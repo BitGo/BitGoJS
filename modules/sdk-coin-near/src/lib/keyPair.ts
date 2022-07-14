@@ -1,6 +1,5 @@
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, toUint8Array } from '@bitgo/sdk-core';
 import * as nearApi from 'near-api-js';
-import { toHex, toUint8Array } from '../hbar/utils';
 import * as nacl from 'tweetnacl';
 
 export class KeyPair extends Ed25519KeyPair {

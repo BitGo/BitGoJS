@@ -105,7 +105,7 @@ export class Transaction extends BaseTransaction {
       const signedTx = nearAPI.utils.serialize.deserialize(
         nearAPI.transactions.SCHEMA,
         nearAPI.transactions.SignedTransaction,
-        bufferRawTransaction,
+        bufferRawTransaction
       );
       signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
       this._nearSignedTransaction = signedTx;
@@ -116,7 +116,7 @@ export class Transaction extends BaseTransaction {
         const unsignedTx = nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
-          bufferRawTransaction,
+          bufferRawTransaction
         );
         unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
         this._nearTransaction = unsignedTx;

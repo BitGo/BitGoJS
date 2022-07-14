@@ -110,14 +110,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       nearAPI.utils.serialize.deserialize(
         nearAPI.transactions.SCHEMA,
         nearAPI.transactions.SignedTransaction,
-        rawTransaction,
+        rawTransaction
       );
     } catch {
       try {
         nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
-          rawTransaction,
+          rawTransaction
         );
       } catch {
         throw new BuildTransactionError('invalid raw transaction');
@@ -227,7 +227,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._receiverId,
       this._nonce,
       this._actions,
-      nearAPI.utils.serialize.base_decode(this._recentBlockHash),
+      nearAPI.utils.serialize.base_decode(this._recentBlockHash)
     );
 
     return tx;

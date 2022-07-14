@@ -1,12 +1,12 @@
-import { register } from '../../../../../src';
-import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/near';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair } from '../../../src';
 import should from 'should';
-import * as testData from '../../../../resources/near';
+import * as testData from '../../resources/near';
 import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as base58 from 'bs58';
 
 describe('Near Transfer Builder', () => {
-  const factory = register('tnear', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tnear');
 
   describe('Succeed', () => {
     it('build a transfer tx unsigned', async () => {
@@ -70,7 +70,7 @@ describe('Near Transfer Builder', () => {
       MPC = await Eddsa.initialize();
     });
     it('should add TSS signature', async () => {
-      const factory = register('tnear', TransactionBuilderFactory);
+      const factory = getBuilderFactory('tnear');
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);
       const C = MPC.keyShare(3, 2, 3);

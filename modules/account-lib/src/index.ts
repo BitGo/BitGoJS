@@ -74,7 +74,7 @@ export { Sol };
 import * as Dot from './coin/dot';
 export { Dot };
 
-import * as Near from './coin/near';
+import * as Near from '@bitgo/sdk-coin-near';
 export { Near };
 
 import * as Polygon from './coin/polygon';

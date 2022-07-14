@@ -1,19 +1,19 @@
 import should = require('should');
-import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { randomBytes } from 'crypto';
-import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
+import { rawTx, accounts, validatorContractAddress, blockHash } from '../fixtures/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
-import { Near } from '../../../../src/v2/coins/near';
+import { KeyPair, Near, TNear, Transaction } from '../../src';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('NEAR:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
   let newTxPrebuild;
   let newTxParams;
-  const factory = accountLib.register('tnear', accountLib.Near.TransactionBuilderFactory);
+  const factory = getBuilderFactory('tnear');
 
   const txPrebuild = {
     txHex: rawTx.transfer.unsigned,
@@ -30,8 +30,10 @@ describe('NEAR:', function () {
   };
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tnear', Near.createInstance);
+    bitgo.safeRegister('near', TNear.createInstance);
     basecoin = bitgo.coin('tnear');
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);
@@ -48,24 +50,26 @@ describe('NEAR:', function () {
     near.getChain().should.equal('near');
     near.getFamily().should.equal('near');
     near.getFullName().should.equal('Near');
-    near.getBaseFactor().should.equal(1e+24);
+    near.getBaseFactor().should.equal(1e24);
 
     tnear.getChain().should.equal('tnear');
     tnear.getFamily().should.equal('near');
     tnear.getFullName().should.equal('Testnet Near');
-    tnear.getBaseFactor().should.equal(1e+24);
+    tnear.getBaseFactor().should.equal(1e24);
   });
 
   describe('Sign Message', () => {
     it('should be performed', async () => {
-      const keyPair = new accountLib.Near.KeyPair();
+      const keyPair = new KeyPair();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
       keyPair.verifySignature(messageToSign, Uint8Array.from(signature)).should.equals(true);
     });
 
     it('should fail with missing private key', async () => {
-      const keyPair = new accountLib.Near.KeyPair({ pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7' }).getKeys();
+      const keyPair = new KeyPair({
+        pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7',
+      }).getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       await basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
     });
@@ -77,9 +81,7 @@ describe('NEAR:', function () {
         txPrebuild: {
           txHex: rawTx.transfer.unsigned,
         },
-        pubs: [
-          accounts.account1.publicKey,
-        ],
+        pubs: [accounts.account1.publicKey],
         prv: accounts.account1.secretKey,
       });
       signed.txHex.should.equal(rawTx.transfer.signed);
@@ -91,9 +93,7 @@ describe('NEAR:', function () {
           txPrebuild: {
             txHex: rawTx.transfer.unsigned,
           },
-          pubs: [
-            accounts.account2.publicKey,
-          ],
+          pubs: [accounts.account2.publicKey],
           prv: accounts.account1.secretKey,
         });
       } catch (e) {
@@ -136,7 +136,6 @@ describe('NEAR:', function () {
     const gas = '125000000000000';
 
     it('should succeed to verify unsigned transaction in base64 encoding', async () => {
-
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const verification = {};
@@ -145,7 +144,6 @@ describe('NEAR:', function () {
     });
 
     it('should succeed to verify signed transaction in base64 encoding', async () => {
-
       const txPrebuild = {
         txHex: rawTx.transfer.signed,
         txInfo: {},
@@ -159,7 +157,6 @@ describe('NEAR:', function () {
     });
 
     it('should fail verify transactions when have different recipients', async () => {
-
       const txPrebuild = newTxPrebuild();
 
       const txParams = {
@@ -177,22 +174,15 @@ describe('NEAR:', function () {
 
       const verification = {};
 
-      await basecoin.verifyTransaction({ txParams, txPrebuild, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
         .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
     it('should fail verify transactions when total amount does not match with expected total amount field', async () => {
-
       const explainedTx = {
         id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         outputAmount: '90000',
         changeAmount: '0',
         changeOutputs: [],
@@ -208,19 +198,19 @@ describe('NEAR:', function () {
         type: 0,
       };
 
-      const stub = sinon.stub(accountLib.Near.Transaction.prototype, 'explainTransaction');
+      const stub = sinon.stub(Transaction.prototype, 'explainTransaction');
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const verification = {};
       stub.returns(explainedTx);
 
-      await basecoin.verifyTransaction({ txParams, txPrebuild, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
         .should.be.rejectedWith('Tx total amount does not match with expected total amount field');
       stub.restore();
     });
 
     it('should succeed to verify transaction in hex encoding', async () => {
-
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       const verification = {};
@@ -250,7 +240,8 @@ describe('NEAR:', function () {
       const txParams = newTxParams();
       txParams.recipients = undefined;
       const txPrebuild = {};
-      await basecoin.verifyTransaction({ txParams, txPrebuild })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
         .should.rejectedWith('missing required tx prebuild property txHex');
     });
 
@@ -351,14 +342,7 @@ describe('NEAR:', function () {
         },
       });
       explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
         type: 0,
         changeOutputs: [],
@@ -383,14 +367,7 @@ describe('NEAR:', function () {
         },
       });
       explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
         type: 0,
         changeOutputs: [],
@@ -426,14 +403,7 @@ describe('NEAR:', function () {
         },
       });
       explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         id: 'GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je',
         type: 13,
         changeOutputs: [],
@@ -469,14 +439,7 @@ describe('NEAR:', function () {
         },
       });
       explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         id: 'CDxPRP3DgHN8gYmRDagk5TRuX7fsCRYHcuqoNULyQPUW',
         type: 17,
         changeOutputs: [],
@@ -507,14 +470,7 @@ describe('NEAR:', function () {
         },
       });
       explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'type',
-        ],
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
         id: '52ZX8MUwmYc6WQ67riUBpmntkcSxxT5aKkJYt5CtCZub',
         type: 15,
         changeOutputs: [],
@@ -612,14 +568,15 @@ describe('NEAR:', function () {
     it('should fail parse a signed transfer transaction when explainTransaction response is undefined', async function () {
       const stub = sinon.stub(Near.prototype, 'explainTransaction');
       stub.resolves(undefined);
-      await basecoin.parseTransaction({
-        txPrebuild: {
-          txHex: rawTx.transfer.signed,
-        },
-        feeInfo: {
-          fee: '',
-        },
-      })
+      await basecoin
+        .parseTransaction({
+          txPrebuild: {
+            txHex: rawTx.transfer.signed,
+          },
+          feeInfo: {
+            fee: '',
+          },
+        })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
     });

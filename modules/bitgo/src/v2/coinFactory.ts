@@ -74,9 +74,8 @@ import {
   Zec,
 } from './coins';
 import { Dot } from './coins/dot';
-import { Near } from './coins/near';
+import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { Tdot } from './coins/tdot';
-import { TNear } from './coins/tnear';
 import { tokens } from '../config';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { HbarToken } from './coins/hbarToken';

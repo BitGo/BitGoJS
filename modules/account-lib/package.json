@@ -38,6 +38,7 @@
     "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-etc": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
+    "@bitgo/sdk-coin-near": "^1.0.0",
     "@bitgo/sdk-coin-rbtc": "^1.0.0",
     "@bitgo/sdk-coin-sol": "^1.0.0",
     "@bitgo/sdk-coin-stx": "^1.0.0",
@@ -61,10 +62,8 @@
     "ethereumjs-abi": "^0.6.5",
     "hi-base32": "^0.5.1",
     "joi": "^17.4.0",
-    "js-sha256": "^0.9.0",
     "lodash": "^4.17.15",
     "long": "^4.0.0",
-    "near-api-js": "^0.44.2",
     "protobufjs": "^6.8.9",
     "stellar-sdk": "^10.0.1",
     "tweetnacl": "^1.0.3"
