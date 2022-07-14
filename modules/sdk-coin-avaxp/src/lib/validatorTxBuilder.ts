@@ -24,7 +24,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
 
   /**
    * set the delegationFeeRate
-   * @param value BigInt
+   * @param value number
    */
   delegationFeeRate(value: number): this {
     this.validateDelegationFeeRate(value);
@@ -34,10 +34,10 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
 
   /**
    * Validate that the delegation fee is at least the minDelegationFee
-   * @param delegationFeeRate BigInt
+   * @param delegationFeeRate number
    */
   validateDelegationFeeRate(delegationFeeRate: number): void {
-    if (delegationFeeRate < this.transaction._network.minDelegationFee) {
+    if (delegationFeeRate < Number(this.transaction._network.minDelegationFee)) {
       throw new BuildTransactionError(
         `Delegation fee cannot be less than ${this.transaction._network.minDelegationFee}`
       );
