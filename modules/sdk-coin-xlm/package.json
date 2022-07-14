@@ -41,7 +41,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.0.1"
+    "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0",
+    "@bitgo/utxo-lib": "^2.2.2",
+    "bignumber.js": "^8.0.1",
+    "lodash": "^4.17.14",
+    "stellar-sdk": "^10.0.1",
+    "superagent": "^3.8.3"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.0.1",

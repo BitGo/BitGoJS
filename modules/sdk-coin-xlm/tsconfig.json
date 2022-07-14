@@ -18,6 +18,12 @@
     },
     {
       "path": "../sdk-test"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../utxo-lib"
     }
   ]
 }
