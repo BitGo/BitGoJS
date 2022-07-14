@@ -10,7 +10,7 @@ export class Secp256k1Curve implements BaseCurve {
   }
 
   scalarAdd(x: bigint, y: bigint): bigint {
-    return bigIntFromU8ABE(secp.utils.privateAdd(x, bigIntToBufferBE(y)));
+    return bigIntFromU8ABE(secp.utils.privateAdd(x, bigIntToBufferBE(y, 32)));
   }
 
   scalarSub(x: bigint, y: bigint): bigint {
@@ -35,23 +35,23 @@ export class Secp256k1Curve implements BaseCurve {
   }
 
   pointAdd(a: bigint, b: bigint): bigint {
-    const pointA = secp.Point.fromHex(bigIntToBufferBE(a));
-    const pointB = secp.Point.fromHex(bigIntToBufferBE(b));
+    const pointA = secp.Point.fromHex(bigIntToBufferBE(a, 32));
+    const pointB = secp.Point.fromHex(bigIntToBufferBE(b, 32));
     return bigIntFromU8ABE(pointA.add(pointB).toRawBytes(true));
   }
 
   pointMultiply(p: bigint, s: bigint): bigint {
-    const pointA = secp.Point.fromHex(bigIntToBufferBE(p));
+    const pointA = secp.Point.fromHex(bigIntToBufferBE(p, 32));
     return bigIntFromU8ABE(pointA.multiply(s).toRawBytes(true));
   }
 
   basePointMult(n: bigint): bigint {
-    const point = bigIntToBufferBE(n);
+    const point = bigIntToBufferBE(n, 32);
     return bigIntFromU8ABE(secp.getPublicKey(point, true));
   }
 
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean {
-    return secp.verify(signature, message, bigIntToBufferBE(publicKey));
+    return secp.verify(signature, message, bigIntToBufferBE(publicKey, 33));
   }
 
   order(): bigint {
