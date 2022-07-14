@@ -1,9 +1,9 @@
-import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { coins, HbarTokenConfig } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { coins, HbarTokenConfig, tokens } from '@bitgo/statics';
 import { Hbar } from './hbar';
 
 export class HbarToken extends Hbar {
-  public readonly tokenConfig : HbarTokenConfig;
+  public readonly tokenConfig: HbarTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: HbarTokenConfig) {
     const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('hbar') : coins.get('thbar');
@@ -13,6 +13,15 @@ export class HbarToken extends Hbar {
 
   static createTokenConstructor(config: HbarTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new HbarToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
+      const tokenConstructor = HbarToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get name(): string {
