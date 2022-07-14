@@ -2,22 +2,22 @@ import * as should from 'should';
 import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
 
-import { Environments } from '../../../../src';
+import { Environments, Wallet } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Txlm } from '../../src';
 
-import { Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-
-import * as nock from 'nock';
+import nock from 'nock';
 nock.enableNetConnect();
 
 describe('XLM:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
   let uri;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('txlm', Txlm.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txlm');
     uri = Environments[bitgo.getEnv()].uri;
@@ -49,11 +49,15 @@ describe('XLM:', function () {
     });
 
     it('should throw on invalid memo id address', () => {
-      (() => { basecoin.getAddressDetails(invalidMemoIdAddress); }).should.throw();
+      (() => {
+        basecoin.getAddressDetails(invalidMemoIdAddress);
+      }).should.throw();
     });
 
     it('should throw on multiple memo id address', () => {
-      (() => { basecoin.getAddressDetails(multipleMemoIdAddress); }).should.throw();
+      (() => {
+        basecoin.getAddressDetails(multipleMemoIdAddress);
+      }).should.throw();
     });
 
     it('should validate address', function () {
@@ -65,7 +69,7 @@ describe('XLM:', function () {
       basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8').should.equal(false); // xrp account
     });
 
-    it('should validate muxed address', function() {
+    it('should validate muxed address', function () {
       basecoin.isValidAddress(validMuxedAddress).should.equal(true);
       const muxedAddressDetails = basecoin.getAddressDetails(validMuxedAddress);
       muxedAddressDetails.should.deepEqual({
@@ -117,7 +121,6 @@ describe('XLM:', function () {
         });
       }).should.throw();
     });
-
   });
 
   it('should validate pub key', () => {
@@ -135,7 +138,10 @@ describe('XLM:', function () {
   });
 
   it('Should explain an XLM transaction', async function () {
-    const signedExplanation = await basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
+    const signedExplanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=',
+    });
     signedExplanation.outputAmount.should.equal('5000000000');
     signedExplanation.outputAmounts.should.have.property('txlm', '5000000000');
     signedExplanation.outputs.length.should.equal(1);
@@ -147,7 +153,10 @@ describe('XLM:', function () {
     signedExplanation.memo.type.should.equal('text');
     signedExplanation.changeOutputs.length.should.equal(0);
     signedExplanation.changeAmount.should.equal('0');
-    const unsignedExplanation = await basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
+    const unsignedExplanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==',
+    });
     unsignedExplanation.outputAmount.should.equal('10000000000');
     unsignedExplanation.outputAmounts.should.have.property('txlm', '10000000000');
     unsignedExplanation.outputs.length.should.equal(1);
@@ -162,7 +171,10 @@ describe('XLM:', function () {
   });
 
   it('Should explain a trustline transaction', async function () {
-    const explanation = await basecoin.explainTransaction({ txBase64: 'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=' });
+    const explanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+    });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('300');
     explanation.memo.should.be.empty();
@@ -178,13 +190,19 @@ describe('XLM:', function () {
   });
 
   it('Should explain a token transaction', async function () {
-    const explanation = await basecoin.explainTransaction({ txBase64: 'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=' });
+    const explanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=',
+    });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('100');
     explanation.memo.should.be.empty();
     explanation.changeOutputs.length.should.equal(0);
     explanation.changeAmount.should.equal('0');
-    explanation.outputAmounts.should.have.property('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', '500000000');
+    explanation.outputAmounts.should.have.property(
+      'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+      '500000000'
+    );
   });
 
   it('isValidMemoId should work', function () {
@@ -226,7 +244,8 @@ describe('XLM:', function () {
       prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
     };
     const prebuild = {
-      txBase64: 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
+      txBase64:
+        'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
       txInfo: {
         fee: 100,
         sequence: '35995558267060226',
@@ -248,7 +267,8 @@ describe('XLM:', function () {
       },
       walletId: '5a78dd561c6258a907f1eeaee132f796',
     };
-    const signedTxBase64 = 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAUrgwAkAAABAOExcvVJIUJv9HuVfbV0y7lRPRARv4wDtcdhHG7QN40h5wQ2uwPF52OGQ8KY+66a1A/8lNKB75sgj2xj44s8lDQ==';
+    const signedTxBase64 =
+      'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAUrgwAkAAABAOExcvVJIUJv9HuVfbV0y7lRPRARv4wDtcdhHG7QN40h5wQ2uwPF52OGQ8KY+66a1A/8lNKB75sgj2xj44s8lDQ==';
 
     before(function () {
       basecoin = bitgo.coin('txlm');
@@ -257,11 +277,7 @@ describe('XLM:', function () {
         users: [
           {
             user: '543c11ed356d00cb7600000b98794503',
-            permissions: [
-              'admin',
-              'view',
-              'spend',
-            ],
+            permissions: ['admin', 'view', 'spend'],
           },
         ],
         coin: 'txlm',
@@ -273,9 +289,7 @@ describe('XLM:', function () {
           '5a78dd5674a70eb4079f58797dfe2f5e',
           '5a78dd561c6258a907f1eea9f1d079e2',
         ],
-        tags: [
-          '5a78dd561c6258a907f1eeaee132f796',
-        ],
+        tags: ['5a78dd561c6258a907f1eeaee132f796'],
         disableTransactionNotifications: false,
         freeze: {},
         deleted: false,
@@ -334,10 +348,12 @@ describe('XLM:', function () {
       });
 
       const txParams = {
-        recipients: [{
-          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
-          amount: '128000000',
-        }],
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            amount: '128000000',
+          },
+        ],
       };
       const txPrebuild = {
         txBase64: tx.halfSigned.txBase64,
@@ -349,7 +365,8 @@ describe('XLM:', function () {
           backup: { pub: backupKeychain.pub },
         },
       };
-      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction signed with wrong key');
     });
 
@@ -361,10 +378,12 @@ describe('XLM:', function () {
       });
 
       const txParams = {
-        recipients: [{
-          address: 'GAK3NSB43EVCZKDH4PYGJPCVPOYZ7X7KIR3ZTWSYRKRMJWGG5TABM6TH',
-          amount: '128000000',
-        }],
+        recipients: [
+          {
+            address: 'GAK3NSB43EVCZKDH4PYGJPCVPOYZ7X7KIR3ZTWSYRKRMJWGG5TABM6TH',
+            amount: '128000000',
+          },
+        ],
       };
       const txPrebuild = {
         txBase64: tx.halfSigned.txBase64,
@@ -376,7 +395,8 @@ describe('XLM:', function () {
           backup: { pub: backupKeychain.pub },
         },
       };
-      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not match expected recipient');
     });
 
@@ -388,10 +408,12 @@ describe('XLM:', function () {
       });
 
       const txParams = {
-        recipients: [{
-          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
-          amount: '130000000',
-        }],
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            amount: '130000000',
+          },
+        ],
       };
       const txPrebuild = {
         txBase64: tx.halfSigned.txBase64,
@@ -403,13 +425,15 @@ describe('XLM:', function () {
           backup: { pub: backupKeychain.pub },
         },
       };
-      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not match expected amount');
     });
 
     it('should fail to verify a transaction without recipients', async function () {
       const prebuilt = {
-        txBase64: 'AAAAAP1qe44j+i4uIT+arbD4QDQBt8ryEeJd7a0jskQ3nwDeAAAAAAB/4cUAAAACAAAAAAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAA==',
+        txBase64:
+          'AAAAAP1qe44j+i4uIT+arbD4QDQBt8ryEeJd7a0jskQ3nwDeAAAAAAB/4cUAAAACAAAAAAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAA==',
         txInfo: {
           fee: 0,
           sequence: '35995558267060226',
@@ -437,10 +461,12 @@ describe('XLM:', function () {
       });
 
       const txParams = {
-        recipients: [{
-          address: 'GAUKA3ZTH3DZ6THBCPL6AOQBCEEBIFYDU4FGXUCHOC7PILXGUPTUBJ6E',
-          amount: '130000000',
-        }],
+        recipients: [
+          {
+            address: 'GAUKA3ZTH3DZ6THBCPL6AOQBCEEBIFYDU4FGXUCHOC7PILXGUPTUBJ6E',
+            amount: '130000000',
+          },
+        ],
       };
       const txPrebuild = {
         txBase64: tx.halfSigned.txBase64,
@@ -452,16 +478,19 @@ describe('XLM:', function () {
           backup: { pub: backupKeychain.pub },
         },
       };
-      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not have any operations');
     });
 
     it('should verify a transaction', async function () {
       const txParams = {
-        recipients: [{
-          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
-          amount: '128000000',
-        }],
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            amount: '128000000',
+          },
+        ],
       };
       const txPrebuild = {
         txBase64: halfSignedTransaction.halfSigned.txBase64,
@@ -486,12 +515,11 @@ describe('XLM:', function () {
         };
 
         const buildResult = {
-          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock(uri)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-          .reply(200, buildResult);
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
 
         const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
@@ -501,7 +529,8 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline operations');
       });
 
@@ -509,19 +538,20 @@ describe('XLM:', function () {
         const txParams = {
           type: 'trustline',
           recipients: [],
-          trustlines: [{
-            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-            action: 'remove',
-          }],
+          trustlines: [
+            {
+              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              action: 'remove',
+            },
+          ],
         };
 
         const buildResult = {
-          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock(uri)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-          .reply(200, buildResult);
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
 
         const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
@@ -531,7 +561,8 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
       });
 
@@ -539,20 +570,21 @@ describe('XLM:', function () {
         const txParams = {
           type: 'trustline',
           recipients: [],
-          trustlines: [{
-            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-            action: 'add',
-            limit: '999',
-          }],
+          trustlines: [
+            {
+              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              action: 'add',
+              limit: '999',
+            },
+          ],
         };
 
         const buildResult = {
-          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock(uri)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-          .reply(200, buildResult);
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
 
         const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
@@ -562,7 +594,8 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
       });
 
@@ -584,12 +617,11 @@ describe('XLM:', function () {
         };
 
         const buildResult = {
-          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAAAAAAAAAAAAAAAAA=',
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAAAAAAAAAAAAAAAAA=',
         };
 
-        nock(uri)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-          .reply(200, buildResult);
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
 
         const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
@@ -623,7 +655,8 @@ describe('XLM:', function () {
             name: 'UserNotFound',
           });
 
-        await basecoin.federationLookupByName(stellarAddress)
+        await basecoin
+          .federationLookupByName(stellarAddress)
           .should.be.rejectedWith(`user not found: ${stellarAddress}`);
       });
 
@@ -666,8 +699,7 @@ describe('XLM:', function () {
             detail: 'invalid id: ' + accountId,
           });
 
-        await basecoin.federationLookupByAccountId(accountId)
-          .should.be.rejectedWith(`invalid id: ${accountId}`);
+        await basecoin.federationLookupByAccountId(accountId).should.be.rejectedWith(`invalid id: ${accountId}`);
       });
 
       it('should return only account_id for non-bitgo accounts', async function () {
@@ -755,7 +787,7 @@ describe('XLM:', function () {
 
       derivedKey.should.have.properties({
         key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
-        derivationPath: 'm/999999\'/230673453\'/206129755\'',
+        derivationPath: "m/999999'/230673453'/206129755'",
       });
     });
 

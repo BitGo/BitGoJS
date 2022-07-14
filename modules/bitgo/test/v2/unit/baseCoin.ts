@@ -8,7 +8,7 @@ import * as nock from 'nock';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { Erc20Token } from '@bitgo/sdk-coin-eth';
-import { StellarToken } from '../../../src/v2/coins/stellarToken';
+import { StellarToken } from '@bitgo/sdk-coin-xlm';
 
 nock.disableNetConnect();
 
