@@ -1,24 +1,25 @@
 /**
  * @prettier
  */
-import * as should from 'should';
-import * as ecc from 'eosjs-ecc';
-import * as bip32 from 'bip32';
-import * as sinon from 'sinon';
-import { Eos } from '../../../../src/v2/coins';
-import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
-
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import * as bip32 from 'bip32';
+import * as ecc from 'eosjs-ecc';
 import * as _ from 'lodash';
+import should from 'should';
+import * as sinon from 'sinon';
+import { Eos, Teos } from '../../src';
+import { EosInputs, EosResponses } from '../fixtures';
 
 describe('EOS:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('eos', Eos.createInstance);
+    bitgo.safeRegister('teos', Teos.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teos');
   });

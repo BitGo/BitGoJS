@@ -167,11 +167,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
-    const tokenConstructor = EosToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
-  }
+  EosToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);

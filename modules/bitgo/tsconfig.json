@@ -75,6 +75,9 @@
       "path": "../sdk-coin-doge"
     },
     {
+      "path": "../sdk-coin-eos"
+    },
+    {
       "path": "../sdk-coin-etc"
     },
     {

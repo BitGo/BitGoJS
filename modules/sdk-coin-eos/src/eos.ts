@@ -12,7 +12,7 @@ import * as request from 'superagent';
 import * as url from 'url';
 
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
-import { StringTextDecoder } from '../../stringTextDecoder';
+import { StringTextDecoder } from './lib/utils';
 import {
   BaseCoin,
   BitGoBase,
