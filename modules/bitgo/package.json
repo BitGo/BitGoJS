@@ -65,6 +65,7 @@
     "@bitgo/sdk-coin-doge": "^1.0.0",
     "@bitgo/sdk-coin-etc": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
+    "@bitgo/sdk-coin-dot": "^1.0.0",
     "@bitgo/sdk-coin-ltc": "^1.0.0",
     "@bitgo/sdk-coin-near": "^1.0.0",
     "@bitgo/sdk-coin-rbtc": "^1.0.0",

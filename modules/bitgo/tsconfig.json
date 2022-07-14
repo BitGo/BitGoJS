@@ -81,6 +81,9 @@
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-dot"
+    },
+    {
       "path": "../sdk-coin-ltc"
     },
     {

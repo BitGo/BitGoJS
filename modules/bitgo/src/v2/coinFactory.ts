@@ -19,6 +19,7 @@ import {
   Cspr,
   Dash,
   Doge,
+  Dot,
   Eos,
   EosToken,
   Erc20Token,
@@ -49,6 +50,7 @@ import {
   Tcspr,
   Tdash,
   Tdoge,
+  Tdot,
   Teos,
   Tetc,
   Teth,
@@ -73,9 +75,7 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Dot } from './coins/dot';
 import { Near, TNear } from '@bitgo/sdk-coin-near';
-import { Tdot } from './coins/tdot';
 import { tokens } from '../config';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { HbarToken } from './coins/hbarToken';

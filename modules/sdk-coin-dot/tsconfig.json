@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*", "test/**/*", "test/resources/materialData.json", "test/resources/materialDataModified.json"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../sdk-test"
+    }
+  ]
+}

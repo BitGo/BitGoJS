@@ -68,6 +68,9 @@
       "path": "./modules/sdk-coin-eth"
     },
     {
+      "path": "./modules/sdk-coin-dot"
+    },
+    {
       "path": "./modules/sdk-coin-ltc"
     },
     {
