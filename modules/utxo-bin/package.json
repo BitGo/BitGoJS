@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/utxo-bin",
   "description": "Command-line utility for BitGo UTXO transactions",
-  "version": "1.0.2-rc.26",
+  "version": "1.0.2-rc.27",
   "files": [
     "dist/**/*"
   ],
