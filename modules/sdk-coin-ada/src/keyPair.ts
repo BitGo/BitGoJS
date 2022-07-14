@@ -1,4 +1,11 @@
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, AddressFormat } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, AddressFormat } from '@bitgo/sdk-core';
+import {
+  PublicKey,
+  PrivateKey,
+  EnterpriseAddress,
+  NetworkInfo,
+  StakeCredential,
+} from '@emurgo/cardano-serialization-lib-nodejs';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -11,18 +18,42 @@ export class KeyPair extends Ed25519KeyPair {
     super(source);
   }
 
-  getAddress(format?: AddressFormat): string {
-    throw new Error('Method not implemented.');
+  /**
+   *  @returns { Address }
+   */
+  getAddress(format): string {
+    const bytesFromHex = new Uint8Array(Buffer.from(this.keyPair.pub, 'hex'));
+    const pubKey = PublicKey.from_bytes(bytesFromHex);
+    let enterpriseAddress;
+    if (format === AddressFormat.testnet) {
+      enterpriseAddress = EnterpriseAddress.new(
+        NetworkInfo.testnet().network_id(),
+        StakeCredential.from_keyhash(pubKey.hash())
+      );
+    } else if (format === AddressFormat.mainnet) {
+      enterpriseAddress = EnterpriseAddress.new(
+        NetworkInfo.mainnet().network_id(),
+        StakeCredential.from_keyhash(pubKey.hash())
+      );
+    }
+    return enterpriseAddress.to_address().to_bech32();
   }
 
   getKeys(): DefaultKeys {
-    throw new Error('Method not implemented.');
+    const result: DefaultKeys = { pub: this.keyPair.pub };
+    if (this.keyPair.prv) {
+      result.prv = this.keyPair.prv;
+    }
+    return result;
   }
 
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new Error('Method not implemented.');
+    const rawPrv = PrivateKey.from_bech32(prv).as_bytes();
+    return new KeyPair({ prv: toHex(rawPrv) }).keyPair;
   }
-  recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new Error('Method not implemented.');
+
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    const rawPub = PublicKey.from_bech32(pub).as_bytes();
+    return { pub: toHex(rawPub) };
   }
 }

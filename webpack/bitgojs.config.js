@@ -42,6 +42,10 @@ module.exports = {
       Buffer: ['buffer', 'Buffer'],
       process: 'process/browser',
     }),
+
+    new webpack.NormalModuleReplacementPlugin(/\@emurgo\/cardano-serialization-lib-nodejs/, '@emurgo/cardano-serialization-lib-asmjs'),
+
+    new webpack.ContextReplacementPlugin(/cardano-serialization-lib-asmjs/),
   ],
   node: {
     global: true,
