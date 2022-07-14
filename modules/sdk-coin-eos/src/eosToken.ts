@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { EosTokenConfig, tokens } from '@bitgo/statics';
 import { Eos } from './eos';
-import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { EosTokenConfig } from '@bitgo/statics';
 
 export { EosTokenConfig };
 
@@ -17,6 +17,15 @@ export class EosToken extends Eos {
 
   static createTokenConstructor(config: EosTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new EosToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
+      const tokenConstructor = EosToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get type() {

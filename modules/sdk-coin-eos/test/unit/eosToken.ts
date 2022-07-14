@@ -2,19 +2,24 @@ import 'should';
 
 import * as _ from 'lodash';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
-
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { Eos, Teos, EosToken } from '../../src';
 
 describe('EOS Token:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let eosTokenCoin;
   let baseCoin;
   const tokenName = 'teos:CHEX';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('eos', Eos.createInstance);
+    bitgo.safeRegister('teos', Teos.createInstance);
+    EosToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     eosTokenCoin = bitgo.coin(tokenName);
     baseCoin = bitgo.coin('teos');
@@ -30,23 +35,19 @@ describe('EOS Token:', function () {
     eosTokenCoin.tokenContractAddress.should.equal('testtoken111');
   });
 
-  describe('verify transaction', function() {
+  describe('verify transaction', function () {
     let wallet;
     let verification;
     let newTxPrebuild;
     let newTxParams;
 
-    before(function() {
+    before(function () {
       const walletData = {
         id: '5a78dd561c6258a907f1eeaee132f796',
         users: [
           {
             user: '543c11ed356d00cb7600000b98794503',
-            permissions: [
-              'admin',
-              'view',
-              'spend',
-            ],
+            permissions: ['admin', 'view', 'spend'],
           },
         ],
         coin: 'teos',
@@ -58,9 +59,7 @@ describe('EOS Token:', function () {
           '5a78dd5674a70eb4079f58797dfe2f5e',
           '5a78dd561c6258a907f1eea9f1d079e2',
         ],
-        tags: [
-          '5a78dd561c6258a907f1eeaee132f796',
-        ],
+        tags: ['5a78dd561c6258a907f1eeaee132f796'],
         disableTransactionNotifications: false,
         freeze: {},
         deleted: false,
@@ -106,10 +105,12 @@ describe('EOS Token:', function () {
           ref_block_num: 52755,
           ref_block_prefix: 54626512,
         },
-        txHex: '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840591f7a6113ced08841030000000100408c7a02ea3055000000000085269d0003023432011042980ad29cb1ca000000572d3ccdcd0120ceb8437333427c00000000a8ed32322120ceb8437333427c20825019ab3ca98be803000000000000084348455800000000000000000000000000000000000000000000000000000000000000000000000000',
+        txHex:
+          '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840591f7a6113ced08841030000000100408c7a02ea3055000000000085269d0003023432011042980ad29cb1ca000000572d3ccdcd0120ceb8437333427c00000000a8ed32322120ceb8437333427c20825019ab3ca98be803000000000000084348455800000000000000000000000000000000000000000000000000000000000000000000000000',
         transaction: {
           compression: 'none',
-          packed_trx: '591f7a6113ced08841030000000100408c7a02ea3055000000000085269d0003023432011042980ad29cb1ca000000572d3ccdcd0120ceb8437333427c00000000a8ed32322120ceb8437333427c20825019ab3ca98be80300000000000008434845580000000000',
+          packed_trx:
+            '591f7a6113ced08841030000000100408c7a02ea3055000000000085269d0003023432011042980ad29cb1ca000000572d3ccdcd0120ceb8437333427c00000000a8ed32322120ceb8437333427c20825019ab3ca98be80300000000000008434845580000000000',
           signatures: [],
         },
         txid: '0bc7d8026af6710680e0f3e819ff7ddbbb3dff8a740846c76fd47f9386832edc',
@@ -137,23 +138,29 @@ describe('EOS Token:', function () {
         ],
       };
 
-      newTxPrebuild = () => { return _.cloneDeep(txPrebuild); };
-      newTxParams = () => { return _.cloneDeep(txParams); };
+      newTxPrebuild = () => {
+        return _.cloneDeep(txPrebuild);
+      };
+      newTxParams = () => {
+        return _.cloneDeep(txParams);
+      };
     });
 
-    it('should verify token transaction', async function() {
+    it('should verify token transaction', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       const validTransaction = await eosTokenCoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
       validTransaction.should.equal(true);
     });
 
-    it('should throw if expected receive symbol is different than actual receive symbol', async function() {
+    it('should throw if expected receive symbol is different than actual receive symbol', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       txParams.txPrebuild = txPrebuild;
       txParams.txPrebuild.token = 'teos:IQ';
-      await eosTokenCoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive symbol does not match expected recipient symbol');
+      await eosTokenCoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('txHex receive symbol does not match expected recipient symbol');
     });
   });
 });

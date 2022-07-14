@@ -3,8 +3,8 @@
  */
 
 import 'should';
-import { StringTextDecoder } from '../../../src/stringTextDecoder';
-import { EosInputs } from '../fixtures/coins/eos';
+import { StringTextDecoder } from '../../src/lib/utils';
+import { EosInputs } from '../fixtures';
 
 describe('String Text Decoder', function () {
   const stringTextDecoder = new StringTextDecoder();

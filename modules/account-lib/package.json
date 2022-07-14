@@ -55,7 +55,6 @@
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",
     "bignumber.js": "^9.0.0",
-    "bn.js": "^5.2.1",
     "bs58": "^4.0.1",
     "ethereumjs-abi": "^0.6.5",
     "lodash": "^4.17.15",
