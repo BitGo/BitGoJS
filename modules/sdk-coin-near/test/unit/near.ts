@@ -2,7 +2,15 @@ import should = require('should');
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { randomBytes } from 'crypto';
-import { rawTx, accounts, validatorContractAddress, blockHash } from '../fixtures/near';
+import {
+  rawTx,
+  accounts,
+  validatorContractAddress,
+  blockHash,
+  NearResponses,
+  keys,
+  accountInfo,
+} from '../fixtures/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
 import { KeyPair, Near, TNear, Transaction } from '../../src';
@@ -652,6 +660,62 @@ describe('NEAR:', function () {
         inputs: [response3],
         outputs: [response3],
       });
+    });
+  });
+
+  describe('Recover Transactions:', () => {
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const sandBox = sinon.createSandbox();
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+              public_key: accountInfo.bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [accountInfo.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: 'abhay-near.testnet',
+        walletPassphrase: 'Ghghjkg!455544llll',
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
     });
   });
 });
