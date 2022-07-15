@@ -1,16 +1,17 @@
-import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import { bufferToHex } from 'ethereumjs-util';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { Eth2, Teth2 } from '../../../../src/v2/coins';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Eth2, KeyPair, Teth2 } from '../../src';
 
 describe('Ethereum 2.0', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   before(async function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('eth2', Eth2.createInstance);
+    bitgo.safeRegister('teth2', Teth2.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teth2');
   });
@@ -36,11 +37,9 @@ describe('Ethereum 2.0', function () {
   });
 
   it('should generate keypair from prv', function () {
-    const prv = Uint8Array.from(
-      Buffer.from('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3', 'hex')
-    );
+    const prv = Uint8Array.from(Buffer.from('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3', 'hex'));
     const localBaseCoin = bitgo.coin('teth2');
-    const keyPair = localBaseCoin.generateKeyPair(prv);
+    const keyPair = localBaseCoin.generateKeyPair(prv as any);
     keyPair.prv.should.equal('0x4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3');
   });
 
@@ -50,17 +49,19 @@ describe('Ethereum 2.0', function () {
     this.skip();
     const localBaseCoin = bitgo.coin('teth2');
     const keyPair = localBaseCoin.generateKeyPair();
-    keyPair.pub.length.should.equal(98);
-    keyPair.secretShares.every((secretShare) => secretShare.length.should.equal(66));
-    (keyPair.pub.startsWith('0x')).should.be.true();
-    keyPair.secretShares.every((secretShare) => (secretShare.startsWith('0x')).should.be.true());
-    localBaseCoin.isValidPub(keyPair.pub).should.be.true();
+    keyPair.pub?.length.should.equal(98);
+    // keyPair.secretShares.every((secretShare) => secretShare.length.should.equal(66));
+    keyPair.pub?.startsWith('0x').should.be.true();
+    // keyPair.secretShares.every((secretShare) => secretShare.startsWith('0x').should.be.true());
+    localBaseCoin.isValidPub(keyPair.pub!).should.be.true();
   });
 
   it('should reject keypair generation from an invalid prv', function () {
     const prv = Uint8Array.from(Buffer.from('', 'hex'));
     const localBaseCoin = bitgo.coin('teth2');
-    (function () {localBaseCoin.generateKeyPair(prv);}).should.throw();
+    (function () {
+      localBaseCoin.generateKeyPair(prv as any);
+    }.should.throw());
   });
 
   describe('Sign message:', () => {
@@ -82,10 +83,13 @@ describe('Ethereum 2.0', function () {
       });
       const walletSignatureBuffer = await basecoin.signMessage({ prv: walletKey.prv }, message);
       const walletSignature = bufferToHex(walletSignatureBuffer);
-      const signature = Eth2AccountLib.KeyPair.aggregateSignatures({ 1: BigInt(userSignature), 3: BigInt(walletSignature) });
+      const signature = KeyPair.aggregateSignatures({
+        1: BigInt(userSignature),
+        3: BigInt(walletSignature),
+      });
 
       userKey.pub.should.equal(walletKey.pub);
-      (await Eth2AccountLib.KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.true();
+      (await KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.true();
     });
 
     it('should fail to validate a string message with wrong public key', async function () {
@@ -107,10 +111,13 @@ describe('Ethereum 2.0', function () {
       });
       const walletSignatureBuffer = await basecoin.signMessage({ prv: walletKey.prv }, message);
       const walletSignature = bufferToHex(walletSignatureBuffer);
-      const signature = Eth2AccountLib.KeyPair.aggregateSignatures({ 1: BigInt(userSignature), 3: BigInt(walletSignature) });
+      const signature = KeyPair.aggregateSignatures({
+        1: BigInt(userSignature),
+        3: BigInt(walletSignature),
+      });
 
       userKey.pub.should.equal(walletKey.pub);
-      (await Eth2AccountLib.KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.false();
+      (await KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.false();
     });
   });
 });

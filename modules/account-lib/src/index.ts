@@ -35,7 +35,7 @@ export { Xtz };
 import * as Eth from '@bitgo/sdk-coin-eth';
 export { Eth };
 
-import * as Eth2 from './coin/eth2';
+import * as Eth2 from '@bitgo/sdk-coin-eth2';
 export { Eth2 };
 
 import * as Etc from '@bitgo/sdk-coin-etc';

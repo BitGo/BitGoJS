@@ -1,11 +1,11 @@
-import { KeyPair } from '@bitgo/sdk-coin-hbar';
+import { KeyPair } from '../../src';
 
 // ACCOUNT_1 has public and private keys with prefix
 export const ACCOUNT_1 = {
   privateKey: '0x8fa1aa4aaa6c54aa2aacaafaaa23aCaa8fa1aa4aaa6c54aa2aacaafaaa23aCaa',
   publicKey: '0x8fa1aa4aaa6c54aa2aacaafaaa23aCaa8fa1aa4aaa6c54aa2aacaafaaa23aCaa',
   privateKeyBytes: Uint8Array.from(
-    Buffer.from('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3', 'hex'),
+    Buffer.from('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3', 'hex')
   ),
 };
 
