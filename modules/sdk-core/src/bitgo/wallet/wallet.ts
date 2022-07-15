@@ -176,7 +176,7 @@ export class Wallet implements IWallet {
    * This is a strict sub-set of prebuildWhitelistedParams
    */
   prebuildConsolidateAccountParams(): string[] {
-    return ['consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock'];
+    return ['consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock', 'preview'];
   }
 
   /**
