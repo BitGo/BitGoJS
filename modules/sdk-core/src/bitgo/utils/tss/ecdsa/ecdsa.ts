@@ -1,36 +1,17 @@
-import { Ecdsa, ECDSA } from '../../../../account-lib/mpc/tss';
+import { Ecdsa } from '../../../../account-lib/mpc/tss';
 import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { MpcUtils } from '../../../utils/mpcUtils';
-import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
+import ECDSAMethods from '../../../tss/ecdsa';
 import * as openpgp from 'openpgp';
-import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
+import { KeychainsTriplet } from '../../../baseCoin';
 import * as crypto from 'crypto';
-import { IWallet } from '../../../wallet';
-import { BitGoBase } from '../../../bitgoBase';
-import * as _ from 'lodash';
-import { IEcdsaUtils } from './types';
+import baseTSSUtils from '../baseTSSUtils';
+import { DecryptableNShare, KeyShare } from './types';
 
-type KeyShare = ECDSA.KeyShare;
-type DecryptableNShare = ECDSAMethodTypes.DecryptableNShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
 
 /** @inheritdoc */
-export class EcdsaUtils extends MpcUtils implements IEcdsaUtils {
-  private _wallet?: IWallet;
-
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
-    super(bitgo, baseCoin);
-    this._wallet = wallet;
-  }
-
-  private get wallet(): IWallet {
-    if (_.isNil(this._wallet)) {
-      throw new Error('Wallet not defined');
-    }
-    return this._wallet;
-  }
-
+export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
@@ -84,6 +65,35 @@ export class EcdsaUtils extends MpcUtils implements IEcdsaUtils {
       backupKeychain,
       bitgoKeychain,
     };
+  }
+
+  createUserKeychain(
+    userGpgKey: SerializedKeyPair<string>,
+    userKeyShare: KeyShare,
+    backupKeyShare: KeyShare,
+    bitgoKeychain: Keychain,
+    passphrase: string,
+    originalPasscodeEncryptionCode: string
+  ): Promise<Keychain> {
+    return this.createParticipantKeychain(
+      userGpgKey,
+      1,
+      userKeyShare,
+      backupKeyShare,
+      bitgoKeychain,
+      passphrase,
+      originalPasscodeEncryptionCode
+    );
+  }
+
+  createBackupKeychain(
+    userGpgKey: SerializedKeyPair<string>,
+    userKeyShare: KeyShare,
+    backupKeyShare: KeyShare,
+    bitgoKeychain: Keychain,
+    passphrase: string
+  ): Promise<Keychain> {
+    return this.createParticipantKeychain(userGpgKey, 2, userKeyShare, backupKeyShare, bitgoKeychain, passphrase);
   }
 
   /** @inheritdoc */
