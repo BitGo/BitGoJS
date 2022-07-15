@@ -42,6 +42,7 @@ import {
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
+  defaultForwarderVersion,
   ERC1155BatchTransferTypeMethodId,
   ERC1155BatchTransferTypes,
   ERC1155SafeTransferTypeMethodId,
@@ -58,6 +59,7 @@ import {
   sendMultiSigTypes,
   walletInitializationFirstBytes,
   v1WalletInitializationFirstBytes,
+  v1CreateForwarderMethodId,
   walletSimpleConstructor,
 } from './walletUtil';
 import { EthTransactionData } from './types';
@@ -168,7 +170,7 @@ export function sendMultiSigTokenData(
  * @param forwarderAddress The forwarder address to flush
  * @param tokenAddress The token address to flush from
  */
-export function flushTokensData(forwarderAddress, tokenAddress): string {
+export function flushTokensData(forwarderAddress: string, tokenAddress: string): string {
   const params = [forwarderAddress, tokenAddress];
   const method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
   const args = EthereumAbi.rawEncode(flushTokensTypes, params);
@@ -188,10 +190,12 @@ export function flushCoinsData(): string {
 /**
  * Returns the create forwarder method calling data
  *
+ * @param {string} forwarderVersion - forwarder version for the address to be initialized
  * @returns {string} - the createForwarder method encoded
  */
-export function getAddressInitializationData(): string {
-  return createForwarderMethodId;
+export function getAddressInitializationData(forwarderVersion?: number): string {
+  const impliedForwarderVersion = forwarderVersion ?? defaultForwarderVersion;
+  return impliedForwarderVersion === defaultForwarderVersion ? createForwarderMethodId : v1CreateForwarderMethodId;
 }
 
 /**
@@ -453,6 +457,7 @@ const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [v1WalletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
+  [v1CreateForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
   [flushCoinsMethodId]: TransactionType.FlushCoins,

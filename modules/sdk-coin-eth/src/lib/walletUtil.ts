@@ -10,6 +10,7 @@ export const flushCoinsMethodId = '0x6b9f96ea';
 export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
 export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
 export const ERC1155BatchTransferTypeMethodId = '0x2eb2c2d6';
+export const defaultForwarderVersion = 0;
 
 /*
   Steps to reproduce:
