@@ -157,10 +157,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
-    const tokenConstructor = StellarToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-  }
+  StellarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.tokens]) {
     const tokenConstructor = OfcToken.createTokenConstructor(ofcToken);

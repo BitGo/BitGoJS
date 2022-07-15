@@ -1,9 +1,5 @@
-/**
- * @prettier
- */
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Ed25519KeyDeriver } from '@bitgo/account-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as request from 'superagent';
@@ -15,6 +11,7 @@ import {
   BitGoBase,
   checkKrsProvider,
   common,
+  Ed25519KeyDeriver,
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -35,7 +32,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
-import { getStellarKeys } from '../recovery/initiate';
+import { getStellarKeys } from './getStellarKeys';
 
 /**
  * XLM accounts support virtual (muxed) addresses

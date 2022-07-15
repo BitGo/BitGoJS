@@ -3,9 +3,9 @@
  */
 import * as _ from 'lodash';
 import { Xlm } from './xlm';
-import { BitGoBase, BitGoJsError, CoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
-import { StellarTokenConfig } from '@bitgo/statics';
+import { StellarTokenConfig, tokens } from '@bitgo/statics';
 
 export { StellarTokenConfig };
 
@@ -31,6 +31,15 @@ export class StellarToken extends Xlm {
 
   static createTokenConstructor(config: StellarTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new StellarToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
+      const tokenConstructor = StellarToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get type() {
