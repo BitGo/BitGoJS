@@ -40,7 +40,7 @@ export class CeloTransaction {
    * @returns sanitized value
    */
   private sanitizeHexString(numberValue) {
-    if (numberValue === '0x0') {
+    if (numberValue === '0x0' || numberValue == '') {
       return '0x';
     } else if (numberValue.length % 2 === 0) {
       return numberValue;
@@ -52,7 +52,7 @@ export class CeloTransaction {
     this.nonce = unpadBuffer(toBuffer(tx.nonce));
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
-    this.data = toBuffer(tx.data);
+    this.data = toBuffer(this.sanitizeHexString(tx.data));
     this.value = toBuffer(this.sanitizeHexString(tx.value));
     if (tx.to) {
       this.to = toBuffer(tx.to);
