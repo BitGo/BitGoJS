@@ -6,6 +6,10 @@ import * as should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
+import { Utils as KeyPairUtils } from '../../src/lib/utils';
+import { KeyPair } from '../../src/lib/keyPair';
+import { Buffer as BufferAvax } from 'avalanche';
+
 import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 
 describe('Avaxp', function () {
@@ -132,6 +136,64 @@ describe('Avaxp', function () {
       };
 
       await basecoin.signTransaction(params).should.be.rejected();
+    });
+    it('should return the same mainnet address', () => {
+      const utils = new KeyPairUtils();
+      const xprv = testData.SEED_ACCOUNT.xPrivateKey;
+      const kp1 = new KeyPair({ prv: xprv });
+      const addressBuffer1 = kp1.getAddressBuffer();
+      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+
+      const kp2 = new KeyPair({ prv: xprv });
+      const addressBuffer2 = kp2.getAddressSafeBuffer();
+      const address2 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
+
+      const kp3 = new KeyPair({ prv: xprv });
+      const address3 = kp3.getAvaxPAddress('avax');
+
+      address1.should.equal(address2);
+      address1.should.equal(address3);
+    });
+    it('should return the same testnet address', () => {
+      const utils = new KeyPairUtils();
+      const xprv = testData.SEED_ACCOUNT.xPrivateKey;
+      const kp1 = new KeyPair({ prv: xprv });
+      const addressBuffer1 = kp1.getAddressBuffer();
+      const address1 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer1));
+
+      const kp2 = new KeyPair({ prv: xprv });
+      const addressBuffer2 = kp2.getAddressSafeBuffer();
+      const address2 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
+
+      const kp3 = new KeyPair({ prv: xprv });
+      const address3 = kp3.getAvaxPAddress('fuji');
+
+      address1.should.equal(address2);
+      address1.should.equal(address3);
+    });
+    it('should not be the same address from same key', () => {
+      const utils = new KeyPairUtils();
+      const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
+      const addressBuffer1 = kp1.getAddressBuffer();
+      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+
+      const kp2 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
+      const addressBuffer2 = kp2.getAddressSafeBuffer();
+      const address2 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
+
+      address1.should.not.equal(address2);
+    });
+    it('should not be the same address from different keys', () => {
+      const utils = new KeyPairUtils();
+      const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
+      const addressBuffer1 = kp1.getAddressBuffer();
+      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+
+      const kp2 = new KeyPair({ prv: testData.ACCOUNT_3.privkey });
+      const addressBuffer2 = kp2.getAddressSafeBuffer();
+      const address2 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
+
+      address1.should.not.equal(address2);
     });
   });
 
