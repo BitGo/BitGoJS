@@ -31,6 +31,14 @@ describe('OFC:', function () {
     teur.getBaseFactor().should.equal(PRECISION_2);
   });
 
+  it('test fiat constants for OFCTGBP', function () {
+    const tgbp = bitgo.coin('ofctgbp');
+    tgbp.getChain().should.equal('ofctgbp');
+    tgbp.getFullName().should.equal('Test British Pound Sterling');
+    tgbp.getBaseFactor().should.equal(PRECISION_2);
+  });
+
+
   it('test crypto coins for ofctbtc', function () {
     const tbtc = bitgo.coin('ofctbtc');
     tbtc.getChain().should.equal('ofctbtc');
