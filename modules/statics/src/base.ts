@@ -166,6 +166,7 @@ export enum UnderlyingAsset {
   ERD = 'erd',
   EUR = 'eur',
   EUROC = 'euroc',
+  GBP = 'gbp',
   GTETH = 'gteth',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',

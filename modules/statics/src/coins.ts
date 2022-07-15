@@ -176,6 +176,7 @@ export const coins = CoinMap.fromCoins([
   ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
+  ofc('ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
   ofc('ofcavaxc', 'Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
   ofc('ofccspr', 'Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
@@ -197,6 +198,7 @@ export const coins = CoinMap.fromCoins([
   ofc('ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
+  tofc('ofctgbp', 'Test British Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
   tofc('ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   tofc('ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
@@ -1662,4 +1664,6 @@ export const coins = CoinMap.fromCoins([
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
   fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),
   fiat('tfiateur', 'Testnet European Union Euro', Networks.test.fiat, 2, UnderlyingAsset.EUR),
+  fiat('fiatgbp', 'British Pound Sterling', Networks.main.fiat, 2, UnderlyingAsset.GBP),
+  fiat('tfiatgbp', 'Testnet British Pound Sterling', Networks.test.fiat, 2, UnderlyingAsset.GBP),
 ]);
