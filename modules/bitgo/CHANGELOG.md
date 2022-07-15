@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.40](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.39...bitgo@14.2.0-rc.40) (2022-07-15)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
 # [14.2.0-rc.39](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.37...bitgo@14.2.0-rc.39) (2022-07-15)
 
 

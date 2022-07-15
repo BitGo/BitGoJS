@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.1.0-rc.0...@bitgo/sdk-coin-celo@1.1.0-rc.1) (2022-07-15)
+
+
+### Bug Fixes
+
+* **sdk-coin-celo:** sanitize input ([04ddf86](https://github.com/BitGo/BitGoJS/commit/04ddf86e09acf17e14020db80ee8770fdd4e89d6))
+
+
+
+
+
 # [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.0.1-rc.1...@bitgo/sdk-coin-celo@1.1.0-rc.0) (2022-07-15)
 
 
