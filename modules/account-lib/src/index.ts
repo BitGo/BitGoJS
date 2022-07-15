@@ -77,7 +77,7 @@ export { Dot };
 import * as Near from '@bitgo/sdk-coin-near';
 export { Near };
 
-import * as Polygon from './coin/polygon';
+import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
 const coinBuilderMap = {

@@ -3,11 +3,19 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./",
-    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "typeRoots": [
+      "./types",
+      "../../types",
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
     "declarationDir": "./dist/types",
     "esModuleInterop": false
   },
-  "include": ["src/**/*", "package.json"],
+  "include": [
+    "src/**/*",
+    "package.json"
+  ],
   "typedocOptions": {
     "mode": "modules",
     "out": "docs",
@@ -67,6 +75,9 @@
       "path": "../sdk-coin-doge"
     },
     {
+      "path": "../sdk-coin-dot"
+    },
+    {
       "path": "../sdk-coin-eos"
     },
     {
@@ -76,9 +87,6 @@
       "path": "../sdk-coin-eth"
     },
     {
-      "path": "../sdk-coin-dot"
-    },
-    {
       "path": "../sdk-coin-hbar"
     },
     {
@@ -86,6 +94,9 @@
     },
     {
       "path": "../sdk-coin-near"
+    },
+    {
+      "path": "../sdk-coin-polygon"
     },
     {
       "path": "../sdk-coin-rbtc"

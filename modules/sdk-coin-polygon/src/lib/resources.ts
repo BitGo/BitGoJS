@@ -11,7 +11,7 @@ export const testnetCommon = EthereumCommon.forCustomChain(
     networkId: (coins.get('tpolygon').network as EthereumNetwork).chainId,
     chainId: (coins.get('tpolygon').network as EthereumNetwork).chainId,
   },
-  'london',
+  'london'
 );
 
 /**
@@ -24,5 +24,5 @@ export const mainnetCommon = EthereumCommon.forCustomChain(
     networkId: (coins.get('polygon').network as EthereumNetwork).chainId,
     chainId: (coins.get('polygon').network as EthereumNetwork).chainId,
   },
-  'london',
+  'london'
 );

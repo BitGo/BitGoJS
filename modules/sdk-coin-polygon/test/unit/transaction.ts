@@ -1,8 +1,8 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/polygon';
-import * as testData from '../../../resources/polygon/polygon';
-import { getCommon } from '../../../../src/coin/polygon/utils';
+import { Transaction } from '../../src';
+import { getCommon } from '../../src/lib/utils';
+import * as testData from '../resources';
 
 describe('Polygon Transaction', () => {
   const coinConfig = coins.get('tpolygon');

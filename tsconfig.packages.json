@@ -62,6 +62,9 @@
       "path": "./modules/sdk-coin-doge"
     },
     {
+      "path": "./modules/sdk-coin-dot"
+    },
+    {
       "path": "./modules/sdk-coin-eos"
     },
     {
@@ -71,9 +74,6 @@
       "path": "./modules/sdk-coin-eth"
     },
     {
-      "path": "./modules/sdk-coin-dot"
-    },
-    {
       "path": "./modules/sdk-coin-hbar"
     },
     {
@@ -81,6 +81,9 @@
     },
     {
       "path": "./modules/sdk-coin-near"
+    },
+    {
+      "path": "./modules/sdk-coin-polygon"
     },
     {
       "path": "./modules/sdk-coin-rbtc"

@@ -1,12 +1,12 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, TransactionExplanation } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from '@bitgo/sdk-coin-eth';
-import { getBuilder, Polygon as PolygonAccountLib } from '@bitgo/account-lib';
-import BigNumber from 'bignumber.js';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
+import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from '@bitgo/sdk-coin-eth';
+import { BaseCoin, BitGoBase, TransactionExplanation } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import { KeyPair, TransactionBuilder } from './lib';
 
 export class Polygon extends Eth {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -47,7 +47,7 @@ export class Polygon extends Eth {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new PolygonAccountLib.KeyPair({ pub });
+      new KeyPair({ pub });
     } catch (e) {
       valid = false;
     }
@@ -89,8 +89,8 @@ export class Polygon extends Eth {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): PolygonAccountLib.TransactionBuilder {
-    return getBuilder(this.getBaseChain()) as PolygonAccountLib.TransactionBuilder;
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
   /**

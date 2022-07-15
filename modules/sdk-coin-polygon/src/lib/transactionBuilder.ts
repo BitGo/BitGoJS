@@ -1,9 +1,9 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumAbi from 'ethereumjs-abi';
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import EthereumAbi from 'ethereumjs-abi';
 import { getCommon } from './utils';
+import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 import { Transaction, TransferBuilder } from './';
 
 export class TransactionBuilder extends EthTransactionBuilder {
