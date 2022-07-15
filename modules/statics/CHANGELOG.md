@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.0...@bitgo/statics@7.0.0-rc.2) (2022-07-15)
+
+
+### Bug Fixes
+
+* **statics:** update avaxp network to use string instead of bigint ([f6505b7](https://github.com/BitGo/BitGoJS/commit/f6505b711e81de7d4ab0c3ee74f33ec7ab07c671))
+
+
+### Reverts
+
+* Revert "feat(statics): update terra a classic" ([ddfa942](https://github.com/BitGo/BitGoJS/commit/ddfa942ee1559e430d6ee3775724b20869a8b1ba))
+
+
+### BREAKING CHANGES
+
+* **statics:** This change could break calling code as it changes the type.
+
+Ticket: STLX-17918
+
+
+
+
+
 # [7.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.0...@bitgo/statics@7.0.0-rc.1) (2022-07-14)
 
 

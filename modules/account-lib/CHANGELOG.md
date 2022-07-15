@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.33...@bitgo/account-lib@2.20.0-rc.35) (2022-07-15)
+
+
+### Bug Fixes
+
+* **account-lib:** fix proper format for compressed hex points ([3882452](https://github.com/BitGo/BitGoJS/commit/38824529efbbb2481e951236960833637e6cf5c5))
+
+
+
+
+
 # [2.20.0-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.33...@bitgo/account-lib@2.20.0-rc.34) (2022-07-14)
 
 **Note:** Version bump only for package @bitgo/account-lib

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.39](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.37...bitgo@14.2.0-rc.39) (2022-07-15)
+
+
+### Features
+
+* **account-lib:** get rid of old ethereum lib ([abd2247](https://github.com/BitGo/BitGoJS/commit/abd2247047218d8cbd8ec7067d227721357f5fcc))
+
+
+
+
+
 # [14.2.0-rc.38](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.37...bitgo@14.2.0-rc.38) (2022-07-14)
 
 **Note:** Version bump only for package bitgo
