@@ -65,6 +65,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 RUN cd /var/modules/sdk-coin-dot && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
 RUN cd /var/modules/sdk-coin-etc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
+RUN cd /var/modules/sdk-coin-hbar && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
 RUN cd /var/modules/sdk-coin-near && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
@@ -129,6 +131,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
+    yarn link @bitgo/sdk-coin-hbar && \
     yarn link @bitgo/sdk-coin-near && \
     yarn link @bitgo/sdk-coin-rbtc && \
     yarn link @bitgo/sdk-coin-sol && \

@@ -315,7 +315,7 @@ export class Transaction extends BaseTransaction {
    */
   private encode<CtorFn extends { new (): T }, T extends { constructor: CtorFn }>(
     obj: T,
-    encoder: { encode(arg: T): Writer },
+    encoder: { encode(arg: T): Writer }
   ): Uint8Array {
     return encoder.encode(obj).finish();
   }

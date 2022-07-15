@@ -1,17 +1,20 @@
 import 'should';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src';
-import { HbarToken } from '../../../../src/v2/coins/hbarToken';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { HbarToken } from '../../src';
 
 describe('Hedera Hashgraph Token', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let token: HbarToken;
   const tokenName = 'thbar:usdc';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    HbarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
-    token = bitgo.coin(tokenName);
+    token = bitgo.coin(tokenName) as HbarToken;
   });
 
   it('Return correct configurations', function () {

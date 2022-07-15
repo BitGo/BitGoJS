@@ -1,17 +1,19 @@
-import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import * as TestData from '../../fixtures/coins/hbar';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import * as TestData from '../fixtures/hbar';
 import { randomBytes } from 'crypto';
-import { Hbar } from '../../../../src/v2/coins/';
 import * as should from 'should';
+import { Hbar, Thbar, KeyPair } from '../../src';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('Hedera Hashgraph:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('thbar', Thbar.createInstance);
+    bitgo.safeRegister('hbar', Hbar.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('thbar');
   });
@@ -22,13 +24,32 @@ describe('Hedera Hashgraph:', function () {
   });
 
   it('should check valid addresses', async function () {
-    const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd', '0.0.41098?memoId='];
-    const goodAddresses = ['0', '0.0.0', '0.0.41098', '0.0.0?memoId=84', '0.0.41098',
-      '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1',
+    const badAddresses = [
+      '',
+      '0.0',
+      'YZ09fd-',
+      '0.0.0.a',
+      'sadasdfggg',
+      '0.2.a.b',
+      '0.0.100?=sksjd',
+      '0.0.41098?memoId=',
+    ];
+    const goodAddresses = [
+      '0',
+      '0.0.0',
+      '0.0.41098',
+      '0.0.0?memoId=84',
+      '0.0.41098',
+      '0.0.41098?memoId=2aaaaa',
+      '0.0.41098?memoId=1',
     ];
 
-    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
-    goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
+    badAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(false);
+    });
+    goodAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(true);
+    });
 
     const hexAddress = '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84';
     basecoin.isValidAddress(hexAddress).should.equal(false);
@@ -154,7 +175,10 @@ describe('Hedera Hashgraph:', function () {
     basecoin.isWalletAddress({ address: validAddress2, baseAddress }).should.true();
     basecoin.isWalletAddress({ address: validAddress2, baseAddress: validAddress1 }).should.true();
     basecoin.isWalletAddress({ address: unrelatedValidAddress, baseAddress }).should.false();
-    should.throws(() => basecoin.isWalletAddress({ address: invalidAddress, baseAddress }), `invalid address: ${invalidAddress}`);
+    should.throws(
+      () => basecoin.isWalletAddress({ address: invalidAddress, baseAddress }),
+      `invalid address: ${invalidAddress}`
+    );
   });
 
   describe('Keypairs:', () => {
@@ -171,8 +195,12 @@ describe('Hedera Hashgraph:', function () {
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      keyPair.prv.should.equal('302e020100300506032b65700422042080350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f');
-      keyPair.pub.should.equal('302a300506032b65700321009cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333');
+      keyPair.prv.should.equal(
+        '302e020100300506032b65700422042080350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f'
+      );
+      keyPair.pub.should.equal(
+        '302a300506032b65700321009cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333'
+      );
     });
 
     it('should validate a stellar seed', function () {
@@ -181,20 +209,24 @@ describe('Hedera Hashgraph:', function () {
 
     it('should convert a stellar seed to an hbar prv', function () {
       const seed = basecoin.convertFromStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX');
-      seed.should.equal('302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055');
+      seed.should.equal(
+        '302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055'
+      );
     });
   });
 
   describe('Sign Message', () => {
     it('should be performed', async () => {
-      const keyPair = new accountLib.Hbar.KeyPair();
+      const keyPair = new KeyPair();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
       keyPair.verifySignature(messageToSign, Uint8Array.from(Buffer.from(signature, 'hex'))).should.equals(true);
     });
 
     it('should fail with missing private key', async () => {
-      const keyPair = new accountLib.Hbar.KeyPair({ pub: '302a300506032b6570032100d8fd745361df270776a3ab1b55d5590ec00a26ab45eea37197dc9894a81fcb82' }).getKeys();
+      const keyPair = new KeyPair({
+        pub: '302a300506032b6570032100d8fd745361df270776a3ab1b55d5590ec00a26ab45eea37197dc9894a81fcb82',
+      }).getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       await basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
     });
@@ -207,13 +239,8 @@ describe('Hedera Hashgraph:', function () {
      * @param source The account sending thist ransaction
      * @param amount The amount to send to the recipient
      */
-    const buildUnsignedTransaction = async function ({
-      destination,
-      source,
-      amount = '100000',
-    }) {
-
-      const factory = accountLib.register('thbar', accountLib.Hbar.TransactionBuilderFactory);
+    const buildUnsignedTransaction = async function ({ destination, source, amount = '100000' }) {
+      const factory = getBuilderFactory('thbar');
       const txBuilder = factory.getTransferBuilder();
       txBuilder.fee({
         fee: '100000',
@@ -226,7 +253,7 @@ describe('Hedera Hashgraph:', function () {
     };
 
     it('should sign transaction', async function () {
-      const key = new accountLib.Hbar.KeyPair();
+      const key = new KeyPair();
       const destination = '0.0.129369';
       const source = '0.0.1234';
       const amount = '100000';
@@ -244,7 +271,7 @@ describe('Hedera Hashgraph:', function () {
         },
       });
 
-      const factory = accountLib.register('thbar', accountLib.Hbar.TransactionBuilderFactory);
+      const factory = getBuilderFactory('thbar');
       const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();

@@ -80,7 +80,7 @@ import {
 import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { tokens } from '../config';
 import { SolToken } from '@bitgo/sdk-coin-sol';
-import { HbarToken } from './coins/hbarToken';
+import { HbarToken } from '@bitgo/sdk-coin-hbar';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
@@ -186,10 +186,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
-    const tokenConstructor = HbarToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-  }
+  HbarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 }
 
 const GlobalCoinFactory: CoinFactory = new CoinFactory();

@@ -42,7 +42,7 @@ export class TokenTransferBuilder extends TransferBuilder {
     this._recipients.forEach((recipient) => {
       tokenTransferAmount = tokenTransferAmount.plus(recipient.amount);
       tokenTransferData.push(
-        { accountID: buildHederaAccountID(recipient.address), amount: Long.fromString(recipient.amount) }, // recipient
+        { accountID: buildHederaAccountID(recipient.address), amount: Long.fromString(recipient.amount) } // recipient
       );
     });
     tokenTransferData[0].amount = Long.fromString(tokenTransferAmount.toString()).negate(); // update sender send amount

@@ -72,7 +72,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   owner(address: string): this {
     if (this._owners.length >= DEFAULT_SIGNER_NUMBER) {
       throw new BuildTransactionError(
-        'A maximum of ' + DEFAULT_SIGNER_NUMBER + ' owners can be set for a multisig wallet',
+        'A maximum of ' + DEFAULT_SIGNER_NUMBER + ' owners can be set for a multisig wallet'
       );
     }
     if (!isValidPublicKey(address)) {
@@ -94,7 +94,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
     if (this._owners.length !== DEFAULT_SIGNER_NUMBER) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_SIGNER_NUMBER}, found: ${this._owners.length}`,
+        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_SIGNER_NUMBER}, found: ${this._owners.length}`
       );
     }
     super.validateMandatoryFields();

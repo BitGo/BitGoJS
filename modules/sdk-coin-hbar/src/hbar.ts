@@ -1,9 +1,7 @@
 /**
  * @prettier
  */
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import * as bitgoAccountLib from '@bitgo/account-lib';
-
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -22,8 +20,9 @@ import {
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
-import { SeedValidator } from '../internal/seedValidator';
-
+import { SeedValidator } from './seedValidator';
+import { KeyPair as HbarKeyPair, TransactionBuilderFactory } from './lib';
+import * as Utils from './lib/utils';
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -106,7 +105,7 @@ export class Hbar extends BaseCoin {
    */
   isValidAddress(address: string): boolean {
     try {
-      return bitgoAccountLib.Hbar.Utils.isValidAddressWithPaymentId(address);
+      return Utils.isValidAddressWithPaymentId(address);
     } catch (e) {
       return false;
     }
@@ -119,7 +118,7 @@ export class Hbar extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new bitgoAccountLib.Hbar.KeyPair({ seed }) : new bitgoAccountLib.Hbar.KeyPair();
+    const keyPair = seed ? new HbarKeyPair({ seed }) : new HbarKeyPair();
     const keys = keyPair.getKeys();
 
     if (!keys.prv) {
@@ -145,7 +144,7 @@ export class Hbar extends BaseCoin {
    */
   isWalletAddress(params: VerifyAddressOptions): boolean {
     const { address, baseAddress } = params;
-    return bitgoAccountLib.Hbar.Utils.isSameBaseAddress(address, baseAddress);
+    return Utils.isSameBaseAddress(address, baseAddress);
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
@@ -162,7 +161,7 @@ export class Hbar extends BaseCoin {
    * @returns Promise<SignedTransaction>
    */
   async signTransaction(params: HbarSignTransactionOptions): Promise<SignedTransaction> {
-    const factory = bitgoAccountLib.register(this.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+    const factory = this.getBuilderFactory();
     const txBuilder = factory.from(params.txPrebuild.txHex);
     txBuilder.sign({ key: params.prv });
 
@@ -188,7 +187,7 @@ export class Hbar extends BaseCoin {
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
     const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
     // reconstitute keys and sign
-    return Buffer.from(new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg));
+    return Buffer.from(new HbarKeyPair({ prv: key.prv }).signMessage(msg));
   }
 
   /**
@@ -217,7 +216,7 @@ export class Hbar extends BaseCoin {
       throw new Error('missing fee information');
     }
 
-    const factory = bitgoAccountLib.register(this.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+    const factory = this.getBuilderFactory();
     const txBuilder = factory.from(txHex);
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
@@ -302,7 +301,7 @@ export class Hbar extends BaseCoin {
     }
 
     if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
-      const keyFromSeed = new bitgoAccountLib.Hbar.KeyPair({ seed: stellar.StrKey.decodeEd25519SecretSeed(seed) });
+      const keyFromSeed = new HbarKeyPair({ seed: stellar.StrKey.decodeEd25519SecretSeed(seed) });
       const keys = keyFromSeed.getKeys();
       if (keys !== undefined && keys.prv) {
         return keys.prv;
@@ -313,6 +312,10 @@ export class Hbar extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    return bitgoAccountLib.Hbar.Utils.isValidPublicKey(pub);
+    return Utils.isValidPublicKey(pub);
+  }
+
+  private getBuilderFactory(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 }

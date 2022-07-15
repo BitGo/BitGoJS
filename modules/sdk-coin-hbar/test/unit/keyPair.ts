@@ -1,9 +1,9 @@
 import assert from 'assert';
 import * as should from 'should';
 import * as nacl from 'tweetnacl';
-import { KeyPair } from '../../../../src/coin/hbar';
-import * as testData from '../../../resources/hbar/hbar';
-import { convertFromStellarPub, toUint8Array } from '../../../../src/coin/hbar/utils';
+import { KeyPair } from '../../src';
+import * as testData from '../resources/hbar';
+import { convertFromStellarPub, toUint8Array } from '../../src/lib/utils';
 
 const pub = testData.ACCOUNT_1.pubKeyWithPrefix;
 const prv = testData.ACCOUNT_1.prvKeyWithPrefix;
@@ -88,7 +88,7 @@ describe('Hedera Key Pair', () => {
       const source = { pub: '01D63D' };
       assert.throws(
         () => new KeyPair(source),
-        (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
+        (e) => e.message.includes(testData.errorMessageInvalidPublicKey)
       );
     });
 
@@ -100,27 +100,27 @@ describe('Hedera Key Pair', () => {
       const prvWithNonHex = { prv: testData.ed25519PrivKeyPrefix + prv + 'GG' };
       assert.throws(
         () => new KeyPair(shorterPrv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey
       );
       assert.throws(
         () => new KeyPair(longerPrv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey
       );
       assert.throws(
         () => new KeyPair(prvWithPrefix),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey
       );
       assert.throws(
         () => new KeyPair({ prv: prv + pub }),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey
       );
       assert.throws(
         () => new KeyPair(prvWithOddNumber),
-        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
+        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey
       );
       assert.throws(
         () => new KeyPair(prvWithNonHex),
-        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
+        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey
       );
     });
   });
@@ -130,7 +130,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ prv: prv });
       assert.throws(
         () => keyPair.getAddress(),
-        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
+        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress
       );
     });
 
@@ -138,7 +138,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       assert.throws(
         () => keyPair.getAddress(),
-        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
+        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress
       );
     });
   });
@@ -166,7 +166,7 @@ describe('Hedera Key Pair', () => {
       const signature = Buffer.from(
         '76ca6556fbfcc5a8b43c12ba6425c5a6c90f5033180628410b5c29f651719f58ef4c1e' +
           '78dddd5fd794c555ec38c9b9c02ea76d3eef4d8422ae7ea8363cab920c',
-        'hex',
+        'hex'
       );
 
       const keyPair = new KeyPair({ pub: userPub });
@@ -189,7 +189,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       assert.throws(
         () => keyPair.signMessage(message),
-        (e) => e.message === testData.errorMessageMissingPrivateKey,
+        (e) => e.message === testData.errorMessageMissingPrivateKey
       );
     });
   });
