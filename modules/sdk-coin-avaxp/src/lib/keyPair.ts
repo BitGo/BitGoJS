@@ -8,6 +8,8 @@ import {
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
+import createHash from 'create-hash';
+import { Buffer as SafeBuffer } from 'safe-buffer';
 import { Buffer as BufferAvax } from 'avalanche';
 import { SECP256k1KeyPair } from 'avalanche/dist/common';
 import * as bip32 from 'bip32';
@@ -118,19 +120,32 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {string} The address derived from the public key and hrp
    */
   getAvaxPAddress(hrp: string): string {
-    const publicKey = BufferAvax.from(this.keyPair.publicKey);
-    const addrressBuffer: BufferAvax = SECP256k1KeyPair.addressFromPublicKey(publicKey);
-    return utils.addressToString(hrp, 'P', addrressBuffer);
+    const addressBuffer: BufferAvax = BufferAvax.from(this.getAddressBuffer());
+    return utils.addressToString(hrp, 'P', addressBuffer);
   }
 
   /**
    * Get an Avalanche P-Chain public mainnet address
    *
-   * @param {string} format - avalanche hrp - select Mainnet(avax) or Testnet(fuji) for the address
-   * @returns {string} The mainnet address derived from the public key
+   * @returns {Buffer} The address buffer derived from the public key
    */
   getAddressBuffer(): Buffer {
     const publicKey = BufferAvax.from(this.keyPair.publicKey);
-    return Buffer.from(SECP256k1KeyPair.addressFromPublicKey(publicKey));
+    try {
+      return Buffer.from(SECP256k1KeyPair.addressFromPublicKey(publicKey));
+    } catch (error) {
+      return this.getAddressSafeBuffer();
+    }
+  }
+
+  /**
+   * Use the safe Buffer instead of the regular buffer to derive the address buffer. Used in the OVC.
+   *
+   * @returns {Buffer}
+   */
+  getAddressSafeBuffer(): Buffer {
+    const publicKeySafe = SafeBuffer.from(this.keyPair.publicKey);
+    const sha256 = SafeBuffer.from(createHash('sha256').update(publicKeySafe).digest());
+    return Buffer.from(createHash('ripemd160').update(sha256).digest());
   }
 }
