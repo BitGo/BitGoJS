@@ -21,6 +21,9 @@
     },
     {
       "path": "../sdk-test"
+    },
+    {
+      "path": "../statics"
     }
   ]
 }
