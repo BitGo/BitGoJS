@@ -5,6 +5,7 @@ export { EDDSAMethods, EDDSAMethodTypes, ECDSAMethods, ECDSAMethodTypes };
 export { ShareKeyPosition } from './types';
 
 // exporting this types for backward compatibility.
+/** @deprecated Use EDDSAMethods */
 export {
   createCombinedKey,
   createUserSignShare,
@@ -20,3 +21,5 @@ export {
   CombinedKey,
   SigningMaterial,
 } from './eddsa';
+
+export * as commonTssMethods from './common';
