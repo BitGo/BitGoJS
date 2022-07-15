@@ -24,8 +24,29 @@ describe('ETH util library', function () {
     });
   });
 
-  it('Should validate valid createForwarder Id', function () {
+  it('Should validate valid createForwarder Id if forwarderVersion is not passed', function () {
     should.equal(getAddressInitializationData(), walletUtilConstants.createForwarderMethodId);
+  });
+
+  it('Should validate valid createForwarder Id for forwarder version 0', function () {
+    should.equal(
+      getAddressInitializationData(testData.FORWARDER_VERSION_V0),
+      walletUtilConstants.createForwarderMethodId
+    );
+  });
+
+  it('Should validate valid createForwarder Id for forwarder version 1', function () {
+    should.equal(
+      getAddressInitializationData(testData.FORWARDER_VERSION_V1),
+      walletUtilConstants.v1CreateForwarderMethodId
+    );
+  });
+
+  it('Should validate valid createForwarder Id for forwarder version 2', function () {
+    should.equal(
+      getAddressInitializationData(testData.FORWARDER_VERSION_V2),
+      walletUtilConstants.v1CreateForwarderMethodId
+    );
   });
 
   it('should validate valid address', function () {
@@ -42,7 +63,7 @@ describe('ETH util library', function () {
 
   it('should generate a proper forwarder version 1 address', function () {
     const initCode = getProxyInitcode(testData.FORWARDER_IMPLEMENTATION_ADDRESS);
-    const saltBuffer = setLengthLeft('0x02', 32);
+    const saltBuffer = setLengthLeft(Buffer.from('02', 'hex'), 32);
 
     // Hash the wallet base address with the given salt, so the address directly relies on the base address
     const calculationSalt = bufferToHex(

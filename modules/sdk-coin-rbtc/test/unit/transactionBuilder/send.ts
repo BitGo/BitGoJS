@@ -1,5 +1,5 @@
 import should from 'should';
-import * as ethUtil from '@bitgo/ethereumjs-utils-old';
+import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { KeyPair, TransactionBuilder } from '../../../src';
@@ -30,7 +30,7 @@ describe('Rbtc send transaction', function () {
         'RSK-ERC20',
         new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
         amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress || ''), 16),
         expireTime,
         sequenceId,
       ],
@@ -110,7 +110,7 @@ describe('Rbtc send transaction', function () {
     const operationHash = getOperationHash(tx);
 
     const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+    const senderPubKey = ethUtil.ecrecover(Buffer.from(operationHash, 'hex'), v, r, s);
     const senderAddress = ethUtil.pubToAddress(senderPubKey);
     const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
     ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
@@ -126,7 +126,7 @@ describe('Rbtc send transaction', function () {
     const operationHash = getOperationHash(tx);
 
     const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+    const senderPubKey = ethUtil.ecrecover(Buffer.from(operationHash || ''), v, r, s);
     const senderAddress = ethUtil.pubToAddress(senderPubKey);
     const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
     ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());

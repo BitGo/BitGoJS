@@ -50,7 +50,7 @@ export { Rbtc };
 import * as Celo from '@bitgo/sdk-coin-celo';
 export { Celo };
 
-import * as Hbar from './coin/hbar';
+import * as Hbar from '@bitgo/sdk-coin-hbar';
 export { Hbar };
 
 import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
@@ -71,7 +71,7 @@ export { AvaxP };
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
-import * as Dot from './coin/dot';
+import * as Dot from '@bitgo/sdk-coin-dot';
 export { Dot };
 
 import * as Near from '@bitgo/sdk-coin-near';

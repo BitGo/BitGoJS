@@ -21,6 +21,7 @@ import { KeyPair } from './keyPair';
 import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
+  calculateForwarderV1Address,
   classifyTransaction,
   decodeFlushTokensData,
   decodeWalletCreationData,
@@ -28,6 +29,7 @@ import {
   flushTokensData,
   getAddressInitializationData,
   getCommon,
+  getProxyInitcode,
   hasSignature,
   isValidEthAddress,
 } from './utils';
@@ -68,6 +70,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
   private _contractAddress: string;
   private _contractCounter: number;
+  private _forwarderVersion: number;
+  private _salt: string;
+  private _initCode: string;
 
   // generic contract call builder
   // encoded contract call hex
@@ -85,6 +90,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = 0;
     this._value = '0';
     this._walletOwnerAddresses = [];
+    this._forwarderVersion = 0;
     this.transaction = new Transaction(this._coinConfig, this._common);
   }
 
@@ -618,11 +624,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TxData} The Ethereum transaction data
    */
   private buildAddressInitializationTransaction(): TxData {
-    const addressInitData = getAddressInitializationData();
+    const addressInitData = getAddressInitializationData(this._forwarderVersion);
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
     if (this._contractCounter) {
-      tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
+      tx.deployedAddress =
+        this._forwarderVersion === 0
+          ? calculateForwarderAddress(this._contractAddress, this._contractCounter)
+          : calculateForwarderV1Address(this._contractAddress, this._salt, this._initCode);
     }
     return tx;
   }
@@ -702,5 +711,39 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected getFinalV(): string {
     return ethUtil.addHexPrefix(this._common.chainIdBN().muln(2).addn(35).toString(16));
+  }
+
+  /**
+   * Set the forwarder version for address to be initialized
+   *
+   * @param {number} version forwarder version
+   */
+  forwarderVersion(version: number): void {
+    if (version < 0 || version > 2) {
+      throw new BuildTransactionError(`Invalid forwarder version: ${version}`);
+    }
+
+    this._forwarderVersion = version;
+  }
+
+  /**
+   * Set the salt to create the address using create2
+   *
+   * @param {string} salt The salt to create the address using create2, hex string
+   */
+  salt(salt: string): void {
+    this._salt = salt;
+  }
+
+  /**
+   * Take the implementation address for the proxy contract, and get the binary initcode for the associated proxy
+   *
+   * @param {string} implementationAddress The address of the implementation contract
+   */
+  initCode(implementationAddress: string): void {
+    if (!isValidEthAddress(implementationAddress)) {
+      throw new BuildTransactionError('Invalid address: ' + implementationAddress);
+    }
+    this._initCode = getProxyInitcode(implementationAddress);
   }
 }

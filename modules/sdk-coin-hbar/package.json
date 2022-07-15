@@ -1,0 +1,61 @@
+{
+  "name": "@bitgo/sdk-coin-hbar",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Hbar",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-hbar"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-coin-algo": "^1.1.0-rc.12",
+    "@bitgo/sdk-core": "^1.1.0-rc.25",
+    "@bitgo/statics": "^7.0.0-rc.1",
+    "@hashgraph/proto": "2.0.1-beta.2",
+    "@hashgraph/sdk": "~2.3.0",
+    "@stablelib/sha384": "^1.0.0",
+    "bignumber.js": "^9.0.0",
+    "lodash": "^4.17.15",
+    "long": "^4.0.0",
+    "protobufjs": "^6.8.9",
+    "stellar-sdk": "^10.0.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.0-rc.29",
+    "@bitgo/sdk-test": "^1.0.1-rc.15"
+  }
+}

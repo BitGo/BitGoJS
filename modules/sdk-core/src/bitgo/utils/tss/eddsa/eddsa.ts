@@ -3,17 +3,11 @@
  */
 import * as bs58 from 'bs58';
 import * as crypto from 'crypto';
-import * as _ from 'lodash';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
-import Eddsa, { KeyShare, YShare } from '../../../../account-lib/mpc/tss';
+import Eddsa from '../../../../account-lib/mpc/tss';
 import { IRequestTracer } from '../../../../api';
-import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
-import { BitGoBase } from '../../../bitgoBase';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { IWallet } from '../../../wallet';
-import { ITssUtils, PrebuildTransactionWithIntentOptions, SignatureShareRecord, TxRequest } from './types';
-import { MpcUtils } from '../../mpcUtils';
 import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
   createUserSignShare,
@@ -24,26 +18,15 @@ import {
   sendUserToBitgoGShare,
   SigningMaterial,
 } from '../../../tss';
-
+import { PrebuildTransactionWithIntentOptions, TxRequest } from '../baseTypes';
+import { KeyShare, YShare } from './types';
+import baseTSSUtils from '../baseTSSUtils';
+import { KeychainsTriplet } from '../../../baseCoin';
 /**
  * Utility functions for TSS work flows.
  */
 
-export class TssUtils extends MpcUtils implements ITssUtils {
-  private _wallet?: IWallet;
-
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
-    super(bitgo, baseCoin);
-    this._wallet = wallet;
-  }
-
-  private get wallet(): IWallet {
-    if (_.isNil(this._wallet)) {
-      throw new Error('Wallet not defined');
-    }
-    return this._wallet;
-  }
-
+export class EddsaUtils extends baseTSSUtils<KeyShare> {
   /**
    * Creates a Keychain containing the User's TSS signing materials.
    *
@@ -309,13 +292,18 @@ export class TssUtils extends MpcUtils implements ITssUtils {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
+    const unsignedTx =
+      txRequestResolved.apiVersion === 'full'
+        ? txRequestResolved.transactions[0].unsignedTx
+        : txRequestResolved.unsignedTxs[0];
+
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      txRequestResolved.unsignedTxs[0].derivationPath
+      unsignedTx.derivationPath
     );
 
-    const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+    const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
 
     const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
 
@@ -381,59 +369,6 @@ export class TssUtils extends MpcUtils implements ITssUtils {
   }
 
   /**
-   * Call delete signature shares for a txRequest, the endpoint delete the signatures and return them
-   *
-   * @param {string} txRequestId tx id reference to delete signature shares
-   * @returns {SignatureShareRecord[]}
-   */
-  async deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]> {
-    return this.bitgo
-      .del(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`, 2))
-      .send()
-      .result();
-  }
-
-  /**
-   * Initialize the send procedure once Bitgo has the User To Bitgo GShare
-   *
-   * @param {String} txRequestId - the txRequest Id
-   * @returns {Promise<any>}
-   */
-  async sendTxRequest(txRequestId: string): Promise<any> {
-    return this.bitgo
-      .post(this.baseCoin.url('/wallet/' + this.wallet.id() + '/tx/send'))
-      .send({ txRequestId })
-      .result();
-  }
-
-  /**
-   * Delete signature shares, get the tx request without them from the db and sign it to finally send it.
-   *
-   * Note : This can be performed in order to reach latest network conditions required on pending approval flow.
-   *
-   * @param {String} txRequestId - the txRequest Id to make the requests.
-   * @param {String} decryptedPrv - decrypted prv to sign the tx request.
-   * @param {RequestTracer} reqId id tracer.
-   * @returns {Promise<any>}
-   */
-  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
-    await this.deleteSignatureShares(txRequestId);
-    // after delete signatures shares get the tx without them
-    const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
-    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
-  }
-
-  /**
-   * Gets the latest Tx Request by id
-   *
-   * @param {String} txRequestId - the txRequest Id
-   * @returns {Promise<TxRequest>}
-   */
-  async getTxRequest(txRequestId: string): Promise<TxRequest> {
-    return getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
-  }
-
-  /**
    * Get the commonPub portion of the commonKeychain.
    *
    * @param {String} commonKeychain
@@ -447,3 +382,7 @@ export class TssUtils extends MpcUtils implements ITssUtils {
     return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
   }
 }
+/**
+ * @deprecated - use EddsaUtils
+ */
+export const TssUtils = EddsaUtils;

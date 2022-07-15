@@ -2,14 +2,10 @@ import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } fr
 import { BitGoBase } from './../../bitgoBase';
 import { DecryptableYShare, CombinedKey, SigningMaterial, EncryptedYShare } from './types';
 import { ShareKeyPosition } from './../types';
-import {
-  encryptAndSignText,
-  readSignedMessage,
-  SignatureShareRecord,
-  SignatureShareType,
-  TxRequest,
-} from './../../utils';
+import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType } from './../../utils';
 import _ = require('lodash');
+import { getTxRequest, sendSignatureShare } from '../common';
+export { getTxRequest, sendSignatureShare };
 
 /**
  * Combines YShares to combine the final TSS key
@@ -192,11 +188,11 @@ export async function getBitgoToUserRShare(
   txRequestId: string
 ): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const signatureShares = txRequest.signatureShares;
+  const signatureShares =
+    txRequest.apiVersion === 'full' ? txRequest.transactions[0].signatureShares : txRequest.signatureShares;
   if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
     throw new Error(`No signatures shares found for id: ${txRequestId}`);
   }
-
   // at this point we expect the only share to be the RShare
   const bitgoToUserRShare = signatureShares.find(
     (sigShare) => sigShare.from === SignatureShareType.BITGO && sigShare.to === SignatureShareType.USER
@@ -232,52 +228,6 @@ export async function sendUserToBitgoGShare(
   };
 
   await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-}
-
-/**
- * Gets the latest Tx Request by id
- *
- * @param {BitGoBase} bitgo - the bitgo instance
- * @param {String} walletId - the wallet id
- * @param {String} txRequestId - the txRequest Id
- * @returns {Promise<TxRequest>}
- */
-export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequestId: string): Promise<TxRequest> {
-  const txRequestRes = await bitgo
-    .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
-    .query({ txRequestIds: txRequestId, latest: 'true' })
-    .result();
-
-  if (txRequestRes.txRequests.length <= 0) {
-    throw new Error(`Unable to find TxRequest with id ${txRequestId}`);
-  }
-
-  return txRequestRes.txRequests[0];
-}
-
-/**
- * Sends a Signature Share
- *
- * @param {BitGoBase} bitgo - the bitgo instance
- * @param {String} walletId - the wallet id  *
- * @param {String} txRequestId - the txRequest Id
- * @param {SignatureShareRecord} signatureShare - a Signature Share
- * @returns {Promise<SignatureShareRecord>} - a Signature Share
- */
-export async function sendSignatureShare(
-  bitgo: BitGoBase,
-  walletId: string,
-  txRequestId: string,
-  signatureShare: SignatureShareRecord,
-  signerShare?: string
-): Promise<SignatureShareRecord> {
-  return bitgo
-    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + '/signatureshares', 2))
-    .send({
-      signatureShare,
-      signerShare,
-    })
-    .result();
 }
 
 /**

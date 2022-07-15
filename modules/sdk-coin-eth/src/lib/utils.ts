@@ -9,12 +9,13 @@ import {
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
-} from '@bitgo/ethereumjs-utils-old';
-import { generateAddress2 } from 'ethereumjs-util';
+  generateAddress2,
+  padToEven,
+} from 'ethereumjs-util';
 import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
-import * as BN from 'bn.js';
+import BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import {
   ActivateMethodId,
@@ -41,6 +42,7 @@ import {
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
+  defaultForwarderVersion,
   ERC1155BatchTransferTypeMethodId,
   ERC1155BatchTransferTypes,
   ERC1155SafeTransferTypeMethodId,
@@ -57,6 +59,7 @@ import {
   sendMultiSigTypes,
   walletInitializationFirstBytes,
   v1WalletInitializationFirstBytes,
+  v1CreateForwarderMethodId,
   walletSimpleConstructor,
 } from './walletUtil';
 import { EthTransactionData } from './types';
@@ -167,7 +170,7 @@ export function sendMultiSigTokenData(
  * @param forwarderAddress The forwarder address to flush
  * @param tokenAddress The token address to flush from
  */
-export function flushTokensData(forwarderAddress, tokenAddress): string {
+export function flushTokensData(forwarderAddress: string, tokenAddress: string): string {
   const params = [forwarderAddress, tokenAddress];
   const method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
   const args = EthereumAbi.rawEncode(flushTokensTypes, params);
@@ -187,10 +190,12 @@ export function flushCoinsData(): string {
 /**
  * Returns the create forwarder method calling data
  *
+ * @param {string} forwarderVersion - forwarder version for the address to be initialized
  * @returns {string} - the createForwarder method encoded
  */
-export function getAddressInitializationData(): string {
-  return createForwarderMethodId;
+export function getAddressInitializationData(forwarderVersion?: number): string {
+  const impliedForwarderVersion = forwarderVersion ?? defaultForwarderVersion;
+  return impliedForwarderVersion === defaultForwarderVersion ? createForwarderMethodId : v1CreateForwarderMethodId;
 }
 
 /**
@@ -280,12 +285,12 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
-    amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    expireTime: bufferToInt(expireTime),
-    sequenceId: bufferToInt(sequenceId),
-    signature: bufferToHex(signature),
-    tokenContractAddress: addHexPrefix(tokenContractAddress),
+    to: addHexPrefix(to as string),
+    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
+    expireTime: bufferToInt(expireTime as Buffer),
+    sequenceId: bufferToInt(sequenceId as Buffer),
+    signature: bufferToHex(signature as Buffer),
+    tokenContractAddress: addHexPrefix(tokenContractAddress as string),
   };
 }
 
@@ -299,7 +304,7 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
     getBufferedByteCode(sendMultisigMethodId, data)
   );
 
-  const internalDataHex = bufferToHex(internalData);
+  const internalDataHex = bufferToHex(internalData as Buffer);
   if (!internalDataHex.startsWith(ERC721SafeTransferTypeMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
@@ -310,15 +315,15 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
   );
 
   return {
-    to: addHexPrefix(receiver),
-    from: addHexPrefix(from),
-    expireTime: bufferToInt(expireTime),
-    amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    tokenId: new BigNumber(bufferToHex(tokenId)).toFixed(),
-    sequenceId: bufferToInt(sequenceId),
-    signature: bufferToHex(signature),
-    tokenContractAddress: addHexPrefix(to),
-    userData: bufferToHex(userSentData),
+    to: addHexPrefix(receiver as string),
+    from: addHexPrefix(from as string),
+    expireTime: bufferToInt(expireTime as Buffer),
+    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
+    tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+    sequenceId: bufferToInt(sequenceId as Buffer),
+    signature: bufferToHex(signature as Buffer),
+    tokenContractAddress: addHexPrefix(to as string),
+    userData: bufferToHex(userSentData as Buffer),
   };
 }
 
@@ -336,7 +341,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     getBufferedByteCode(sendMultisigMethodId, data)
   );
 
-  const internalDataHex = bufferToHex(internalData);
+  const internalDataHex = bufferToHex(internalData as Buffer);
   if (internalDataHex.startsWith(ERC1155SafeTransferTypeMethodId)) {
     let tokenId;
     let value;
@@ -348,7 +353,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
 
     tokenIds = [new BigNumber(bufferToHex(tokenId)).toFixed()];
     values = [new BigNumber(bufferToHex(value)).toFixed()];
-  } else if (bufferToHex(internalData).startsWith(ERC1155BatchTransferTypeMethodId)) {
+  } else if (bufferToHex(internalData as Buffer).startsWith(ERC1155BatchTransferTypeMethodId)) {
     let tempTokenIds, tempValues;
     [from, receiver, tempTokenIds, tempValues, userSentData] = getRawDecoded(
       ERC1155BatchTransferTypes,
@@ -363,13 +368,13 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
   return {
     to: addHexPrefix(receiver),
     from: addHexPrefix(from),
-    expireTime: bufferToInt(expireTime),
-    amount: new BigNumber(bufferToHex(amount)).toFixed(),
+    expireTime: bufferToInt(expireTime as Buffer),
+    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
     tokenIds,
     values,
-    sequenceId: bufferToInt(sequenceId),
-    signature: bufferToHex(signature),
-    tokenContractAddress: addHexPrefix(to),
+    sequenceId: bufferToInt(sequenceId as Buffer),
+    signature: bufferToHex(signature as Buffer),
+    tokenContractAddress: addHexPrefix(to as string),
     userData: userSentData,
   };
 }
@@ -391,12 +396,12 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
-    amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    expireTime: bufferToInt(expireTime),
-    sequenceId: bufferToInt(sequenceId),
-    signature: bufferToHex(signature),
-    data: bufferToHex(internalData),
+    to: addHexPrefix(to as string),
+    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
+    expireTime: bufferToInt(expireTime as Buffer),
+    sequenceId: bufferToInt(sequenceId as Buffer),
+    signature: bufferToHex(signature as Buffer),
+    data: bufferToHex(internalData as Buffer),
   };
 }
 
@@ -417,8 +422,8 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
   );
 
   return {
-    forwarderAddress: addHexPrefix(forwarderAddress),
-    tokenAddress: addHexPrefix(tokenAddress),
+    forwarderAddress: addHexPrefix(forwarderAddress as string),
+    tokenAddress: addHexPrefix(tokenAddress as string),
   };
 }
 
@@ -452,6 +457,7 @@ const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [v1WalletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
+  [v1CreateForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
   [flushCoinsMethodId]: TransactionType.FlushCoins,
@@ -491,7 +497,10 @@ export function hexStringToNumber(hex: string): number {
  * @returns {string} the calculated forwarder contract address
  */
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(contractAddress, contractCounter);
+  const forwarderAddress = generateAddress(
+    Buffer.from(stripHexPrefix(contractAddress), 'hex'),
+    Buffer.from(padToEven(stripHexPrefix(numberToHexString(contractCounter))), 'hex')
+  );
   return addHexPrefix(forwarderAddress.toString('hex'));
 }
 
@@ -507,7 +516,7 @@ export function calculateForwarderV1Address(creatorAddress: string, salt: string
   const forwarderV1Address = generateAddress2(
     Buffer.from(stripHexPrefix(creatorAddress), 'hex'),
     Buffer.from(stripHexPrefix(salt), 'hex'),
-    Buffer.from(stripHexPrefix(initcode), 'hex')
+    Buffer.from(padToEven(stripHexPrefix(initcode)), 'hex')
   );
   return addHexPrefix(forwarderV1Address.toString('hex'));
 }
@@ -532,7 +541,13 @@ export function getProxyInitcode(implementationAddress: string): string {
  * @returns {string} String representation of the signature
  */
 export function toStringSig(sig: SignatureParts): string {
-  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+  return bufferToHex(
+    Buffer.concat([
+      setLengthLeft(Buffer.from(stripHexPrefix(sig.r), 'hex'), 32),
+      setLengthLeft(Buffer.from(stripHexPrefix(sig.s), 'hex'), 32),
+      toBuffer(sig.v),
+    ])
+  );
 }
 
 /**
@@ -552,6 +567,8 @@ export function hasSignature(txData: TxData): boolean {
   );
 }
 
+type RecursiveBufferOrString = string | Buffer | RecursiveBufferOrString[];
+
 /**
  * Get the raw data decoded for some types
  *
@@ -559,8 +576,20 @@ export function hasSignature(txData: TxData): boolean {
  * @param {Buffer} serializedArgs encoded args
  * @returns {Buffer[]} the decoded raw
  */
-export function getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[] {
-  return EthereumAbi.rawDecode(types, serializedArgs);
+export function getRawDecoded(types: string[], serializedArgs: Buffer): RecursiveBufferOrString[] {
+  function normalize(v: unknown, i: number): unknown {
+    if (BN.isBN(v)) {
+      return v.toBuffer();
+    } else if (typeof v === 'string' || Buffer.isBuffer(v)) {
+      return v;
+    } else if (Array.isArray(v)) {
+      return v.map(normalize);
+    } else {
+      throw new Error(`For ${types}[${i}] got ${typeof v}`);
+    }
+  }
+
+  return EthereumAbi.rawDecode(types, serializedArgs).map(normalize);
 }
 
 /**
@@ -574,6 +603,9 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
   const splitBytecode = rawData.split(methodId);
   if (splitBytecode.length !== 2) {
     throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
+  }
+  if (splitBytecode[1].length % 2 !== 0) {
+    throw new BuildTransactionError(`Invalid send bytecode: ${rawData} (wrong lenght)`);
   }
   return Buffer.from(splitBytecode[1], 'hex');
 }

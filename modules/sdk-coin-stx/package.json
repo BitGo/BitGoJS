@@ -51,6 +51,7 @@
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "bn.js": "^5.2.1",
     "elliptic": "^6.5.2",
+    "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.15"
   },
   "devDependencies": {

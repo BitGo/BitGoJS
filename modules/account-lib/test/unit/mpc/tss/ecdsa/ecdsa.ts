@@ -51,6 +51,10 @@ describe('TSS ECDSA TESTS', function () {
       keyShares[index].yShares[participantThree].j.should.equal(participantThree);
       keyShares[index].yShares[participantTwo].n.should.not.be.Null;
       keyShares[index].yShares[participantThree].n.should.not.be.Null;
+
+      const publicKeyPrefix = keyShares[index].xShare.y.slice(0, 2);
+      const isRightPrefix = publicKeyPrefix === '03' || publicKeyPrefix === '02';
+      isRightPrefix.should.equal(true);
     }
   });
 

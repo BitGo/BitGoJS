@@ -75,6 +75,10 @@
     "@bitgo/sdk-coin-xtz": "^1.1.0-rc.2",
     "@bitgo/sdk-coin-zec": "^1.1.0-rc.5",
     "@bitgo/sdk-core": "^1.1.0-rc.25",
+    "@bitgo/sdk-coin-eos": "^1.0.0",
+    "@bitgo/sdk-coin-dot": "^1.0.0",
+    "@bitgo/sdk-coin-hbar": "^1.0.0",
+    "@bitgo/sdk-coin-xlm": "^1.0.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^7.0.0-rc.1",
     "@bitgo/unspents": "^0.8.0-rc.15",
@@ -93,8 +97,6 @@
     "debug": "^3.1.0",
     "ecurve": "^1.0.6",
     "eol": "^0.5.0",
-    "eosjs": "^21.0.2",
-    "eosjs-ecc": "^4.0.4",
     "keccak": "^3.0.2",
     "lodash": "^4.17.14",
     "openpgp": "5.1.0",
@@ -130,7 +132,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "6.2.1"
+    "ethereumjs-util": "7.1.5"
   },
   "nyc": {
     "extension": [

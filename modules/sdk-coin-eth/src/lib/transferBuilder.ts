@@ -1,5 +1,6 @@
-import ethUtil from '@bitgo/ethereumjs-utils-old';
+import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
+import BN from 'bn.js';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
@@ -141,9 +142,9 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           this.getTokenOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -153,9 +154,9 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
-          Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
+          Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(this._data)) || '', 'hex'),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -206,9 +207,13 @@ export class TransferBuilder {
 
   protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
+    const keyBuffer = Buffer.from(ethUtil.padToEven(this._signKey), 'hex');
+    if (keyBuffer.length != 32) {
+      throw new Error('private key length is invalid');
+    }
     const signatureInParts = ethUtil.ecsign(
-      Buffer.from(ethUtil.stripHexPrefix(data), 'hex'),
-      Buffer.from(this._signKey, 'hex')
+      Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(data)), 'hex'),
+      keyBuffer
     );
 
     // Assemble strings from r, s and v

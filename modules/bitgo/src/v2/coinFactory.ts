@@ -19,6 +19,7 @@ import {
   Cspr,
   Dash,
   Doge,
+  Dot,
   Eos,
   EosToken,
   Erc20Token,
@@ -26,6 +27,7 @@ import {
   Eth,
   Eth2,
   FiatEur,
+  FiatGBP,
   FiatUsd,
   Gteth,
   Hbar,
@@ -49,11 +51,13 @@ import {
   Tcspr,
   Tdash,
   Tdoge,
+  Tdot,
   Teos,
   Tetc,
   Teth,
   Teth2,
   TfiatEur,
+  TfiatGBP,
   TfiatUsd,
   Thbar,
   Tltc,
@@ -73,12 +77,10 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Dot } from './coins/dot';
 import { Near, TNear } from '@bitgo/sdk-coin-near';
-import { Tdot } from './coins/tdot';
 import { tokens } from '../config';
 import { SolToken } from '@bitgo/sdk-coin-sol';
-import { HbarToken } from './coins/hbarToken';
+import { HbarToken } from '@bitgo/sdk-coin-hbar';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
@@ -100,6 +102,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('eth', Eth.createInstance);
   globalCoinFactory.register('eth2', Eth2.createInstance);
   globalCoinFactory.register('fiateur', FiatEur.createInstance);
+  globalCoinFactory.register('fiatgbp', FiatGBP.createInstance);
   globalCoinFactory.register('fiatusd', FiatUsd.createInstance);
   globalCoinFactory.register('gteth', Gteth.createInstance);
   globalCoinFactory.register('hbar', Hbar.createInstance);
@@ -129,6 +132,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('teth', Teth.createInstance);
   globalCoinFactory.register('teth2', Teth2.createInstance);
   globalCoinFactory.register('tfiateur', TfiatEur.createInstance);
+  globalCoinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('tltc', Tltc.createInstance);
@@ -153,10 +157,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
-    const tokenConstructor = StellarToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-  }
+  StellarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.tokens]) {
     const tokenConstructor = OfcToken.createTokenConstructor(ofcToken);
@@ -167,11 +170,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
-    const tokenConstructor = EosToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
-  }
+  EosToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
@@ -185,10 +186,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
-    const tokenConstructor = HbarToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-  }
+  HbarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 }
 
 const GlobalCoinFactory: CoinFactory = new CoinFactory();

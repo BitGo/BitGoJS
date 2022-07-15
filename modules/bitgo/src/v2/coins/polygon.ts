@@ -107,7 +107,7 @@ export class Polygon extends Eth {
         'POLYGON',
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.padToEven(recipient.data || '')), 'hex'),
         expireTime,
         contractSequenceId,
       ],

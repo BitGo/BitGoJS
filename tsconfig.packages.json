@@ -62,10 +62,19 @@
       "path": "./modules/sdk-coin-doge"
     },
     {
+      "path": "./modules/sdk-coin-eos"
+    },
+    {
       "path": "./modules/sdk-coin-etc"
     },
     {
       "path": "./modules/sdk-coin-eth"
+    },
+    {
+      "path": "./modules/sdk-coin-dot"
+    },
+    {
+      "path": "./modules/sdk-coin-hbar"
     },
     {
       "path": "./modules/sdk-coin-ltc"
@@ -84,6 +93,9 @@
     },
     {
       "path": "./modules/sdk-coin-trx"
+    },
+    {
+      "path": "./modules/sdk-coin-xlm"
     },
     {
       "path": "./modules/sdk-coin-xrp"

@@ -32,6 +32,12 @@
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-dot"
+    },
+    {
+      "path": "../sdk-coin-hbar"
+    },
+    {
       "path": "../sdk-coin-near"
     },
     {
