@@ -47,13 +47,13 @@ describe('Ethereum 2.0', function () {
     // FIXME(BG-47812): this test is flaky
     // @ts-expect-error - no implicit this
     this.skip();
-    const localBaseCoin = bitgo.coin('teth2');
+    const localBaseCoin: Teth2 = bitgo.coin('teth2') as Teth2;
     const keyPair = localBaseCoin.generateKeyPair();
     keyPair.pub?.length.should.equal(98);
-    // keyPair.secretShares.every((secretShare) => secretShare.length.should.equal(66));
+    keyPair.secretShares?.every((secretShare) => secretShare.length.should.equal(66));
     keyPair.pub?.startsWith('0x').should.be.true();
-    // keyPair.secretShares.every((secretShare) => secretShare.startsWith('0x').should.be.true());
-    localBaseCoin.isValidPub(keyPair.pub!).should.be.true();
+    keyPair.secretShares?.every((secretShare) => secretShare.startsWith('0x').should.be.true());
+    localBaseCoin.isValidPub(keyPair.pub as string).should.be.true();
   });
 
   it('should reject keypair generation from an invalid prv', function () {
