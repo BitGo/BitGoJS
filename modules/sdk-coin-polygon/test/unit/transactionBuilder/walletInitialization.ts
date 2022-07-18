@@ -1,12 +1,13 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Polygon } from '../../../../../src';
-import * as testData from '../../../../resources/polygon/polygon';
+import { TransactionBuilder } from '../../../src';
+import * as testData from '../../resources';
+import { coins } from '@bitgo/statics';
 
 describe('Polygon wallet initialization', function () {
-  let txBuilder: Polygon.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tpolygon') as Polygon.TransactionBuilder;
+    txBuilder = new TransactionBuilder(coins.get('tpolygon'));
     txBuilder.fee({
       fee: '10000000000',
       gasLimit: '6800000',
@@ -35,7 +36,7 @@ describe('Polygon wallet initialization', function () {
     });
 
     it('a signed init transaction from serialized', async () => {
-      const newTxBuilder = getBuilder('tpolygon') as Polygon.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
@@ -72,7 +73,7 @@ describe('Polygon wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('tpolygon') as Polygon.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
@@ -86,7 +87,7 @@ describe('Polygon wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('tpolygon') as Polygon.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);

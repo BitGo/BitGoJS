@@ -41,6 +41,9 @@
       "path": "../sdk-coin-near"
     },
     {
+      "path": "../sdk-coin-polygon"
+    },
+    {
       "path": "../sdk-coin-rbtc"
     },
     {
