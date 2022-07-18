@@ -44,20 +44,20 @@
     ]
   },
   "devDependencies": {
+    "@bitgo/sdk-api": "^1.0.1",
+    "@bitgo/sdk-test": "^1.0.0",
     "@types/elliptic": "^6.4.12"
   },
   "dependencies": {
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/statics": "^6.17.0",
     "avalanche": "3.13.3",
-    "bech32": "2.0.0",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "create-hash": "^1.2.0",
     "elliptic": "^6.5.2",
     "lodash": "^4.17.14",
-    "safe-buffer": "^5.2.1",
-    "secp256k1": "^4.0.2"
+    "safe-buffer": "^5.2.1"
   }
 }

@@ -14,9 +14,22 @@ const options = {
   ],
   ignoreMatches: [
     '@components/**',
-    'assert',
+    '@types/**',
     'blake2b',
     'express-serve-static-core',
+    // Required for sdk-coin-celo inner dependencies
+    '@celo/contractkit',
+    // Webpack - not detected by depcheck
+    '@testing-library/cypress',
+    'css-loader',
+    'file-loader',
+    'postcss',
+    'postcss-loader',
+    'postcss-preset-env',
+    'sass',
+    'sass-loader',
+    'style-loader',
+    'ts-loader',
   ],
   specials: [
     depcheck.special.babel,
@@ -82,6 +95,7 @@ async function main() {
     }
 
     if (showDepWarnings && depWarningModules.length) {
+      exitCode = 1;
       console.warn(`\x1b[31m Warning: dependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
       depWarningModules.forEach(x => console.log(x));
     }
@@ -100,6 +114,7 @@ async function main() {
     }
 
     if (showDevDepWarnings && devDepWarningModules.length) {
+      exitCode = 1;
       console.warn(`\x1b[31m Warning: devDependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
       devDepWarningModules.forEach(x => console.log(x));
     }
