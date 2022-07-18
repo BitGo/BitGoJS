@@ -559,6 +559,7 @@ export const coins = CoinMap.fromCoins([
   erc20('musd', 'mStable USD', 18, '0xe2f2a5c287993345a840db3b0845fbc70f5935a5', UnderlyingAsset.MUSD),
   erc20('mvl', 'Mass Vehicle Ledger', 18, '0xa849eaae994fb86afa73382e9bd88c2b6b18dc71', UnderlyingAsset.MVL),
   erc20('mvi', 'Metaverse Index', 18, '0x72e364f2abdc788b7e918bc238b21f109cd634d7', UnderlyingAsset.MVI),
+  erc20('mwt', 'Mountain Wolf Token', 18, '0x1bd936a1d180b5afc640ea9b2274156af0b7533b', UnderlyingAsset.MWT),
   erc20('nas', 'Nebulas', 18, '0x5d65d971895edc438f465c17db6992698a52318d', UnderlyingAsset.NAS),
   erc20('nct', 'Polyswarm', 18, '0x9e46a38f5daabe8683e10793b06749eef7d733d1', UnderlyingAsset.NCT),
   erc20('ndx', 'Indexed Finance', 18, '0x86772b1409b61c639eaac9ba0acfbb6e238e5f83', UnderlyingAsset.NDX),
