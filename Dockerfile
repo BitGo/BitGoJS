@@ -153,6 +153,12 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
+#LABEL_START
+LABEL created="Mon, 18 Jul 2022 20:03:36 GMT"
+LABEL version=9.12.0
+LABEL git_hash=973a8b01131f5958dd5b588a17dc4346b148acb3
+#LABEL_END
+
 USER node
 ENV NODE_ENV production
 ENV BITGO_BIND 0.0.0.0
