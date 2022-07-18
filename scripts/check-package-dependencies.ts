@@ -10,7 +10,6 @@ const options = {
   ignorePatterns: [
     'dist',
     'example',
-    'test',
     'examples',
   ],
   ignoreMatches: [
@@ -83,7 +82,7 @@ async function main() {
     }
 
     if (showDepWarnings && depWarningModules.length) {
-      console.warn(`\x1b[33m Warning: dependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
+      console.warn(`\x1b[31m Warning: dependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
       depWarningModules.forEach(x => console.log(x));
     }
 
@@ -101,7 +100,7 @@ async function main() {
     }
 
     if (showDevDepWarnings && devDepWarningModules.length) {
-      console.warn(`\x1b[33m Warning: devDependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
+      console.warn(`\x1b[31m Warning: devDependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
       devDepWarningModules.forEach(x => console.log(x));
     }
 
