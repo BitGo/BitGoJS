@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.2...@bitgo/statics@7.0.0-rc.3) (2022-07-18)
+
+
+### Features
+
+* **statics:** add toekn MWT ([1bd223d](https://github.com/BitGo/BitGoJS/commit/1bd223d4e0bf24544c57b8f7023a46135f46a632))
+
+
+
+
+
 # [7.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.0...@bitgo/statics@7.0.0-rc.2) (2022-07-15)
 
 
