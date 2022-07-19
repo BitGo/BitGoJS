@@ -355,6 +355,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         recipients: intentRecipients,
         memo: params.memo?.value,
         nonce: params.nonce,
+        token: params.tokenName,
       },
       apiVersion: apiVersion,
       preview,
