@@ -1407,6 +1407,16 @@
   resolved "https://registry.yarnpkg.com/@emotion/unitless/-/unitless-0.7.5.tgz#77211291c1900a700b8a78cfafda3160d76949ed"
   integrity sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg==
 
+"@emurgo/cardano-serialization-lib-browser@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-10.2.0.tgz#5eb1d1b579072598e4911e5d8ae23f63e22e7b28"
+  integrity sha512-b4RrWtC5y8+bjKp9sFo8IWXg+xIatXoUq4YcqFDReDN6dpHRjLlOJv7h9Da6VA5GXvLQy6vOFuieAZJFGng9FQ==
+
+"@emurgo/cardano-serialization-lib-nodejs@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-10.2.0.tgz#e76ee34fca434b5b0c95cf33ef61548d6845f79e"
+  integrity sha512-rRWBQcbQlMj4GS7gt6toxRzY9cjMfFBWYKWrfH+eEqUXSO+3blKKA3T/yra3khxU/8+EAY1T94uoUDvjkrpTzg==
+
 "@es-joy/jsdoccomment@^0.4.4":
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.4.4.tgz#8a25154156edbfc29e310943ebb17ee29122c9df"
