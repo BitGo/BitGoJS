@@ -627,11 +627,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const addressInitData = getAddressInitializationData(this._forwarderVersion);
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
+
     if (this._contractCounter) {
-      tx.deployedAddress =
-        this._forwarderVersion === 0
-          ? calculateForwarderAddress(this._contractAddress, this._contractCounter)
-          : calculateForwarderV1Address(this._contractAddress, this._salt, this._initCode);
+      tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
+    }
+
+    if (this._salt && this._initCode) {
+      tx.deployedAddress = calculateForwarderV1Address(this._contractAddress, this._salt, this._initCode);
     }
     return tx;
   }
