@@ -129,11 +129,14 @@ export enum CoinFeature {
    * This coin supports custodial wallet types
    */
   CUSTODY = 'custody',
-
   /*
   This coin uses TSS for key creation and signing
    */
   TSS = 'tss',
+  /*
+   * This coin supports staking
+   */
+  STAKING = 'staking',
 }
 
 /**
