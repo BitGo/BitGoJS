@@ -53,6 +53,8 @@ export enum TransactionType {
 export enum AddressFormat {
   hex = 'hex',
   base58 = 'base58',
+  mainnet = 'mainnet',
+  testnet = 'testnet',
 }
 
 // TODO(): create union type of all address formats enums
