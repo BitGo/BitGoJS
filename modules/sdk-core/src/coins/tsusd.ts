@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '../';
 import { Susd } from './susd';
 
 export class Tsusd extends Susd {

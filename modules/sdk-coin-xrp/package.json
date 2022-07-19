@@ -41,9 +41,11 @@
     ]
   },
   "dependencies": {
+    "@bitgo/abstract-eth": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0",
     "@bitgo/utxo-lib": "^2.2.2",
-    "bignumber.js": "^8.0.1",
+    "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
     "lodash": "^4.17.14",
     "ripple-address-codec": "~4.1.3",

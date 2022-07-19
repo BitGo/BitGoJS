@@ -12,37 +12,37 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
+} from '../';
 
-export class Susd extends BaseCoin {
+export class FiatGBP extends BaseCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Susd(bitgo);
+    return new FiatGBP(bitgo);
   }
 
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor(): number {
+  getBaseFactor() {
     return 1e2;
   }
 
-  getChain(): string {
-    return 'susd';
+  getChain() {
+    return 'fiatgbp';
   }
 
-  getFamily(): string {
-    return 'susd';
+  getFamily() {
+    return 'fiat';
   }
 
-  getFullName(): string {
-    return 'Silvergate USD';
+  getFullName() {
+    return 'British Pound Sterling';
   }
 
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
+  isValidMofNSetup({ m, n }: { m: number; n: number }) {
     return m === 0 && n === 0;
   }
 
