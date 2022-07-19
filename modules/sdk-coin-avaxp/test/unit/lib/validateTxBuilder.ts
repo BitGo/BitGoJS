@@ -28,6 +28,9 @@ describe('AvaxP Validate Tx Builder', () => {
         (e) => e.message === errorMessage.ERROR_NODE_ID_LENGTH
       );
     });
+    it('should suucess nodeID length incorrect', () => {
+      txBuilder.validateNodeID(testData.NODE_ID_2);
+    });
     it('should fail endTime less than 2 weeks', () => {
       assert.throws(
         () => {
