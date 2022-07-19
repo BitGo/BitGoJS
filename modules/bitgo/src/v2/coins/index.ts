@@ -30,6 +30,8 @@ import { EosToken, Eos, Teos } from '@bitgo/sdk-coin-eos';
 export { EosToken, Eos, Teos };
 import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';
 export { Erc20Token, Eth, Gteth, Teth };
+import { Eth2, Teth2 } from '@bitgo/sdk-coin-eth2';
+export { Eth2, Teth2 };
 import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
 export { Etc, Tetc };
 import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
@@ -55,14 +57,13 @@ export { Xtz, Txtz };
 import { Zec, Tzec } from '@bitgo/sdk-coin-zec';
 export { Zec, Tzec };
 
-export { Eth2 } from './eth2';
+
 export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
 export { OfcToken } from './ofcToken';
 export { Susd } from './susd';
 export { FiatUsd } from './fiatusd';
 export { FiatEur } from './fiateur';
 export { FiatGBP } from './fiatgbp';
-export { Teth2 } from './teth2';
 export { Tsusd } from './tsusd';
 export { TfiatUsd } from './tfiatusd';
 export { TfiatEur } from './tfiateur';

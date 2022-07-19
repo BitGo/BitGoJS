@@ -4,7 +4,6 @@
 import * as _ from 'lodash';
 import * as ethUtil from 'ethereumjs-util';
 import * as request from 'superagent';
-import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 
 import {
@@ -21,6 +20,8 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+
+import { KeyPair as Eth2KeyPair } from './lib';
 
 interface Recipient {
   address: string;
@@ -170,7 +171,7 @@ export class Eth2 extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return Eth2AccountLib.KeyPair.isValidPub(pub);
+    return Eth2KeyPair.isValidPub(pub);
   }
 
   /**
@@ -299,10 +300,10 @@ export class Eth2 extends BaseCoin {
    * @returns {Object} object with generated pub and prv
    */
   generateKeyPair(seed?: Buffer): IBlsKeyPair {
-    let keyPair = new Eth2AccountLib.KeyPair();
-    if (seed && Eth2AccountLib.KeyPair.isValidPrv(seed)) {
+    let keyPair = new Eth2KeyPair();
+    if (seed && Eth2KeyPair.isValidPrv(seed)) {
       const seedStr = '0x' + Buffer.from(seed).toString('hex');
-      keyPair = new Eth2AccountLib.KeyPair({ prv: seedStr });
+      keyPair = new Eth2KeyPair({ prv: seedStr });
     } else if (seed) {
       throw new Error('trying to generate keypair from invalid seed');
     }
@@ -333,10 +334,10 @@ export class Eth2 extends BaseCoin {
    * @param message
    */
   async signMessage(key: { prv: string }, message: string): Promise<Buffer> {
-    const keyPair = new Eth2AccountLib.KeyPair({ prv: key.prv });
+    const keyPair = new Eth2KeyPair({ prv: key.prv });
 
     let messageToSign: Buffer = Buffer.from(message);
-    if (Eth2AccountLib.KeyPair.isValidPub(message)) {
+    if (Eth2KeyPair.isValidPub(message)) {
       // if we are doing a key signature, we should decode the message as a hex string
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
@@ -348,8 +349,8 @@ export class Eth2 extends BaseCoin {
   }
 
   aggregateShares(shares: { pubShares: string[]; prvShares: string[] }): IBlsKeyPair {
-    const commonPub = Eth2AccountLib.KeyPair.aggregatePubkeys(shares.pubShares);
-    const prv = Eth2AccountLib.KeyPair.aggregatePrvkeys(shares.prvShares);
+    const commonPub = Eth2KeyPair.aggregatePubkeys(shares.pubShares);
+    const prv = Eth2KeyPair.aggregatePrvkeys(shares.prvShares);
 
     return {
       pub: commonPub,

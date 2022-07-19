@@ -3,19 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./",
-    "typeRoots": [
-      "./types",
-      "../../types",
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
+    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"],
     "declarationDir": "./dist/types",
     "esModuleInterop": false
   },
-  "include": [
-    "src/**/*",
-    "package.json"
-  ],
+  "include": ["src/**/*", "package.json"],
   "typedocOptions": {
     "mode": "modules",
     "out": "docs",
@@ -85,6 +77,9 @@
     },
     {
       "path": "../sdk-coin-eth"
+    },
+    {
+      "path": "../sdk-coin-eth2"
     },
     {
       "path": "../sdk-coin-hbar"

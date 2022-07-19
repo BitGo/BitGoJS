@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair } from '../../../../src/coin/eth2';
-import * as testData from '../../../resources/eth2/eth2';
+import { KeyPair } from '../../src';
+import * as testData from '../resources/eth2';
 
 const pub = testData.ACCOUNT_1.publicKey;
 const prv = testData.ACCOUNT_1.privateKey;
@@ -28,7 +28,7 @@ describe('Eth2 Key Pair', () => {
           new KeyPair({
             secretShares: ['0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002'],
             publicShare: pub,
-          }),
+          })
       );
     });
 
@@ -38,7 +38,7 @@ describe('Eth2 Key Pair', () => {
           new KeyPair({
             secretShares: [prv],
             publicShare: '123',
-          }),
+          })
       );
     });
 
@@ -58,7 +58,7 @@ describe('Eth2 Key Pair', () => {
           new KeyPair({
             threshold: 2,
             participants: 1,
-          }),
+          })
       );
     });
 
@@ -112,14 +112,14 @@ describe('Eth2 Key Pair', () => {
     it('from a public key', () => {
       assert.throws(
         () => new KeyPair().recordKeysFromPublicKey(pub),
-        (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
+        (e) => e.message.includes(testData.errorMessageInvalidPublicKey)
       );
     });
 
     it('from a private key', () => {
       assert.throws(
         () => new KeyPair().recordKeysFromPrivateKey(prv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey
       );
     });
   });
