@@ -47,6 +47,10 @@ async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void>
       // https://github.com/BTCGPU/BTCGPU/blob/71894be9/src/chainparams.cpp#L371
       minBlocks = 2000;
       break;
+    case utxolib.networks.dogecoinTest:
+      // Mine 1000 blocks to get at least 100 M doge to send
+      minBlocks = 1000;
+      break;
     case utxolib.networks.zcashTest:
       switch (protocol.version) {
         case ZcashTransaction.VERSION4_BRANCH_CANOPY:
@@ -109,16 +113,38 @@ async function createTransactionsForScriptType(
     return;
   }
 
-  const deposit2Txid = await sendFromFaucet(rpc, address, 1);
+  let amount: number | string = 1;
+  switch (protocol.network) {
+    case utxolib.networks.dogecoinTest:
+      amount = 109999998.00000001;
+      break;
+  }
+  const deposit2Txid = await sendFromFaucet(rpc, address, amount);
   const deposit2Tx = await rpc.getRawTransaction(deposit2Txid);
-  const spendTx = createSpendTransaction(
-    fixtureKeys,
-    scriptType,
-    [deposit1Tx, deposit2Tx],
-    script,
-    protocol.network,
-    protocol.version
-  );
+  let spendTx;
+  switch (protocol.network) {
+    case utxolib.networks.dogecoinTest:
+      spendTx = createSpendTransaction<bigint>(
+        fixtureKeys,
+        scriptType,
+        [deposit1Tx, deposit2Tx],
+        script,
+        protocol.network,
+        protocol.version,
+        'bigint'
+      );
+      break;
+    default:
+      spendTx = createSpendTransaction(
+        fixtureKeys,
+        scriptType,
+        [deposit1Tx, deposit2Tx],
+        script,
+        protocol.network,
+        protocol.version
+      );
+      break;
+  }
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
   await writeTransactionFixtureWithInputs(rpc, protocol, `spend_${scriptType}.json`, spendTxid);
