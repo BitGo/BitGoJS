@@ -1069,7 +1069,7 @@
     web3-eth-abi "1.3.6"
     web3-utils "1.3.6"
 
-"@celo/wallet-base@2.0.0":
+"@celo/wallet-base@2.0.0", "@celo/wallet-base@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@celo/wallet-base/-/wallet-base-2.0.0.tgz#c3926af9fe618792eadb5e89b594cafcd7e8f158"
   integrity sha512-P/w1sd+VVqzCxOHzS9jUBSKfke/49GuaaNhsxD8xFX3Rr2/ryGE3ZgzoS3LQbQx2X3WqwRUGhelt7fGgTguBJg==
@@ -1419,6 +1419,16 @@
   version "0.7.5"
   resolved "https://registry.yarnpkg.com/@emotion/unitless/-/unitless-0.7.5.tgz#77211291c1900a700b8a78cfafda3160d76949ed"
   integrity sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg==
+
+"@emurgo/cardano-serialization-lib-browser@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-10.2.0.tgz#5eb1d1b579072598e4911e5d8ae23f63e22e7b28"
+  integrity sha512-b4RrWtC5y8+bjKp9sFo8IWXg+xIatXoUq4YcqFDReDN6dpHRjLlOJv7h9Da6VA5GXvLQy6vOFuieAZJFGng9FQ==
+
+"@emurgo/cardano-serialization-lib-nodejs@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-10.2.0.tgz#e76ee34fca434b5b0c95cf33ef61548d6845f79e"
+  integrity sha512-rRWBQcbQlMj4GS7gt6toxRzY9cjMfFBWYKWrfH+eEqUXSO+3blKKA3T/yra3khxU/8+EAY1T94uoUDvjkrpTzg==
 
 "@es-joy/jsdoccomment@^0.4.4":
   version "0.4.4"
@@ -2713,7 +2723,7 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.0.0.tgz#d5e38bfbdaba174805a4e649f13be9a9ed3351ae"
   integrity sha512-DZVbtY62kc3kkBtMHqwCOfXrT/hnoORy5BJ4+HU1IR59X0KWAOqsfzQPcUl/lQLlG7qXbe/fZ3r/emxtAl+sqg==
 
-"@noble/secp256k1@1.5.5", "@noble/secp256k1@git+https://github.com/brandonblack/noble-secp256k1.git#856129c06436fb696bab7d827edad5effdffaee2":
+"@noble/secp256k1@1.5.5":
   version "1.5.5"
   resolved "git+https://github.com/brandonblack/noble-secp256k1.git#856129c06436fb696bab7d827edad5effdffaee2"
 

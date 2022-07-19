@@ -2,7 +2,6 @@
  * @prettier
  */
 import { UnsupportedCoinError } from '@bitgo/sdk-core';
-import { CoinFamily } from '@bitgo/statics';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
@@ -547,7 +546,7 @@ export async function handleV2ConsolidateAccount(req: express.Request) {
     throw new Error('consolidate address must be an array of addresses');
   }
 
-  if (coin.getFamily() !== CoinFamily.ALGO && coin.getFamily() !== CoinFamily.XTZ) {
+  if (!coin.allowsAccountConsolidations()) {
     throw new Error('invalid coin selected');
   }
 

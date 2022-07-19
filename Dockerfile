@@ -21,14 +21,6 @@ COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 
 #COPY_START
-COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
-RUN cd /var/modules/bitgo && yarn link
-COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
-RUN cd /var/modules/abstract-eth && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
-RUN cd /var/modules/sdk-coin-eth && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
-RUN cd /var/modules/sdk-api && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 RUN cd /var/modules/sdk-core && yarn link
 COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
@@ -41,6 +33,14 @@ COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 RUN cd /var/modules/blake2b && yarn link
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 RUN cd /var/modules/blake2b-wasm && yarn link
+COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
+RUN cd /var/modules/bitgo && yarn link
+COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
+RUN cd /var/modules/abstract-eth && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
+RUN cd /var/modules/sdk-coin-eth && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
+RUN cd /var/modules/sdk-api && yarn link
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 RUN cd /var/modules/sjcl && yarn link
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
@@ -65,10 +65,14 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 RUN cd /var/modules/sdk-coin-dot && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
 RUN cd /var/modules/sdk-coin-etc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth2 /var/modules/sdk-coin-eth2/
+RUN cd /var/modules/sdk-coin-eth2 && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
 RUN cd /var/modules/sdk-coin-hbar && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
 RUN cd /var/modules/sdk-coin-near && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-polygon /var/modules/sdk-coin-polygon/
+RUN cd /var/modules/sdk-coin-polygon && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
 RUN cd /var/modules/sdk-coin-rbtc && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sol /var/modules/sdk-coin-sol/
@@ -109,16 +113,16 @@ RUN cd /var/modules/sdk-coin-zec && yarn link
 
 #LINK_START
 RUN cd /var/bitgo-express && \
-    yarn link bitgo && \
-    yarn link @bitgo/abstract-eth && \
-    yarn link @bitgo/sdk-coin-eth && \
-    yarn link @bitgo/sdk-api && \
     yarn link @bitgo/sdk-core && \
     yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
+    yarn link bitgo && \
+    yarn link @bitgo/abstract-eth && \
+    yarn link @bitgo/sdk-coin-eth && \
+    yarn link @bitgo/sdk-api && \
     yarn link @bitgo/sjcl && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/abstract-utxo && \
@@ -131,8 +135,10 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
+    yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-hbar && \
     yarn link @bitgo/sdk-coin-near && \
+    yarn link @bitgo/sdk-coin-polygon && \
     yarn link @bitgo/sdk-coin-rbtc && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-stx && \
@@ -152,6 +158,12 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
+
+#LABEL_START
+LABEL created="Mon, 18 Jul 2022 20:03:36 GMT"
+LABEL version=9.12.0
+LABEL git_hash=973a8b01131f5958dd5b588a17dc4346b148acb3
+#LABEL_END
 
 USER node
 ENV NODE_ENV production

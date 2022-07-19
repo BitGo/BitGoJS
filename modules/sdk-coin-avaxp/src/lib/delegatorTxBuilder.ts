@@ -56,8 +56,8 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   }
 
   /**
-   *
-   * @param startTime
+   * start time of staking period
+   * @param value
    */
   startTime(value: string | number): this {
     this._startTime = new BN(value);
@@ -65,8 +65,8 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   }
 
   /**
-   *
-   * @param endTime
+   * end time of staking period
+   * @param value
    */
   endTime(value: string | number): this {
     this._endTime = new BN(value);
@@ -124,6 +124,10 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    *   unix time stamp based off seconds
    */
   validateStakeDuration(startTime: BN, endTime: BN): void {
+    const oneDayLater = new BN(Date.now()).add(new BN(86400));
+    if (!startTime.gt(oneDayLater)) {
+      throw new BuildTransactionError('Start time needs to be one day greater than current time');
+    }
     if (endTime < startTime) {
       throw new BuildTransactionError('End date cannot be less than start date');
     }
@@ -174,6 +178,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * @protected
    */
   protected buildAvaxpTransaction(): void {
+    this.validateStakeDuration(this._startTime, this._endTime);
     const { inputs, outputs, credentials } = this.createInputOutput();
     this.transaction.setTransaction(
       new Tx(

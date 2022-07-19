@@ -1,4 +1,3 @@
-import { CoinFamily } from '@bitgo/statics';
 import * as sinon from 'sinon';
 
 import 'should-http';
@@ -12,8 +11,8 @@ import { handleV2ConsolidateAccount } from '../../../src/clientRoutes';
 import { BitGo } from 'bitgo';
 
 describe('Consolidate account', () => {
-  it('should fail if coin is not algo or tezos', async () => {
-    const coinStub = sinon.stub().returns({ getFamily: () => CoinFamily.BTC });
+  it('should fail if coin does not allow consolidation', async () => {
+    const coinStub = sinon.stub().returns({ allowsAccountConsolidations: () => false });
     const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
 
     const mockRequest = {
@@ -31,29 +30,9 @@ describe('Consolidate account', () => {
       .should.be.rejectedWith('invalid coin selected');
   });
 
-  it('should pass if coin is algo', async () => {
+  it('should pass if coin allows consolidation', async () => {
     const result = { failure: [] };
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, CoinFamily.ALGO);
-
-    const mockRequest = {
-      bitgo: bitgoStub,
-      params: {
-        coin: 'talgo',
-        id: '23423423423423',
-      },
-      body: {
-        consolidateAddresses: ['someAddr'],
-      },
-    };
-
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.resolvedWith(result);
-    consolidationStub.should.be.calledOnceWith(mockRequest.body);
-  });
-
-  it('should pass if coin is xtz', async () => {
-    const result = { failure: [] };
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, CoinFamily.XTZ);
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
 
     const mockRequest = {
       bitgo: bitgoStub,
@@ -89,11 +68,11 @@ describe('Consolidate account', () => {
       .should.be.rejectedWith('consolidate address must be an array of addresses');
   });
 
-  function createConsolidateMocks(res, coin = CoinFamily.ALGO) {
+  function createConsolidateMocks(res, allowsAccountConsolidations = false) {
     const consolidationStub = sinon.stub().returns(res);
     const walletStub = { sendAccountConsolidations: consolidationStub };
     const coinStub = {
-      getFamily: () => coin,
+      allowsAccountConsolidations: () => allowsAccountConsolidations,
       wallets: () => ({ get: () => Promise.resolve(walletStub) }),
     };
     return {
@@ -105,7 +84,7 @@ describe('Consolidate account', () => {
   it('should return 400 when all transactions fail', async () => {
     const result = { success: [], failure: [0] };
     const body = 'testbody';
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result);
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
       params: {
@@ -122,7 +101,7 @@ describe('Consolidate account', () => {
   it('should return 202 when some transactions fail', async () => {
     const result = { success: [0], failure: [0] };
     const body = 'testbody';
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result);
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
       params: {
@@ -139,7 +118,7 @@ describe('Consolidate account', () => {
   it('should return 200 when all transactions succeed', async () => {
     const result = { failure: [] };
     const body = 'testbody';
-    const { bitgoStub, consolidationStub } = createConsolidateMocks(result);
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
       params: {

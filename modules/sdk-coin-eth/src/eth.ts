@@ -21,7 +21,6 @@ import {
   FeeEstimateOptions,
   getIsKrsRecovery,
   getIsUnsignedSweep,
-  HalfSignedAccountTransaction,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IWallet,
@@ -38,12 +37,17 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
+  Recipient,
+  HalfSignedTransaction,
+  FullySignedTransaction,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import { calculateForwarderV1Address, getProxyInitcode } from './lib';
+
+export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
 const debug = debugLib('bitgo:v2:eth');
 
@@ -118,12 +122,6 @@ interface HopPrebuild {
   gasPriceMax: number;
 }
 
-export interface Recipient {
-  address: string;
-  amount: string;
-  data?: string;
-}
-
 interface EIP1559 {
   maxPriorityFeePerGas: number;
   maxFeePerGas: number;
@@ -165,20 +163,6 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
   gasLimit: number;
   gasPrice: number;
   custodianTransactionId?: string;
-}
-
-export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
-  halfSigned: {
-    recipients: Recipient[];
-    expireTime: number;
-    contractSequenceId: number;
-    sequenceId: number;
-    txHex?: never;
-  };
-}
-
-export interface FullySignedTransaction {
-  txHex: string;
 }
 
 export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;

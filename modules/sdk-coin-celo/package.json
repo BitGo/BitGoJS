@@ -48,6 +48,7 @@
     "@bitgo/statics": "^7.0.0-rc.3",
     "@celo/connect": "^2.0.0",
     "@celo/contractkit": "^2.0.0",
+    "@celo/wallet-base": "^2.0.0",
     "@celo/wallet-local": "^2.0.0",
     "@ethereumjs/common": "^2.4.0",
     "bignumber.js": "^9.0.0",

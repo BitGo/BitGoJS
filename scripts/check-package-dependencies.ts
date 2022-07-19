@@ -11,9 +11,10 @@ const options = {
     'dist',
     'example',
     'test',
+    'examples',
   ],
   ignoreMatches: [
-    '@*/**',
+    '@components/**',
     'assert',
     'blake2b',
     'express-serve-static-core',

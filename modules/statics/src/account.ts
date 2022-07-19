@@ -84,7 +84,6 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
-  kind: CoinKind;
 }
 
 export interface ContractAddress extends String {
@@ -321,7 +320,7 @@ export class FiatCoin extends BaseCoin {
   public readonly network: BaseNetwork;
 
   constructor(options: FiatCoinConstructorOptions) {
-    super(options);
+    super({ ...options, kind: CoinKind.FIAT });
 
     this.network = options.network;
   }
@@ -1247,7 +1246,6 @@ export function tavaxErc20(
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this coin is a token of another coin
- * @param kind? Differentiates coins which represent fiat assets from those which represent crypto assets
  */
 export function fiat(
   name: FiatCoinName,
@@ -1259,8 +1257,7 @@ export function fiat(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  isToken = false,
-  kind: CoinKind = CoinKind.FIAT
+  isToken = false
 ) {
   return Object.freeze(
     new FiatCoin({
@@ -1274,7 +1271,6 @@ export function fiat(
       isToken,
       asset,
       primaryKeyCurve,
-      kind,
     })
   );
 }

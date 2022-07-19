@@ -35,7 +35,7 @@ export { Xtz };
 import * as Eth from '@bitgo/sdk-coin-eth';
 export { Eth };
 
-import * as Eth2 from './coin/eth2';
+import * as Eth2 from '@bitgo/sdk-coin-eth2';
 export { Eth2 };
 
 import * as Etc from '@bitgo/sdk-coin-etc';
@@ -56,9 +56,6 @@ export { Hbar };
 import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr };
 
-import * as Xrp from './coin/xrp';
-export { Xrp };
-
 import { StxLib as Stx } from '@bitgo/sdk-coin-stx';
 export { Stx };
 
@@ -77,7 +74,7 @@ export { Dot };
 import * as Near from '@bitgo/sdk-coin-near';
 export { Near };
 
-import * as Polygon from './coin/polygon';
+import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
 const coinBuilderMap = {
@@ -102,8 +99,6 @@ const coinBuilderMap = {
   thbar: Hbar.TransactionBuilderFactory,
   cspr: Cspr.TransactionBuilderFactory,
   tcspr: Cspr.TransactionBuilderFactory,
-  xrp: Xrp.TransactionBuilderFactory,
-  txrp: Xrp.TransactionBuilderFactory,
   stx: Stx.TransactionBuilderFactory,
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,

@@ -5,7 +5,6 @@ import { CoinFactory } from '@bitgo/sdk-core';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import {
-  Ada,
   Algo,
   AvaxC,
   AvaxCToken,
@@ -40,7 +39,6 @@ import {
   StellarToken,
   Stx,
   Susd,
-  Tada,
   Talgo,
   TavaxC,
   TavaxP,
@@ -83,7 +81,6 @@ import { SolToken } from '@bitgo/sdk-coin-sol';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
-  globalCoinFactory.register('ada', Ada.createInstance);
   globalCoinFactory.register('algo', Algo.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
@@ -114,7 +111,6 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
-  globalCoinFactory.register('tada', Tada.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
   globalCoinFactory.register('tavaxc', TavaxC.createInstance);
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);

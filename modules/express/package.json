@@ -38,6 +38,8 @@
     "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
+    "@bitgo/sdk-core": "^1.1.0-rc.28",
+    "@bitgo/statics": "^7.0.0-rc.3",
     "argparse": "^1.0.10",
     "bitgo": "^14.2.0-rc.41",
     "bluebird": "^3.5.3",

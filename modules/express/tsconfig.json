@@ -10,6 +10,12 @@
   "references": [
     {
       "path": "../bitgo"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
     }
   ]
 }

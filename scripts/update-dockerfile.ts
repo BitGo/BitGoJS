@@ -10,11 +10,11 @@ type ManagedModule = {
 
 /**
  * Create a function which can run lerna commands
- * @param lernaPath {string} path to lerna binary
+ * @param {String} lernaPath - path to lerna binary
  * @returns {function(string, string[], Object.<string, string>): Promise<string>}
  */
-function getLernaRunner(lernaPath) {
-  return async (command, args = [], options = {}) => {
+function getLernaRunner(lernaPath: string) {
+  return async (command: string, args: string[] = [], options = {}) => {
     const { stdout } = await execa(
       lernaPath,
       [command, ...args],
@@ -36,7 +36,7 @@ const walkDependencies = (packageName: string, setDeps: Set<ManagedModule>, grap
 
 /**
  * Get information on the modules in this repo that are managed by lerna.
- * @param lerna {function}
+ * @param {Function} lerna
  * @returns {Promise<{path: *, name: *, deps: *, version: *}[]>}
  */
 async function updateDockerFile(lerna) {
@@ -56,10 +56,16 @@ async function updateDockerFile(lerna) {
   
   const linkers = Array.from(setDeps).map((dep) => `    yarn link ${dep.name}`).join(' && \\\n');
   const linkContent = `RUN cd /var/bitgo-express && \\\n${linkers}\n`;
+
+  // add metadata about the build to docker labels
+  let labelContent = `LABEL created="${new Date().toUTCString()}"\n`; // add created timestamp;
+  labelContent += `LABEL version=${require('../modules/express/package.json').version}\n`; // set current image version from express
+  labelContent += `LABEL git_hash=${require('child_process').execSync(`git rev-parse HEAD`).toString().trim()}\n`; // set to latest git HEAD hash
+
   dockerContents = dockerContents
     .replace(/#COPY_START((.|\n)*)#COPY_END/, `#COPY_START\n${copyContent}#COPY_END`)
-    .replace(/#LINK_START((.|\n)*)#LINK_END/, `#LINK_START\n${linkContent}#LINK_END`);
-  
+    .replace(/#LINK_START((.|\n)*)#LINK_END/, `#LINK_START\n${linkContent}#LINK_END`)
+    .replace(/#LABEL_START((.|\n)*)#LABEL_END/, `#LABEL_START\n${labelContent}#LABEL_END`);
 
   fs.writeFileSync('Dockerfile', dockerContents);
 }
