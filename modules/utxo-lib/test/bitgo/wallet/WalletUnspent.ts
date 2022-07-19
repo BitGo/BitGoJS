@@ -22,6 +22,7 @@ import {
 
 import { getDefaultWalletKeys } from '../../testutil';
 import { mockWalletUnspent } from './util';
+import { defaultTestOutputAmount, toTNumber } from '../../transaction_util';
 
 describe('WalletUnspent', function () {
   const network = networks.bitcoin;
@@ -53,22 +54,36 @@ describe('WalletUnspent', function () {
     assert.strictEqual(isWalletUnspent({ ...unspent, chain: 0, index: 0 } as Unspent), true);
   });
 
-  function runTestSignUnspent(scriptType: outputScripts.ScriptType2Of3, signer: string, cosigner: string) {
-    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner}]`, function () {
+  function runTestSignUnspent<TNumber extends number | bigint>(
+    scriptType: outputScripts.ScriptType2Of3,
+    signer: string,
+    cosigner: string,
+    amountType: 'number' | 'bigint' = 'number',
+    testOutputAmount: TNumber = defaultTestOutputAmount as TNumber
+  ) {
+    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
       const unspents = [
         mockWalletUnspent(network, {
           keys: walletKeys,
           chain: getExternalChainCode(scriptType),
           vout: 0,
+          value: toTNumber(testOutputAmount, amountType),
         }),
         mockWalletUnspent(network, {
           keys: walletKeys,
           chain: getInternalChainCode(scriptType),
           vout: 1,
+          value: toTNumber(testOutputAmount, amountType),
         }),
       ];
-      const txb = createTransactionBuilderForNetwork(network);
-      txb.addOutput(getWalletAddress(walletKeys, 0, 100, network), unspentSum(unspents) - 100);
+      const txb = createTransactionBuilderForNetwork<TNumber>(network);
+      let outputValue = unspentSum(unspents) as TNumber;
+      if (amountType === 'number') {
+        outputValue = ((outputValue as number) - 100) as TNumber;
+      } else {
+        outputValue = ((outputValue as bigint) - BigInt(100)) as TNumber;
+      }
+      txb.addOutput(getWalletAddress(walletKeys, 0, 100, network), outputValue);
       unspents.forEach((u) => {
         addToTransactionBuilder(txb, u);
       });
@@ -96,6 +111,7 @@ describe('WalletUnspent', function () {
       keyNames.forEach((cosigner) => {
         if (signer !== cosigner) {
           runTestSignUnspent(t, signer, cosigner);
+          runTestSignUnspent<bigint>(t, signer, cosigner, 'bigint', BigInt('10000000000000000'));
         }
       });
     });

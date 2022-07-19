@@ -14,17 +14,17 @@ export function mockOutputId(vout: number): string {
   });
 }
 
-export function mockWalletUnspent(
+export function mockWalletUnspent<TNumber extends number | bigint = number>(
   network: Network,
   {
     chain = 0 as ChainCode,
     index = 0,
-    value = defaultTestOutputAmount,
+    value = defaultTestOutputAmount as TNumber,
     keys = getDefaultWalletKeys(),
     vout = 0,
     id = mockOutputId(vout),
   } = {}
-): WalletUnspent {
+): WalletUnspent<TNumber> {
   const derivedKeys = keys.deriveForChainAndIndex(chain, index);
   return {
     id,

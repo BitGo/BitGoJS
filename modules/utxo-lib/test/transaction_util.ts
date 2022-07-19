@@ -67,6 +67,19 @@ export function mockTransactionId(v = 0xff): string {
   return Buffer.alloc(32).fill(v).toString('hex');
 }
 
+export function toTNumber<TNumber extends number | bigint>(v: any | undefined, t: 'number' | 'bigint'): TNumber {
+  if (v === undefined) {
+    return v as TNumber;
+  }
+  if (t === 'number') {
+    return Number(v) as TNumber;
+  }
+  if (t === 'bigint') {
+    return BigInt(v) as TNumber;
+  }
+  throw new Error();
+}
+
 export function getPrevOutput(
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   vout = 0,
