@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.4...@bitgo/statics@7.0.0) (2022-07-19)
+
+**Note:** Version bump only for package @bitgo/statics
+
+
+
+
+
 # [7.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.2...@bitgo/statics@7.0.0-rc.4) (2022-07-19)
 
 
