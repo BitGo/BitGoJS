@@ -16,27 +16,29 @@ async function getFixture<T>(network: Network, name: string): Promise<T> {
   return JSON.parse(await fs.readFile(p, 'utf-8'));
 }
 
-function runTest(scriptType: ScriptType2Of3) {
+function runTest<TNumber extends number | bigint>(scriptType: ScriptType2Of3, amountType: 'number' | 'bigint') {
   const network = networks.bitcoin;
 
-  describe(`createTransactionFromNonStandardHalfSigned ${scriptType}`, function () {
+  describe(`createTransactionFromNonStandardHalfSigned ${scriptType} ${amountType}`, function () {
     if (scriptType === 'p2tr') {
       return; // TODO: enable p2tr tests when signing is supported
     }
     fixtureKeys.forEach((signKey, pubkeyIndex) => {
       it(`parses non-standard half signed transaction pubkeyIndex=${pubkeyIndex}`, async function () {
-        const standardHalfSigned = getHalfSignedTransaction2Of3(
+        const standardHalfSigned = getHalfSignedTransaction2Of3<TNumber>(
           fixtureKeys,
           signKey,
           getDefaultCosigner(fixtureKeys, signKey),
           scriptType,
-          network
+          network,
+          amountType
         );
 
         // Fixtures can only be constructed using utxolib < 1.10
-        const nonStandardHalfSigned = createTransactionFromHex(
+        const nonStandardHalfSigned = createTransactionFromHex<TNumber>(
           await getFixture(network, `nonStandardHalfSigned-${scriptType}-${pubkeyIndex}.json`),
-          network
+          network,
+          amountType
         );
 
         // The nonstandard transaction input is missing two `OP_0`
@@ -55,5 +57,6 @@ function runTest(scriptType: ScriptType2Of3) {
 }
 
 describe('Non-Standard Half-Signed Transactions', function () {
-  scriptTypes2Of3.forEach((scriptType) => runTest(scriptType as ScriptType2Of3));
+  scriptTypes2Of3.forEach((scriptType) => runTest<number>(scriptType as ScriptType2Of3, 'number'));
+  scriptTypes2Of3.forEach((scriptType) => runTest<bigint>(scriptType as ScriptType2Of3, 'bigint'));
 });

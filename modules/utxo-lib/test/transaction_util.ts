@@ -80,12 +80,12 @@ export function toTNumber<TNumber extends number | bigint>(v: any | undefined, t
   throw new Error();
 }
 
-export function getPrevOutput(
+export function getPrevOutput<TNumber extends number | bigint = number>(
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   vout = 0,
-  value = defaultTestOutputAmount,
+  value = defaultTestOutputAmount as TNumber,
   keys: KeyTriple = fixtureKeys
-): PrevOutput {
+): PrevOutput<TNumber> {
   return {
     txid: mockTransactionId(),
     vout,
@@ -99,12 +99,12 @@ export function getPrevOutput(
   };
 }
 
-export function getPrevOutputs(
+export function getPrevOutputs<TNumber extends number | bigint = number>(
   scriptType: ScriptType2Of3 | 'p2shP2pk',
-  value = defaultTestOutputAmount,
+  value = defaultTestOutputAmount as TNumber,
   keys: KeyTriple = fixtureKeys
-): PrevOutput[] {
-  return [getPrevOutput(scriptType, 0, value, keys)];
+): PrevOutput<TNumber>[] {
+  return [getPrevOutput<TNumber>(scriptType, 0, value, keys)];
 }
 
 export type HalfSigner = {
@@ -112,27 +112,31 @@ export type HalfSigner = {
   cosigner?: bip32.BIP32Interface;
 };
 
-export function getTransactionBuilder(
+export function getTransactionBuilder<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   halfSigners: HalfSigner[],
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   network: Network,
+  amountType: 'number' | 'bigint' = 'number',
   {
     outputAmount = defaultTestOutputAmount,
-    prevOutputs = getPrevOutputs(scriptType, outputAmount),
+    prevOutputs = getPrevOutputs<TNumber>(scriptType, toTNumber<TNumber>(outputAmount, amountType)),
   }: {
-    outputAmount?: number;
-    prevOutputs?: PrevOutput[];
+    outputAmount?: number | bigint | string;
+    prevOutputs?: PrevOutput<TNumber>[];
   } = {}
-): UtxoTransactionBuilder {
-  const txBuilder = createTransactionBuilderForNetwork(network);
+): UtxoTransactionBuilder<TNumber> {
+  const txBuilder = createTransactionBuilderForNetwork<TNumber>(network);
 
   prevOutputs.forEach(({ txid, vout }) => {
     txBuilder.addInput(txid, vout);
   });
 
   const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);
-  txBuilder.addOutput(recipientScript, outputAmount - 1000);
+  const tNumOutput = (
+    amountType === 'number' ? Number(outputAmount) - 1000 : BigInt(outputAmount) - BigInt(1000)
+  ) as TNumber;
+  txBuilder.addOutput(recipientScript, tNumOutput);
 
   const pubkeys = keys.map((k) => k.publicKey);
   assert(isTriple(pubkeys));
@@ -161,14 +165,21 @@ export function getUnsignedTransaction2Of3(
   return getTransactionBuilder(keys, [], scriptType, network).buildIncomplete();
 }
 
-export function getHalfSignedTransaction2Of3(
+export function getHalfSignedTransaction2Of3<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   signer1: bip32.BIP32Interface,
   signer2: bip32.BIP32Interface,
   scriptType: ScriptType2Of3,
-  network: Network
-): UtxoTransaction {
-  return getTransactionBuilder(keys, [{ signer: signer1, cosigner: signer2 }], scriptType, network).buildIncomplete();
+  network: Network,
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  return getTransactionBuilder<TNumber>(
+    keys,
+    [{ signer: signer1, cosigner: signer2 }],
+    scriptType,
+    network,
+    amountType
+  ).buildIncomplete();
 }
 
 export function getFullSignedTransactionP2shP2pk(
