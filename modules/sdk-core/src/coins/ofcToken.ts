@@ -1,11 +1,15 @@
 /**
  * @prettier
  */
-import { isString } from 'lodash';
-import { Ofc } from './ofc';
-import { BitGoBase, CoinConstructor, SignTransactionOptions as BaseSignTransactionOptions } from '@bitgo/sdk-core';
-import { SignedTransaction } from '@bitgo/sdk-coin-eth';
 import { OfcTokenConfig } from '@bitgo/statics';
+import { isString } from 'lodash';
+import {
+  BitGoBase,
+  CoinConstructor,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  SignedTransaction,
+} from '../';
+import { Ofc } from './ofc';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: {

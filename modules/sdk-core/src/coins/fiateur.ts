@@ -12,7 +12,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
+} from '../';
 
 export class FiatEur extends BaseCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {

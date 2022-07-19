@@ -14,7 +14,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
+} from '../';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {

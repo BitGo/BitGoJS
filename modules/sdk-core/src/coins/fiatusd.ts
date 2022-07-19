@@ -12,11 +12,11 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
+} from '../';
 
-export class FiatGBP extends BaseCoin {
+export class FiatUsd extends BaseCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new FiatGBP(bitgo);
+    return new FiatUsd(bitgo);
   }
 
   /**
@@ -28,7 +28,7 @@ export class FiatGBP extends BaseCoin {
   }
 
   getChain() {
-    return 'fiatgbp';
+    return 'fiatusd';
   }
 
   getFamily() {
@@ -36,7 +36,7 @@ export class FiatGBP extends BaseCoin {
   }
 
   getFullName() {
-    return 'British Pound Sterling';
+    return 'USD Dollar';
   }
 
   /**

@@ -56,9 +56,6 @@ export { Hbar };
 import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr };
 
-import * as Xrp from './coin/xrp';
-export { Xrp };
-
 import { StxLib as Stx } from '@bitgo/sdk-coin-stx';
 export { Stx };
 
@@ -102,8 +99,6 @@ const coinBuilderMap = {
   thbar: Hbar.TransactionBuilderFactory,
   cspr: Cspr.TransactionBuilderFactory,
   tcspr: Cspr.TransactionBuilderFactory,
-  xrp: Xrp.TransactionBuilderFactory,
-  txrp: Xrp.TransactionBuilderFactory,
   stx: Stx.TransactionBuilderFactory,
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,

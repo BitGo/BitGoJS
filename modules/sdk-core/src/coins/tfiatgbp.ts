@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '../';
 import { FiatGBP } from './fiatgbp';
 
 export class TfiatGBP extends FiatGBP {

@@ -55,14 +55,6 @@ export { Xtz, Txtz };
 import { Zec, Tzec } from '@bitgo/sdk-coin-zec';
 export { Zec, Tzec };
 
-
-export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
-export { OfcToken } from './ofcToken';
-export { Susd } from './susd';
-export { FiatUsd } from './fiatusd';
-export { FiatEur } from './fiateur';
-export { FiatGBP } from './fiatgbp';
-export { Tsusd } from './tsusd';
-export { TfiatUsd } from './tfiatusd';
-export { TfiatEur } from './tfiateur';
-export { TfiatGBP } from './tfiatgbp';
+import { coins } from '@bitgo/sdk-core';
+const { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP } = coins;
+export { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP };
