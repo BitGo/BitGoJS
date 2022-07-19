@@ -5,6 +5,7 @@ import * as testData from '../../resources/avaxp';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
+import { BN } from 'avalanche';
 
 describe('AvaxP Validate Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('avaxp'));
@@ -30,7 +31,7 @@ describe('AvaxP Validate Tx Builder', () => {
     it('should fail endTime less than 2 weeks', () => {
       assert.throws(
         () => {
-          txBuilder.validateStakeDuration(testData.INVALID_START_TIME, testData.END_TIME);
+          txBuilder.validateStakeDuration(testData.START_TIME, testData.START_TIME.add(testData.ONE_WEEK));
         },
         (e) => e.message === errorMessage.ERROR_STAKE_DURATION_SHORT_TIME
       );
@@ -38,9 +39,17 @@ describe('AvaxP Validate Tx Builder', () => {
     it('should fail endTime greater than 1 year', () => {
       assert.throws(
         () => {
-          txBuilder.validateStakeDuration(testData.START_TIME, testData.INVALID_END_TIME);
+          txBuilder.validateStakeDuration(testData.START_TIME, testData.START_TIME.add(testData.TWO_YEAR));
         },
         (e) => e.message === errorMessage.ERROR_STAKE_DURATION_LONG_TIME
+      );
+    });
+    it('should fail startTime too soon', () => {
+      assert.throws(
+        () => {
+          txBuilder.validateStakeDuration(new BN(Date.now()), testData.ONE_WEEK);
+        },
+        (e) => e.message === errorMessage.ERROR_STAKE_START_TIME_TOO_SHORT
       );
     });
     it('should fail stake amount less than 2000', () => {

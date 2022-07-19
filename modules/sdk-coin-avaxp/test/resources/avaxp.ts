@@ -55,10 +55,9 @@ export const INVALID_STAKE_AMOUNT = new BN(1999);
 
 export const INVALID_DELEGATION_FEE = 0;
 
-export const START_TIME = new BN(0);
-export const INVALID_START_TIME = new BN(1000000);
-export const END_TIME = new BN(1209600);
-export const INVALID_END_TIME = new BN(31556927);
+export const START_TIME = new BN(Date.now()).add(new BN(90000));
+export const ONE_WEEK = new BN(604800);
+export const TWO_YEAR = new BN(63072000);
 
 export const INVALID_SHORT_KEYPAIR_KEY = '82A34E';
 

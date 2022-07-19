@@ -6,6 +6,8 @@ export const ERROR_EMPTY_RAW_TRANSACTION = 'Raw transaction is empty';
 
 export const ERROR_RAW_PARSING = 'Raw transaction is not hex string';
 
+export const ERROR_STAKE_START_TIME_TOO_SHORT = 'Start time needs to be one day greater than current time';
+
 export const ERROR_STAKE_DURATION_SHORT_TIME = 'End date must be greater than or equal to two weeks';
 
 export const ERROR_STAKE_DURATION_LONG_TIME = 'End date must be less than or equal to one year';
