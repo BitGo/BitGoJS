@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.1.0-rc.5...@bitgo/sdk-coin-ada@1.1.0-rc.7) (2022-07-19)
+
+
+### Features
+
+* **sdk-coin-ada:** implement key pair and utils for ada sdk ([9a1aabb](https://github.com/BitGo/BitGoJS/commit/9a1aabb8a07b5787ab3fa645c29be1b940694892))
+
+
+
+
+
 # [1.1.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.1.0-rc.5...@bitgo/sdk-coin-ada@1.1.0-rc.6) (2022-07-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

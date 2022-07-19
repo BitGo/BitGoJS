@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@1.1.0-rc.1...@bitgo/sdk-coin-eth@1.1.0-rc.3) (2022-07-19)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** modify buildAddressInitializationTransaction method ([3cc205f](https://github.com/BitGo/BitGoJS/commit/3cc205f6e216fa4245dcebefe584de708f4037b0))
+
+
+
+
+
 # [1.1.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@1.1.0-rc.1...@bitgo/sdk-coin-eth@1.1.0-rc.2) (2022-07-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

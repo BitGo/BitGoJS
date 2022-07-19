@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.12.4-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.24...@bitgo/express@9.12.4-rc.26) (2022-07-19)
+
+
+### Bug Fixes
+
+* **express:** allow account consolidations ([ede16e5](https://github.com/BitGo/BitGoJS/commit/ede16e57f5dac7319a02d10e084ae47972709591))
+* update bad dependency match ([5cc3255](https://github.com/BitGo/BitGoJS/commit/5cc3255aecba1ffb112da3ba10d8d36d2074b3e3))
+
+
+
+
+
 ## [9.12.4-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.24...@bitgo/express@9.12.4-rc.25) (2022-07-18)
 
 **Note:** Version bump only for package @bitgo/express

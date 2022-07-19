@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0-rc.2...@bitgo/sdk-coin-avaxp@2.0.0-rc.4) (2022-07-19)
+
+
+### Features
+
+* **sdk-coin-avaxp:** update stake validation check ([82ee448](https://github.com/BitGo/BitGoJS/commit/82ee4481094eaa60d5f3c97714eea10a6e69161b))
+
+
+
+
+
 # [2.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0-rc.2...@bitgo/sdk-coin-avaxp@2.0.0-rc.3) (2022-07-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp
