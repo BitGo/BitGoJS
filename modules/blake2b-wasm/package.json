@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/blake2b-wasm",
-  "version": "3.0.3-rc.0",
+  "version": "3.0.3",
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {
@@ -10,7 +10,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@bitgo/blake2b": "^3.0.3-rc.0",
+    "@bitgo/blake2b": "^3.0.3",
     "browserify": "^14.4.0",
     "tape": "^4.6.3",
     "wat2js": "^1.1.1",
