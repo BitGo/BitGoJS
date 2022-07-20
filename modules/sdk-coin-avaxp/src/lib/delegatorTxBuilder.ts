@@ -229,19 +229,20 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * @param inputs
    * @protected
    */
-  protected recoverUtxos(inputs: TransferableInput[]): DecodedUtxoObj[] {
-    return inputs.map((input) => {
-      const secpInput: SECPTransferInput = input.getInput() as SECPTransferInput;
-      // Order Addresses as output was defined.
+  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
+    return utxos.map((utxo) => {
+      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
+
+      // use the same addressesIndex as existing ones in the inputs
       const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
 
       return {
         outputID: 7,
-        outputidx: utils.cb58Encode(input.getOutputIdx()),
-        txid: utils.cb58Encode(input.getTxID()),
+        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
+        txid: utils.cb58Encode(utxo.getTxID()),
         amount: secpInput.getAmount().toString(),
         threshold: this.transaction._threshold,
-        addresses: [],
+        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
         addressesIndex,
       };
     });
@@ -250,7 +251,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   /**
    * Threshold must be 2 and since output always get reordered we want to make sure we can always add signatures in the correct location
    * To find the correct location for the signature, we use the ouput's addresses to create the signatureIdx in the order that we desire
-   * 0: user key, 1: recovery key, 2: hsm key
+   * 0: user key, 1: hsm key, 2: recovery key
    * @protected
    */
   protected createInputOutput(): {
@@ -260,90 +261,132 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   } {
     const inputs: TransferableInput[] = [];
     const outputs: TransferableOutput[] = [];
-    const addresses = this.transaction._fromAddresses.map((b) =>
-      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
-    );
-    let total: BN = new BN(0);
-    const totalTarget = this._stakeAmount.clone().add(this.transaction._txFee);
+
+    // amount spent so far
+    let currentTotal: BN = new BN(0);
+
+    // delegating and validating have no fees
+    const totalTarget = this._stakeAmount.clone();
+
     const credentials: Credential[] = [];
 
-    this.transaction._utxos.forEach((outputs) => {
-      if (!outputs.addressesIndex || outputs.addressesIndex.length == 0) {
-        outputs.addressesIndex = addresses.map((a) => outputs.addresses.indexOf(a));
+    // convert fromAddresses to string
+    // fromAddresses = bitgo order if we are in WP
+    // fromAddresses = onchain order if we are in from
+    const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
+      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
+    );
+
+    /* 
+    A = user key
+    B = hsm key
+    C = backup key
+    bitgoAddresses = bitgo addresses [ A, B, C ]
+    utxo.addresses = IMS addresses [ B, C, A ]
+    utxo.addressesIndex = [ 2, 0, 1 ]
+    we pick 0, 1 for non-recovery
+    we pick 1, 2 for recovery
+    */
+    this.transaction._utxos.forEach((utxo) => {
+      // in WP, output.addressesIndex is empty, so fill it
+      if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
+        utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
+      }
+      // in OVC, output.addressesIndex is defined correctly from the previous iteration
+    });
+
+    // validate the utxos
+    this.transaction._utxos.forEach((utxo) => {
+      if (!utxo) {
+        throw new BuildTransactionError('Utxo is undefined');
+      }
+      // addressesIndex should neve have a mismatch
+      if (utxo.addressesIndex?.includes(-1)) {
+        throw new BuildTransactionError('Addresses are inconsistent');
+      }
+      if (utxo.threshold !== this.transaction._threshold) {
+        throw new BuildTransactionError('Threshold is inconsistent');
       }
     });
 
-    this.transaction._utxos
-      .filter(
-        (output) =>
-          output.threshold === this.transaction._threshold &&
-          (output.addressesIndex?.length == 3 || !output.addressesIndex?.includes(-1))
-      )
-      .forEach((output, i) => {
-        if (output.outputID === 7 && total.lte(totalTarget)) {
-          const txidBuf = utils.cb58Decode(output.txid);
-          const amt: BN = new BN(output.amount);
-          const outputidx = utils.cb58Decode(output.outputidx);
-          const addressesIndex = output.addressesIndex ?? [];
-          const isRawUtxos = output.addresses.length == 0;
-          const firstIndex = this.recoverSigner ? 1 : 0;
-          total = total.add(amt);
+    // if we are in OVC, none of the utxos will have addresses since they come from
+    // deserialized inputs (which don't have addresses), not the IMS
+    const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
 
-          const secpTransferInput = new SECPTransferInput(amt);
+    this.transaction._utxos.forEach((utxo, i) => {
+      if (utxo.outputID === 7 && currentTotal.lte(totalTarget)) {
+        const txidBuf = utils.cb58Decode(utxo.txid);
+        const amt: BN = new BN(utxo.amount);
+        const outputidx = utils.cb58Decode(utxo.outputidx);
+        const addressesIndex = utxo.addressesIndex ?? [];
 
-          if (isRawUtxos) {
-            addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0; // 0
+        const bitgoIndex = 1;
+        currentTotal = currentTotal.add(amt);
+
+        const secpTransferInput = new SECPTransferInput(amt);
+
+        if (!buildOutputs) {
+          addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
+        } else {
+          // if user/backup > bitgo
+          if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+            // console.log('bitgo < user', addressesIndex[bitgoIndex], addressesIndex[firstIndex]);
+            secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
+            secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
+            credentials.push(
+              SelectCredentialClass(
+                secpTransferInput.getCredentialID(), // 9
+                ['', this.transaction._fromAddresses[firstIndex].toString('hex')].map(utils.createSig)
+              )
+            );
           } else {
-            if (addressesIndex[firstIndex] > addressesIndex[2]) {
-              secpTransferInput.addSignatureIdx(addressesIndex[2], this.transaction._fromAddresses[2]);
-              secpTransferInput.addSignatureIdx(
-                addressesIndex[firstIndex],
-                this.transaction._fromAddresses[firstIndex]
-              );
-              credentials.push(
-                SelectCredentialClass(
-                  secpTransferInput.getCredentialID(),
-                  ['', this.transaction._fromAddresses[firstIndex].toString('hex')].map(utils.createSig)
-                )
-              );
-            } else {
-              secpTransferInput.addSignatureIdx(
-                addressesIndex[firstIndex],
-                this.transaction._fromAddresses[firstIndex]
-              );
-              secpTransferInput.addSignatureIdx(addressesIndex[2], this.transaction._fromAddresses[2]);
-              credentials.push(
-                SelectCredentialClass(
-                  secpTransferInput.getCredentialID(),
-                  [this.transaction._fromAddresses[firstIndex].toString('hex'), ''].map(utils.createSig)
-                )
-              );
-            }
+            // console.log('user < bitgo', addressesIndex[firstIndex], addressesIndex[bitgoIndex]);
+            secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
+            secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
+            credentials.push(
+              SelectCredentialClass(
+                secpTransferInput.getCredentialID(),
+                [this.transaction._fromAddresses[firstIndex].toString('hex'), ''].map(utils.createSig)
+              )
+            );
           }
-
-          const input: TransferableInput = new TransferableInput(
-            txidBuf,
-            outputidx,
-            this.transaction._assetId,
-            secpTransferInput
-          );
-          inputs.push(input);
         }
-      });
-    if (total.lt(totalTarget)) {
-      throw new BuildTransactionError(`Utxo outputs get ${total.toString()} and ${totalTarget.toString()} is required`);
-    }
-    outputs.push(
-      new TransferableOutput(
-        this.transaction._assetId,
-        new SECPTransferOutput(
-          total.sub(totalTarget),
-          this.transaction._fromAddresses,
-          this.transaction._locktime,
-          this.transaction._threshold
+
+        const input: TransferableInput = new TransferableInput(
+          txidBuf,
+          outputidx,
+          this.transaction._assetId,
+          secpTransferInput
+        );
+        inputs.push(input);
+      }
+    });
+
+    if (buildOutputs) {
+      if (currentTotal.lt(totalTarget)) {
+        throw new BuildTransactionError(
+          `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
+        );
+      }
+      outputs.push(
+        new TransferableOutput(
+          this.transaction._assetId,
+          new SECPTransferOutput(
+            currentTotal.sub(totalTarget),
+            this.transaction._fromAddresses,
+            this.transaction._locktime,
+            this.transaction._threshold
+          )
         )
-      )
-    );
-    return { inputs, outputs, credentials: credentials.length == 0 ? this.transaction.credentials : credentials };
+      );
+    }
+    // get outputs and credentials from the deserialized transaction if we are in OVC
+    return {
+      inputs,
+      outputs: outputs.length === 0 ? this.transaction.avaxPTransaction.getOuts() : outputs,
+      credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
+    };
   }
 }
