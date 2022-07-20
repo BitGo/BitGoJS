@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0...@bitgo/sdk-coin-avaxp@2.1.0-rc.0) (2022-07-20)
+
+
+### Bug Fixes
+
+* **sdk-coin-avaxp:** fix avaxp validation issue ([8b586d6](https://github.com/BitGo/BitGoJS/commit/8b586d693fbaf6cbc06de63a732cbdc0db9a4881))
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement verifyTransaction ([5805c40](https://github.com/BitGo/BitGoJS/commit/5805c40dbbe0db06ea1c6a1db91e013bec39499d))
+
+
+
+
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0-rc.4...@bitgo/sdk-coin-avaxp@2.0.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

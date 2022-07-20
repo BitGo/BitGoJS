@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-ada",
-  "version": "1.1.0",
+  "version": "1.1.1-rc.0",
   "description": "BitGo SDK coin library for Ada",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,13 +41,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.1.0",
-    "@bitgo/statics": "^7.0.0",
+    "@bitgo/sdk-core": "^1.1.1-rc.0",
+    "@bitgo/statics": "^7.1.0-rc.0",
     "@emurgo/cardano-serialization-lib-browser": "^10.2.0",
     "@emurgo/cardano-serialization-lib-nodejs": "^10.2.0",
     "bignumber.js": "^9.0.2"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.1.0"
+    "@bitgo/sdk-api": "^1.1.1-rc.0"
   }
 }
