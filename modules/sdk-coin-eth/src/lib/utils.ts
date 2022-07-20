@@ -567,7 +567,7 @@ export function hasSignature(txData: TxData): boolean {
   );
 }
 
-type RecursiveBufferOrString = string | Buffer | RecursiveBufferOrString[];
+type RecursiveBufferOrString = string | Buffer | BN | RecursiveBufferOrString[];
 
 /**
  * Get the raw data decoded for some types
@@ -579,7 +579,7 @@ type RecursiveBufferOrString = string | Buffer | RecursiveBufferOrString[];
 export function getRawDecoded(types: string[], serializedArgs: Buffer): RecursiveBufferOrString[] {
   function normalize(v: unknown, i: number): unknown {
     if (BN.isBN(v)) {
-      return v.toBuffer();
+      return v;
     } else if (typeof v === 'string' || Buffer.isBuffer(v)) {
       return v;
     } else if (Array.isArray(v)) {
