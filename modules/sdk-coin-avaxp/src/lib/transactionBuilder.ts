@@ -90,11 +90,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new Error('Network or blockchain is not equals');
     }
     this._transaction._memo = baseTx.getMemo();
-    const out = baseTx.getOuts()[0];
-    if (!out.getAssetID().equals(this._transaction._assetId)) {
+
+    // good assumption: addresses that unlock the outputs, will also be used to sign the transaction
+    // so pick the first utxo as the from address
+    const utxo = baseTx.getOuts()[0];
+
+    if (!utxo.getAssetID().equals(this._transaction._assetId)) {
       throw new Error('AssetID are not equals');
     }
-    const secpOut = out.getOutput();
+    const secpOut = utxo.getOutput();
     this._transaction._locktime = secpOut.getLocktime();
     this._transaction._threshold = secpOut.getThreshold();
     this._transaction._fromAddresses = secpOut.getAddresses();
