@@ -15,6 +15,8 @@ import {
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import { AvaxpSignTransactionOptions, TransactionFee, ExplainTransactionOptions } from './iface';
+import _ from 'lodash';
+import { BN } from 'avalanche';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -51,7 +53,33 @@ export class AvaxP extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    // TODO(STLX-16574): verifyTransaction
+    let totalAmount = new BN(0);
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const transactionBuilder = new AvaxpLib.TransactionBuilderFactory(coinConfig).from(rawTx);
+    const transaction = await transactionBuilder.build();
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients !== undefined) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredOutputs = explainedTx.outputs.map((output: { address: string; amount: string; memo: string }) =>
+        _.pick(output, ['address', 'amount'])
+      );
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.add(new BN(recipients.amount));
+      }
+      if (!totalAmount.eq(new BN(explainedTx.outputAmount))) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
     return true;
   }
 
