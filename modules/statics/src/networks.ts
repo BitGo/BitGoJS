@@ -1,5 +1,6 @@
 import { CoinFamily } from './base';
 import { mainnetMetadataRpc, westendMetadataRpc } from '../resources/dot';
+import { acalaMetadataRpc, mandalaMetadataRpc } from '../resources/aca';
 
 export enum NetworkType {
   MAINNET = 'mainnet',
@@ -61,16 +62,25 @@ export interface AccountNetwork extends BaseNetwork {
  * Specification name type of the chain. Used in setting up the registry
  */
 export type PolkadotSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine';
+export type AcalaSpecNameType = 'acala' | 'mandala';
 
-export interface DotNetwork extends AccountNetwork {
-  // some chains pay fees via an enterprise gas task. The account explorer url
-  // is a url that can be used to look up the account for the gas tank on-chain.
-  readonly specName: PolkadotSpecNameType;
+export interface DotBaseNetwork extends AccountNetwork {
   readonly genesisHash: string;
   readonly specVersion: number;
   readonly chainName: string;
   readonly metadataRpc: `0x${string}`;
   readonly txVersion: number;
+}
+export interface DotNetwork extends DotBaseNetwork {
+  // some chains pay fees via an enterprise gas task. The account explorer url
+  // is a url that can be used to look up the account for the gas tank on-chain.
+  readonly specName: PolkadotSpecNameType;
+}
+
+export interface AcalaNetwork extends DotBaseNetwork {
+  // some chains pay fees via an enterprise gas task. The account explorer url
+  // is a url that can be used to look up the account for the gas tank on-chain.
+  readonly specName: AcalaSpecNameType;
 }
 
 export interface EthereumNetwork extends AccountNetwork {
@@ -327,6 +337,30 @@ class PolkadotTestnet extends Testnet implements DotNetwork {
   chainName = 'Westend';
   metadataRpc = westendMetadataRpc as `0x${string}`;
   txVersion = 9;
+}
+
+class Acala extends Mainnet implements AcalaNetwork {
+  name = 'Acala';
+  family = CoinFamily.ACA;
+  explorerUrl = 'https://acala.subscan.io/extrinsic/';
+  specName = 'acala' as AcalaSpecNameType;
+  genesisHash = '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c';
+  specVersion = 2083;
+  chainName = 'Acala';
+  metadataRpc = acalaMetadataRpc as `0x${string}`;
+  txVersion = 1;
+}
+
+class AcalaTestnet extends Testnet implements AcalaNetwork {
+  name = 'Mandala';
+  family = CoinFamily.ACA;
+  explorerUrl = 'https://acala-testnet.subscan.io/extrinsic/';
+  specName = 'mandala' as AcalaSpecNameType;
+  genesisHash = '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b';
+  specVersion = 2082;
+  chainName = 'Acala Mandala TC7';
+  metadataRpc = mandalaMetadataRpc as `0x${string}`;
+  txVersion = 1;
 }
 
 class Celo extends Mainnet implements EthereumNetwork {
@@ -647,6 +681,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
 
 export const Networks = {
   main: {
+    aca: Object.freeze(new Acala()),
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
     avalancheC: Object.freeze(new AvalancheC()),
@@ -682,6 +717,7 @@ export const Networks = {
     zCash: Object.freeze(new ZCash()),
   },
   test: {
+    aca: Object.freeze(new AcalaTestnet()),
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
