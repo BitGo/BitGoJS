@@ -9,6 +9,7 @@ import * as testData from '../resources/avaxp';
 import { Utils as KeyPairUtils } from '../../src/lib/utils';
 import { KeyPair } from '../../src/lib/keyPair';
 import { Buffer as BufferAvax } from 'avalanche';
+import * as _ from 'lodash';
 
 import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 
@@ -17,6 +18,22 @@ describe('Avaxp', function () {
   const tcoinName = 't' + coinName;
   let bitgo: TestBitGoAPI;
   let basecoin;
+  let newTxPrebuild;
+  let newTxParams;
+
+  const txPrebuild = {
+    txHex: testData.ADDVALIDATOR_SAMPLES.unsignedTxHex,
+    txInfo: {},
+  };
+
+  const txParams = {
+    recipients: [
+      {
+        address: testData.ADDVALIDATOR_SAMPLES.nodeID,
+        amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
+      },
+    ],
+  };
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, {
@@ -26,6 +43,12 @@ describe('Avaxp', function () {
     bitgo.safeRegister(coinName, AvaxP.createInstance);
     bitgo.safeRegister(tcoinName, TavaxP.createInstance);
     basecoin = bitgo.coin(tcoinName);
+    newTxPrebuild = () => {
+      return _.cloneDeep(txPrebuild);
+    };
+    newTxParams = () => {
+      return _.cloneDeep(txParams);
+    };
   });
 
   it('should instantiate the coin', function () {
@@ -240,7 +263,53 @@ describe('Avaxp', function () {
     });
   });
 
-  // TODO(STLX-16574): verifyTransaction
+  describe('Verify Transaction', () => {
+    it('should succeed to verify unsigned transaction', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+    it('should succeed to verify signed transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+    it('should fail verify transactions when have different recipients', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: 'NodeID-EZ38CcWHoSyoEfAkDN9zaieJ5Yq64Yepy',
+            amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
+          },
+        ],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+    it('should verify when input `recipients` is absent', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+    it('should succeed to verify transactions when recipients has extra data', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.data = 'data';
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+  });
+
   xdescribe('Validation', function () {
     it('should fail to validate invalid address', function () {
       const invalidAddresses = [];
