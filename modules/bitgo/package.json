@@ -127,7 +127,7 @@
     "request-promise": "^4.2.2",
     "sjcl": "^1.0.8",
     "supertest": "^3.0.0",
-    "terser": "^3.16.1"
+    "terser": "^4.8.1"
   },
   "optionalDependencies": {
     "@ethereumjs/common": "^2.4.0",
