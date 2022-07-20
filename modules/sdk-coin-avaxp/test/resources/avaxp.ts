@@ -49,13 +49,15 @@ export const ACCOUNT_4 = {
 
 export const INVALID_NODE_ID_MISSING_NODE_ID = 'NodeI-NFBbbJ4qCmNaCzeW7sxErhvWqvEQMnYcN';
 
-export const INVALID_NODE_ID_LENGTH = 'NodeID-NFBbbJ4qCmNaCzeW7sxErhvWqvEQMnYc';
+export const INVALID_NODE_ID_LENGTH = 'NodeID-test';
+
+export const NODE_ID_2 = 'NodeID-P1KjdPNrap8LHfx5AstcXxsHjk3jbbyF';
 
 export const INVALID_STAKE_AMOUNT = new BN(1999);
 
 export const INVALID_DELEGATION_FEE = 0;
 
-export const START_TIME = new BN(Date.now()).add(new BN(90000));
+export const START_TIME = new BN(Date.now()).add(new BN(120000));
 export const ONE_WEEK = new BN(604800);
 export const TWO_YEAR = new BN(63072000);
 

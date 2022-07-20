@@ -15,7 +15,7 @@ import {
   Tx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
-import { BN } from 'avalanche';
+import { BinTools, BN } from 'avalanche';
 import { DecodedUtxoObj } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
@@ -111,8 +111,9 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     if (nodeID.slice(0, 6) !== 'NodeID') {
       throw new BuildTransactionError('Invalid transaction: invalid NodeID tag');
     }
-    if (nodeID.length !== 40) {
-      throw new BuildTransactionError('Invalid transaction: NodeID has incorrect length');
+    const bintools = BinTools.getInstance();
+    if (!(bintools.b58ToBuffer(nodeID.slice(7)).length === 24)) {
+      throw new BuildTransactionError('Invalid transaction: NodeID is not in cb58 format');
     }
   }
   /**
@@ -144,8 +145,9 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * @param amount
    */
   validateStakeAmount(amount: BN): void {
-    if (amount.lt(new BN(this.transaction._network.minStake))) {
-      throw new BuildTransactionError('Minimum staking amount is 2,000 AVAX');
+    const minStake = new BN(this.transaction._network.minStake);
+    if (amount.lt(minStake)) {
+      throw new BuildTransactionError('Minimum staking amount is ' + Number(minStake) / 1000000000 + ' AVAX.');
     }
   }
 
