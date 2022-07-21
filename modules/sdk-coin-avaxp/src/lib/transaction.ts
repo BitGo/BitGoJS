@@ -37,7 +37,9 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
     // Look for address.
     return function (sig, address): boolean {
       try {
-        if (!isEmptySignature(sig.bytes)) return false;
+        if (!isEmptySignature(sig.bytes)) {
+          return false;
+        }
         const pub = sig.bytes.substring(90);
         return pub === address;
       } catch (e) {

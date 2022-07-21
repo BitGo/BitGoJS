@@ -154,19 +154,21 @@ export class AvaxP extends BaseCoin {
    * Signs Avaxp transaction
    */
   async signTransaction(params: AvaxpSignTransactionOptions): Promise<SignedTransaction> {
+    // deserialize raw transaction (note: fromAddress has onchain order)
     const txBuilder = this.getBuilder().from(params.txPrebuild.txHex);
     const key = params.prv;
+
+    // push the keypair to signer array
     txBuilder.sign({ key });
 
+    // build the transaction
     const transaction: BaseTransaction = await txBuilder.build();
     if (!transaction) {
       throw new InvalidTransactionError('Error while trying to build transaction');
     }
-    const response = {
-      txHex: transaction.toBroadcastFormat(),
-    };
-
-    return transaction.signature.length >= 2 ? response : { halfSigned: response };
+    return transaction.signature.length >= 2
+      ? { txHex: transaction.toBroadcastFormat() }
+      : { halfSigned: { txHex: transaction.toBroadcastFormat() } };
   }
 
   async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {

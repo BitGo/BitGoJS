@@ -102,48 +102,75 @@ describe('Avaxp', function () {
   describe('Sign Transaction', () => {
     const factory = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName));
 
-    it('should build transaction correctly', async () => {
+    it('build and sign a transaction in regular mode', async () => {
+      const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
         .getValidatorBuilder()
-        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
-        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
-        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
-        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
-        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
-        .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
-        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
-        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
+        .locktime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.locktime)
+        .recoverMode(recoveryMode)
+        .fromPubKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.bitgoAddresses)
+        .startTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.startTime)
+        .endTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.endTime)
+        .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
+        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
+        .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
+        .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
+        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
-      const txHex = tx.toBroadcastFormat();
-      txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
-    });
 
-    it('should be performed', async () => {
-      const builder = factory.from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
-      const tx = await builder.build();
+      let txHex = tx.toBroadcastFormat();
+      txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.unsignedRawTxNonRecovery);
+
+      const privateKey = recoveryMode
+        ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
+        : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
 
       const params = {
         txPrebuild: {
           txHex: tx.toBroadcastFormat(),
         },
-        prv: testData.ADDVALIDATOR_SAMPLES.privKey.prv1,
+        prv: privateKey,
       };
-      params.txPrebuild.txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+
       const halfSignedTransaction = await basecoin.signTransaction(params);
-      halfSignedTransaction.should.have.property('halfSigned');
-      (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex?.should.equal(
-        testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
-      );
-      params.txPrebuild.txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxNonRecovery);
+    });
+    it('build and sign a transaction in recovery mode', async () => {
+      const recoveryMode = true;
+      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
+        .getValidatorBuilder()
+        .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
+        .locktime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.locktime)
+        .recoverMode(recoveryMode)
+        .fromPubKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.bitgoAddresses)
+        .startTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.startTime)
+        .endTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.endTime)
+        .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
+        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
+        .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
+        .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
+        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
+      const tx = await txBuilder.build();
 
-      params.prv = testData.ADDVALIDATOR_SAMPLES.privKey.prv3;
-      const signedTransaction = await basecoin.signTransaction(params);
-      signedTransaction.should.not.have.property('halfSigned');
-      signedTransaction.should.have.property('txHex');
+      let txHex = tx.toBroadcastFormat();
+      txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.unsignedRawtxRecovery);
 
-      signedTransaction.txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+      const privateKey = recoveryMode
+        ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
+        : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
+
+      const params = {
+        txPrebuild: {
+          txHex: tx.toBroadcastFormat(),
+        },
+        prv: privateKey,
+      };
+
+      const halfSignedTransaction = await basecoin.signTransaction(params);
+      txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxRecovery);
     });
 
     it('should be rejected if invalid key', async () => {
