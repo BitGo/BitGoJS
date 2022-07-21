@@ -17,6 +17,8 @@ const options = {
     '@types/**',
     'blake2b',
     'express-serve-static-core',
+    // Required for sdk-coin-ada
+    '@emurgo/cardano-serialization-lib-browser',
     // Required for sdk-coin-celo inner dependencies
     '@celo/contractkit',
     // Webpack - not detected by depcheck
