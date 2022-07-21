@@ -23,7 +23,7 @@
     "directory": "modules/blockapis"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "^2.3.0-rc.11",
+    "@bitgo/utxo-lib": "^2.4.1",
     "bluebird": "^3.7.2",
     "superagent": "^7.1.1"
   },

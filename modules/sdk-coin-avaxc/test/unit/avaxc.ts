@@ -58,13 +58,18 @@ describe('Avalanche C-Chain', function () {
     nock.cleanAll();
   });
 
-  describe('Instantiate', () => {
+  describe('Instantiate & Statics', () => {
     it('should instantiate the coin', function () {
       let localBasecoin = bitgo.coin('tavaxc');
       localBasecoin.should.be.an.instanceof(TavaxC);
 
       localBasecoin = bitgo.coin('avaxc');
       localBasecoin.should.be.an.instanceof(AvaxC);
+    });
+
+    it('should get hop digest', () => {
+      const digest = AvaxC.getHopDigest(['1', '2', '3']);
+      digest.toString('hex').should.equal('231cda5f050c841322b9df536afb633ca062400a8f393bf654a48bdd1dfd825b');
     });
   });
 

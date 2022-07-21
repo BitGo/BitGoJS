@@ -53,8 +53,8 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.1.1-rc.0",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/unspents": "^0.8.0-rc.15",
-    "@bitgo/utxo-lib": "^2.3.0-rc.11",
+    "@bitgo/unspents": "^0.8.3",
+    "@bitgo/utxo-lib": "^2.4.1",
     "@types/superagent": "4.1.15",
     "bip32": "^2.0.6",
     "bitcoinjs-message": "^2.0.0",

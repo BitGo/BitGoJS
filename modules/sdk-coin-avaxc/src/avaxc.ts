@@ -3,7 +3,7 @@
  */
 import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
-import * as Keccak from 'keccak';
+import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -643,7 +643,7 @@ export class AvaxC extends BaseCoin {
    * Gets the hop digest for the user to sign. This is validated in the HSM to prove that the user requested this tx
    * @param paramsArr The parameters to hash together for the digest
    */
-  private static getHopDigest(paramsArr: string[]): Buffer {
+  static getHopDigest(paramsArr: string[]): Buffer {
     const hash = new Keccak('keccak256');
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
