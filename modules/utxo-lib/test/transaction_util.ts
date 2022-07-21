@@ -157,12 +157,13 @@ export function getTransactionBuilder<TNumber extends number | bigint = number>(
   return txBuilder;
 }
 
-export function getUnsignedTransaction2Of3(
+export function getUnsignedTransaction2Of3<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3 | 'p2shP2pk',
-  network: Network
-): UtxoTransaction {
-  return getTransactionBuilder(keys, [], scriptType, network).buildIncomplete();
+  network: Network,
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  return getTransactionBuilder<TNumber>(keys, [], scriptType, network, amountType).buildIncomplete();
 }
 
 export function getHalfSignedTransaction2Of3<TNumber extends number | bigint = number>(
@@ -182,28 +183,31 @@ export function getHalfSignedTransaction2Of3<TNumber extends number | bigint = n
   ).buildIncomplete();
 }
 
-export function getFullSignedTransactionP2shP2pk(
+export function getFullSignedTransactionP2shP2pk<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   signer1: bip32.BIP32Interface,
-  network: Network
-): UtxoTransaction {
-  return getTransactionBuilder(keys, [{ signer: signer1 }], 'p2shP2pk', network).build();
+  network: Network,
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  return getTransactionBuilder<TNumber>(keys, [{ signer: signer1 }], 'p2shP2pk', network, amountType).build();
 }
 
-export function getFullSignedTransaction2Of3(
+export function getFullSignedTransaction2Of3<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   signer1: bip32.BIP32Interface,
   signer2: bip32.BIP32Interface,
   scriptType: ScriptType2Of3,
-  network: Network
-): UtxoTransaction {
-  return getTransactionBuilder(
+  network: Network,
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  return getTransactionBuilder<TNumber>(
     keys,
     [
       { signer: signer1, cosigner: signer2 },
       { signer: signer2, cosigner: signer1 },
     ],
     scriptType,
-    network
+    network,
+    amountType
   ).build();
 }
