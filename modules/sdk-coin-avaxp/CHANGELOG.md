@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.1.0-rc.0...@bitgo/sdk-coin-avaxp@2.1.0-rc.1) (2022-07-21)
+
+
+### Features
+
+* **sdk-coin-avaxp:** correct select signer logic ([b5777c9](https://github.com/BitGo/BitGoJS/commit/b5777c9fa59b76a97e76d1367ef472525a7ce7c8))
+
+
+
+
+
 # [2.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0...@bitgo/sdk-coin-avaxp@2.1.0-rc.0) (2022-07-20)
 
 

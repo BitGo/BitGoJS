@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.20.1-rc.0",
+  "version": "2.20.1-rc.1",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -34,7 +34,7 @@
     "@bitgo/ethereumjs-utils-old": "npm:ethereumjs-util@5.2.0",
     "@bitgo/sdk-coin-algo": "^1.1.1-rc.0",
     "@bitgo/sdk-coin-avaxc": "^1.1.1-rc.0",
-    "@bitgo/sdk-coin-avaxp": "^2.1.0-rc.0",
+    "@bitgo/sdk-coin-avaxp": "^2.1.0-rc.1",
     "@bitgo/sdk-coin-celo": "^1.1.1-rc.0",
     "@bitgo/sdk-coin-cspr": "^1.0.2-rc.0",
     "@bitgo/sdk-coin-dot": "^1.0.2-rc.0",
