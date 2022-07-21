@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import {
-  NotImplementedError,
   BaseAddress,
   BaseKey,
   BaseTransactionBuilder,
@@ -175,7 +174,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new NotImplementedError('validateAddress not implemented');
+    if (!utils.isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address');
+    }
   }
 
   /** @inheritdoc */
