@@ -10,6 +10,7 @@ import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 export interface MpcKeyShare {
   publicShare: string;
   privateShare: string;
+  privateShareProof?: string;
 }
 
 export abstract class MpcUtils {
@@ -58,12 +59,14 @@ export abstract class MpcUtils {
           to: 'bitgo',
           publicShare: userKeyShare.publicShare,
           privateShare: encUserToBitGoMessage,
+          privateShareProof: userKeyShare.privateShareProof,
         },
         {
           from: 'backup',
           to: 'bitgo',
           publicShare: backupKeyShare.publicShare,
           privateShare: encBackupToBitGoMessage,
+          privateShareProof: backupKeyShare.privateShareProof,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,

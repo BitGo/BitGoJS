@@ -1,7 +1,10 @@
 import * as openpgp from 'openpgp';
 import 'should';
+import * as crypto from 'crypto';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
+
+const sodium = require('libsodium-wrappers-sumo');
 
 describe('OpenGPG Utils Tests', function () {
   let senderKey: { publicKey: string, privateKey: string };
@@ -9,6 +12,7 @@ describe('OpenGPG Utils Tests', function () {
   let otherKey: { publicKey: string, privateKey: string };
 
   before(async function () {
+    openpgp.config.rejectCurves = new Set();
     senderKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -16,6 +20,7 @@ describe('OpenGPG Utils Tests', function () {
           email: 'sender@username.com',
         },
       ],
+      curve: 'secp256k1',
     });
     recipientKey = await openpgp.generateKey({
       userIDs: [
@@ -24,6 +29,7 @@ describe('OpenGPG Utils Tests', function () {
           email: 'recipient@username.com',
         },
       ],
+      curve: 'secp256k1',
     });
     otherKey = await openpgp.generateKey({
       userIDs: [
@@ -32,6 +38,26 @@ describe('OpenGPG Utils Tests', function () {
           email: 'other@username.com',
         },
       ],
+      curve: 'secp256k1',
+    });
+  });
+
+  describe('createShareProof', function () {
+    it('should create a share proof', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue);
+
+      // verify proof
+      const decodedProof = await openpgp.readKey({ armoredKey: proof }).should.be.fulfilled();
+      const isValid = (await decodedProof.verifyPrimaryUser())[0].valid;
+      isValid.should.be.true();
+
+      const proofSubkeys = decodedProof.getSubkeys()[1];
+
+      const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams.Q.slice(1)).toString('hex');
+      const rawUValueProof = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))).toString('hex');
+
+      decodedUValueProof.should.equal(rawUValueProof);
     });
   });
 
