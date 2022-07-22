@@ -1,7 +1,8 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { TransactionBuilder } from './lib';
 
 export class Bsc extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -13,6 +14,6 @@ export class Bsc extends AbstractEthLikeCoin {
   }
 
   protected getTransactionBuilder(): EthTransactionBuilder {
-    throw new Error('Not implemented yet');
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }
