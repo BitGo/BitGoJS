@@ -239,6 +239,77 @@ describe('Sol Token Transfer Builder', () => {
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.MULTI_TOKEN_TRANSFER_SIGNED);
     });
+
+    it('build a token multi asset transfer tx unsigned', async () => {
+      const account1 = new KeyPair({ prv: testData.extraAccounts.prv1 }).getKeys();
+      const account2 = new KeyPair({ prv: testData.extraAccounts.prv2 }).getKeys();
+      const account3 = new KeyPair({ prv: testData.extraAccounts.prv3 }).getKeys();
+      const txBuilder = factory.getTokenTransferBuilder();
+      const nameUSDC = 'tsol:usdc';
+      const nameMNDE = 'tsol:mnde';
+
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(ownerORCA);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account2.pub, amount, tokenName: nameMNDE });
+      txBuilder.send({ address: account3.pub, amount, tokenName: nameUSDC });
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(4);
+      tx.inputs[0].should.deepEqual({
+        address: ownerORCA,
+        value: amount,
+        coin: nameORCA,
+      });
+      tx.inputs[1].should.deepEqual({
+        address: ownerORCA,
+        value: amount,
+        coin: nameORCA,
+      });
+      tx.inputs[2].should.deepEqual({
+        address: ownerORCA,
+        value: amount,
+        coin: nameMNDE,
+      });
+      tx.inputs[3].should.deepEqual({
+        address: ownerORCA,
+        value: amount,
+        coin: nameUSDC,
+      });
+
+      tx.outputs.length.should.equal(4);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameORCA,
+      });
+      tx.outputs[1].should.deepEqual({
+        address: account1.pub,
+        value: amount,
+        coin: nameORCA,
+      });
+      tx.outputs[2].should.deepEqual({
+        address: account2.pub,
+        value: amount,
+        coin: nameMNDE,
+      });
+      tx.outputs[3].should.deepEqual({
+        address: account3.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(4);
+      txJson.instructionsData[0].params.sourceAddress.should.equal(testData.tokenTransfers.sourceORCA);
+      txJson.instructionsData[1].params.sourceAddress.should.equal(testData.tokenTransfers.sourceORCA);
+      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceMNDE);
+      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.MULTI_ASSET_TOKEN_TRANSFER_UNSIGNED);
+    });
   });
   describe('Fail', () => {
     it('for invalid sender', () => {
