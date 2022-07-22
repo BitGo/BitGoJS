@@ -27,6 +27,11 @@ describe('TSS EDDSA key generation and signing', function () {
     MPC = await Eddsa.initialize(hdTree);
   });
 
+  it('should fail to generate keys with invalid config', function () {
+    assert.throws(() => MPC.keyShare(0, 2, 3), /Invalid KeyShare config/);
+    assert.throws(() => MPC.keyShare(5, 2, 3), /Invalid KeyShare config/);
+  });
+
   it('should generate keys and sign message', function () {
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);

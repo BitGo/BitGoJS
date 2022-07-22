@@ -29,7 +29,6 @@
  * 4. This results in each signer having a public g-share which they send to the other signers.
  * 5. After the signers broadcast their g-shares, the final signature can be re-constructed independently.
  */
-const assert = require('assert');
 import { randomBytes, createHash } from 'crypto';
 import { Ed25519Curve } from '../../curves';
 import Shamir from '../../shamir';
@@ -74,7 +73,9 @@ export default class Eddsa {
   }
 
   keyShare(index: number, threshold: number, numShares: number, seed?: Buffer): KeyShare {
-    assert(index > 0 && index <= numShares);
+    if (!(index > 0 && index <= numShares)) {
+      throw new Error('Invalid KeyShare config');
+    }
     if (seed && seed.length !== 64) {
       throw new Error('Seed must have length 64');
     }
