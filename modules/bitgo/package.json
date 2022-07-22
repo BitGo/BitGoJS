@@ -107,6 +107,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.0",
     "karma-typescript": "^5.0.3",
+    "libsodium-wrappers-sumo": "^0.7.9",
     "puppeteer": "2.1.1",
     "q": "^1.1.2",
     "request": "^2.88.0",
