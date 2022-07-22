@@ -63,21 +63,23 @@ export class TokenTransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    const coin = coins.get(this._sendParams[0].tokenName);
-    assert(coin instanceof SolCoin);
-    const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
-    this._instructionsData = this._sendParams.map((sendParams: SendParams): TokenTransfer => {
-      return {
-        type: InstructionBuilderTypes.TokenTransfer,
-        params: {
-          fromAddress: this._sender,
-          toAddress: sendParams.address,
-          amount: sendParams.amount,
-          tokenName: sendParams.tokenName,
-          sourceAddress: sourceAddress,
-        },
-      };
-    });
+    this._instructionsData = await Promise.all(
+      this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {
+        const coin = coins.get(sendParams.tokenName);
+        assert(coin instanceof SolCoin);
+        const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
+        return {
+          type: InstructionBuilderTypes.TokenTransfer,
+          params: {
+            fromAddress: this._sender,
+            toAddress: sendParams.address,
+            amount: sendParams.amount,
+            tokenName: sendParams.tokenName,
+            sourceAddress: sourceAddress,
+          },
+        };
+      })
+    );
 
     return await super.buildImplementation();
   }

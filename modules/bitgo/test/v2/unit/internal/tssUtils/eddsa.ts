@@ -22,6 +22,8 @@ import {
   Ed25519BIP32,
 } from '@bitgo/sdk-core';
 
+openpgp.config.rejectCurves = new Set();
+
 describe('TSS Utils:', async function () {
   let sandbox: sinon.SinonSandbox;
   let MPC: Eddsa;
@@ -135,6 +137,7 @@ describe('TSS Utils:', async function () {
             email: 'test@test.com',
           },
         ],
+        curve: 'secp256k1',
       });
 
       const nockedBitGoKeychain = await nockBitgoKeychain({
@@ -185,6 +188,7 @@ describe('TSS Utils:', async function () {
             email: 'test@test.com',
           },
         ],
+        curve: 'secp256k1',
       });
 
       const nockedBitGoKeychain = await nockBitgoKeychain({
@@ -233,6 +237,7 @@ describe('TSS Utils:', async function () {
             email: 'test@test.com',
           },
         ],
+        curve: 'secp256k1',
       });
 
       const nockedBitGoKeychain = await nockBitgoKeychain({

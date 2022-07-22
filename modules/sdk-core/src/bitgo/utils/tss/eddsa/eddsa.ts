@@ -8,7 +8,7 @@ import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
 import Eddsa from '../../../../account-lib/mpc/tss';
 import { IRequestTracer } from '../../../../api';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
+import { encryptText, getBitgoGpgPubKey, createShareProof } from '../../opengpgUtils';
 import {
   createUserSignShare,
   createUserToBitGoGShare,
@@ -175,6 +175,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userToBitgoKeyShare = {
       publicShare: userToBitgoPublicShare,
       privateShare: userToBitgoPrivateShare,
+      privateShareProof: await createShareProof(userGpgKey.privateKey, userToBitgoPrivateShare.slice(0, 64)),
     };
 
     const backupToBitgoPublicShare = Buffer.concat([
@@ -188,6 +189,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const backupToBitgoKeyShare = {
       publicShare: backupToBitgoPublicShare,
       privateShare: backupToBitgoPrivateShare,
+      privateShareProof: await createShareProof(userGpgKey.privateKey, backupToBitgoPrivateShare.slice(0, 64)),
     };
 
     return await this.createBitgoKeychainInWP(
