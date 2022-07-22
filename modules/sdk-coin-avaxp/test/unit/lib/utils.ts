@@ -37,5 +37,15 @@ describe('Avaxp Utils', () => {
         Utils.isValidAddress(address).should.be.true();
       }
     });
+
+    it('should fail to validate an invalid block id', function () {
+      const block = 'abcdefghijklmnopqrstuvwxyz';
+      Utils.isValidBlockId(block).should.be.false();
+    });
+
+    it('should validate a block id', function () {
+      const block = 'zGC26Bagj79RBPobK8Hghk9xuqAmME53eEUtM9RJ2yadBxrch';
+      Utils.isValidBlockId(block).should.be.true();
+    });
   });
 });
