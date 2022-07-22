@@ -1,4 +1,4 @@
-import { BaseAddress, BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import {
@@ -25,7 +25,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   protected _startTime: BN;
   protected _endTime: BN;
   protected _stakeAmount: BN;
-  protected _rewardAddress: BaseAddress;
 
   /**
    *
@@ -81,18 +80,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     const valueBN = BN.isBN(value) ? value : new BN(value);
     this.validateStakeAmount(valueBN);
     this._stakeAmount = valueBN;
-    return this;
-  }
-
-  /**
-   * Set the transaction source
-   *
-   * @param {BaseAddress} address The source account
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  rewardAddress(address: BaseAddress): this {
-    this.validateAddress(address);
-    this._rewardAddress = address;
     return this;
   }
 
@@ -217,8 +204,13 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   }
 
   protected rewardOwnersOutput(): ParseableOutput {
+    // if there are no reward addresses, the sender gets the rewards
+    if (!this.transaction._rewardAddresses || this.transaction._rewardAddresses.length === 0) {
+      this.transaction._rewardAddresses = this.transaction._fromAddresses;
+    }
+
     return new ParseableOutput(
-      new SECPOwnerOutput(this.transaction._fromAddresses, this.transaction._locktime, this.transaction._threshold)
+      new SECPOwnerOutput(this.transaction._rewardAddresses, this.transaction._locktime, this.transaction._threshold)
     );
   }
 
@@ -314,14 +306,14 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
 
     this.transaction._utxos.forEach((utxo, i) => {
-      if (utxo.outputID === 7 && currentTotal.lte(totalTarget)) {
+      if (utxo.outputID === 7) {
         const txidBuf = utils.cb58Decode(utxo.txid);
         const amt: BN = new BN(utxo.amount);
         const outputidx = utils.cb58Decode(utxo.outputidx);
         const addressesIndex = utxo.addressesIndex ?? [];
 
         // either user (0) or recovery (2)
-        const firstIndex = this.recoverSigner ? 2 : 0; // 0
+        const firstIndex = this.recoverSigner ? 2 : 0;
         const bitgoIndex = 1;
         currentTotal = currentTotal.add(amt);
 
@@ -332,7 +324,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
         } else {
           // if user/backup > bitgo
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-            // console.log('bitgo < user', addressesIndex[bitgoIndex], addressesIndex[firstIndex]);
             secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
             secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
             credentials.push(
@@ -342,7 +333,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
               )
             );
           } else {
-            // console.log('user < bitgo', addressesIndex[firstIndex], addressesIndex[bitgoIndex]);
             secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
             secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
             credentials.push(
@@ -369,18 +359,19 @@ export class DelegatorTxBuilder extends TransactionBuilder {
         throw new BuildTransactionError(
           `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
         );
-      }
-      outputs.push(
-        new TransferableOutput(
-          this.transaction._assetId,
-          new SECPTransferOutput(
-            currentTotal.sub(totalTarget),
-            this.transaction._fromAddresses,
-            this.transaction._locktime,
-            this.transaction._threshold
+      } else if (currentTotal.gt(totalTarget)) {
+        outputs.push(
+          new TransferableOutput(
+            this.transaction._assetId,
+            new SECPTransferOutput(
+              currentTotal.sub(totalTarget),
+              this.transaction._fromAddresses,
+              this.transaction._locktime,
+              this.transaction._threshold
+            )
           )
-        )
-      );
+        );
+      }
     }
     // get outputs and credentials from the deserialized transaction if we are in OVC
     return {

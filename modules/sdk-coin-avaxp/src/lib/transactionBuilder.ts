@@ -14,7 +14,7 @@ import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { DecodedUtxoObj } from './iface';
-import { Tx } from 'avalanche/dist/apis/platformvm';
+import { AddDelegatorTx, Tx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -36,12 +36,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig);
   }
 
-  /**
-   * commented out check until multisig signing is in effect
-   * TODO: STLX-17077
-   * @param value
-   */
-
   threshold(value: number): this {
     this.validateThreshold(value);
     this._transaction._threshold = value;
@@ -57,6 +51,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
     this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
+    return this;
+  }
+
+  rewardAddresses(address: string | string[]): this {
+    const rewardAddresses = address instanceof Array ? address : [address];
+    this._transaction._rewardAddresses = rewardAddresses.map(utils.parseAddress);
     return this;
   }
 
@@ -102,6 +102,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction._locktime = secpOut.getLocktime();
     this._transaction._threshold = secpOut.getThreshold();
     this._transaction._fromAddresses = secpOut.getAddresses();
+    this._transaction._rewardAddresses = (baseTx as AddDelegatorTx).getRewardOwners().getOutput().getAddresses();
     this._transaction.setTransaction(tx);
     return this;
   }
