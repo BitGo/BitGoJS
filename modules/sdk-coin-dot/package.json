@@ -43,7 +43,6 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/statics": "^6.17.0",
-    "@polkadot/api": "7.15.1",
     "@polkadot/keyring": "^8.7.1",
     "@polkadot/types": "7.15.1",
     "@polkadot/util": "^8.7.1",

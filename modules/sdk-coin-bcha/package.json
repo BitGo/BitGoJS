@@ -41,7 +41,6 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^1.0.0",
     "@bitgo/sdk-coin-bch": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/utxo-lib": "^2.2.2"
