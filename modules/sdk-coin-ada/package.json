@@ -48,6 +48,7 @@
     "bignumber.js": "^9.0.2"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.1.0"
+    "@bitgo/sdk-api": "^1.1.0",
+    "@bitgo/sdk-test": "^1.0.1"
   }
 }

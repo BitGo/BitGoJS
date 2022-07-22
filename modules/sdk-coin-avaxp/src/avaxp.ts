@@ -15,6 +15,8 @@ import {
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import { AvaxpSignTransactionOptions, TransactionFee, ExplainTransactionOptions } from './iface';
+import _ from 'lodash';
+import { BN } from 'avalanche';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -51,7 +53,33 @@ export class AvaxP extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    // TODO(STLX-16574): verifyTransaction
+    let totalAmount = new BN(0);
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const transactionBuilder = new AvaxpLib.TransactionBuilderFactory(coinConfig).from(rawTx);
+    const transaction = await transactionBuilder.build();
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients !== undefined) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredOutputs = explainedTx.outputs.map((output: { address: string; amount: string; memo: string }) =>
+        _.pick(output, ['address', 'amount'])
+      );
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.add(new BN(recipients.amount));
+      }
+      if (!totalAmount.eq(new BN(explainedTx.outputAmount))) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
     return true;
   }
 
@@ -126,23 +154,26 @@ export class AvaxP extends BaseCoin {
    * Signs Avaxp transaction
    */
   async signTransaction(params: AvaxpSignTransactionOptions): Promise<SignedTransaction> {
+    // deserialize raw transaction (note: fromAddress has onchain order)
     const txBuilder = this.getBuilder().from(params.txPrebuild.txHex);
     const key = params.prv;
+
+    // push the keypair to signer array
     txBuilder.sign({ key });
 
+    // build the transaction
     const transaction: BaseTransaction = await txBuilder.build();
     if (!transaction) {
       throw new InvalidTransactionError('Error while trying to build transaction');
     }
-    const response = {
-      txHex: transaction.toBroadcastFormat(),
-    };
-
-    return transaction.signature.length >= 2 ? response : { halfSigned: response };
+    return transaction.signature.length >= 2
+      ? { txHex: transaction.toBroadcastFormat() }
+      : { halfSigned: { txHex: transaction.toBroadcastFormat() } };
   }
 
   async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {
-    return { fee: (this._staticsCoin.network as AvalancheNetwork).txFee };
+    // staking transactions are fee-less
+    return { fee: '0' };
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {
