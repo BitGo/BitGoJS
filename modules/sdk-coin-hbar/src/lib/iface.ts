@@ -11,9 +11,6 @@ export interface TxData {
   validDuration: string;
   node: string;
   memo?: string;
-  to?: string; // TODO: [BG-51282] Deprecate once wp work for multi recipients
-  amount?: string;
-  tokenName?: string;
   instructionsData?: InstructionParams;
 }
 

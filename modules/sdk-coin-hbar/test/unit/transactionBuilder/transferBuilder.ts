@@ -29,8 +29,6 @@ describe('HBAR Transfer Builder', () => {
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(tx.signature.length, 1);
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: testData.ACCOUNT_2.accountId,
@@ -73,8 +71,6 @@ describe('HBAR Transfer Builder', () => {
 
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '0');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: testData.ACCOUNT_2.accountId,
@@ -89,8 +85,6 @@ describe('HBAR Transfer Builder', () => {
         builder.memo('This is an example');
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: testData.ACCOUNT_2.accountId,
@@ -108,8 +102,6 @@ describe('HBAR Transfer Builder', () => {
         builder.node({ nodeId: '0.0.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: testData.ACCOUNT_2.accountId,
@@ -141,7 +133,6 @@ describe('HBAR Transfer Builder', () => {
         builder.node({ nodeId: '5.2.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '3.4.567');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: '3.4.567',
@@ -162,7 +153,6 @@ describe('HBAR Transfer Builder', () => {
         builder.node({ nodeId: '2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '0.0.567');
         txJson.instructionsData.params.recipients.length.should.equal(1);
         txJson.instructionsData.params.recipients[0].should.deepEqual({
           address: '0.0.567',
@@ -290,7 +280,11 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with an invalid destination address', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
-        () => txBuilder.to('invalidaddress'),
+        () =>
+          txBuilder.send({
+            address: 'invalidaddress',
+            amount: '10000',
+          }),
         (e) => e.message === 'Invalid address'
       );
     });
@@ -298,7 +292,11 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with an invalid amount: text value', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
-        () => txBuilder.amount('invalidamount'),
+        () =>
+          txBuilder.send({
+            address: testData.ACCOUNT_2.accountId,
+            amount: 'invalidamount',
+          }),
         (e) => e.message === 'Invalid amount'
       );
     });
@@ -306,7 +304,11 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with an invalid amount: negative value', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
-        () => txBuilder.amount('-5'),
+        () =>
+          txBuilder.send({
+            address: testData.ACCOUNT_2.accountId,
+            amount: '-5',
+          }),
         (e) => e.message === 'Invalid amount'
       );
     });
@@ -320,22 +322,6 @@ describe('HBAR Transfer Builder', () => {
           ),
         (e) => e.message === 'Memo must not be longer than 100 bytes'
       );
-    });
-
-    it('a transfer transaction without destination param', async () => {
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.fee({ fee: '1000000000' });
-      txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-      txBuilder.amount('10');
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing recipients');
-    });
-
-    it('a transfer transaction without amount', async () => {
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.fee({ fee: '1000000000' });
-      txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-      txBuilder.to(testData.ACCOUNT_2.accountId);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing recipients');
     });
 
     it('a transfer transaction with invalid start time', () => {

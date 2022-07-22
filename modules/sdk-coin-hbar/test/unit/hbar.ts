@@ -246,8 +246,10 @@ describe('Hedera Hashgraph:', function () {
         fee: '100000',
       });
       txBuilder.source({ address: source });
-      txBuilder.to(destination);
-      txBuilder.amount(amount);
+      txBuilder.send({
+        address: destination,
+        amount,
+      });
 
       return await txBuilder.build();
     };
@@ -275,9 +277,11 @@ describe('Hedera Hashgraph:', function () {
       const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
-      txJson.to.should.equal(destination);
       txJson.from.should.equal(source);
-      txJson.amount.should.equal(amount);
+      txJson.instructionsData.params.recipients[0].should.deepEqual({
+        address: destination,
+        amount,
+      });
       signedTx.signature.length.should.equal(1);
     });
   });
