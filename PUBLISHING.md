@@ -9,7 +9,7 @@ Starting from the master branch in the root of the repository, run the following
 
 ```sh
 $ git checkout -b rel/new-release-branch
-$ npx lerna version --sign-git-commit --sign-git-tag --preid rc --message “BRE-123: Update SDK modules for sprint ABC” preminor
+$ npx lerna version --sign-git-commit --sign-git-tag --preid rc --message "BRE-123: Update SDK modules for sprint ABC" preminor
 ```
 
 `Prepatch`, and `premajor` should be used instead of `preminor` in the above command when a patch version or major version should be bumped instead of the minor version.
@@ -34,4 +34,26 @@ $ docker build -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r '.version'
 
 ## Pushing the newly built container image
 
-TODO
+### Docker
+After you've logged in through `docker login`, run:
+
+```bash
+$ docker push bitgosdk/express:latest
+$ docker push bitgosdk/express:<tag>
+```
+
+Or if you are confident enough to push multiple at once, you can add the -a tag [available](https://docs.docker.com/engine/release-notes/#client-9) since `docker@20.10.0`:
+```
+$ docker push bitgosdk/express -a
+```
+
+### Podman
+Login through `podman` with:
+```bash
+$ podman login docker.io -u <username>            # will need to explicitly provide registry for podman@^4.1.1
+```
+
+And you can push to the registry desired:
+```bash
+$ podman push docker.io/bitgosdk/express          # you can verify it by running `podman search bitgo` in case of changes
+```
