@@ -46,4 +46,20 @@ describe('Shamir Secret Sharing tests', async function () {
     assert.throws(() => shamir.split(secret, 0, 1), /Threshold cannot be less than two/);
     assert.throws(() => shamir.split(secret, 4, 1), /Threshold cannot be greater than the total number of shares/);
   });
+
+  it('Should throw an exception if when supplied with an invalid indice', async () => {
+    const shamir = new ShamirSecret(curves[0]);
+    assert.throws(() => shamir.split(secret, 2, 3, [0]), /Invalid value supplied for indices/);
+  });
+
+  it('Should throw an exception if supplied with modularly non-unique shares', async () => {
+    const shamir = new ShamirSecret(curves[0]);
+    const splitUModified = {};
+    splitUModified['0'] = BigInt('0x1234');
+    splitUModified['7237005577332262213973186563042994240857116359379907606001950938285454250989'] = BigInt('0x1234');
+    assert.throws(
+      () => shamir.combine(splitUModified),
+      /Error: Failed to combine Shamir shares , Error: invalid reciprocate/,
+    );
+  });
 });
