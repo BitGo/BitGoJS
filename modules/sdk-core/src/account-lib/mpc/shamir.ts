@@ -23,7 +23,12 @@ export default class Shamir {
   split(secret: bigint, threshold: number, numShares: number, indices?: Array<number>): Record<number, bigint> {
     let bigIndices: Array<bigint>;
     if (indices) {
-      bigIndices = indices.map((i) => BigInt(i));
+      bigIndices = indices.map((i) => {
+        if (i < 1) {
+          throw new Error('Invalid value supplied for indices');
+        }
+        return BigInt(i);
+      });
     } else {
       // make range(1, n + 1)
       bigIndices = Array(numShares)
@@ -67,30 +72,34 @@ export default class Shamir {
    * @returns secret
    */
   combine(shares: Record<number, bigint>): bigint {
-    let s = BigInt(0);
-    for (const i in shares) {
-      const yi = shares[i];
-      const xi = BigInt(i);
-      let num = BigInt(1);
-      let denum = BigInt(1);
+    try {
+      let s = BigInt(0);
+      for (const i in shares) {
+        const yi = shares[i];
+        const xi = BigInt(i);
+        let num = BigInt(1);
+        let denum = BigInt(1);
 
-      for (const j in shares) {
-        const xj = BigInt(j);
-        if (xi !== xj) {
-          num = this.curve.scalarMult(num, xj);
+        for (const j in shares) {
+          const xj = BigInt(j);
+          if (xi !== xj) {
+            num = this.curve.scalarMult(num, xj);
+          }
         }
-      }
-      for (const j in shares) {
-        const xj = BigInt(j);
-        if (xi !== xj) {
-          denum = this.curve.scalarMult(denum, this.curve.scalarSub(xj, xi));
+        for (const j in shares) {
+          const xj = BigInt(j);
+          if (xi !== xj) {
+            denum = this.curve.scalarMult(denum, this.curve.scalarSub(xj, xi));
+          }
         }
+        const inverted = this.curve.scalarInvert(denum);
+        const innerMultiplied = this.curve.scalarMult(num, inverted);
+        const multiplied = this.curve.scalarMult(innerMultiplied, yi);
+        s = this.curve.scalarAdd(multiplied, s);
       }
-      const inverted = this.curve.scalarInvert(denum);
-      const innerMultiplied = this.curve.scalarMult(num, inverted);
-      const multiplied = this.curve.scalarMult(innerMultiplied, yi);
-      s = this.curve.scalarAdd(multiplied, s);
+      return s;
+    } catch (error) {
+      throw new Error('Failed to combine Shamir shares , ' + error);
     }
-    return s;
   }
 }
