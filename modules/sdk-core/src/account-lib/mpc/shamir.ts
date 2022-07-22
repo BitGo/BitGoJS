@@ -1,7 +1,7 @@
 const assert = require('assert');
 const crypto = require('crypto');
 import Curve from './curves';
-import { bigIntFromBufferLE, bigIntToBufferLE, clamp } from './util';
+import { bigIntFromBufferLE, bigIntToBufferLE } from './util';
 
 export default class Shamir {
   curve: Curve;
@@ -35,8 +35,8 @@ export default class Shamir {
     assert(threshold <= numShares);
     const coefs: bigint[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
-      const coeff = clamp(
-        bigIntFromBufferLE(crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest())
+      const coeff = bigIntFromBufferLE(
+        crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest()
       );
       coefs.push(coeff);
     }
