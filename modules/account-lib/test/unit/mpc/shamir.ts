@@ -43,12 +43,7 @@ describe('Shamir Secret Sharing tests', async function () {
 
   it('Should throw exception for invalid threshold', async () => {
     const shamir = new ShamirSecret(curves[0]);
-    assert.throws(() => {
-      shamir.split(secret, 0, 1);
-    });
-
-    assert.throws(() => {
-      shamir.split(secret, 4, 1);
-    });
+    assert.throws(() => shamir.split(secret, 0, 1), /Threshold cannot be less than two/);
+    assert.throws(() => shamir.split(secret, 4, 1), /Threshold cannot be greater than the total number of shares/);
   });
 });

@@ -1,4 +1,3 @@
-const assert = require('assert');
 const crypto = require('crypto');
 import Curve from './curves';
 import { bigIntFromBufferLE, bigIntToBufferLE } from './util';
@@ -31,8 +30,14 @@ export default class Shamir {
         .fill(null)
         .map((_, i) => BigInt(i + 1));
     }
-    assert(threshold > 1);
-    assert(threshold <= numShares);
+    if (threshold < 2) {
+      throw new Error('Threshold cannot be less than two');
+    }
+
+    if (threshold > numShares) {
+      throw new Error('Threshold cannot be greater than the total number of shares');
+    }
+
     const coefs: bigint[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
       const coeff = bigIntFromBufferLE(
