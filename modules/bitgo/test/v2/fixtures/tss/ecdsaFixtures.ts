@@ -320,6 +320,7 @@ export const mockSShare = {
 };
 
 export const mockSignature = {
+  i: 1,
   y: '0362c0f94da66b5cb2880d1bd8c0c407cfa417be23cfc29d3d02aec83a70f6d8ab',
   r: '181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
   s: '4ffc4eb69700daa897662db238e06a856c697807ab22a3824ad472eb59e7d86f',
