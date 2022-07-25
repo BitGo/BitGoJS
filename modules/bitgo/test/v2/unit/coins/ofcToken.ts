@@ -156,6 +156,27 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for Near network', function () {
+    describe('for main network', function () {
+      const coin = 'ofcnear';
+      it(`should have the correct values for ${coin}`, function () {
+        const ofcCoin = bitgo.coin(coin);
+        ofcCoin.getChain().should.equal(coin);
+        ofcCoin.getFullName().should.equal('Near');
+        ofcCoin.getBaseFactor().should.equal('1e+24');
+      });
+    });
+    describe('for test network', function () {
+      const coin = 'ofctnear';
+      it(`should have the correct values for ${coin}`, function () {
+        const ofcCoin = bitgo.coin(coin);
+        ofcCoin.getChain().should.equal(coin);
+        ofcCoin.getFullName().should.equal('Test Near');
+        ofcCoin.getBaseFactor().should.equal('1e+24');
+      });
+    });
+  });
+
   describe('check ofc tokens for Stacks network', function () {
     const coinMain = 'ofcstx';
     const coinTest = 'ofctstx';
