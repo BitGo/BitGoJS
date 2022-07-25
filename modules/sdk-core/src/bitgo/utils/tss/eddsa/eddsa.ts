@@ -18,7 +18,7 @@ import {
   sendUserToBitgoGShare,
   SigningMaterial,
 } from '../../../tss';
-import { PrebuildTransactionWithIntentOptions, TxRequest } from '../baseTypes';
+import { TxRequest } from '../baseTypes';
 import { KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -328,47 +328,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare);
 
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
-  }
-
-  /**
-   * Builds a tx request from params and verify it
-   *
-   * @param {PrebuildTransactionWithIntentOptions} params - parameters to build the tx
-   * @param apiVersion lite or full
-   * @param preview boolean indicating if this is to preview a tx request, which will not initiate policy checks or pending approvals
-   * @returns {Promise<TxRequest>} - a built tx request
-   */
-  async prebuildTxWithIntent(
-    params: PrebuildTransactionWithIntentOptions,
-    apiVersion = 'lite',
-    preview?: boolean
-  ): Promise<TxRequest> {
-    const chain = this.baseCoin.getChain();
-    const intentRecipients = params.recipients.map((recipient) => ({
-      address: { address: recipient.address },
-      amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
-    }));
-
-    const whitelistedParams = {
-      intent: {
-        intentType: params.intentType,
-        sequenceId: params.sequenceId,
-        comment: params.comment,
-        recipients: intentRecipients,
-        memo: params.memo?.value,
-        nonce: params.nonce,
-        token: params.tokenName,
-      },
-      apiVersion: apiVersion,
-      preview,
-    };
-
-    const unsignedTx = (await this.bitgo
-      .post(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
-      .send(whitelistedParams)
-      .result()) as TxRequest;
-
-    return unsignedTx;
   }
 
   /**

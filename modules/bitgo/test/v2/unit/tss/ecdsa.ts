@@ -2,11 +2,18 @@ import {
   readSignedMessage,
   Ecdsa,
   ECDSA,
+  ECDSAMethodTypes,
+  Wallet,
+  SignatureShareRecord,
+  getTxRequest,
   ECDSAMethods,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
-import { keyShares } from '../../fixtures/tss/ecdsaKeyShares';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
+import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
+import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShare, mockSignature, mockDShareToBitgo } from '../../fixtures/tss/ecdsaFixtures';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -16,16 +23,16 @@ type GpgKeypair = {
   privateKey: string
 };
 
-describe('test tss helper functions', function () {
+describe('Ecdsa tss helper functions tests', function () {
   let mpc: Ecdsa;
 
   let userKeyShare: KeyShare;
   let backupKeyShare: KeyShare;
   let bitgoKeyShare: KeyShare;
 
-  let userKey;
-  let backupKey;
-  let bitgoKey;
+  let userKey: ECDSA.KeyCombined;
+  let backupKey: ECDSA.KeyCombined;
+  let bitgoKey: ECDSA.KeyCombined;
 
   let userGpgKeypair: GpgKeypair;
   let backupGpgKeypair: GpgKeypair;
@@ -81,8 +88,8 @@ describe('test tss helper functions', function () {
 
     it('should error for invalid recipient', async function () {
       await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey ).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey ).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
     });
   });
 
@@ -211,4 +218,168 @@ describe('test tss helper functions', function () {
       ).should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
   });
+
+
+  describe('tss signing helper function', async function () {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo.initializeTestVars();
+
+    let wallet: Wallet;
+    const txRequest = {
+      txRequestId: 'randomId',
+      unsignedTxs: [{ signableHex: 'TOO MANY SECRETS', serializedTxHex: 'randomhex2' }],
+      signatureShares: [
+        {
+          from: 'bitgo',
+          to: 'user',
+          share: '',
+        }],
+    };
+    const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
+
+    before('initializes', async function () {
+
+      const baseCoin = bitgo.coin('gteth');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'gteth',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {},
+      };
+      wallet = new Wallet(bitgo, baseCoin, walletData);
+    });
+
+    describe('createUserSignShare:', async function () {
+      it('should succeed to create User SignShare', async function () {
+        const userSignShare = await ECDSAMethods.createUserSignShare(userKey.xShare, userKey.yShares[3]);
+        userSignShare.should.have.properties(['wShare', 'kShare']);
+        const { wShare, kShare } = userSignShare;
+        wShare.should.have.property('gamma').and.be.a.String();
+        wShare.should.have.property('w').and.be.a.String();
+        wShare.should.have.property('k').and.be.a.String();
+        kShare['i'].should.equal(3);
+        kShare['j'].should.equal(1);
+        kShare.should.have.property('n').and.be.a.String();
+        kShare.should.have.property('k').and.be.a.String();
+      });
+
+      it('should fail if the Xshare doesnt belong to the User', async function () {
+        const invalidUserSigningMaterial = { ...userKey, xShare: { ...userKey.xShare, i: 3 } };
+        await ECDSAMethods.createUserSignShare(invalidUserSigningMaterial.xShare, invalidUserSigningMaterial.yShares[3]).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
+      });
+    });
+
+    describe('createUserGammaAndMuShare:', async function () {
+      it('should succeed to create User Gamma Share and MuShare', async function () {
+        const userShare = await ECDSAMethods.createUserGammaAndMuShare(gammaAndMuShareCreationParams.wShare, gammaAndMuShareCreationParams.aShare);
+        userShare.should.have.properties(['muShare', 'gShare']);
+        const { muShare, gShare } = userShare;
+        muShare?.i?.should.equal(3);
+        muShare?.j?.should.equal(1);
+        muShare?.should.have.property('alpha').and.be.a.String();
+        muShare?.should.have.property('mu').and.be.a.String();
+        gShare?.should.have.property('beta').and.be.a.String();
+        gShare?.should.have.property('nu').and.be.a.String();
+      });
+
+      it('should fail if the Wshare / AShare doesnt belong to the User', async function () {
+        const invalidWShare = { ...gammaAndMuShareCreationParams.wShare, i: 3 };
+        const invalidAShare = { ...gammaAndMuShareCreationParams.aShare, i: 3 };
+        await ECDSAMethods.createUserGammaAndMuShare(invalidWShare, gammaAndMuShareCreationParams.aShare).should.be.rejectedWith(`Invalid WShare, doesn't belong to the User`);
+        await ECDSAMethods.createUserGammaAndMuShare(gammaAndMuShareCreationParams.wShare, invalidAShare).should.be.rejectedWith(`Invalid AShare, is not from Bitgo to User`);
+      });
+    });
+
+    describe('createUserOmicronAndDeltaShare:', async function () {
+      it('should succeed to create User Omicron and Mu Shares', async function () {
+        const userShare = await ECDSAMethods.createUserOmicronAndDeltaShare(omicronAndDeltaShareCreationParams.gShare);
+        userShare.should.have.properties(['dShare', 'oShare']);
+        const { dShare, oShare } = userShare;
+       
+        dShare?.i?.should.equal(3);
+        dShare?.j?.should.equal(1);
+        dShare?.should.have.property('delta').and.be.a.String();
+        dShare?.should.have.property('Gamma').and.be.a.String();
+        oShare?.should.have.property('omicron').and.be.a.String();
+        oShare?.should.have.property('delta').and.be.a.String();
+      });
+
+      it(`should fail if the gShare doesn't belong to the User`, async function () {
+        const invalidGShare = { ...omicronAndDeltaShareCreationParams.gShare, i: 3 };
+        await ECDSAMethods.createUserOmicronAndDeltaShare(invalidGShare).should.be.rejectedWith(`Invalid GShare, doesn't belong to the User`);
+      });
+    });
+
+    describe('createUserSignatureShare:', async function () {
+      it('should succeed to create User Signature Share', async function () {
+        const userSignatureShare = await ECDSAMethods.createUserSignatureShare(createUserSignatureParams.oShare, createUserSignatureParams.dShare, signablePayload);
+        const { r, s, y, i } = userSignatureShare;
+        i.should.be.Number();
+        r.should.be.a.String();
+        s.should.be.a.String();
+        y.should.be.a.String();
+      });
+
+      it(`should fail if the OShare / dShare doesn't belong to the User`, async function () {
+        const invalidOShare = { ...createUserSignatureParams.oShare, i: 3 };
+        await ECDSAMethods.createUserSignatureShare(invalidOShare, createUserSignatureParams.dShare, signablePayload).should.be.rejectedWith(`Invalid OShare, doesn't belong to the User`);
+        const invalidDShare = { ...createUserSignatureParams.dShare, i: 3 };
+        await ECDSAMethods.createUserSignatureShare(createUserSignatureParams.oShare, invalidDShare, signablePayload).should.be.rejectedWith(`Invalid DShare, doesn't seem to be from BitGo`);
+      });
+    });
+
+    describe('sendSignatureShare Tests', async function () {
+      const mockAShareString = mockAShare.k + mockAShare.alpha + mockAShare.mu + mockAShare.n;
+      const mockDShareString = mockDShare.delta + mockDShare.Gamma;
+      const mockSignatureShareString = mockSignature.r + mockSignature.s + mockSignature.y;
+      const config = [
+        { shareToSend: 'KShare', mockShareToSend: mockSignRT.kShare, mockShareToSendString: mockSignRT.kShare.k + mockSignRT.kShare.n, sendType: ECDSAMethodTypes.SendShareType.KShare, mockShareAsResponse: mockAShare, mockShareAsResponseString: mockAShareString, shareReceived: 'AShare', incorrectReceivedShareString: mockAShareString.substring(4700) },
+        { shareToSend: 'MUShare', mockShareToSend: mockMuShare, mockShareToSendString: mockMuShare.alpha + mockMuShare.mu, sendType: ECDSAMethodTypes.SendShareType.MUShare, mockShareAsResponse: mockDShare, mockShareAsResponseString: mockDShareString, shareReceived: 'DShare', incorrectReceivedShareString: mockDShareString.substring(4) },
+        { shareToSend: 'SShare', mockShareToSend: mockSShare, optionalDShare: mockDShareToBitgo, mockShareToSendString: mockSShare.r + mockSShare.s + mockSShare.y + mockDShareToBitgo.delta + mockDShareToBitgo.Gamma, sendType: ECDSAMethodTypes.SendShareType.SShare, mockShareAsResponse: mockSignature, mockShareAsResponseString: mockSignatureShareString, shareReceived: 'Signature', incorrectReceivedShareString: mockSignatureShareString.substring(4) },
+      ];
+
+      for (let index = 0; index < config.length; index++) {
+        describe(`sendSignatureShare: ${config[index].shareToSend}`, async function () {
+          it(`should succeed to send ${config[index].shareToSend}`, async function () {
+            const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
+            const response = { from: 'bitgo', to: 'user', share: config[index].mockShareAsResponseString } as SignatureShareRecord;
+            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response });
+            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare);
+            responseAShare.should.deepEqual(config[index].mockShareAsResponse);
+          });
+
+          it(`should fail if we get an invalid ${config[index].shareReceived} as response`, async function () {
+            const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
+            const invalidSignatureShare = { from: 'bitgo', to: 'user', share: JSON.stringify(config[index].incorrectReceivedShareString) } as SignatureShareRecord;
+            const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare }, 200);
+            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare).should.be.rejectedWith(`Invalid ${config[index].shareReceived} from Bitgo`);
+            nock.isDone().should.equal(true);
+          });
+        });
+      }
+    });
+
+
+    describe('getTxRequest:', async function () {
+      it('should succeed to get txRequest by id', async function () {
+        const response = { txRequests: [txRequest] };
+        const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+        const txReq = await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId);
+        txReq.should.deepEqual(txRequest);
+        nock.isDone().should.equal(true);
+      });
+
+      it('should fail if there are no txRequests', async function () {
+        const response = { txRequests: [] };
+        const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+        await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith('Unable to find TxRequest with id randomId');
+        nock.isDone().should.equal(true);
+      });
+    });
+  });
+
 });

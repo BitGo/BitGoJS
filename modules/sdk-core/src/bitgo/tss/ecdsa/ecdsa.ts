@@ -1,9 +1,32 @@
-import { ECDSA, Ecdsa } from './../../../account-lib/mpc/tss';
-import { DecryptableNShare, CombinedKey, SigningMaterial, EncryptedNShare } from './types';
-import { encryptAndSignText, readSignedMessage } from './../../utils';
+import { Ecdsa } from './../../../account-lib/mpc/tss';
+import {
+  DecryptableNShare,
+  CombinedKey,
+  SigningMaterial,
+  EncryptedNShare,
+  AShare,
+  CreateUserGammaAndMuShareRT,
+  CreateUserOmicronAndDeltaShareRT,
+  DShare,
+  GShare,
+  KeyShare,
+  NShare,
+  OShare,
+  SendShareType,
+  SignatureShare,
+  SignShare,
+  WShare,
+  XShare,
+  YShare,
+  SendShareToBitgoRT,
+} from './types';
+import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType } from './../../utils';
+import { ShareKeyPosition } from '../types';
+import { BitGoBase } from '../../bitgoBase';
+import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
+import { sendSignatureShare } from '../common';
 
-type NShare = ECDSA.NShare;
-type KeyShare = ECDSA.KeyShare;
+const MPC = new Ecdsa();
 
 /**
  * Combines NShares to combine the final TSS key
@@ -19,8 +42,6 @@ export async function createCombinedKey(
   encryptedNShares: DecryptableNShare[],
   commonKeychain: string
 ): Promise<CombinedKey> {
-  const MPC = new Ecdsa();
-
   const nShares: NShare[] = [];
 
   let bitgoNShare: NShare | undefined;
@@ -80,6 +101,165 @@ export async function createCombinedKey(
     signingMaterial,
     commonKeychain,
   };
+}
+
+/**
+ * Creates the SignShare with User XShare and YShare Corresponding to BitGo
+ * @param {XShare} xShare User secret xShare
+ * @param {YShare} yShare YShare from Bitgo
+ * @returns {Promise<SignShare>}
+ */
+export async function createUserSignShare(xShare: XShare, yShare: YShare): Promise<SignShare> {
+  if (xShare.i !== ShareKeyPosition.USER) {
+    throw new Error(`Invalid XShare, XShare doesn't belong to the User`);
+  }
+
+  if (yShare.i !== ShareKeyPosition.USER || yShare.j !== ShareKeyPosition.BITGO) {
+    throw new Error('Invalid YShare provided for sign');
+  }
+  return MPC.signShare(xShare, yShare);
+}
+
+/**
+ * Creates the Gamma Share and MuShare with User WShare and AShare From BitGo
+ * @param {WShare} wShare User WShare
+ * @param {AShare} aShare AShare from Bitgo
+ * @returns {Promise<CreateUserGammaAndMuShareRT>}
+ */
+export async function createUserGammaAndMuShare(wShare: WShare, aShare: AShare): Promise<CreateUserGammaAndMuShareRT> {
+  if (wShare.i !== ShareKeyPosition.USER) {
+    throw new Error(`Invalid WShare, doesn't belong to the User`);
+  }
+  if (aShare.i !== ShareKeyPosition.USER || aShare.j !== ShareKeyPosition.BITGO) {
+    throw new Error('Invalid AShare, is not from Bitgo to User');
+  }
+
+  return MPC.signConvert({ wShare, aShare });
+}
+
+/**
+ * Creates the Omicron Share and Delta share with user GShare
+ * @param {GShare} gShare User GShare
+ * @returns {Promise<CreateUserOmicronAndDeltaShareRT>}
+ */
+export async function createUserOmicronAndDeltaShare(gShare: GShare): Promise<CreateUserOmicronAndDeltaShareRT> {
+  if (gShare.i !== ShareKeyPosition.USER) {
+    throw new Error(`Invalid GShare, doesn't belong to the User`);
+  }
+  return MPC.signCombine({
+    gShare: gShare,
+    signIndex: {
+      i: ShareKeyPosition.BITGO,
+      j: gShare.i,
+    },
+  });
+}
+
+/**
+ * Creates the Signature Share with User OShare and DShare From BitGo
+ * @param {OShare} oShare User OShare
+ * @param {DShare} dShare DShare from bitgo
+ * @param {Buffer} message message to perform sign
+ * @returns {Promise<createUserSignShareRT>}
+ */
+export async function createUserSignatureShare(
+  oShare: OShare,
+  dShare: DShare,
+  message: Buffer
+): Promise<SignatureShare> {
+  if (oShare.i !== ShareKeyPosition.USER) {
+    throw new Error(`Invalid OShare, doesn't belong to the User`);
+  }
+
+  if (dShare.i !== ShareKeyPosition.USER || dShare.j !== ShareKeyPosition.BITGO) {
+    throw new Error(`Invalid DShare, doesn't seem to be from BitGo`);
+  }
+  return MPC.sign(message, oShare, dShare);
+}
+
+/**
+ * Sends Share To Bitgo
+ * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {String} walletId - the wallet id  *
+ * @param {String} txRequestId - the txRequest Id
+ * @param {SignatureShareRecord} signatureShare - a Signature Share
+ * @returns {Promise<SignatureShareRecord>} - a Signature Share
+ */
+export async function sendShareToBitgo(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  shareType: SendShareType,
+  share: SShare | MUShare | KShare,
+  dShare?: DShare
+): Promise<SendShareToBitgoRT> {
+  if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
+    throw new Error('Invalid Share, is not from User to Bitgo');
+  }
+  const signatureShare: SignatureShareRecord = {
+    from: SignatureShareType.USER,
+    to: SignatureShareType.BITGO,
+    share: '',
+  };
+
+  let responseFromBitgo: SendShareToBitgoRT;
+
+  switch (shareType) {
+    case SendShareType.KShare:
+      const kShare = share as KShare;
+      signatureShare.share = kShare.k + kShare.n;
+      const AShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      if (AShareRecord.share.length < 4608) {
+        throw new Error('Invalid AShare from Bitgo');
+      }
+      responseFromBitgo = {
+        i: kShare.j,
+        j: 3,
+        k: AShareRecord.share.substring(0, 1536),
+        alpha: AShareRecord.share.substring(1536, 3072),
+        mu: AShareRecord.share.substring(3072, 4608),
+        n: AShareRecord.share.substring(4608),
+      };
+      break;
+    case SendShareType.MUShare:
+      const muShare = share as MUShare;
+      signatureShare.share = muShare.alpha + muShare.mu;
+      const dShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      if (dShareRecord.share.length !== 130) {
+        throw new Error('Invalid DShare from Bitgo');
+      }
+      responseFromBitgo = {
+        i: muShare.j,
+        j: 3,
+        delta: dShareRecord.share.substring(0, 64),
+        Gamma: dShareRecord.share.substring(64, 130),
+      };
+      break;
+    case SendShareType.SShare:
+      if (!dShare) {
+        throw new Error('DShare not provided');
+      }
+      if (dShare.i !== ShareKeyPosition.BITGO || dShare.j !== ShareKeyPosition.USER) {
+        throw new Error('Invalid DShare provided');
+      }
+      const sShare = share as SShare;
+      signatureShare.share = sShare.r + sShare.s + sShare.y + dShare.delta + dShare.Gamma;
+      const signatureRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+
+      if (signatureRecord.share.length !== 194) {
+        throw new Error('Invalid Signature from Bitgo');
+      }
+      responseFromBitgo = {
+        r: signatureRecord.share.substring(0, 64),
+        s: signatureRecord.share.substring(64, 128),
+        y: signatureRecord.share.substring(128, 194),
+      };
+      break;
+    default:
+      throw 'Invalid Share given to send';
+  }
+
+  return responseFromBitgo;
 }
 
 /**

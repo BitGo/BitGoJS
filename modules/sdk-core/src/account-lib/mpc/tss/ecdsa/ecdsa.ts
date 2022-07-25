@@ -265,7 +265,7 @@ export default class Ecdsa {
    * @returns {SignCombineRT}
    */
   signCombine(shares: SignCombine): SignCombineRT {
-    const gShare = shares.gShares;
+    const gShare = shares.gShare;
     const S = shares.signIndex;
     const gamma = hexToBigInt(gShare.gamma);
     const alpha = hexToBigInt(gShare.alpha);
@@ -286,13 +286,13 @@ export default class Ecdsa {
         k: bigIntToBufferBE(k, 32).toString('hex'),
         omicron: bigIntToBufferBE(omicron, 32).toString('hex'),
         delta: bigIntToBufferBE(delta, 32).toString('hex'),
-        Gamma: bigIntToBufferBE(Gamma, 32).toString('hex'),
+        Gamma: bigIntToBufferBE(Gamma, 33).toString('hex'),
       },
       dShare: {
         i: S.i,
         j: gShare.i,
         delta: bigIntToBufferBE(delta, 32).toString('hex'),
-        Gamma: bigIntToBufferBE(Gamma, 32).toString('hex'),
+        Gamma: bigIntToBufferBE(Gamma, 33).toString('hex'),
       },
     };
   }
