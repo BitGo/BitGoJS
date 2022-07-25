@@ -5,6 +5,8 @@ import { randomBytes } from 'crypto';
 import * as should from 'should';
 import { Hbar, Thbar, KeyPair } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
+import { Wallet } from '@bitgo/sdk-core';
+import * as _ from 'lodash';
 
 describe('Hedera Hashgraph:', function () {
   let bitgo: TestBitGoAPI;
@@ -212,6 +214,219 @@ describe('Hedera Hashgraph:', function () {
       seed.should.equal(
         '302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055'
       );
+    });
+  });
+
+  describe('Verify Transaction:', () => {
+    let newTxPrebuild;
+    let newTxParams;
+    let newTxParamsWithError;
+    let newTxParamsWithExtraData;
+    const txPrebuild = {
+      recipients: [
+        {
+          address: 'lionteste212',
+          amount: '1000',
+        },
+      ],
+      txHex: TestData.UNSIGNED_MULTI_TRANSFER,
+      txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+      isVotingTransaction: false,
+      coin: 'thbar',
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    };
+    const txParams = {
+      txPrebuild,
+      recipients: [
+        {
+          address: '0.0.75861',
+          amount: '10',
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+        },
+      ],
+    };
+    const memo = { value: '' };
+    const txParamsWithError = {
+      txPrebuild,
+      recipients: [
+        {
+          address: '0.0.75861',
+          amount: '1000',
+        },
+      ],
+    };
+    const txParamsWithExtraData = {
+      txPrebuild,
+      recipients: [
+        {
+          address: '0.0.75861',
+          amount: '10',
+          data: undefined,
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+          data: undefined,
+        },
+      ],
+    };
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000000',
+      coin: 'thbar',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {
+        baseAddress: '0.0.2935',
+      },
+      multisigType: 'onchain',
+    };
+    const walletObj = new Wallet(bitgo, basecoin, walletData);
+
+    before(function () {
+      newTxPrebuild = () => {
+        return _.cloneDeep(txPrebuild);
+      };
+      newTxParams = () => {
+        return _.cloneDeep(txParams);
+      };
+      newTxParamsWithError = () => {
+        return _.cloneDeep(txParamsWithError);
+      };
+      newTxParamsWithExtraData = () => {
+        return _.cloneDeep(txParamsWithExtraData);
+      };
+    });
+
+    it('should verify native transfer transactions', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify when input `recipients` is absent', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo: memo, wallet: walletObj } as any)
+        .should.be.rejectedWith('missing required tx params property recipients');
+    });
+
+    it('should fail verify transactions when have different recipients', async function () {
+      const txParams = newTxParamsWithError();
+      const txPrebuild = newTxPrebuild();
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transactions when recipients has extra data', async function () {
+      const txParams = newTxParamsWithExtraData();
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify create associated token account transaction', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.recipients = [
+        {
+          address: '0.0.81320',
+          amount: '0',
+          tokenName: 'thbar:usdc',
+        },
+      ];
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify create associated token account transaction with mismatch recipients', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.recipients = [
+        {
+          address: '0.0.81321',
+          amount: '0',
+          tokenName: 'thbar:usdc',
+        },
+      ];
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should verify token transfer transaction', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_MULTI_TRANSFER;
+      txParams.recipients = [
+        {
+          address: '0.0.75861',
+          amount: '10',
+          tokenName: 'thbar:usdc',
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+          tokenName: 'thbar:usdc',
+        },
+      ];
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify token transfer transaction with mismatch recipients', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_MULTI_TRANSFER;
+      txParams.recipients = [
+        {
+          address: '0.0.75861',
+          amount: '10',
+          tokenName: 'thbar:usdc',
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+        },
+      ];
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
   });
 

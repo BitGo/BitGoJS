@@ -17,12 +17,15 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
+  Memo,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from './seedValidator';
-import { KeyPair as HbarKeyPair, TransactionBuilderFactory } from './lib';
+import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction } from './lib';
 import * as Utils from './lib/utils';
+import * as _ from 'lodash';
+
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -52,6 +55,11 @@ export interface ExplainTransactionOptions {
     type: string;
     value: string;
   };
+}
+
+export interface HbarVerifyTransactionOptions extends VerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  memo?: Memo;
 }
 
 interface VerifyAddressOptions extends BaseVerifyAddressOptions {
@@ -147,7 +155,66 @@ export class Hbar extends BaseCoin {
     return Utils.isSameBaseAddress(address, baseAddress);
   }
 
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+  async verifyTransaction(params: HbarVerifyTransactionOptions): Promise<boolean> {
+    // asset name to transfer amount map
+    const totalAmount: Record<string, BigNumber> = {};
+    const coinConfig = coins.get(this.getChain());
+    const { txParams: txParams, txPrebuild: txPrebuild, memo: memo } = params;
+    const transaction = new Transaction(coinConfig);
+    if (!txPrebuild.txHex) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    transaction.fromRawTransaction(txPrebuild.txHex);
+    const explainTxParams: ExplainTransactionOptions = {
+      txHex: txPrebuild.txHex,
+      feeInfo: txPrebuild.feeInfo,
+      memo: memo,
+    };
+    const explainedTx = await this.explainTransaction(explainTxParams);
+
+    if (!txParams.recipients) {
+      throw new Error('missing required tx params property recipients');
+    }
+
+    // for enabletoken, recipient output amount is 0
+    txParams.recipients = txParams.recipients.map((recipient) => ({
+      ...recipient,
+      amount: txParams.type === 'enabletoken' ? '0' : recipient.amount,
+    }));
+
+    // verify recipients from params and explainedTx
+    const filteredRecipients = txParams.recipients?.map((recipient) =>
+      _.pick(recipient, ['address', 'amount', 'tokenName'])
+    );
+    const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
+
+    if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+      throw new Error('Tx outputs does not match with expected txParams recipients');
+    }
+
+    // verify total output amount from params and explainedTx
+    for (const recipients of txParams.recipients) {
+      // totalAmount based on each token
+      const assetName = recipients.tokenName || this.getChain();
+      const amount = totalAmount[assetName] || new BigNumber(0);
+      totalAmount[assetName] = amount.plus(recipients.amount);
+    }
+
+    // total output amount from explainedTx
+    const explainedTxTotal: Record<string, BigNumber> = {};
+
+    for (const output of explainedTx.outputs) {
+      // total output amount based on each token
+      const assetName = output.tokenName || this.getChain();
+      const amount = explainedTxTotal[assetName] || new BigNumber(0);
+      explainedTxTotal[assetName] = amount.plus(output.amount);
+    }
+
+    if (!_.isEqual(explainedTxTotal, totalAmount)) {
+      throw new Error('Tx total amount does not match with expected total amount field');
+    }
+
     return true;
   }
 
