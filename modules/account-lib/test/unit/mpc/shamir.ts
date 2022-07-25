@@ -1,9 +1,43 @@
 import { Ed25519Curve, ShamirSecret, Secp256k1Curve } from '@bitgo/sdk-core';
 import { strict as assert } from 'assert';
 
+type tssCurves = Array<Ed25519Curve | Secp256k1Curve>;
+
 const secret = BigInt(3012019);
 const secretString = secret.toString();
-let curves: Array<Ed25519Curve | Secp256k1Curve>;
+let curves: tssCurves;
+
+/**
+ * Shamir Key Share generation test
+ * @param {bigint} salt
+ */
+async function shamirKeyshareTests(curves: tssCurves, salt?: bigint) {
+  for (let index = 0; index < curves.length; index++) {
+    const shamir = new ShamirSecret(curves[index]);
+    const shares = shamir.split(secret, 2, 3, undefined, salt);
+
+    const combineSecret12 = shamir.combine({
+      1: shares[1],
+      2: shares[2],
+    });
+
+    combineSecret12.toString().should.equal(secretString);
+
+    const combineSecret23 = shamir.combine({
+      2: shares[2],
+      3: shares[3],
+    });
+
+    combineSecret23.toString().should.equal(secretString);
+
+    const combineSecret13 = shamir.combine({
+      1: shares[1],
+      3: shares[3],
+    });
+
+    combineSecret13.toString().should.equal(secretString);
+  }
+}
 
 describe('Shamir Secret Sharing tests', async function () {
   before(async () => {
@@ -14,31 +48,11 @@ describe('Shamir Secret Sharing tests', async function () {
   });
 
   it('Should split secret and reconstruct properly', async () => {
-    for (let index = 0; index < curves.length; index++) {
-      const shamir = new ShamirSecret(curves[index]);
-      const shares = shamir.split(secret, 2, 3);
+    shamirKeyshareTests(curves);
+  });
 
-      const combineSecret12 = shamir.combine({
-        1: shares[1],
-        2: shares[2],
-      });
-
-      combineSecret12.toString().should.equal(secretString);
-
-      const combineSecret23 = shamir.combine({
-        2: shares[2],
-        3: shares[3],
-      });
-
-      combineSecret23.toString().should.equal(secretString);
-
-      const combineSecret13 = shamir.combine({
-        1: shares[1],
-        3: shares[3],
-      });
-
-      combineSecret13.toString().should.equal(secretString);
-    }
+  it('Should split secret and reconstruct properly with a custom salt', async () => {
+    shamirKeyshareTests(curves, BigInt(12345678));
   });
 
   it('Should throw exception for invalid threshold', async () => {

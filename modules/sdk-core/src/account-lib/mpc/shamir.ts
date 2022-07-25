@@ -16,11 +16,18 @@ export default class Shamir {
    * @param secret secret to split
    * @param threshold share threshold required to reconstruct secret
    * @param numShares total number of shares to split to split secret into
-   * @param indices
+   * @param indices optional indices which can be used while generating the shares
+   * @param salt optional salt which could be used while generating the shares
    * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares
    * representing that share's free term.
    */
-  split(secret: bigint, threshold: number, numShares: number, indices?: Array<number>): Record<number, bigint> {
+  split(
+    secret: bigint,
+    threshold: number,
+    numShares: number,
+    indices?: Array<number>,
+    salt = BigInt(0)
+  ): Record<number, bigint> {
     let bigIndices: Array<bigint>;
     if (indices) {
       bigIndices = indices.map((i) => {
