@@ -2,6 +2,7 @@ import { TxOutput } from 'bitcoinjs-lib';
 import { Network } from '..';
 import { toOutputScript } from '../address';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { toTNumber } from './tnumber';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -114,14 +115,25 @@ export function unspentSum<TNumber extends number | bigint>(
   unspents: Unspent<TNumber>[],
   sumType: 'inherit' | 'number' | 'bigint' = 'inherit'
 ): TNumber {
-  const total = unspents.reduce((sum, u) => sum + BigInt(u.value), BigInt(0));
-  if (sumType === 'bigint' || (unspents.length > 0 && typeof unspents[0].value === 'bigint' && sumType === 'inherit')) {
-    return total as TNumber;
-  } else {
-    const numTotal = Number(total);
-    if (!Number.isSafeInteger(numTotal)) {
-      throw new Error('unspent sum is not a safe integer');
-    }
-    return numTotal as TNumber;
+  if (unspents.length === 0 && sumType === 'inherit') {
+    throw new Error(`invalid sumType for empty unspents`);
   }
+
+  if (sumType === 'inherit') {
+    const t = typeof unspents[0].value;
+    if (t === 'number' || t === 'bigint') {
+      sumType = t;
+    } else {
+      throw new Error(`invalid unspent value type`);
+    }
+  }
+
+  const total = unspents.reduce((sum, u) => {
+    if (typeof u.value !== typeof unspents[0].value) {
+      throw new TypeError(`unspent values must be of same type`);
+    }
+    return sum + BigInt(u.value);
+  }, BigInt(0));
+
+  return toTNumber(total, sumType) as TNumber;
 }
