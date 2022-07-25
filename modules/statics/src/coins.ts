@@ -50,7 +50,8 @@ const SOL_FEATURES = [
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.SUPPORTS_TOKENS,
 ];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -93,9 +94,16 @@ export const coins = CoinMap.fromCoins([
   account('tdot', 'Testnet Polkadot', Networks.test.dot, 12, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
   account('aca', 'Acala', Networks.main.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
   account('taca', 'Mandala', Networks.test.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
-  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES_WITH_STAKING),
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
-  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.GTETH, ETH_FEATURES),
+  account(
+    'gteth',
+    'Goerli Testnet Ethereum',
+    Networks.test.goerli,
+    18,
+    UnderlyingAsset.GTETH,
+    ETH_FEATURES_WITH_STAKING
+  ),
   account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
   account(
     'teth2',
