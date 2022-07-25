@@ -14,8 +14,13 @@ import {
   ECDSA,
   ECDSAUtils,
   ECDSAMethods,
+  TxRequest,
+  SignatureShareType,
+  SignatureShareRecord,
+  RequestTracer,
 } from '@bitgo/sdk-core';
-import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaKeyShares';
+import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
+import { nockGetTxRequest, nockSendSignatureShareWithResponse } from './common';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
@@ -42,6 +47,7 @@ describe('TSS Ecdsa Utils:', async function () {
   let nockedUserKeychain: Keychain;
 
   const coinName = 'gteth';
+  const reqId = new RequestTracer;
 
   beforeEach(async function () {
     sandbox = sinon.createSandbox();
@@ -219,6 +225,230 @@ describe('TSS Ecdsa Utils:', async function () {
       await Promise.all(testCasesPromises);
     });
   });
+
+  describe('signTxRequest:', () => {
+    const txRequestId = 'randomidEcdsa';
+    const txRequest: TxRequest = {
+      txRequestId,
+      transactions: [],
+      unsignedTxs: [
+        {
+          serializedTxHex: 'TOO MANY SECRETS',
+          signableHex: 'TOO MANY SECRETS',
+          derivationPath: '', // Needs this when key derivation is supported
+        },
+      ],
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+      },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+    };
+
+    beforeEach(async () => {
+
+      // Initializing user and bitgo for creating shares for nocks
+      const userSigningKey = MPC.keyCombine(userKeyShare.pShare, [
+        bitgoKeyShare.nShares[1], backupKeyShare.nShares[1],
+      ]);
+      const bitgoSigningKey = MPC.keyCombine(bitgoKeyShare.pShare, [
+        userKeyShare.nShares[3], backupKeyShare.nShares[3],
+      ]);
+  
+      /**
+       * START STEP ONE
+       * 1) User creates signShare, saves wShare and sends kShare to bitgo
+       * 2) Bitgo performs signConvert operation using its private xShare , yShare
+       *  and KShare from user and responds back with aShare and saves bShare for later use
+       */
+      const userSignShare = await ECDSAMethods.createUserSignShare(userSigningKey.xShare, userSigningKey.yShares[3]);
+      const signatureShareOneFromUser: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: userSignShare.kShare.k + userSignShare.kShare.n,
+      };
+      const getBitgoAandBShare = MPC.signConvert({
+        kShare: userSignShare.kShare,
+        xShare: bitgoSigningKey.xShare,
+        yShare: bitgoSigningKey.yShares['1'], // corresponds to the user
+      });
+      const bitgoAshare = getBitgoAandBShare.aShare as ECDSA.AShare;
+      const aShareBitgoResponse = (bitgoAshare.k as string) + (bitgoAshare.alpha as string) + (bitgoAshare.mu as string) + (bitgoAshare.n as string);
+      const signatureShareOneFromBitgo: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: aShareBitgoResponse,
+      };
+      await nockSendSignatureShareWithResponse({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare: signatureShareOneFromUser,
+        response: signatureShareOneFromBitgo,
+      });
+      /**  END STEP ONE */
+
+        
+      /**
+       * START STEP TWO
+       * 1) Using the aShare got from bitgo and wShare from previous step,
+       * user creates gShare and muShare and sends muShare to bitgo
+       * 2) Bitgo using the signConvert step using bShare from previous step
+       * and muShare from user generates its gShare. 
+       * 3) Using the signCombine operation using gShare, Bitgo generates oShare 
+       * which it saves and dShare which is send back to the user.
+       */
+      const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoAshare);
+      const signatureShareTwoFromUser: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: (userGammaAndMuShares?.muShare?.alpha as string) + (userGammaAndMuShares?.muShare?.mu as string),
+      };
+      const getBitGoGShareAndSignerIndexes = MPC.signConvert({
+        bShare: getBitgoAandBShare.bShare,
+        muShare: userGammaAndMuShares.muShare,
+      });
+
+      const getBitgoOShareAndDShares = MPC.signCombine(
+        {
+          gShare: getBitGoGShareAndSignerIndexes.gShare as ECDSA.GShare,
+          signIndex: {
+            i: 1,
+            j: 3,
+          },
+        }
+      );
+      const bitgoDshare = getBitgoOShareAndDShares.dShare as ECDSA.DShare;
+      const dShareBitgoResponse = (bitgoDshare.delta as string) + (bitgoDshare.Gamma as string);
+      const signatureShareTwoFromBitgo: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: dShareBitgoResponse,
+      };
+      await nockSendSignatureShareWithResponse({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare: signatureShareTwoFromUser,
+        response: signatureShareTwoFromBitgo,
+      });
+      /**  END STEP TWO */
+
+
+      /**
+       * START STEP THREE
+       * 1) User creates its oShare and  dShare using the  private gShare
+       * from step two
+       * 2) User uses the private oShare and dShare from bitgo from step
+       * two to generate its signature share which it sends back along with dShare that
+       * user generated from the above step
+       * 3) Bitgo using its private oShare from step two and dShare from bitgo creates
+       * its signature share. Using the Signature Share received from user from the above
+       * step, bitgo constructs the final signature and is returned to the user
+       */
+      const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(userGammaAndMuShares.gShare as ECDSA.GShare);
+      const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
+      const userSShare = await ECDSAMethods.createUserSignatureShare(userOmicronAndDeltaShare.oShare, bitgoDshare, signablePayload);
+      const signatureShareThreeFromUser: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: userSShare.r + userSShare.s + userSShare.y + userOmicronAndDeltaShare.dShare.delta + userOmicronAndDeltaShare.dShare.Gamma,
+      };
+      const getBitGoSShare = MPC.sign(signablePayload, getBitgoOShareAndDShares.oShare, userOmicronAndDeltaShare.dShare);
+      const getBitGoFinalSignature = MPC.constructSignature([getBitGoSShare, userSShare]);
+      const finalSigantureBitgoResponse = getBitGoFinalSignature.r + getBitGoFinalSignature.s + getBitGoFinalSignature.y;
+      const signatureShareThreeFromBitgo: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: finalSigantureBitgoResponse,
+      };
+      await nockSendSignatureShareWithResponse({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare: signatureShareThreeFromUser,
+        response: signatureShareThreeFromBitgo,
+      });
+      /* END STEP THREE */
+
+      // We could possibly avoid this request, but left for consistency with EDDSA
+      const response = { txRequests: [{ ...txRequest }] };
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+
+    });
+
+    it('signTxRequest should succeed with txRequest object as input', async function () {
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+    });
+
+    it('signTxRequest should succeed with txRequest id as input', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith(txRequestId);
+
+      const signedTxRequest = await tssUtils.signTxRequest({
+        txRequest: txRequestId,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+      });
+      signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should fail with invalid user prv', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith(txRequestId);
+
+      const invalidUserKey = { ...userKeyShare, pShare: { ...userKeyShare.pShare, i: 2 } };
+      await tssUtils.signTxRequest({
+        txRequest: txRequestId,
+        prv: JSON.stringify({
+          pShare: invalidUserKey.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+      }).should.be.rejectedWith('Invalid user key');
+
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should fail with no backupNShares', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith(txRequestId);
+
+      await tssUtils.signTxRequest({
+        txRequest: txRequestId,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+        }),
+        reqId,
+      }).should.be.rejectedWith('Invalid user key - missing backupNShare');
+
+      sandbox.verifyAndRestore();
+    });
+  });
+
 
   // #region Nock helpers
   async function nockBitgoKeychain(params: {

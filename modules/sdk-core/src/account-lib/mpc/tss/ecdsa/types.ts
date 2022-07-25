@@ -150,7 +150,7 @@ export interface SShare {
 }
 
 export interface SignCombine {
-  gShares: GShare;
+  gShare: GShare;
   signIndex: {
     i: number;
     j: number;

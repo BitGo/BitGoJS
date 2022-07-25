@@ -21,6 +21,7 @@ import {
   KeyShare,
   Ed25519BIP32,
 } from '@bitgo/sdk-core';
+import { nockSendSignatureShare, nockGetTxRequest, nockCreateTxRequest, nockDeleteSignatureShare, nockSendTxRequest } from './common';
 
 openpgp.config.rejectCurves = new Set();
 
@@ -559,38 +560,6 @@ describe('TSS Utils:', async function () {
       .reply(200, backupKeychain);
 
     return backupKeychain;
-  }
-
-  async function nockSendTxRequest(params: {coin:string, walletId: string, txRequestId: string}): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .post(`/api/v2/${params.coin}/wallet/${params.walletId}/tx/send`, { txRequestId: params.txRequestId })
-      .reply(200);
-  }
-
-  async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any, signerShare?: string}, status = 200): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .persist(true)
-      .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
-      .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
-  }
-
-  async function nockDeleteSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: SignatureShareRecord}, status = 200): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .delete(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
-      .reply(status, (status === 200 ? [params.signatureShare] : { error: 'some error' }));
-  }
-
-  async function nockCreateTxRequest(params: { walletId: string, requestBody: any, response: any }): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .post(`/api/v2/wallet/${params.walletId}/txrequests`, params.requestBody)
-      .reply(200, params.response);
-  }
-
-  async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: any}): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .persist(true)
-      .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
-      .reply(200, params.response);
   }
 
   // #endregion Nock helpers

@@ -1,12 +1,16 @@
-import { Ecdsa } from '../../../../account-lib/mpc/tss';
+import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
 import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import ECDSAMethods from '../../../tss/ecdsa';
+import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import * as openpgp from 'openpgp';
 import { KeychainsTriplet } from '../../../baseCoin';
 import * as crypto from 'crypto';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
+import { TxRequest } from '../baseTypes';
+import { IRequestTracer } from '../../../../api';
+import { getTxRequest } from '../../../tss/common';
+import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -229,5 +233,86 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const result =
       recipientIndex === 1 ? await keychains.add(userKeychainParams) : await keychains.createBackup(userKeychainParams);
     return result;
+  }
+
+  /**
+   * Signs the transaction associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param { string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequest(params: {
+    txRequest: string | TxRequest;
+    prv: string;
+    reqId: IRequestTracer;
+  }): Promise<TxRequest> {
+    let txRequestResolved: TxRequest;
+    let txRequestId: string;
+
+    const { txRequest, prv } = params;
+
+    if (typeof txRequest === 'string') {
+      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
+      txRequestId = txRequestResolved.txRequestId;
+    } else {
+      txRequestResolved = txRequest;
+      txRequestId = txRequest.txRequestId;
+    }
+
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
+    if (userSigningMaterial.pShare.i !== 1) {
+      throw new Error('Invalid user key');
+    }
+    if (!userSigningMaterial.backupNShare) {
+      throw new Error('Invalid user key - missing backupNShare');
+    }
+    const MPC = new Ecdsa();
+    const signingKey = MPC.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
+
+    const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
+
+    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      SendShareType.KShare,
+      userSignShare.kShare
+    )) as AShare;
+
+    const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
+
+    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      SendShareType.MUShare,
+      userGammaAndMuShares.muShare as ECDSA.MUShare
+    )) as DShare;
+
+    const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
+      userGammaAndMuShares.gShare as ECDSA.GShare
+    );
+
+    const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+
+    const userSShare = await ECDSAMethods.createUserSignatureShare(
+      userOmicronAndDeltaShare.oShare,
+      bitgoToUserDShare,
+      signablePayload
+    );
+
+    await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      SendShareType.SShare,
+      userSShare,
+      userOmicronAndDeltaShare.dShare
+    );
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 }
