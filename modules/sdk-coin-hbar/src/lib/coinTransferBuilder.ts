@@ -13,8 +13,9 @@ declare class DuplicateMethodError extends ExtendableError {
 }
 
 export class CoinTransferBuilder extends TransferBuilder {
-  // TODO: [BG-51282] Deprecate once wp work for multi recipients
+  // @deprecated Use _recipients field instead
   private _toAddress: string;
+  // @deprecated Use _recipients field instead
   private _amount: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -78,10 +79,11 @@ export class CoinTransferBuilder extends TransferBuilder {
   }
 
   // region Transfer fields
-  /** TODO: [BG-51282] Deprecate to and amount once wp has been fixed
-      Currently work for one recipient by using exatcly one of to + amount or send function
-   */
+
+  // Currently works for one recipient by using exatcly one of to + amount or send function
   /**
+   * @deprecated - Use the send method instead
+   *
    * Set the destination address where the funds will be sent,
    * it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`
    *
@@ -100,6 +102,8 @@ export class CoinTransferBuilder extends TransferBuilder {
   }
 
   /**
+   * @deprecated - Use the send method instead
+   *
    * Set the amount to be transferred
    *
    * @param {string} amount - Amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
@@ -131,7 +135,6 @@ export class CoinTransferBuilder extends TransferBuilder {
   // region Validators
   /** @inheritdoc */
   validateMandatoryFields(): void {
-    // TODO: [BG-51282] Remove once to and amount function is deprecated
     if (this._toAddress && this._amount) {
       this._recipients.push({
         address: this._toAddress,

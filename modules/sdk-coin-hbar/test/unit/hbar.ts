@@ -1,3 +1,4 @@
+import { TxData, Transfer } from '../../src/lib/iface';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import * as TestData from '../fixtures/hbar';
@@ -274,10 +275,14 @@ describe('Hedera Hashgraph:', function () {
       const factory = getBuilderFactory('thbar');
       const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
-      const txJson = signedTx.toJson();
-      txJson.to.should.equal(destination);
-      txJson.from.should.equal(source);
-      txJson.amount.should.equal(amount);
+      const txJson = signedTx.toJson() as TxData;
+      txJson.to!.should.equal(destination);
+      txJson.from!.should.equal(source);
+      txJson.amount!.should.equal(amount);
+      (txJson.instructionsData as Transfer).params.recipients[0].should.deepEqual({
+        address: destination,
+        amount,
+      });
       signedTx.signature.length.should.equal(1);
     });
   });
