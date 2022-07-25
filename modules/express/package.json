@@ -30,7 +30,7 @@
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
-    "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
+    "build-docker": "docker build -f ../../Dockerfile --platform=linux/amd64 -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
     "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
     "precommit": "yarn lint-staged",
     "check-fmt": "yarn prettier --check '{src,test}/**/*.{ts,js,json}'",
