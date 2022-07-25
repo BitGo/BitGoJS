@@ -1,3 +1,105 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.11...@bitgo/utxo-lib@2.4.1) (2022-07-19)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.10...@bitgo/utxo-lib@2.3.0-rc.11) (2022-07-11)
+
+
+### Features
+
+* **utxo-lib:** add network configuration for DOGE ([442e7e9](https://github.com/BitGo/BitGoJS/commit/442e7e9df3acd00edde3a0512de363164a377bb5))
+
+
+
+
+
+# [2.3.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.9...@bitgo/utxo-lib@2.3.0-rc.10) (2022-06-23)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.8...@bitgo/utxo-lib@2.3.0-rc.9) (2022-06-22)
+
+
+### Bug Fixes
+
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+
+
+
+# [2.3.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.7...@bitgo/utxo-lib@2.3.0-rc.8) (2022-06-16)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.6...@bitgo/utxo-lib@2.3.0-rc.7) (2022-06-13)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.5...@bitgo/utxo-lib@2.3.0-rc.6) (2022-06-07)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.4...@bitgo/utxo-lib@2.3.0-rc.5) (2022-06-01)
+
+
+### Bug Fixes
+
+* **utxo-lib:** always use VERSION4_BRANCH_NU5 for zcash ([ef0692c](https://github.com/BitGo/BitGoJS/commit/ef0692c6772f6d21fce3da6cc515dc74915c3c6d))
+
+
+
+
+
+# [2.3.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.3...@bitgo/utxo-lib@2.3.0-rc.4) (2022-05-17)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.2...@bitgo/utxo-lib@2.3.0-rc.3) (2022-05-16)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
+# [2.3.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.1...@bitgo/utxo-lib@2.3.0-rc.2) (2022-05-12)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
 # Changelog
 
 ## Versioning

@@ -3,6 +3,352 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.12.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.26...@bitgo/express@9.12.4) (2022-07-19)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.24...@bitgo/express@9.12.4-rc.26) (2022-07-19)
+
+
+### Bug Fixes
+
+* **express:** allow account consolidations ([ede16e5](https://github.com/BitGo/BitGoJS/commit/ede16e57f5dac7319a02d10e084ae47972709591))
+* update bad dependency match ([5cc3255](https://github.com/BitGo/BitGoJS/commit/5cc3255aecba1ffb112da3ba10d8d36d2074b3e3))
+
+
+
+
+
+## [9.12.4-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.24...@bitgo/express@9.12.4-rc.25) (2022-07-18)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.23...@bitgo/express@9.12.4-rc.24) (2022-07-15)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.21...@bitgo/express@9.12.4-rc.23) (2022-07-15)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.21...@bitgo/express@9.12.4-rc.22) (2022-07-14)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.19...@bitgo/express@9.12.4-rc.20) (2022-07-12)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.18...@bitgo/express@9.12.4-rc.19) (2022-07-11)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.17...@bitgo/express@9.12.4-rc.18) (2022-07-07)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.16...@bitgo/express@9.12.4-rc.17) (2022-07-05)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.15...@bitgo/express@9.12.4-rc.16) (2022-07-01)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.14...@bitgo/express@9.12.4-rc.15) (2022-06-30)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.13...@bitgo/express@9.12.4-rc.14) (2022-06-30)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.11...@bitgo/express@9.12.4-rc.13) (2022-06-29)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.11...@bitgo/express@9.12.4-rc.12) (2022-06-29)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.10...@bitgo/express@9.12.4-rc.11) (2022-06-27)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.9...@bitgo/express@9.12.4-rc.10) (2022-06-27)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.8...@bitgo/express@9.12.4-rc.9) (2022-06-23)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.7...@bitgo/express@9.12.4-rc.8) (2022-06-22)
+
+
+### Bug Fixes
+
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+
+
+
+## [9.12.4-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.6...@bitgo/express@9.12.4-rc.7) (2022-06-21)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.5...@bitgo/express@9.12.4-rc.6) (2022-06-16)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.4...@bitgo/express@9.12.4-rc.5) (2022-06-15)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.3...@bitgo/express@9.12.4-rc.4) (2022-06-14)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.2...@bitgo/express@9.12.4-rc.3) (2022-06-14)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.1...@bitgo/express@9.12.4-rc.2) (2022-06-14)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.4-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.14...@bitgo/express@9.12.4-rc.1) (2022-06-13)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.13...@bitgo/express@9.12.2-rc.14) (2022-06-10)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.12...@bitgo/express@9.12.2-rc.13) (2022-06-07)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.11...@bitgo/express@9.12.2-rc.12) (2022-06-07)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.10...@bitgo/express@9.12.2-rc.11) (2022-06-02)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.9...@bitgo/express@9.12.2-rc.10) (2022-06-02)
+
+
+### Bug Fixes
+
+* update express package dependencies ([5db23fe](https://github.com/BitGo/BitGoJS/commit/5db23fe3c8daa0ff0613e6e37b2097774bf67fb6))
+
+
+
+
+
+## [9.12.2-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.8...@bitgo/express@9.12.2-rc.9) (2022-06-01)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.7...@bitgo/express@9.12.2-rc.8) (2022-05-23)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.6...@bitgo/express@9.12.2-rc.7) (2022-05-19)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.5...@bitgo/express@9.12.2-rc.6) (2022-05-19)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.4...@bitgo/express@9.12.2-rc.5) (2022-05-18)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.3...@bitgo/express@9.12.2-rc.4) (2022-05-17)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.2...@bitgo/express@9.12.2-rc.3) (2022-05-16)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.1...@bitgo/express@9.12.2-rc.2) (2022-05-13)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.2-rc.0...@bitgo/express@9.12.2-rc.1) (2022-05-13)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.2-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.1...@bitgo/express@9.12.2-rc.0) (2022-05-12)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.0...@bitgo/express@9.12.1) (2022-05-04)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
 # [9.12.0-rc.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.0-rc.37...@bitgo/express@9.12.0-rc.38) (2022-04-20)
 
 **Note:** Version bump only for package @bitgo/express
