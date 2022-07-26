@@ -50,8 +50,9 @@ module.exports = {
   node: {
     global: true,
   },
-   experiments: {
-   syncWebAssembly: true,
+  experiments: {
+    backCompat: false,
+    asyncWebAssembly: true,
   },
   optimization: {
     minimizer: [
