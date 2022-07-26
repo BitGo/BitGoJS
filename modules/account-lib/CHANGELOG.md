@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.1...@bitgo/account-lib@2.21.0-rc.0) (2022-07-26)
+
+
+### Features
+
+* **sdk-coin-bsc:** create bsc module ([b55ca71](https://github.com/BitGo/BitGoJS/commit/b55ca7173e27ee2d75d342b6706698769f11734f))
+* **sdk-core:** implement signing flow ecdsa ([68aa561](https://github.com/BitGo/BitGoJS/commit/68aa561193fe0574bd7b7080bb51d1d795cf31f9))
+
+
+
+
+
 ## [2.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.1-rc.2...@bitgo/account-lib@2.20.1) (2022-07-21)
 
 **Note:** Version bump only for package @bitgo/account-lib

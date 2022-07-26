@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.1.0...@bitgo/statics@8.0.0-rc.0) (2022-07-26)
+
+
+### chore
+
+* **statics:** update Sol coin name to Solana BG-52979 ([f7c36bf](https://github.com/BitGo/BitGoJS/commit/f7c36bf206330d317d39c11fa22fbdf638870d60))
+
+
+### Features
+
+* **sdk-coin-bsc:** create bsc module ([b55ca71](https://github.com/BitGo/BitGoJS/commit/b55ca7173e27ee2d75d342b6706698769f11734f))
+* **statics:** add coin feature for NEAR ([cf1a2f2](https://github.com/BitGo/BitGoJS/commit/cf1a2f278124813bcae33c6e141ceba6920e823e))
+* **statics:** add new tokens ([db11934](https://github.com/BitGo/BitGoJS/commit/db119349da8385784074b6cbf56879c0899e2471))
+* **statics:** add ofc for near ([4ecde82](https://github.com/BitGo/BitGoJS/commit/4ecde82919019aa8bdacbe7958acb8ec6a5bf50f))
+
+
+### BREAKING CHANGES
+
+* **statics:** updates coin names from `Sol` and `Testnet Sol` to `Solana` and `Testnet Solana`.
+TICKET: BG-52979
+
+
+
+
+
 # [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.1.0-rc.0...@bitgo/statics@7.1.0) (2022-07-21)
 
 **Note:** Version bump only for package @bitgo/statics

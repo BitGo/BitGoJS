@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.12.6-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.5...@bitgo/express@9.12.6-rc.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* specify exact platform for express docker ([e845f8f](https://github.com/BitGo/BitGoJS/commit/e845f8f3a855ead10e20195925ce1935edfa1c48))
+
+
+
+
+
 ## [9.12.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.5-rc.2...@bitgo/express@9.12.5) (2022-07-21)
 
 **Note:** Version bump only for package @bitgo/express

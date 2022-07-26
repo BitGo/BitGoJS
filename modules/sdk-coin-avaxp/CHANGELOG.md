@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.1.0...@bitgo/sdk-coin-avaxp@2.2.0-rc.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* **avaxp:** use "P-" prefix in avaxp addresses ([55ea71d](https://github.com/BitGo/BitGoJS/commit/55ea71d40e09689a3b2500c89dbef0a1e65bea39))
+* **sdk-coin-avaxp:** fix block id validation ([a6d94d3](https://github.com/BitGo/BitGoJS/commit/a6d94d3e1aa684c9aec5398502695a393af194f1))
+
+
+### Features
+
+* **sdk-coin-avaxp:** create change only and allow custom reward owners ([b0abe92](https://github.com/BitGo/BitGoJS/commit/b0abe92ce88c4cac6cf70955fb2fc58e3add0678))
+
+
+
+
+
 # [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.1.0-rc.2...@bitgo/sdk-coin-avaxp@2.1.0) (2022-07-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

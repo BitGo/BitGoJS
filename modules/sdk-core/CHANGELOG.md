@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.1.1...@bitgo/sdk-core@1.2.0-rc.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* update AddWalletOptions ([64578e0](https://github.com/BitGo/BitGoJS/commit/64578e078129aa6503fd9d6193c57eddc5c4d27e))
+
+
+### Features
+
+* add u value proof during tss eddssa key creation ([79d2c91](https://github.com/BitGo/BitGoJS/commit/79d2c91ea5b101f8cad9b107b9e4426939333c5f))
+* **sdk-core:** add more ecdsa helper methods ([aa57eac](https://github.com/BitGo/BitGoJS/commit/aa57eacdc97f2ecac4179f76461d798226178ba8))
+* **sdk-core:** implement signing flow ecdsa ([68aa561](https://github.com/BitGo/BitGoJS/commit/68aa561193fe0574bd7b7080bb51d1d795cf31f9))
+
+
+
+
+
 ## [1.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.1.1-rc.1...@bitgo/sdk-core@1.1.1) (2022-07-21)
 
 **Note:** Version bump only for package @bitgo/sdk-core
