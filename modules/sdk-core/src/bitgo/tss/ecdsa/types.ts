@@ -5,6 +5,7 @@ export type KeyShare = ECDSA.KeyShare;
 export type XShare = ECDSA.XShare;
 export type YShare = ECDSA.YShare;
 export type SignShare = ECDSA.SignShareRT;
+export type KShare = ECDSA.KShare;
 export type WShare = ECDSA.WShare;
 export type AShare = ECDSA.AShare;
 export type GShare = ECDSA.GShare;

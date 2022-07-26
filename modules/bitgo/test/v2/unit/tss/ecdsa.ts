@@ -7,6 +7,7 @@ import {
   SignatureShareRecord,
   getTxRequest,
   ECDSAMethods,
+  SignatureShareType,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
@@ -73,7 +74,7 @@ describe('Ecdsa tss helper functions tests', function () {
     bitgoGpgKeypair = gpgKeypairs[2];
   });
 
-  describe('encryptNShare', function () {
+  describe('encryptNShare and decryptNShare', function () {
     it('should encrypt n shares foreach user', async function () {
       for (let i = 2; i <= 3; i++) {
         const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey, userGpgKeypair.privateKey);
@@ -90,6 +91,16 @@ describe('Ecdsa tss helper functions tests', function () {
       await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
       await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
       await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
+    });
+
+    it('should decrypt n share', async function() {
+      const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, 3, bitgoGpgKeypair.publicKey, userGpgKeypair.privateKey);
+      const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, recipientPrivateArmor: bitgoGpgKeypair.privateKey, senderPublicArmor: userGpgKeypair.publicKey });
+      decryptedNShare.i.should.equal(userKeyShare.nShares[3].i);
+      decryptedNShare.j.should.equal(userKeyShare.nShares[3].j);
+      decryptedNShare.n.should.equal(userKeyShare.nShares[3].n);
+      decryptedNShare.u.should.equal(userKeyShare.nShares[3].u);
+      decryptedNShare.y.should.equal(userKeyShare.nShares[3].y);
     });
   });
 
@@ -219,7 +230,6 @@ describe('Ecdsa tss helper functions tests', function () {
     });
   });
 
-
   describe('tss signing helper function', async function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
@@ -299,7 +309,6 @@ describe('Ecdsa tss helper functions tests', function () {
         const userShare = await ECDSAMethods.createUserOmicronAndDeltaShare(omicronAndDeltaShareCreationParams.gShare);
         userShare.should.have.properties(['dShare', 'oShare']);
         const { dShare, oShare } = userShare;
-       
         dShare?.i?.should.equal(3);
         dShare?.j?.should.equal(1);
         dShare?.should.have.property('delta').and.be.a.String();
@@ -356,13 +365,12 @@ describe('Ecdsa tss helper functions tests', function () {
             const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
             const invalidSignatureShare = { from: 'bitgo', to: 'user', share: JSON.stringify(config[index].incorrectReceivedShareString) } as SignatureShareRecord;
             const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare }, 200);
-            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare).should.be.rejectedWith(`Invalid ${config[index].shareReceived} from Bitgo`);
+            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare).should.be.rejectedWith(/Excepted share length to be greater than or equal .*/g);
             nock.isDone().should.equal(true);
           });
         });
       }
     });
-
 
     describe('getTxRequest:', async function () {
       it('should succeed to get txRequest by id', async function () {
@@ -380,6 +388,169 @@ describe('Ecdsa tss helper functions tests', function () {
         nock.isDone().should.equal(true);
       });
     });
-  });
 
+    describe('signing share parsers and converters', function() {
+      it('should successfully parse K share', function () {
+        const bitgoKShare = mockSignRT.kShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: bitgoKShare.k + bitgoKShare.n,
+        } as SignatureShareRecord;
+        const kShare = ECDSAMethods.parseKShare(share);
+        kShare.i.should.equal(bitgoKShare.i);
+        kShare.j.should.equal(bitgoKShare.j);
+        kShare.k.should.equal(bitgoKShare.k);
+        kShare.n.should.equal(bitgoKShare.n);
+      });
+
+      it('should successfully convert K share to signarture share record', function () {
+        const bitgoKShare = mockSignRT.kShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: bitgoKShare.k + bitgoKShare.n,
+        } as SignatureShareRecord;
+
+        const kshare = ECDSAMethods.convertKShare(bitgoKShare);
+        kshare.from.should.equal(share.from);
+        kshare.to.should.equal(share.to);
+        kshare.share.should.equal(share.share);
+      });
+  
+      it('should successfully parse A share', function() {
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: mockAShare.k + mockAShare.alpha + mockAShare.mu + mockAShare.n,
+        } as SignatureShareRecord;
+        const aShare = ECDSAMethods.parseAShare(share);
+        should.exist(aShare);
+        aShare.i.should.equal(mockAShare.i);
+        aShare.j.should.equal(mockAShare.j);
+        aShare!.k!.should.equal(mockAShare.k);
+        aShare!.alpha!.should.equal(mockAShare.alpha);
+        aShare!.mu!.should.equal(mockAShare.mu);
+        aShare!.n!.should.equal(mockAShare.n);
+      });
+
+      it('should successfully convert A share to signarture share record', function () {
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: mockAShare.k + mockAShare.alpha + mockAShare.mu + mockAShare.n,
+        } as SignatureShareRecord;
+
+        const aShare = ECDSAMethods.convertAShare(mockAShare);
+        aShare.from.should.equal(share.from);
+        aShare.to.should.equal(share.to);
+        aShare.share.should.equal(share.share);
+      });
+  
+      it('should successfully parse Mu share', function() {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockMuShare.alpha + mockMuShare.mu,
+        } as SignatureShareRecord;
+        const muShare = ECDSAMethods.parseMuShare(share);
+        muShare.i.should.equal(mockMuShare.i);
+        muShare.j.should.equal(mockMuShare.j);
+        muShare.alpha.should.equal(mockMuShare.alpha);
+        muShare.mu.should.equal(mockMuShare.mu);
+      });
+
+      it('should successfully convert Mu share to signarture share record', function () {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockMuShare.alpha + mockMuShare.mu,
+        } as SignatureShareRecord;
+        const muShare = ECDSAMethods.convertMuShare(mockMuShare);
+        muShare.from.should.equal(share.from);
+        muShare.to.should.equal(share.to);
+        muShare.share.should.equal(share.share);
+      });
+  
+      it('should successfully parse D share', function() {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockDShareToBitgo.delta + mockDShareToBitgo.Gamma,
+        } as SignatureShareRecord;
+        const dShare = ECDSAMethods.parseDShare(share);
+        dShare.i.should.equal(mockDShareToBitgo.i);
+        dShare.j.should.equal(mockDShareToBitgo.j);
+        dShare.delta.should.equal(mockDShareToBitgo.delta);
+        dShare.Gamma.should.equal(mockDShareToBitgo.Gamma);
+      });
+  
+      it('should successfully convert D share to signarture share record', function () {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockDShareToBitgo.delta + mockDShareToBitgo.Gamma,
+        } as SignatureShareRecord;
+        const dShare = ECDSAMethods.convertDShare(mockDShareToBitgo);
+        dShare.from.should.equal(share.from);
+        dShare.to.should.equal(share.to);
+        dShare.share.should.equal(share.share);
+      });
+
+      it('should successfully parse S and D share', function() {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockSignature.r + mockSignature.s + mockSignature.y + mockDShareToBitgo.delta + mockDShareToBitgo.Gamma,
+        } as SignatureShareRecord;
+        const { sShare, dShare } = ECDSAMethods.parseSDShare(share);
+        sShare.i.should.equal(3);
+        sShare.r.should.equal(mockSignature.r);
+        sShare.s.should.equal(mockSignature.s);
+        sShare.y.should.equal(mockSignature.y);
+  
+        dShare.i.should.equal(mockDShareToBitgo.i);
+        dShare.j.should.equal(mockDShareToBitgo.j);
+        dShare.delta.should.equal(mockDShareToBitgo.delta);
+        dShare.Gamma.should.equal(mockDShareToBitgo.Gamma);
+      });
+
+      it('should successfully convert S and D share to signarture share record', function () {
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: mockSignature.r + mockSignature.s + mockSignature.y + mockDShareToBitgo.delta + mockDShareToBitgo.Gamma,
+        } as SignatureShareRecord;
+        const sdShare = ECDSAMethods.convertSDShare({ sShare: mockSignature, dShare: mockDShareToBitgo });
+        sdShare.from.should.equal(share.from);
+        sdShare.to.should.equal(share.to);
+        sdShare.share.should.equal(share.share);
+      });
+  
+      it('should successfully parse signature share', function() {
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: mockSignature.r + mockSignature.s + mockSignature.y,
+        } as SignatureShareRecord;
+        const signature = ECDSAMethods.parseSignatureShare(share);
+        signature.i.should.equal(1);
+        signature.r.should.equal(mockSignature.r);
+        signature.s.should.equal(mockSignature.s);
+        signature.y.should.equal(mockSignature.y);
+      });
+
+      it('should successfully convert signature share to signarture share record', function () {
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: mockSignature.r + mockSignature.s + mockSignature.y,
+        } as SignatureShareRecord;
+        const signatureShare = ECDSAMethods.convertSignatureShare(mockSignature, ECDSAMethods.getParticapantIndex('bitgo'));
+        signatureShare.from.should.equal(share.from);
+        signatureShare.to.should.equal(share.to);
+        signatureShare.share.should.equal(share.share);
+      });
+    });
+  });
 });

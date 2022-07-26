@@ -49,20 +49,7 @@ export async function createCombinedKey(
   let backupNShare: NShare | undefined;
 
   for (const encryptedNShare of encryptedNShares) {
-    const privateShare = await readSignedMessage(
-      encryptedNShare.nShare.encryptedPrivateShare,
-      encryptedNShare.senderPublicArmor,
-      encryptedNShare.recipientPrivateArmor
-    );
-
-    const nShare: NShare = {
-      i: encryptedNShare.nShare.i,
-      j: encryptedNShare.nShare.j,
-      y: encryptedNShare.nShare.publicShare.slice(0, 65),
-      u: privateShare,
-      n: encryptedNShare.nShare.publicShare.slice(129),
-      chaincode: encryptedNShare.nShare.publicShare.slice(65, 129),
-    };
+    const nShare = await decryptNShare(encryptedNShare);
 
     switch (encryptedNShare.nShare.j) {
       case 1:
@@ -196,44 +183,21 @@ export async function sendShareToBitgo(
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
   }
-  const signatureShare: SignatureShareRecord = {
-    from: SignatureShareType.USER,
-    to: SignatureShareType.BITGO,
-    share: '',
-  };
-
+  let signatureShare: SignatureShareRecord;
   let responseFromBitgo: SendShareToBitgoRT;
 
   switch (shareType) {
     case SendShareType.KShare:
       const kShare = share as KShare;
-      signatureShare.share = kShare.k + kShare.n;
+      signatureShare = convertKShare(kShare);
       const AShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-      if (AShareRecord.share.length < 4608) {
-        throw new Error('Invalid AShare from Bitgo');
-      }
-      responseFromBitgo = {
-        i: kShare.j,
-        j: 3,
-        k: AShareRecord.share.substring(0, 1536),
-        alpha: AShareRecord.share.substring(1536, 3072),
-        mu: AShareRecord.share.substring(3072, 4608),
-        n: AShareRecord.share.substring(4608),
-      };
+      responseFromBitgo = parseAShare(AShareRecord);
       break;
     case SendShareType.MUShare:
       const muShare = share as MUShare;
-      signatureShare.share = muShare.alpha + muShare.mu;
+      signatureShare = convertMuShare(muShare);
       const dShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-      if (dShareRecord.share.length !== 130) {
-        throw new Error('Invalid DShare from Bitgo');
-      }
-      responseFromBitgo = {
-        i: muShare.j,
-        j: 3,
-        delta: dShareRecord.share.substring(0, 64),
-        Gamma: dShareRecord.share.substring(64, 130),
-      };
+      responseFromBitgo = parseDShare(dShareRecord);
       break;
     case SendShareType.SShare:
       if (!dShare) {
@@ -243,17 +207,9 @@ export async function sendShareToBitgo(
         throw new Error('Invalid DShare provided');
       }
       const sShare = share as SShare;
-      signatureShare.share = sShare.r + sShare.s + sShare.y + dShare.delta + dShare.Gamma;
+      signatureShare = convertSDShare({ sShare, dShare });
       const signatureRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-
-      if (signatureRecord.share.length !== 194) {
-        throw new Error('Invalid Signature from Bitgo');
-      }
-      responseFromBitgo = {
-        r: signatureRecord.share.substring(0, 64),
-        s: signatureRecord.share.substring(64, 128),
-        y: signatureRecord.share.substring(128, 194),
-      };
+      responseFromBitgo = parseSignatureShare(signatureRecord);
       break;
     default:
       throw 'Invalid Share given to send';
@@ -270,7 +226,7 @@ export async function sendShareToBitgo(
  * @param recipientIndex - index of the recipient (1, 2, or 3)
  * @param recipientGpgPublicArmor - recipient's public gpg key in armor format
  * @param senderGpgPrivateArmor - sender's private gpg key in armor format
- * @returns { EncryptedNShare } encrypted Y Share
+ * @returns encrypted N Share
  */
 export async function encryptNShare(
   keyShare: KeyShare,
@@ -294,4 +250,264 @@ export async function encryptNShare(
     publicShare,
     encryptedPrivateShare,
   };
+}
+
+/**
+ * Decrypts encrypted n share
+ * @param encryptedNShare - decryptable n share with recipient private gpg key armor and sender public gpg key
+ * @returns N share
+ */
+export async function decryptNShare(encryptedNShare: DecryptableNShare): Promise<NShare> {
+  const privateShare = await readSignedMessage(
+    encryptedNShare.nShare.encryptedPrivateShare,
+    encryptedNShare.senderPublicArmor,
+    encryptedNShare.recipientPrivateArmor
+  );
+
+  const nShare: NShare = {
+    i: encryptedNShare.nShare.i,
+    j: encryptedNShare.nShare.j,
+    y: encryptedNShare.nShare.publicShare.slice(0, 65),
+    u: privateShare,
+    n: encryptedNShare.nShare.publicShare.slice(129),
+    chaincode: encryptedNShare.nShare.publicShare.slice(65, 129),
+  };
+
+  return nShare;
+}
+
+/**
+ * Gets public key from common key chain
+ * @param commonKeyChain - common key chain of ecdsa tss
+ * @returns public key
+ */
+export function getPublicKey(commonKeyChain: string): string {
+  return commonKeyChain.slice(0, 66);
+}
+
+/**
+ * validates signature share record
+ * @param share - signature share record to validate
+ * @param shareLength - share record expected length
+ * @param isExactLength - if this false then share length can be greater.
+ */
+function validateShare(share: SignatureShareRecord, shareLength: number, isExactLength = true): void {
+  const error = (message: string) => new Error(message);
+
+  if (share.share.length < shareLength) {
+    throw error(`Excepted share length to be greater than or equal ${shareLength} but got ${share.share.length}.`);
+  }
+
+  if (isExactLength && share.share.length !== shareLength) {
+    throw error(`Excepted share length to be ${shareLength} but got ${share.share.length}.`);
+  }
+
+  if (share.from === share.to) {
+    throw error(`Key share sender and receiver cannot be the same.`);
+  }
+}
+
+/**
+ * parses K share from signature share record
+ * @param share - signature share record
+ * @returns K Share
+ */
+export function parseKShare(share: SignatureShareRecord): KShare {
+  validateShare(share, 1536, false);
+
+  return {
+    i: getParticapantIndex(share.to),
+    j: getParticapantIndex(share.from),
+    k: share.share.substring(0, 1536),
+    n: share.share.substring(1536),
+  };
+}
+
+/**
+ * convert K share to signature share record
+ * @param share - K share
+ * @returns signature share record
+ */
+export function convertKShare(share: KShare): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.i),
+    from: getParticapantFromIndex(share.j),
+    share: share.k + share.n,
+  };
+}
+
+/**
+ * parses A share from signature share record
+ * @param share - signature share record
+ * @returns A Share
+ */
+export function parseAShare(share: SignatureShareRecord): AShare {
+  validateShare(share, 4608, false);
+  return {
+    i: getParticapantIndex(share.to),
+    j: getParticapantIndex(share.from),
+    k: share.share.slice(0, 1536),
+    alpha: share.share.slice(1536, 3072),
+    mu: share.share.slice(3072, 4608),
+    n: share.share.slice(4608),
+  };
+}
+
+/**
+ * convert A share to signature share record
+ * @param share - A share
+ * @returns signature share record
+ */
+export function convertAShare(share: AShare): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.i),
+    from: getParticapantFromIndex(share.j),
+    share: share.k! + share.alpha! + share.mu! + share.n!,
+  };
+}
+
+/**
+ * parses Mu share from signature share record
+ * @param share - signature share record
+ * @returns Mu Share
+ */
+export function parseMuShare(share: SignatureShareRecord): MUShare {
+  validateShare(share, 3072);
+  return {
+    i: getParticapantIndex(share.to),
+    j: getParticapantIndex(share.from),
+    alpha: share.share.slice(0, 1536),
+    mu: share.share.slice(1536, 3072),
+  };
+}
+
+/**
+ * convert Mu share to signature share record
+ * @param share - Mu share
+ * @returns signature share record
+ */
+export function convertMuShare(share: MUShare): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.i),
+    from: getParticapantFromIndex(share.j),
+    share: share.alpha + share.mu,
+  };
+}
+
+/**
+ * parses D share from signature share record
+ * @param share - signature share record
+ * @returns D Share
+ */
+export function parseDShare(share: SignatureShareRecord): DShare {
+  validateShare(share, 130);
+  return {
+    i: getParticapantIndex(share.to),
+    j: getParticapantIndex(share.from),
+    delta: share.share.slice(0, 64),
+    Gamma: share.share.slice(64, 130),
+  };
+}
+
+/**
+ * convert D share to signature share record
+ * @param share - D share
+ * @returns signature share record
+ */
+export function convertDShare(share: DShare): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.i),
+    from: getParticapantFromIndex(share.j),
+    share: share.delta + share.Gamma,
+  };
+}
+
+/**
+ * parses S and D share from signature share record
+ * @param share - signature share record
+ * @returns Object containing S and D Share
+ */
+export function parseSDShare(share: SignatureShareRecord): { sShare: SignatureShare; dShare: DShare } {
+  validateShare(share, 324);
+  return {
+    sShare: parseSignatureShare({ to: share.to, from: share.from, share: share.share.slice(0, 194) }),
+    dShare: parseDShare({ to: share.to, from: share.from, share: share.share.slice(194) }),
+  };
+}
+
+/**
+ * convert S and D share to signature share record
+ * @param share - S and D share in a object
+ * @returns signature share record
+ */
+export function convertSDShare(share: { sShare: SignatureShare; dShare: DShare }): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.dShare.i),
+    from: getParticapantFromIndex(share.dShare.j),
+    share: share.sShare.r + share.sShare.s + share.sShare.y + share.dShare.delta + share.dShare.Gamma,
+  };
+}
+
+/**
+ * parses signature share from signature share record
+ * @param share - signature share record
+ * @returns Signature Share
+ */
+export function parseSignatureShare(share: SignatureShareRecord): SignatureShare {
+  validateShare(share, 194);
+  return {
+    i: getParticapantIndex(share.to),
+    r: share.share.substring(0, 64),
+    s: share.share.substring(64, 128),
+    y: share.share.substring(128, 194),
+  };
+}
+
+/**
+ * convert signature share to signature share record
+ * @param share - K share
+ * @returns signature share record
+ */
+export function convertSignatureShare(share: SignatureShare, senderIndex: number): SignatureShareRecord {
+  return {
+    to: getParticapantFromIndex(share.i),
+    from: getParticapantFromIndex(senderIndex),
+    share: share.r + share.s + share.y,
+  };
+}
+
+/**
+ * gets particapant index
+ * @param participant - participants (user, backup, or bitgo)
+ * @returns index (1, 2, 0r 3)
+ */
+export function getParticapantIndex(participant: 'user' | 'backup' | 'bitgo'): number {
+  switch (participant) {
+    case 'user':
+      return 1;
+    case 'backup':
+      return 2;
+    case 'bitgo':
+      return 3;
+    default:
+      throw Error('Unkown participant');
+  }
+}
+
+/**
+ * gets particapant name by index
+ * @param index particapant index
+ * @returns particapant name
+ */
+export function getParticapantFromIndex(index: number): SignatureShareType {
+  switch (index) {
+    case 1:
+      return SignatureShareType.USER;
+    case 2:
+      return SignatureShareType.BACKUP;
+    case 3:
+      return SignatureShareType.BITGO;
+    default:
+      throw new Error(`Unknown particapant index ${index}`);
+  }
 }
