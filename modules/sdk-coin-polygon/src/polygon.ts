@@ -1,15 +1,27 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
-import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from '@bitgo/sdk-coin-eth';
-import { BaseCoin, BitGoBase, TransactionExplanation } from '@bitgo/sdk-core';
+import {
+  Eth,
+  Recipient,
+  GetSendMethodArgsOptions,
+  SendMethodArgs,
+  optionalDeps,
+  BuildTransactionParams,
+  SignFinalOptions,
+} from '@bitgo/sdk-coin-eth';
+import { BaseCoin, BitGoBase, TransactionExplanation, FullySignedTransaction } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { KeyPair, TransactionBuilder } from './lib';
+import _ from 'lodash';
+import type * as EthTxLib from '@ethereumjs/tx';
 
 export class Polygon extends Eth {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -23,6 +35,49 @@ export class Polygon extends Eth {
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Polygon(bitgo, staticsCoin);
+  }
+  static getCustomChainName(): string {
+    return 'PolygonMainnet';
+  }
+
+  static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+    // if eip1559 params are specified, default to london hardfork, otherwise,
+    // default to tangerine whistle to avoid replay protection issues
+    const defaultHardfork = !!params.eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    const customChain = optionalDeps.EthCommon.CustomChain[this.getCustomChainName()];
+    const customChainCommon = optionalDeps.EthCommon.default.custom(customChain);
+
+    // if replay protection options are set, override the default common setting
+    params.replayProtectionOptions
+      ? customChainCommon.setHardfork(params.replayProtectionOptions.hardfork)
+      : customChainCommon.setHardfork(defaultHardfork);
+
+    const baseParams = {
+      to: params.to,
+      nonce: params.nonce,
+      value: params.value,
+      data: params.data,
+      gasLimit: new optionalDeps.ethUtil.BN(params.gasLimit),
+    };
+
+    const unsignedEthTx = !!params.eip1559
+      ? optionalDeps.EthTx.FeeMarketEIP1559Transaction.fromTxData(
+          {
+            ...baseParams,
+            maxFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas),
+            maxPriorityFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxPriorityFeePerGas),
+          },
+          { common: customChainCommon }
+        )
+      : optionalDeps.EthTx.Transaction.fromTxData(
+          {
+            ...baseParams,
+            gasPrice: new optionalDeps.ethUtil.BN(params.gasPrice),
+          },
+          { common: customChainCommon }
+        );
+
+    return unsignedEthTx;
   }
 
   getChain(): string {
@@ -153,5 +208,65 @@ export class Polygon extends Eth {
         value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
       },
     ];
+  }
+
+  /**
+   * Helper function for signTransaction for the rare case that SDK is doing the second signature
+   * Note: we are expecting this to be called from the offline vault
+   * @param params.txPrebuild
+   * @param params.signingKeyNonce
+   * @param params.walletContractAddress
+   * @param params.prv
+   * @returns {{txHex: *}}
+   */
+  signFinal(params: SignFinalOptions): FullySignedTransaction {
+    const txPrebuild = params.txPrebuild;
+
+    if (!_.isNumber(params.signingKeyNonce) && !_.isNumber(params.txPrebuild.halfSigned.backupKeyNonce)) {
+      throw new Error(
+        'must have at least one of signingKeyNonce and backupKeyNonce as a parameter, and it must be a number'
+      );
+    }
+    if (_.isUndefined(params.walletContractAddress)) {
+      throw new Error('params must include walletContractAddress, but got undefined');
+    }
+
+    const signingNode = bip32.fromBase58(params.prv);
+    const signingKey = signingNode.privateKey;
+    if (_.isUndefined(signingKey)) {
+      throw new Error('missing private key');
+    }
+
+    const txInfo = {
+      recipient: txPrebuild.recipients[0],
+      expireTime: txPrebuild.halfSigned.expireTime,
+      contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
+      signature: txPrebuild.halfSigned.signature,
+    };
+
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    const ethTxParams = {
+      to: params.walletContractAddress,
+      nonce:
+        params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned.backupKeyNonce,
+      value: 0,
+      gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
+      gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
+      data: sendData,
+    };
+
+    const unsignedEthTx = Polygon.buildTransaction({
+      ...ethTxParams,
+      eip1559: params.txPrebuild.eip1559,
+      replayProtectionOptions: params.txPrebuild.replayProtectionOptions,
+    });
+
+    const ethTx = unsignedEthTx.sign(signingKey);
+
+    return { txHex: ethTx.serialize().toString('hex') };
   }
 }
