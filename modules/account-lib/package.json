@@ -28,6 +28,7 @@
     "node": ">=14 <17"
   },
   "dependencies": {
+    "@bitgo/sdk-coin-ada": "^1.1.0",
     "@bitgo/sdk-coin-algo": "^1.1.0",
     "@bitgo/sdk-coin-avaxc": "^1.1.0",
     "@bitgo/sdk-coin-avaxp": "^2.0.0",

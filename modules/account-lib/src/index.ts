@@ -59,6 +59,9 @@ export { Cspr };
 import { StxLib as Stx } from '@bitgo/sdk-coin-stx';
 export { Stx };
 
+import * as Ada from '@bitgo/sdk-coin-ada';
+export { Ada };
+
 import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
 export { Algo };
 
