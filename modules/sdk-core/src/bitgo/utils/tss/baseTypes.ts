@@ -6,6 +6,25 @@ import { Memo, WalletType } from '../../wallet/iWallet';
 import { EDDSA } from '../../../account-lib/mpc/tss';
 
 export type TxRequestVersion = 'full' | 'lite';
+export interface HopParams {
+  paymentId?: string;
+  userReqSig?: string;
+  gasPriceMax?: number;
+}
+
+export interface EIP1559FeeOptions {
+  gasLimit?: number;
+  maxFeePerGas?: number;
+  maxPriorityFeePerGas?: number;
+}
+
+export interface FeeOption {
+  unit?: 'baseUnit' | 'cpu' | 'ram';
+  formula?: 'fixed' | 'feeRate' | 'perKB' | 'custom' | 'perVKB';
+  feeType?: 'base' | 'max' | 'tip';
+  gasLimit?: number;
+  gasPrice?: number;
+}
 
 export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
@@ -20,6 +39,10 @@ export interface PrebuildTransactionWithIntentOptions {
   memo?: Memo;
   tokenName?: string;
   nonce?: string;
+  selfSend?: boolean;
+  feeOptions?: FeeOption | EIP1559FeeOptions;
+  hopParams?: HopParams;
+  isTss?: boolean;
 }
 
 export type TxRequestState =

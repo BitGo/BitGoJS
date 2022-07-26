@@ -67,8 +67,8 @@ export class Transaction extends BaseTransaction {
   public _threshold = 2;
   public _locktime: BN = new BN(0);
   public _fromAddresses: BufferAvax[] = [];
+  public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
-  public _txFee: BN;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -76,7 +76,6 @@ export class Transaction extends BaseTransaction {
     this._assetId = utils.cb58Decode(this._network.avaxAssetID);
     this._blockchainID = utils.cb58Decode(this._network.blockchainID);
     this._networkID = this._network.networkID;
-    this._txFee = new BN(this._network.txFee);
   }
 
   get avaxPTransaction(): BaseTx {
@@ -210,6 +209,11 @@ export class Transaction extends BaseTransaction {
   get fromAddresses(): string[] {
     return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
   }
+
+  get rewardAddresses(): string[] {
+    return this._rewardAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+  }
+
   /**
    * Get the list of outputs. Amounts are expressed in absolute value.
    */
@@ -262,7 +266,7 @@ export class Transaction extends BaseTransaction {
       outputAmount: txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString(),
       changeOutputs: [], // account based does not use change outputs
       changeAmount: '0', // account base does not make change
-      fee: { fee: this._txFee.toString() },
+      fee: { fee: '0' },
       type: txJson.type,
     };
   }

@@ -76,12 +76,35 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     throw new Error('Method not implemented.');
   }
 
-  prebuildTxWithIntent(
+  /**
+   * Builds a tx request from params and verify it
+   *
+   * @param {PrebuildTransactionWithIntentOptions} params - parameters to build the tx
+   * @param {TxRequestVersion} apiVersion lite or full
+   * @param {boolean} preview boolean indicating if this is to preview a tx request, which will not initiate policy checks or pending approvals
+   * @returns {Promise<TxRequest>} - a built tx request
+   */
+  async prebuildTxWithIntent(
     params: PrebuildTransactionWithIntentOptions,
-    apiVersion?: TxRequestVersion | undefined,
-    preview?: boolean | undefined
+    apiVersion: TxRequestVersion = 'lite',
+    preview?: boolean
   ): Promise<TxRequest> {
-    throw new Error('Method not implemented.');
+    const intentOptions = this.populateIntent(this.baseCoin, params);
+
+    const whitelistedParams = {
+      intent: {
+        ...intentOptions,
+      },
+      apiVersion: apiVersion,
+      preview,
+    };
+
+    const unsignedTx = (await this.bitgo
+      .post(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
+      .send(whitelistedParams)
+      .result()) as TxRequest;
+
+    return unsignedTx;
   }
 
   /**

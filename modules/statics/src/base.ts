@@ -22,6 +22,7 @@ export enum CoinFamily {
   AVAXP = 'avaxp',
   BCH = 'bch',
   BCHA = 'bcha',
+  BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
@@ -129,11 +130,14 @@ export enum CoinFeature {
    * This coin supports custodial wallet types
    */
   CUSTODY = 'custody',
-
   /*
   This coin uses TSS for key creation and signing
    */
   TSS = 'tss',
+  /*
+   * This coin supports staking
+   */
+  STAKING = 'staking',
 }
 
 /**
@@ -154,6 +158,7 @@ export enum UnderlyingAsset {
   AXL = 'AXL',
   BCH = 'bch',
   BCHA = 'bcha',
+  BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
@@ -601,6 +606,7 @@ export enum UnderlyingAsset {
   REEF = 'reef',
   REP = 'rep',
   REPV2 = 'repv2',
+  'RETH-H' = 'reth-h',
   RFR = 'rfr',
   RFUEL = 'rfuel',
   RGT = 'rgt',
@@ -649,6 +655,7 @@ export enum UnderlyingAsset {
   STBU = 'stbu',
   STC = 'stc',
   STCV2 = 'stcv2',
+  'SETH-H' = 'seth-h',
   STKAAVE = 'stkaave',
   STORE = 'store',
   STORJ = 'storj',

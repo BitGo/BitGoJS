@@ -47,7 +47,6 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.1.1",
-    "@bitgo/sdk-test": "^1.0.2",
-    "assert": "^2.0.0"
+    "@bitgo/sdk-test": "^1.0.2"
   }
 }

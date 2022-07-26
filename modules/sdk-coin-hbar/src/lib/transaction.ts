@@ -96,10 +96,9 @@ export class Transaction extends BaseTransaction {
 
     switch (this._txBody.data) {
       case HederaTransactionTypes.Transfer:
-        const transferData = this.getTransferData();
         result.instructionsData = {
           type: HederaTransactionTypes.Transfer,
-          params: transferData,
+          params: this.getTransferData(),
         };
         result.to = result.instructionsData.params.recipients[0].address;
         result.amount = result.instructionsData.params.recipients[0].amount;

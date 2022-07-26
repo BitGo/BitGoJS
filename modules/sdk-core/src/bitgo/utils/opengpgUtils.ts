@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import {
   createMessage,
   decrypt,
@@ -10,7 +12,10 @@ import {
   sign,
   verify,
 } from 'openpgp';
+import * as pgp from 'openpgp';
 import { BitGoBase } from '../bitgoBase';
+
+const sodium = require('libsodium-wrappers-sumo');
 
 /**
  * Fetches BitGo's pubic gpg key used in MPC flows
@@ -25,6 +30,69 @@ export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
 
   const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
   return await readKey({ armoredKey: bitgoPublicKeyStr });
+}
+
+/**
+ * Creates an Eddsa KeyShare Proof by appending an ed25519 subkey to an armored gpg private key.
+ *
+ * @param privateArmor gpg private key in armor format
+ * @param uValue u value from an Eddsa keyshare
+ * @return {string} keyshare proof
+ */
+export async function createShareProof(privateArmor: string, uValue: string): Promise<string> {
+  const privateKey = await readKey({ armoredKey: privateArmor });
+  const dateTime = new Date();
+  await sodium.ready;
+  const subKeyVal = Buffer.from(
+    sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'), 'uint8array')
+  );
+
+  // Sub-key (encryption key) packet.
+  const publicSubKey = new Uint8Array([...new Uint8Array([0x40]), ...new Uint8Array(subKeyVal)]);
+  const subOid = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01];
+
+  // @ts-ignore
+  subOid.write = () => new Uint8Array(Buffer.from('092b06010401da470f01', 'hex'));
+  // @ts-ignore - type inconsistency, this ctor supports a date param: https://docs.openpgpjs.org/SecretSubkeyPacket.html
+  const secretSubkeyPacket = new pgp.SecretSubkeyPacket(dateTime);
+  secretSubkeyPacket.algorithm = pgp.enums.publicKey.eddsa;
+  // @ts-ignore - same as above
+  secretSubkeyPacket.isEncrypted = false;
+  secretSubkeyPacket.publicParams = {
+    oid: subOid,
+    Q: new Uint8Array(publicSubKey),
+  };
+  // @ts-ignore - same as above
+  await secretSubkeyPacket.computeFingerprintAndKeyID();
+
+  // Sub-key signature packet.
+  const subKeydataToSign = {
+    key: privateKey.keyPacket,
+    bind: privateKey.keyPacket,
+  };
+  const subkeySignaturePacket = new pgp.SignaturePacket();
+  subkeySignaturePacket.signatureType = pgp.enums.signature.subkeyBinding;
+  subkeySignaturePacket.publicKeyAlgorithm = pgp.enums.publicKey.ecdsa;
+  subkeySignaturePacket.hashAlgorithm = pgp.enums.hash.sha256;
+  subkeySignaturePacket.keyFlags = new Uint8Array([pgp.enums.keyFlags.authentication]);
+
+  // Sign the subkey
+  // @ts-ignore - sign supports arbitrary data for 2nd param: https://docs.openpgpjs.org/SignaturePacket.html
+  await subkeySignaturePacket.sign(privateKey.keyPacket, subKeydataToSign, dateTime);
+
+  // Assemble packets together.
+  const newKeyPktList = new pgp.PacketList();
+  const privateKeyPkts = privateKey.toPacketList();
+  privateKeyPkts.forEach((packet) => newKeyPktList.push(packet));
+  newKeyPktList.push(secretSubkeyPacket, subkeySignaturePacket);
+  // @ts-ignore - supports packet list as ctor param: https://docs.openpgpjs.org/PrivateKey.html
+  const newPubKey = new pgp.PrivateKey(newKeyPktList).toPublic();
+
+  if (!(await newPubKey.verifyPrimaryUser([privateKey]))[0].valid) {
+    throw new Error('Incorrect signature');
+  }
+
+  return newPubKey.armor().replace(/\r\n/g, '\n');
 }
 
 /**

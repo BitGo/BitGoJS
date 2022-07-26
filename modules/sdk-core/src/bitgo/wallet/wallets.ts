@@ -95,8 +95,14 @@ export class Wallets implements IWallets {
    *    "n": number of keys available on the wallet (3)
    *    "keys": array of keychain ids
    */
-  async add(params: AddWalletOptions = {}): Promise<any> {
+  async add(params: AddWalletOptions): Promise<any> {
+    params = params || {};
+
     common.validateParams(params, [], ['label', 'enterprise', 'type']);
+
+    if (typeof params.label !== 'string') {
+      throw new Error('missing required string parameter label');
+    }
 
     // no need to pass keys for (single) custodial wallets
     if (params.type !== 'custodial') {
@@ -138,47 +144,7 @@ export class Wallets implements IWallets {
       throw new Error('invalid argument for address - valid address string expected');
     }
 
-    const walletParams = _.pick(params, [
-      'label',
-      'm',
-      'n',
-      'keys',
-      'enterprise',
-      'isCold',
-      'isCustodial',
-      'tags',
-      'clientFlags',
-      'type',
-      'address',
-      'gasPrice',
-      'walletVersion',
-    ]);
-
-    // Additional params needed for xrp
-    if (params.rootPub) {
-      walletParams.rootPub = params.rootPub;
-    }
-
-    // In XRP, XLM and CSPR this private key is used only for wallet creation purposes,
-    // once the wallet is initialized then we update its weight to 0 making it an invalid key.
-    // https://www.stellar.org/developers/guides/concepts/multi-sig.html#additional-signing-keys
-    if (params.rootPrivateKey) {
-      walletParams.rootPrivateKey = params.rootPrivateKey;
-    }
-
-    if (params.initializationTxs) {
-      walletParams.initializationTxs = params.initializationTxs;
-    }
-
-    if (params.disableTransactionNotifications) {
-      walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
-    }
-
-    if (params.multisigType) {
-      walletParams.multisigType = params.multisigType;
-    }
-
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(params).result();
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
     };
@@ -209,7 +175,7 @@ export class Wallets implements IWallets {
    */
   async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
     common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub']);
-    if (!_.isString(params.label)) {
+    if (typeof params.label !== 'string') {
       throw new Error('missing required string parameter label');
     }
 

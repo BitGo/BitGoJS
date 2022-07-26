@@ -145,14 +145,14 @@ describe('TSS ECDSA TESTS', function () {
 
         const [signCombineOne, signCombineTwo] = [
           MPC.signCombine({
-            gShares: signConvertS12.gShare as ECDSA.GShare,
+            gShare: signConvertS12.gShare as ECDSA.GShare,
             signIndex: {
               i: (signConvertS12.muShare as ECDSA.MUShare).i,
               j: (signConvertS12.muShare as ECDSA.MUShare).j,
             },
           }),
           MPC.signCombine({
-            gShares: signConvertS21.gShare as ECDSA.GShare,
+            gShare: signConvertS21.gShare as ECDSA.GShare,
             signIndex: {
               i: (signConvertS21.muShare as ECDSA.MUShare).i,
               j: (signConvertS21.muShare as ECDSA.MUShare).j,

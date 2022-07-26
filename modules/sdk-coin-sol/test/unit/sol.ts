@@ -118,7 +118,7 @@ describe('SOL:', function () {
   it('should retun the right info', function () {
     basecoin.getChain().should.equal('tsol');
     basecoin.getFamily().should.equal('sol');
-    basecoin.getFullName().should.equal('Testnet Sol');
+    basecoin.getFullName().should.equal('Testnet Solana');
     basecoin.getBaseFactor().should.equal(1000000000);
   });
   describe('verify transactions', () => {

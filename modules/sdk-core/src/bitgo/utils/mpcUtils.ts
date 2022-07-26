@@ -6,10 +6,12 @@ import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeyType } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
+import { PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
 
 export interface MpcKeyShare {
   publicShare: string;
   privateShare: string;
+  privateShareProof?: string;
 }
 
 export abstract class MpcUtils {
@@ -58,12 +60,14 @@ export abstract class MpcUtils {
           to: 'bitgo',
           publicShare: userKeyShare.publicShare,
           privateShare: encUserToBitGoMessage,
+          privateShareProof: userKeyShare.privateShareProof,
         },
         {
           from: 'backup',
           to: 'bitgo',
           publicShare: backupKeyShare.publicShare,
           privateShare: encBackupToBitGoMessage,
+          privateShareProof: backupKeyShare.privateShareProof,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
@@ -86,4 +90,42 @@ export abstract class MpcUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
+
+  /**
+   * This function would be responsible for populating intents
+   * based on the type of coin / sig scheme the coin uses
+   * @param {IBaseCoin} baseCoin
+   * @param {PrebuildTransactionWithIntentOptions} params
+   * @returns {Record<string, unknown>}
+   */
+  populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): Record<string, unknown> {
+    const chain = this.baseCoin.getChain();
+    const intentRecipients = params.recipients.map((recipient) => ({
+      address: { address: recipient.address },
+      amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
+    }));
+
+    const baseIntent = {
+      intentType: params.intentType,
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      nonce: params.nonce,
+      recipients: intentRecipients,
+    };
+    if (baseCoin.getFamily() === 'eth') {
+      return {
+        ...baseIntent,
+        selfSend: params.selfSend,
+        feeOptions: params.feeOptions,
+        hopParams: params.hopParams,
+        isTss: params.isTss,
+      };
+    }
+
+    return {
+      ...baseIntent,
+      memo: params.memo?.value,
+      token: params.tokenName,
+    };
+  }
 }

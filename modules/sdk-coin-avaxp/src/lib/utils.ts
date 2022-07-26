@@ -37,7 +37,7 @@ export class Utils implements BaseUtils {
    */
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    return (address as string).match(/^[a-zA-Z0-9]+$/) !== null;
+    return /^(^P||NodeID)-[a-zA-Z0-9]+$/.test(address);
   }
 
   /**
@@ -48,10 +48,7 @@ export class Utils implements BaseUtils {
    */
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    if (hash.length !== 66 || hash.slice(0, 2) !== '0x') {
-      return false;
-    }
-    return (hash as string).match(/^[a-zA-Z0-9]+$/) !== null;
+    return this.binTools.isCB58(hash) && this.binTools.b58ToBuffer(hash).length === 36;
   }
 
   /**

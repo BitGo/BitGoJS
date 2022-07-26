@@ -17,10 +17,10 @@ import {
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
-import * as nock from 'nock';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
+import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 
 describe('test tss helper functions', function () {
   let mpc: Eddsa;
@@ -252,7 +252,7 @@ describe('test tss helper functions', function () {
     });
   });
 
-  describe('tss signing helper function', async function() {
+  describe('Eddsa tss signing helper function', async function() {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
@@ -531,22 +531,4 @@ describe('test tss helper functions', function () {
     });
 
   });
-
-
-  async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any, signerShare?: string}, status = 200): Promise<nock.Scope> {
-    const { signatureShare, signerShare } = params;
-    const requestBody = signerShare === undefined ?
-      { signatureShare } :
-      { signatureShare, signerShare };
-
-    return nock('https://bitgo.fakeurl')
-      .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, requestBody)
-      .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
-  }
-
-  async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: any}): Promise<nock.Scope> {
-    return nock('https://bitgo.fakeurl')
-      .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
-      .reply(200, params.response);
-  }
 });

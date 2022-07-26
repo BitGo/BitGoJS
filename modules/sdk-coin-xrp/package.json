@@ -41,9 +41,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^1.0.2",
     "@bitgo/sdk-core": "^1.1.1",
-    "@bitgo/statics": "^7.1.0",
     "@bitgo/utxo-lib": "^2.4.1",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
@@ -54,6 +52,7 @@
     "ripple-lib": "~1.4.1"
   },
   "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.1",
     "@bitgo/sdk-test": "^1.0.2"
   }
 }

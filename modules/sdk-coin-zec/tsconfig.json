@@ -14,6 +14,9 @@
       "path": "../abstract-utxo"
     },
     {
+      "path": "../sdk-api"
+    },
+    {
       "path": "../sdk-core"
     },
     {

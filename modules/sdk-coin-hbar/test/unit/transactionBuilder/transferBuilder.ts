@@ -287,7 +287,7 @@ describe('HBAR Transfer Builder', () => {
       );
     });
 
-    it('a transfer transaction with an invalid destination address', () => {
+    it('a transfer transaction with an invalid destination address using deprecated to method', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
         () => txBuilder.to('invalidaddress'),
@@ -295,7 +295,7 @@ describe('HBAR Transfer Builder', () => {
       );
     });
 
-    it('a transfer transaction with an invalid amount: text value', () => {
+    it('a transfer transaction with an invalid amount using deprecated amount method: text value', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
         () => txBuilder.amount('invalidamount'),
@@ -303,10 +303,46 @@ describe('HBAR Transfer Builder', () => {
       );
     });
 
-    it('a transfer transaction with an invalid amount: negative value', () => {
+    it('a transfer transaction with an invalid amount using deprecated amount method: negative value', () => {
       const txBuilder = factory.getTransferBuilder();
       assert.throws(
         () => txBuilder.amount('-5'),
+        (e) => e.message === 'Invalid amount'
+      );
+    });
+
+    it('a transfer transaction with an invalid destination address', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () =>
+          txBuilder.send({
+            address: 'invalidaddress',
+            amount: '10000',
+          }),
+        (e) => e.message === 'Invalid address'
+      );
+    });
+
+    it('a transfer transaction with an invalid amount: text value', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () =>
+          txBuilder.send({
+            address: testData.ACCOUNT_2.accountId,
+            amount: 'invalidamount',
+          }),
+        (e) => e.message === 'Invalid amount'
+      );
+    });
+
+    it('a transfer transaction with an invalid amount: negative value', () => {
+      const txBuilder = factory.getTransferBuilder();
+      assert.throws(
+        () =>
+          txBuilder.send({
+            address: testData.ACCOUNT_2.accountId,
+            amount: '-5',
+          }),
         (e) => e.message === 'Invalid amount'
       );
     });

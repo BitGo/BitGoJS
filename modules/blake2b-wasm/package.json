@@ -10,11 +10,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@bitgo/blake2b": "^3.0.3",
     "browserify": "^14.4.0",
     "tape": "^4.6.3",
-    "wat2js": "^1.1.1",
-    "wat2wasm": "^1.0.2"
+    "wat2js": "^1.1.1"
   },
   "scripts": {
     "compile": "wat2js blake2b.wat -o blake2b.js",

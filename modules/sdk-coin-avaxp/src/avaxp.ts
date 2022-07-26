@@ -172,7 +172,8 @@ export class AvaxP extends BaseCoin {
   }
 
   async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {
-    return { fee: (this._staticsCoin.network as AvalancheNetwork).txFee };
+    // staking transactions are fee-less
+    return { fee: '0' };
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {

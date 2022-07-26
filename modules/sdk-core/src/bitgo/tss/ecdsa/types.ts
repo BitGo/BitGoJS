@@ -1,5 +1,28 @@
 import { ECDSA } from './../../../account-lib/mpc/tss';
 
+export type NShare = ECDSA.NShare;
+export type KeyShare = ECDSA.KeyShare;
+export type XShare = ECDSA.XShare;
+export type YShare = ECDSA.YShare;
+export type SignShare = ECDSA.SignShareRT;
+export type KShare = ECDSA.KShare;
+export type WShare = ECDSA.WShare;
+export type AShare = ECDSA.AShare;
+export type GShare = ECDSA.GShare;
+export type OShare = ECDSA.OShare;
+export type DShare = ECDSA.DShare;
+export type CreateUserGammaAndMuShareRT = ECDSA.SignConvertRT;
+export type CreateUserOmicronAndDeltaShareRT = ECDSA.SignCombineRT;
+export type SignatureShare = ECDSA.SignRT;
+export type Signature = ECDSA.Signature;
+
+export enum SendShareType {
+  KShare = 'KShare',
+  MUShare = 'MUShare',
+  SShare = 'SShare',
+}
+
+export type GetShareFromBitgoRT = DShare | AShare;
 // NShare that has been encrypted and signed via GPG
 export type EncryptedNShare = {
   i: number;
@@ -35,3 +58,5 @@ export type CreateCombinedKeyParams = {
   encryptedNShares: DecryptableNShare[];
   commonKeychain: string;
 };
+
+export type SendShareToBitgoRT = AShare | DShare | Signature;

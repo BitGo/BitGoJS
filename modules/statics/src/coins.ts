@@ -50,7 +50,8 @@ const SOL_FEATURES = [
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.SUPPORTS_TOKENS,
 ];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -93,9 +94,16 @@ export const coins = CoinMap.fromCoins([
   account('tdot', 'Testnet Polkadot', Networks.test.dot, 12, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
   account('aca', 'Acala', Networks.main.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
   account('taca', 'Mandala', Networks.test.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
-  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES_WITH_STAKING),
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
-  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.GTETH, ETH_FEATURES),
+  account(
+    'gteth',
+    'Goerli Testnet Ethereum',
+    Networks.test.goerli,
+    18,
+    UnderlyingAsset.GTETH,
+    ETH_FEATURES_WITH_STAKING
+  ),
   account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
   account(
     'teth2',
@@ -131,10 +139,12 @@ export const coins = CoinMap.fromCoins([
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX),
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
-  account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
-  account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  account('sol', 'Solana', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  account('tsol', 'Testnet Solana', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, ETH_FEATURES),
+  account('tbsc', 'Testnet Binance Smart Chain', Networks.test.bsc, 18, UnderlyingAsset.BSC, ETH_FEATURES),
   account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES),
   account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES),
   erc20CompatibleAccountCoin(
@@ -182,6 +192,7 @@ export const coins = CoinMap.fromCoins([
   ofc('ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
   ofc('ofcavaxc', 'Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
   ofc('ofccspr', 'Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
+  ofc('ofcnear', 'Near', 24, UnderlyingAsset.NEAR, CoinKind.CRYPTO),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   ofc('ofceth', 'Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
   ofc('ofcltc', 'Litecoin', 8, UnderlyingAsset.LTC, CoinKind.CRYPTO),
@@ -203,6 +214,7 @@ export const coins = CoinMap.fromCoins([
   tofc('ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc('ofctgbp', 'Test British Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
   tofc('ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
+  tofc('ofctnear', 'Test Near', 24, UnderlyingAsset.NEAR, CoinKind.CRYPTO),
   tofc('ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
@@ -653,6 +665,7 @@ export const coins = CoinMap.fromCoins([
   erc20('reef', 'REEF', 18, '0xfe3e6a25e6b192a42a44ecddcd13796471735acf', UnderlyingAsset.REEF),
   erc20('rep', 'Augur', 18, '0x1985365e9f78359a9b6ad760e32412f4a445e862', UnderlyingAsset.REP),
   erc20('repv2', 'Augur V2 Token', 18, '0x221657776846890989a759ba2973e427dff5c9bb', UnderlyingAsset.REPV2),
+  erc20('reth-h', 'Reward ETH Harbour', 18, '0xcbe26dbc91b05c160050167107154780f36ceaab', UnderlyingAsset['RETH-H']),
   erc20('rfr', 'Refereum', 4, '0xd0929d411954c47438dc1d871dd6081f5c5e149c', UnderlyingAsset.RFR),
   erc20('rfuel', 'RioDeFi', 18, '0xaf9f549774ecedbd0966c52f250acc548d3f36e5', UnderlyingAsset.RFUEL),
   erc20('rgt', 'Rari Governance Token', 18, '0xd291e7a03283640fdc51b121ac401383a46cc623', UnderlyingAsset.RGT),
@@ -699,6 +712,7 @@ export const coins = CoinMap.fromCoins([
   erc20('stbu', 'Stobox Token', 18, '0x212dd60d4bf0da8372fe8116474602d429e5735f', UnderlyingAsset.STBU),
   erc20('stc', 'Student Coin', 2, '0xb8b7791b1a445fb1e202683a0a329504772e0e52', UnderlyingAsset.STC),
   erc20('stcv2', 'Student Coin V2', 18, '0x15b543e986b8c34074dfc9901136d9355a537e7e', UnderlyingAsset.STCV2),
+  erc20('seth-h', 'Staked Aave', 18, '0x65077fa7df8e38e135bd4052ac243f603729892d', UnderlyingAsset['SETH-H']),
   erc20('stkaave', 'Staked Aave', 18, '0x4da27a545c0c5b758a6ba100e3a049001de870f5', UnderlyingAsset.STKAAVE),
   erc20('storj', 'Storj', 8, '0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac', UnderlyingAsset.STORJ),
   erc20('store', 'Store', 8, '0x2c0f41eb07a0635bac34bd7d11d0ca6058279601', UnderlyingAsset.STORE),

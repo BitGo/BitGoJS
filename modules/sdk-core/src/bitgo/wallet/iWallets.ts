@@ -65,23 +65,48 @@ export interface AcceptShareOptions {
 }
 
 export interface AddWalletOptions {
-  type?: string;
+  coinSpecific?: any;
+  enterprise?: string;
+  isCold?: IsCold;
+  isCustodial?: IsCustodial;
   keys?: string[];
+  keySignatures?: KeySignatures;
+  label: string;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  address?: string;
   m?: number;
   n?: number;
   tags?: string[];
+  type?: string;
+  walletVersion?: number;
+  eip1559?: Eip1559;
   clientFlags?: string[];
-  isCold?: boolean;
-  isCustodial?: boolean;
-  address?: string;
+  // Additional params needed for xrp
   rootPub?: string;
+  // In XRP, XLM and CSPR this private key is used only for wallet creation purposes,
+  // once the wallet is initialized then we update its weight to 0 making it an invalid key.
+  // https://www.stellar.org/developers/guides/concepts/multi-sig.html#additional-signing-keys
   rootPrivateKey?: string;
   initializationTxs?: any;
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
-  walletVersion?: number;
-  multisigType?: 'onchain' | 'tss' | 'blsdkg';
 }
+
+type KeySignatures = {
+  backup?: string;
+  bitgo?: string;
+};
+
+/** @deprecated */
+type IsCold = boolean;
+
+/** @deprecated */
+type IsCustodial = boolean;
+
+type Eip1559 = {
+  maxPriorityFeePerGas: string;
+  maxFeePerGas: string;
+};
 
 export interface ListWalletOptions extends PaginationOptions {
   skip?: number;
