@@ -19,7 +19,10 @@ export const BaseTransactionSchema = joi.object({
   blockHash: joi.string().required(),
   genesisHash: joi.string().required(),
   specVersion: joi.number().required(),
-  specName: joi.string().valid('kusama', 'polkadot', 'westend', 'statemint', 'statemine').required(),
+  specName: joi
+    .string()
+    .valid('kusama', 'polkadot', 'westend', 'statemint', 'statemine', 'mandala', 'acala')
+    .required(),
   transactionVersion: joi.number().required(),
   chainName: joi.string().required(),
   eraPeriod: joi.number().required(),

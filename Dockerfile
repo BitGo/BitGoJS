@@ -83,8 +83,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
 RUN cd /var/modules/sdk-coin-trx && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
 RUN cd /var/modules/sdk-coin-xtz && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
-RUN cd /var/modules/sdk-coin-ada && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-aca /var/modules/sdk-coin-aca/
+RUN cd /var/modules/sdk-coin-aca && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bch /var/modules/sdk-coin-bch/
 RUN cd /var/modules/sdk-coin-bch && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bcha /var/modules/sdk-coin-bcha/
@@ -146,7 +146,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-xtz && \
-    yarn link @bitgo/sdk-coin-ada && \
+    yarn link @bitgo/sdk-coin-aca && \
     yarn link @bitgo/sdk-coin-bch && \
     yarn link @bitgo/sdk-coin-bcha && \
     yarn link @bitgo/sdk-coin-bsc && \
@@ -163,9 +163,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 18 Jul 2022 20:03:36 GMT"
+LABEL created="Wed, 20 Jul 2022 07:34:51 GMT"
 LABEL version=9.12.0
-LABEL git_hash=973a8b01131f5958dd5b588a17dc4346b148acb3
+LABEL git_hash=93c125e470a374e140f9ecdaf21895ffb8c6a26d
 #LABEL_END
 
 USER node

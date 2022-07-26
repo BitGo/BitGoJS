@@ -66,6 +66,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return this;
   }
 
+  // should get builder be protected instead and whoever implement this class override it?
   private getBuilder(rawTxn: string): TransactionBuilder {
     const registry = SingletonRegistry.getInstance(this._material);
     const decodedTxn = decode(rawTxn, {
@@ -74,7 +75,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     });
 
     const methodName = decodedTxn.method?.name;
-    if (methodName === MethodNames.TransferKeepAlive || methodName === MethodNames.Proxy) {
+    if (
+      methodName === MethodNames.TransferKeepAlive ||
+      methodName === MethodNames.Proxy ||
+      methodName === MethodNames.Transfer
+    ) {
       return this.getTransferBuilder();
     } else if (methodName === MethodNames.Bond) {
       return this.getStakingBuilder();

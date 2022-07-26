@@ -12,6 +12,7 @@ export enum MethodNames {
   Proxy = 'proxy',
   Bond = 'bond',
   TransferKeepAlive = 'transferKeepAlive',
+  Transfer = 'transfer',
   Unbond = 'unbond',
   Anonymous = 'anonymous',
   Batch = 'batch',

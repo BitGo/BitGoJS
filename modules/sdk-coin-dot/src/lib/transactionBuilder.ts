@@ -192,6 +192,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       metadataRpc: this._material.metadata,
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
+    console.log('DECODED TXN ' + JSON.stringify(decodedTxn, null, 2));
     if (utils.isSigningPayload(decodedTxn)) {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
