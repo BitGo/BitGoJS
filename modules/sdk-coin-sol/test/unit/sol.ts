@@ -371,7 +371,7 @@ describe('SOL:', function () {
     it('should verify create associated token account transaction', async function () {
       const tx = await factory
         .getAtaInitializationBuilder()
-        .mint('tsol:orca')
+        .mint('tsol:usdc')
         .sender(wallet.pub)
         .nonce(blockHash)
         .memo('test memo')
@@ -533,15 +533,15 @@ describe('SOL:', function () {
       parsedTransaction.should.deepEqual({
         inputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
             amount: 5000,
           },
         ],
         outputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-            amount: '2',
-            tokenName: 'tsol:mnde',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+            tokenName: 'tsol:usdc',
           },
         ],
       });
@@ -558,15 +558,15 @@ describe('SOL:', function () {
       parsedTransaction.should.deepEqual({
         inputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
             amount: 5000,
           },
         ],
         outputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-            amount: '2',
-            tokenName: 'tsol:mnde',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+            tokenName: 'tsol:usdc',
           },
         ],
       });
@@ -767,17 +767,17 @@ describe('SOL:', function () {
         outputAmount: '0',
         outputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-            amount: '2',
-            tokenName: 'tsol:mnde',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+            tokenName: 'tsol:usdc',
           },
         ],
         fee: {
           fee: '5000',
           feeRate: 5000,
         },
-        memo: undefined,
-        blockhash: '9qanCxWtF5KaxWTZV8Xj1RJKTeBXeEB2FhhuZBVqbnHE',
+        memo: 'test memo',
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
       });
     });
@@ -802,24 +802,24 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '2CHaadAc1v9Z2rgeWbQBXsSiANmZeyzzTTfozGvzoWiTkTzNPFpXcqb9htL87Tok2u32hAT58KWXDHBshq5YQ4aR',
+        id: '4idioQZoVgSPARCHWL19vWtd1RJbf34pbFRSseypxMESBV9ffcimBiYmEyUdHfHys9rkuhZ41tJC5DgBerTvfpcz',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
         outputAmount: '0',
         outputs: [
           {
-            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-            amount: '2',
-            tokenName: 'tsol:mnde',
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+            tokenName: 'tsol:usdc',
           },
         ],
         fee: {
           fee: '5000',
           feeRate: 5000,
         },
-        memo: undefined,
-        blockhash: 'FweXfZMDBPNFinGjcEDsw7ktw5BcDdzYBkqLUfJc554u',
+        memo: 'test memo',
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
       });
     });
@@ -973,7 +973,7 @@ describe('SOL:', function () {
     });
 
     it('should explain create ATA transaction', async function () {
-      const tokenName = 'tsol:orca';
+      const tokenName = 'tsol:usdc';
       const rentExemptAmount = '3000000';
       const tx = await factory
         .getAtaInitializationBuilder()
@@ -1012,7 +1012,7 @@ describe('SOL:', function () {
         outputAmount: rentExemptAmount,
         outputs: [
           {
-            address: '9nEfQqahxpyYP5RPExt9TGssPmV5MxjEw9YjGWmepMAt',
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
             amount: rentExemptAmount,
           },
         ],

@@ -20,8 +20,8 @@ describe('Sol Token Transfer Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const amount = testData.tokenTransfers.amount.toString();
   const memo = testData.tokenTransfers.memo;
-  const nameORCA = testData.tokenTransfers.nameORCA;
-  const ownerORCA = testData.tokenTransfers.ownerORCA;
+  const nameUSDC = testData.tokenTransfers.nameUSDC;
+  const owner = testData.tokenTransfers.owner;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
 
@@ -30,20 +30,20 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -54,19 +54,19 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -82,20 +82,20 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -106,19 +106,19 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -132,7 +132,7 @@ describe('Sol Token Transfer Builder', () => {
         authWalletAddress: walletPK,
       });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       txBuilder.sign({ key: walletSK });
       const tx = await txBuilder.build();
@@ -141,13 +141,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -163,77 +163,77 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
 
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
-      txBuilder.sender(ownerORCA);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account1.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account2.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account3.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account4.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account5.pub, amount, tokenName: nameORCA });
+      txBuilder.sender(owner);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account2.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account3.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account4.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account5.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       txBuilder.sign({ key: authAccount.prv });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(6);
       tx.inputs[0].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.inputs[1].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.inputs[2].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.inputs[3].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.inputs[4].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.inputs[5].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs.length.should.equal(6);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[1].should.deepEqual({
         address: account1.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[2].should.deepEqual({
         address: account2.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[3].should.deepEqual({
         address: account3.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[4].should.deepEqual({
         address: account4.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[5].should.deepEqual({
         address: account5.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -245,66 +245,66 @@ describe('Sol Token Transfer Builder', () => {
       const account2 = new KeyPair({ prv: testData.extraAccounts.prv2 }).getKeys();
       const account3 = new KeyPair({ prv: testData.extraAccounts.prv3 }).getKeys();
       const txBuilder = factory.getTokenTransferBuilder();
-      const nameUSDC = 'tsol:usdc';
-      const nameMNDE = 'tsol:mnde';
+      const nameSRM = 'tsol:srm';
+      const nameRAY = 'tsol:ray';
 
       txBuilder.nonce(recentBlockHash);
-      txBuilder.sender(ownerORCA);
-      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account1.pub, amount, tokenName: nameORCA });
-      txBuilder.send({ address: account2.pub, amount, tokenName: nameMNDE });
-      txBuilder.send({ address: account3.pub, amount, tokenName: nameUSDC });
+      txBuilder.sender(owner);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account2.pub, amount, tokenName: nameSRM });
+      txBuilder.send({ address: account3.pub, amount, tokenName: nameRAY });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(4);
       tx.inputs[0].should.deepEqual({
-        address: ownerORCA,
-        value: amount,
-        coin: nameORCA,
-      });
-      tx.inputs[1].should.deepEqual({
-        address: ownerORCA,
-        value: amount,
-        coin: nameORCA,
-      });
-      tx.inputs[2].should.deepEqual({
-        address: ownerORCA,
-        value: amount,
-        coin: nameMNDE,
-      });
-      tx.inputs[3].should.deepEqual({
-        address: ownerORCA,
+        address: owner,
         value: amount,
         coin: nameUSDC,
+      });
+      tx.inputs[1].should.deepEqual({
+        address: owner,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.inputs[2].should.deepEqual({
+        address: owner,
+        value: amount,
+        coin: nameSRM,
+      });
+      tx.inputs[3].should.deepEqual({
+        address: owner,
+        value: amount,
+        coin: nameRAY,
       });
 
       tx.outputs.length.should.equal(4);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[1].should.deepEqual({
         address: account1.pub,
         value: amount,
-        coin: nameORCA,
+        coin: nameUSDC,
       });
       tx.outputs[2].should.deepEqual({
         address: account2.pub,
         value: amount,
-        coin: nameMNDE,
+        coin: nameSRM,
       });
       tx.outputs[3].should.deepEqual({
         address: account3.pub,
         value: amount,
-        coin: nameUSDC,
+        coin: nameRAY,
       });
 
       const txJson = tx.toJson();
       txJson.instructionsData.length.should.equal(4);
-      txJson.instructionsData[0].params.sourceAddress.should.equal(testData.tokenTransfers.sourceORCA);
-      txJson.instructionsData[1].params.sourceAddress.should.equal(testData.tokenTransfers.sourceORCA);
-      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceMNDE);
-      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData[0].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData[1].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceSRM);
+      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceRAY);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -319,7 +319,7 @@ describe('Sol Token Transfer Builder', () => {
 
     it('for invalid toAddress', () => {
       const txBuilder = tokenTransferBuilder();
-      should(() => txBuilder.send({ address: invalidPubKey, amount, tokenName: nameORCA })).throwError(
+      should(() => txBuilder.send({ address: invalidPubKey, amount, tokenName: nameUSDC })).throwError(
         'Invalid or missing address, got: ' + invalidPubKey
       );
     });
@@ -331,7 +331,7 @@ describe('Sol Token Transfer Builder', () => {
         txBuilder.send({
           address: nonceAccount.pub,
           amount: invalidAmount,
-          tokenName: nameORCA,
+          tokenName: nameUSDC,
         })
       ).throwError('Invalid or missing amount, got: ' + invalidAmount);
     });
