@@ -894,6 +894,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcleo', 'Bitfinex LEO Token', 18, UnderlyingAsset.LEO),
   ofcerc20('ofcqnt', 'Quant', 18, UnderlyingAsset.QNT),
   ofcerc20('ofczil', 'Zilliqa', 18, UnderlyingAsset.ZIL),
+  ofcerc20('ofcnexo', 'Nexo', 18, UnderlyingAsset.NEXO),
   stellarToken(
     'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
     'BitGo Shield Token',
