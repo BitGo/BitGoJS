@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
-import { AddValidatorTx, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
+import { AddValidatorTx, AmountInput, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import * as createHash from 'create-hash';
@@ -170,13 +170,15 @@ export class Transaction extends BaseTransaction {
     }
     return {
       id: this.id,
+      inputs: this.inputs,
       fromAddresses: this.fromAddresses,
       threshold: this._threshold,
       locktime: this._locktime.toString(),
       type: this.type,
       memo: utils.bufferToString(this.avaxPTransaction.getMemo()),
       signatures: this.signature,
-      outputs: this.outputs,
+      stakedOutputs: this.stakedOutputs,
+      changeOutputs: this.changeOutputs,
     };
   }
 
@@ -217,16 +219,18 @@ export class Transaction extends BaseTransaction {
   /**
    * Get the list of outputs. Amounts are expressed in absolute value.
    */
-  get outputs(): Entry[] {
-    if (this.type === TransactionType.addValidator) {
-      const addValidatorTx = this.avaxPTransaction as AddValidatorTx;
-      return [
-        {
-          address: addValidatorTx.getNodeIDString(),
-          value: addValidatorTx.getStakeAmount().toString(),
-        },
-      ];
-    }
+  get stakedOutputs(): Entry[] {
+    // Get staked outputs
+    const addValidatorTx = this.avaxPTransaction as AddValidatorTx;
+    return [
+      {
+        address: addValidatorTx.getNodeIDString(),
+        value: addValidatorTx.getStakeAmount().toString(),
+      },
+    ];
+  }
+
+  get changeOutputs(): Entry[] {
     // general support any transaction type, but it's scoped yet
     return this.avaxPTransaction.getOuts().map((output) => {
       const amountOutput = output.getOutput() as any as AmountOutput;
@@ -237,6 +241,20 @@ export class Transaction extends BaseTransaction {
       return {
         value: amountOutput.getAmount().toString(),
         address,
+      };
+    });
+  }
+
+  get inputs(): Entry[] {
+    const bintools = BinTools.getInstance();
+    return this.avaxPTransaction.getIns().map((input) => {
+      const amountInput = input.getInput() as any as AmountInput;
+      return {
+        address: amountInput
+          .getSigIdxs()
+          .map((i) => bintools.fromBufferToBN(bintools.b58ToBuffer(i.toString())).toString())
+          .toString(),
+        value: amountInput.getAmount().toString(),
       };
     });
   }
@@ -258,16 +276,38 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const txJson = this.toJson();
-    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    const displayOrder = [
+      'id',
+      'inputs',
+      'outputAmount',
+      'changeAmount',
+      'outputs',
+      'changeOutputs',
+      'rewardAddresses',
+      'fee',
+      'type',
+      'memo',
+    ];
+
+    let totalIn = new BN(0);
+    this._utxos.map((utxo) => {
+      totalIn = totalIn.add(new BN(utxo.amount));
+    });
+    const outputAmount = txJson.stakedOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
+    const changeAmount = txJson.changeOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
+
     return {
       displayOrder,
       id: txJson.id,
-      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.value, memo: txJson.memo })),
-      outputAmount: txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString(),
-      changeOutputs: [], // account based does not use change outputs
-      changeAmount: '0', // account base does not make change
+      inputs: txJson.inputs,
+      outputs: txJson.stakedOutputs.map((o) => ({ address: o.address, amount: o.value })),
+      outputAmount,
+      changeOutputs: txJson.changeOutputs.map((o) => ({ address: o.address, amount: o.value })),
+      changeAmount,
+      rewardAddresses: this.rewardAddresses,
       fee: { fee: '0' },
       type: txJson.type,
+      memo: txJson.memo,
     };
   }
 }
