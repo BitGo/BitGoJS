@@ -9,4 +9,7 @@ export { TransferBuilder } from './transferBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { AtaInitializationBuilder } from './ataInitializationBuilder';
+export { StakingActivateBuilder } from './stakingActivateBuilder';
+export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
+export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 export { Utils, Interface };

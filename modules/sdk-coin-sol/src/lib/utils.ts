@@ -204,26 +204,35 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 }
 
 /**
- * Check the transaction type matching instructions by order.
+ * Check the transaction type matching instructions by order. Memo and AdvanceNonceAccount instructions
+ * are ignored.
  *
  * @param {TransactionInstruction[]} instructions - the array of supported Solana instructions to be parsed
  * @param {Record<string, number>} instructionIndexes - the instructions indexes of the current transaction
- * @returns true if it matchs by order.
+ * @returns true if it matches by order.
  */
 export function matchTransactionTypeByInstructionsOrder(
   instructions: TransactionInstruction[],
   instructionIndexes: Record<string, number>
 ): boolean {
-  const instructionsKeys = Object.keys(instructionIndexes);
+  const instructionsCopy = [...instructions]; // Make a copy since we may modify the array below
+  // AdvanceNonceAccount is optional and the first instruction added, it does not matter to match the type
+  if (instructionsCopy.length > 0) {
+    if (getInstructionType(instructions[0]) === 'AdvanceNonceAccount') {
+      instructionsCopy.shift();
+    }
+  }
 
   // Memo is optional and the last instruction added, it does not matter to match the type
+  // Why have it in instructionKeys if we are going to ignore it?
+  const instructionsKeys = Object.keys(instructionIndexes);
   if (instructionsKeys[instructionsKeys.length - 1] === 'Memo') {
     instructionsKeys.pop();
   }
 
   // Check instructions by order using the index.
   for (const keyName of instructionsKeys) {
-    if (getInstructionType(instructions[instructionIndexes[keyName]]) !== keyName) {
+    if (getInstructionType(instructionsCopy[instructionIndexes[keyName]]) !== keyName) {
       return false;
     }
   }
