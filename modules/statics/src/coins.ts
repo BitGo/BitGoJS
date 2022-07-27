@@ -855,6 +855,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcgala', 'Gala', 8, UnderlyingAsset.GALA),
   ofcerc20('ofcgno', 'Gnosis', 18, UnderlyingAsset.GNO),
   ofcerc20('ofcholo', 'Holo Token', 18, UnderlyingAsset.HOT),
+  ofcerc20('ofcnexo', 'Nexo', 18, UnderlyingAsset.NEXO),
   ofcerc20('ofcht', 'Huobi Token', 18, UnderlyingAsset.HT),
   ofcerc20('ofcleo', 'Bitfinex LEO Token', 18, UnderlyingAsset.LEO),
   ofcerc20('ofcqnt', 'Quant', 18, UnderlyingAsset.QNT),
