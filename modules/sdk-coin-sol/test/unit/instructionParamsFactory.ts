@@ -82,10 +82,10 @@ describe('Instruction Parser Tests: ', function () {
       const amount = testData.tokenTransfers.amount;
       const memo = testData.tokenTransfers.memo;
       const decimals = testData.tokenTransfers.decimals;
-      const nameORCA = testData.tokenTransfers.nameORCA;
-      const mintORCA = testData.tokenTransfers.mintORCA;
-      const ownerORCA = testData.tokenTransfers.ownerORCA;
-      const sourceORCA = testData.tokenTransfers.sourceORCA;
+      const nameUSDC = testData.tokenTransfers.nameUSDC;
+      const mintUSDC = testData.tokenTransfers.mintUSDC;
+      const owner = testData.tokenTransfers.owner;
+      const sourceUSDC = testData.tokenTransfers.sourceUSDC;
 
       // nonce
       const nonceAdvanceParams: InstructionParams = {
@@ -101,19 +101,19 @@ describe('Instruction Parser Tests: ', function () {
       const transferParams = {
         type: InstructionBuilderTypes.TokenTransfer,
         params: {
-          fromAddress: ownerORCA,
+          fromAddress: owner,
           toAddress: nonceAccount,
           amount: amount.toString(),
-          tokenName: nameORCA,
-          sourceAddress: sourceORCA,
+          tokenName: nameUSDC,
+          sourceAddress: sourceUSDC,
         },
       };
       const transferInstruction = Token.createTransferCheckedInstruction(
         TOKEN_PROGRAM_ID,
-        new PublicKey(sourceORCA),
-        new PublicKey(mintORCA),
+        new PublicKey(sourceUSDC),
+        new PublicKey(mintUSDC),
         new PublicKey(nonceAccount),
-        new PublicKey(ownerORCA),
+        new PublicKey(owner),
         [],
         amount,
         decimals
@@ -154,7 +154,7 @@ describe('Instruction Parser Tests: ', function () {
 
       const createATA: InstructionParams = {
         type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-        params: { mintAddress, ataAddress, ownerAddress, payerAddress, tokenName: 'sol:orca' },
+        params: { mintAddress, ataAddress, ownerAddress, payerAddress, tokenName: 'sol:usdc' },
       };
 
       const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, [instruction]);

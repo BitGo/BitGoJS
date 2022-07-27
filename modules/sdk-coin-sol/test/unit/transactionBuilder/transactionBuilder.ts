@@ -168,21 +168,24 @@ describe('Sol Transaction Builder', async () => {
     const txBuilder = factory.from(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, 'S6H1ahay3rdgpdipazUi1yxTkC8Gkchcmk8ARwLYRqnWTu4Va54ha6okJ8D5CdPSsngAuA26tWVyM4B9FffH2N7');
+    should.equal(
+      builtTx.id,
+      '4idioQZoVgSPARCHWL19vWtd1RJbf34pbFRSseypxMESBV9ffcimBiYmEyUdHfHys9rkuhZ41tJC5DgBerTvfpcz'
+    );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.associatedTokenAccounts.accounts[0].pub,
       value: testData.tokenTransfers.amount.toString(),
-      coin: 'tsol:orca',
+      coin: 'tsol:usdc',
     });
     builtTx.outputs.length.should.equal(1);
     builtTx.outputs[0].should.deepEqual({
       address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
       value: testData.tokenTransfers.amount.toString(),
-      coin: 'tsol:orca',
+      coin: 'tsol:usdc',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('S6H1ahay3rdgpdipazUi1yxTkC8Gkchcmk8ARwLYRqnWTu4Va54ha6okJ8D5CdPSsngAuA26tWVyM4B9FffH2N7');
+    jsonTx.id.should.equal('4idioQZoVgSPARCHWL19vWtd1RJbf34pbFRSseypxMESBV9ffcimBiYmEyUdHfHys9rkuhZ41tJC5DgBerTvfpcz');
     jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);
@@ -197,8 +200,8 @@ describe('Sol Transaction Builder', async () => {
           fromAddress: testData.associatedTokenAccounts.accounts[0].pub,
           toAddress: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
           amount: testData.tokenTransfers.amount.toString(),
-          tokenName: testData.tokenTransfers.nameORCA.toString(),
-          sourceAddress: '2SN4FRheJhoFKae16QQEvh4RnbraUa5Wm5i2fEQ5A84o',
+          tokenName: testData.tokenTransfers.nameUSDC.toString(),
+          sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
         },
       },
       {
