@@ -21,6 +21,7 @@ module.exports = function (config) {
       'dist/browser/BitGoJS.min.js',
       'test/browser/karmaHelper.js',
       { pattern: 'test/browser/**/*.ts' },
+      { pattern: 'dist/browser/*.wasm', included: false, served: true, watched: false, nocache: true },
     ],
 
     plugins: [
