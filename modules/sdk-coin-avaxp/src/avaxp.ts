@@ -199,6 +199,10 @@ export class AvaxP extends BaseCoin {
     }
   }
 
+  recoverySignature(message: Buffer, signature: Buffer): Buffer {
+    return AvaxpLib.Utils.recoverySignature(this._staticsCoin.network as AvalancheNetwork, message, signature);
+  }
+
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
     const prv = new AvaxpLib.KeyPair(key).getPrivateKey();
     if (!prv) {
