@@ -2,6 +2,9 @@ import { Entry, TransactionExplanation as BaseTransactionExplanation, Transactio
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
+  rewardAddresses: string[];
+  inputs: Entry[];
+  memo?: string;
 }
 
 /**
@@ -17,13 +20,15 @@ export enum MethodNames {
  */
 export interface TxData {
   id: string;
+  inputs: Entry[];
   type: TransactionType;
   fromAddresses: string[];
   threshold: number;
   locktime: string;
   memo: string;
   signatures: string[];
-  outputs: Entry[];
+  stakedOutputs: Entry[];
+  changeOutputs: Entry[];
 }
 
 /**
