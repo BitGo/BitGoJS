@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@1.1.0-rc.0...@bitgo/sdk-coin-bsc@1.1.0-rc.1) (2022-07-27)
+
+
+### Features
+
+* **sdk-coin-bsc:** add transfer and transaction builders ([1c27a63](https://github.com/BitGo/BitGoJS/commit/1c27a6343f30d341588eadd2a323b4ac2fe73646))
+
+
+
+
+
 # 1.1.0-rc.0 (2022-07-26)
 
 

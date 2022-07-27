@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.0...@bitgo/statics@8.0.0-rc.1) (2022-07-27)
+
+
+### Features
+
+* **statics:** add prime tokens ofc ([308bdab](https://github.com/BitGo/BitGoJS/commit/308bdab2cd9ad0738b3dac173dabaa1cd9b3b74c))
+
+
+
+
+
 # [8.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.1.0...@bitgo/statics@8.0.0-rc.0) (2022-07-26)
 
 
