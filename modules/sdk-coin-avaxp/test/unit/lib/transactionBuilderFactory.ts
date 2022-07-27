@@ -71,7 +71,7 @@ describe('AvaxP Transaction Builder Factory', () => {
       const txExplain = tx.explainTransaction();
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
-      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.stakedOutputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
     });
 
     it('should explains a Half Signed AddValidatorTx', async () => {
@@ -82,7 +82,7 @@ describe('AvaxP Transaction Builder Factory', () => {
       const txExplain = tx.explainTransaction();
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
-      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.stakedOutputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
     });
 
     it('should explains a unsigned AddValidatorTx', async () => {
@@ -93,7 +93,7 @@ describe('AvaxP Transaction Builder Factory', () => {
       const txExplain = tx.explainTransaction();
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
-      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.stakedOutputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
     });
   });
 });

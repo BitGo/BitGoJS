@@ -275,6 +275,8 @@ describe('Avaxp', function () {
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
       txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.changeOutputs[0].address.split(',').length.should.equal(3);
+      txExplain.memo.should.equal(testData.ADDVALIDATOR_SAMPLES.memo);
     });
 
     it('should explain a signed AddValidator transaction', async () => {
@@ -282,6 +284,8 @@ describe('Avaxp', function () {
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
       txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.changeOutputs[0].address.split(',').length.should.equal(3);
+      txExplain.memo.should.equal(testData.ADDVALIDATOR_SAMPLES.memo);
     });
 
     it('should fail when a tx is not passed as parameter', async () => {
@@ -350,7 +354,4 @@ describe('Avaxp', function () {
       }
     });
   });
-
-  // TODO(STLX-16574): verifyTransaction
-  // describe('Verification', function () {});
 });
