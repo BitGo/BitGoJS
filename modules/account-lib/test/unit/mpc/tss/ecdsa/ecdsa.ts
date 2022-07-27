@@ -1,7 +1,8 @@
 import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
 import * as sinon from 'sinon';
 import * as paillierBigint from 'paillier-bigint';
-import { paillerKeys, mockNShares, mockPShare } from '../fixtures/ecdsa';
+import { paillerKeys, mockNShares, mockPShare, mockDKeyShare, mockEKeyShare, mockFKeyShare } from '../fixtures/ecdsa';
+import { randomBytes } from 'crypto';
 /**
  * @prettier
  */
@@ -11,6 +12,10 @@ describe('TSS ECDSA TESTS', function () {
   const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000'); // 2^256
   let keyShares: ECDSA.KeyCombined[];
   let commonPublicKey: string;
+  const seed = Buffer.from(
+    '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
+    'hex',
+  );
   before(async () => {
     const pallierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
@@ -19,79 +24,116 @@ describe('TSS ECDSA TESTS', function () {
       .onCall(1)
       .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
       .onCall(2)
+      .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair)
+      .onCall(3)
+      .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
+      .onCall(4)
+      .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
+      .onCall(5)
       .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair);
     const [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
-    const A_combine = MPC.keyCombine(A.pShare, [B.nShares[1], C.nShares[1]]);
-    const B_combine = MPC.keyCombine(B.pShare, [A.nShares[2], C.nShares[2]]);
-    const C_combine = MPC.keyCombine(C.pShare, [A.nShares[3], B.nShares[3]]);
-    keyShares = [A_combine, B_combine, C_combine];
-    commonPublicKey = A_combine.xShare.y;
+    // Needs to run this serially for testing deterministic key generation
+    // to get specific pallier keys to be assigned
+    const D = await MPC.keyShare(1, 2, 3, seed);
+    const E = await MPC.keyShare(2, 2, 3, seed);
+    const F = await MPC.keyShare(3, 2, 3, seed);
+
+    const aKeyCombine = MPC.keyCombine(A.pShare, [B.nShares[1], C.nShares[1]]);
+    const bKeyCombine = MPC.keyCombine(B.pShare, [A.nShares[2], C.nShares[2]]);
+    const cKeyCombine = MPC.keyCombine(C.pShare, [A.nShares[3], B.nShares[3]]);
+
+    // Shares with specific seeds
+    const dKeyCombine = MPC.keyCombine(D.pShare, [E.nShares[1], F.nShares[1]]);
+    const eKeyCombine = MPC.keyCombine(E.pShare, [D.nShares[2], F.nShares[2]]);
+    const fKeyCombine = MPC.keyCombine(F.pShare, [D.nShares[3], E.nShares[3]]);
+    keyShares = [aKeyCombine, bKeyCombine, cKeyCombine, dKeyCombine, eKeyCombine, fKeyCombine];
+    commonPublicKey = aKeyCombine.xShare.y;
     pallierMock.reset();
   });
 
-  it('should generate keys with correct threshold and share number', async function () {
-    for (let index = 0; index < 3; index++) {
-      const participantOne = (index % 3) + 1;
-      const participantTwo = ((index + 1) % 3) + 1;
-      const participantThree = ((index + 2) % 3) + 1;
-      keyShares[index].xShare.i.should.equal(participantOne);
-      keyShares[index].xShare.y.should.equal(commonPublicKey);
-      keyShares[index].xShare.m.should.not.be.Null;
-      keyShares[index].xShare.l.should.not.be.Null;
-      keyShares[index].xShare.n.should.not.be.Null;
+  describe('Ecdsa Key Generation Test', function () {
+    it('should generate keys with correct threshold and share number', async function () {
+      for (let index = 0; index < 3; index++) {
+        const participantOne = (index % 3) + 1;
+        const participantTwo = ((index + 1) % 3) + 1;
+        const participantThree = ((index + 2) % 3) + 1;
+        keyShares[index].xShare.i.should.equal(participantOne);
+        keyShares[index].xShare.y.should.equal(commonPublicKey);
+        keyShares[index].xShare.m.should.not.be.Null;
+        keyShares[index].xShare.l.should.not.be.Null;
+        keyShares[index].xShare.n.should.not.be.Null;
 
-      const chaincode = BigInt('0x' + keyShares[index].xShare.chaincode);
-      const isChainCodeValid = chaincode > BigInt(0) && chaincode <= base;
-      isChainCodeValid.should.equal(true);
+        const chaincode = BigInt('0x' + keyShares[index].xShare.chaincode);
+        const isChainCodeValid = chaincode > BigInt(0) && chaincode <= base;
+        isChainCodeValid.should.equal(true);
 
-      keyShares[index].yShares[participantTwo].i.should.equal(participantOne);
-      keyShares[index].yShares[participantThree].i.should.equal(participantOne);
-      keyShares[index].yShares[participantTwo].j.should.equal(participantTwo);
-      keyShares[index].yShares[participantThree].j.should.equal(participantThree);
-      keyShares[index].yShares[participantTwo].n.should.not.be.Null;
-      keyShares[index].yShares[participantThree].n.should.not.be.Null;
+        keyShares[index].yShares[participantTwo].i.should.equal(participantOne);
+        keyShares[index].yShares[participantThree].i.should.equal(participantOne);
+        keyShares[index].yShares[participantTwo].j.should.equal(participantTwo);
+        keyShares[index].yShares[participantThree].j.should.equal(participantThree);
+        keyShares[index].yShares[participantTwo].n.should.not.be.Null;
+        keyShares[index].yShares[participantThree].n.should.not.be.Null;
 
-      const publicKeyPrefix = keyShares[index].xShare.y.slice(0, 2);
-      const isRightPrefix = publicKeyPrefix === '03' || publicKeyPrefix === '02';
-      isRightPrefix.should.equal(true);
-    }
-  });
-
-  it('should calculate correct chaincode while combining', async function () {
-    const keyCombine = MPC.keyCombine(mockPShare, mockNShares);
-    keyCombine.xShare.chaincode.should.equal('fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc32');
-  });
-
-  it('should fail to generate keys with invalid threshold and share number', async function () {
-    const invalidConfigs = [
-      { index: 1, threshold: 5, numShares: 3 },
-      { index: -1, threshold: 2, numShares: 3 },
-      { index: 1, threshold: 2, numShares: 1 },
-    ];
-    for (let index = 0; index < invalidConfigs.length; index++) {
-      try {
-        await MPC.keyShare(
-          invalidConfigs[index].index,
-          invalidConfigs[index].threshold,
-          invalidConfigs[index].numShares,
-        );
-      } catch (e) {
-        e.should.equal('Invalid KeyShare Config');
+        const publicKeyPrefix = keyShares[index].xShare.y.slice(0, 2);
+        const isRightPrefix = publicKeyPrefix === '03' || publicKeyPrefix === '02';
+        isRightPrefix.should.equal(true);
       }
-    }
+    });
+
+    it('should generate keyshares with specific seed', async function () {
+      // Keys should be deterministic when using seed
+      const [, , , D, E, F] = keyShares;
+      mockDKeyShare.should.deepEqual(D);
+      mockEKeyShare.should.deepEqual(E);
+      mockFKeyShare.should.deepEqual(F);
+    });
+
+    it('should fail if seed is not length 72', async function () {
+      await MPC.keyShare(1, 2, 3, randomBytes(33)).should.be.rejectedWith('Seed must have length 72');
+      await MPC.keyShare(1, 2, 3, randomBytes(66)).should.be.rejectedWith('Seed must have length 72');
+    });
+
+    it('should calculate correct chaincode while combining', async function () {
+      const keyCombine = MPC.keyCombine(mockPShare, mockNShares);
+      keyCombine.xShare.chaincode.should.equal('fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc32');
+    });
+
+    it('should fail to generate keys with invalid threshold and share number', async function () {
+      const invalidConfigs = [
+        { index: 1, threshold: 5, numShares: 3 },
+        { index: -1, threshold: 2, numShares: 3 },
+        { index: 1, threshold: 2, numShares: 1 },
+      ];
+      for (let index = 0; index < invalidConfigs.length; index++) {
+        try {
+          await MPC.keyShare(
+            invalidConfigs[index].index,
+            invalidConfigs[index].threshold,
+            invalidConfigs[index].numShares,
+          );
+        } catch (e) {
+          e.should.equal('Invalid KeyShare Config');
+        }
+      }
+    });
   });
 
   describe('ECDSA Signing', async function () {
     let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined }[];
 
     before(async () => {
-      const [A, B, C] = keyShares;
+      const [A, B, C, D, E, F] = keyShares;
 
       config = [
         { signerOne: A, signerTwo: B },
         { signerOne: B, signerTwo: C },
         { signerOne: C, signerTwo: A },
+
+        // Checks signing with specific seed
+        { signerOne: D, signerTwo: E },
+        { signerOne: E, signerTwo: F },
+        { signerOne: F, signerTwo: D },
       ];
     });
 
