@@ -552,7 +552,7 @@ describe('Sol Transaction', () => {
         .fee({ amount: 5000 })
         .sender(sender)
         .nonce(blockHash)
-        .mint('tsol:orca')
+        .mint('tsol:usdc')
         .rentExemptAmount(amount)
         .build();
 
@@ -577,7 +577,7 @@ describe('Sol Transaction', () => {
         outputAmount: '10000',
         outputs: [
           {
-            address: '9nEfQqahxpyYP5RPExt9TGssPmV5MxjEw9YjGWmepMAt',
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
             amount: '10000',
           },
         ],
@@ -729,7 +729,7 @@ describe('Sol Transaction', () => {
         .getTokenTransferBuilder()
         .nonce(blockHash)
         .sender(sender)
-        .send({ address, amount, tokenName: 'tsol:orca' })
+        .send({ address, amount, tokenName: 'tsol:usdc' })
         .fee({ amount: 5000 })
         .build();
 
@@ -756,7 +756,7 @@ describe('Sol Transaction', () => {
           {
             address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
             amount: '10000',
-            tokenName: 'tsol:orca',
+            tokenName: 'tsol:usdc',
           },
         ],
         fee: {
@@ -775,9 +775,9 @@ describe('Sol Transaction', () => {
         .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
         .sender(sender)
         .memo('memo text')
-        .send({ address, amount, tokenName: 'tsol:orca' })
-        .send({ address: testData.addresses.validAddresses[1], amount, tokenName: 'tsol:orca' })
-        .send({ address: testData.addresses.validAddresses[2], amount, tokenName: 'tsol:orca' })
+        .send({ address, amount, tokenName: 'tsol:usdc' })
+        .send({ address: testData.addresses.validAddresses[1], amount, tokenName: 'tsol:usdc' })
+        .send({ address: testData.addresses.validAddresses[2], amount, tokenName: 'tsol:usdc' })
         .build();
 
       const explainedTransaction = tx.explainTransaction();
@@ -803,17 +803,17 @@ describe('Sol Transaction', () => {
           {
             address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
             amount: '10000',
-            tokenName: 'tsol:orca',
+            tokenName: 'tsol:usdc',
           },
           {
             address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
             amount: '10000',
-            tokenName: 'tsol:orca',
+            tokenName: 'tsol:usdc',
           },
           {
             address: '2n2xqWM9Z18LqxfJzkNrMMFWiDUFYA2k6WSgSnf6EnJs',
             amount: '10000',
-            tokenName: 'tsol:orca',
+            tokenName: 'tsol:usdc',
           },
         ],
         fee: {
