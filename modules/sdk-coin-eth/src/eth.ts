@@ -132,7 +132,7 @@ interface ReplayProtectionOptions {
   hardfork: string;
 }
 
-interface SignFinalOptions {
+export interface SignFinalOptions {
   txPrebuild: {
     eip1559?: EIP1559;
     replayProtectionOptions?: ReplayProtectionOptions;
@@ -207,7 +207,7 @@ export interface RecoverOptions {
   replayProtectionOptions?: ReplayProtectionOptions;
 }
 
-interface BuildTransactionParams {
+export interface BuildTransactionParams {
   to: string;
   nonce?: number;
   value: number;
