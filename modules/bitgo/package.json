@@ -49,6 +49,7 @@
     "@bitgo/account-lib": "^2.20.0",
     "@bitgo/blockapis": "^1.0.4",
     "@bitgo/sdk-api": "^1.1.0",
+    "@bitgo/sdk-coin-aca": "^1.0.0",
     "@bitgo/sdk-coin-ada": "^1.1.0",
     "@bitgo/sdk-coin-algo": "^1.1.0",
     "@bitgo/sdk-coin-avaxc": "^1.1.0",

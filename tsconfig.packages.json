@@ -23,6 +23,9 @@
       "path": "./modules/sdk-api"
     },
     {
+      "path": "./modules/sdk-coin-aca"
+    },
+    {
       "path": "./modules/sdk-coin-ada"
     },
     {
