@@ -1,0 +1,767 @@
+{
+	"info": {
+		"_postman_id": "123661d3-524b-4f5c-a24d-8f38f8124994",
+		"name": "BitGo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1000007"
+	},
+	"item": [
+		{
+			"name": "Ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/ping",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Session - Check Access Token",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2xb803a6a09b8b82c1ea377fad87e255df1787dd1cbafb75dadf16e27fd7d3eebb",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/user/me",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"user",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Wallet Share",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"permissions\": \"spend,view\",\n  \"message\": \"string\",\n  \"reshare\": true,\n  \"skipKeychain\": true,\n  \"disableEmail\": true,\n  \"user\": \"59cd72485007a239fb00282ed480da1f\",\n  \"keychain\": {\n    \"pub\": \"string\",\n    \"encryptedPrv\": \"string\",\n    \"fromPubKey\": \"string\",\n    \"toPubKey\": \"string\",\n    \"path\": \"m/1234/1/1\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/share",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"share"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Wallet Shares",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/walletshares",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"walletshares"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Wallets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/wallets",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Wallets by Coin",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet?limit=50",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Wallet Fee by Coin",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/tx/fee",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"tx",
+						"fee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Address",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"walletID2\", \"629b77744843c50007962921a396705b\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"walletID2\", \"629b77744843c50007962921a396705b\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletId}}/address",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletId}}",
+						"address"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Build a Transaction",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"walletId\", \"6299543b00f5810007d335dcaaf8ae29\");",
+							"pm.globals.set(\"walletId\", \"6299543b00f5810007d335dcaaf8ae29\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"numBlocks\": 2,\n  \"feeRate\": 10000,\n  \"maxFeeRate\": 20000,\n  \"feeMultiplier\": 1.5,\n  \"minConfirms\": 0,\n  \"enforceMinConfirmsForChange\": false,\n  \"gasPrice\": \"10\",\n  \"eip1559\": {\n    \"maxPriorityFeePerGas\": \"10\",\n    \"maxFeePerGas\": \"10\"\n  },\n  \"gasLimit\": \"10\",\n  \"targetWalletUnspents\": 1000,\n  \"minValue\": \"10\",\n  \"maxValue\": \"10\",\n  \"sequenceId\": \"1\",\n  \"nonce\": \"1\",\n  \"noSplitChange\": false,\n  \"unspents\": [\n    \"12b147dd8b4f73c01f72bdbf5b589eea614f3de609ffdbdac84852d6505cf8a3:1\"\n  ],\n  \"changeAddress\": \"string\",\n  \"instant\": true,\n  \"memo\": {\n    \"type\": \"string\",\n    \"value\": \"string\"\n  },\n  \"comment\": \"string\",\n  \"addressType\": \"string\",\n  \"startTime\": \"string\",\n  \"consolidateId\": \"59cd72485007a239fb00282ed480da1f\",\n  \"lastLedgerSequence\": 0,\n  \"ledgerSequenceDelta\": 0,\n  \"cpfpTxIds\": [\n    \"string\"\n  ],\n  \"cpfpFeeRate\": 0,\n  \"maxFee\": 0,\n  \"strategy\": \"string\",\n  \"validFromBlock\": 0,\n  \"validToBlock\": 0,\n  \"type\": \"string\",\n  \"trustlines\": [\n    {\n      \"token\": \"txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L\",\n      \"action\": \"add\",\n      \"limit\": \"2000000\"\n    }\n  ],\n  \"stakingOptions\": {\n    \"amount\": \"string\",\n    \"validator\": \"string\"\n  },\n  \"unstakingOptions\": {\n    \"from\": \"string\",\n    \"receiver\": \"string\",\n    \"unstakeCpuQuantity\": \"string\",\n    \"unstakeNetQuantity\": \"string\"\n  },\n  \"refundOptions\": {\n    \"address\": \"string\"\n  },\n  \"messageKey\": \"string\",\n  \"reservation\": {\n    \"expireTime\": \"2019-08-24T14:15:22Z\"\n  },\n  \"recipients\": [\n    {\n      \"amount\": \"2\",\n      \"address\": \"string\",\n      \"memo\": \"string\"\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/tx/build",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"tx",
+						"build"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Audit Log",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/api/v2/auditlog",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"auditlog"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Wallet",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "dc232a93cc392a0d877c6151c63aaae18cfc8f0ebff0f2bcb65ec6d2c1bbe50e",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"chain\": 1,\n\"label\": \"d\",\n\"lowPriority\": false,\n\"gasPrice\": 0,\n\"eip1559\": {\n\"maxPriorityFeePerGas\": \"string\",\n\"maxFeePerGas\": \"string\"\n},\n\"forwarderVersion\": 2,\n\"onToken\": \"ofcbtc\",\n\"format\": \"cashaddr\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/address",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"address"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Freeze Wallet",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2xb803a6a09b8b82c1ea377fad87e255df1787dd1cbafb75dadf16e27fd7d3eebb",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"duration\": 1\n}"
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/freeze",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"freeze"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Bitcoin Wallet - Advanced",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"label\": \"My Wallet\",\n\"passphrase\": \"string\",\n\"userKey\": \"string\",\n\"backupXpub\": \"xpub661MyMwAqRbcGMVhmc7wqQRYMtcX9LAvSj1pjB213y5TsrkV2uuzJjWnjBrT1FUeNWGPjaVm5p7o6jdNcQJrV1cy3a1R8NQ9m7LuYKA8RpH\",\n\"backupXpubProvider\": \"keyternal\",\n\"enterprise\": \"59cd72485007a239fb00282ed480da1f\",\n\"disableTransactionNotifications\": true,\n\"passcodeEncryptionCode\": \"string\",\n\"coldDerivationSeed\": \"string\",\n\"gasPrice\": 0,\n\"disableKRSEmail\": true,\n\"walletVersion\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/generate",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send Coin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"address\": \"629b77744843c50007962921a396705b\",\n\"amount\": \"0.0001\",\n\"walletPassphrase\": \"string\",\n\"prv\": \"string\",\n\"numBlocks\": 2,\n\"feeRate\": 10000,\n\"maxFeeRate\": 20000,\n\"feeMultiplier\": 1.5,\n\"minConfirms\": 0,\n\"enforceMinConfirmsForChange\": false,\n\"gasPrice\": \"0\",\n\"eip1559\": {\n\"maxPriorityFeePerGas\": \"0.05\",\n\"maxFeePerGas\": \"0.05\"\n},\n\"gasLimit\": \"string\",\n\"targetWalletUnspents\": 1000,\n\"minValue\": \"string\",\n\"maxValue\": \"string\",\n\"sequenceId\": \"string\",\n\"nonce\": \"string\",\n\"noSplitChange\": false,\n\"unspents\": [\n\"12b147dd8b4f73c01f72bdbf5b589eea614f3de609ffdbdac84852d6505cf8a3:1\"\n],\n\"changeAddress\": \"string\",\n\"instant\": true,\n\"memo\": {\n\"type\": \"string\",\n\"value\": \"string\"\n},\n\"comment\": \"string\",\n\"addressType\": \"string\",\n\"startTime\": \"string\",\n\"consolidateId\": \"59cd72485007a239fb00282ed480da1f\",\n\"lastLedgerSequence\": 0,\n\"ledgerSequenceDelta\": 0,\n\"cpfpTxIds\": [\n\"string\"\n],\n\"cpfpFeeRate\": 0,\n\"maxFee\": 0,\n\"strategy\": \"string\",\n\"validFromBlock\": 0,\n\"validToBlock\": 0,\n\"type\": \"string\",\n\"trustlines\": [\n{\n\"token\": \"txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L\",\n\"action\": \"add\",\n\"limit\": \"2000000\"\n}\n],\n\"stakingOptions\": {\n\"amount\": \"string\",\n\"validator\": \"string\"\n},\n\"unstakingOptions\": {\n\"from\": \"string\",\n\"receiver\": \"string\",\n\"unstakeCpuQuantity\": \"string\",\n\"unstakeNetQuantity\": \"string\"\n},\n\"refundOptions\": {\n\"address\": \"string\"\n},\n\"messageKey\": \"string\",\n\"reservation\": {\n\"expireTime\": \"2019-08-24T14:15:22Z\"\n},\n\"data\": \"string\",\n\"hop\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/sendcoins",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"sendcoins"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Address",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"address\": \"2MvrwRYBAuRtPTiZ5MyKg42Ke55W3fZJfZS\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/verifyaddress",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"verifyaddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Wallet",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/6299543b00f5810007d335dcaaf8ae29",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"6299543b00f5810007d335dcaaf8ae29"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Maximum Spendable",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://app.bitgo-test.com/api/v2/{{coin}}/wallet/{{walletID}}/maximumSpendable",
+					"protocol": "https",
+					"host": [
+						"app",
+						"bitgo-test",
+						"com"
+					],
+					"path": [
+						"api",
+						"v2",
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"maximumSpendable"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Transfers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/transfer",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Fee Estimate",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/tx/fee",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"tx",
+						"fee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"ozamabel@gmail.com\",\n    \"extensible\": false,\n    \"otp\": \"000000\",\n    \"password\": \"DeepDive0608\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/user/login",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Proof of Address Ownership",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletId}}/address/{{address}}/proof",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletId}}",
+						"address",
+						"{{address}}",
+						"proof"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Addresses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/addresses",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Transfers by Coin",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletId}}/transfer",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletId}}",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Transactions by Wallet ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/629da13429d13a0008c71457252bea3b/transfer",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"629da13429d13a0008c71457252bea3b",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Transactions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://app.bitgo-test.com/enterprise/personal/coin/tbtc/629da13429d13a0008c71457252bea3b/transactions",
+					"protocol": "https",
+					"host": [
+						"app",
+						"bitgo-test",
+						"com"
+					],
+					"path": [
+						"enterprise",
+						"personal",
+						"coin",
+						"tbtc",
+						"629da13429d13a0008c71457252bea3b",
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/{{walletID}}/address/629ee424a8ab0a0007a84418e34449c8",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"{{walletID}}",
+						"address",
+						"629ee424a8ab0a0007a84418e34449c8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"label\": \"string\",\n    \"passphrase\": \"string\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bitgo_base_url}}/{{coin}}/wallet/generate",
+					"host": [
+						"{{bitgo_base_url}}"
+					],
+					"path": [
+						"{{coin}}",
+						"wallet",
+						"generate"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "New Request",
+					"originalRequest": {
+						"method": "GET",
+						"header": []
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.collectionVariables.set(\"coin\", \"tbtc\");",
+					"pm.collectionVariables.set(\"walletID\",\"629da13429d13a0008c71457252bea3b\")",
+					"pm.collectionVariables.set(\"bitgo_base_url\", \"http://localhost:3080/api/v2\")",
+					"pm.collectionVariables.set(\"address\", \"2MtHzNNu3xhB1zCNB9AKMKrYY8E8ZURqDY5\");"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "coin",
+			"value": ""
+		},
+		{
+			"key": "walletID",
+			"value": ""
+		},
+		{
+			"key": "bitgo_base_url",
+			"value": ""
+		},
+		{
+			"key": "address",
+			"value": ""
+		}
+	]
+}
