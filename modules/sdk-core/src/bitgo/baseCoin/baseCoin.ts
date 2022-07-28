@@ -33,6 +33,7 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   SupplementGenerateWalletOptions,
+  TokenEnablementConfig,
   TransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -142,6 +143,19 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   allowsAccountConsolidations(): boolean {
     return false;
+  }
+
+  /**
+   * Gets config for how token enablements work for this coin
+   * @returns
+   *    requiresTokenEnablement: True if tokens need to be enabled for this coin
+   *    supportsMultipleTokenEnablements: True if multiple tokens can be enabled in one transaction
+   */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: false,
+      supportsMultipleTokenEnablements: false,
+    };
   }
 
   /**

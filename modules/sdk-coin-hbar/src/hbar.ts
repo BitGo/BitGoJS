@@ -18,6 +18,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
   Memo,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -380,6 +381,13 @@ export class Hbar extends BaseCoin {
 
   isValidPub(pub: string): boolean {
     return Utils.isValidPublicKey(pub);
+  }
+
+  public getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: true,
+    };
   }
 
   private getBuilderFactory(): TransactionBuilderFactory {
