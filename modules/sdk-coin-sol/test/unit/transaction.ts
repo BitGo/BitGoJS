@@ -678,7 +678,7 @@ describe('Sol Transaction', () => {
       });
     });
 
-    it('should withdraw builder ', async function () {
+    it('should explain withdraw transaction ', async function () {
       const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
       const tx = await factory
         .getStakingWithdrawBuilder()
@@ -721,6 +721,56 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
+      });
+    });
+
+    it('should explain withdraw transaction with memo and durable nonce ', async function () {
+      const tx = await factory
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .amount(amount)
+        .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
+        .memo('memo text')
+        .fee({ amount: 5000 })
+        .build();
+      tx.signablePayload;
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingWithdraw',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: {
+          walletNonceAddress: testData.nonceAccount.pub,
+          authWalletAddress: sender,
+        },
       });
     });
 

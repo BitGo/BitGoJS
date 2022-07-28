@@ -1,8 +1,13 @@
 import should from 'should';
 import { Utils } from '../../src/lib';
 import * as testData from '../resources/sol';
-import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
-import { MEMO_PROGRAM_PK } from '../../src/lib/constants';
+import { Lockup, PublicKey, StakeProgram, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import {
+  MEMO_PROGRAM_PK,
+  stakingActivateInstructionsIndexes,
+  stakingDeactivateInstructionsIndexes,
+  stakingWithdrawInstructionsIndexes,
+} from '../../src/lib/constants';
 import BigNumber from 'bignumber.js';
 
 describe('SOL util library', function () {
@@ -290,6 +295,201 @@ describe('SOL util library', function () {
     });
     it('should fail if tokenName is not in coins', function () {
       should.equal(Utils.getSolTokenFromTokenName('something random'), undefined);
+    });
+  });
+
+  describe('matchTransactionTypeByInstructionsOrder', function () {
+    describe('Activate stake instructions', function () {
+      it('should match staking activate instructions', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const validator = new PublicKey(testData.validator.pub);
+        const amount = '100000';
+
+        // Instructions
+        const stakingActivateInstructions = StakeProgram.createAccount({
+          fromPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          authorized: {
+            staker: fromAccount,
+            withdrawer: fromAccount,
+          },
+          lockup: new Lockup(0, 0, fromAccount),
+          lamports: new BigNumber(amount).toNumber(),
+        }).instructions;
+
+        const stakingDelegateInstructions = StakeProgram.delegate({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          votePubkey: validator,
+        }).instructions;
+
+        const instructions = [...stakingActivateInstructions, ...stakingDelegateInstructions];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingActivateInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
+
+      it('should match staking activate instructions with memo and durable nonce', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const nonceAccount = testData.nonceAccount.pub;
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const validator = new PublicKey(testData.validator.pub);
+        const amount = '100000';
+        const memo = 'test memo';
+
+        // Instructions
+        const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(nonceAccount),
+          authorizedPubkey: fromAccount,
+        });
+
+        const stakingActivateInstructions = StakeProgram.createAccount({
+          fromPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          authorized: {
+            staker: fromAccount,
+            withdrawer: fromAccount,
+          },
+          lockup: new Lockup(0, 0, fromAccount),
+          lamports: new BigNumber(amount).toNumber(),
+        }).instructions;
+
+        const stakingDelegateInstructions = StakeProgram.delegate({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          votePubkey: validator,
+        }).instructions;
+
+        const memoInstruction = new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from(memo),
+        });
+
+        const instructions = [
+          nonceAdvanceInstruction,
+          ...stakingActivateInstructions,
+          ...stakingDelegateInstructions,
+          memoInstruction,
+        ];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingActivateInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
+    });
+
+    describe('Deactivate stake instructions', function () {
+      it('should match staking deactivate instructions', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+
+        // Instructions
+        const stakingDeactivateInstructions = StakeProgram.deactivate({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+        }).instructions;
+
+        const instructions = [...stakingDeactivateInstructions];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingDeactivateInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
+
+      it('should match staking deactivate instructions with memo and durable nonce', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const nonceAccount = testData.nonceAccount.pub;
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const memo = 'test memo';
+
+        // Instructions
+        const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(nonceAccount),
+          authorizedPubkey: fromAccount,
+        });
+
+        const stakingDeactivateInstructions = StakeProgram.deactivate({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+        }).instructions;
+
+        const memoInstruction = new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from(memo),
+        });
+
+        const instructions = [nonceAdvanceInstruction, ...stakingDeactivateInstructions, memoInstruction];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingDeactivateInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
+    });
+
+    describe('Staking withdraw instructions', function () {
+      it('should match staking withdraw instructions', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const amount = '100000';
+
+        // Instructions
+        const stakingWithdrawInstructions = StakeProgram.withdraw({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          toPubkey: fromAccount,
+          lamports: new BigNumber(amount).toNumber(),
+        }).instructions;
+
+        const instructions = [...stakingWithdrawInstructions];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingWithdrawInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
+
+      it('should match staking withdraw instructions with memo and durable nonce', function () {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const nonceAccount = testData.nonceAccount.pub;
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const amount = '100000';
+        const memo = 'test memo';
+
+        // Instructions
+        const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(nonceAccount),
+          authorizedPubkey: fromAccount,
+        });
+
+        // Instructions
+        const stakingWithdrawInstructions = StakeProgram.withdraw({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          toPubkey: fromAccount,
+          lamports: new BigNumber(amount).toNumber(),
+        }).instructions;
+
+        const memoInstruction = new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from(memo),
+        });
+
+        const instructions = [nonceAdvanceInstruction, ...stakingWithdrawInstructions, memoInstruction];
+        const isAMatch = Utils.matchTransactionTypeByInstructionsOrder(
+          instructions,
+          stakingWithdrawInstructionsIndexes
+        );
+        isAMatch.should.be.true();
+      });
     });
   });
 });
