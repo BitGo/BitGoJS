@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.3](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.2...bitgo@14.3.0-rc.3) (2022-07-28)
+
+
+### Features
+
+* **sdk-coin-ada:** incorporate sdk-coin-ada back into bitgo ([3e86a5b](https://github.com/BitGo/BitGoJS/commit/3e86a5b89a679ebf5c0dc0a08e3c6002cbca21f7))
+
+
+
+
+
 # [14.3.0-rc.2](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.1...bitgo@14.3.0-rc.2) (2022-07-27)
 
 **Note:** Version bump only for package bitgo

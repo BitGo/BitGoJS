@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "14.3.0-rc.2",
+  "version": "14.3.0-rc.3",
   "description": "BitGo JavaScript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@bitgo/abstract-utxo": "^1.1.2-rc.1",
-    "@bitgo/account-lib": "^2.21.0-rc.2",
+    "@bitgo/account-lib": "^2.21.0-rc.3",
     "@bitgo/blockapis": "^1.0.6-rc.0",
     "@bitgo/sdk-api": "^1.1.2-rc.1",
     "@bitgo/sdk-coin-ada": "1.1.2-rc.1",
@@ -73,7 +73,7 @@
     "@bitgo/sdk-coin-near": "^1.1.2-rc.1",
     "@bitgo/sdk-coin-polygon": "^1.0.3-rc.1",
     "@bitgo/sdk-coin-rbtc": "^1.1.2-rc.1",
-    "@bitgo/sdk-coin-sol": "^2.0.0-rc.1",
+    "@bitgo/sdk-coin-sol": "^2.0.0-rc.2",
     "@bitgo/sdk-coin-stx": "^1.1.2-rc.1",
     "@bitgo/sdk-coin-trx": "^1.0.3-rc.1",
     "@bitgo/sdk-coin-xlm": "^1.0.3-rc.1",

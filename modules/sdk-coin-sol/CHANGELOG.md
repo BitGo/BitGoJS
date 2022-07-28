@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.1...@bitgo/sdk-coin-sol@2.0.0-rc.2) (2022-07-28)
+
+
+### Bug Fixes
+
+* add support for durable nonces for Solana transactions ([aa912de](https://github.com/BitGo/BitGoJS/commit/aa912de0ade40df835c3e0e8077b5ea0ac660d0a))
+
+
+
+
+
 # [2.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.0...@bitgo/sdk-coin-sol@2.0.0-rc.1) (2022-07-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
