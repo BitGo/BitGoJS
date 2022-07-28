@@ -51,18 +51,6 @@ describe('TSS Ecdsa Utils:', async function () {
 
   beforeEach(async function () {
     sandbox = sinon.createSandbox();
-    const nockPromises = [
-      nockBitgoKeychain({
-        coin: coinName,
-        userKeyShare,
-        backupKeyShare,
-        userGpgKey,
-        backupGpgKey,
-      }),
-      nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '' }, source: 'user' }),
-      nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '' }, source: 'backup' }),
-    ];
-    [nockedBitGoKeychain, nockedUserKeychain] = await Promise.all(nockPromises);
   });
 
   afterEach(function () {
@@ -70,6 +58,7 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   before(async function () {
+    nock.cleanAll();
     MPC = new Ecdsa();
     userKeyShare = keyShares.userKeyShare;
     backupKeyShare = keyShares.backupKeyShare;
@@ -106,17 +95,30 @@ describe('TSS Ecdsa Utils:', async function () {
       },
     };
 
-    nock('https://bitgo.fakeurl')
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants });
-
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
     const baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
+    
+    nock(bgUrl)
+      .persist()
+      .get('/api/v1/client/constants')
+      .reply(200, { ttl: 3600, constants });
+
+    const nockPromises = [
+      nockBitgoKeychain({
+        coin: coinName,
+        userKeyShare,
+        backupKeyShare,
+        userGpgKey,
+        backupGpgKey,
+      }),
+      nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '' }, source: 'user' }),
+      nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '' }, source: 'backup' }),
+    ];
+    [nockedBitGoKeychain, nockedUserKeychain] = await Promise.all(nockPromises);
 
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',
@@ -127,7 +129,11 @@ describe('TSS Ecdsa Utils:', async function () {
     tssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, wallet);
   });
 
-  describe('TSS key chains:', async function() {
+  after(function () {
+    nock.cleanAll();
+  });
+
+  describe('TSS key chains', async function() {
     it('should generate TSS key chains', async function () {
       const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
@@ -173,7 +179,7 @@ describe('TSS Ecdsa Utils:', async function () {
         backupKeyShare,
         bitgoKeychain,
         'passphrase')];
-      
+
       const [userKeychain, backupKeychain] = await Promise.all(usersKeyChainPromises);
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       userKeychain.should.deepEqual(nockedUserKeychain);
@@ -260,7 +266,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const bitgoSigningKey = MPC.keyCombine(bitgoKeyShare.pShare, [
         userKeyShare.nShares[3], backupKeyShare.nShares[3],
       ]);
-  
+
       /**
        * START STEP ONE
        * 1) User creates signShare, saves wShare and sends kShare to bitgo
@@ -293,14 +299,13 @@ describe('TSS Ecdsa Utils:', async function () {
       });
       /**  END STEP ONE */
 
-        
       /**
        * START STEP TWO
        * 1) Using the aShare got from bitgo and wShare from previous step,
        * user creates gShare and muShare and sends muShare to bitgo
        * 2) Bitgo using the signConvert step using bShare from previous step
-       * and muShare from user generates its gShare. 
-       * 3) Using the signCombine operation using gShare, Bitgo generates oShare 
+       * and muShare from user generates its gShare.
+       * 3) Using the signCombine operation using gShare, Bitgo generates oShare
        * which it saves and dShare which is send back to the user.
        */
       const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoAshare);
@@ -463,15 +468,15 @@ describe('TSS Ecdsa Utils:', async function () {
       bitgoKeyShare,
       1,
       userGpgKey.publicKey,
-      userGpgKey.privateKey
+      bitGoGPGKey.privateKey,
     ),
     encryptNShare(
       bitgoKeyShare,
       2,
       backupGpgKey.publicKey,
-      backupGpgKey.privateKey
+      bitGoGPGKey.privateKey,
     )];
-    
+
     const [userToBitgoShare, backupToBitgoShare] = await Promise.all(nSharePromises);
     const bitgoKeychain: Keychain = {
       id: '3',
@@ -494,6 +499,7 @@ describe('TSS Ecdsa Utils:', async function () {
     };
 
     nock(bgUrl)
+      .persist()
       .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'tss', source: 'bitgo' }))
       .reply(200, bitgoKeychain);
 
@@ -507,11 +513,12 @@ describe('TSS Ecdsa Utils:', async function () {
   }): Promise<Keychain> {
 
     nock('https://bitgo.fakeurl')
+      .persist()
       .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'tss', source: params.source }))
       .reply(200, params.keyChain);
 
     return params.keyChain;
   }
-  
+
   // #endregion Nock helpers
 });
