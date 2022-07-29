@@ -65,7 +65,7 @@
     "modules/*"
   ],
   "scripts": {
-    "postinstall": "lerna run build --stream",
+    "postinstall": "test -n \"$NOYARNPOSTINSTALL\" || lerna run build --stream",
     "gen-drone": "chmod 0666 .drone.yml && drone jsonnet --stream && drone sign BitGo/BitGoJS --save && chmod 0444 .drone.yml",
     "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",

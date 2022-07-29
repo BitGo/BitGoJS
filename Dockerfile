@@ -1,11 +1,28 @@
-FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS builder
+
+# An elaborated scheme to build all the dependencies of all packages first in a cached layer
+# https://stackoverflow.com/a/63142468/134409
+# https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
+FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS filter-packages-json
 MAINTAINER Tyler Levine <tyler@bitgo.com>
+
+COPY package.json yarn.lock lerna.json ./
+WORKDIR /tmp/bitgo
+COPY package.json yarn.lock lerna.json ./
+COPY modules ./modules
+# delete all the non package.json files under `./modules/`
+RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
+
+FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS builder
 RUN apk add --no-cache git python3 make g++ libtool autoconf automake
 WORKDIR /tmp/bitgo
+COPY --from=filter-packages-json /tmp/bitgo .
+# (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
+RUN NOYARNPOSTINSTALL=1 yarn install --pure-lockfile
+
 COPY . .
 RUN \
     # clean up unnecessary local node_modules and dist
-    rm -rf **/node_modules **/dist && \ 
+    rm -rf modules/**/node_modules modules/**/dist && \
     # install with dev deps so we can run the prepare script
     yarn install --frozen-lockfile && \
     # install again to prune dev deps
