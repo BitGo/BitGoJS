@@ -2,7 +2,7 @@ import { Chalk, Instance } from 'chalk';
 import * as archy from 'archy';
 import { TxNode, TxNodeValue } from './parse';
 
-const hideDefault = ['pubkeys', 'sequence', 'locktime', 'script', 'witness'];
+const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];
 
 export function formatTree(
   n: TxNode,
@@ -32,7 +32,7 @@ export function formatTree(
           return v.length === 0 ? '[]' : v.toString('hex');
         }
     }
-    throw new Error(`could not get lavel from value`);
+    throw new Error(`could not get label from value`);
   }
 
   function toArchy(n: TxNode): archy.Data {

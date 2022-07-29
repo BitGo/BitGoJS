@@ -100,7 +100,7 @@ export class Parser {
     });
   }
 
-  parseScript(buffer: Buffer): TxNode {
+  parseInputScript(buffer: Buffer): TxNode {
     let value;
     let nodes;
     if (buffer.length && this.params.parseSignatureData) {
@@ -114,7 +114,7 @@ export class Parser {
       value = buffer;
     }
 
-    return this.node('script', value, nodes);
+    return this.node('scriptSig', value, nodes);
   }
 
   parseWitness(script: Buffer[]): TxNode {
@@ -216,7 +216,7 @@ export class Parser {
     return ins.map((input, i) => {
       return this.node(i, utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(input)), [
         this.node('sequence', toBufferUInt32BE(input.sequence)),
-        this.parseScript(input.script),
+        this.parseInputScript(input.script),
         this.parseWitness(input.witness),
         this.parseSigScript(tx, i, outputInfo.prevOutputs),
         ...this.parsePrevOut(input, i, tx.network, outputInfo.prevOutputs),
