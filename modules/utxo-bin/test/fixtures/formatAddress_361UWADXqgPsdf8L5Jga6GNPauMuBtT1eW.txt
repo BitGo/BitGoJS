@@ -1,0 +1,10 @@
+address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
+├─┬ base58Check: 052f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+│ ├── version: 5
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│ └─┬ scriptPubKey: [23byte]
+│   ├── type: scripthash
+│   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
+└── network: bitcoin, bitcoincash, bitcoinsv
