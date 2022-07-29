@@ -694,21 +694,22 @@ describe('V2 Wallet:', function () {
 
     it('Should build token enablement transactions', async () => {
       const params = {
-        tokens: [{
+        enableTokens: [{
           name: 'thbar:usdc',
         }],
       };
-      nock(bgUrl)
+      const txRequestNock = nock(bgUrl)
         .post(`/api/v2/${hbarWallet.coin()}/wallet/${hbarWallet.id()}/tx/build`)
         .reply((uri, body) => {
           const params = JSON.parse(body);
           params.recipients.length.should.equal(1);
           params.recipients[0].tokenName.should.equal('thbar:usdc');
           params.type.should.equal('enabletoken');
-          should.not.exist(params.tokens);
+          should.not.exist(params.enableTokens);
           return params;
         });
       await hbarWallet.buildTokenEnablements(params);
+      txRequestNock.isDone().should.equal(true);
     });
 
     afterEach(() => {
@@ -717,7 +718,7 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Solana tests: ', () => {
-    let solWallet;
+    let solWallet: Wallet;
     const passphrase = '#Bondiola1234';
     const solBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     solBitgo.initializeTestVars();
@@ -735,6 +736,7 @@ describe('V2 Wallet:', function () {
         '598f606cc8e43aef09fcb785221d9dd2',
         '5935d59cf660764331bafcade1855fd7',
       ],
+      multisigType: 'tss',
     };
 
     before(async function () {
@@ -830,6 +832,31 @@ describe('V2 Wallet:', function () {
         const preBuiltSignedTx = await solWallet.prebuildAndSignTransaction(txParams);
         preBuiltSignedTx.should.have.property('txHex');
       });
+    });
+
+    it('Should build token enablement transactions correctly', async function () {
+      const params = {
+        enableTokens: [{ name: 'tsol:usdc' }, { name: 'tsol:srm' }, { name: 'tsol:gmt' }],
+      };
+      const txRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${solWallet.id()}/txrequests`)
+        .reply((url, body) => {
+          const bodyParams = JSON.parse(body);
+          bodyParams.intent.intentType.should.equal('enableToken');
+          bodyParams.intent.recipients.length.should.equal(0);
+          bodyParams.intent.enableTokens.should.deepEqual(params.enableTokens);
+          return {
+            apiVersion: 'full',
+            transactions: [{
+              unsignedTx: {
+                serializedTxHex: 'fake transaction',
+                feeInfo: 'fake fee info',
+              },
+            }],
+          };
+        });
+      await solWallet.buildTokenEnablements(params);
+      txRequestNock.isDone().should.equal(true);
     });
   });
 

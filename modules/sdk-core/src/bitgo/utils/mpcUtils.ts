@@ -126,6 +126,7 @@ export abstract class MpcUtils {
       ...baseIntent,
       memo: params.memo?.value,
       token: params.tokenName,
+      enableTokens: params.enableTokens,
     };
   }
 }
