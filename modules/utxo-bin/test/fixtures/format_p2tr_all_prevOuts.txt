@@ -23,4 +23,8 @@ transaction: 02ebf7ae9f4d0bd6c5c661e992485f328495fb1edcce2d37de5103066a2ee97b
 │     └── address: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
-    └── value: 1.99999
+    ├── value: 1.99999000
+    ├── type: taproot
+    └─┬ scriptPubKey: 34 bytes
+      ├── hex: 5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8
+      └── asm: OP_1 c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8

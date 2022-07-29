@@ -13,4 +13,5 @@ transaction: a7b64a92c6fb7e0c6ea0b95c0db8a3253347d22f76562df4dc187ed5d442767b
 │     └── signatures: [72byte] [71byte]
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: 2MvPeRFSGYJq9BXoV2fxrMpJjsZMGx2m6Zk
-    └── value: 1.99999
+    ├── value: 1.99999000
+    └── type: scripthash

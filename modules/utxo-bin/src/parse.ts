@@ -28,6 +28,7 @@ export type TxNode = {
 export type ParserArgs = {
   parseScriptData: boolean;
   parseScriptAsm: boolean;
+  parseOutputScript: boolean;
   parseSignatureData: boolean;
   hide?: string[];
   maxOutputs?: number;
@@ -56,6 +57,7 @@ export class Parser {
     parseScriptData: true,
     parseScriptAsm: true,
     parseSignatureData: true,
+    parseOutputScript: true,
   };
 
   constructor(private params: ParserArgs) {}
@@ -242,24 +244,36 @@ export class Parser {
       } catch (e) {
         // ignore
       }
-      return this.node(i, `${buf.length} bytes`, [
+      return this.node(`OP_RETURN ${i}`, `${buf.length} bytes`, [
         this.node('hex', buf),
         ...(utf8 && isPrintable(utf8) ? [this.node('utf8', utf8)] : []),
       ]);
     });
   }
 
-  tryFormatAddress(script: Buffer, network: utxolib.Network): string | Buffer {
-    const opReturnNodes = this.tryParseOpReturn(script);
-    if (opReturnNodes.length) {
-      return `OP_RETURN`;
-    }
+  parseOutputScript(buffer: Buffer): TxNode[] {
+    return [
+      this.node('scriptPubKey', `${buffer.length} bytes`, [
+        this.node('hex', buffer.toString('hex')),
+        this.node('asm', utxolib.script.toASM(buffer), this.tryParseOpReturn(buffer)),
+      ]),
+    ];
+  }
 
+  parseOutput(txid: string, o: utxolib.TxOutput, i: number, network: utxolib.Network, params: ChainInfo): TxNode {
+    const type = utxolib.classify.output(o.script);
+
+    let address;
     try {
-      return utxolib.address.fromOutputScript(script, network);
-    } catch (e) {
-      return script;
-    }
+      address = utxolib.address.fromOutputScript(o.script, network);
+    } catch (e) {}
+
+    return this.node(i, address ?? '(no address)', [
+      this.node(`value`, formatSat(o.value)),
+      this.node(`type`, type),
+      ...(this.params.parseOutputScript || address === undefined ? this.parseOutputScript(o.script) : []),
+      ...this.parseSpend(txid, i, params.outputSpends, { conflict: false }),
+    ]);
   }
 
   parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): TxNode[] {
@@ -268,13 +282,7 @@ export class Parser {
     }
 
     const txid = tx.getId();
-    return outs.map((o, i) =>
-      this.node(i, this.tryFormatAddress(o.script, tx.network), [
-        ...this.tryParseOpReturn(o.script),
-        this.node(`value`, o.value / 1e8),
-        ...this.parseSpend(txid, i, params.outputSpends, { conflict: false }),
-      ])
-    );
+    return outs.map((o, i) => this.parseOutput(txid, o, i, tx.network, params));
   }
 
   parseStatus(tx: utxolib.bitgo.UtxoTransaction, status?: TransactionStatus): TxNode[] {
