@@ -915,6 +915,13 @@ export class Wallet implements IWallet {
       query.includeBalances = params.includeBalances;
     }
 
+    if (!_.isNil(params.includeTokens)) {
+      if (!_.isBoolean(params.includeTokens)) {
+        throw new Error('invalid includeTokens argument, expecting boolean');
+      }
+      query.includeTokens = params.includeTokens;
+    }
+
     if (!_.isNil(params.includeTotalAddressCount)) {
       if (!_.isBoolean(params.includeTotalAddressCount)) {
         throw new Error('invalid includeTotalAddressCount argument, expecting boolean');

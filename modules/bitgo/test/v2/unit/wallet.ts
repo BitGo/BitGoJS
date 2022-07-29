@@ -197,7 +197,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('search list addresses should return success', async function () {
-      const params = { includeBalances: true, returnBalancesForToken: 'gterc6dp', pendingDeployment: false, includeTotalAddressCount: true };
+      const params = { includeBalances: true, includeTokens: true, returnBalancesForToken: 'gterc6dp', pendingDeployment: false, includeTotalAddressCount: true };
 
       const scope =
         nock(bgUrl)
@@ -219,6 +219,8 @@ describe('V2 Wallet:', function () {
       await ethWallet.addresses({ pendingDeployment: 1 }).should.be.rejectedWith('invalid pendingDeployment argument, expecting boolean');
 
       await ethWallet.addresses({ includeBalances: 1 }).should.be.rejectedWith('invalid includeBalances argument, expecting boolean');
+
+      await ethWallet.addresses({ includeTokens: 1 }).should.be.rejectedWith('invalid includeTokens argument, expecting boolean');
 
       await ethWallet.addresses({ includeTotalAddressCount: 1 }).should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
     });
