@@ -1,5 +1,5 @@
 import should from 'should';
-import { KeyPair } from '../../src/keyPair';
+import { KeyPair } from '../../src';
 import { enterpriseAccounts } from '../resources/';
 import { PrivateKey, PublicKey } from '@emurgo/cardano-serialization-lib-nodejs';
 import { AddressFormat, toHex } from '@bitgo/sdk-core';
