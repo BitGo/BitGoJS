@@ -4,7 +4,10 @@ import { <%= constructor %>Transaction } from './transaction';
 
 const { UtxoTransactionBuilder } = bitgo
 
-export class <%= constructor %>TransactionBuilder extends UtxoTransactionBuilder<<%= constructor %>Transaction> {
+export class <%= constructor %>TransactionBuilder<TNumber extends number | bigint = number> extends UtxoTransactionBuilder<
+  TNumber,
+  <%= constructor %>Transaction<TNumber>
+> {
   constructor(network: Network, txb?: UtxoTransactionBuilder) {
     super(network, txb);
   }
