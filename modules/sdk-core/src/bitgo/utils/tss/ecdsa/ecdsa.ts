@@ -3,7 +3,7 @@ import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import * as openpgp from 'openpgp';
-import { KeychainsTriplet } from '../../../baseCoin';
+import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import * as crypto from 'crypto';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
@@ -11,11 +11,37 @@ import { TxRequest } from '../baseTypes';
 import { IRequestTracer } from '../../../../api';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
+import { getBitgoGpgPubKey } from '../../opengpgUtils';
+import { BitGoBase } from '../../../bitgoBase';
+import { IWallet } from '../../../wallet';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
 /** @inheritdoc */
 export class EcdsaUtils extends baseTSSUtils<KeyShare> {
+  private bitgoPublicGpgKey: openpgp.Key | undefined = undefined;
+
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
+    super(bitgo, baseCoin, wallet);
+    this.setBitgoGpgPubKey(bitgo);
+  }
+
+  private async setBitgoGpgPubKey(bitgo) {
+    this.bitgoPublicGpgKey = await getBitgoGpgPubKey(bitgo);
+  }
+
+  async getBitgoPublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoPublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoPublicGpgKey) {
+        throw new Error("Failed to get Bitgo's gpg key");
+      }
+    }
+
+    return this.bitgoPublicGpgKey!;
+  }
+
   /** @inheritdoc */
   async createKeychains(params: {
     passphrase: string;
@@ -30,7 +56,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const backupKeyShare = await MPC.keyShare(2, m, n);
 
     const randomHexString = crypto.randomBytes(12).toString('hex');
-
     openpgp.config.rejectCurves = new Set();
 
     const userGpgKey = await openpgp.generateKey({
@@ -107,18 +132,19 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     backupKeyShare: KeyShare,
     enterprise?: string
   ): Promise<Keychain> {
+    const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
     const recipientIndex = 3;
     const userToBitgoShare = await encryptNShare(
       userKeyShare,
       recipientIndex,
-      userGpgKey.publicKey,
+      bitgoPublicGpgKey.armor(),
       userGpgKey.privateKey
     );
 
     const backupToBitgoShare = await encryptNShare(
       backupKeyShare,
       recipientIndex,
-      userGpgKey.publicKey,
+      bitgoPublicGpgKey.armor(),
       userGpgKey.privateKey
     );
 
@@ -186,6 +212,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Missing BitGo to User key share');
     }
 
+    const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
+
     const backupToUserShare = await encryptNShare(
       otherShare,
       recipientIndex,
@@ -206,7 +234,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           encryptedPrivateShare: bitGoToUserShare.privateShare,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
-        senderPublicArmor: userGpgKey.publicKey,
+        senderPublicArmor: bitgoPublicGpgKey.armor(),
       },
     ];
 

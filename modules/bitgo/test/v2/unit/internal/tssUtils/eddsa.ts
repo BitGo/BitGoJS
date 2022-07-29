@@ -81,7 +81,6 @@ describe('TSS Utils:', async function () {
   before('initializes mpc', async function() {
     const hdTree = await Ed25519BIP32.initialize();
     MPC = await Eddsa.initialize(hdTree);
-
   });
 
   before(async function () {
@@ -101,17 +100,17 @@ describe('TSS Utils:', async function () {
       },
     };
 
-    nock('https://bitgo.fakeurl')
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants });
-
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
     const baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
+
+    nock(bgUrl)
+      .persist()
+      .get('/api/v1/client/constants')
+      .reply(200, { ttl: 3600, constants });
 
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',
@@ -125,6 +124,10 @@ describe('TSS Utils:', async function () {
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new TssUtils(bitgo, baseCoin, wallet);
+  });
+
+  after(function () {
+    nock.cleanAll();
   });
 
   describe('TSS key chains:', async function() {
