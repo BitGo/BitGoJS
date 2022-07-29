@@ -13,9 +13,6 @@ export class Tpolygon extends Polygon {
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tpolygon(bitgo, staticsCoin);
   }
-  static getCustomChainName(): string {
-    return 'PolygonMumbai';
-  }
 
   getChain(): string {
     return 'tpolygon';

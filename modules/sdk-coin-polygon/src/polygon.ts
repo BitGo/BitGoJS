@@ -36,7 +36,10 @@ export class Polygon extends Eth {
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Polygon(bitgo, staticsCoin);
   }
-  static getCustomChainName(): string {
+  static getCustomChainName(chainId?: number): string {
+    if (chainId === 80001) {
+      return 'PolygonMumbai';
+    }
     return 'PolygonMainnet';
   }
 
@@ -44,13 +47,18 @@ export class Polygon extends Eth {
     // if eip1559 params are specified, default to london hardfork, otherwise,
     // default to tangerine whistle to avoid replay protection issues
     const defaultHardfork = !!params.eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
-    const customChain = optionalDeps.EthCommon.CustomChain[this.getCustomChainName()];
-    const customChainCommon = optionalDeps.EthCommon.default.custom(customChain);
-
+    let customChainCommon;
     // if replay protection options are set, override the default common setting
-    params.replayProtectionOptions
-      ? customChainCommon.setHardfork(params.replayProtectionOptions.hardfork)
-      : customChainCommon.setHardfork(defaultHardfork);
+    if (params.replayProtectionOptions) {
+      const customChainName = Polygon.getCustomChainName(params.replayProtectionOptions.chain as number);
+      const customChain = optionalDeps.EthCommon.CustomChain[customChainName];
+      customChainCommon = optionalDeps.EthCommon.default.custom(customChain);
+      customChainCommon.setHardfork(params.replayProtectionOptions.hardfork);
+    } else {
+      const customChain = optionalDeps.EthCommon.CustomChain[Polygon.getCustomChainName()];
+      customChainCommon = optionalDeps.EthCommon.default.custom(customChain);
+      customChainCommon.setHardfork(defaultHardfork);
+    }
 
     const baseParams = {
       to: params.to,
