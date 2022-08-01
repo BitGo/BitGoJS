@@ -93,7 +93,8 @@
     "sdk-coin:new": "yo ./scripts/sdk-coin-generator && yarn update-dockerfile",
     "build-docker-express": "yarn update-dockerfile && docker build -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < modules/express/package.json) .",
     "push-docker-express": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < modules/express/package.json)",
-    "update-dockerfile": "ts-node scripts/update-dockerfile.ts"
+    "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
+    "precommit": "lint-staged"
   },
   "dependencies": {}
 }

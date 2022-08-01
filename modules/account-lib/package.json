@@ -10,7 +10,6 @@
     "coverage": "npm run gen-coverage && npm run upload-coverage",
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
-    "precommit": "yarn lint-staged",
     "prepare": "npm run build-ts && cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
