@@ -321,6 +321,11 @@ export interface RecoverTokenTransaction {
   };
 }
 
+export interface TokenEnablementConfig {
+  requiresTokenEnablement: boolean;
+  supportsMultipleTokenEnablements: boolean;
+}
+
 export interface IBaseCoin {
   type: string;
   url(suffix: string): string;
@@ -337,6 +342,7 @@ export interface IBaseCoin {
   sweepWithSendMany(): boolean;
   transactionDataAllowed(): boolean;
   allowsAccountConsolidations(): boolean;
+  getTokenEnablementConfig(): TokenEnablementConfig;
   supportsTss(): boolean;
   supportsStaking(): boolean;
   supportsBlsDkg(): boolean;

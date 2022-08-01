@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-import 'should';
+import * as should from 'should';
 import * as sinon from 'sinon';
 require('should-sinon');
 import '../lib/asserts';
@@ -674,6 +674,47 @@ describe('V2 Wallet:', function () {
       scope.isDone().should.be.true();
     });
   }) ;
+
+  describe('Hedera tests', () => {
+    let hbarWallet: Wallet;
+
+    before(async () => {
+      // This is not a real THBAR wallet
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'thbar',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+      };
+      hbarWallet = new Wallet(bitgo, bitgo.coin('thbar'), walletData);
+    });
+
+    it('Should build token enablement transactions', async () => {
+      const params = {
+        tokens: [{
+          name: 'thbar:usdc',
+        }],
+      };
+      nock(bgUrl)
+        .post(`/api/v2/${hbarWallet.coin()}/wallet/${hbarWallet.id()}/tx/build`)
+        .reply((uri, body) => {
+          const params = JSON.parse(body);
+          params.recipients.length.should.equal(1);
+          params.recipients[0].tokenName.should.equal('thbar:usdc');
+          params.type.should.equal('enabletoken');
+          should.not.exist(params.tokens);
+          return params;
+        });
+      await hbarWallet.buildTokenEnablements(params);
+    });
+
+    afterEach(() => {
+      nock.cleanAll();
+    });
+  });
 
   describe('Solana tests: ', () => {
     let solWallet;

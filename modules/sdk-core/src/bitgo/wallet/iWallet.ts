@@ -34,11 +34,21 @@ export interface BuildConsolidationTransactionOptions extends PrebuildTransactio
   consolidateAddresses?: string[];
 }
 
+export interface TokenEnablement {
+  name: string;
+  address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
+}
+
+export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions {
+  tokens: TokenEnablement[];
+}
+
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
     address: string;
     amount: string | number;
+    tokenName?: string;
   }[];
   numBlocks?: number;
   maxFeeRate?: number;
@@ -556,4 +566,7 @@ export interface IWallet {
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;
+  buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
+  sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
+  sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
 }
