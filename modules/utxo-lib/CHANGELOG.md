@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.4.2-rc.0...@bitgo/utxo-lib@3.0.0-rc.0) (2022-08-01)
+
+
+### Features
+
+* **utxo-lib:** full 64 bit support w/ bigints ([91434ef](https://github.com/BitGo/BitGoJS/commit/91434effed0a8dbd2a75bd08475b0380ec6761aa))
+
+
+### BREAKING CHANGES
+
+* **utxo-lib:** UtxoTransaction.fromBuffer interface - new optional param `amountType` inserted
+BG-49864
+BG-53245
+
+
+
+
+
 ## [2.4.2-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.4.1...@bitgo/utxo-lib@2.4.2-rc.0) (2022-07-26)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

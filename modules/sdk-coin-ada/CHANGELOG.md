@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.1.2-rc.1...@bitgo/sdk-coin-ada@1.2.0-rc.0) (2022-08-01)
+
+
+### Features
+
+* **account-lib:** add transaction builder for ada ([f35974b](https://github.com/BitGo/BitGoJS/commit/f35974b91f561e70bd83804bfc98f15b08923663))
+
+
+
+
+
 ## [1.1.2-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.1.2-rc.0...@bitgo/sdk-coin-ada@1.1.2-rc.1) (2022-07-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

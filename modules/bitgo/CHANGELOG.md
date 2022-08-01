@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.4](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.3...bitgo@14.3.0-rc.4) (2022-08-01)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix tss ecdsa keychain encryption ([95f9c2d](https://github.com/BitGo/BitGoJS/commit/95f9c2d7d1018d387dc6cabd89e5c0d14b9f07d3))
+
+
+### Features
+
+* **sdk-coin-aca:** add sdk-coin-aca module BG-52862 ([fef877c](https://github.com/BitGo/BitGoJS/commit/fef877c0ef9019d90dd91fabd3517b2335c49267))
+* **sdk-coin-ada:** incorporate sdk-coin-ada back into bitgo ([99d141b](https://github.com/BitGo/BitGoJS/commit/99d141be06fa98f77ea88dc6f7cbae7aa1f9e002))
+* **sdk-core:** add specialized enable token functions ([3e60cef](https://github.com/BitGo/BitGoJS/commit/3e60cef71a0ae76b378356508338738eac49a920))
+
+
+
+
+
 # [14.3.0-rc.3](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.2...bitgo@14.3.0-rc.3) (2022-07-28)
 
 

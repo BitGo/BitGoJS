@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.2.0-rc.1...@bitgo/sdk-core@1.2.0-rc.2) (2022-08-01)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix tss ecdsa keychain encryption ([95f9c2d](https://github.com/BitGo/BitGoJS/commit/95f9c2d7d1018d387dc6cabd89e5c0d14b9f07d3))
+
+
+### Features
+
+* **sdk-core:** add specialized enable token functions ([3e60cef](https://github.com/BitGo/BitGoJS/commit/3e60cef71a0ae76b378356508338738eac49a920))
+
+
+
+
+
 # [1.2.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.2.0-rc.0...@bitgo/sdk-core@1.2.0-rc.1) (2022-07-27)
 
 **Note:** Version bump only for package @bitgo/sdk-core

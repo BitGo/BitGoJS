@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.1.0-rc.1...@bitgo/sdk-coin-hbar@1.1.0-rc.2) (2022-08-01)
+
+
+### Features
+
+* **sdk-core:** add specialized enable token functions ([3e60cef](https://github.com/BitGo/BitGoJS/commit/3e60cef71a0ae76b378356508338738eac49a920))
+
+
+
+
+
 # [1.1.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.1.0-rc.0...@bitgo/sdk-coin-hbar@1.1.0-rc.1) (2022-07-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar
