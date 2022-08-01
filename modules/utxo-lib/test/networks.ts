@@ -150,10 +150,10 @@ describe('networks', function () {
         assert.strictEqual(typeof network.wif, 'number');
         assert.strictEqual(typeof network.coin, 'string');
 
-        if (isMainnet(network) && !isDogecoin(network)) {
+        if (isMainnet(network)) {
           assert.strictEqual(network.bip32.public, networks.bitcoin.bip32.public);
           assert.strictEqual(network.bip32.private, networks.bitcoin.bip32.private);
-        } else if (!isDogecoin(network)) {
+        } else {
           assert.strictEqual(network.bip32.public, networks.testnet.bip32.public);
           assert.strictEqual(network.bip32.private, networks.testnet.bip32.private);
         }
