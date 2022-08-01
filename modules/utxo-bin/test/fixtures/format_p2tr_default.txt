@@ -13,4 +13,5 @@ transaction: 02ebf7ae9f4d0bd6c5c661e992485f328495fb1edcce2d37de5103066a2ee97b
 │     └── signatures: [64byte] [64byte]
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
-    └── value: 1.99999
+    ├── value: 1.99999000
+    └── type: taproot

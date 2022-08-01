@@ -208,6 +208,60 @@ describe('Polygon', function () {
       halfSignedTransaction.halfSigned.eip1559.maxPriorityFeePerGas.should.equal(10);
       halfSignedTransaction.halfSigned.eip1559.maxFeePerGas.should.equal(10);
     });
+
+    it('should second sign a transaction', async function () {
+      const fullSignedTransaction = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            eip1559: {
+              maxPriorityFeePerGas: '1499999999',
+              maxFeePerGas: '1500000015',
+            },
+            isBatch: false,
+            recipients: [
+              {
+                address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
+                amount: '10000000000000',
+                value: '0.00001 TPOLYGON',
+              },
+            ],
+            expireTime: 1659366867,
+            contractSequenceId: 5,
+            operationHash: '0xf41d88a06cfbd7010b679c5b94e9b251db13ca32de5152e98be61741644f27c4',
+            signature:
+              '0x797063743697aff08c1df39bed086160136dcf2a37808f951cdd0742208d16027e18954c5434dd94c487951815d10e76f4df402b2188955962bc3eb7310e2b931c',
+          },
+          eip1559: {
+            maxPriorityFeePerGas: '1499999999',
+            maxFeePerGas: '1500000015',
+          },
+          isBatch: false,
+          recipients: [
+            {
+              address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
+              amount: '10000000000000',
+              value: '0.00001 TPOLYGON',
+            },
+          ],
+          expireTime: 1659366867,
+          contractSequenceId: 5,
+          gasLimit: 200000,
+          address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
+          amount: '10000000000000',
+          isHalfSigned: true,
+          backupKeyNonce: 5,
+          coin: 'tpolygon',
+          walletContractAddress: '0x2f04b3504450dbf12a9289c4c8d2e8aa15901bde',
+          replayProtectionOptions: { chain: 80001, hardfork: 'london' },
+        },
+        isLastSignature: true,
+        signingKeyNonce: 5,
+        prv: userKeychain.prv,
+        walletContractAddress: '0x2f04b3504450dbf12a9289c4c8d2e8aa15901bde',
+      });
+
+      should.exist(fullSignedTransaction.txHex);
+    });
   });
 
   describe('Transaction Verification', function () {

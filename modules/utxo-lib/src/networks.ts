@@ -206,12 +206,10 @@ export const networks: Record<NetworkName, Network> = {
 
   // https://github.com/dogecoin/dogecoin/blob/master/src/validation.cpp
   // https://github.com/dogecoin/dogecoin/blob/master/src/chainparams.cpp
+  // Mainnet bip32 here does not match dogecoin core, this is intended (see BG-53241)
   dogecoin: {
     messagePrefix: '\x19Dogecoin Signed Message:\n',
-    bip32: {
-      public: 0x02facafd,
-      private: 0x02fac398,
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x1e,
     scriptHash: 0x16,
     wif: 0x9e,

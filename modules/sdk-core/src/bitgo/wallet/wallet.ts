@@ -26,6 +26,7 @@ import {
   AccelerateTransactionOptions,
   AddressesOptions,
   BuildConsolidationTransactionOptions,
+  BuildTokenEnablementOptions,
   ChangeFeeOptions,
   ConsolidateUnspentsOptions,
   CreateAddressOptions,
@@ -2266,6 +2267,106 @@ export class Wallet implements IWallet {
         failure: failedTxs,
       };
     }
+  }
+
+  /**
+   * Builds a set of transactions that enables the specified tokens
+   * @param params -
+   *    tokens: Token enablement operations we want to perform
+   * @returns Unsigned transactions that enables the specified tokens
+   */
+  public async buildTokenEnablements(
+    params: BuildTokenEnablementOptions = { tokens: [] }
+  ): Promise<PrebuildTransactionResult[]> {
+    const teConfig = this.baseCoin.getTokenEnablementConfig();
+    if (!teConfig.requiresTokenEnablement) {
+      throw new Error(`${this.baseCoin.getFullName()} does not require token enablements`);
+    }
+    if (params.tokens.length === 0) {
+      throw new Error('No tokens are being specified');
+    }
+    if (params.recipients) {
+      throw new Error('Can not specify recipients for token enablement transactions');
+    }
+
+    if (params.reqId) {
+      this.bitgo.setRequestTracer(params.reqId);
+    }
+
+    const buildParams = _.pick(params, this.prebuildWhitelistedParams());
+    buildParams.type = 'enabletoken';
+    // Check if we build with intent
+    if (this._wallet.multisigType === 'tss') {
+      throw new Error('tss not supported for token enablement');
+    } else {
+      // Rewrite tokens into recipients for buildTransaction
+      buildParams.recipients = params.tokens.map((token) => {
+        return {
+          tokenName: token.name,
+          address: token.address,
+        };
+      });
+      return [await this.prebuildTransaction(buildParams)];
+    }
+  }
+
+  /**
+   * Signs and sends a single unsigned token enablement transaction
+   * @param params
+   */
+  public async sendTokenEnablement(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
+    const teConfig = this.baseCoin.getTokenEnablementConfig();
+    if (!teConfig.requiresTokenEnablement) {
+      throw new Error(`${this.baseCoin.getFullName()} does not require token enablement transactions`);
+    }
+
+    if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
+      throw new Error('Invalid build of token enablement.');
+    }
+
+    if (this._wallet.multisigType === 'tss') {
+      return await this.sendManyTss(params);
+    } else {
+      const signedPrebuild = await this.prebuildAndSignTransaction(params);
+      return await this.submitTransaction(signedPrebuild);
+    }
+  }
+
+  /**
+   * Some chains require tokens to be enabled before they can be received/sent.
+   * This is a dedicated function that enables tokens.
+   *
+   * Builds, signs, and sends a set of transactions that enables the specified tokens
+   * @param params -
+   *    tokens: Token enablement operations we want to perform
+   */
+  public async sendTokenEnablements(params: BuildTokenEnablementOptions = { tokens: [] }): Promise<{
+    success: any[];
+    failure: Error[];
+  }> {
+    const unsignedBuilds = await this.buildTokenEnablements(params);
+
+    const successfulTxs: any[] = [];
+    const failedTxs = new Array<Error>();
+    for (const unsignedBuild of unsignedBuilds) {
+      // fold any of the parameters we used to build this transaction into the unsignedBuild
+      const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = _.pick(
+        params,
+        this.prebuildWhitelistedParams()
+      );
+      unsignedBuildWithOptions.prebuildTx = unsignedBuild;
+      try {
+        const sendTx = await this.sendTokenEnablement(unsignedBuildWithOptions);
+        successfulTxs.push(sendTx);
+      } catch (e) {
+        failedTxs.push(e);
+      }
+    }
+
+    return {
+      success: successfulTxs,
+      failure: failedTxs,
+    };
   }
 
   /* MARK: TSS Helpers */

@@ -50,8 +50,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected _type: TransactionType;
   // Specifies common chain and hardfork parameters.
   protected _common: EthereumCommon;
+  protected _sourceKeyPair: KeyPair;
   private _transaction: Transaction;
-  private _sourceKeyPair: KeyPair;
   private _counter: number;
   private _fee: Fee;
   private _value: string;

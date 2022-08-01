@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
-import { isTestnet, TxOutput, getNetworkList, getNetworkName } from '../../src';
+import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
 
 import {
   createTransactionBuilderForNetwork,
@@ -17,6 +17,7 @@ import {
   TxOutPoint,
   UtxoTransaction,
   verifySignature,
+  getValueScaled,
 } from '../../src/bitgo';
 import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
@@ -41,7 +42,12 @@ import { getDefaultCosigner } from '../testutil';
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
-function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: ScriptType) {
+function runTestParse<TNumber extends number | bigint>(
+  protocol: Protocol,
+  txType: FixtureTxType,
+  scriptType: ScriptType,
+  amountType: 'number' | 'bigint' = 'number'
+) {
   if (txType === 'deposit' && !isSupportedDepositType(protocol.network, scriptType)) {
     return;
   }
@@ -53,7 +59,7 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
   const fixtureName = `${txType}_${scriptType}.json`;
   describe(fixtureName, function () {
     let fixture: TransactionFixtureWithInputs;
-    let parsedTx: UtxoTransaction;
+    let parsedTx: UtxoTransaction<TNumber>;
 
     before(async function () {
       fixture = await readFixture(
@@ -63,9 +69,12 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
         },
         fixtureName
       );
-      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
-        version: protocol.version,
-      });
+      parsedTx = createTransactionFromBuffer<TNumber>(
+        Buffer.from(fixture.transaction.hex, 'hex'),
+        protocol.network,
+        { version: protocol.version },
+        amountType
+      );
     });
 
     type InputLookup = { txid?: string; hash?: Buffer; index: number };
@@ -89,15 +98,15 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
       return prevOutput;
     }
 
-    function getPrevOutputValue(input: InputLookup) {
-      return getPrevOutput(input).value * 1e8;
+    function getPrevOutputValue(input: InputLookup): TNumber {
+      return getValueScaled<TNumber>(getPrevOutput(input).value, amountType);
     }
 
     function getPrevOutputScript(input: InputLookup): Buffer {
       return Buffer.from(getPrevOutput(input).scriptPubKey.hex, 'hex');
     }
 
-    function getPrevOutputs(): (TxOutPoint & TxOutput)[] {
+    function getPrevOutputs(): (TxOutPoint & TxOutput<TNumber>)[] {
       return parsedTx.ins.map((i) => ({
         ...getOutputIdForInput(i),
         script: getPrevOutputScript(i),
@@ -106,24 +115,32 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
     }
 
     it(`round-trip`, function () {
-      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, getPrevOutputs());
+      parseTransactionRoundTrip(
+        Buffer.from(fixture.transaction.hex, 'hex'),
+        protocol.network,
+        getPrevOutputs(),
+        amountType
+      );
     });
 
     it(`recreate from unsigned hex`, function () {
       if (txType === 'deposit') {
         return;
       }
-      const txbUnsigned = createTransactionBuilderForNetwork(protocol.network, { version: protocol.version });
+      const txbUnsigned = createTransactionBuilderForNetwork<TNumber>(protocol.network, { version: protocol.version });
       getPrevOutputs().forEach((o) => {
         txbUnsigned.addInput(o.txid, o.vout);
       });
       fixture.transaction.vout.forEach((o) => {
-        txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);
+        txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), getValueScaled<TNumber>(o.value, amountType));
       });
 
-      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network, {
-        version: protocol.version,
-      });
+      const tx = createTransactionFromBuffer<TNumber>(
+        txbUnsigned.buildIncomplete().toBuffer(),
+        protocol.network,
+        { version: protocol.version },
+        amountType
+      );
       const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());
       const signKeys = [fixtureKeys[0], fixtureKeys[2]];
       const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;
@@ -281,7 +298,12 @@ describe(`regtest fixtures`, function () {
       describe(`${getNetworkName(network)} fixtures (version=${version}, isDefault=${isDefault})`, function () {
         scriptTypes.forEach((scriptType) => {
           fixtureTxTypes.forEach((txType) => {
-            runTestParse({ network, version }, txType, scriptType);
+            runTestParse(
+              { network, version },
+              txType,
+              scriptType,
+              network === networks.dogecoinTest ? 'bigint' : 'number'
+            );
           });
         });
       });

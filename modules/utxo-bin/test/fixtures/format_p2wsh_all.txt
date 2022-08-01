@@ -13,4 +13,8 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │     └── signatures: [71byte] [71byte]
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: tb1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qw8zyk7
-    └── value: 1.99999
+    ├── value: 1.99999000
+    ├── type: witnessscripthash
+    └─┬ scriptPubKey: 34 bytes
+      ├── hex: 00201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a
+      └── asm: OP_0 1553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a
