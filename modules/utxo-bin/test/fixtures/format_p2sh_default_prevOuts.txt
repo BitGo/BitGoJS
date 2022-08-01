@@ -23,4 +23,5 @@ transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
 │     └── address: 2NGSAkyhiWMZPcrfiwmcRWf9HQgpsiRGKv4
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: 2NGSAkyhiWMZPcrfiwmcRWf9HQgpsiRGKv4
-    └── value: 1.99999
+    ├── value: 1.99999000
+    └── type: scripthash

@@ -51,6 +51,7 @@ export const cmdParse = {
       .option('parseScriptAsm', { alias: 'scriptasm', type: 'boolean', default: false })
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
+      .option('parseOutputScript', { type: 'boolean', default: false })
       .option('maxOutputs', { type: 'number' })
       .option('all', { type: 'boolean', default: false })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
