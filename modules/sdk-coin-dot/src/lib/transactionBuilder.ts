@@ -16,6 +16,7 @@ import {
 import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { TypeRegistry as AcaTypeRegistry } from '@acala-network/txwrapper-acala';
 import { decode } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
@@ -38,7 +39,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _nonce: number;
   protected _tip?: number;
   protected _eraPeriod?: number;
-  protected _registry: TypeRegistry;
+  protected _registry: TypeRegistry | AcaTypeRegistry;
   protected _method?: TxMethod;
   protected __material?: Material;
   // signatures that will be used to sign a transaction when building
