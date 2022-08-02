@@ -32,8 +32,9 @@ import {
   getProxyInitcode,
   hasSignature,
   isValidEthAddress,
+  getWalletV1InitData,
 } from './utils';
-import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { defaultWalletVersion, walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 import * as ethUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
@@ -61,6 +62,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
+  private _walletVersion: number;
 
   // flush tokens parameters
   private _forwarderAddress: string;
@@ -71,12 +73,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _contractAddress: string;
   private _contractCounter: number;
   private _forwarderVersion: number;
-  private _salt: string;
   private _initCode: string;
 
   // generic contract call builder
   // encoded contract call hex
   private _data: string;
+
+  // Common parameter for wallet initialization and address initialization transaction
+  private _salt: string;
 
   /**
    * Public constructor.
@@ -91,6 +95,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._value = '0';
     this._walletOwnerAddresses = [];
     this._forwarderVersion = 0;
+    this._walletVersion = 0;
     this.transaction = new Transaction(this._coinConfig, this._common);
   }
 
@@ -116,7 +121,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected getTransactionData(): TxData {
     switch (this._type) {
       case TransactionType.WalletInitialization:
-        return this.buildWalletInitializationTransaction();
+        return this.buildWalletInitializationTransaction(this._walletVersion);
       case TransactionType.Send:
       case TransactionType.SendERC721:
       case TransactionType.SendERC1155:
@@ -186,10 +191,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected setTransactionTypeFields(decodedType: TransactionType, transactionJson: TxData): void {
     switch (decodedType) {
       case TransactionType.WalletInitialization:
-        const owners = decodeWalletCreationData(transactionJson.data);
+        const { owners, salt } = decodeWalletCreationData(transactionJson.data);
         owners.forEach((element) => {
           this.owner(element);
         });
+        if (salt) {
+          this.salt(salt as string);
+          this.walletVersion(1);
+          this.setContract(transactionJson.to);
+        }
         break;
       case TransactionType.FlushTokens:
         this.setContract(transactionJson.to);
@@ -527,8 +537,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @returns {TxData} The Ethereum transaction data
    */
-  protected buildWalletInitializationTransaction(): TxData {
-    return this.buildBase(this.getContractData(this._walletOwnerAddresses));
+  protected buildWalletInitializationTransaction(walletVersion?: number): TxData {
+    const walletInitData =
+      walletVersion === defaultWalletVersion
+        ? this.getContractData(this._walletOwnerAddresses)
+        : getWalletV1InitData(this._walletOwnerAddresses, this._salt);
+    return this.buildBase(walletInitData);
   }
 
   /**
@@ -747,5 +761,18 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Invalid address: ' + implementationAddress);
     }
     this._initCode = getProxyInitcode(implementationAddress);
+  }
+
+  /**
+   * Set the wallet version for wallet to be initialized
+   *
+   * @param {number} version wallet version
+   */
+  walletVersion(version: number): void {
+    if (version < 0 || version > 3) {
+      throw new BuildTransactionError(`Invalid wallet version: ${version}`);
+    }
+
+    this._walletVersion = version;
   }
 }

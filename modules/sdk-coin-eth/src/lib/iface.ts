@@ -141,3 +141,8 @@ export interface FlushTokensData {
 export interface NativeTransferData extends TransferData {
   data: string;
 }
+
+export interface WalletInitializationData {
+  salt?: string;
+  owners: string[];
+}

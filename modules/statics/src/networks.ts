@@ -693,6 +693,8 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   chainId = 80001;
   forwarderFactoryAddress = '0x7d10cfdcb763375fb5f0a0e9101f490f0bf1b43a';
   forwarderImplementationAddress = '0xaa2216d72d7c149dfe4c3dd2154cd00994216506';
+  walletFactoryAddress = '0xe37c07faec87be075ce4002b5fedbde00a4fe9d5';
+  walletImplementationAddress = '0x11f8d70a4ee9d0962bb1160d776d4a996cfdff40';
 }
 
 export const Networks = {
