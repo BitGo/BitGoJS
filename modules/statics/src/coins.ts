@@ -1580,14 +1580,6 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
-    'sol:orca',
-    'Orca',
-    6,
-    'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
-    UnderlyingAsset.ORCA,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  solToken(
     'sol:usdc',
     'USD Coin',
     6,
@@ -1604,27 +1596,19 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
-    'sol:mnde',
-    'Marinade',
-    9,
-    'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', // https://explorer.solana.com/address/MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey/metadata
-    UnderlyingAsset.MNDE,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  solToken(
-    'sol:slnd',
-    'Solend',
-    6,
-    'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
-    UnderlyingAsset.SLND,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  solToken(
     'sol:gmt',
     'GMT',
     9,
     '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx', // https://explorer.solana.com/address/7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx
     UnderlyingAsset.GMT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:usdt',
+    'USD Tether',
+    6,
+    'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
+    UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
@@ -1633,14 +1617,6 @@ export const coins = CoinMap.fromCoins([
     9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
     UnderlyingAsset.SRM,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  tsolToken(
-    'tsol:orca',
-    'Orca',
-    9,
-    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
-    UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
@@ -1660,27 +1636,19 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
-    'tsol:mnde',
-    'Marinade',
-    9,
-    '7gRLy19WNhGx5D4znmak436sa1ZMqYkxF7aNi5fL1ZXg',
-    UnderlyingAsset.MNDE,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  tsolToken(
-    'tsol:slnd',
-    'Solend',
-    9,
-    'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
-    UnderlyingAsset.SLND,
-    AccountCoin.DEFAULT_FEATURES
-  ),
-  tsolToken(
     'tsol:gmt',
     'GMT',
     9,
     '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
     UnderlyingAsset.GMT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:usdt',
+    'USD Tether',
+    9,
+    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+    UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),

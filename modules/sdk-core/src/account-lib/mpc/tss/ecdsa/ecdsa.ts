@@ -40,18 +40,23 @@ export default class Ecdsa {
    * @param {number} index participant index
    * @param {number} threshold Signing threshold
    * @param {number} numShares  Number of shares
+   * @param {Buffer} seed optional seed to use for key generation
    * @returns {Promise<KeyShare>} Returns the private p-share
    * and n-shares to be distributed to participants at their corresponding index.
    */
-  async keyShare(index: number, threshold: number, numShares: number): Promise<KeyShare> {
+  async keyShare(index: number, threshold: number, numShares: number, seed?: Buffer): Promise<KeyShare> {
     if (!(index > 0 && index <= numShares && threshold <= numShares && threshold === 2)) {
       throw 'Invalid KeyShare Config';
     }
+
+    if (seed && seed.length !== 72) {
+      throw new Error('Seed must have length 72');
+    }
     // Generate additively homomorphic encryption key.
     const { publicKey, privateKey } = await paillierBigint.generateRandomKeys(3072, true);
-    const u = Ecdsa.curve.scalarRandom();
+    const u = (seed && bigIntFromU8ABE(secp.utils.hashToPrivateKey(seed.slice(0, 40)))) ?? Ecdsa.curve.scalarRandom();
     const y = Ecdsa.curve.basePointMult(u);
-    const chaincode = randomBytes(32);
+    const chaincode = seed?.slice(40) ?? randomBytes(32);
     // Compute secret shares of the private key
     const uShares = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
