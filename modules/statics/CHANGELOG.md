@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.1...@bitgo/statics@8.0.0-rc.2) (2022-08-02)
+
+
+### Code Refactoring
+
+* **statics:** update sol token asset ([47260f9](https://github.com/BitGo/BitGoJS/commit/47260f9dd768ee29ce96df3abce58c3abbdb0e1b))
+
+
+### BREAKING CHANGES
+
+* **statics:** This breaks the provided token asset used for wp in bitgo-ms,
+will require to change available solana token asset in wp once this merged.
+BG-52918
+
+
+
+
+
 # [8.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.0...@bitgo/statics@8.0.0-rc.1) (2022-07-27)
 
 

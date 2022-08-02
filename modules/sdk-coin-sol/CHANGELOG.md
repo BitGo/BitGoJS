@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.3...@bitgo/sdk-coin-sol@2.0.0-rc.4) (2022-08-02)
+
+
+### Code Refactoring
+
+* **statics:** update sol token asset ([47260f9](https://github.com/BitGo/BitGoJS/commit/47260f9dd768ee29ce96df3abce58c3abbdb0e1b))
+
+
+### BREAKING CHANGES
+
+* **statics:** This breaks the provided token asset used for wp in bitgo-ms,
+will require to change available solana token asset in wp once this merged.
+BG-52918
+
+
+
+
+
 # [2.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.2...@bitgo/sdk-coin-sol@2.0.0-rc.3) (2022-08-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

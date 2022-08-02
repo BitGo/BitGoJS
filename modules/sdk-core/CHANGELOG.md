@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.2.0-rc.2...@bitgo/sdk-core@1.2.0-rc.3) (2022-08-02)
+
+
+### Features
+
+* **account-lib:** add option to pass in custom seed ecdsa ([86b205e](https://github.com/BitGo/BitGoJS/commit/86b205e342ca5610ce460877a64f4733f944bf6e))
+
+
+
+
+
 # [1.2.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@1.2.0-rc.1...@bitgo/sdk-core@1.2.0-rc.2) (2022-08-01)
 
 

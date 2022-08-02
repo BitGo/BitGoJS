@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@1.1.2-rc.2...@bitgo/sdk-coin-xtz@1.1.2-rc.3) (2022-08-02)
+
+
+### Bug Fixes
+
+* **sdk-coin-xtz:** xtz utils export typescript fix ([f0d464f](https://github.com/BitGo/BitGoJS/commit/f0d464fe53279e6256e96a4ed8ddd89def7d0a4b))
+
+
+
+
+
 ## [1.1.2-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@1.1.2-rc.1...@bitgo/sdk-coin-xtz@1.1.2-rc.2) (2022-08-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz
