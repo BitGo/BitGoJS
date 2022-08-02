@@ -61,6 +61,53 @@ describe('OpenGPG Utils Tests', function () {
     });
   });
 
+  describe('verifyShareProof positive case', function () {
+    it('should be able to verify a valid proof', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue);
+      // verify proof
+      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValue);
+      isValid.should.be.true();
+    });
+  });
+
+  describe('verifyShareProof attack proof', function () {
+    it('should be able to detect sender is an attacker', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(otherKey.privateKey, uValue);
+      // verify proof
+      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValue);
+      isValid.should.be.false();
+    });
+  });
+
+  describe('verifyShareProof attack u value', function () {
+    it('should be able to detect u value is corrupted', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue);
+      const uValueCorrupted = crypto.randomBytes(32).toString('hex');
+      // verify proof
+      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValueCorrupted);
+      isValid.should.be.false();
+    });
+  });
+
+  describe('verifySharedDataProof and createSharedDataProof test', function () {
+    it('should be able to detect if proof value is corrupted or not', async function () {
+      const sharedData1 = crypto.randomBytes(32).toString('hex');
+      const sharedData2 = crypto.randomBytes(32).toString('hex');
+      const dataToProofArray = [{ name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 }];
+      const proof = await openpgpUtils.createSharedDataProof(senderKey.privateKey, otherKey.publicKey, dataToProofArray);
+      let isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
+      isValid.should.be.true();
+      // tamper with the data
+      dataToProofArray[0].value = 'tampered data';
+      isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
+      isValid.should.be.false();
+    });
+  });
+
   describe('encrypt and decrypt with signing', function() {
     it('should successfully encrypt, sign, and decrypt', async function () {
       const text = 'original message';
