@@ -2,6 +2,7 @@ import * as AvaxpLib from '../../src/lib';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { AvaxP, TavaxP } from '../../src/';
 import { randomBytes } from 'crypto';
+import * as should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
@@ -17,22 +18,6 @@ describe('Avaxp', function () {
   const tcoinName = 't' + coinName;
   let bitgo: TestBitGoAPI;
   let basecoin;
-  let newTxPrebuild;
-  let newTxParams;
-
-  const txPrebuild = {
-    txHex: testData.ADDVALIDATOR_SAMPLES.unsignedTxHex,
-    txInfo: {},
-  };
-
-  const txParams = {
-    recipients: [
-      {
-        address: testData.ADDVALIDATOR_SAMPLES.nodeID,
-        amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
-      },
-    ],
-  };
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, {
@@ -42,12 +27,6 @@ describe('Avaxp', function () {
     bitgo.safeRegister(coinName, AvaxP.createInstance);
     bitgo.safeRegister(tcoinName, TavaxP.createInstance);
     basecoin = bitgo.coin(tcoinName);
-    newTxPrebuild = () => {
-      return _.cloneDeep(txPrebuild);
-    };
-    newTxParams = () => {
-      return _.cloneDeep(txParams);
-    };
   });
 
   it('should instantiate the coin', function () {
@@ -293,12 +272,184 @@ describe('Avaxp', function () {
     });
   });
 
-  describe('Verify Transaction', () => {
-    it('should succeed to verify unsigned transaction', async () => {
-      const txPrebuild = newTxPrebuild();
-      const txParams = newTxParams();
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
-      isTransactionVerified.should.equal(true);
+  describe('Address Validation', function () {
+    const keychains = [
+      {
+        id: '624f0dcc93cbcc0008d88df2369a565e',
+        pub: 'xpub661MyMwAqRbcEeRkBciuaUfF4C1jgBcnj2RXdnt9gokx4CFRBUp4bsbk5hXHC1BrBDZLDNecVsUCMmoLpPhWdPZhPiTsHSoxNoGVW9KtiEQ',
+        ethAddress: '0xcfbf38770af3a95da7998537a481434e2cb9b2fa',
+        source: 'user',
+        type: 'independent',
+        encryptedPrv:
+          '{"iv":"Z2XySTRNipFZ06/EXynwvA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KGRPbZ2jt1g=","ct":"szpCbDLFIlRZvCBV60SWBEMYXvny7YlBtu4ffjlctDQGjR4/+vfCkovgGHs+Xvf/eIlUM3Kicubg+Sdp61MImjMT/umZ3IJT1E2I9mM0QDqpzXlohTGnJ4vgfHgCz3QkB4uYm5mqaD4LtRbvZbGhGrc5jzrLzqQ="}',
+      },
+      {
+        id: '624f0dcd93cbcc0008d88e0fc4261a38',
+        pub: 'xpub661MyMwAqRbcGeqZVFgQfcD8zLoxaZL7y4cVAjhE8ybMTpvbppP6rc22a69BgcNVo74yL8fWPzNM5vAozBE7chzGYoPDJMyJ39F2HeAsGcn',
+        ethAddress: '0xbf37f39208d77e3254b7efbcab1432b9c353e337',
+        source: 'backup',
+        type: 'independent',
+        encryptedPrv:
+          '{"iv":"T9gdJnSAEWFsLZ4cg9VA8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"FaLlns3mPiI=","ct":"QW5Zq9qJoDxDrK60zTAM6Lg+S4KP9FcEn9AHw5UIyakSBlD0XjVTluZ9PlTABjIlp9cQvMef/SH8Em1d4ash0PACoqBz2IxPwhW9h6uyQBdqk97iPrnM2rOQobsy9p0ILJM10fOgB+EEFYX5yQ5gyfEcK060j/Q="}',
+      },
+      {
+        id: '624f0dce10610a0007fc5282353187ae',
+        pub: 'xpub661MyMwAqRbcFVMAYJe51sgXaiFLeUb1v4u3B63CgBNMmMjtWBo32AS3bunsBUZMdi37pzovtEg5mVf6wBKayTYapGQRxymQjcmHaVmSPz8',
+        ethAddress: '0x7527720b5638d2f5e2b272b20fc96d2223528d0e',
+        source: 'bitgo',
+        type: 'independent',
+        isBitGo: true,
+      },
+    ];
+
+    it('should validate address', function () {
+      const validAddress = 'P-fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa';
+      basecoin.isValidAddress(validAddress).should.be.true();
+    });
+
+    it('should fail to validate invalid address', function () {
+      const invalidAddresses = ['', 'asdadsaaf', '15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex'];
+
+      for (const address of invalidAddresses) {
+        should.doesNotThrow(() => basecoin.isValidAddress(address));
+        basecoin.isValidAddress(address).should.be.false();
+      }
+    });
+
+    it('should validate address', function () {
+      const validAddresses = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+      ];
+
+      for (const address of validAddresses) {
+        basecoin.isValidAddress(address).should.be.true();
+      }
+    });
+
+    it('should fail to verify invalid address', function () {
+      const invalidAddresses = [
+        {
+          address: 'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
+          keychains,
+        },
+        {
+          address: 'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+          keychains,
+        },
+      ];
+
+      for (const address of invalidAddresses) {
+        should.throws(() => basecoin.verifyAddress(address));
+      }
+    });
+
+    it('should verify address', function () {
+      const validAddresses = [
+        {
+          address: 'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+          keychains,
+        },
+        {
+          address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4',
+          keychains,
+        },
+      ];
+
+      for (const addressParams of validAddresses) {
+        basecoin.verifyAddress(addressParams).should.be.true();
+      }
+    });
+
+    it('should fail to validate invalid address', function () {
+      const invalidAddresses = ['', '15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex'];
+
+      for (const address of invalidAddresses) {
+        should.doesNotThrow(() => basecoin.isValidAddress(address));
+        basecoin.isValidAddress(address).should.be.false();
+      }
+    });
+
+    it('should validate address', function () {
+      const validAddresses = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+        'NodeID-143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+      ];
+
+      for (const address of validAddresses) {
+        basecoin.isValidAddress(address).should.be.true();
+      }
+    });
+
+    it('should fail to verify invalid address', function () {
+      const invalidAddresses = [
+        {
+          address: 'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
+          keychains,
+        },
+        {
+          address: 'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+          keychains,
+        },
+      ];
+
+      for (const address of invalidAddresses) {
+        should.throws(() => basecoin.verifyAddress(address));
+      }
+    });
+
+    it('should verify address', function () {
+      const validAddresses = [
+        {
+          address: 'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+          keychains,
+        },
+        {
+          address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4',
+          keychains,
+        },
+      ];
+
+      for (const addressParams of validAddresses) {
+        basecoin.verifyAddress(addressParams).should.be.true();
+      }
+    });
+  });
+
+  describe('verify transaction', function () {
+    let newTxPrebuild;
+    let newTxParams;
+
+    const txPrebuild = {
+      txHex: testData.ADDVALIDATOR_SAMPLES.unsignedTxHex,
+      txInfo: {},
+    };
+
+    const txParams = {
+      recipients: [],
+      type: 'addValidator',
+      stakingOptions: {
+        startTime: '1656423398',
+        endTime: '1659053398',
+        nodeID: 'NodeID-EZ38CcWHoSyoEfAkDN9zaieJ5Yq64YePY',
+        amount: '1000000000', // 1 tavaxp
+        delegationFeeRate: '10',
+      },
+      locktime: 0,
+      memo: {
+        value: 'Manually add a delegator to the primary subnet with multisig',
+        type: 'text',
+      },
+    };
+
+    before(function () {
+      newTxPrebuild = () => {
+        return _.cloneDeep(txPrebuild);
+      };
+      newTxParams = () => {
+        return _.cloneDeep(txParams);
+      };
     });
     it('should succeed to verify signed transaction', async () => {
       const txPrebuild = {
@@ -309,27 +460,24 @@ describe('Avaxp', function () {
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
       isTransactionVerified.should.equal(true);
     });
-    it('should fail verify transactions when have different recipients', async () => {
-      const txPrebuild = newTxPrebuild();
-      const txParams = {
-        recipients: [
-          {
-            address: 'NodeID-EZ38CcWHoSyoEfAkDN9zaieJ5Yq64Yepy',
-            amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
-          },
-        ],
+
+    it('should succeed to verify half signed transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
+        txInfo: {},
       };
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-    it('should verify when input `recipients` is absent', async function () {
       const txParams = newTxParams();
-      txParams.recipients = undefined;
-      const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
-      validTransaction.should.equal(true);
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
     });
+
+    it('should succeed to verify unsigned transaction', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should succeed to verify transactions when recipients has extra data', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
@@ -338,20 +486,99 @@ describe('Avaxp', function () {
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
     });
-  });
 
-  describe('Validation', function () {
-    it('should validate address', function () {
-      const validAddress = 'P-fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa';
-      basecoin.isValidAddress(validAddress).should.be.true();
+    it('should fail verify transactions when have different memo', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.memo = { value: 'errorMemo', type: 'text' };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx memo does not match with expected txParams memo');
     });
 
-    it('should fail to validate invalid address', function () {
-      const invalidAddresses = ['asdadsaaf', 'fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa'];
+    it('should fail verify transactions when have different locktime', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.locktime = 1;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx locktime does not match with expected txParams locktime');
+    });
 
-      for (const address of invalidAddresses) {
-        basecoin.isValidAddress(address).should.be.false();
-      }
+    it('should fail verify transactions when have different type', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.type = 'addDelegator';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx type does not match with expected txParams type');
+    });
+
+    it('should fail verify transactions when have different nodeId', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.nodeID = 'NodeID-MdteS9U987PY7iwA5Pcz3sKVprJAbAvE7';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+    it('should fail verify when input `nodeId` is absent', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.stakingOptions.nodeID = undefined;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+
+    it('should fail verify transactions when have different amount', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = '2000000000';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+    it('should fail verify transactions when amount is number', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = 1000000000;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+
+    it('should fail verify transactions when amount is absent', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = undefined;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
     });
   });
 });
