@@ -39,11 +39,11 @@ import {
   TransferData,
   TxData,
   WalletInitializationData,
+  ForwarderInitializationData,
 } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
-  defaultForwarderVersion,
   ERC1155BatchTransferTypeMethodId,
   ERC1155BatchTransferTypes,
   ERC1155SafeTransferTypeMethodId,
@@ -61,8 +61,9 @@ import {
   walletInitializationFirstBytes,
   v1CreateForwarderMethodId,
   walletSimpleConstructor,
-  createWalletTypes,
+  createV1WalletTypes,
   v1CreateWalletMethodId,
+  createV1ForwarderTypes,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -192,12 +193,10 @@ export function flushCoinsData(): string {
 /**
  * Returns the create forwarder method calling data
  *
- * @param {string} forwarderVersion - forwarder version for the address to be initialized
  * @returns {string} - the createForwarder method encoded
  */
-export function getAddressInitializationData(forwarderVersion?: number): string {
-  const impliedForwarderVersion = forwarderVersion ?? defaultForwarderVersion;
-  return impliedForwarderVersion === defaultForwarderVersion ? createForwarderMethodId : v1CreateForwarderMethodId;
+export function getAddressInitializationData(): string {
+  return createForwarderMethodId;
 }
 
 /**
@@ -255,7 +254,7 @@ export function decodeWalletCreationData(data: string): WalletInitializationData
     return { owners: paddedAddresses.map((address) => addHexPrefix(address)) };
   } else {
     const decodedDataForWalletCreation = getRawDecoded(
-      createWalletTypes,
+      createV1WalletTypes,
       getBufferedByteCode(v1CreateWalletMethodId, data)
     );
     const addresses = decodedDataForWalletCreation[0] as string[];
@@ -662,10 +661,54 @@ export function getToken(tokenContractAddress: string, network: BaseNetwork): Re
  * @param {string} salt - The salt for wallet initialization transactions
  * @returns {string} - the createWallet method encoded
  */
-export function getWalletV1InitData(walletOwners: string[], salt: string): string {
+export function getV1WalletInitializationData(walletOwners: string[], salt: string): string {
   const saltBuffer = setLengthLeft(toBuffer(salt), 32);
   const params = [walletOwners, saltBuffer];
-  const method = EthereumAbi.methodID('createWallet', createWalletTypes);
-  const args = EthereumAbi.rawEncode(createWalletTypes, params);
+  const method = EthereumAbi.methodID('createWallet', createV1WalletTypes);
+  const args = EthereumAbi.rawEncode(createV1WalletTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Returns the create address method calling data for v1 wallets
+ *
+ * @param {string} baseAddress - The address of the wallet contract
+ * @param {string} salt - The salt for address initialization transactions
+ * @returns {string} - the createForwarder method encoded
+ */
+export function getV1AddressInitializationData(baseAddress: string, salt: string): string {
+  const saltBuffer = setLengthLeft(toBuffer(salt), 32);
+  const params = [baseAddress, saltBuffer];
+  const method = EthereumAbi.methodID('createForwarder', createV1ForwarderTypes);
+  const args = EthereumAbi.rawEncode(createV1ForwarderTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decode the given ABI-encoded create forwarder data and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed transfer data
+ */
+export function decodeForwarderCreationData(data: string): ForwarderInitializationData {
+  if (!(data.startsWith(v1CreateForwarderMethodId) || data.startsWith(createForwarderMethodId))) {
+    throw new BuildTransactionError(`Invalid address bytecode: ${data}`);
+  }
+
+  if (data.startsWith(createForwarderMethodId)) {
+    return {
+      baseAddress: undefined,
+      addressCreationSalt: undefined,
+    };
+  } else {
+    const [baseAddress, saltBuffer] = getRawDecoded(
+      createV1ForwarderTypes,
+      getBufferedByteCode(v1CreateForwarderMethodId, data)
+    );
+
+    return {
+      baseAddress: addHexPrefix(baseAddress as string),
+      addressCreationSalt: bufferToHex(saltBuffer as Buffer),
+    };
+  }
 }
