@@ -688,6 +688,9 @@ describe('V2 Wallet:', function () {
           '598f606cc8e43aef09fcb785221d9dd2',
           '5935d59cf660764331bafcade1855fd7',
         ],
+        coinSpecific: {
+          baseAddress: '0.0.47841511',
+        },
       };
       hbarWallet = new Wallet(bitgo, bitgo.coin('thbar'), walletData);
     });
