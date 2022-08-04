@@ -12,11 +12,13 @@ import {
   InvalidTransactionError,
   FeeEstimateOptions,
   SigningError,
+  InvalidAddressError,
+  UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import { AvaxpSignTransactionOptions, TransactionFee, ExplainTransactionOptions } from './iface';
 import _ from 'lodash';
-import { BN, BinTools } from 'avalanche';
+import { BN } from 'avalanche';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -83,18 +85,27 @@ export class AvaxP extends BaseCoin {
     return true;
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    const bintools = BinTools.getInstance();
-    const address = bintools.parseAddress(params.address, 'P');
-    return address !== undefined;
-  }
-
   /**
    * Check if address is valid, then make sure it matches the root address.
    *
-   * @param {VerifyAddressOptions} params address and rootAddress to verify
+   * @param params.address address to validate
+   * @param params.keychains public keys to generate the wallet
    */
   isWalletAddress(params: VerifyAddressOptions): boolean {
+    const { address, keychains } = params;
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+    if (!keychains || keychains.length !== 3) {
+      throw new Error('Invalid keychains');
+    }
+    const unlockAddresses = keychains.map((keychain) =>
+      new AvaxpLib.KeyPair({ pub: keychain.pub }).getAddress(this._staticsCoin.network.type)
+    );
+
+    if (!unlockAddresses.some((unlockAddress) => unlockAddress === address)) {
+      throw new UnexpectedAddressError(`address validation failure: ${address} is not of this wallet`);
+    }
     return true;
   }
   /**
