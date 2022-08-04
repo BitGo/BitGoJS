@@ -24,29 +24,8 @@ describe('ETH util library', function () {
     });
   });
 
-  it('Should validate valid createForwarder Id if forwarderVersion is not passed', function () {
+  it('Should validate valid createForwarder Id for forwarder', function () {
     should.equal(getAddressInitializationData(), walletUtilConstants.createForwarderMethodId);
-  });
-
-  it('Should validate valid createForwarder Id for forwarder version 0', function () {
-    should.equal(
-      getAddressInitializationData(testData.FORWARDER_VERSION_V0),
-      walletUtilConstants.createForwarderMethodId
-    );
-  });
-
-  it('Should validate valid createForwarder Id for forwarder version 1', function () {
-    should.equal(
-      getAddressInitializationData(testData.FORWARDER_VERSION_V1),
-      walletUtilConstants.v1CreateForwarderMethodId
-    );
-  });
-
-  it('Should validate valid createForwarder Id for forwarder version 2', function () {
-    should.equal(
-      getAddressInitializationData(testData.FORWARDER_VERSION_V2),
-      walletUtilConstants.v1CreateForwarderMethodId
-    );
   });
 
   it('should validate valid address', function () {

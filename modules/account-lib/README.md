@@ -13,17 +13,15 @@ Below is the list of coins supported by this library -- as well as those that
 are on the roadmap.
 
 | Coin             | Mainnet Ticker | Testnet Ticker | Supported In Library |
-| :--------------- | :------------- | :------------- | :------------------- |
-| Tron             | trx            | ttrx           | Yes                  |
-| Tezos            | xtz            | txtz           | Yes                  |
-| Ethereum         | eth            | teth           | Yes                  |
+|:-----------------|:---------------|:---------------|:---------------------|
+| Alogrand         | algo           | talgo          | Yes                  |
 | CELO             | celo           | tcelo          | Yes                  |
+| Ethereum         | eth            | teth           | Yes                  |
 | Ethereum Classic | etc            | tetc           | Yes                  |
 | RSK              | rbtc           | trbtc          | Yes                  |
-| EOS              | eos            | teos           | Not yet...           |
-| Alogrand         | algo           | talgo          | Not yet...           |
-| Ripple           | xrp            | txrp           | Not yet...           |
 | Stellar          | xlm            | txlm           | Not yet...           |
+| Tezos            | xtz            | txtz           | Yes                  |
+| Tron             | trx            | ttrx           | Yes                  |
 
 ## Core Concepts
 

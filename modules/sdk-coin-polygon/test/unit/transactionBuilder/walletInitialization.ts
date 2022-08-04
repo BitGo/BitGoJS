@@ -14,11 +14,15 @@ describe('Polygon wallet initialization', function () {
     });
     txBuilder.counter(1);
     txBuilder.type(TransactionType.WalletInitialization);
+    txBuilder.walletVersion(1);
+    txBuilder.contract(testData.WALLET_FACTORY_ADDRESS);
+    txBuilder.salt('0x0');
   };
 
   describe('should build', () => {
     it('an init transaction', async () => {
       initTxBuilder();
+
       txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
       txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
@@ -40,7 +44,7 @@ describe('Polygon wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0xbadc4d3141830840dc109efc4cf023c3fcfdc471c6e35ef640a10616489416b6');
+      should.equal(newTx.id, '0x400357e2d5fdbcd16ee09cb484b7e20d87ebea9b0d92935f1ed0566b6e8d44c6');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);

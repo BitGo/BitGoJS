@@ -24,6 +24,7 @@ import {
   SignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
   PresignTransactionOptions,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import { AtaInitializationBuilder, KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import { isValidAddress, isValidPrivateKey, isValidPublicKey } from './lib/utils';
@@ -364,6 +365,13 @@ export class Sol extends BaseCoin {
       txPrebuild: recreated,
       txHex: recreated.unsignedTxs[0].serializedTxHex,
     });
+  }
+
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: true,
+    };
   }
 
   private getBuilder(): TransactionBuilderFactory {

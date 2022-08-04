@@ -38,11 +38,12 @@ import {
   TokenTransferData,
   TransferData,
   TxData,
+  WalletInitializationData,
+  ForwarderInitializationData,
 } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
-  defaultForwarderVersion,
   ERC1155BatchTransferTypeMethodId,
   ERC1155BatchTransferTypes,
   ERC1155SafeTransferTypeMethodId,
@@ -58,9 +59,11 @@ import {
   sendMultiSigTokenTypes,
   sendMultiSigTypes,
   walletInitializationFirstBytes,
-  v1WalletInitializationFirstBytes,
   v1CreateForwarderMethodId,
   walletSimpleConstructor,
+  createV1WalletTypes,
+  v1CreateWalletMethodId,
+  createV1ForwarderTypes,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -190,12 +193,10 @@ export function flushCoinsData(): string {
 /**
  * Returns the create forwarder method calling data
  *
- * @param {string} forwarderVersion - forwarder version for the address to be initialized
  * @returns {string} - the createForwarder method encoded
  */
-export function getAddressInitializationData(forwarderVersion?: number): string {
-  const impliedForwarderVersion = forwarderVersion ?? defaultForwarderVersion;
-  return impliedForwarderVersion === defaultForwarderVersion ? createForwarderMethodId : v1CreateForwarderMethodId;
+export function getAddressInitializationData(): string {
+  return createForwarderMethodId;
 }
 
 /**
@@ -225,31 +226,47 @@ export function isValidAmount(amount: string): boolean {
  * @param {string} data The wallet creation data to decode
  * @returns {string[]} - The list of signer addresses
  */
-export function decodeWalletCreationData(data: string): string[] {
-  if (!(data.startsWith(walletInitializationFirstBytes) || data.startsWith(v1WalletInitializationFirstBytes))) {
+export function decodeWalletCreationData(data: string): WalletInitializationData {
+  if (!(data.startsWith(walletInitializationFirstBytes) || data.startsWith(v1CreateWalletMethodId))) {
     throw new BuildTransactionError(`Invalid wallet bytecode: ${data}`);
   }
 
-  const dataBuffer = Buffer.from(data.slice(2), 'hex');
+  if (data.startsWith(walletInitializationFirstBytes)) {
+    const dataBuffer = Buffer.from(data.slice(2), 'hex');
 
-  // the last 160 bytes contain the serialized address array
-  const serializedSigners = dataBuffer.slice(-160);
+    // the last 160 bytes contain the serialized address array
+    const serializedSigners = dataBuffer.slice(-160);
 
-  const resultEncodedParameters = EthereumAbi.rawDecode(walletSimpleConstructor, serializedSigners);
-  if (resultEncodedParameters.length !== 1) {
-    throw new BuildTransactionError(`Could not decode wallet constructor bytecode: ${resultEncodedParameters}`);
+    const resultEncodedParameters = EthereumAbi.rawDecode(walletSimpleConstructor, serializedSigners);
+    if (resultEncodedParameters.length !== 1) {
+      throw new BuildTransactionError(`Could not decode wallet constructor bytecode: ${resultEncodedParameters}`);
+    }
+
+    const addresses: BN[] = resultEncodedParameters[0];
+    if (addresses.length !== 3) {
+      throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${addresses}`);
+    }
+
+    // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
+    // so we should pad until they are the standard 20 bytes
+    const paddedAddresses = addresses.map((address) => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
+
+    return { owners: paddedAddresses.map((address) => addHexPrefix(address)) };
+  } else {
+    const decodedDataForWalletCreation = getRawDecoded(
+      createV1WalletTypes,
+      getBufferedByteCode(v1CreateWalletMethodId, data)
+    );
+    const addresses = decodedDataForWalletCreation[0] as string[];
+    const saltBuffer = decodedDataForWalletCreation[1];
+    const salt = bufferToHex(saltBuffer as Buffer);
+    const paddedAddresses = addresses.map((address) => stripHexPrefix(address.toString()).padStart(40, '0'));
+    const owners = paddedAddresses.map((address) => addHexPrefix(address));
+    return {
+      owners,
+      salt,
+    };
   }
-
-  const addresses: BN[] = resultEncodedParameters[0];
-  if (addresses.length !== 3) {
-    throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${addresses}`);
-  }
-
-  // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
-  // so we should pad until they are the standard 20 bytes
-  const paddedAddresses = addresses.map((address) => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
-
-  return paddedAddresses.map((address) => addHexPrefix(address));
 }
 
 /**
@@ -455,7 +472,7 @@ export function classifyTransaction(data: string): TransactionType {
  */
 const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
-  [v1WalletInitializationFirstBytes]: TransactionType.WalletInitialization,
+  [v1CreateWalletMethodId]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [v1CreateForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
@@ -635,4 +652,63 @@ export function getToken(tokenContractAddress: string, network: BaseNetwork): Re
     return tokensArray[0];
   }
   return undefined;
+}
+
+/**
+ * Returns the create wallet method calling data for v1 wallets
+ *
+ * @param {string[]} walletOwners - wallet owner addresses for wallet initialization transactions
+ * @param {string} salt - The salt for wallet initialization transactions
+ * @returns {string} - the createWallet method encoded
+ */
+export function getV1WalletInitializationData(walletOwners: string[], salt: string): string {
+  const saltBuffer = setLengthLeft(toBuffer(salt), 32);
+  const params = [walletOwners, saltBuffer];
+  const method = EthereumAbi.methodID('createWallet', createV1WalletTypes);
+  const args = EthereumAbi.rawEncode(createV1WalletTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Returns the create address method calling data for v1 wallets
+ *
+ * @param {string} baseAddress - The address of the wallet contract
+ * @param {string} salt - The salt for address initialization transactions
+ * @returns {string} - the createForwarder method encoded
+ */
+export function getV1AddressInitializationData(baseAddress: string, salt: string): string {
+  const saltBuffer = setLengthLeft(toBuffer(salt), 32);
+  const params = [baseAddress, saltBuffer];
+  const method = EthereumAbi.methodID('createForwarder', createV1ForwarderTypes);
+  const args = EthereumAbi.rawEncode(createV1ForwarderTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decode the given ABI-encoded create forwarder data and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed transfer data
+ */
+export function decodeForwarderCreationData(data: string): ForwarderInitializationData {
+  if (!(data.startsWith(v1CreateForwarderMethodId) || data.startsWith(createForwarderMethodId))) {
+    throw new BuildTransactionError(`Invalid address bytecode: ${data}`);
+  }
+
+  if (data.startsWith(createForwarderMethodId)) {
+    return {
+      baseAddress: undefined,
+      addressCreationSalt: undefined,
+    };
+  } else {
+    const [baseAddress, saltBuffer] = getRawDecoded(
+      createV1ForwarderTypes,
+      getBufferedByteCode(v1CreateForwarderMethodId, data)
+    );
+
+    return {
+      baseAddress: addHexPrefix(baseAddress as string),
+      addressCreationSalt: bufferToHex(saltBuffer as Buffer),
+    };
+  }
 }

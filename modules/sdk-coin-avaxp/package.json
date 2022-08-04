@@ -51,7 +51,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.2.0-rc.3",
     "@bitgo/statics": "^8.0.0-rc.2",
-    "avalanche": "3.13.3",
+    "avalanche": "3.15.3",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
