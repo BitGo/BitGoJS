@@ -19,8 +19,10 @@ import { KeyPair } from '.';
 const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
 const coinToAddressMap = new Map<DotAssetTypes, DotAddressFormat>([
+  ['aca', DotAddressFormat.acala],
   ['dot', DotAddressFormat.polkadot],
   ['tdot', DotAddressFormat.substrate],
+  ['taca', DotAddressFormat.substrate],
 ]);
 
 export class Utils implements BaseUtils {
