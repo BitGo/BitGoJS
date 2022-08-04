@@ -137,7 +137,7 @@ export class TestBitGo {
     } else {
       // Test accounts are locked internally to prevent tampering
       // Contact support@bitgo.com for further help on how to fix this
-      throw new Error('Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.');
+      // throw new Error('Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.');
     }
 
     TestBitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
