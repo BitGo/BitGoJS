@@ -34,4 +34,8 @@ export class Btc extends AbstractUtxoCoin {
   supportsBlockTarget(): boolean {
     return true;
   }
+
+  supportsLightning(): boolean {
+    return true;
+  }
 }

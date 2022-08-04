@@ -6,6 +6,7 @@ import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import { TokenEnablement } from '../utils';
+import { ILightning } from '../lightning';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -566,4 +567,5 @@ export interface IWallet {
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
+  lightning(): ILightning;
 }

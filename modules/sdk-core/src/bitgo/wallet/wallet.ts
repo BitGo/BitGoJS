@@ -69,6 +69,7 @@ import {
   WalletSignTransactionOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
+import { Lightning } from '../lightning';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2369,6 +2370,17 @@ export class Wallet implements IWallet {
       success: successfulTxs,
       failure: failedTxs,
     };
+  }
+
+  /**
+   * Create lightning for btc/tbtc from this wallet
+   */
+  public lightning(): Lightning {
+    if (!this.baseCoin.supportsLightning()) {
+      throw new Error(`Lightning not supported for ${this.coin()}`);
+    }
+
+    return new Lightning(this.bitgo, this.id());
   }
 
   /* MARK: TSS Helpers */
