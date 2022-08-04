@@ -5,6 +5,7 @@ import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
+import { TokenEnablement } from '../utils';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -34,13 +35,8 @@ export interface BuildConsolidationTransactionOptions extends PrebuildTransactio
   consolidateAddresses?: string[];
 }
 
-export interface TokenEnablement {
-  name: string;
-  address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
-}
-
 export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions {
-  tokens: TokenEnablement[];
+  enableTokens: TokenEnablement[];
 }
 
 export interface PrebuildTransactionOptions {
@@ -86,6 +82,7 @@ export interface PrebuildTransactionOptions {
   comment?: string;
   [index: string]: unknown;
   tokenName?: string;
+  enableTokens?: TokenEnablement[];
   nonce?: string;
   preview?: boolean;
 }

@@ -26,6 +26,11 @@ export interface FeeOption {
   gasPrice?: number;
 }
 
+export interface TokenEnablement {
+  name: string;
+  address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
+}
+
 export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
   intentType: string;
@@ -38,6 +43,7 @@ export interface PrebuildTransactionWithIntentOptions {
   comment?: string;
   memo?: Memo;
   tokenName?: string;
+  enableTokens?: TokenEnablement[];
   nonce?: string;
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;

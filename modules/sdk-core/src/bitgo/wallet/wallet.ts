@@ -167,6 +167,7 @@ export class Wallet implements IWallet {
       'keyregTxBase64',
       'closeRemainderTo',
       'tokenName',
+      'enableTokens',
       // param to set emergency flag on a custodial transaction.
       // This transaction should be performed in less than 1 hour or it will fail.
       'emergency',
@@ -2272,17 +2273,17 @@ export class Wallet implements IWallet {
   /**
    * Builds a set of transactions that enables the specified tokens
    * @param params -
-   *    tokens: Token enablement operations we want to perform
+   *    enableTokens: Token enablement operations we want to perform
    * @returns Unsigned transactions that enables the specified tokens
    */
   public async buildTokenEnablements(
-    params: BuildTokenEnablementOptions = { tokens: [] }
+    params: BuildTokenEnablementOptions = { enableTokens: [] }
   ): Promise<PrebuildTransactionResult[]> {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
     if (!teConfig.requiresTokenEnablement) {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablements`);
     }
-    if (params.tokens.length === 0) {
+    if (params.enableTokens.length === 0) {
       throw new Error('No tokens are being specified');
     }
     if (params.recipients) {
@@ -2297,15 +2298,16 @@ export class Wallet implements IWallet {
     buildParams.type = 'enabletoken';
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
-      throw new Error('tss not supported for token enablement');
+      return [await this.prebuildTransaction(buildParams)];
     } else {
       // Rewrite tokens into recipients for buildTransaction
-      buildParams.recipients = params.tokens.map((token) => {
+      buildParams.recipients = params.enableTokens.map((token) => {
         return {
           tokenName: token.name,
           address: token.address,
         };
       });
+      delete buildParams.enableTokens;
       return [await this.prebuildTransaction(buildParams)];
     }
   }
@@ -2338,9 +2340,9 @@ export class Wallet implements IWallet {
    *
    * Builds, signs, and sends a set of transactions that enables the specified tokens
    * @param params -
-   *    tokens: Token enablement operations we want to perform
+   *    enableTokens: Token enablement operations we want to perform
    */
-  public async sendTokenEnablements(params: BuildTokenEnablementOptions = { tokens: [] }): Promise<{
+  public async sendTokenEnablements(params: BuildTokenEnablementOptions = { enableTokens: [] }): Promise<{
     success: any[];
     failure: Error[];
   }> {
@@ -2402,9 +2404,9 @@ export class Wallet implements IWallet {
         txRequest = await this.tssUtils.prebuildTxWithIntent(
           {
             reqId,
-            intentType: 'createAccount',
+            intentType: 'enableToken',
             recipients: params.recipients || [],
-            tokenName: params.tokenName,
+            enableTokens: params.enableTokens,
             memo: params.memo,
           },
           apiVersion,
