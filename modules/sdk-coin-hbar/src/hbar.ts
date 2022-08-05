@@ -158,7 +158,6 @@ export class Hbar extends BaseCoin {
 
   async verifyTransaction(params: HbarVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
-    const totalAmount: Record<string, BigNumber> = {};
     const coinConfig = coins.get(this.getChain());
     const { txParams: txParams, txPrebuild: txPrebuild, memo: memo } = params;
     const transaction = new Transaction(coinConfig);
@@ -179,41 +178,25 @@ export class Hbar extends BaseCoin {
     }
 
     // for enabletoken, recipient output amount is 0
-    txParams.recipients = txParams.recipients.map((recipient) => ({
+    const recipients = txParams.recipients.map((recipient) => ({
       ...recipient,
       amount: txParams.type === 'enabletoken' ? '0' : recipient.amount,
     }));
+    if (coinConfig.isToken) {
+      recipients.forEach((recipient) => {
+        if (recipient.tokenName !== undefined && recipient.tokenName !== coinConfig.name) {
+          throw new Error('Incorrect token name specified in recipients');
+        }
+        recipient.tokenName = coinConfig.name;
+      });
+    }
 
     // verify recipients from params and explainedTx
-    const filteredRecipients = txParams.recipients?.map((recipient) =>
-      _.pick(recipient, ['address', 'amount', 'tokenName'])
-    );
+    const filteredRecipients = recipients?.map((recipient) => _.pick(recipient, ['address', 'amount', 'tokenName']));
     const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
 
     if (!_.isEqual(filteredOutputs, filteredRecipients)) {
       throw new Error('Tx outputs does not match with expected txParams recipients');
-    }
-
-    // verify total output amount from params and explainedTx
-    for (const recipients of txParams.recipients) {
-      // totalAmount based on each token
-      const assetName = recipients.tokenName || this.getChain();
-      const amount = totalAmount[assetName] || new BigNumber(0);
-      totalAmount[assetName] = amount.plus(recipients.amount);
-    }
-
-    // total output amount from explainedTx
-    const explainedTxTotal: Record<string, BigNumber> = {};
-
-    for (const output of explainedTx.outputs) {
-      // total output amount based on each token
-      const assetName = output.tokenName || this.getChain();
-      const amount = explainedTxTotal[assetName] || new BigNumber(0);
-      explainedTxTotal[assetName] = amount.plus(output.amount);
-    }
-
-    if (!_.isEqual(explainedTxTotal, totalAmount)) {
-      throw new Error('Tx total amount does not match with expected total amount field');
     }
 
     return true;
