@@ -149,6 +149,8 @@ export interface SignFinalOptions {
     hopTransaction?: string;
     backupKeyNonce?: number;
     isBatch?: boolean;
+    txHex?: string;
+    expireTime?: number;
   };
   signingKeyNonce: number;
   walletContractAddress: string;

@@ -11,6 +11,8 @@ import {
   optionalDeps,
   BuildTransactionParams,
   SignFinalOptions,
+  SignTransactionOptions,
+  SignedTransaction,
 } from '@bitgo/sdk-coin-eth';
 import { BaseCoin, BitGoBase, TransactionExplanation, FullySignedTransaction } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -276,5 +278,32 @@ export class Polygon extends Eth {
     const ethTx = unsignedEthTx.sign(signingKey);
 
     return { txHex: ethTx.serialize().toString('hex') };
+  }
+
+  /**
+   * Assemble half-sign prebuilt transaction
+   * @param params
+   */
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder.transfer().key(new KeyPair({ prv: params.prv }).getKeys().prv!);
+    const transaction = await txBuilder.build();
+
+    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+
+    const txParams = {
+      eip1559: params.txPrebuild.eip1559,
+      txHex: transaction.toBroadcastFormat(),
+      recipients: recipients,
+      expiration: params.txPrebuild.expireTime,
+      hopTransaction: params.txPrebuild.hopTransaction,
+      custodianTransactionId: params.custodianTransactionId,
+      expireTime: params.expireTime,
+      contractSequenceId: params.txPrebuild.nextContractSequenceId as number,
+      sequenceId: params.sequenceId,
+    };
+
+    return { halfSigned: txParams };
   }
 }
