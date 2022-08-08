@@ -6,17 +6,6 @@ export interface CreateInvoiceParams {
   expiration?: number;
 }
 
-export interface CreateDepositAddressParams {
-  amount: number;
-  memo?: string;
-  expiration?: number;
-}
-
-export interface GetInvoicesParams {
-  id?: string;
-  status?: 'open' | 'closed';
-}
-
 export interface LightningWithdrawalParams {
   amount: number;
   address?: string;
@@ -31,6 +20,10 @@ export interface LightningDepositParams {
 
 export interface PayInvoiceParams {
   invoice: string;
+  sequenceId?: string;
+  comment?: string;
+  feeLimitRatio?: number;
+  feeLimit?: number;
 }
 
 export const WPTransferEntry = t.type(
@@ -124,6 +117,7 @@ export const GetBalanceResponse = t.strict(
   {
     balance: t.number,
     availableBalance: t.number,
+    maximumBalance: t.number,
   },
   'GetBalanceResponse'
 );
@@ -131,34 +125,11 @@ export const GetBalanceResponse = t.strict(
 // eslint-disable-next-line no-redeclare
 export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 
-const GetInvoiceResponse = t.strict(
-  {
-    paymentHash: t.string,
-    walletId: t.string,
-    status: t.string,
-    expiresAt: t.string,
-    value: t.number,
-    amtPaidMillisats: t.number,
-    updatedAt: t.string,
-    createdAt: t.string,
-  },
-  'GetInvoiceResponse'
-);
-
-// eslint-disable-next-line no-redeclare
-type GetInvoiceResponse = t.TypeOf<typeof GetInvoiceResponse>;
-
-export const GetInvoicesResponse = t.array(GetInvoiceResponse);
-
-// eslint-disable-next-line no-redeclare
-export type GetInvoicesResponse = t.TypeOf<typeof GetInvoicesResponse>;
-
 export interface ILightning {
   createInvoice(params?: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
-  createDepositAddress(params?: CreateDepositAddressParams): Promise<CreateDepositAddressResponse>;
+  createDepositAddress(): Promise<CreateDepositAddressResponse>;
   payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse>;
   getBalance(): Promise<GetBalanceResponse>;
   withdraw(params?: LightningWithdrawalParams): Promise<WithdrawResponse>;
   deposit(params?: LightningDepositParams): Promise<DepositResponse>;
-  getInvoices(params?: GetInvoicesParams): Promise<GetInvoicesResponse>;
 }

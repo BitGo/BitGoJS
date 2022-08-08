@@ -1,18 +1,15 @@
 import {
   ILightning,
   CreateInvoiceParams,
-  CreateDepositAddressParams,
   PayInvoiceParams,
   LightningWithdrawalParams,
   LightningDepositParams,
-  GetInvoicesParams,
   CreateInvoiceResponse,
   CreateDepositAddressResponse,
   PayInvoiceResponse,
   GetBalanceResponse,
   WithdrawResponse,
   DepositResponse,
-  GetInvoicesResponse,
 } from './iLightning';
 import { BitGoBase } from '../bitgoBase';
 
@@ -29,7 +26,7 @@ export class Lightning implements ILightning {
     throw new Error('method not implemented');
   }
 
-  public async createDepositAddress(params?: CreateDepositAddressParams): Promise<CreateDepositAddressResponse> {
+  public async createDepositAddress(): Promise<CreateDepositAddressResponse> {
     throw new Error('method not implemented');
   }
 
@@ -46,10 +43,6 @@ export class Lightning implements ILightning {
   }
 
   public async deposit(params?: LightningDepositParams): Promise<DepositResponse> {
-    throw new Error('method not implemented');
-  }
-
-  public async getInvoices(params?: GetInvoicesParams): Promise<GetInvoicesResponse> {
     throw new Error('method not implemented');
   }
 }
