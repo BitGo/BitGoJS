@@ -22,6 +22,12 @@ export enum SendShareType {
   SShare = 'SShare',
 }
 
+export enum ReceivedShareType {
+  AShare = 'AShare',
+  DShare = 'DShare',
+  Signature = 'Signature',
+}
+
 export type GetShareFromBitgoRT = DShare | AShare;
 // NShare that has been encrypted and signed via GPG
 export type EncryptedNShare = {
