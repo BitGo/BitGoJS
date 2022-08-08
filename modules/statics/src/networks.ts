@@ -482,7 +482,7 @@ class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
 class Eos extends Mainnet implements AccountNetwork {
   name = 'Eos';
   family = CoinFamily.EOS;
-  explorerUrl = 'https://bloks.io/transaction/';
+  explorerUrl = 'https://explorer.eosnetwork.com/transaction/';
 }
 
 class EosTestnet extends Testnet implements AccountNetwork {
