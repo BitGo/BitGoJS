@@ -4,7 +4,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import * as TestData from '../fixtures/hbar';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
-import { Hbar, Thbar, KeyPair } from '../../src';
+import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
 import { Wallet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
@@ -12,13 +12,18 @@ import * as _ from 'lodash';
 describe('Hedera Hashgraph:', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
+  let token;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('thbar', Thbar.createInstance);
     bitgo.safeRegister('hbar', Hbar.createInstance);
+    HbarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('thbar');
+    token = bitgo.coin('thbar:usdc');
   });
 
   it('should instantiate the coin', function () {
@@ -401,7 +406,7 @@ describe('Hedera Hashgraph:', function () {
           tokenName: 'thbar:usdc',
         },
       ];
-      const validTransaction = await basecoin.verifyTransaction({
+      const validTransaction = await token.verifyTransaction({
         txParams,
         txPrebuild,
         memo,
@@ -410,7 +415,7 @@ describe('Hedera Hashgraph:', function () {
       validTransaction.should.equal(true);
     });
 
-    it('should fail verify token transfer transaction with mismatch recipients', async function () {
+    it('should verify token transfer transaction with any token name on token base coin', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txHex = TestData.UNSIGNED_TOKEN_MULTI_TRANSFER;
@@ -425,9 +430,48 @@ describe('Hedera Hashgraph:', function () {
           amount: '15',
         },
       ];
-      await basecoin
+      (await token.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)).should.equal(true);
+    });
+
+    it('should fail to verify token transfer with mismatched recipients', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_MULTI_TRANSFER;
+      txParams.recipients = [
+        {
+          address: '0.0.75861',
+          amount: '11',
+          tokenName: 'thbar:usdc',
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+        },
+      ];
+      await token
         .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
         .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify token transfer with incorrect token name', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_MULTI_TRANSFER;
+      txParams.recipients = [
+        {
+          address: '0.0.75861',
+          amount: '11',
+          tokenName: 'thbar:usdc',
+        },
+        {
+          address: '0.0.78963',
+          amount: '15',
+          tokenName: 'invalidtoken',
+        },
+      ];
+      await token
+        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
+        .should.be.rejectedWith('Incorrect token name specified in recipients');
     });
   });
 
