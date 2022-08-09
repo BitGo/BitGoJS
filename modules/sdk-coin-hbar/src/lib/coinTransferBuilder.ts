@@ -1,16 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
 import * as proto from '@hashgraph/proto';
-import { ExtendableError, InvalidParameterValueError } from '@bitgo/sdk-core';
+import { DuplicateMethodError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Recipient } from './iface';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount, stringifyAccountId, buildHederaAccountID } from './utils';
 import { BigNumber } from 'bignumber.js';
-
-declare class DuplicateMethodError extends ExtendableError {
-  constructor(message: string);
-}
 
 export class CoinTransferBuilder extends TransferBuilder {
   // @deprecated Use _recipients field instead

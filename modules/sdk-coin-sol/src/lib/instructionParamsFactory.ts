@@ -8,12 +8,7 @@ import {
 } from '@solana/web3.js';
 
 import { TransactionType, NotSupported } from '@bitgo/sdk-core';
-import {
-  InstructionBuilderTypes,
-  ValidInstructionTypesEnum,
-  walletInitInstructionIndexes,
-  ataInitInstructionIndexes,
-} from './constants';
+import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
 import {
   AtaInit,
   InstructionParams,
@@ -367,28 +362,37 @@ const ataInitInstructionKeysIndexes = {
  */
 function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array<AtaInit | Memo> {
   const instructionData: Array<AtaInit | Memo> = [];
-  const ataInitInstruction = instructions[ataInitInstructionIndexes.InitializeAssociatedTokenAccount];
+  let memo: Memo | undefined;
 
-  const mintAddress = ataInitInstruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
-  const tokenName = findTokenName(mintAddress);
+  for (const instruction of instructions) {
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.Memo:
+        memo = { type: InstructionBuilderTypes.Memo, params: { memo: instruction.data.toString() } };
+        break;
+      case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
+        const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+        const tokenName = findTokenName(mintAddress);
 
-  const ataInit: AtaInit = {
-    type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-    params: {
-      mintAddress,
-      ataAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
-      ownerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
-      payerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
-      tokenName,
-    },
-  };
-  instructionData.push(ataInit);
-
-  if (instructions.length === 2 && instructions[ataInitInstructionIndexes.Memo]) {
-    const memo: Memo = {
-      type: InstructionBuilderTypes.Memo,
-      params: { memo: instructions[ataInitInstructionIndexes.Memo].data.toString() },
-    };
+        const ataInit: AtaInit = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: {
+            mintAddress,
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName,
+          },
+        };
+        instructionData.push(ataInit);
+        break;
+      default:
+        throw new NotSupported(
+          'Invalid transaction, instruction type not supported: ' + getInstructionType(instruction)
+        );
+    }
+  }
+  if (memo) {
     instructionData.push(memo);
   }
   return instructionData;

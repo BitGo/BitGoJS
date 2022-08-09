@@ -97,3 +97,9 @@ export class UnsupportedTokenError extends ExtendableError {
     super(message);
   }
 }
+
+export class DuplicateMethodError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
