@@ -137,28 +137,44 @@ describe('Instruction Parser Tests: ', function () {
       should.deepEqual(result, instructionsData);
     });
 
-    it('ATA init tx instructions', () => {
-      const mintAddress = testData.associatedTokenAccounts.mintId;
-      const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
-      const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
-      const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
+    it('multi ATA init tx instructions', () => {
+      const ataParams = [
+        {
+          mintAddress: testData.associatedTokenAccounts.mintId,
+          ownerAddress: testData.associatedTokenAccounts.accounts[0].pub,
+          payerAddress: testData.associatedTokenAccounts.accounts[0].pub,
+          ataAddress: testData.associatedTokenAccounts.accounts[0].ata,
+        },
+        {
+          mintAddress: testData.associatedTokenAccounts.mintId,
+          ownerAddress: testData.associatedTokenAccounts.accounts[1].pub,
+          payerAddress: testData.associatedTokenAccounts.accounts[0].pub,
+          ataAddress: testData.associatedTokenAccounts.accounts[1].ata,
+        },
+      ];
 
-      const instruction = Token.createAssociatedTokenAccountInstruction(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(mintAddress),
-        new PublicKey(ataAddress),
-        new PublicKey(ownerAddress),
-        new PublicKey(payerAddress)
-      );
+      const ataInstructions: TransactionInstruction[] = [];
+      const createATAParams: InstructionParams[] = [];
 
-      const createATA: InstructionParams = {
-        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-        params: { mintAddress, ataAddress, ownerAddress, payerAddress, tokenName: 'sol:usdc' },
-      };
+      ataParams.forEach((param) => {
+        ataInstructions.push(
+          Token.createAssociatedTokenAccountInstruction(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            new PublicKey(param.mintAddress),
+            new PublicKey(param.ataAddress),
+            new PublicKey(param.ownerAddress),
+            new PublicKey(param.payerAddress)
+          )
+        );
 
-      const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, [instruction]);
-      should.deepEqual(result, [createATA]);
+        createATAParams.push({
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: { ...param, tokenName: 'sol:usdc' },
+        });
+      });
+      const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, ataInstructions);
+      should.deepEqual(result, createATAParams);
     });
   });
   describe('Fail ', function () {
