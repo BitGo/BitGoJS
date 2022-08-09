@@ -21,6 +21,9 @@
     },
     {
       "path": "../statics"
+    },
+    {
+      "path": "../sdk-coin-dot"
     }
   ]
 }
