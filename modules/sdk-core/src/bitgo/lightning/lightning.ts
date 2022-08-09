@@ -23,8 +23,15 @@ export class Lightning implements ILightning {
     this.url = this.bitgo.url(`/wallet/${walletId}/lightning`, 2);
   }
 
-  public async createInvoice(params?: CreateInvoiceParams): Promise<CreateInvoiceResponse> {
-    throw new Error('method not implemented');
+  public async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse> {
+    const body = await this.bitgo
+      .post(this.url + '/invoice')
+      .send(params)
+      .result();
+
+    return decodeOrElse(CreateInvoiceResponse.name, CreateInvoiceResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 
   public async createDepositAddress(): Promise<CreateDepositAddressResponse> {
