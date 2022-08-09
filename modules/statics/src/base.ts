@@ -850,6 +850,10 @@ export enum UnderlyingAsset {
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
+
+  // Acala Tokens
+  AUSD = 'ausd',
+  LDOT = 'ldot',
 }
 
 /**
