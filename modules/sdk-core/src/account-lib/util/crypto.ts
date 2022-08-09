@@ -167,7 +167,7 @@ export function isValidEd25519PublicKey(pub: string): boolean {
  */
 export function isValidBLSPrivateKey(prv: string): boolean {
   try {
-    return bls.Fr.isValid(BigInt(prv));
+    return bls.Fr.isValid(BigInt('0x' + prv));
   } catch (e) {
     return false;
   }
@@ -204,9 +204,13 @@ export function toHex(buffer: Buffer | Uint8Array): string {
  * @param {bigint} bigint - the bigint to be converted to hex
  * @returns {string} - the hex value
  */
-export function bigIntToHex(bigint: bigint): string {
-  const hex = bigint.toString(16);
-  return '0x' + '0'.slice(0, hex.length % 2) + hex;
+export function bigIntToHex(bigint: bigint, hexLength?: number): string {
+  let hex = bigint.toString(16);
+  hex = '0'.slice(0, hex.length % 2) + hex;
+  if (hexLength) {
+    hex = hex.padStart(hexLength, '0');
+  }
+  return hex;
 }
 
 /**

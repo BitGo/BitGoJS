@@ -94,6 +94,8 @@ export interface KeyPair {
 
 export interface IBlsKeyPair extends KeyPair {
   secretShares?: string[];
+  chaincode: string;
+  seed?: string;
 }
 
 export interface VerifyAddressOptions {
@@ -356,6 +358,7 @@ export interface IBaseCoin {
   isWalletAddress(params: VerifyAddressOptions): boolean;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
+  supportsLightning(): boolean;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;

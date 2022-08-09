@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { randomBytes } from 'crypto';
 import * as BLS from '@bitgo/bls-dkg';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
@@ -34,6 +35,8 @@ export abstract class BlsKeyPair implements BaseKeyPair {
         prv: source.prv,
         publicShare: '',
         secretShares: [],
+        seed: '',
+        chaincode: '',
       };
     } else {
       throw new Error('Invalid key pair options');
@@ -48,7 +51,9 @@ export abstract class BlsKeyPair implements BaseKeyPair {
     const keySecretShares = BLS.secretShares(polynomial, participants);
     const keyPublicShare = BLS.publicShare(polynomial);
     this.keyPair = {
-      secretShares: keySecretShares.map((secretShare) => bigIntToHex(secretShare)),
+      seed: bigIntToHex(polynomial[0], 64),
+      chaincode: randomBytes(32).toString('hex'),
+      secretShares: keySecretShares.map((secretShare) => bigIntToHex(secretShare, 64)),
       publicShare: bigIntToHex(keyPublicShare),
     };
   }
@@ -86,11 +91,28 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @return signature of the bytes using this keypair
    */
   async sign(msg: Buffer): Promise<string> {
-    if (this.keyPair?.prv) {
-      const signedMessage = await BLS.sign(msg, BigInt(this.keyPair.prv));
-      return bigIntToHex(signedMessage);
+    if (this.keyPair.prv) {
+      const signedMessage = await BLS.sign(msg, BigInt('0x' + this.keyPair.prv));
+      return '0x' + bigIntToHex(signedMessage);
     }
     throw new Error('Missing private key');
+  }
+
+  public static keyDerive(seed: string, pk: string, chaincode: string, path: string): BlsKeys {
+    const seedBI = BigInt('0x' + seed);
+    const pkBI = BigInt('0x' + pk);
+    const chaincodeBI = BigInt('0x' + chaincode);
+    const childKey = BLS.privateDerive(seedBI, pkBI, chaincodeBI, path);
+    const childChaincode = bigIntToHex(childKey.chaincode);
+    const entropy = BigInt('0x' + randomBytes(32).toString('hex'));
+    const secretShares = BLS.secretShares([childKey.sk, entropy], DEFAULT_SIGNATURE_PARTICIPANTS);
+    const publicShare = BLS.publicShare([childKey.sk]);
+    return {
+      seed,
+      chaincode: childChaincode,
+      secretShares: secretShares.map((secretShare) => bigIntToHex(secretShare)),
+      publicShare: bigIntToHex(publicShare),
+    };
   }
 
   /**
@@ -102,7 +124,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
   public static aggregatePrvkeys(prvKeys: string[]): string {
     assert(prvKeys.every(isValidBLSPrivateKey), 'Invalid private keys');
     try {
-      const secretShares = prvKeys.map((secretShare) => BigInt(secretShare));
+      const secretShares = prvKeys.map((secretShare) => BigInt('0x' + secretShare));
       const prv = BLS.mergeSecretShares(secretShares);
       return bigIntToHex(prv);
     } catch (e) {
@@ -118,11 +140,21 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    */
   public static aggregatePubkeys(pubKeys: string[]): string {
     try {
-      const secretShares = pubKeys.map((secretShare) => BigInt(secretShare));
-      const commonPubKey = BLS.mergePublicShares(secretShares);
+      const publicShares = pubKeys.map((publicShare) => BigInt('0x' + publicShare));
+      const commonPubKey = BLS.mergePublicShares(publicShares);
       return bigIntToHex(commonPubKey);
     } catch (e) {
       throw new Error('Error aggregating pubkeys: ' + e);
+    }
+  }
+
+  public static aggregateChaincodes(chaincodeContributions: string[]): string {
+    try {
+      const chaincodes = chaincodeContributions.map((chaincode) => BigInt('0x' + chaincode));
+      const commonChaincode = BLS.mergeChaincodes(chaincodes);
+      return bigIntToHex(commonChaincode, 64);
+    } catch (e) {
+      throw new Error('Error aggregating chaincodes: ' + e);
     }
   }
 
@@ -140,7 +172,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
   public static aggregateSignatures(signatures: { [n: number]: bigint }): string {
     try {
       const signature = BLS.mergeSignatures(signatures);
-      return bigIntToHex(signature);
+      return '0x' + bigIntToHex(signature);
     } catch (e) {
       throw new Error('Error aggregating signatures: ' + e);
     }
@@ -155,6 +187,6 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    */
   public static async verifySignature(pub: string, msg: Buffer, signature: string): Promise<boolean> {
     assert(isValidBLSPublicKey(pub), `Invalid public key: ${pub}`);
-    return await BLS.verify(BigInt(signature), msg, BigInt(pub));
+    return await BLS.verify(BigInt(signature), msg, BigInt('0x' + pub));
   }
 }

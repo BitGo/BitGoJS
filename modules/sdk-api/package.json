@@ -20,7 +20,6 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "precommit": "yarn lint-staged",
     "prepare": "npm run build",
     "webpack-dev": "yarn webpack",
     "webpack-prod": "yarn webpack --mode=production --node-env=production",

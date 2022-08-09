@@ -12,7 +12,6 @@
     "test": "mocha",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "precommit": "yarn lint-staged",
     "unit-test": "npm run test"
   },
   "repository": {

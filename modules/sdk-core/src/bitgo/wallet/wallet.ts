@@ -69,6 +69,7 @@ import {
   WalletSignTransactionOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
+import { Lightning } from '../lightning';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -915,6 +916,13 @@ export class Wallet implements IWallet {
         throw new Error('invalid includeBalances argument, expecting boolean');
       }
       query.includeBalances = params.includeBalances;
+    }
+
+    if (!_.isNil(params.includeTokens)) {
+      if (!_.isBoolean(params.includeTokens)) {
+        throw new Error('invalid includeTokens argument, expecting boolean');
+      }
+      query.includeTokens = params.includeTokens;
     }
 
     if (!_.isNil(params.includeTotalAddressCount)) {
@@ -2294,7 +2302,7 @@ export class Wallet implements IWallet {
       this.bitgo.setRequestTracer(params.reqId);
     }
 
-    const buildParams = _.pick(params, this.prebuildWhitelistedParams());
+    const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
     buildParams.type = 'enabletoken';
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
@@ -2302,13 +2310,20 @@ export class Wallet implements IWallet {
     } else {
       // Rewrite tokens into recipients for buildTransaction
       buildParams.recipients = params.enableTokens.map((token) => {
+        const address = token.address || this._wallet.coinSpecific?.baseAddress;
+        if (!address) {
+          throw new Error('Wallet does not have base address, must specify with token param');
+        }
         return {
           tokenName: token.name,
-          address: token.address,
+          address,
+          amount: '0',
         };
       });
       delete buildParams.enableTokens;
-      return [await this.prebuildTransaction(buildParams)];
+      const prebuildTx = await this.prebuildTransaction(buildParams);
+      prebuildTx.buildParams = buildParams;
+      return [prebuildTx];
     }
   }
 
@@ -2322,7 +2337,7 @@ export class Wallet implements IWallet {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablement transactions`);
     }
 
-    if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
+    if (typeof params.prebuildTx === 'string' || params.prebuildTx?.buildParams?.type !== 'enabletoken') {
       throw new Error('Invalid build of token enablement.');
     }
 
@@ -2351,12 +2366,10 @@ export class Wallet implements IWallet {
     const successfulTxs: any[] = [];
     const failedTxs = new Array<Error>();
     for (const unsignedBuild of unsignedBuilds) {
-      // fold any of the parameters we used to build this transaction into the unsignedBuild
-      const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = _.pick(
-        params,
-        this.prebuildWhitelistedParams()
-      );
-      unsignedBuildWithOptions.prebuildTx = unsignedBuild;
+      const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = {
+        ...params,
+        prebuildTx: unsignedBuild,
+      };
       try {
         const sendTx = await this.sendTokenEnablement(unsignedBuildWithOptions);
         successfulTxs.push(sendTx);
@@ -2369,6 +2382,17 @@ export class Wallet implements IWallet {
       success: successfulTxs,
       failure: failedTxs,
     };
+  }
+
+  /**
+   * Create lightning for btc/tbtc from this wallet
+   */
+  public lightning(): Lightning {
+    if (!this.baseCoin.supportsLightning()) {
+      throw new Error(`Lightning not supported for ${this.coin()}`);
+    }
+
+    return new Lightning(this.bitgo, this.id());
   }
 
   /* MARK: TSS Helpers */

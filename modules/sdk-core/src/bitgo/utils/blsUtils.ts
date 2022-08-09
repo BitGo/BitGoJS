@@ -10,6 +10,19 @@ import { Keychain } from '../keychain';
 import { IBlsUtils } from './iBlsUtils';
 import { MpcUtils } from './mpcUtils';
 
+type SigningShare = {
+  seed?: string;
+  pub: string;
+  priv: string;
+  chaincode: string;
+};
+
+type SigningMaterial = {
+  userShare: SigningShare;
+  backupShare: SigningShare;
+  bitgoShare: SigningShare;
+};
+
 /**
  * Utility functions for BLS-DKG work flows.
  */
@@ -52,28 +65,48 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       throw new Error('Invalid backup key shares');
     }
 
-    const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
-
-    const userPrivateKey = BlsKeyPairClass.aggregatePrvkeys([
-      userKeyShare.secretShares[0],
-      backupKeyShare.secretShares[0],
-      bitGoToUserPrivateShare,
+    const bitGoToUserPublicShare = bitGoToUserShare.publicShare.slice(0, 96);
+    const bitGoToUserChaincode = bitGoToUserShare.publicShare.slice(96);
+    const commonPub = BlsKeyPairClass.aggregatePubkeys([userKeyShare.pub, backupKeyShare.pub, bitGoToUserPublicShare]);
+    const commonChaincode = BlsKeyPairClass.aggregateChaincodes([
+      userKeyShare.chaincode,
+      backupKeyShare.chaincode,
+      bitGoToUserChaincode,
     ]);
-    const commonPub = BlsKeyPairClass.aggregatePubkeys([
-      userKeyShare.pub,
-      backupKeyShare.pub,
-      bitGoToUserShare.publicShare,
-    ]);
-    if (commonPub !== bitgoKeychain.commonPub) {
-      throw new Error('Failed to create user keychain - commonPubs do not match.');
+    const commonKeychain = commonPub + commonChaincode;
+    if (commonKeychain !== bitgoKeychain.commonKeychain) {
+      throw new Error('Failed to create user keychain - commonKeychains do not match.');
     }
+
+    const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
+    if (bitGoToUserPrivateShare.slice(64) !== bitGoToUserChaincode) {
+      throw new Error('Failed to create user keychain - bitgo to user chaincode do not match.');
+    }
+    const userSigningMaterial: SigningMaterial = {
+      userShare: {
+        pub: userKeyShare.pub,
+        priv: userKeyShare.secretShares[0],
+        seed: userKeyShare.seed,
+        chaincode: userKeyShare.chaincode,
+      },
+      backupShare: {
+        pub: backupKeyShare.pub,
+        priv: backupKeyShare.secretShares[0],
+        chaincode: backupKeyShare.chaincode,
+      },
+      bitgoShare: {
+        pub: bitGoToUserPublicShare,
+        priv: bitGoToUserPrivateShare.slice(0, 64),
+        chaincode: bitGoToUserChaincode,
+      },
+    };
 
     const userKeychainParams: any = {
       source: 'user',
       keyType: 'blsdkg',
-      commonPub: commonPub,
-      encryptedPrv: this.bitgo.encrypt({ input: userPrivateKey, password: passphrase }),
-      originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
+      commonKeychain: commonKeychain,
+      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
+      originalPasscodeEncryptionCode,
     };
 
     return await this.baseCoin.keychains().add(userKeychainParams);
@@ -112,28 +145,53 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       throw new Error('Invalid backup key shares');
     }
 
-    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
-
-    const backupPrivateKey = BlsKeyPairClass.aggregatePrvkeys([
-      userKeyShare.secretShares[1],
-      backupKeyShare.secretShares[1],
-      bitGoToBackupPrivateShare,
-    ]);
+    const bitGoToBackupPublicShare = bitGoToBackupShare.publicShare.slice(0, 96);
+    const bitGoToBackupChaincode = bitGoToBackupShare.publicShare.slice(96);
     const commonPub = BlsKeyPairClass.aggregatePubkeys([
       userKeyShare.pub,
       backupKeyShare.pub,
-      bitGoToBackupShare.publicShare,
+      bitGoToBackupPublicShare,
     ]);
-    if (commonPub !== bitgoKeychain.commonPub) {
-      throw new Error('Failed to create backup keychain - commonPubs do not match.');
+    const commonChaincode = BlsKeyPairClass.aggregateChaincodes([
+      userKeyShare.chaincode,
+      backupKeyShare.chaincode,
+      bitGoToBackupChaincode,
+    ]);
+    const commonKeychain = commonPub + commonChaincode;
+    if (commonKeychain !== bitgoKeychain.commonKeychain) {
+      throw new Error('Failed to create backup keychain - commonKeychains do not match.');
     }
+
+    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
+    if (bitGoToBackupPrivateShare.slice(64) !== bitGoToBackupChaincode) {
+      throw new Error('Failed to create user keychain - bitgo to user chaincode do not match.');
+    }
+    const backupSigningMaterial: SigningMaterial = {
+      userShare: {
+        pub: userKeyShare.pub,
+        priv: userKeyShare.secretShares[1],
+        chaincode: userKeyShare.chaincode,
+      },
+      backupShare: {
+        pub: backupKeyShare.pub,
+        priv: backupKeyShare.secretShares[1],
+        chaincode: backupKeyShare.chaincode,
+        seed: backupKeyShare.seed,
+      },
+      bitgoShare: {
+        pub: bitGoToBackupPublicShare,
+        priv: bitGoToBackupPrivateShare.slice(0, 64),
+        chaincode: bitGoToBackupChaincode,
+      },
+    };
+    const prv = JSON.stringify(backupSigningMaterial);
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
       keyType: 'blsdkg',
-      commonPub: commonPub,
-      prv: backupPrivateKey,
-      encryptedPrv: this.bitgo.encrypt({ input: backupPrivateKey, password: passphrase }),
+      commonKeychain: commonKeychain,
+      prv,
+      encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
     });
   }
 
@@ -157,14 +215,31 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       throw new Error('Invalid backup key shares');
     }
 
+    const userToBitgoPublicShare = Buffer.concat([
+      Buffer.from(userKeyShare.pub, 'hex'),
+      Buffer.from(userKeyShare.chaincode, 'hex'),
+    ]).toString('hex');
+    const userToBitgoPrivateShare = Buffer.concat([
+      Buffer.from(userKeyShare.secretShares[2], 'hex'),
+      Buffer.from(userKeyShare.chaincode, 'hex'),
+    ]).toString('hex');
+
     const userToBitgoKeyShare = {
-      publicShare: userKeyShare.pub,
-      privateShare: userKeyShare.secretShares[2],
+      publicShare: userToBitgoPublicShare,
+      privateShare: userToBitgoPrivateShare,
     };
 
+    const backupToBitgoPublicShare = Buffer.concat([
+      Buffer.from(backupKeyShare.pub, 'hex'),
+      Buffer.from(backupKeyShare.chaincode, 'hex'),
+    ]).toString('hex');
+    const backupToBitgoPrivateShare = Buffer.concat([
+      Buffer.from(backupKeyShare.secretShares[2], 'hex'),
+      Buffer.from(backupKeyShare.chaincode, 'hex'),
+    ]).toString('hex');
     const backupToBitgoKeyShare = {
-      publicShare: backupKeyShare.pub,
-      privateShare: backupKeyShare.secretShares[2],
+      publicShare: backupToBitgoPublicShare,
+      privateShare: backupToBitgoPrivateShare,
     };
 
     return await this.createBitgoKeychainInWP(
@@ -186,8 +261,8 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    const userKeyShare = this.baseCoin.generateKeyPair();
-    const backupKeyShare = this.baseCoin.generateKeyPair();
+    const userKeyShare = this.baseCoin.generateKeyPair() as IBlsKeyPair;
+    const backupKeyShare = this.baseCoin.generateKeyPair() as IBlsKeyPair;
 
     const randomHexString = randomBytes(12).toString('hex');
 

@@ -10,7 +10,6 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "precommit": "yarn lint-staged",
     "prepare": "npm run build"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",

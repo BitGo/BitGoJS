@@ -302,16 +302,19 @@ export class Eth2 extends BaseCoin {
   generateKeyPair(seed?: Buffer): IBlsKeyPair {
     let keyPair = new Eth2KeyPair();
     if (seed && Eth2KeyPair.isValidPrv(seed)) {
-      const seedStr = '0x' + Buffer.from(seed).toString('hex');
+      const seedStr = Buffer.from(seed).toString('hex');
       keyPair = new Eth2KeyPair({ prv: seedStr });
     } else if (seed) {
       throw new Error('trying to generate keypair from invalid seed');
     }
 
+    const keys = keyPair.getKeys();
     return {
-      pub: keyPair.getKeys().publicShare,
-      prv: keyPair.getKeys().prv || '',
-      secretShares: keyPair.getKeys().secretShares || [],
+      pub: keys.publicShare,
+      prv: keys.prv || '',
+      secretShares: keys.secretShares || [],
+      seed: keys.seed,
+      chaincode: keys.chaincode || '',
     };
   }
 
@@ -348,14 +351,16 @@ export class Eth2 extends BaseCoin {
     return ethUtil.toBuffer(signedMessage);
   }
 
-  aggregateShares(shares: { pubShares: string[]; prvShares: string[] }): IBlsKeyPair {
+  aggregateShares(shares: { pubShares: string[]; prvShares: string[]; chaincodes: string[] }): IBlsKeyPair {
     const commonPub = Eth2KeyPair.aggregatePubkeys(shares.pubShares);
     const prv = Eth2KeyPair.aggregatePrvkeys(shares.prvShares);
+    const commonChaincode = Eth2KeyPair.aggregateChaincodes(shares.chaincodes);
 
     return {
       pub: commonPub,
       prv,
       secretShares: shares.prvShares,
+      chaincode: commonChaincode,
     };
   }
 }

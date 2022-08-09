@@ -61,8 +61,7 @@ export class KeyPair extends BlsKeyPair {
           return '0'.slice(0, hex.length % 2) + hex;
         })
         .join('');
-      const privateKey = '0x' + hexPrv;
-      return isValidBLSPrivateKey(privateKey);
+      return isValidBLSPrivateKey(hexPrv);
     } catch (e) {
       return false;
     }

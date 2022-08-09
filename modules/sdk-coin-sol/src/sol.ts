@@ -111,6 +111,10 @@ export class Sol extends BaseCoin {
     return true;
   }
 
+  supportsStaking(): boolean {
+    return true;
+  }
+
   getChain(): string {
     return this._staticsCoin.name;
   }

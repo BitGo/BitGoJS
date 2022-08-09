@@ -64,9 +64,11 @@ export enum DotAddressFormat {
   substrate = 42,
   // format for polkadot mainnet addresses
   polkadot = 0,
+  // format for acala mainnet addresses
+  acala = 10,
 }
 
-export type DotAssetTypes = 'dot' | 'tdot';
+export type DotAssetTypes = 'dot' | 'tdot' | 'aca' | 'taca';
 
 export enum StakingOperationTypes {
   LOCK,

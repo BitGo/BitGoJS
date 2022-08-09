@@ -38,7 +38,6 @@
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
-    "precommit": "yarn lint-staged",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
     "upload-docs": "node scripts/upload-docs.js",
