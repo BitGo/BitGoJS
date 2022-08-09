@@ -1,4 +1,14 @@
-import { Erc20Coin, StellarCoin, CeloCoin, EosCoin, AvaxERC20Token, AlgoCoin, SolCoin, HederaToken } from './account';
+import {
+  AcaCoin,
+  Erc20Coin,
+  StellarCoin,
+  CeloCoin,
+  EosCoin,
+  AvaxERC20Token,
+  AlgoCoin,
+  SolCoin,
+  HederaToken,
+} from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
@@ -27,6 +37,10 @@ export type StellarTokenConfig = BaseNetworkConfig;
 
 export type SolTokenConfig = BaseNetworkConfig & {
   tokenAddress: string;
+};
+
+export type AcaTokenConfig = BaseNetworkConfig & {
+  tokenSymbol: string;
 };
 
 export type AlgoTokenConfig = BaseNetworkConfig & {
@@ -69,6 +83,9 @@ export interface Tokens {
     hbar: {
       tokens: HbarTokenConfig[];
     };
+    aca: {
+      tokens: AcaTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -97,6 +114,9 @@ export interface Tokens {
     };
     hbar: {
       tokens: HbarTokenConfig[];
+    };
+    aca: {
+      tokens: AcaTokenConfig[];
     };
   };
 }
@@ -225,6 +245,20 @@ const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedAcaTokens = coins.reduce((acc: AcaTokenConfig[], coin) => {
+  if (coin instanceof AcaCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'aca' : 'taca',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenSymbol: coin.tokenSymbol,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
   if (coin instanceof AlgoCoin) {
     acc.push({
@@ -282,6 +316,9 @@ export const tokens: Tokens = {
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Mainnet'),
     },
+    aca: {
+      tokens: formattedAcaTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -311,6 +348,9 @@ export const tokens: Tokens = {
     },
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Testnet'),
+    },
+    aca: {
+      tokens: formattedAcaTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };

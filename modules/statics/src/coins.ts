@@ -1,4 +1,5 @@
 import {
+  acaToken,
   account,
   AccountCoin,
   algoToken,
@@ -21,6 +22,7 @@ import {
   terc721,
   tronToken,
   tsolToken,
+  tacaToken,
   tstellarToken,
   ttronToken,
 } from './account';
@@ -1651,6 +1653,10 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
+  acaToken('aca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
+  acaToken('aca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
+  tacaToken('taca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
+  tacaToken('taca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
   fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),
