@@ -12,6 +12,7 @@ import {
   DepositResponse,
 } from './iLightning';
 import { BitGoBase } from '../bitgoBase';
+import { decodeOrElse } from '../utils/decode';
 
 export class Lightning implements ILightning {
   private readonly bitgo: BitGoBase;
@@ -19,7 +20,7 @@ export class Lightning implements ILightning {
 
   constructor(bitgo: BitGoBase, walletId: string) {
     this.bitgo = bitgo;
-    this.url = this.bitgo.url(`/wallet/${walletId}/lightning/`, 2);
+    this.url = this.bitgo.url(`/wallet/${walletId}/lightning`, 2);
   }
 
   public async createInvoice(params?: CreateInvoiceParams): Promise<CreateInvoiceResponse> {
@@ -35,7 +36,10 @@ export class Lightning implements ILightning {
   }
 
   public async getBalance(): Promise<GetBalanceResponse> {
-    throw new Error('method not implemented');
+    const body = await this.bitgo.get(this.url + '/balance').result();
+    return decodeOrElse(GetBalanceResponse.name, GetBalanceResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 
   public async withdraw(params?: LightningWithdrawalParams): Promise<WithdrawResponse> {
