@@ -5,7 +5,7 @@ import { TransactionBuilderFactory } from '../../src';
 import { coins } from '@bitgo/statics';
 
 describe('ADA Transaction Builder', async () => {
-  const factory = new TransactionBuilderFactory(coins.get('tnear'));
+  const factory = new TransactionBuilderFactory(coins.get('tada'));
   it('start and build an unsigned transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.input({
