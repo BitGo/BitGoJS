@@ -16,6 +16,7 @@ describe('lightning API requests', function () {
   };
   const wallet = new Wallet(bitgo, basecoin, walletData);
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
+  const address = 'fake_address';
 
   it('should return the balance of lightning wallet', async function () {
     const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/balance`).reply(200, {
@@ -28,6 +29,17 @@ describe('lightning API requests', function () {
       balance: 1000,
       availableBalance: 1000,
       maximumBalance: 1e8,
+    });
+    scope.done();
+  });
+
+  it('should generate a lightning address', async function () {
+    const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/address`).reply(200, {
+      address,
+    });
+    const res = await wallet.lightning().createDepositAddress();
+    assert.deepStrictEqual(res, {
+      address,
     });
     scope.done();
   });

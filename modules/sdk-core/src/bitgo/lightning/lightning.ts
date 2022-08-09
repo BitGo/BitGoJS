@@ -28,7 +28,10 @@ export class Lightning implements ILightning {
   }
 
   public async createDepositAddress(): Promise<CreateDepositAddressResponse> {
-    throw new Error('method not implemented');
+    const body = await this.bitgo.post(this.url + '/address').result();
+    return decodeOrElse(CreateDepositAddressResponse.name, CreateDepositAddressResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 
   public async payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse> {
