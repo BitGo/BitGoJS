@@ -2,9 +2,11 @@ import * as AvaxpLib from '../../src/lib';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { AvaxP, TavaxP } from '../../src/';
 import { randomBytes } from 'crypto';
+import * as should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
+import { keychains } from '../resources/keychains';
 import { Utils as KeyPairUtils } from '../../src/lib/utils';
 import { KeyPair } from '../../src/lib/keyPair';
 import { Buffer as BufferAvax } from 'avalanche';
@@ -347,10 +349,55 @@ describe('Avaxp', function () {
     });
 
     it('should fail to validate invalid address', function () {
-      const invalidAddresses = ['asdadsaaf', 'fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa'];
-
+      const invalidAddresses = [undefined, '', 'asdadsaaf', '15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex'];
       for (const address of invalidAddresses) {
         basecoin.isValidAddress(address).should.be.false();
+      }
+    });
+
+    it('should validate address', function () {
+      const validAddresses = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+        'NodeID-143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+      ];
+
+      for (const address of validAddresses) {
+        basecoin.isValidAddress(address).should.be.true();
+      }
+    });
+
+    it('should verify address', function () {
+      const validAddresses = [
+        {
+          address: 'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+          keychains,
+        },
+        {
+          address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4',
+          keychains,
+        },
+      ];
+
+      for (const addressParams of validAddresses) {
+        basecoin.verifyAddress(addressParams).should.be.true();
+      }
+    });
+
+    it('should fail to verify invalid address', function () {
+      const invalidAddresses = [
+        {
+          address: 'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
+          keychains,
+        },
+        {
+          address: 'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+          keychains,
+        },
+      ];
+
+      for (const address of invalidAddresses) {
+        should.throws(() => basecoin.verifyAddress(address));
       }
     });
   });
