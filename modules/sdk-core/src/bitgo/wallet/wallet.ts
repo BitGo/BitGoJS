@@ -2302,6 +2302,18 @@ export class Wallet implements IWallet {
       this.bitgo.setRequestTracer(params.reqId);
     }
 
+    // Split query if we can't enable multiple tokens in one tx
+    if (!teConfig.supportsMultipleTokenEnablements && params.enableTokens.length > 1) {
+      const queries = params.enableTokens.map(async (enableToken) => {
+        return this.buildTokenEnablements({
+          ...params,
+          enableTokens: [enableToken],
+        });
+      });
+      const results = await Promise.all(queries);
+      return results.flat();
+    }
+
     const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
     buildParams.type = 'enabletoken';
     // Check if we build with intent
