@@ -208,11 +208,6 @@ export interface RecoverFromWrongChainOptions {
   signed?: boolean;
 }
 
-export interface AddressInfo {
-  txCount: number;
-  totalBalance: number;
-}
-
 export interface VerifyKeySignaturesOptions {
   userKeychain?: Keychain;
   keychainToVerify?: Keychain;
@@ -227,14 +222,6 @@ export interface VerifyUserPublicKeyOptions {
 
 export interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
-}
-
-export interface UnspentParams {
-  id: string;
-  value: number;
-  valueString: string;
-  address: string;
-  blockHeight: number;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
