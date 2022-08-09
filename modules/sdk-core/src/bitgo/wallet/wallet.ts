@@ -2323,6 +2323,10 @@ export class Wallet implements IWallet {
   /**
    * Signs and sends a single unsigned token enablement transaction
    * @param params
+   * @returns
+   *   - The response from sending the transaction for hot wallets
+   *   - The response from initiating the transaction for custodial wallets
+   *   - The included prebuilt transaction for cold wallets
    */
   public async sendTokenEnablement(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
@@ -2337,8 +2341,17 @@ export class Wallet implements IWallet {
     if (this._wallet.multisigType === 'tss') {
       return await this.sendManyTss(params);
     } else {
-      const signedPrebuild = await this.prebuildAndSignTransaction(params);
-      return await this.submitTransaction(signedPrebuild);
+      switch (this._wallet.type) {
+        case 'hot':
+          const signedPrebuild = await this.prebuildAndSignTransaction(params);
+          return await this.submitTransaction(signedPrebuild);
+        case 'cold':
+          // Don't sign or send and just return the built transaction
+          return params.txPrebuild;
+        case 'custodial':
+          const url = this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate');
+          return await this.bitgo.post(url).send(params.prebuildTx.buildParams).result();
+      }
     }
   }
 
@@ -2349,6 +2362,9 @@ export class Wallet implements IWallet {
    * Builds, signs, and sends a set of transactions that enables the specified tokens
    * @param params -
    *    enableTokens: Token enablement operations we want to perform
+   * @return
+   *    success: Successful responses from sendTokenEnablement
+   *    failure: Errors from failed transactions
    */
   public async sendTokenEnablements(params: BuildTokenEnablementOptions = { enableTokens: [] }): Promise<{
     success: any[];
