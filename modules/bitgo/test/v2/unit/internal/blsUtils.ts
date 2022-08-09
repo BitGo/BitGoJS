@@ -79,16 +79,30 @@ describe('BLS Utils:', async function () {
       bitgoKeychain,
       'passphrase');
 
-    const backupCombined = eth2.aggregateShares({
-      pubShares: [backupKeyShare.pub, userKeyShare.pub, bitgoKeyShare.pub],
-      prvShares: [userKeyShare.secretShares[1], backupKeyShare.secretShares[1], bitgoKeyShare.secretShares[1]],
-    });
-
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
     userKeychain.should.deepEqual(nockedUserKeychain);
 
     // unencrypted `prv` property should exist on backup keychain
-    backupCombined.prv.should.equal(backupKeychain.prv);
+    const backupSigningMaterial = {
+      userShare: {
+        pub: userKeyShare.pub,
+        priv: userKeyShare.secretShares[1],
+        chaincode: userKeyShare.chaincode,
+      },
+      backupShare: {
+        pub: backupKeyShare.pub,
+        priv: backupKeyShare.secretShares[1],
+        chaincode: backupKeyShare.chaincode,
+        seed: backupKeyShare.seed,
+      },
+      bitgoShare: {
+        pub: bitgoKeyShare.pub,
+        priv: bitgoKeyShare.secretShares[1],
+        chaincode: bitgoKeyShare.chaincode,
+      },
+    };
+    const backupPrv = JSON.stringify(backupSigningMaterial);
+    backupPrv.should.equal(backupKeychain.prv);
     should.exist(backupKeychain.encryptedPrv);
 
   });
@@ -132,16 +146,30 @@ describe('BLS Utils:', async function () {
       bitgoKeychain,
       'passphrase');
 
-    const backupCombined = eth2.aggregateShares({
-      pubShares: [backupKeyShare.pub, userKeyShare.pub, bitgoKeyShare.pub],
-      prvShares: [userKeyShare.secretShares[1], backupKeyShare.secretShares[1], bitgoKeyShare.secretShares[1]],
-    });
-
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
     userKeychain.should.deepEqual(nockedUserKeychain);
 
     // unencrypted `prv` property should exist on backup keychain
-    backupCombined.prv.should.equal(backupKeychain.prv);
+    const backupSigningMaterial = {
+      userShare: {
+        pub: userKeyShare.pub,
+        priv: userKeyShare.secretShares[1],
+        chaincode: userKeyShare.chaincode,
+      },
+      backupShare: {
+        pub: backupKeyShare.pub,
+        priv: backupKeyShare.secretShares[1],
+        chaincode: backupKeyShare.chaincode,
+        seed: backupKeyShare.seed,
+      },
+      bitgoShare: {
+        pub: bitgoKeyShare.pub,
+        priv: bitgoKeyShare.secretShares[1],
+        chaincode: bitgoKeyShare.chaincode,
+      },
+    };
+    const backupPrv = JSON.stringify(backupSigningMaterial);
+    backupPrv.should.equal(backupKeychain.prv);
     should.exist(backupKeychain.encryptedPrv);
 
   });
@@ -173,14 +201,14 @@ describe('BLS Utils:', async function () {
       eth2.generateKeyPair(),
       bitgoKeychain,
       'passphrase')
-      .should.be.rejectedWith('Failed to create user keychain - commonPubs do not match.');
+      .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
     await blsUtils.createUserKeychain(
       userGpgKey,
       eth2.generateKeyPair(),
       backupKeyShare,
       bitgoKeychain,
       'passphrase')
-      .should.be.rejectedWith('Failed to create user keychain - commonPubs do not match.');
+      .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
 
     await blsUtils.createBackupKeychain(
       userGpgKey,
@@ -188,14 +216,14 @@ describe('BLS Utils:', async function () {
       backupKeyShare,
       bitgoKeychain,
       'passphrase')
-      .should.be.rejectedWith('Failed to create backup keychain - commonPubs do not match.');
+      .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
     await blsUtils.createBackupKeychain(
       userGpgKey,
       userKeyShare,
       eth2.generateKeyPair(),
       bitgoKeychain,
       'passphrase')
-      .should.be.rejectedWith('Failed to create backup keychain - commonPubs do not match.');
+      .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
   });
 
   // Nock helpers
@@ -213,17 +241,18 @@ describe('BLS Utils:', async function () {
     const bitgoCombined = eth2.aggregateShares({
       pubShares: [bitgoKeyShare.pub, params.userKeyShare.pub, params.backupKeyShare.pub],
       prvShares: [params.userKeyShare.secretShares[2], params.backupKeyShare.secretShares[2], bitgoKeyShare.secretShares[2]],
+      chaincodes: [bitgoKeyShare.chaincode, params.userKeyShare.chaincode, params.backupKeyShare.chaincode],
     });
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
 
-    const bitgoToUserMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[0] });
+    const bitgoToUserMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[0] + bitgoKeyShare.chaincode });
     const encryptedBitgoToUserMessage = await openpgp.encrypt({
       message: bitgoToUserMessage,
       encryptionKeys: [userGpgKeyActual.toPublic()],
       format: 'armored',
     });
 
-    const bitgoToBackupMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[1] });
+    const bitgoToBackupMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[1] + bitgoKeyShare.chaincode });
     const encryptedBitgoToBackupMessage = await openpgp.encrypt({
       message: bitgoToBackupMessage,
       encryptionKeys: [userGpgKeyActual.toPublic()],
@@ -233,18 +262,18 @@ describe('BLS Utils:', async function () {
     const bitgoKeychain: Keychain = {
       id: '3',
       pub: bitgoCombined.pub,
-      commonPub: bitgoCombined.pub,
+      commonKeychain: bitgoCombined.pub + bitgoCombined.chaincode,
       keyShares: [
         {
           from: 'bitgo',
           to: 'user',
-          publicShare: bitgoKeyShare.pub,
+          publicShare: bitgoKeyShare.pub + bitgoKeyShare.chaincode,
           privateShare: encryptedBitgoToUserMessage.toString(),
         },
         {
           from: 'bitgo',
           to: 'backup',
-          publicShare: bitgoKeyShare.pub,
+          publicShare: bitgoKeyShare.pub + bitgoKeyShare.chaincode,
           privateShare: encryptedBitgoToBackupMessage.toString(),
         },
       ],

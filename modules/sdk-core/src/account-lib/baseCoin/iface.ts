@@ -114,6 +114,8 @@ export type BlsKeys = {
   prv?: string;
   secretShares: string[];
   publicShare: string;
+  seed: string;
+  chaincode: string;
 };
 
 export interface BaseAddress {
