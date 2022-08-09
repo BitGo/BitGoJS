@@ -1298,9 +1298,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.xprv the unencrypted xprv (used instead of wallet passphrase)
    * @returns {*}
    */
-  async recoverFromWrongChain(
+  async recoverFromWrongChain<TNumber extends number | bigint = number>(
     params: RecoverFromWrongChainOptions
-  ): Promise<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
+  ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
     const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
 
     // params.recoveryCoin used to be params.coin, backwards compatibility
@@ -1319,7 +1319,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
     }
 
-    return await recoverCrossChain(this.bitgo, {
+    return await recoverCrossChain<TNumber>(this.bitgo, {
       sourceCoin: this,
       recoveryCoin,
       walletId: wallet,

@@ -34,8 +34,8 @@ import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../u
 import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
 
-type Unspent = utxolib.bitgo.Unspent;
-type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 
 function getKeyId(k: KeychainBase58): string {
   return getSeed(k.pub).toString('hex');
@@ -82,23 +82,34 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
     .persist();
 }
 
-function nockAddressWithUnspents(coin: AbstractUtxoCoin, address: string, unspents: Unspent[]): nock.Scope {
-  return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(200, unspents).persist();
+function nockAddressWithUnspents<TNumber extends number | bigint = number>(
+  coin: AbstractUtxoCoin,
+  address: string,
+  unspents: Unspent<TNumber>[]
+): nock.Scope {
+  const payload = unspents.map((u) => {
+    return {
+      ...u,
+      value: Number(u.value),
+      valueString: coin.amountType === 'bigint' ? u.value.toString() : undefined,
+    };
+  });
+  return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(200, payload).persist();
 }
 
 function nockAddressWithoutUnspents(coin: AbstractUtxoCoin, address: string): nock.Scope {
   return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(404).persist();
 }
 
-function nockBitGoPublicTransactionInfo(
+function nockBitGoPublicTransactionInfo<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
-  depositTx: utxolib.bitgo.UtxoTransaction,
-  depositUnspents: Unspent[],
+  depositTx: utxolib.bitgo.UtxoTransaction<TNumber>,
+  depositUnspents: Unspent<TNumber>[],
   depositAddress: string
 ): nock.Scope[] {
   return [
     nockBitGoPublicTransaction(coin, depositTx, depositUnspents).persist(),
-    nockBitGoPublicAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
+    nockBitGoPublicAddressUnspents<TNumber>(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
   ];
 }
 
@@ -117,7 +128,7 @@ function nockBitGoPublicTransactionInfo(
  * @param sourceCoin - the coin to construct the transaction for
  * @param recoveryCoin - the coin the receiving wallet was set up for
  */
-function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
+function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
   describe(`Cross-Chain Recovery [sourceCoin=${sourceCoin.getChain()} recoveryCoin=${recoveryCoin.getChain()}]`, function () {
     const walletKeys = getDefaultWalletKeys();
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
@@ -129,14 +140,22 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     const recoveryAddress = sourceCoin.generateAddress({ keychains: keychainsBase58, index: 1 }).address;
     const nocks: nock.Scope[] = [];
 
-    let depositTx: utxolib.bitgo.UtxoTransaction;
+    let depositTx: utxolib.bitgo.UtxoTransaction<TNumber>;
 
     function getDepositUnspents() {
-      return [mockUnspent(sourceCoin.network, walletKeys, 'p2sh', 0, 1e8)];
+      return [
+        mockUnspent<TNumber>(
+          sourceCoin.network,
+          walletKeys,
+          'p2sh',
+          0,
+          (sourceCoin.amountType === 'bigint' ? BigInt('10999999800000001') : 1e8) as TNumber
+        ),
+      ];
     }
 
-    function getDepositTransaction(): utxolib.bitgo.UtxoTransaction {
-      return createFullSignedTransaction(
+    function getDepositTransaction(): utxolib.bitgo.UtxoTransaction<TNumber> {
+      return createFullSignedTransaction<TNumber>(
         sourceCoin.network,
         getDepositUnspents(),
         depositAddressSourceCoin.address,
@@ -148,7 +167,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       depositTx = getDepositTransaction();
     });
 
-    function getRecoveryUnspents(): WalletUnspent[] {
+    function getRecoveryUnspents(): WalletUnspent<TNumber>[] {
       return [
         {
           id: depositTx.getId(),
@@ -176,8 +195,8 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       nock.cleanAll();
     });
 
-    let signedRecovery: CrossChainRecoverySigned;
-    let unsignedRecovery: CrossChainRecoveryUnsigned;
+    let signedRecovery: CrossChainRecoverySigned<TNumber>;
+    let unsignedRecovery: CrossChainRecoveryUnsigned<TNumber>;
 
     before('create recovery transaction', async function () {
       const params = {
@@ -187,24 +206,38 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
         wallet: recoveryWalletId,
       };
 
-      signedRecovery = (await sourceCoin.recoverFromWrongChain({
+      signedRecovery = (await sourceCoin.recoverFromWrongChain<TNumber>({
         ...params,
         xprv: keychainsBase58[0].prv,
-      })) as CrossChainRecoverySigned;
+      })) as CrossChainRecoverySigned<TNumber>;
 
-      unsignedRecovery = (await sourceCoin.recoverFromWrongChain({
+      unsignedRecovery = (await sourceCoin.recoverFromWrongChain<TNumber>({
         ...params,
         signed: false,
-      })) as CrossChainRecoveryUnsigned;
+      })) as CrossChainRecoveryUnsigned<TNumber>;
     });
 
-    function testMatchFixture(name: string, getRecoveryResult: () => { txHex: string }) {
+    function testMatchFixture(
+      name: string,
+      getRecoveryResult: () => CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>
+    ) {
       it(`should match fixture (${name})`, async function () {
         const recovery = getRecoveryResult();
-        const recoveryObj = {
+        let recoveryObj = {
           ...recovery,
-          tx: transactionHexToObj(recovery.txHex as string, sourceCoin.network),
+          tx: transactionHexToObj(recovery.txHex as string, sourceCoin.network, sourceCoin.amountType),
         };
+        if (sourceCoin.amountType === 'bigint') {
+          recoveryObj = JSON.parse(
+            JSON.stringify(recoveryObj, (k, v) => {
+              if (typeof v === 'bigint') {
+                return v.toString();
+              } else {
+                return v;
+              }
+            })
+          );
+        }
         shouldEqualJSON(
           recoveryObj,
           await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}-${name}`, recoveryObj)
@@ -212,19 +245,24 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       });
     }
 
-    testMatchFixture('signed', () => signedRecovery as { txHex: string });
+    testMatchFixture('signed', () => signedRecovery);
     testMatchFixture('unsigned', () => unsignedRecovery);
 
-    function checkRecoveryTransactionSignature(tx: string | utxolib.bitgo.UtxoTransaction) {
+    function checkRecoveryTransactionSignature(tx: string | utxolib.bitgo.UtxoTransaction<TNumber>) {
       if (typeof tx === 'string') {
-        tx = utxolib.bitgo.createTransactionFromBuffer(Buffer.from(tx, 'hex'), sourceCoin.network);
+        tx = utxolib.bitgo.createTransactionFromBuffer<TNumber>(
+          Buffer.from(tx, 'hex'),
+          sourceCoin.network,
+          undefined,
+          sourceCoin.amountType
+        );
       }
       const unspents = getRecoveryUnspents();
       should.equal(tx.ins.length, unspents.length);
       tx.ins.forEach((input, i) => {
         assert(typeof tx !== 'string');
         utxolib.bitgo
-          .verifySignatureWithUnspent(tx, i, getRecoveryUnspents(), walletKeys)
+          .verifySignatureWithUnspent<TNumber>(tx, i, getRecoveryUnspents(), walletKeys)
           .should.eql([true, false, false]);
       });
     }
@@ -234,7 +272,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     });
 
     it('should be signable for unsigned recovery', async function () {
-      const signedTx = await sourceCoin.signTransaction({
+      const signedTx = await sourceCoin.signTransaction<TNumber>({
         txPrebuild: unsignedRecovery,
         prv: keychainsBase58[0].prv,
         pubs: keychainsBase58.map((k) => k.pub) as Triple<string>,
@@ -258,7 +296,11 @@ utxoCoins.forEach((coin) => {
           (utxolib.isTestnet(coin.network) && utxolib.isTestnet(otherCoin.network)))
     )
     .forEach((otherCoin) => {
-      run(coin, otherCoin);
+      if (coin.amountType === 'bigint') {
+        run<bigint>(coin, otherCoin);
+      } else {
+        run(coin, otherCoin);
+      }
     });
 });
 
@@ -304,18 +346,30 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
 
 describe(`Cross-Chain Recovery BitgoPublicApi.getUnspentInfo`, async function () {
   const coin = getUtxoCoin('btc');
+  const bigintCoin = getUtxoCoin('doge');
+  const numberValue = 1000;
+  const bigintValue = '10999999800000001';
+
   const withUnspent1 = 'addresswithUnspent1';
   const unspent1: Unspent = {
     id: 'txid1',
     address: withUnspent1,
-    value: 1000,
+    value: numberValue,
   };
+  const bigintUnspent1: Unspent<bigint> = _.assign(_.clone(unspent1), {
+    value: BigInt(bigintValue),
+    valueString: bigintValue,
+  });
   const withUnspent2 = 'addresswithUnspent2';
   const unspent2: Unspent = {
     id: 'txid2',
     address: withUnspent2,
-    value: 1000,
+    value: numberValue,
   };
+  const bigintUnspent2: Unspent<bigint> = _.assign(_.clone(unspent2), {
+    value: BigInt(bigintValue),
+    valueString: bigintValue,
+  });
   const withoutUnspent = 'addressWithoutUnspent';
   const nocks: nock.Scope[] = [];
 
@@ -325,11 +379,21 @@ describe(`Cross-Chain Recovery BitgoPublicApi.getUnspentInfo`, async function ()
   });
 
   const api = new BitgoPublicApi(coin);
+  const bigintApi = new BitgoPublicApi(bigintCoin);
 
   it('should first attempt a single batched address call to the addressUnspents api', async function () {
     const addresses = [withUnspent1, withUnspent2];
     nocks.push(nockAddressWithUnspents(coin, _.uniq(addresses).join(','), [unspent1, unspent2]));
     (await api.getUnspentInfo(addresses)).should.eql([unspent1, unspent2]);
+  });
+
+  it('[bigint] should first attempt a single batched address call to the addressUnspents api', async function () {
+    const addresses = [withUnspent1, withUnspent2];
+    nocks.push(nockAddressWithUnspents(bigintCoin, _.uniq(addresses).join(','), [bigintUnspent1, bigintUnspent2]));
+    (await bigintApi.getUnspentInfo<bigint>(addresses, bigintCoin.amountType)).should.eql([
+      bigintUnspent1,
+      bigintUnspent2,
+    ]);
   });
 
   it('should ignore duplicate addresses and those which have missing (already spent) unspents', async function () {
@@ -339,6 +403,18 @@ describe(`Cross-Chain Recovery BitgoPublicApi.getUnspentInfo`, async function ()
     nocks.push(nockAddressWithUnspents(coin, withUnspent2, [unspent2]));
     nocks.push(nockAddressWithoutUnspents(coin, withoutUnspent));
     (await api.getUnspentInfo(addresses)).should.eql([unspent1, unspent2]);
+  });
+
+  it('[bigint] should ignore duplicate addresses and those which have missing (already spent) unspents', async function () {
+    const addresses = [withUnspent1, withUnspent1, withoutUnspent, withUnspent2];
+    nocks.push(nockAddressWithoutUnspents(bigintCoin, _.uniq(addresses).join(',')));
+    nocks.push(nockAddressWithUnspents(bigintCoin, withUnspent1, [bigintUnspent1]));
+    nocks.push(nockAddressWithUnspents(bigintCoin, withUnspent2, [bigintUnspent2]));
+    nocks.push(nockAddressWithoutUnspents(bigintCoin, withoutUnspent));
+    (await bigintApi.getUnspentInfo<bigint>(addresses, bigintCoin.amountType)).should.eql([
+      bigintUnspent1,
+      bigintUnspent2,
+    ]);
   });
 
   it('should throw an error if no unspents are found', async function () {
