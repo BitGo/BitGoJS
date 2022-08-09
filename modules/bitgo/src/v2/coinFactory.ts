@@ -37,6 +37,7 @@ import {
   Ofc,
   OfcToken,
   Polygon,
+  PolygonToken,
   Rbtc,
   Sol,
   StellarToken,
@@ -188,6 +189,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   AvaxCToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  PolygonToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 

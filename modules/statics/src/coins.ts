@@ -20,6 +20,7 @@ import {
   teosToken,
   terc20,
   terc721,
+  tpolygonErc20,
   tronToken,
   tsolToken,
   tacaToken,
@@ -1715,6 +1716,21 @@ export const coins = CoinMap.fromCoins([
   acaToken('aca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
   tacaToken('taca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
   tacaToken('taca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
+  // testnet polygon tokens
+  tpolygonErc20(
+    'DERC20',
+    'Polygon Test ERC20',
+    18,
+    '0xfe4f5145f6e09952a5ba9e956ed0c25e3fa4c7f1',
+    UnderlyingAsset.DERC20
+  ),
+  tpolygonErc20(
+    'TESTWMATIC',
+    'Polygon Test WMATIC',
+    18,
+    '0x9c3c9283d3e44854697cd22d3faa240cfb032889',
+    UnderlyingAsset.TESTWMATIC
+  ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
   fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),
