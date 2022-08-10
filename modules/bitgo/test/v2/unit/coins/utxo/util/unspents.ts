@@ -5,8 +5,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent = utxolib.bitgo.Unspent;
-type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type ChainCode = utxolib.bitgo.ChainCode;
 
 import { getSeed } from '@bitgo/sdk-test';
@@ -40,11 +40,11 @@ function mockOutputIdForAddress(address: string) {
   return getSeed(address).toString('hex') + ':1';
 }
 
-export function mockWalletUnspent(
+export function mockWalletUnspent<TNumber extends number | bigint = number>(
   network: utxolib.Network,
   walletKeys: RootWalletKeys,
-  { id, chain = defaultChain, index = 0, value, address }: Partial<WalletUnspent>
-): WalletUnspent {
+  { id, chain = defaultChain, index = 0, value, address }: Partial<WalletUnspent<TNumber>>
+): WalletUnspent<TNumber> {
   if (value === undefined) {
     throw new Error(`unspent value must be set`);
   }
@@ -72,28 +72,31 @@ export function mockWalletUnspent(
   };
 }
 
-export function mockUnspentReplayProtection(network: utxolib.Network): Unspent {
+export function mockUnspentReplayProtection<TNumber extends number | bigint = number>(
+  network: utxolib.Network,
+  value: TNumber
+): Unspent<TNumber> {
   const addresses = getReplayProtectionAddresses(network);
   if (addresses.length) {
     const address = addresses[0];
     return {
       id: mockOutputIdForAddress(address),
       address,
-      value: 0.1,
+      value,
     };
   }
   throw new Error(`${utxolib.getNetworkName(network)} has no replay protection unspetns`);
 }
 
-export function mockUnspent(
+export function mockUnspent<TNumber extends number | bigint = number>(
   network: utxolib.Network,
   walletKeys: RootWalletKeys,
   chain: ChainCode | InputScriptType,
   index: number,
-  value: number
-): Unspent {
+  value: TNumber
+): Unspent<TNumber> {
   if (chain === 'replayProtection') {
-    return mockUnspentReplayProtection(network);
+    return mockUnspentReplayProtection(network, (typeof value === 'bigint' ? BigInt(1000) : 1000) as TNumber);
   } else {
     return mockWalletUnspent(network, walletKeys, { chain: getInternalChainCode(chain), value, index });
   }

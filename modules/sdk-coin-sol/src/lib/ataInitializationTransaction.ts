@@ -32,17 +32,16 @@ export class AtaInitializationTransaction extends Transaction {
     const outputs: Entry[] = [];
     const inputs: Entry[] = [];
     const instructionParams = instructionParamsFactory(this.type, this._solTransaction.instructions);
-
     for (const instruction of instructionParams) {
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
-        const token = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
+        const token = getSolTokenFromAddress(instruction.params.mintAddress!, this._coinConfig.network);
         if (!token) {
           throw new NotSupported(
             'Invalid transaction, token mint address not supported: ' + instruction.params.mintAddress
           );
         }
         inputs.push({
-          address: instruction.params.ownerAddress,
+          address: instruction.params.payerAddress,
           value: this.tokenAccountRentExemptAmount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
           coin: this._coinConfig.name,
         });

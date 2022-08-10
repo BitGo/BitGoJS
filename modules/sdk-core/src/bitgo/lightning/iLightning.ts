@@ -1,9 +1,9 @@
 import * as t from 'io-ts';
 
 export interface CreateInvoiceParams {
-  amount: number;
+  value: number;
   memo?: string;
-  expiration?: number;
+  expiry?: number;
 }
 
 export interface LightningWithdrawalParams {
@@ -126,7 +126,7 @@ export const GetBalanceResponse = t.strict(
 export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 
 export interface ILightning {
-  createInvoice(params?: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
+  createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
   createDepositAddress(): Promise<CreateDepositAddressResponse>;
   payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse>;
   getBalance(): Promise<GetBalanceResponse>;

@@ -1,7 +1,7 @@
-import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, SolCoin } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { getAssociatedTokenAccountAddress, isValidAmount, validateAddress } from './utils';
+import { getAssociatedTokenAccountAddress, getSolTokenFromTokenName, isValidAmount, validateAddress } from './utils';
 import { InstructionBuilderTypes } from './constants';
 import { TokenTransfer } from './iface';
 
@@ -56,7 +56,6 @@ export class TokenTransferBuilder extends TransactionBuilder {
     }
 
     this._sendParams.push({ address, amount, tokenName: tokenName });
-
     return this;
   }
 
@@ -65,7 +64,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
     assert(this._sender, 'Sender must be set before building the transaction');
     this._instructionsData = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {
-        const coin = coins.get(sendParams.tokenName);
+        const coin = getSolTokenFromTokenName(sendParams.tokenName!);
         assert(coin instanceof SolCoin);
         const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
         return {
@@ -74,7 +73,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
             fromAddress: this._sender,
             toAddress: sendParams.address,
             amount: sendParams.amount,
-            tokenName: sendParams.tokenName,
+            tokenName: coin?.name,
             sourceAddress: sourceAddress,
           },
         };

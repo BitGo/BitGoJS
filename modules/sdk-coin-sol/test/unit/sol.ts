@@ -1025,6 +1025,74 @@ describe('SOL:', function () {
         durableNonce: undefined,
       });
     });
+
+    it('should explain create multi ATA transaction', async function () {
+      const recipients = [
+        {
+          ownerAddress: wallet.pub,
+          tokenName: 'tsol:usdc',
+        },
+        {
+          ownerAddress: durableNonce.walletNonceAddress,
+          tokenName: 'tsol:ray',
+        },
+      ];
+      const rentExemptAmount = '3000000';
+      const tx = await factory
+        .getAtaInitializationBuilder()
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .enableToken(recipients[0])
+        .enableToken(recipients[1])
+        .rentExemptAmount(rentExemptAmount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: txToBroadcastFormat,
+        feeInfo: {
+          fee: '5000',
+        },
+        tokenAccountRentExemptAmount: rentExemptAmount,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'AssociatedTokenAccountInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '6000000',
+        outputs: [
+          {
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
+            amount: rentExemptAmount,
+          },
+          {
+            address: '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf',
+            amount: rentExemptAmount,
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
   });
 
   describe('Keypair:', () => {

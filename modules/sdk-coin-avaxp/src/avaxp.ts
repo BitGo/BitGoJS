@@ -4,7 +4,6 @@ import {
   BitGoBase,
   KeyPair,
   VerifyAddressOptions,
-  VerifyTransactionOptions,
   SignedTransaction,
   ParseTransactionOptions,
   MethodNotImplementedError,
@@ -12,13 +11,18 @@ import {
   InvalidTransactionError,
   FeeEstimateOptions,
   SigningError,
+  TransactionType,
   InvalidAddressError,
   UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
-import { AvaxpSignTransactionOptions, TransactionFee, ExplainTransactionOptions } from './iface';
+import {
+  AvaxpSignTransactionOptions,
+  TransactionFee,
+  ExplainTransactionOptions,
+  AvaxpVerifyTransactionOptions,
+} from './iface';
 import _ from 'lodash';
-import { BN } from 'avalanche';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -54,33 +58,44 @@ export class AvaxP extends BaseCoin {
     return true;
   }
 
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    let totalAmount = new BN(0);
-    const coinConfig = coins.get(this.getChain());
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const rawTx = txPrebuild.txHex;
-    if (!rawTx) {
+  async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
+    const txHex = params.txPrebuild && params.txPrebuild.txHex;
+    if (!txHex) {
       throw new Error('missing required tx prebuild property txHex');
     }
-    const transactionBuilder = new AvaxpLib.TransactionBuilderFactory(coinConfig).from(rawTx);
-    const transaction = await transactionBuilder.build();
-    const explainedTx = transaction.explainTransaction();
+    let tx;
+    try {
+      const txBuilder = this.getBuilder().from(txHex);
+      tx = await txBuilder.build();
+    } catch (error) {
+      throw new Error('Invalid transaction');
+    }
+    const explainedTx = tx.explainTransaction();
 
-    if (txParams.recipients !== undefined) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
-      const filteredOutputs = explainedTx.outputs.map((output: { address: string; amount: string; memo: string }) =>
-        _.pick(output, ['address', 'amount'])
-      );
+    const { type, stakingOptions, memo } = params.txParams;
+    if (!type || explainedTx.type !== TransactionType[type]) {
+      throw new Error('Tx type does not match with expected txParams type');
+    }
+    if (memo && explainedTx.memo !== memo.value) {
+      throw new Error('Tx memo does not match with expected txParams memo');
+    }
+    switch (explainedTx.type) {
+      case TransactionType.addDelegator:
+      case TransactionType.addValidator:
+        if (!params.txParams.recipients || params.txParams.recipients.length === 0) {
+          const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
+          const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
 
-      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
-        throw new Error('Tx outputs does not match with expected txParams recipients');
-      }
-      for (const recipients of txParams.recipients) {
-        totalAmount = totalAmount.add(new BN(recipients.amount));
-      }
-      if (!totalAmount.eq(new BN(explainedTx.outputAmount))) {
-        throw new Error('Tx total amount does not match with expected total amount field');
-      }
+          if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+            throw new Error('Tx outputs does not match with expected txParams');
+          }
+          if (stakingOptions.amount !== explainedTx.outputAmount) {
+            throw new Error('Tx total amount does not match with expected total amount field');
+          }
+        }
+        break;
+      default:
+        throw new Error('Tx type is not supported yet');
     }
     return true;
   }

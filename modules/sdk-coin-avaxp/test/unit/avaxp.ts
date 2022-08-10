@@ -28,12 +28,20 @@ describe('Avaxp', function () {
   };
 
   const txParams = {
-    recipients: [
-      {
-        address: testData.ADDVALIDATOR_SAMPLES.nodeID,
-        amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
-      },
-    ],
+    recipients: [],
+    type: 'addValidator',
+    stakingOptions: {
+      startTime: testData.ADDVALIDATOR_SAMPLES.startTime,
+      endTime: testData.ADDVALIDATOR_SAMPLES.endTime,
+      nodeID: testData.ADDVALIDATOR_SAMPLES.nodeID,
+      amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
+      delegationFeeRate: testData.ADDVALIDATOR_SAMPLES.delegationFee,
+    },
+    locktime: 0,
+    memo: {
+      value: testData.ADDVALIDATOR_SAMPLES.memo,
+      type: 'text',
+    },
   };
 
   before(function () {
@@ -295,13 +303,7 @@ describe('Avaxp', function () {
     });
   });
 
-  describe('Verify Transaction', () => {
-    it('should succeed to verify unsigned transaction', async () => {
-      const txPrebuild = newTxPrebuild();
-      const txParams = newTxParams();
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
-      isTransactionVerified.should.equal(true);
-    });
+  describe('verify transaction', function () {
     it('should succeed to verify signed transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
@@ -311,27 +313,24 @@ describe('Avaxp', function () {
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
       isTransactionVerified.should.equal(true);
     });
-    it('should fail verify transactions when have different recipients', async () => {
-      const txPrebuild = newTxPrebuild();
-      const txParams = {
-        recipients: [
-          {
-            address: 'NodeID-EZ38CcWHoSyoEfAkDN9zaieJ5Yq64Yepy',
-            amount: testData.ADDVALIDATOR_SAMPLES.minValidatorStake,
-          },
-        ],
+
+    it('should succeed to verify half signed transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
+        txInfo: {},
       };
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-    it('should verify when input `recipients` is absent', async function () {
       const txParams = newTxParams();
-      txParams.recipients = undefined;
-      const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
-      validTransaction.should.equal(true);
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
     });
+
+    it('should succeed to verify unsigned transaction', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should succeed to verify transactions when recipients has extra data', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
@@ -339,6 +338,76 @@ describe('Avaxp', function () {
 
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    it('should fail verify transactions when have different type', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.type = 'addDelegator';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx type does not match with expected txParams type');
+    });
+
+    it('should fail verify transactions when have different nodeId', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.nodeID = 'NodeID-MdteS9U987PY7iwA5Pcz3sKVprJAbAvE7';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+    it('should fail verify when input `nodeId` is absent', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.stakingOptions.nodeID = undefined;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+
+    it('should fail verify transactions when have different amount', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = '2000000000';
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+    it('should fail verify transactions when amount is number', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = 1000000000;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
+    });
+
+    it('should fail verify transactions when amount is absent', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txParams.stakingOptions.amount = undefined;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams');
     });
   });
 
