@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.6...@bitgo/sdk-coin-sol@2.0.0-rc.7) (2022-08-10)
+
+
+### Features
+
+* **sdk-coin-sol:** sol token multi ata init ([736318f](https://github.com/BitGo/BitGoJS/commit/736318fff36f074fa841b97f3bc0c8cd95fae001))
+
+
+
+
+
 # [2.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.3...@bitgo/sdk-coin-sol@2.0.0-rc.4) (2022-08-02)
 
 

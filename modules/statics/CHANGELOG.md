@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.4...@bitgo/statics@8.0.0-rc.5) (2022-08-10)
+
+
+### Features
+
+* add acala token config ([dd4739f](https://github.com/BitGo/BitGoJS/commit/dd4739f94ebeb199069a63712e4e9f83bba61907))
+* **statics:** add ERC20 tokens ([7d800f0](https://github.com/BitGo/BitGoJS/commit/7d800f0fe6e7a5da6e8e71030f5584e7df2965d5))
+* **statics:** adding tokens for trading ([1241a66](https://github.com/BitGo/BitGoJS/commit/1241a66a9cc280399ac8f28a5bb840c52bb0009f))
+
+
+### BREAKING CHANGES
+
+* **statics:** modfiy symbol 'seth-h' to 'Staked ETH Harbour' and ofcholo to ocfhot
+BG-53319
+
+
+
+
+
 # [8.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.1...@bitgo/statics@8.0.0-rc.2) (2022-08-02)
 
 

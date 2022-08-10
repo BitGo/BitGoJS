@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.8](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.7...bitgo@14.3.0-rc.8) (2022-08-10)
+
+
+### Features
+
+* **abstract-utxo:** add support for bigints from new utxo-lib ([8e5bbe5](https://github.com/BitGo/BitGoJS/commit/8e5bbe5e158254d34abb87f6d000e5afd9bb6b9d))
+* add AcaToken in sdk-coin-aca ([df0b9ca](https://github.com/BitGo/BitGoJS/commit/df0b9caf5cf4163b6b9a1f22f757e416d6721fba))
+* **sdk-core:** add createDepositAddress to lightning ([e7056dc](https://github.com/BitGo/BitGoJS/commit/e7056dc48448d69328d29bd223c179eb6486a40e))
+* **sdk-core:** add createInvoice to lightning ([293a5d6](https://github.com/BitGo/BitGoJS/commit/293a5d6badd73def299b4f8420bc3380bb862cb2))
+
+
+
+
+
 # [14.3.0-rc.5](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.4...bitgo@14.3.0-rc.5) (2022-08-02)
 
 **Note:** Version bump only for package bitgo
