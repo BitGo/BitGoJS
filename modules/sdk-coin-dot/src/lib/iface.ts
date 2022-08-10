@@ -1,6 +1,7 @@
 import { TransactionType, TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 import { PolkadotSpecNameType } from '@bitgo/statics';
-import { BaseTxInfo, TypeRegistry, DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
+import { BaseTxInfo, DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
+import { TypeRegistry } from '@polkadot/types';
 
 export { HexString } from '@polkadot/util/types';
 

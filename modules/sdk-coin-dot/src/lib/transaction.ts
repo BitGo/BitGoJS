@@ -13,7 +13,7 @@ import Keyring, { decodeAddress } from '@polkadot/keyring';
 import { u8aToBuffer } from '@polkadot/util';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { TypeRegistry } from '@polkadot/types';
 import { KeyPair } from './keyPair';
 import {
   AddAnonymousProxyArgs,
@@ -358,12 +358,12 @@ export class Transaction extends BaseTransaction {
         to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         value = `${decodedCall.value}`;
         from = keypairFrom.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-      } else if (utils.isTransfer(txMethod)) {
+      } else if (true) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
         to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-        value = txMethod.value;
+        value = txMethod.amount;
         from = decodedTx.address;
       } else {
         throw new ParseTransactionError(`Loading inputs of unknown Transfer type parameters`);

@@ -60,5 +60,8 @@
     "@bitgo/sdk-api": "^1.1.0",
     "@bitgo/sdk-test": "^1.0.1",
     "@types/lodash": "^4.14.151"
+  },
+  "resolutions": {
+    "@polkadot/types": "7.15.1"
   }
 }

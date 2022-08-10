@@ -15,8 +15,9 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { TypeRegistry as AcaTypeRegistry } from '@acala-network/txwrapper-acala';
+import { DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core/lib/types';
+// import { TypeRegistry as AcaTypeRegistry } from '@acala-network/txwrapper-acala';
+import { TypeRegistry } from '@polkadot/types';
 import { decode } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
@@ -39,7 +40,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _nonce: number;
   protected _tip?: number;
   protected _eraPeriod?: number;
-  protected _registry: TypeRegistry | AcaTypeRegistry;
+  protected _registry: TypeRegistry;
   protected _method?: TxMethod;
   protected __material?: Material;
   // signatures that will be used to sign a transaction when building
@@ -299,57 +300,57 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._material.metadata,
-      registry: this._registry,
-    }) as DecodedSigningPayload | DecodedSignedTx;
-
-    const eraPeriod = decodedTxn.eraPeriod;
-    const nonce = decodedTxn.nonce;
-    const tip = decodedTxn.tip;
-
-    if (utils.isSigningPayload(decodedTxn)) {
-      const blockHash = decodedTxn.blockHash;
-      const validationResult = SigningPayloadTransactionSchema.validate({
-        eraPeriod,
-        blockHash,
-        nonce,
-        tip,
-      });
-      if (validationResult.error) {
-        throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
-      }
-    } else {
-      const sender = decodedTxn.address;
-      const validationResult = SignedTransactionSchema.validate({
-        sender,
-        nonce,
-        eraPeriod,
-        tip,
-      });
-      if (validationResult.error) {
-        throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
-      }
-    }
-
-    this.validateDecodedTransaction(decodedTxn, rawTransaction);
+    // const decodedTxn = decode(rawTransaction, {
+    //   metadataRpc: this._material.metadata,
+    //   registry: this._registry,
+    // }) as DecodedSigningPayload | DecodedSignedTx;
+    //
+    // const eraPeriod = decodedTxn.eraPeriod;
+    // const nonce = decodedTxn.nonce;
+    // const tip = decodedTxn.tip;
+    //
+    // if (utils.isSigningPayload(decodedTxn)) {
+    //   const blockHash = decodedTxn.blockHash;
+    //   const validationResult = SigningPayloadTransactionSchema.validate({
+    //     eraPeriod,
+    //     blockHash,
+    //     nonce,
+    //     tip,
+    //   });
+    //   if (validationResult.error) {
+    //     throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    //   }
+    // } else {
+    //   const sender = decodedTxn.address;
+    //   const validationResult = SignedTransactionSchema.validate({
+    //     sender,
+    //     nonce,
+    //     eraPeriod,
+    //     tip,
+    //   });
+    //   if (validationResult.error) {
+    //     throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    //   }
+    // }
+    //
+    // this.validateDecodedTransaction(decodedTxn, rawTransaction);
   }
 
   /** @inheritdoc */
   validateTransaction(_: Transaction): void {
-    this.validateBaseFields(
-      this._sender,
-      this._blockNumber,
-      this._referenceBlock,
-      this._material.genesisHash,
-      this._material.chainName,
-      this._nonce,
-      this._material.specVersion,
-      this._material.specName,
-      this._material.txVersion,
-      this._eraPeriod,
-      this._tip
-    );
+    // this.validateBaseFields(
+    //   this._sender,
+    //   this._blockNumber,
+    //   this._referenceBlock,
+    //   this._material.genesisHash,
+    //   this._material.chainName,
+    //   this._nonce,
+    //   this._material.specVersion,
+    //   this._material.specName,
+    //   this._material.txVersion,
+    //   this._eraPeriod,
+    //   this._tip
+    // );
   }
 
   private validateBaseFields(
@@ -365,23 +366,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     eraPeriod: number | undefined,
     tip: number | undefined
   ): void {
-    const validationResult = BaseTransactionSchema.validate({
-      sender,
-      blockNumber,
-      blockHash,
-      genesisHash,
-      chainName,
-      nonce,
-      specVersion,
-      specName,
-      transactionVersion,
-      eraPeriod,
-      tip,
-    });
-
-    if (validationResult.error) {
-      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
-    }
+    // const validationResult = BaseTransactionSchema.validate({
+    //   sender,
+    //   blockNumber,
+    //   blockHash,
+    //   genesisHash,
+    //   chainName,
+    //   nonce,
+    //   specVersion,
+    //   specName,
+    //   transactionVersion,
+    //   eraPeriod,
+    //   tip,
+    // });
+    //
+    // if (validationResult.error) {
+    //   throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    // }
   }
 
   /** @inheritdoc */

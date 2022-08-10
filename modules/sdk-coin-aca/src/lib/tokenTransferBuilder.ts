@@ -1,4 +1,4 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, TransactionType } from "@bitgo/sdk-core";
 import { TransactionBuilder } from '@bitgo/sdk-coin-dot';
 import {
   DecodedSigningPayload,
@@ -6,11 +6,12 @@ import {
   UnsignedTransaction,
   TokenSymbol,
   methods,
-  TypeRegistry,
 } from '@acala-network/txwrapper-acala';
+// import { TypeRegistry } from '@polkadot/types';
 import { AcaCreateBaseTxInfo } from './iface';
+import BigNumber from "bignumber.js";
 
-export class tokenTransferBuilder extends TransactionBuilder {
+export class TokenTransferBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _to: string;
   protected _token: TokenSymbol;
@@ -23,7 +24,8 @@ export class tokenTransferBuilder extends TransactionBuilder {
    * @see https://polkadot.js.org/docs/substrate/extrinsics/#proxy
    */
   protected buildTransaction(): UnsignedTransaction {
-    const baseTxInfo = this.acaCreateBaseTxInfo();
+    // const baseTxInfo = this.acaCreateBaseTxInfo();
+    const baseTxInfo = this.createBaseTxInfo();
     const tokenTransferTx = methods.currencies.transfer(
       {
         amount: this._amount,
@@ -31,6 +33,8 @@ export class tokenTransferBuilder extends TransactionBuilder {
         dest: this._to,
       },
       baseTxInfo.baseTxInfo,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore sjupress this now
       baseTxInfo.options
     );
     return tokenTransferTx;
@@ -51,25 +55,33 @@ export class tokenTransferBuilder extends TransactionBuilder {
     // }
   }
 
-  protected acaCreateBaseTxInfo(): AcaCreateBaseTxInfo {
-    return {
-      baseTxInfo: {
-        address: this._sender,
-        blockHash: this._referenceBlock,
-        blockNumber: this._registry.createType('BlockNumber', this._blockNumber).toNumber(),
-        eraPeriod: this._eraPeriod,
-        genesisHash: this._material.genesisHash,
-        metadataRpc: this._material.metadata,
-        specVersion: this._material.specVersion,
-        transactionVersion: this._material.txVersion,
-        nonce: this._nonce,
-        tip: this._tip,
-      },
-      options: {
-        metadataRpc: this._material.metadata,
-        registry: (this._registry as TypeRegistry),
-        isImmortalEra: this._eraPeriod === 0,
-      },
-    };
+  /**
+   *
+   * The amount for transfer transaction.
+   *
+   * @param {string} amount
+   * @returns {TransferBuilder} This transfer builder.
+   *
+   * @see https://wiki.polkadot.network/docs/build-protocol-info
+   */
+  amount(amount: string): this {
+    this.validateValue(new BigNumber(amount));
+    this._amount = amount;
+    return this;
+  }
+
+  /**
+   *
+   * The destination address for transfer transaction.
+   *
+   * @param {string} dest
+   * @returns {TransferBuilder} This transfer builder.
+   *
+   * @see https://wiki.polkadot.network/docs/build-protocol-info
+   */
+  to({ address }: BaseAddress): this {
+    this.validateAddress({ address });
+    this._to = address;
+    return this;
   }
 }

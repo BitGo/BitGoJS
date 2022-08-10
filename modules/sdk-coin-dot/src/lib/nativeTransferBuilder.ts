@@ -117,29 +117,29 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction: string): void {
-    if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
-      const txMethod = decodedTxn.method.args as unknown as TransferArgs;
-      const amount = `${txMethod.value}`;
-      const to = txMethod.dest.id;
-      const validationResult = TransferTransactionSchema.validate({ amount, to });
-      if (validationResult.error) {
-        throw new InvalidTransactionError(`Transfer Transaction validation failed: ${validationResult.error.message}`);
-      }
-    } else if (decodedTxn.method?.name === MethodNames.Proxy) {
-      const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
-      const real = txMethod.real;
-      const forceProxyType = txMethod.forceProxyType;
-      const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: SingletonRegistry.getInstance(this._material),
-        metadataRpc: this._material.metadata,
-      });
-      const amount = `${decodedCall.value}`;
-      const to = decodedCall.dest.id;
-      const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, amount, to });
-      if (validationResult.error) {
-        throw new InvalidTransactionError(`Proxy Transaction validation failed: ${validationResult.error.message}`);
-      }
-    }
+    // if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
+    //   const txMethod = decodedTxn.method.args as unknown as TransferArgs;
+    //   const amount = `${txMethod.value}`;
+    //   const to = txMethod.dest.id;
+    //   const validationResult = TransferTransactionSchema.validate({ amount, to });
+    //   if (validationResult.error) {
+    //     throw new InvalidTransactionError(`Transfer Transaction validation failed: ${validationResult.error.message}`);
+    //   }
+    // } else if (decodedTxn.method?.name === MethodNames.Proxy) {
+    //   const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
+    //   const real = txMethod.real;
+    //   const forceProxyType = txMethod.forceProxyType;
+    //   const decodedCall = utils.decodeCallMethod(rawTransaction, {
+    //     registry: SingletonRegistry.getInstance(this._material),
+    //     metadataRpc: this._material.metadata,
+    //   });
+    //   const amount = `${decodedCall.value}`;
+    //   const to = decodedCall.dest.id;
+    //   const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, amount, to });
+    //   if (validationResult.error) {
+    //     throw new InvalidTransactionError(`Proxy Transaction validation failed: ${validationResult.error.message}`);
+    //   }
+    // }
   }
 
   /** @inheritdoc */

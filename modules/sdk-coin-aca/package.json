@@ -49,5 +49,8 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^1.1.0",
     "@bitgo/sdk-test": "^1.0.1"
+  },
+  "resolutions": {
+    "@polkadot/types": "7.15.1"
   }
 }
