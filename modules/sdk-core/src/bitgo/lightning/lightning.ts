@@ -12,15 +12,18 @@ import {
   DepositResponse,
 } from './iLightning';
 import { BitGoBase } from '../bitgoBase';
+import { IWallet } from '../wallet';
 import { decodeOrElse } from '../utils/decode';
 
 export class Lightning implements ILightning {
   private readonly bitgo: BitGoBase;
+  private readonly wallet: IWallet;
   private readonly url: string;
 
-  constructor(bitgo: BitGoBase, walletId: string) {
+  constructor(bitgo: BitGoBase, wallet: IWallet) {
     this.bitgo = bitgo;
-    this.url = this.bitgo.url(`/wallet/${walletId}/lightning`, 2);
+    this.wallet = wallet;
+    this.url = this.bitgo.url(`/wallet/${this.wallet.id()}/lightning`, 2);
   }
 
   public async createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse> {
@@ -52,8 +55,25 @@ export class Lightning implements ILightning {
     });
   }
 
-  public async withdraw(params?: LightningWithdrawalParams): Promise<WithdrawResponse> {
-    throw new Error('method not implemented');
+  public async withdraw(params: LightningWithdrawalParams): Promise<WithdrawResponse> {
+    const { value } = params;
+    let { destination, sequenceId } = params;
+
+    if (destination === undefined) {
+      destination = (await this.wallet.createAddress()).address;
+    }
+
+    if (sequenceId === undefined) {
+      sequenceId = `${Math.round(Math.random() * 1e10)}`;
+    }
+
+    const body = await this.bitgo
+      .post(this.url + '/withdrawal')
+      .send({ value, destination, sequenceId })
+      .result();
+    return decodeOrElse(WithdrawResponse.name, WithdrawResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 
   public async deposit(params?: LightningDepositParams): Promise<DepositResponse> {

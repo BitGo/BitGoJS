@@ -7,8 +7,8 @@ export interface CreateInvoiceParams {
 }
 
 export interface LightningWithdrawalParams {
-  amount: number;
-  address?: string;
+  value: number;
+  destination?: string;
   sequenceId?: string;
 }
 
@@ -130,6 +130,6 @@ export interface ILightning {
   createDepositAddress(): Promise<CreateDepositAddressResponse>;
   payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse>;
   getBalance(): Promise<GetBalanceResponse>;
-  withdraw(params?: LightningWithdrawalParams): Promise<WithdrawResponse>;
+  withdraw(params: LightningWithdrawalParams): Promise<WithdrawResponse>;
   deposit(params?: LightningDepositParams): Promise<DepositResponse>;
 }

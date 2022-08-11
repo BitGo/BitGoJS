@@ -2392,7 +2392,7 @@ export class Wallet implements IWallet {
       throw new Error(`Lightning not supported for ${this.coin()}`);
     }
 
-    return new Lightning(this.bitgo, this.id());
+    return new Lightning(this.bitgo, this);
   }
 
   /* MARK: TSS Helpers */
