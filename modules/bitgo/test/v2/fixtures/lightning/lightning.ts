@@ -44,4 +44,63 @@ export default {
     },
     status: 'unconfirmed',
   },
+
+  deposit: {
+    transfer: {
+      entries: [
+        {
+          address: '62cda48d41bc6ba5c37c6fe8-lightning',
+          wallet: '62cda48d41bc6ba5c37c6fe8cd0889f7',
+          value: 100000,
+          valueString: '100000',
+        },
+        {
+          address: '03511d864ff7ba88b21ab23eb30bbfd18b1188e1539a666951c4acf9c74e3b37fd',
+          value: 100000,
+          valueString: '100000',
+          isChange: false,
+          isPayGo: false,
+        },
+      ],
+      id: '62cda48e41bc6ba5c37c7062086a4ab1',
+      coin: 'tbtc',
+      wallet: '62cda48d41bc6ba5c37c6fe8cd0889f7',
+      walletType: 'hot',
+      txid: '2751d1e00ce102777e11f04cf976df9176ced18e8da482ba108eaccbe3a7ddf9',
+      height: 999999999,
+      heightId: '999999999-62cda48e41bc6ba5c37c7062086a4ab1',
+      date: '2022-07-12T16:42:54.373Z',
+      type: 'send',
+      value: 100000,
+      valueString: '100000',
+      baseValue: 100000,
+      baseValueString: '100000',
+      feeString: '23',
+      payGoFee: 0,
+      payGoFeeString: '0',
+      state: 'signed',
+      instant: false,
+      isReward: false,
+      isFee: false,
+      tags: ['62cda48d41bc6ba5c37c6fe8cd0889f7'],
+      history: [
+        {
+          date: '2022-07-12T16:42:54.372Z',
+          action: 'signed',
+        },
+        {
+          date: '2022-07-12T16:42:54.245Z',
+          user: '62cc2180b11c673400ba532239b1d206',
+          action: 'created',
+        },
+      ],
+      signedDate: '2022-07-12T16:42:54.372Z',
+      coinSpecific: {
+        lightning: true,
+      },
+      signedTime: '2022-07-12T16:42:54.372Z',
+      createdTime: '2022-07-12T16:42:54.245Z',
+    },
+    status: 'signed',
+  },
 };

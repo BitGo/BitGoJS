@@ -62,4 +62,10 @@ describe('lightning API requests', function () {
     assert.deepStrictEqual(res, fixtures.withdraw);
     scope.done();
   });
+
+  it('should deposit an amount from on-chain wallet to lightning wallet', async function () {
+    sinon.stub(wallet, 'send').resolves(fixtures.deposit);
+    const res = await wallet.lightning().deposit({ amount: 100000, address: 'fake_address' });
+    assert.deepStrictEqual(res, fixtures.deposit);
+  });
 });

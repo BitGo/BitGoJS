@@ -15,7 +15,6 @@ export interface LightningWithdrawalParams {
 export interface LightningDepositParams {
   amount: number;
   address?: string;
-  sequenceId?: string;
 }
 
 export interface PayInvoiceParams {
@@ -26,11 +25,15 @@ export interface PayInvoiceParams {
   feeLimit?: number;
 }
 
-export const WPTransferEntry = t.type(
+export const WPTransferEntry = t.partial(
   {
     wallet: t.string,
     address: t.string,
     value: t.number,
+    valueString: t.string,
+    isChange: t.boolean,
+    isPayGo: t.boolean,
+    token: t.string,
   },
   'WPTransferEntry'
 );
@@ -131,5 +134,5 @@ export interface ILightning {
   payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse>;
   getBalance(): Promise<GetBalanceResponse>;
   withdraw(params: LightningWithdrawalParams): Promise<WithdrawResponse>;
-  deposit(params?: LightningDepositParams): Promise<DepositResponse>;
+  deposit(params: LightningDepositParams): Promise<DepositResponse>;
 }
