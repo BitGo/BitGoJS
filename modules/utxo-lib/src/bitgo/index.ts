@@ -11,4 +11,3 @@ export * from './UtxoTransaction';
 export * from './UtxoTransactionBuilder';
 export * from './wallet';
 export * from './zcash';
-export * from './tnumber';

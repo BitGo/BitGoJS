@@ -5548,29 +5548,6 @@ bitcoin-ops@^1.3.0, bitcoin-ops@^1.4.0:
     varuint-bitcoin "^1.0.4"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@6.1.0-rc.4":
-  version "6.1.0-rc.4"
-  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-6.1.0-rc.4.tgz#318cd9de8b0f4c236cb20e2305d5ba33d118dd44"
-  integrity sha512-NybXcePLy3JWSkxgC1zv2im5oucfOdgwF+VyIR8aoRMxxmUGV8d3HBIKcUn6AzsgnCTywAQG2XwImxoV2skMUQ==
-  dependencies:
-    bech32 "^2.0.0"
-    bip174 "^2.0.1"
-    bip32 "^2.0.4"
-    bip66 "^1.1.0"
-    bitcoin-ops "^1.4.0"
-    bs58check "^2.0.0"
-    create-hash "^1.1.0"
-    create-hmac "^1.1.3"
-    elliptic "^6.5.4"
-    fastpriorityqueue "^0.7.1"
-    merkle-lib "^2.0.10"
-    pushdata-bitcoin "^1.0.1"
-    randombytes "^2.0.1"
-    tiny-secp256k1 "^1.1.6"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
-    wif "^2.0.1"
-
 bitcoinjs-message@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/bitcoinjs-message/-/bitcoinjs-message-2.2.0.tgz#8116ec7f447f9889e23030fc15c5286a6ae5503b"

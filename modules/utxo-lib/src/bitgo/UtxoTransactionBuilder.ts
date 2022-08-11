@@ -4,22 +4,19 @@ import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 
-export interface TxbSignArg<TNumber extends number | bigint = number> {
+export interface TxbSignArg {
   prevOutScriptType: string;
   vin: number;
   keyPair: bitcoinjs.ECPair.Signer;
   redeemScript?: Buffer;
   hashType?: number;
-  witnessValue?: TNumber;
+  witnessValue?: number;
   witnessScript?: Buffer;
   controlBlock?: Buffer;
 }
 
-export class UtxoTransactionBuilder<
-  TNumber extends number | bigint = number,
-  T extends UtxoTransaction<TNumber> = UtxoTransaction<TNumber>
-> extends TransactionBuilder<TNumber> {
-  constructor(network: Network, txb?: TransactionBuilder<TNumber>, prevOutputs?: TxOutput<TNumber>[]) {
+export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction> extends TransactionBuilder {
+  constructor(network: Network, txb?: TransactionBuilder, prevOutputs?: TxOutput[]) {
     super();
     this.network = network as bitcoinjs.Network;
 
@@ -41,20 +38,16 @@ export class UtxoTransactionBuilder<
     }
   }
 
-  createInitialTransaction(network: Network, tx?: Transaction<TNumber>): UtxoTransaction<TNumber> {
-    return new UtxoTransaction<TNumber>(network, tx);
+  createInitialTransaction(network: Network, tx?: Transaction): UtxoTransaction {
+    return new UtxoTransaction(network, tx);
   }
 
-  static fromTransaction<TNumber extends number | bigint = number>(
-    tx: UtxoTransaction<TNumber>,
+  static fromTransaction(
+    tx: UtxoTransaction,
     network?: bitcoinjs.Network,
-    prevOutputs?: TxOutput<TNumber>[]
-  ): UtxoTransactionBuilder<TNumber> {
-    return new UtxoTransactionBuilder<TNumber>(
-      tx.network,
-      TransactionBuilder.fromTransaction<TNumber>(tx),
-      prevOutputs
-    );
+    prevOutputs?: TxOutput[]
+  ): UtxoTransactionBuilder {
+    return new UtxoTransactionBuilder(tx.network, TransactionBuilder.fromTransaction(tx), prevOutputs);
   }
 
   get tx(): T {
@@ -70,11 +63,11 @@ export class UtxoTransactionBuilder<
   }
 
   sign(
-    signParams: number | TxbSignArg<TNumber>,
+    signParams: number | TxbSignArg,
     keyPair?: bitcoinjs.ECPair.Signer,
     redeemScript?: Buffer,
     hashType?: number,
-    witnessValue?: TNumber,
+    witnessValue?: number,
     witnessScript?: Buffer
   ): void {
     // Regular bitcoin p2sh-p2ms inputs do not include the input amount (value) in the signature and
@@ -84,7 +77,7 @@ export class UtxoTransactionBuilder<
     // on the transaction input object.
 
     if (typeof signParams === 'number') {
-      if (typeof witnessValue === 'number' || typeof witnessValue === 'bigint') {
+      if (typeof witnessValue === 'number') {
         (this.tx.ins[signParams] as any).value = witnessValue;
       }
 

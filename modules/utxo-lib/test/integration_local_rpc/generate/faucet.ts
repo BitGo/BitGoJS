@@ -38,7 +38,7 @@ async function getFaucetRpc(rpc: RpcClient): Promise<RpcClientWithWallet> {
   return faucetWallet;
 }
 
-export async function sendFromFaucet(rpc: RpcClient, address: string, amount: number | string): Promise<string> {
+export async function sendFromFaucet(rpc: RpcClient, address: string, amount: number): Promise<string> {
   const faucetWallet = await getFaucetRpc(rpc);
   return await faucetWallet.sendToAddress(address, amount);
 }
