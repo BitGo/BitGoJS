@@ -140,127 +140,83 @@ describe('Polygon', function () {
       owner_3: '4421ab25dd91e1a3180d03d57c323a7886dcc313d3b3a4b4256a5791572bf597',
     };
 
-    const userKeychain = {
-      prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
-      pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',
-      rawPub: '023636e68b7b204573abda2616aff6b584910dece2543f1cc6d842caac7d74974b',
-      rawPrv: '7438a50010ce7b1dfd86e68046cc78ba1ebd242d6d85d9904d3fcc08734bc172',
+    const account_2 = {
+      address: '0xeeaf0F05f37891ab4a21208B105A0687d12c5aF7',
+      owner_1: '4ee089aceabf3ddbf748db79b1066c33b7d3ea1ab3eb7e325121bba2bff2f5ca',
+      owner_2: '5ca116d25aec5f765465432cc421ff25ef9ffdc330b10bb3d9ad61e3baad88d7',
+      owner_3: '1fae946cc84af8bd74d610a88537e24e19c3349d478d86fc5bb59ba4c88fb9cc',
     };
 
     it('should sign an unsigned test tx', async function () {
-      const halfSignedTransaction = await basecoin.signTransaction({
+      const builder = getBuilder('tpolygon') as TransactionBuilder;
+      builder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+      });
+      builder.counter(1);
+      builder.type(TransactionType.Send);
+      builder.contract(account_1.address);
+      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+
+      const unsignedTx = await builder.build();
+      const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
+
+      const halfSignedRawTx = await basecoin.signTransaction({
         txPrebuild: {
-          isBatch: false,
-          recipients: [
-            {
-              amount: '1',
-              address: account_1.address,
-            },
-          ],
-          expireTime: 1627949214,
-          contractSequenceId: 1,
-          gasLimit: 7000000,
-          gasPrice: 280000000000,
-          hopTransaction: undefined,
-          backupKeyNonce: undefined,
-          sequenceId: undefined,
-          nextContractSequenceId: 0,
+          txHex: unsignedTxForBroadcasting,
         },
-        prv: userKeychain.prv,
+        prv: account_1.owner_2,
       });
 
-      halfSignedTransaction.halfSigned.recipients.length.should.equals(1);
-      halfSignedTransaction.halfSigned.recipients[0].address
-        .toLowerCase()
-        .should.equals(account_1.address.toLowerCase());
-      halfSignedTransaction.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      builder.transfer().key(account_1.owner_2);
+      const halfSignedTx = await builder.build();
+      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
+
+      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
+      halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
+      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
+      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
     });
 
-    it('should sign a transaction with EIP1559 fee params', async function () {
-      const halfSignedTransaction = await basecoin.signTransaction({
-        txPrebuild: {
-          eip1559: { maxPriorityFeePerGas: 10, maxFeePerGas: 10 },
-          isBatch: false,
-          recipients: [
-            {
-              amount: '1',
-              address: account_1.address,
-            },
-          ],
-          expireTime: 1627949214,
-          contractSequenceId: 12,
-          gasLimit: undefined,
-          gasPrice: undefined,
-          hopTransaction: undefined,
-          backupKeyNonce: undefined,
-          sequenceId: undefined,
-          nextContractSequenceId: 0,
+    it('should sign an unsigned test tx with eip1559', async function () {
+      const builder = getBuilder('tpolygon') as TransactionBuilder;
+      builder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+        eip1559: {
+          maxFeePerGas: '7593123',
+          maxPriorityFeePerGas: '150',
         },
-        prv: userKeychain.prv,
       });
+      builder.counter(1);
+      builder.type(TransactionType.Send);
+      builder.contract(account_1.address);
+      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
 
-      halfSignedTransaction.halfSigned.recipients.length.should.equals(1);
-      halfSignedTransaction.halfSigned.recipients[0].address
-        .toLowerCase()
-        .should.equals(account_1.address.toLowerCase());
-      halfSignedTransaction.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      const unsignedTx = await builder.build();
+      const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
 
-      halfSignedTransaction.halfSigned.eip1559.maxPriorityFeePerGas.should.equal(10);
-      halfSignedTransaction.halfSigned.eip1559.maxFeePerGas.should.equal(10);
-    });
-
-    it('should second sign a transaction', async function () {
-      const fullSignedTransaction = await basecoin.signTransaction({
+      const halfSignedRawTx = await basecoin.signTransaction({
         txPrebuild: {
-          halfSigned: {
-            eip1559: {
-              maxPriorityFeePerGas: '1499999999',
-              maxFeePerGas: '1500000015',
-            },
-            isBatch: false,
-            recipients: [
-              {
-                address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
-                amount: '10000000000000',
-                value: '0.00001 TPOLYGON',
-              },
-            ],
-            expireTime: 1659366867,
-            contractSequenceId: 5,
-            operationHash: '0xf41d88a06cfbd7010b679c5b94e9b251db13ca32de5152e98be61741644f27c4',
-            signature:
-              '0x797063743697aff08c1df39bed086160136dcf2a37808f951cdd0742208d16027e18954c5434dd94c487951815d10e76f4df402b2188955962bc3eb7310e2b931c',
-          },
+          txHex: unsignedTxForBroadcasting,
           eip1559: {
-            maxPriorityFeePerGas: '1499999999',
-            maxFeePerGas: '1500000015',
+            maxFeePerGas: '7593123',
+            maxPriorityFeePerGas: '150',
           },
-          isBatch: false,
-          recipients: [
-            {
-              address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
-              amount: '10000000000000',
-              value: '0.00001 TPOLYGON',
-            },
-          ],
-          expireTime: 1659366867,
-          contractSequenceId: 5,
-          gasLimit: 200000,
-          address: '0x3C287bb59B9926Bbc8DFC100b88bbE5a015d254E',
-          amount: '10000000000000',
-          isHalfSigned: true,
-          backupKeyNonce: 5,
-          coin: 'tpolygon',
-          walletContractAddress: '0x2f04b3504450dbf12a9289c4c8d2e8aa15901bde',
-          replayProtectionOptions: { chain: 80001, hardfork: 'london' },
         },
-        isLastSignature: true,
-        signingKeyNonce: 5,
-        prv: userKeychain.prv,
-        walletContractAddress: '0x2f04b3504450dbf12a9289c4c8d2e8aa15901bde',
+        prv: account_1.owner_2,
       });
 
-      should.exist(fullSignedTransaction.txHex);
+      builder.transfer().key(account_1.owner_2);
+      const halfSignedTx = await builder.build();
+      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
+
+      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
+      halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
+      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
+      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      halfSignedRawTx.halfSigned.eip1559.maxFeePerGas.should.equal('7593123');
+      halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
     });
   });
 
