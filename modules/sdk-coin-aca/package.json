@@ -43,7 +43,19 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.1.0",
     "@bitgo/statics": "^7.0.0",
-    "@bitgo/sdk-coin-dot": "^1.0.1"
+    "@acala-network/txwrapper-acala": "^0.4.0",
+    "@polkadot/keyring": "10.1.4",
+    "@polkadot/types": "7.15.1",
+    "@polkadot/util": "10.1.4",
+    "@polkadot/util-crypto": "10.1.4",
+    "@substrate/txwrapper-core": "3.1.7",
+    "@substrate/txwrapper-polkadot": "3.1.7",
+    "bignumber.js": "^9.0.0",
+    "bs58": "^4.0.1",
+    "hi-base32": "^0.5.1",
+    "joi": "^17.4.0",
+    "lodash": "^4.17.15",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.1.0",

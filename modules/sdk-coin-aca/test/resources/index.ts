@@ -33,3 +33,5 @@ export const accounts = {
     polkadotAddress: '13QgbfCNWka9Cz8BaYjzCiSYq8dA3fdfC8MCwwZ4GMh3AeYY',
   },
 };
+
+export { material } from './material';

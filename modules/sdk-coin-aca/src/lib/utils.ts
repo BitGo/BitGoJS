@@ -1,22 +1,25 @@
-import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
+import { BaseUtils, DotAddressFormat, DotAssetTypes, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
+import { AcalaNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { construct } from '@substrate/txwrapper-polkadot';
+import {
+  construct,
+  DecodedSignedTx,
+  DecodedSigningPayload,
+  TokenSymbol,
+  TypeRegistry,
+  UnsignedTransaction,
+} from '@acala-network/txwrapper-acala';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
-import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, Material, TransferArgs, TxMethod, TokenTransferArgs } from './iface';
 import { KeyPair } from '.';
 
-const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
 const coinToAddressMap = new Map<DotAssetTypes, DotAddressFormat>([
   ['aca', DotAddressFormat.acala],
@@ -59,7 +62,7 @@ export class Utils implements BaseUtils {
     // tss common pub is in base58 format and decodes to length of 32
     if (isBase58(pubKey, 32)) {
       const base58Decode = bs58.decode(pubKey);
-      pubKey = base58Decode.toString('hex');
+      pubKey = base58Decode.toString();
     }
 
     return isValidEd25519PublicKey(pubKey);
@@ -92,6 +95,16 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Returns whether or not it is a valid token
+   *
+   * @param {TokenSymbol} token - the token to be validated
+   * @returns {boolean} - the validation result
+   */
+  isValidToken(token: TokenSymbol): boolean {
+    return token === TokenSymbol.AUSD || token === TokenSymbol.LDOT;
+  }
+
+  /**
    * decodeSeed decodes a dot seed
    *
    * @param {string} seed - the seed to be validated.
@@ -112,47 +125,6 @@ export class Utils implements BaseUtils {
    */
   capitalizeFirstLetter(val: string): string {
     return val.charAt(0).toUpperCase() + val.slice(1);
-  }
-
-  /**
-   * Helper function to decode the internal method hex in case of a proxy transaction
-   *
-   * @param {string | UnsignedTransaction} tx
-   * @param { metadataRpc: string; registry: TypeRegistry } options
-   * @returns {TransferArgs}
-   */
-  decodeCallMethod(
-    tx: string | UnsignedTransaction,
-    options: { metadataRpc: string; registry: TypeRegistry }
-  ): TransferArgs {
-    const { registry } = options;
-    let methodCall: GenericCall | GenericExtrinsic;
-    if (typeof tx === 'string') {
-      try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: suppress error
-        const payload: GenericExtrinsicPayload = createTypeUnsafe(registry, 'ExtrinsicPayload', [
-          tx,
-          { version: EXTRINSIC_VERSION },
-        ]);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: suppress error
-        methodCall = createTypeUnsafe(registry, 'Call', [payload.method]);
-      } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: suppress error
-        methodCall = registry.createType('Extrinsic', hexToU8a(tx), {
-          isSigned: true,
-        });
-      }
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: suppress error
-      methodCall = registry.createType('Call', tx.method);
-    }
-    const method = methodCall.args[PROXY_METHOD_ARG];
-    const decodedArgs = method.toJSON() as unknown as ProxyCallArgs;
-    return decodedArgs.args;
   }
 
   /**
@@ -245,7 +217,7 @@ export class Utils implements BaseUtils {
   }
 
   getMaterial(coinConfig: Readonly<CoinConfig>): Material {
-    const networkConfig = coinConfig.network as DotNetwork;
+    const networkConfig = coinConfig.network as AcalaNetwork;
     const { specName, specVersion, chainName, txVersion, genesisHash } = networkConfig;
 
     return {
@@ -262,12 +234,16 @@ export class Utils implements BaseUtils {
     return (payload as DecodedSigningPayload).blockHash !== undefined;
   }
 
-  isProxyTransfer(arg: TxMethod['args']): arg is ProxyArgs {
-    return (arg as ProxyArgs).real !== undefined;
+  isTransfer(arg: TxMethod['args']): arg is TransferArgs {
+    return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).amount !== undefined;
   }
 
-  isTransfer(arg: TxMethod['args']): arg is TransferArgs {
-    return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
+  isTokenTransfer(arg: TxMethod['args']): arg is TransferArgs {
+    return (
+      (arg as TokenTransferArgs).dest?.id !== undefined &&
+      (arg as TokenTransferArgs).amount !== undefined &&
+      (arg as TokenTransferArgs).currencyId?.token !== undefined
+    );
   }
 
   /**
