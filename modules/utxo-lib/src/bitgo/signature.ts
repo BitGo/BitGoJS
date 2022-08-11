@@ -421,12 +421,12 @@ export type SignatureVerification = {
  * @param prevOutputs - must be set for p2tr transactions
  * @returns SignatureVerification[] - in order of parsed non-empty signatures
  */
-export function getSignatureVerifications<TNumber extends number | bigint>(
-  transaction: UtxoTransaction<TNumber>,
+export function getSignatureVerifications(
+  transaction: UtxoTransaction,
   inputIndex: number,
-  amount: TNumber,
+  amount: number,
   verificationSettings: VerificationSettings = {},
-  prevOutputs?: TxOutput<TNumber>[]
+  prevOutputs?: TxOutput[]
 ): SignatureVerification[] {
   /* istanbul ignore next */
   if (!transaction.ins) {
@@ -546,12 +546,12 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
  * @param verificationSettings - if publicKey is specified, returns true iff any signature is signed by publicKey.
  * @param prevOutputs - must be set for p2tr transactions
  */
-export function verifySignature<TNumber extends number | bigint>(
-  transaction: UtxoTransaction<TNumber>,
+export function verifySignature(
+  transaction: UtxoTransaction,
   inputIndex: number,
-  amount: TNumber,
+  amount: number,
   verificationSettings: VerificationSettings = {},
-  prevOutputs?: TxOutput<TNumber>[]
+  prevOutputs?: TxOutput[]
 ): boolean {
   const signatureVerifications = getSignatureVerifications(
     transaction,
@@ -593,10 +593,10 @@ function isSignatureByPublicKey(v: SignatureVerification, publicKey: Buffer): bo
  * @param publicKeys - public keys to check signatures for
  * @return array of booleans indicating a valid signature for every pubkey in _publicKeys_
  */
-export function verifySignatureWithPublicKeys<TNumber extends number | bigint>(
-  transaction: UtxoTransaction<TNumber>,
+export function verifySignatureWithPublicKeys(
+  transaction: UtxoTransaction,
   inputIndex: number,
-  prevOutputs: TxOutput<TNumber>[],
+  prevOutputs: TxOutput[],
   publicKeys: Buffer[]
 ): boolean[] {
   if (transaction.ins.length !== prevOutputs.length) {
@@ -622,20 +622,16 @@ export function verifySignatureWithPublicKeys<TNumber extends number | bigint>(
  * @param publicKey
  * @return true iff signature is valid
  */
-export function verifySignatureWithPublicKey<TNumber extends number | bigint>(
-  transaction: UtxoTransaction<TNumber>,
+export function verifySignatureWithPublicKey(
+  transaction: UtxoTransaction,
   inputIndex: number,
-  prevOutputs: TxOutput<TNumber>[],
+  prevOutputs: TxOutput[],
   publicKey: Buffer
 ): boolean {
   return verifySignatureWithPublicKeys(transaction, inputIndex, prevOutputs, [publicKey])[0];
 }
 
-export function signInputP2shP2pk<TNumber extends number | bigint>(
-  txBuilder: UtxoTransactionBuilder<TNumber>,
-  vin: number,
-  keyPair: bip32.BIP32Interface
-): void {
+export function signInputP2shP2pk(txBuilder: UtxoTransactionBuilder, vin: number, keyPair: bip32.BIP32Interface): void {
   const prevOutScriptType = 'p2sh-p2pk';
   const { redeemScript, witnessScript } = createOutputScriptP2shP2pk(keyPair.publicKey);
   keyPair.network = txBuilder.network;
@@ -651,14 +647,14 @@ export function signInputP2shP2pk<TNumber extends number | bigint>(
   });
 }
 
-export function signInput2Of3<TNumber extends number | bigint>(
-  txBuilder: UtxoTransactionBuilder<TNumber>,
+export function signInput2Of3(
+  txBuilder: UtxoTransactionBuilder,
   vin: number,
   scriptType: ScriptType2Of3,
   pubkeys: Triple<Buffer>,
   keyPair: bip32.BIP32Interface,
   cosigner: Buffer,
-  amount: TNumber
+  amount: number
 ): void {
   let controlBlock;
   let redeemScript;
