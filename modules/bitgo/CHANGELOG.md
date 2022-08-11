@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-hotfix.1](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-hotfix.0...bitgo@14.3.0-hotfix.1) (2022-08-11)
+
+
+### Bug Fixes
+
+* **bitgo:** pin utxo-lib to hotfix version ([a357dff](https://github.com/BitGo/BitGoJS/commit/a357dff39cd7b8dbad2af5f10c5703ef1c36f62c))
+
+
+
+
+
 # [14.3.0-hotfix.0](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.8...bitgo@14.3.0-hotfix.0) (2022-08-11)
 
 
