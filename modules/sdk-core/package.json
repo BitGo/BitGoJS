@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-core",
-  "version": "2.0.0-rc.2",
+  "version": "2.0.0-hotfix.0",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@bitgo/bls-dkg": "^1.1.0",
     "@bitgo/statics": "^8.0.0-rc.5",
-    "@bitgo/utxo-lib": "^3.0.0-rc.0",
+    "@bitgo/utxo-lib": "^3.0.0-hotfix.0",
     "@noble/secp256k1": "1.6.0",
     "@stablelib/hex": "^1.0.0",
     "big.js": "^3.1.3",

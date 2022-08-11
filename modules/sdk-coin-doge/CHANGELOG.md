@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-hotfix.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.1.0-rc.0...@bitgo/sdk-coin-doge@1.1.0-hotfix.0) (2022-08-11)
+
+
+### Reverts
+
+* Revert "feat(abstract-utxo): add support for bigints from new utxo-lib" ([3d452cf](https://github.com/BitGo/BitGoJS/commit/3d452cfed2a783cd8d5b9fe718b4ceca1d14e5a8))
+
+
+
+
+
 # [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.0.3-rc.5...@bitgo/sdk-coin-doge@1.1.0-rc.0) (2022-08-10)
 
 

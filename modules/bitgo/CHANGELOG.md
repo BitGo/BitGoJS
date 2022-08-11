@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-hotfix.0](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.8...bitgo@14.3.0-hotfix.0) (2022-08-11)
+
+
+### Reverts
+
+* Revert "feat(abstract-utxo): add support for bigints from new utxo-lib" ([3d452cf](https://github.com/BitGo/BitGoJS/commit/3d452cfed2a783cd8d5b9fe718b4ceca1d14e5a8))
+
+
+
+
+
 # [14.3.0-rc.8](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.7...bitgo@14.3.0-rc.8) (2022-08-10)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-hotfix.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.2...@bitgo/sdk-core@2.0.0-hotfix.0) (2022-08-11)
+
+
+### Reverts
+
+* Revert "feat(abstract-utxo): add support for bigints from new utxo-lib" ([3d452cf](https://github.com/BitGo/BitGoJS/commit/3d452cfed2a783cd8d5b9fe718b4ceca1d14e5a8))
+
+
+
+
+
 # [2.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.1...@bitgo/sdk-core@2.0.0-rc.2) (2022-08-10)
 
 
