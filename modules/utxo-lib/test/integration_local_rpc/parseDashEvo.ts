@@ -48,9 +48,7 @@ describe('Dash', function () {
 
   it(`Calculates correct sighash`, function () {
     const txsExtraPayload = txs
-      .map((transaction) =>
-        parseTransactionRoundTrip<number, DashTransaction>(Buffer.from(transaction.hex, 'hex'), network)
-      )
+      .map((transaction) => parseTransactionRoundTrip<DashTransaction>(Buffer.from(transaction.hex, 'hex'), network))
       .filter((tx) => tx.extraPayload && tx.extraPayload.length > 0);
     const txsNormalizedHashes = txsExtraPayload.map((tx) =>
       // https://github.com/bitcoin/bitcoin/pull/3656/files

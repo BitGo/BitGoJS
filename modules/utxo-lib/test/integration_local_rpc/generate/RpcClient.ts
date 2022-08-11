@@ -219,7 +219,7 @@ export class RpcClientWithWallet extends RpcClient {
     return this.exec('getnewaddress');
   }
 
-  async sendToAddress(address: string, amount: number | string): Promise<string> {
+  async sendToAddress(address: string, amount: number): Promise<string> {
     return this.exec('sendtoaddress', address, amount);
   }
 

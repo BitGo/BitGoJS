@@ -35,7 +35,7 @@ describe('Abstract UTXO Coin:', () => {
       migratedFrom: 'v1_wallet_base_address',
     });
 
-    const outputAmount = (0.01 * 1e8).toString();
+    const outputAmount = 0.01 * 1e8;
 
     async function runClassifyOutputsTest(outputAddress, verification, expectExternal, txParams: TransactionParams = {}) {
       sinon.stub(coin, 'explainTransaction').resolves({
@@ -64,10 +64,6 @@ describe('Abstract UTXO Coin:', () => {
         external: expectExternal,
       });
 
-      const isExplicit = txParams.recipients !== undefined && txParams.recipients.some(recipient => recipient.address === outputAddress);
-      should.equal(parsedTransaction.explicitExternalSpendAmount, isExplicit && expectExternal ? outputAmount : '0');
-      should.equal(parsedTransaction.implicitExternalSpendAmount, !isExplicit && expectExternal ? outputAmount : '0');
-
       (coin.explainTransaction as any).restore();
 
       if (!txParams.changeAddress) {
@@ -91,11 +87,6 @@ describe('Abstract UTXO Coin:', () => {
     it('should accept a custom change address', async function () {
       const changeAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
       return runClassifyOutputsTest(changeAddress, verification, false, { changeAddress, recipients: [] });
-    });
-
-    it('should classify outputs with external address in recipients as explicit', async function () {
-      const externalAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
-      return runClassifyOutputsTest(externalAddress, verification, true, { recipients: [{ address: externalAddress, amount: outputAmount }] });
     });
   });
 
@@ -466,40 +457,6 @@ describe('Abstract UTXO Coin:', () => {
       const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
       await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {
-          txHex: '00',
-        },
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.eventually.be.true();
-
-      coinMock.restore();
-      bitcoinMock.restore();
-    });
-
-    it('should work with bigint amounts', async () => {
-      // need a coin that uses bigint
-      const bigintCoin = bitgo.coin('tdoge') as AbstractUtxoCoin;
-
-      const coinMock = sinon.stub(bigintCoin, 'parseTransaction').resolves({
-        keychains: {},
-        keySignatures: {},
-        outputs: [],
-        missingOutputs: [],
-        explicitExternalOutputs: [{ address: 'external_address', amount: '10000' }],
-        implicitExternalOutputs: [{ address: 'external_address_2', amount: '15' }],
-        changeOutputs: [],
-        explicitExternalSpendAmount: BigInt(10000),
-        implicitExternalSpendAmount: BigInt(15),
-        needsCustomChangeKeySignatureVerification: false,
-      });
-
-      const bitcoinMock = sinon.stub(bigintCoin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
-
-      await bigintCoin.verifyTransaction({
         txParams: {
           walletPassphrase: passphrase,
         },

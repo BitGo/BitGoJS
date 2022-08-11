@@ -61,7 +61,7 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
   throw new Error(`no value for version ${version}`);
 }
 
-export class ZcashTransaction<TNumber extends number | bigint = number> extends UtxoTransaction<TNumber> {
+export class ZcashTransaction extends UtxoTransaction {
   static VERSION_JOINSPLITS_SUPPORT = 2;
   static VERSION_OVERWINTER = 3;
   static VERSION_SAPLING = 4;
@@ -78,7 +78,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   expiryHeight = 0;
   consensusBranchId: number;
 
-  constructor(public network: ZcashNetwork, tx?: ZcashTransaction<TNumber>) {
+  constructor(public network: ZcashNetwork, tx?: ZcashTransaction) {
     super(network, tx);
 
     let consensusBranchId;
@@ -94,19 +94,14 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     this.consensusBranchId = consensusBranchId ?? getDefaultConsensusBranchIdForVersion(network, this.version);
   }
 
-  static fromBuffer<TNumber extends number | bigint = number>(
-    buffer: Buffer,
-    __noStrict: boolean,
-    amountType: 'number' | 'bigint' = 'number',
-    network?: ZcashNetwork
-  ): ZcashTransaction<TNumber> {
+  static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
     /* istanbul ignore next */
     if (!network) {
       throw new Error(`must provide network`);
     }
 
     const bufferReader = new BufferReader(buffer);
-    const tx = new ZcashTransaction<TNumber>(network);
+    const tx = new ZcashTransaction(network);
     tx.version = bufferReader.readInt32();
 
     // Split the header into fOverwintered and nVersion
@@ -120,9 +115,9 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     }
 
     if (tx.version === 5) {
-      fromBufferV5(bufferReader, tx, amountType);
+      fromBufferV5(bufferReader, tx);
     } else {
-      fromBufferV4(bufferReader, tx, amountType);
+      fromBufferV4(bufferReader, tx);
     }
 
     if (__noStrict) return tx;
@@ -134,13 +129,8 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     return tx;
   }
 
-  static fromBufferWithVersion<TNumber extends number | bigint>(
-    buf: Buffer,
-    network: ZcashNetwork,
-    version?: number,
-    amountType: 'number' | 'bigint' = 'number'
-  ): ZcashTransaction<TNumber> {
-    const tx = ZcashTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
+  static fromBufferWithVersion(buf: Buffer, network: ZcashNetwork, version?: number): ZcashTransaction {
+    const tx = ZcashTransaction.fromBuffer(buf, false, network);
     if (version) {
       tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
     }
@@ -275,13 +265,9 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   hashForSignatureByNetwork(
     inIndex: number | undefined,
     prevOutScript: Buffer,
-    value: TNumber | undefined,
+    value: number,
     hashType: number
   ): Buffer {
-    if (value === undefined) {
-      throw new Error(`must provide value`);
-    }
-
     // https://github.com/zcash/zcash/blob/v4.5.1/src/script/interpreter.cpp#L1175
     if (this.version === 5) {
       return getSignatureDigest(this, inIndex, prevOutScript, value, hashType);
@@ -396,7 +382,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     return crypto.hash256(this.toBuffer());
   }
 
-  clone(): ZcashTransaction<TNumber> {
+  clone(): ZcashTransaction {
     return new ZcashTransaction(this.network, this);
   }
 }

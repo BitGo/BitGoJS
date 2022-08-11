@@ -3,7 +3,7 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+type Unspent = utxolib.bitgo.Unspent;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
 import * as debugLib from 'debug';
@@ -12,21 +12,18 @@ import { isReplayProtectionUnspent } from './replayProtection';
 
 const debug = debugLib('bitgo:v2:utxo');
 
-export class InputSigningError<TNumber extends number | bigint = number> extends Error {
-  static expectedWalletUnspent<TNumber extends number | bigint>(
-    inputIndex: number,
-    unspent: Unspent<TNumber>
-  ): InputSigningError<TNumber> {
+export class InputSigningError extends Error {
+  static expectedWalletUnspent(inputIndex: number, unspent: Unspent): InputSigningError {
     return new InputSigningError(inputIndex, unspent, `not a wallet unspent, not a replay protection unspent`);
   }
 
-  constructor(public inputIndex: number, public unspent: Unspent<TNumber>, public reason: Error | string) {
+  constructor(public inputIndex: number, public unspent: Unspent, public reason: Error | string) {
     super(`signing error at input ${inputIndex}: unspentId=${unspent.id}: ${reason}`);
   }
 }
 
-export class TransactionSigningError<TNumber extends number | bigint = number> extends Error {
-  constructor(signErrors: InputSigningError<TNumber>[], verifyError: InputSigningError<TNumber>[]) {
+export class TransactionSigningError extends Error {
+  constructor(signErrors: InputSigningError[], verifyError: InputSigningError[]) {
     super(
       `sign errors at inputs: [${signErrors.join(',')}], ` +
         `verify errors at inputs: [${verifyError.join(',')}], see log for details`
@@ -44,18 +41,18 @@ export class TransactionSigningError<TNumber extends number | bigint = number> e
  * @param walletSigner - signing parameters
  * @param isLastSignature - Returns full-signed transaction when true. Builds half-signed when false.
  */
-export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
-  transaction: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoTransactionBuilder<TNumber>,
-  unspents: Unspent<TNumber>[],
+export function signAndVerifyWalletTransaction(
+  transaction: utxolib.bitgo.UtxoTransaction | utxolib.bitgo.UtxoTransactionBuilder,
+  unspents: Unspent[],
   walletSigner: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
   { isLastSignature }: { isLastSignature: boolean }
-): utxolib.bitgo.UtxoTransaction<TNumber> {
+): utxolib.bitgo.UtxoTransaction {
   const network = transaction.network as utxolib.Network;
   const prevOutputs = unspents.map((u) => toOutput(u, network));
 
-  let txBuilder: utxolib.bitgo.UtxoTransactionBuilder<TNumber>;
+  let txBuilder: utxolib.bitgo.UtxoTransactionBuilder;
   if (transaction instanceof utxolib.bitgo.UtxoTransaction) {
-    txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction<TNumber>(transaction, prevOutputs);
+    txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, prevOutputs);
     if (transaction.ins.length !== unspents.length) {
       throw new Error(`transaction inputs must match unspents`);
     }
@@ -65,30 +62,30 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
     throw new Error(`must pass UtxoTransaction or UtxoTransactionBuilder`);
   }
 
-  const signErrors: InputSigningError<TNumber>[] = unspents
-    .map((unspent: Unspent<TNumber>, inputIndex: number) => {
-      if (isReplayProtectionUnspent<TNumber>(unspent, network)) {
+  const signErrors: InputSigningError[] = unspents
+    .map((unspent: Unspent, inputIndex: number) => {
+      if (isReplayProtectionUnspent(unspent, network)) {
         debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, unspents.length);
         return;
       }
-      if (!isWalletUnspent<TNumber>(unspent)) {
-        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, unspent);
+      if (!isWalletUnspent(unspent)) {
+        return InputSigningError.expectedWalletUnspent(inputIndex, unspent);
       }
       try {
-        signInputWithUnspent<TNumber>(txBuilder, inputIndex, unspent, walletSigner);
+        signInputWithUnspent(txBuilder, inputIndex, unspent, walletSigner);
         debug('Successfully signed input %d of %d', inputIndex + 1, unspents.length);
       } catch (e) {
-        return new InputSigningError<TNumber>(inputIndex, unspent, e);
+        return new InputSigningError(inputIndex, unspent, e);
       }
     })
-    .filter((e): e is InputSigningError<TNumber> => e !== undefined);
+    .filter((e): e is InputSigningError => e !== undefined);
 
   const signedTransaction = isLastSignature ? txBuilder.build() : txBuilder.buildIncomplete();
 
-  const verifyErrors: InputSigningError<TNumber>[] = signedTransaction.ins
+  const verifyErrors: InputSigningError[] = signedTransaction.ins
     .map((input, inputIndex) => {
-      const unspent = unspents[inputIndex] as Unspent<TNumber>;
-      if (isReplayProtectionUnspent<TNumber>(unspent, network)) {
+      const unspent = unspents[inputIndex] as Unspent;
+      if (isReplayProtectionUnspent(unspent, network)) {
         debug(
           'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
           inputIndex + 1,
@@ -96,22 +93,20 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
         );
         return;
       }
-      if (!isWalletUnspent<TNumber>(unspent)) {
-        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, unspent);
+      if (!isWalletUnspent(unspent)) {
+        return InputSigningError.expectedWalletUnspent(inputIndex, unspent);
       }
       try {
         const publicKey = walletSigner.deriveForChainAndIndex(unspent.chain, unspent.index).signer.publicKey;
-        if (
-          !utxolib.bitgo.verifySignatureWithPublicKey<TNumber>(signedTransaction, inputIndex, prevOutputs, publicKey)
-        ) {
+        if (!utxolib.bitgo.verifySignatureWithPublicKey(signedTransaction, inputIndex, prevOutputs, publicKey)) {
           return new InputSigningError(inputIndex, unspent, new Error(`invalid signature`));
         }
       } catch (e) {
         debug('Invalid signature');
-        return new InputSigningError<TNumber>(inputIndex, unspent, e);
+        return new InputSigningError(inputIndex, unspent, e);
       }
     })
-    .filter((e): e is InputSigningError<TNumber> => e !== undefined);
+    .filter((e): e is InputSigningError => e !== undefined);
 
   if (signErrors.length || verifyErrors.length) {
     throw new TransactionSigningError(signErrors, verifyErrors);
