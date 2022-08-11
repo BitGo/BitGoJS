@@ -34,7 +34,7 @@ export async function nockCreateTxRequest(params: { walletId: string, requestBod
     .reply(200, params.response);
 }
 
-export async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: unknown}): Promise<nock.Scope> {
+export async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: unknown, notPersist?: boolean}): Promise<nock.Scope> {
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
