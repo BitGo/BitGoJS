@@ -8,7 +8,6 @@ import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
-import BigNumber from 'bignumber.js';
 
 import { backupKeyRecovery, RecoverParams } from './recovery/backupKeyRecovery';
 import { CrossChainRecoverySigned, CrossChainRecoveryUnsigned, recoverCrossChain } from './recovery';
@@ -64,7 +63,7 @@ import { supportedCrossChainRecoveries } from './config';
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
   bitgo;
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+type Unspent = bitgo.Unspent;
 type RootWalletKeys = bitgo.RootWalletKeys;
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -78,7 +77,7 @@ export interface Output {
   needsCustomChangeKeySignatureVerification?: boolean;
 }
 
-export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
+export interface TransactionExplanation extends BaseTransactionExplanation<string, number> {
   locktime: number;
   outputs: Output[];
   changeOutputs: Output[];
@@ -94,24 +93,24 @@ export interface TransactionExplanation extends BaseTransactionExplanation<strin
   signatures: number;
 }
 
-export interface TransactionInfo<TNumber extends number | bigint = number> {
+export interface TransactionInfo {
   /** Maps txid to txhex. Required for offline signing. */
   txHexes?: Record<string, string>;
   changeAddresses?: string[];
-  unspents: Unspent<TNumber>[];
+  unspents: Unspent[];
 }
 
-export interface ExplainTransactionOptions<TNumber extends number | bigint = number> {
+export interface ExplainTransactionOptions {
   txHex: string;
-  txInfo?: TransactionInfo<TNumber>;
+  txInfo?: TransactionInfo;
   feeInfo?: string;
   pubs?: Triple<string>;
 }
 
 export type UtxoNetwork = utxolib.Network;
 
-export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
-  txInfo?: TransactionInfo<TNumber>;
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txInfo?: TransactionInfo;
   blockHeight?: number;
 }
 
@@ -120,15 +119,15 @@ export interface TransactionParams extends BaseTransactionParams {
   changeAddress?: string;
 }
 
-export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
+export interface ParseTransactionOptions extends BaseParseTransactionOptions {
   txParams: TransactionParams;
-  txPrebuild: TransactionPrebuild<TNumber>;
+  txPrebuild: TransactionPrebuild;
   wallet: IWallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
 }
 
-export interface ParsedTransaction<TNumber extends number | bigint = number> extends BaseParsedTransaction {
+export interface ParsedTransaction extends BaseParsedTransaction {
   keychains: {
     user?: Keychain;
     backup?: Keychain;
@@ -143,8 +142,8 @@ export interface ParsedTransaction<TNumber extends number | bigint = number> ext
   explicitExternalOutputs: Output[];
   implicitExternalOutputs: Output[];
   changeOutputs: Output[];
-  explicitExternalSpendAmount: TNumber;
-  implicitExternalSpendAmount: TNumber;
+  explicitExternalSpendAmount: number;
+  implicitExternalSpendAmount: number;
   needsCustomChangeKeySignatureVerification: boolean;
   customChange?: CustomChangeOptions;
 }
@@ -171,11 +170,11 @@ export interface AddressDetails {
   addressType?: string;
 }
 
-export interface SignTransactionOptions<TNumber extends number | bigint = number> extends BaseSignTransactionOptions {
+export interface SignTransactionOptions extends BaseSignTransactionOptions {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
     txHex: string;
-    txInfo: TransactionInfo<TNumber>;
+    txInfo: TransactionInfo;
   };
   /** xprv of user key or backup key */
   prv: string;
@@ -221,18 +220,16 @@ export interface VerifyUserPublicKeyOptions {
   txParams: TransactionParams;
 }
 
-export interface VerifyTransactionOptions<TNumber extends number | bigint = number>
-  extends BaseVerifyTransactionOptions {
-  txPrebuild: TransactionPrebuild<TNumber>;
+export interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
-  public readonly amountType: 'number' | 'bigint';
   private readonly _network: utxolib.Network;
 
-  protected constructor(bitgo: BitGoBase, network: utxolib.Network, amountType: 'number' | 'bigint' = 'number') {
+  protected constructor(bitgo: BitGoBase, network: utxolib.Network) {
     super(bitgo);
     if (!utxolib.isValidNetwork(network)) {
       throw new Error(
@@ -240,7 +237,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           '@bitgo/utxo-lib as this library when initializing an instance of this class'
       );
     }
-    this.amountType = amountType;
     this._network = network;
   }
 
@@ -370,13 +366,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Run custom coin logic after a transaction prebuild has been received from BitGo
    * @param prebuild
    */
-  async postProcessPrebuild<TNumber extends number | bigint>(
-    prebuild: TransactionPrebuild<TNumber>
-  ): Promise<TransactionPrebuild<TNumber>> {
+  async postProcessPrebuild(prebuild: TransactionPrebuild): Promise<TransactionPrebuild> {
     if (_.isUndefined(prebuild.txHex)) {
       throw new Error('missing required txPrebuild property txHex');
     }
-    const transaction = this.createTransactionFromHex<TNumber>(prebuild.txHex);
+    const transaction = this.createTransactionFromHex(prebuild.txHex);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
@@ -414,10 +408,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
   }
 
-  createTransactionFromHex<TNumber extends number | bigint = number>(
-    hex: string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> {
-    return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+  createTransactionFromHex(hex: string) {
+    return utxolib.bitgo.createTransactionFromHex(hex, this.network);
   }
 
   /**
@@ -425,9 +417,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params
    * @returns {*}
    */
-  async parseTransaction<TNumber extends number | bigint = number>(
-    params: ParseTransactionOptions<TNumber>
-  ): Promise<ParsedTransaction<TNumber>> {
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
     if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
@@ -464,7 +454,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing required txPrebuild property txHex');
     }
     // obtain all outputs
-    const explanation: TransactionExplanation = await this.explainTransaction<TNumber>({
+    const explanation: TransactionExplanation = await this.explainTransaction({
       txHex: txPrebuild.txHex,
       txInfo: txPrebuild.txInfo,
       pubs: keychainArray.map((k) => k.pub) as Triple<string>,
@@ -546,10 +536,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
 
     // this is the sum of all the originally explicitly specified non-wallet output values
-    const explicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-      explicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
-      this.amountType
-    );
+    const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
 
     /**
      * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
@@ -563,10 +550,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // make sure that all the extra addresses are change addresses
     // get all the additional external outputs the server added and calculate their values
     const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
-    const implicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-      implicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
-      this.amountType
-    );
+    const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
 
     return {
       keychains,
@@ -678,10 +662,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @return {boolean}
    * @protected
    */
-  protected verifyCustomChangeKeySignatures<TNumber extends number | bigint>(
-    tx: ParsedTransaction<TNumber>,
-    userKeychain: Keychain
-  ): boolean {
+  protected verifyCustomChangeKeySignatures(tx: ParsedTransaction, userKeychain: Keychain): boolean {
     if (!tx.customChange) {
       throw new Error('parsed transaction is missing required custom change verification data');
     }
@@ -737,12 +718,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.verification.addresses Address details to pass in for out-of-band verification
    * @returns {boolean}
    */
-  async verifyTransaction<TNumber extends number | bigint = number>(
-    params: VerifyTransactionOptions<TNumber>
-  ): Promise<boolean> {
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
     const disableNetworking = !!verification.disableNetworking;
-    const parsedTransaction: ParsedTransaction<TNumber> = await this.parseTransaction<TNumber>({
+    const parsedTransaction: ParsedTransaction = await this.parseTransaction({
       txParams,
       txPrebuild,
       wallet,
@@ -800,9 +779,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
 
     // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-    const payAsYouGoLimit = new BigNumber(this.getPayGoLimit(verification.allowPaygoOutput)).multipliedBy(
-      intendedExternalSpend.toString()
-    );
+    const payAsYouGoLimit = intendedExternalSpend * this.getPayGoLimit(verification.allowPaygoOutput);
 
     /*
     Some explanation for why we're doing what we're doing:
@@ -814,17 +791,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // make sure that all the extra addresses are change addresses
     // get all the additional external outputs the server added and calculate their values
-    const nonChangeAmount = new BigNumber(parsedTransaction.implicitExternalSpendAmount.toString());
+    const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
 
     debug(
       'Intended spend is %s, Non-change amount is %s, paygo limit is %s',
-      intendedExternalSpend.toString(),
-      nonChangeAmount.toString(),
-      payAsYouGoLimit.toString()
+      intendedExternalSpend,
+      nonChangeAmount,
+      payAsYouGoLimit
     );
 
     // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-    if (nonChangeAmount.gt(payAsYouGoLimit)) {
+    if (nonChangeAmount > payAsYouGoLimit) {
       // there are some addresses that are outside the scope of intended recipients that are not change addresses
       throw new Error('prebuild attempts to spend to unintended external recipients');
     }
@@ -833,14 +810,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (!txPrebuild.txHex) {
       throw new Error(`txPrebuild.txHex not set`);
     }
-    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+    const transaction = this.createTransactionFromHex(txPrebuild.txHex);
     const transactionCache = {};
     const inputs = await Promise.all(
       transaction.ins.map(async (currentInput) => {
         const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
         const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
         if (txHex) {
-          const localTx = this.createTransactionFromHex<TNumber>(txHex);
+          const localTx = this.createTransactionFromHex(txHex);
           if (localTx.getId() !== transactionId) {
             throw new Error('input transaction hex does not match id');
           }
@@ -849,7 +826,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           return {
             address,
             value: currentOutput.value,
-            valueString: currentOutput.value.toString(),
           };
         } else if (!transactionCache[transactionId]) {
           if (disableNetworking) {
@@ -865,12 +841,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       })
     );
 
-    // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field
-    const inputAmount = inputs.reduce(
-      (sum: bigint, i) => sum + BigInt(this.amountType === 'bigint' ? i.valueString : i.value),
-      BigInt(0)
-    );
-    const outputAmount = allOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0));
+    const inputAmount = _.sumBy(inputs, 'value');
+    const outputAmount = _.sumBy(allOutputs, 'amount');
     const fee = inputAmount - outputAmount;
 
     if (fee < 0) {
@@ -1061,9 +1033,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params - {@see SignTransactionOptions}
    * @returns {Promise<SignedTransaction | HalfSignedUtxoTransaction>}
    */
-  async signTransaction<TNumber extends number | bigint = number>(
-    params: SignTransactionOptions<TNumber>
-  ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
     const txPrebuild = params.txPrebuild;
     const userPrv = params.prv;
 
@@ -1073,7 +1043,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       throw new Error('missing txPrebuild parameter');
     }
-    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+    const transaction = this.createTransactionFromHex(txPrebuild.txHex);
 
     if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
       throw new Error('length of unspents array should equal to the number of transaction inputs');
@@ -1122,8 +1092,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param unspent
    * @returns {boolean}
    */
-  isBitGoTaintedUnspent<TNumber extends number | bigint>(unspent: Unspent<TNumber>): boolean {
-    return isReplayProtectionUnspent<TNumber>(unspent, this.network);
+  isBitGoTaintedUnspent(unspent: Unspent): boolean {
+    return isReplayProtectionUnspent(unspent, this.network);
   }
 
   /**
@@ -1160,9 +1130,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * change amounts, and transaction outputs.
    * @param params
    */
-  async explainTransaction<TNumber extends number | bigint = number>(
-    params: ExplainTransactionOptions<TNumber>
-  ): Promise<TransactionExplanation> {
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     const txHex = _.get(params, 'txHex');
     if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
@@ -1176,8 +1144,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     const id = transaction.getId();
-    let spendAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
-    let changeAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
+    let spendAmount = 0;
+    let changeAmount = 0;
     const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
@@ -1196,7 +1164,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         changeAmount += currentAmount;
         explanation.changeOutputs.push({
           address: currentAddress,
-          amount: currentAmount.toString(),
+          amount: currentAmount,
         });
         return;
       }
@@ -1204,11 +1172,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       spendAmount += currentAmount;
       explanation.outputs.push({
         address: currentAddress,
-        amount: currentAmount.toString(),
+        amount: currentAmount,
       });
     });
-    explanation.outputAmount = spendAmount.toString();
-    explanation.changeAmount = changeAmount.toString();
+    explanation.outputAmount = spendAmount;
+    explanation.changeAmount = changeAmount;
 
     // add fee info if available
     if (params.feeInfo) {
@@ -1221,7 +1189,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       explanation.displayOrder.push('locktime');
     }
 
-    const prevOutputs = params.txInfo?.unspents.map((u) => toOutput<TNumber>(u, this.network));
+    const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
     // if keys are provided, prepare the keys for input signature checking
     const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
@@ -1244,7 +1212,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        return verifySignatureWithUnspent<TNumber>(transaction, idx, unspents, walletKeys).filter((v) => v).length;
+        return verifySignatureWithUnspent(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
         // some other error occurred and we can't validate the signatures
         return 0;
