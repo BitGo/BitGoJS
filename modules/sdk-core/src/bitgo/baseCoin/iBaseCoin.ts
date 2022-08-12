@@ -328,6 +328,8 @@ export interface TokenEnablementConfig {
   supportsMultipleTokenEnablements: boolean;
 }
 
+export type MPCAlgorithm = 'ecdsa' | 'eddsa';
+
 export interface IBaseCoin {
   type: string;
   url(suffix: string): string;
@@ -376,6 +378,7 @@ export interface IBaseCoin {
   isValidAddress(address: string): boolean;
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction>;
   getSignablePayload(serializedTx: string): Promise<Buffer>;
+  getMPCAlgorithm(): MPCAlgorithm;
   // TODO - this only belongs in eth coins
   recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction>;
 }

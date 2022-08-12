@@ -20,6 +20,7 @@ export interface GenerateMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
+  walletVersion?: number;
 }
 
 export interface GenerateWalletOptions {

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, RequestTracer, TssUtils } from '../utils';
+import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils } from '../utils';
 import {
   AddKeychainOptions,
   ChangedKeychains,
@@ -201,6 +201,7 @@ export class Keychains implements IKeychains {
     if (params.reqId) {
       this.bitgo.setRequestTracer(params.reqId);
     }
+
     return await this.bitgo
       .post(this.baseCoin.url('/key'))
       .send({
@@ -284,7 +285,7 @@ export class Keychains implements IKeychains {
     let MpcUtils;
     switch (params.multisigType) {
       case 'tss':
-        MpcUtils = TssUtils;
+        MpcUtils = this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? ECDSAUtils.EcdsaUtils : EDDSAUtils.default;
         break;
       case 'blsdkg':
         MpcUtils = BlsUtils;

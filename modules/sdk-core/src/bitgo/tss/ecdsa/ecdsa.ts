@@ -267,10 +267,10 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare): Promise
   const nShare: NShare = {
     i: encryptedNShare.nShare.i,
     j: encryptedNShare.nShare.j,
-    y: encryptedNShare.nShare.publicShare.slice(0, 65),
+    y: encryptedNShare.nShare.publicShare.slice(0, 66),
     u: privateShare,
-    n: encryptedNShare.nShare.publicShare.slice(129),
-    chaincode: encryptedNShare.nShare.publicShare.slice(65, 129),
+    n: encryptedNShare.nShare.publicShare.slice(130),
+    chaincode: encryptedNShare.nShare.publicShare.slice(66, 130),
   };
 
   return nShare;

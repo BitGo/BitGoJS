@@ -224,6 +224,7 @@ export class Wallets implements IWallets {
         passphrase: passphrase!,
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise: params.enterprise,
+        walletVersion: params.walletVersion,
       });
     }
 
@@ -628,6 +629,7 @@ export class Wallets implements IWallets {
       isCold: false,
       multisigType: params.multisigType,
       enterprise: params.enterprise,
+      walletVersion: params.walletVersion,
     };
 
     // Create MPC Keychains

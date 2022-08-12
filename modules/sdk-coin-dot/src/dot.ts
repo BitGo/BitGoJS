@@ -13,6 +13,7 @@ import {
   UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Utils, TransactionBuilderFactory } from './lib';
@@ -91,6 +92,10 @@ export class Dot extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
   }
 
   allowsAccountConsolidations(): boolean {
