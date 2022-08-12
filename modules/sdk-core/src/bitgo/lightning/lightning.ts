@@ -41,8 +41,15 @@ export class Lightning implements ILightning {
     });
   }
 
-  public async payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse> {
-    throw new Error('method not implemented');
+  public async payInvoice(params: PayInvoiceParams): Promise<PayInvoiceResponse> {
+    const body = await this.bitgo
+      .post(this.url + '/payment')
+      .send(params)
+      .result();
+
+    return decodeOrElse(PayInvoiceResponse.name, PayInvoiceResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 
   public async getBalance(): Promise<GetBalanceResponse> {

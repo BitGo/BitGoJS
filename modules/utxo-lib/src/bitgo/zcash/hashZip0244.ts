@@ -10,10 +10,10 @@ const blake2b = require('@bitgo/blake2b');
 import { ZcashTransaction } from './ZcashTransaction';
 import { varSliceSize } from '../UtxoTransaction';
 
-type SignatureParams<TNumber extends number | bigint = number> = {
+type SignatureParams = {
   inIndex?: number;
   prevOutScript: Buffer;
-  value: TNumber;
+  value: number;
   hashType: number;
 };
 
@@ -29,7 +29,7 @@ export function getBlake2bHash(buffer: Buffer, personalization: string | Buffer)
   return blake2b(out.length, null, null, personalization).update(buffer).digest(out);
 }
 
-function getHeaderDigest<TNumber extends number | bigint>(tx: ZcashTransaction<TNumber>): Buffer {
+function getHeaderDigest(tx: ZcashTransaction): Buffer {
   // https://zips.z.cash/zip-0244#t-1-header-digest
   const mask = tx.overwintered ? 1 : 0;
   const writer = BufferWriter.withCapacity(4 * 5);
@@ -41,11 +41,7 @@ function getHeaderDigest<TNumber extends number | bigint>(tx: ZcashTransaction<T
   return getBlake2bHash(writer.end(), 'ZTxIdHeadersHash');
 }
 
-export function getPrevoutsDigest<TNumber extends number | bigint>(
-  ins: TxInput[],
-  tag = 'ZTxIdPrevoutHash',
-  sigParams?: SignatureParams<TNumber>
-): Buffer {
+export function getPrevoutsDigest(ins: TxInput[], tag = 'ZTxIdPrevoutHash', sigParams?: SignatureParams): Buffer {
   if (sigParams) {
     if (sigParams.hashType & Transaction.SIGHASH_ANYONECANPAY) {
       return getPrevoutsDigest([]);
@@ -60,11 +56,7 @@ export function getPrevoutsDigest<TNumber extends number | bigint>(
   return getBlake2bHash(bufferWriter.end(), tag);
 }
 
-export function getSequenceDigest<TNumber extends number | bigint>(
-  ins: TxInput[],
-  tag = 'ZTxIdSequencHash',
-  sigParams?: SignatureParams<TNumber>
-): Buffer {
+export function getSequenceDigest(ins: TxInput[], tag = 'ZTxIdSequencHash', sigParams?: SignatureParams): Buffer {
   // txid: https://zips.z.cash/zip-0244#t-2b-sequence-digest
   // sig: https://zips.z.cash/zip-0244#s-2b-sequence-sig-digest
   // https://github.com/zcash-hackworks/zcash-test-vectors/blob/dd8fdb/zip_0244.py#L263
@@ -88,11 +80,7 @@ export function getSequenceDigest<TNumber extends number | bigint>(
   return getBlake2bHash(bufferWriter.end(), tag);
 }
 
-export function getOutputsDigest<TNumber extends number | bigint>(
-  outs: TxOutput<TNumber>[],
-  tag = 'ZTxIdOutputsHash',
-  sigParams?: SignatureParams<TNumber>
-): Buffer {
+export function getOutputsDigest(outs: TxOutput[], tag = 'ZTxIdOutputsHash', sigParams?: SignatureParams): Buffer {
   // txid: https://zips.z.cash/zip-0244#t-2c-outputs-digest
   // sig: https://zips.z.cash/zip-0244#s-2c-outputs-sig-digest
   // https://github.com/zcash-hackworks/zcash-test-vectors/blob/dd8fdb/zip_0244.py#L275
@@ -132,7 +120,7 @@ export function getOutputsDigest<TNumber extends number | bigint>(
   return getBlake2bHash(bufferWriter.end(), tag);
 }
 
-function getTxinDigest<TNumber extends number | bigint>(input: TxInput, sigParams: SignatureParams<TNumber>) {
+function getTxinDigest(input: TxInput, sigParams: SignatureParams) {
   // https://zips.z.cash/zip-0244#s-2d-txin-sig-digest
   // https://github.com/zcash-hackworks/zcash-test-vectors/blob/dd8fdb/zip_0244.py#L291
   const writer = BufferWriter.withCapacity(
@@ -150,10 +138,7 @@ function getTxinDigest<TNumber extends number | bigint>(input: TxInput, sigParam
   return getBlake2bHash(writer.end(), 'Zcash___TxInHash');
 }
 
-function getTransparentDigest<TNumber extends number | bigint>(
-  tx: { ins: TxInput[]; outs: TxOutput<TNumber>[] },
-  sigParams?: SignatureParams<TNumber>
-): Buffer {
+function getTransparentDigest(tx: { ins: TxInput[]; outs: TxOutput[] }, sigParams?: SignatureParams): Buffer {
   // txid: https://zips.z.cash/zip-0244#t-2-transparent-digest
   // sig: https://zips.z.cash/zip-0244#s-2a-prevouts-sig-digest
   if (sigParams) {
@@ -181,12 +166,12 @@ function getTransparentDigest<TNumber extends number | bigint>(
   return getBlake2bHash(buffer, 'ZTxIdTranspaHash');
 }
 
-function getSaplingDigest<TNumber extends number | bigint>(tx: ZcashTransaction<TNumber>): Buffer {
+function getSaplingDigest(tx: ZcashTransaction): Buffer {
   // https://zips.z.cash/zip-0244#t-3-sapling-digest
   return getBlake2bHash(Buffer.of(), 'ZTxIdSaplingHash');
 }
 
-function getOrchardDigest<TNumber extends number | bigint>(tx: ZcashTransaction<TNumber>): Buffer {
+function getOrchardDigest(tx: ZcashTransaction): Buffer {
   // https://zips.z.cash/zip-0244#t-4-orchard-digest
   return getBlake2bHash(Buffer.of(), 'ZTxIdOrchardHash');
 }
@@ -195,10 +180,7 @@ function getOrchardDigest<TNumber extends number | bigint>(tx: ZcashTransaction<
  * @param tx
  * @param signatureParams - calculates txid when undefined
  */
-function getDigest<TNumber extends number | bigint>(
-  tx: ZcashTransaction<TNumber>,
-  signatureParams?: SignatureParams<TNumber>
-): Buffer {
+function getDigest(tx: ZcashTransaction, signatureParams?: SignatureParams): Buffer {
   // txid: https://zips.z.cash/zip-0244#id4
   // sig: https://zips.z.cash/zip-0244#id13
   const writer = BufferWriter.withCapacity(32 * 4);
@@ -214,16 +196,16 @@ function getDigest<TNumber extends number | bigint>(
   return getBlake2bHash(writer.end(), personalization.end());
 }
 
-export function getTxidDigest<TNumber extends number | bigint>(tx: ZcashTransaction<TNumber>): Buffer {
+export function getTxidDigest(tx: ZcashTransaction): Buffer {
   // https://zips.z.cash/zip-0244#id4
   return getDigest(tx);
 }
 
-export function getSignatureDigest<TNumber extends number | bigint>(
-  tx: ZcashTransaction<TNumber>,
+export function getSignatureDigest(
+  tx: ZcashTransaction,
   inIndex: number | undefined,
   prevOutScript: Buffer,
-  value: TNumber,
+  value: number,
   hashType: number
 ): Buffer {
   // https://zips.z.cash/zip-0244#id13

@@ -52,4 +52,11 @@ describe('lightning API requests', function () {
     assert.deepStrictEqual(res, fixtures.invoice);
     scope.done();
   });
+
+  it('should pay a lightning invoice', async function () {
+    const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/payment`).reply(200, fixtures.payment);
+    const res = await wallet.lightning().payInvoice({ invoice: 'fake_invoice' });
+    assert.deepStrictEqual(res, fixtures.payment);
+    scope.done();
+  });
 });

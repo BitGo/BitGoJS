@@ -26,11 +26,15 @@ export interface PayInvoiceParams {
   feeLimit?: number;
 }
 
-export const WPTransferEntry = t.type(
+export const WPTransferEntry = t.partial(
   {
     wallet: t.string,
     address: t.string,
     value: t.number,
+    valueString: t.string,
+    isChange: t.boolean,
+    isPayGo: t.boolean,
+    token: t.string,
   },
   'WPTransferEntry'
 );
@@ -128,7 +132,7 @@ export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 export interface ILightning {
   createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
   createDepositAddress(): Promise<CreateDepositAddressResponse>;
-  payInvoice(params?: PayInvoiceParams): Promise<PayInvoiceResponse>;
+  payInvoice(params: PayInvoiceParams): Promise<PayInvoiceResponse>;
   getBalance(): Promise<GetBalanceResponse>;
   withdraw(params?: LightningWithdrawalParams): Promise<WithdrawResponse>;
   deposit(params?: LightningDepositParams): Promise<DepositResponse>;
