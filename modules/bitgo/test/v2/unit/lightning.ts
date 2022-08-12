@@ -3,6 +3,7 @@ import { common, Wallet } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src/bitgo';
 import * as nock from 'nock';
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import fixtures from '../fixtures/lightning/lightning';
 
 describe('lightning API requests', function () {
@@ -57,6 +58,15 @@ describe('lightning API requests', function () {
     const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/payment`).reply(200, fixtures.payment);
     const res = await wallet.lightning().payInvoice({ invoice: 'fake_invoice' });
     assert.deepStrictEqual(res, fixtures.payment);
+    scope.done();
+  });
+  
+  it('should withdraw a value from lightning wallet to regular wallet', async function () {
+    const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/withdrawal`).reply(200, fixtures.withdraw
+    );
+    sinon.stub(wallet, 'createAddress').resolves({ address: 'fake_address' });
+    const res = await wallet.lightning().withdraw({ value: 30000 });
+    assert.deepStrictEqual(res, fixtures.withdraw);
     scope.done();
   });
 });
