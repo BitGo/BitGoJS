@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.2.0-rc.0...@bitgo/abstract-utxo@1.2.0-rc.1) (2022-08-12)
+
+
+### Reverts
+
+* Revert "feat(abstract-utxo): add support for bigints from new utxo-lib" ([f6091df](https://github.com/BitGo/BitGoJS/commit/f6091dfe659a94168db52b050d36907a7d0716b2))
+
+
+
+
+
 # [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.1.2-rc.5...@bitgo/abstract-utxo@1.2.0-rc.0) (2022-08-10)
 
 

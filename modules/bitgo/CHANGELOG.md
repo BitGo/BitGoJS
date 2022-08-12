@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.9](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.8...bitgo@14.3.0-rc.9) (2022-08-12)
+
+
+### Features
+
+* **sdk-core:** add payInvoice to lightning object ([eaaa48d](https://github.com/BitGo/BitGoJS/commit/eaaa48d10a8d0cc74b2ac97e0d0d97feba88d72a))
+
+
+
+
+
 # [14.3.0-rc.8](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.7...bitgo@14.3.0-rc.8) (2022-08-10)
 
 

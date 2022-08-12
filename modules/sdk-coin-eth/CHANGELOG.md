@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.0.0-rc.2...@bitgo/sdk-coin-eth@2.0.0-rc.3) (2022-08-12)
+
+
+### Features
+
+* **sdk-coin-polygon:** add signTx method ([3458ed0](https://github.com/BitGo/BitGoJS/commit/3458ed0f10d46489be5f1765679a8de3e786b020))
+
+
+
+
+
 # [2.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.0.0-rc.1...@bitgo/sdk-coin-eth@2.0.0-rc.2) (2022-08-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

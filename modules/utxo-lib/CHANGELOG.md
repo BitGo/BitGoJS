@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.0...@bitgo/utxo-lib@3.0.0-rc.1) (2022-08-12)
+
+
+### Reverts
+
+* Revert "feat(utxo-lib): full 64 bit support w/ bigints" ([496392c](https://github.com/BitGo/BitGoJS/commit/496392cf08e3871c5197b92592149aa787c79fa0))
+
+
+
+
+
 # [3.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.4.2-rc.0...@bitgo/utxo-lib@3.0.0-rc.0) (2022-08-01)
 
 

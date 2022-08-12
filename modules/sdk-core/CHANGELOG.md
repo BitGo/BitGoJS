@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.2...@bitgo/sdk-core@2.0.0-rc.3) (2022-08-12)
+
+
+### Features
+
+* **sdk-core:** add payInvoice to lightning object ([eaaa48d](https://github.com/BitGo/BitGoJS/commit/eaaa48d10a8d0cc74b2ac97e0d0d97feba88d72a))
+* **sdk-core:** add support for enabling tokens on cold and custodial wallets ([e15c69c](https://github.com/BitGo/BitGoJS/commit/e15c69c4b38b7de74bd73627904960ad086b5f44))
+* **sdk-core:** handle multiple token enables on chains that don't support it ([11302e9](https://github.com/BitGo/BitGoJS/commit/11302e97add128f6c11146373ef40637ec36ce95))
+
+
+### Reverts
+
+* Revert "feat(abstract-utxo): add support for bigints from new utxo-lib" ([f6091df](https://github.com/BitGo/BitGoJS/commit/f6091dfe659a94168db52b050d36907a7d0716b2))
+
+
+
+
+
 # [2.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.1...@bitgo/sdk-core@2.0.0-rc.2) (2022-08-10)
 
 
