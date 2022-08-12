@@ -6,6 +6,8 @@ export * as address from './address';
 
 export * as addressFormat from './addressFormat';
 
+export * as classify from './classify';
+
 export {
   networks,
   Network,
@@ -20,5 +22,7 @@ export {
   supportsTaproot,
   supportsSegwit,
 } from './networks';
+
+export { TransactionBuilder } from './transaction_builder';
 
 export { Network as BitcoinJSNetwork } from 'bitcoinjs-lib';
