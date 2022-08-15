@@ -14,7 +14,7 @@ import * as should from 'should';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
-import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShare, mockSignature, mockDShareToBitgo } from '../../fixtures/tss/ecdsaFixtures';
+import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSignature, mockDShareToBitgo } from '../../fixtures/tss/ecdsaFixtures';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -344,20 +344,21 @@ describe('Ecdsa tss helper functions tests', function () {
     describe('sendSignatureShare Tests', async function () {
       const mockAShareString = mockAShare.k + mockAShare.alpha + mockAShare.mu + mockAShare.n;
       const mockDShareString = mockDShare.delta + mockDShare.Gamma;
-      const mockSignatureShareString = mockSignature.r + mockSignature.s + mockSignature.y;
       const config = [
         { shareToSend: 'KShare', mockShareToSend: mockSignRT.kShare, mockShareToSendString: mockSignRT.kShare.k + mockSignRT.kShare.n, sendType: ECDSAMethodTypes.SendShareType.KShare, mockShareAsResponse: mockAShare, mockShareAsResponseString: mockAShareString, shareReceived: 'AShare', incorrectReceivedShareString: mockAShareString.substring(4700) },
         { shareToSend: 'MUShare', mockShareToSend: mockMuShare, mockShareToSendString: mockMuShare.alpha + mockMuShare.mu, sendType: ECDSAMethodTypes.SendShareType.MUShare, mockShareAsResponse: mockDShare, mockShareAsResponseString: mockDShareString, shareReceived: 'DShare', incorrectReceivedShareString: mockDShareString.substring(4) },
-        { shareToSend: 'SShare', mockShareToSend: mockSShare, optionalDShare: mockDShareToBitgo, mockShareToSendString: mockSShare.r + mockSShare.s + mockSShare.y + mockDShareToBitgo.delta + mockDShareToBitgo.Gamma, sendType: ECDSAMethodTypes.SendShareType.SShare, mockShareAsResponse: mockSignature, mockShareAsResponseString: mockSignatureShareString, shareReceived: 'Signature', incorrectReceivedShareString: mockSignatureShareString.substring(4) },
       ];
 
       for (let index = 0; index < config.length; index++) {
         describe(`sendSignatureShare: ${config[index].shareToSend}`, async function () {
           it(`should succeed to send ${config[index].shareToSend}`, async function () {
             const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
-            const response = { from: 'bitgo', to: 'user', share: config[index].mockShareAsResponseString } as SignatureShareRecord;
-            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response });
-            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare);
+            const shareRecord = { from: 'bitgo', to: 'user', share: config[index].mockShareAsResponseString } as SignatureShareRecord;
+            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: shareRecord });
+            txRequest.signatureShares = [shareRecord];
+            const response = { txRequests: [{ ...txRequest }] };
+            await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend);
             responseAShare.should.deepEqual(config[index].mockShareAsResponse);
           });
 
@@ -365,7 +366,10 @@ describe('Ecdsa tss helper functions tests', function () {
             const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
             const invalidSignatureShare = { from: 'bitgo', to: 'user', share: JSON.stringify(config[index].incorrectReceivedShareString) } as SignatureShareRecord;
             const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare }, 200);
-            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].optionalDShare).should.be.rejectedWith(/Excepted share length to be greater than or equal .*/g);
+            txRequest.signatureShares = [invalidSignatureShare];
+            const response = { txRequests: [{ ...txRequest }] };
+            await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend).should.be.rejectedWith(/Excepted share length to be greater than or equal .*/g);
             nock.isDone().should.equal(true);
           });
         });

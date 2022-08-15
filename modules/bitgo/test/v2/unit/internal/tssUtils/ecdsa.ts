@@ -19,8 +19,9 @@ import {
   SignatureShareRecord,
   RequestTracer,
 } from '@bitgo/sdk-core';
-import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
-import { nockGetTxRequest, nockSendSignatureShareWithResponse } from './common';
+import { keyShares, mockAShare, mockDShare, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
+import { nockSendSignatureShareWithResponse } from './common';
+import { nockGetTxRequest } from '../../tss/helpers';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
@@ -101,7 +102,7 @@ describe('TSS Ecdsa Utils:', async function () {
     const baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
-    
+
     nock(bgUrl)
       .persist()
       .get('/api/v1/client/constants')
@@ -378,14 +379,10 @@ describe('TSS Ecdsa Utils:', async function () {
         response: signatureShareThreeFromBitgo,
       });
       /* END STEP THREE */
-
-      // We could possibly avoid this request, but left for consistency with EDDSA
-      const response = { txRequests: [{ ...txRequest }] };
-      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
+      await setupSignTxRequestNocks(false);
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest,
         prv: JSON.stringify({
@@ -399,10 +396,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {
-      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
-      getTxRequest.resolves(txRequest);
-      getTxRequest.calledWith(txRequestId);
-
+      await setupSignTxRequestNocks();
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest: txRequestId,
         prv: JSON.stringify({
@@ -413,14 +407,14 @@ describe('TSS Ecdsa Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
-
-      sandbox.verifyAndRestore();
     });
 
     it('signTxRequest should fail with invalid user prv', async function () {
       const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
       getTxRequest.resolves(txRequest);
       getTxRequest.calledWith(txRequestId);
+
+      setupSignTxRequestNocks();
 
       const invalidUserKey = { ...userKeyShare, pShare: { ...userKeyShare.pShare, i: 2 } };
       await tssUtils.signTxRequest({
@@ -441,6 +435,8 @@ describe('TSS Ecdsa Utils:', async function () {
       getTxRequest.resolves(txRequest);
       getTxRequest.calledWith(txRequestId);
 
+      setupSignTxRequestNocks();
+
       await tssUtils.signTxRequest({
         txRequest: txRequestId,
         prv: JSON.stringify({
@@ -452,6 +448,23 @@ describe('TSS Ecdsa Utils:', async function () {
 
       sandbox.verifyAndRestore();
     });
+
+    async function setupSignTxRequestNocks(isTxRequest = true) {
+      let response = { txRequests: [{ ...txRequest }] };
+      if (isTxRequest) {
+        await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+      }
+      const aRecord = ECDSAMethods.convertAShare(mockAShare);
+      const signatureShares = [aRecord];
+      txRequest.signatureShares = signatureShares;
+      response = { txRequests: [{ ...txRequest }] };
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+      const dRecord = ECDSAMethods.convertDShare(mockDShare);
+      signatureShares.push(dRecord);
+      response = { txRequests: [{ ...txRequest }] };
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+    }
   });
 
 
@@ -519,6 +532,5 @@ describe('TSS Ecdsa Utils:', async function () {
 
     return params.keyChain;
   }
-
   // #endregion Nock helpers
 });
