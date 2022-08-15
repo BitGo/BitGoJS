@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.5...@bitgo/statics@8.0.0-rc.6) (2022-08-15)
+
+
+### Bug Fixes
+
+* **statics:** fix terc tokens to use goerli network ([024483d](https://github.com/BitGo/BitGoJS/commit/024483d3892d6ea05b11e63bb86dfdd0a1fe715a))
+
+
+
+
+
 # [8.0.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.4...@bitgo/statics@8.0.0-rc.5) (2022-08-10)
 
 

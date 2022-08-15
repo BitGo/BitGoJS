@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.10](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.9...bitgo@14.3.0-rc.10) (2022-08-15)
+
+
+### Bug Fixes
+
+* **sdk-core:** ecdsa signing get user share ([acbc700](https://github.com/BitGo/BitGoJS/commit/acbc7002c9ffd62c78e6dd2e72feac0c3ff4fe45))
+
+
+### Features
+
+* **sdk-core:** add withdraw to lightning object ([99474b5](https://github.com/BitGo/BitGoJS/commit/99474b581023b228ce6f2713f5b5d58c8d1186d6))
+
+
+
+
+
 # [14.3.0-rc.9](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.8...bitgo@14.3.0-rc.9) (2022-08-12)
 
 
