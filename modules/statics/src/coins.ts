@@ -1326,196 +1326,308 @@ export const coins = CoinMap.fromCoins([
     'Test ERC Token 2 Decimals',
     2,
     '0x107295c724c29553f51c5373b959f947065e6445',
-    UnderlyingAsset.TERC2DP
+    UnderlyingAsset.TERC2DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp',
     'Test ERC Token 6 Decimals',
     6,
     '0x4fcae60b370e5e523d18ba1fdf3bae46de88ac70',
-    UnderlyingAsset.TERC6DP
+    UnderlyingAsset.TERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp',
     'Test ERC Token 18 Decimals',
     18,
     '0xd1e7cd06a5c81af9307cf3162f0fe740a0a69d25',
-    UnderlyingAsset.TERC18DP
+    UnderlyingAsset.TERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc2dp1',
     'Test ERC Token 2 Decimals',
     2,
     '0xceef48d58cc3a51d8b6df155633007415b9bae01',
-    UnderlyingAsset.TERC2DP1
+    UnderlyingAsset.TERC2DP1,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc2dp2',
     'Test ERC Token 2 Decimals',
     2,
     '0x168ae5b381f7c317ac6ef2161c6e5fcc0e0de41e',
-    UnderlyingAsset.TERC2DP2
+    UnderlyingAsset.TERC2DP2,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc2dp3',
     'Test ERC Token 2 Decimals',
     2,
     '0x12cb9d6127ac74847cc444e6661cfd1b5107bd26',
-    UnderlyingAsset.TERC2DP3
+    UnderlyingAsset.TERC2DP3,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc2dp4',
     'Test ERC Token 2 Decimals',
     2,
     '0x458fdef6e1e58614d82f3116d8ca1f23419cb8c0',
-    UnderlyingAsset.TERC2DP4
+    UnderlyingAsset.TERC2DP4,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc2dp5',
     'Test ERC Token 2 Decimals',
     2,
     '0xf44c85bf1d556a8268a1212cf0b9248af4f238bd',
-    UnderlyingAsset.TERC2DP5
+    UnderlyingAsset.TERC2DP5,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp1',
     'Test ERC Token 6 Decimals',
     6,
     '0x3b9f958f0ba34aa103fabb054f29400703470bac',
-    UnderlyingAsset.TERC6DP1
+    UnderlyingAsset.TERC6DP1,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp2',
     'Test ERC Token 6 Decimals',
     6,
     '0x2508d109a0cd87e597a1de071325f5cf56d4639a',
-    UnderlyingAsset.TERC6DP2
+    UnderlyingAsset.TERC6DP2,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp3',
     'Test ERC Token 6 Decimals',
     6,
     '0xdda2375104ee9a97e1d7aa4bc48ede2c4c6ddf48',
-    UnderlyingAsset.TERC6DP3
+    UnderlyingAsset.TERC6DP3,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp4',
     'Test ERC Token 6 Decimals',
     6,
     '0x06c1f1195c59ec5f318d12d4cc2d1f9d45261756',
-    UnderlyingAsset.TERC6DP4
+    UnderlyingAsset.TERC6DP4,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc6dp5',
     'Test ERC Token 6 Decimals',
     6,
     '0x3326af8eeb6d4ce1f1f0652fcb3d5e07cd9c1039',
-    UnderlyingAsset.TERC6DP5
+    UnderlyingAsset.TERC6DP5,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp1',
     'Test ERC Token 18 Decimals',
     18,
     '0x9f77b76e6866b3f5dd99382c96f16eddabc0b78e',
-    UnderlyingAsset.TERC18DP1
+    UnderlyingAsset.TERC18DP1,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp2',
     'Test ERC Token 18 Decimals',
     18,
     '0x18b17853ff62122c60f113b8b8967243c39ad30e',
-    UnderlyingAsset.TERC18DP2
+    UnderlyingAsset.TERC18DP2,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp3',
     'Test ERC Token 18 Decimals',
     18,
     '0x96f13e2ea4b738380922dd9f5cd8fcf0416e5f2d',
-    UnderlyingAsset.TERC18DP3
+    UnderlyingAsset.TERC18DP3,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp4',
     'Test ERC Token 18 Decimals',
     18,
     '0xbecf20f89b6898bd8bbf3fa93fb4bcda367b9594',
-    UnderlyingAsset.TERC18DP4
+    UnderlyingAsset.TERC18DP4,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp5',
     'Test ERC Token 18 Decimals',
     18,
     '0x4464fe55f9a8aea46e02c4a22b4d74661805ec26',
-    UnderlyingAsset.TERC18DP5
+    UnderlyingAsset.TERC18DP5,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp6',
     'Test ERC Token 18 Decimals',
     18,
     '0x998ddfd1ac3ed76fc163528c5fc69b8d67fa5395',
-    UnderlyingAsset.TERC18DP6
+    UnderlyingAsset.TERC18DP6,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp7',
     'Test ERC Token 18 Decimals',
     18,
     '0xf2555ac243ab2606fa71e2f2728117054dd1867b',
-    UnderlyingAsset.TERC18DP7
+    UnderlyingAsset.TERC18DP7,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp8',
     'Test ERC Token 18 Decimals',
     18,
     '0xd9da1e909e3b4b2c1ec31b702bef0bf1e42533e4',
-    UnderlyingAsset.TERC18DP8
+    UnderlyingAsset.TERC18DP8,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp9',
     'Test ERC Token 18 Decimals',
     18,
     '0xb91be6a36b60c4576aff75a50d2b7c762349ddec',
-    UnderlyingAsset.TERC18DP9
+    UnderlyingAsset.TERC18DP9,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp10',
     'Test ERC Token 18 Decimals',
     18,
     '0xc53d2c04795a1cef22a91c9d52c04f5082bb5631',
-    UnderlyingAsset.TERC18DP10
+    UnderlyingAsset.TERC18DP10,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp11',
     'Test ERC Token 18 Decimals',
     18,
     '0xc325d7f188dc6015f45d3d39e58c5404e79b5cb9',
-    UnderlyingAsset.TERC18DP11
+    UnderlyingAsset.TERC18DP11,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp12',
     'Test ERC Token 18 Decimals',
     18,
     '0x7a8f375798284920cd27d1c757ceca3675603ab1',
-    UnderlyingAsset.TERC18DP12
+    UnderlyingAsset.TERC18DP12,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp13',
     'Test ERC Token 18 Decimals',
     18,
     '0x2e3f4bf47e4ea53a7a94f0597b47fe3caab78b0d',
-    UnderlyingAsset.TERC18DP13
+    UnderlyingAsset.TERC18DP13,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp14',
     'Test ERC Token 18 Decimals',
     18,
     '0x4f369aa78b9f299cb50ad4d96e13bdfbd8be7239',
-    UnderlyingAsset.TERC18DP14
+    UnderlyingAsset.TERC18DP14,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20(
     'terc18dp15',
     'Test ERC Token 18 Decimals',
     18,
     '0x0fcb9bc4c67d502a45a07f514638ca8f83ba2912',
-    UnderlyingAsset.TERC18DP15
+    UnderlyingAsset.TERC18DP15,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
   ),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),

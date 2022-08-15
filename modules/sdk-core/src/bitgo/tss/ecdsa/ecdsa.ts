@@ -19,12 +19,13 @@ import {
   XShare,
   YShare,
   SendShareToBitgoRT,
+  ReceivedShareType,
 } from './types';
 import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType } from './../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
-import { sendSignatureShare } from '../common';
+import { getTxRequest, sendSignatureShare } from '../common';
 
 const MPC = new Ecdsa();
 
@@ -190,14 +191,14 @@ export async function sendShareToBitgo(
     case SendShareType.KShare:
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
-      const AShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-      responseFromBitgo = parseAShare(AShareRecord);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.AShare);
       break;
     case SendShareType.MUShare:
       const muShare = share as MUShare;
       signatureShare = convertMuShare(muShare);
-      const dShareRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-      responseFromBitgo = parseDShare(dShareRecord);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.DShare);
       break;
     case SendShareType.SShare:
       if (!dShare) {
@@ -208,11 +209,50 @@ export async function sendShareToBitgo(
       }
       const sShare = share as SShare;
       signatureShare = convertSDShare({ sShare, dShare });
-      const signatureRecord = await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
-      responseFromBitgo = parseSignatureShare(signatureRecord);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      responseFromBitgo = sShare;
       break;
     default:
-      throw 'Invalid Share given to send';
+      throw new Error('Invalid Share given to send');
+  }
+
+  return responseFromBitgo;
+}
+
+/**
+ * Gets the latest user's share from bitgo needed to continue signing flow
+ * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {String} walletId - the wallet id  *
+ * @param {String} txRequestId - the txRequest Id
+ * @param {ReceivedShareType} shareType - the excpected share type
+ * @returns {Promise<SendShareToBitgoRT>} - share from bitgo to user
+ */
+export async function getBitgoToUserLatestShare(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  shareType: ReceivedShareType
+): Promise<SendShareToBitgoRT> {
+  let responseFromBitgo: SendShareToBitgoRT;
+  const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
+  const userShares = txRequest.signatureShares;
+  if (!userShares || !userShares.length) {
+    throw new Error('user share is not present');
+  }
+
+  const shareRecord = userShares[userShares.length - 1];
+  switch (shareType) {
+    case ReceivedShareType.AShare:
+      responseFromBitgo = parseAShare(shareRecord);
+      break;
+    case ReceivedShareType.DShare:
+      responseFromBitgo = parseDShare(shareRecord);
+      break;
+    case ReceivedShareType.Signature:
+      responseFromBitgo = parseSignatureShare(shareRecord);
+      break;
+    default:
+      throw new Error('Invalid share received');
   }
 
   return responseFromBitgo;
