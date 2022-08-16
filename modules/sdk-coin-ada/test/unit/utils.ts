@@ -11,11 +11,16 @@ describe('utils', () => {
     should.equal(Utils.default.isValidAddress(address.address3), false);
     should.equal(Utils.default.isValidAddress(address.address4), true);
     should.equal(Utils.default.isValidAddress('dfjk35y'), false);
+    should.equal(Utils.default.isValidAddress(undefined as unknown as string), false);
+    should.equal(Utils.default.isValidAddress(''), false);
   });
 
   it('should validate block hash correctly', () => {
     should.equal(Utils.default.isValidBlockId(blockHash.hash1), true);
     should.equal(Utils.default.isValidBlockId(blockHash.hash2), true);
+    // param is coming as undefined so it was causing an issue
+    should.equal(Utils.default.isValidBlockId(undefined as unknown as string), false);
+    should.equal(Utils.default.isValidBlockId(''), false);
   });
 
   it('should validate invalid block hash correctly', () => {
