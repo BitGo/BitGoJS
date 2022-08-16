@@ -9,23 +9,27 @@ import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 
-export function createTransactionFromBuffer(
+export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
   network: Network,
-  { version }: { version?: number } = {}
-): UtxoTransaction {
+  { version }: { version?: number } = {},
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  if (amountType !== 'number' && (getMainnet(network) === networks.dash || getMainnet(network) === networks.zcash)) {
+    throw new Error('dash and zcash must use number amount type; bigint amount type is recommended for doge only');
+  }
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.litecoin:
     case networks.dogecoin:
-      return UtxoTransaction.fromBuffer(buf, false, network);
+    case networks.litecoin:
+      return UtxoTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.dash:
-      return DashTransaction.fromBuffer(buf, false, network);
+      return DashTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.zcash:
-      return ZcashTransaction.fromBufferWithVersion(buf, network as ZcashNetwork, version);
+      return ZcashTransaction.fromBufferWithVersion<TNumber>(buf, network as ZcashNetwork, version, amountType);
   }
 
   /* istanbul ignore next */
@@ -33,8 +37,12 @@ export function createTransactionFromBuffer(
 }
 
 /* istanbul ignore next */
-export function createTransactionFromHex(hex: string, network: Network): UtxoTransaction {
-  return createTransactionFromBuffer(Buffer.from(hex, 'hex'), network);
+export function createTransactionFromHex<TNumber extends number | bigint = number>(
+  hex: string,
+  network: Network,
+  amountType: 'number' | 'bigint' = 'number'
+): UtxoTransaction<TNumber> {
+  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, {}, amountType);
 }
 
 export function getDefaultTransactionVersion(network: Network): number {
@@ -50,8 +58,8 @@ export function getDefaultTransactionVersion(network: Network): number {
   }
 }
 
-export function setTransactionBuilderDefaults(
-  txb: UtxoTransactionBuilder,
+export function setTransactionBuilderDefaults<TNumber extends number | bigint>(
+  txb: UtxoTransactionBuilder<TNumber>,
   network: Network,
   { version = getDefaultTransactionVersion(network) }: { version?: number } = {}
 ): void {
@@ -65,7 +73,7 @@ export function setTransactionBuilderDefaults(
       txb.setVersion(version);
       break;
     case networks.zcash:
-      (txb as ZcashTransactionBuilder).setDefaultsForVersion(network, version);
+      (txb as ZcashTransactionBuilder<TNumber>).setDefaultsForVersion(network, version);
       break;
     default:
       if (version !== 1) {
@@ -74,53 +82,61 @@ export function setTransactionBuilderDefaults(
   }
 }
 
-export function createTransactionBuilderForNetwork(
+export function createTransactionBuilderForNetwork<TNumber extends number | bigint = number>(
   network: Network,
   { version }: { version?: number } = {}
-): UtxoTransactionBuilder {
+): UtxoTransactionBuilder<TNumber> {
   let txb;
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.litecoin:
-    case networks.dogecoin: {
-      txb = new UtxoTransactionBuilder(network);
+    case networks.dogecoin:
+    case networks.litecoin: {
+      txb = new UtxoTransactionBuilder<TNumber>(network);
       break;
     }
     case networks.dash:
-      txb = new DashTransactionBuilder(network);
+      txb = new DashTransactionBuilder<TNumber>(network);
       break;
     case networks.zcash: {
-      txb = new ZcashTransactionBuilder(network as ZcashNetwork);
+      txb = new ZcashTransactionBuilder<TNumber>(network as ZcashNetwork);
       break;
     }
     default:
       throw new Error(`unsupported network`);
   }
 
-  setTransactionBuilderDefaults(txb, network, { version });
+  setTransactionBuilderDefaults<TNumber>(txb, network, { version });
 
   return txb;
 }
 
-export function createTransactionBuilderFromTransaction(
-  tx: UtxoTransaction,
-  prevOutputs?: TxOutput[]
-): UtxoTransactionBuilder {
+export function createTransactionBuilderFromTransaction<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
+  prevOutputs?: TxOutput<TNumber>[]
+): UtxoTransactionBuilder<TNumber> {
   switch (getMainnet(tx.network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.litecoin:
     case networks.dogecoin:
-      return UtxoTransactionBuilder.fromTransaction(tx, undefined, prevOutputs);
+    case networks.litecoin:
+      return UtxoTransactionBuilder.fromTransaction<TNumber>(tx, undefined, prevOutputs);
     case networks.dash:
-      return DashTransactionBuilder.fromTransaction(tx as DashTransaction, undefined, prevOutputs);
+      return DashTransactionBuilder.fromTransaction<TNumber>(
+        tx as DashTransaction<TNumber>,
+        undefined,
+        prevOutputs as TxOutput<TNumber>[]
+      );
     case networks.zcash:
-      return ZcashTransactionBuilder.fromTransaction(tx as ZcashTransaction, undefined, prevOutputs);
+      return ZcashTransactionBuilder.fromTransaction<TNumber>(
+        tx as ZcashTransaction<TNumber>,
+        undefined,
+        prevOutputs as TxOutput<TNumber>[]
+      );
   }
 
   throw new Error(`invalid network`);

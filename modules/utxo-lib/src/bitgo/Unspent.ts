@@ -1,11 +1,12 @@
-import { TxOutput, Network } from '..';
+import { TxOutput } from 'bitcoinjs-lib';
+import { Network } from '..';
 import { toOutputScript } from '../address';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 
 /**
  * Public unspent data in BitGo-specific representation.
  */
-export interface Unspent {
+export interface Unspent<TNumber extends number | bigint = number> {
   /**
    * Format: ${txid}:${vout}.
    * Use `parseOutputId(id)` to parse.
@@ -19,13 +20,13 @@ export interface Unspent {
   /**
    * The amount in satoshi.
    */
-  value: number;
+  value: TNumber;
 }
 
 /**
  * @return TxOutput from Unspent
  */
-export function toOutput(u: Unspent, network: Network): TxOutput {
+export function toOutput<TNumber extends number | bigint>(u: Unspent<TNumber>, network: Network): TxOutput<TNumber> {
   return {
     script: toOutputScript(u.address, network),
     value: u.value,
@@ -80,12 +81,15 @@ export type TxOutPoint = {
  * Output reference and script data.
  * Suitable for use for `txb.addInput()`
  */
-export type PrevOutput = TxOutPoint & TxOutput;
+export type PrevOutput<TNumber extends number | bigint = number> = TxOutPoint & TxOutput<TNumber>;
 
 /**
  * @return PrevOutput from Unspent
  */
-export function toPrevOutput(u: Unspent, network: Network): PrevOutput {
+export function toPrevOutput<TNumber extends number | bigint>(
+  u: Unspent<TNumber>,
+  network: Network
+): PrevOutput<TNumber> {
   return {
     ...parseOutputId(u.id),
     ...toOutput(u, network),
@@ -97,11 +101,33 @@ export function toPrevOutput(u: Unspent, network: Network): PrevOutput {
  * @param u
  * @param sequence - sequenceId
  */
-export function addToTransactionBuilder(txb: UtxoTransactionBuilder, u: Unspent, sequence?: number): void {
+export function addToTransactionBuilder<TNumber extends number | bigint>(
+  txb: UtxoTransactionBuilder<TNumber>,
+  u: Unspent<TNumber>,
+  sequence?: number
+): void {
   const { txid, vout, script, value } = toPrevOutput(u, txb.network as Network);
   txb.addInput(txid, vout, sequence, script, value);
 }
 
-export function unspentSum(unspents: Unspent[]): number {
-  return unspents.reduce((sum, u) => sum + u.value, 0);
+/**
+ * Sum the values of the unspents.
+ * Throws error if sum is not a safe integer value, or if unspent amount types do not match `amountType`
+ * @param unspents - array of unspents to sum
+ * @param amountType - expected value type of unspents
+ * @return unspentSum - type matches amountType
+ */
+export function unspentSum<TNumber extends number | bigint>(
+  unspents: Unspent<TNumber>[],
+  amountType: 'number' | 'bigint' = 'number'
+): TNumber {
+  if (amountType === 'bigint') {
+    return unspents.reduce((sum, u) => sum + (u.value as bigint), BigInt(0)) as TNumber;
+  } else {
+    const sum = unspents.reduce((sum, u) => sum + (u.value as number), Number(0));
+    if (!Number.isSafeInteger(sum)) {
+      throw new Error('unspent sum is not a safe integer number, consider using bigint');
+    }
+    return sum as TNumber;
+  }
 }

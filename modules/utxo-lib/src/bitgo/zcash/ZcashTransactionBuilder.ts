@@ -12,21 +12,24 @@ import {
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
 
-export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransaction> {
+export class ZcashTransactionBuilder<TNumber extends number | bigint = number> extends UtxoTransactionBuilder<
+  TNumber,
+  ZcashTransaction<TNumber>
+> {
   constructor(network: ZcashNetwork) {
     super(network);
   }
 
-  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction): ZcashTransaction {
-    return new ZcashTransaction(network as ZcashNetwork, tx as ZcashTransaction);
+  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction<TNumber>): ZcashTransaction<TNumber> {
+    return new ZcashTransaction<TNumber>(network as ZcashNetwork, tx as ZcashTransaction<TNumber>);
   }
 
-  static fromTransaction(
-    transaction: ZcashTransaction,
+  static fromTransaction<TNumber extends number | bigint = number>(
+    transaction: ZcashTransaction<TNumber>,
     network?: bitcoinjs.Network,
-    prevOutput?: bitcoinjs.TxOutput[]
-  ): ZcashTransactionBuilder {
-    const txb = new ZcashTransactionBuilder(transaction.network);
+    prevOutput?: bitcoinjs.TxOutput<TNumber>[]
+  ): ZcashTransactionBuilder<TNumber> {
+    const txb = new ZcashTransactionBuilder<TNumber>(transaction.network);
 
     // Copy transaction fields
     txb.setVersion(transaction.version, !!transaction.overwintered);
@@ -89,7 +92,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     });
   }
 
-  private setPropertyCheckSignatures(propName: keyof ZcashTransaction, value: unknown) {
+  private setPropertyCheckSignatures(propName: keyof ZcashTransaction<TNumber>, value: unknown) {
     if (this.tx[propName] === value) {
       return;
     }
@@ -114,15 +117,15 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     this.setPropertyCheckSignatures('expiryHeight', expiryHeight);
   }
 
-  build(): ZcashTransaction {
-    return super.build() as ZcashTransaction;
+  build(): ZcashTransaction<TNumber> {
+    return super.build() as ZcashTransaction<TNumber>;
   }
 
-  buildIncomplete(): ZcashTransaction {
-    return super.buildIncomplete() as ZcashTransaction;
+  buildIncomplete(): ZcashTransaction<TNumber> {
+    return super.buildIncomplete() as ZcashTransaction<TNumber>;
   }
 
-  addOutput(scriptPubKey: string | Buffer, value: number): number {
+  addOutput(scriptPubKey: string | Buffer, value: TNumber): number {
     // Attempt to get a script if it's a base58 or bech32 address string
     if (typeof scriptPubKey === 'string') {
       scriptPubKey = toOutputScript(scriptPubKey, this.network as Network);
