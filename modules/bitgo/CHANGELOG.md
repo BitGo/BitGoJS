@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.12](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.11...bitgo@14.3.0-rc.12) (2022-08-17)
+
+
+### Bug Fixes
+
+* **utxo-lib:** use safe version of bitcoinjs-lib ([8f2226b](https://github.com/BitGo/BitGoJS/commit/8f2226b6276fe47413759bf7462b8429d9e69f90))
+
+
+### Features
+
+* **abstract-utxo:** add support for bigints from new utxo-lib ([77c60dd](https://github.com/BitGo/BitGoJS/commit/77c60ddd4d0ddd1e82a8b1bb041686a9c7f39fae))
+
+
+
+
+
 # [14.3.0-rc.11](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.10...bitgo@14.3.0-rc.11) (2022-08-17)
 
 

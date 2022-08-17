@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.1...@bitgo/utxo-lib@3.0.0-rc.2) (2022-08-17)
+
+
+### Bug Fixes
+
+* **utxo-lib:** use safe version of bitcoinjs-lib ([8f2226b](https://github.com/BitGo/BitGoJS/commit/8f2226b6276fe47413759bf7462b8429d9e69f90))
+
+
+### Features
+
+* **utxo-lib:** full 64 bit support w/ bigints ([3186934](https://github.com/BitGo/BitGoJS/commit/3186934f8af3a3d50d3b8890446008e7bee06d90))
+
+
+### BREAKING CHANGES
+
+* **utxo-lib:** UtxoTransaction.fromBuffer interface - new optional param `amountType` inserted
+BG-54862
+
+
+
+
+
 # [3.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.0...@bitgo/utxo-lib@3.0.0-rc.1) (2022-08-12)
 
 

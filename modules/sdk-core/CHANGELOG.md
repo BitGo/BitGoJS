@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.5...@bitgo/sdk-core@2.0.0-rc.6) (2022-08-17)
+
+
+### Bug Fixes
+
+* **root:** align versions of bitcoinjs-lib ([b7eb929](https://github.com/BitGo/BitGoJS/commit/b7eb92998836a5945627ef1c80d74414b11f4867))
+
+
+### Features
+
+* **abstract-utxo:** add support for bigints from new utxo-lib ([77c60dd](https://github.com/BitGo/BitGoJS/commit/77c60ddd4d0ddd1e82a8b1bb041686a9c7f39fae))
+
+
+
+
+
 # [2.0.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.4...@bitgo/sdk-core@2.0.0-rc.5) (2022-08-17)
 
 

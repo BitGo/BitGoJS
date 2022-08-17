@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.1.2-rc.9...@bitgo/sdk-coin-stx@1.1.2-rc.10) (2022-08-17)
+
+
+### Bug Fixes
+
+* **root:** align versions of bitcoinjs-lib ([b7eb929](https://github.com/BitGo/BitGoJS/commit/b7eb92998836a5945627ef1c80d74414b11f4867))
+
+
+
+
+
 ## [1.1.2-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.1.2-rc.8...@bitgo/sdk-coin-stx@1.1.2-rc.9) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

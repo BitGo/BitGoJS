@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-xtz",
-  "version": "1.1.2-rc.9",
+  "version": "1.1.2-rc.10",
   "description": "BitGo SDK coin library for Tezos",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@bitgo/blake2b": "^3.0.4-rc.0",
-    "@bitgo/sdk-core": "^2.0.0-rc.5",
+    "@bitgo/sdk-core": "^2.0.0-rc.6",
     "@bitgo/statics": "^8.0.0-rc.7",
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
@@ -54,7 +54,7 @@
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.1.2-rc.9",
-    "@bitgo/sdk-test": "^1.0.3-rc.9"
+    "@bitgo/sdk-api": "^1.1.2-rc.10",
+    "@bitgo/sdk-test": "^1.0.3-rc.10"
   }
 }

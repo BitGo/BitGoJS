@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-aca",
-  "version": "1.1.0-rc.7",
+  "version": "1.1.0-rc.8",
   "description": "BitGo SDK coin library for Acala",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,12 +41,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-coin-dot": "^1.0.3-rc.9",
-    "@bitgo/sdk-core": "^2.0.0-rc.5",
+    "@bitgo/sdk-coin-dot": "^1.0.3-rc.10",
+    "@bitgo/sdk-core": "^2.0.0-rc.6",
     "@bitgo/statics": "^8.0.0-rc.7"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.1.2-rc.9",
-    "@bitgo/sdk-test": "^1.0.3-rc.9"
+    "@bitgo/sdk-api": "^1.1.2-rc.10",
+    "@bitgo/sdk-test": "^1.0.3-rc.10"
   }
 }

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.5-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.5-rc.3...@bitgo/unspents@0.8.5-rc.4) (2022-08-17)
+
+
+### Bug Fixes
+
+* **root:** align versions of bitcoinjs-lib ([b7eb929](https://github.com/BitGo/BitGoJS/commit/b7eb92998836a5945627ef1c80d74414b11f4867))
+
+
+
+
+
 ## [0.8.5-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.5-rc.2...@bitgo/unspents@0.8.5-rc.3) (2022-08-12)
 
 **Note:** Version bump only for package @bitgo/unspents
