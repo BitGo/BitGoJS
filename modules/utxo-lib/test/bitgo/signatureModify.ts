@@ -53,7 +53,10 @@ function changeSignatureScriptToHighS(v: Buffer | Buffer[], signature: Buffer): 
   return Buffer.isBuffer(v) ? script.compile(newParts) : (newParts as Buffer[]);
 }
 
-export function getTransactionWithHighS(tx: UtxoTransaction, inputIndex: number): UtxoTransaction[] {
+export function getTransactionWithHighS<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
+  inputIndex: number
+): UtxoTransaction<TNumber>[] {
   const parsed = parseSignatureScript(tx.ins[inputIndex]);
   switch (parsed.scriptType) {
     case 'p2sh':

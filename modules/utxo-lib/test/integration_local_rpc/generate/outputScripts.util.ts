@@ -69,28 +69,33 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
   }
 }
 
-export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
+export function createSpendTransactionFromPrevOutputs<TNumber extends number | bigint>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
-  prevOutputs: (TxOutPoint & TxOutput)[],
+  prevOutputs: (TxOutPoint & TxOutput<TNumber>)[],
   recipientScript: Buffer,
   network: Network,
-  { signKeys = [keys[0], keys[2]], version }: { signKeys?: bip32.BIP32Interface[]; version?: number } = {}
-): T {
+  {
+    signKeys = [keys[0], keys[2]],
+    version,
+    amountType,
+  }: { signKeys?: bip32.BIP32Interface[]; version?: number; amountType?: 'number' | 'bigint' } = {}
+): UtxoTransaction<TNumber> {
   if (signKeys.length !== 1 && signKeys.length !== 2) {
     throw new Error(`signKeys length must be 1 or 2`);
   }
 
-  const txBuilder = createTransactionBuilderForNetwork(network, { version });
+  const txBuilder = createTransactionBuilderForNetwork<TNumber>(network, { version });
 
   prevOutputs.forEach(({ txid, vout, script, value }, i) => {
     txBuilder.addInput(txid, vout, undefined, script, value);
   });
 
-  const inputSum = prevOutputs.reduce((sum, { value }) => sum + value, 0);
-  const fee = network === utxolib.networks.dogecoinTest ? 1_000_000 : 1_000;
+  const inputSum = prevOutputs.reduce((sum, { value }) => sum + BigInt(value), BigInt(0));
+  const fee = network === utxolib.networks.dogecoinTest ? BigInt(1_000_000) : BigInt(1_000);
+  const outputValue = inputSum - fee;
 
-  txBuilder.addOutput(recipientScript, inputSum - fee);
+  txBuilder.addOutput(recipientScript, (amountType === 'number' ? Number(outputValue) : outputValue) as TNumber);
 
   const publicKeys = keys.map((k) => k.publicKey);
   if (!isTriple(publicKeys)) {
@@ -104,22 +109,23 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   });
 
   if (signKeys.length === 1) {
-    return txBuilder.buildIncomplete() as T;
+    return txBuilder.buildIncomplete() as UtxoTransaction<TNumber>;
   }
-  return txBuilder.build() as T;
+  return txBuilder.build() as UtxoTransaction<TNumber>;
 }
 
-export function createSpendTransaction(
+export function createSpendTransaction<TNumber extends number | bigint = number>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
   inputTxs: Buffer[],
   recipientScript: Buffer,
   network: Network,
-  version?: number
-): Transaction {
-  const matches: (TxOutPoint & TxOutput)[] = inputTxs
-    .map((inputTxBuffer): (TxOutPoint & TxOutput)[] => {
-      const inputTx = createTransactionFromBuffer(inputTxBuffer, network);
+  version?: number,
+  amountType?: 'number' | 'bigint'
+): Transaction<TNumber> {
+  const matches: (TxOutPoint & TxOutput<TNumber>)[] = inputTxs
+    .map((inputTxBuffer): (TxOutPoint & TxOutput<TNumber>)[] => {
+      const inputTx = createTransactionFromBuffer<TNumber>(inputTxBuffer, network, {}, amountType);
 
       const { scriptPubKey } = createOutputScript2of3(
         keys.map((k) => k.publicKey),
@@ -127,7 +133,7 @@ export function createSpendTransaction(
       );
 
       return inputTx.outs
-        .map((o, vout): (TxOutPoint & TxOutput) | undefined => {
+        .map((o, vout): (TxOutPoint & TxOutput<TNumber>) | undefined => {
           if (!scriptPubKey.equals(o.script)) {
             return;
           }
@@ -138,7 +144,7 @@ export function createSpendTransaction(
             script: o.script,
           };
         })
-        .filter((v): v is TxOutPoint & TxOutput => v !== undefined);
+        .filter((v): v is TxOutPoint & TxOutput<TNumber> => v !== undefined);
     })
     .reduce((all, matches) => [...all, ...matches]);
 
@@ -146,5 +152,8 @@ export function createSpendTransaction(
     throw new Error(`could not find matching outputs in funding transaction`);
   }
 
-  return createSpendTransactionFromPrevOutputs(keys, scriptType, matches, recipientScript, network, { version });
+  return createSpendTransactionFromPrevOutputs<TNumber>(keys, scriptType, matches, recipientScript, network, {
+    version,
+    amountType,
+  });
 }

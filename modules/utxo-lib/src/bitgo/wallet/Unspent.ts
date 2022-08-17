@@ -10,19 +10,19 @@ import { Triple } from '../types';
 import { toOutput, Unspent } from '../Unspent';
 import { ChainCode } from './chains';
 
-export interface WalletUnspent extends Unspent {
+export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
   index: number;
 }
 
-export function isWalletUnspent(u: Unspent): u is WalletUnspent {
-  return (u as WalletUnspent).chain !== undefined;
+export function isWalletUnspent<TNumber extends number | bigint>(u: Unspent<TNumber>): u is WalletUnspent<TNumber> {
+  return (u as WalletUnspent<TNumber>).chain !== undefined;
 }
 
-export function signInputWithUnspent(
-  txBuilder: UtxoTransactionBuilder,
+export function signInputWithUnspent<TNumber extends number | bigint>(
+  txBuilder: UtxoTransactionBuilder<TNumber>,
   inputIndex: number,
-  unspent: WalletUnspent,
+  unspent: WalletUnspent<TNumber>,
   unspentSigner: WalletUnspentSigner<RootWalletKeys>
 ): void {
   const { walletKeys, signer, cosigner } = unspentSigner.deriveForChainAndIndex(unspent.chain, unspent.index);
@@ -34,7 +34,15 @@ export function signInputWithUnspent(
       `pubscript mismatch: expected ${pubScriptExpected.toString('hex')} got ${pubScript.toString('hex')}`
     );
   }
-  signInput2Of3(txBuilder, inputIndex, scriptType, walletKeys.publicKeys, signer, cosigner.publicKey, unspent.value);
+  signInput2Of3<TNumber>(
+    txBuilder,
+    inputIndex,
+    scriptType,
+    walletKeys.publicKeys,
+    signer,
+    cosigner.publicKey,
+    unspent.value
+  );
 }
 
 /**
@@ -44,10 +52,10 @@ export function signInputWithUnspent(
  * @param walletKeys
  * @return triple of booleans indicating a valid signature for each pubkey
  */
-export function verifySignatureWithUnspent(
-  tx: UtxoTransaction,
+export function verifySignatureWithUnspent<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
   inputIndex: number,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   walletKeys: RootWalletKeys
 ): Triple<boolean> {
   if (tx.ins.length !== unspents.length) {
@@ -69,7 +77,7 @@ export function verifySignatureWithUnspent(
  * @deprecated
  * Used in certain legacy signing methods that do not derive signing data from index/chain
  */
-export interface WalletUnspentLegacy extends WalletUnspent {
+export interface WalletUnspentLegacy<TNumber extends number | bigint = number> extends WalletUnspent<TNumber> {
   /** @deprecated - obviated by signWithUnspent */
   redeemScript?: string;
   /** @deprecated - obviated by verifyWithUnspent */

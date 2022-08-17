@@ -27,12 +27,15 @@ export function readInputs(bufferReader: BufferReader): TxInput[] {
   return ins;
 }
 
-export function readOutputs(bufferReader: BufferReader): TxOutput[] {
+export function readOutputs<TNumber extends number | bigint>(
+  bufferReader: BufferReader,
+  amountType: 'number' | 'bigint' = 'number'
+): TxOutput<TNumber>[] {
   const voutLen = bufferReader.readVarInt();
-  const outs: TxOutput[] = [];
+  const outs: TxOutput<TNumber>[] = [];
   for (let i = 0; i < voutLen; ++i) {
     outs.push({
-      value: bufferReader.readUInt64(),
+      value: (amountType === 'bigint' ? bufferReader.readUInt64BigInt() : bufferReader.readUInt64()) as TNumber,
       script: bufferReader.readVarSlice(),
     });
   }
@@ -73,10 +76,14 @@ export function writeEmptySamplingBundle(bufferWriter: BufferWriter): void {
   bufferWriter.writeVarInt(0) /* vOutputsSapling */;
 }
 
-export function fromBufferV4(bufferReader: BufferReader, tx: ZcashTransaction): void {
+export function fromBufferV4<TNumber extends number | bigint>(
+  bufferReader: BufferReader,
+  tx: ZcashTransaction<TNumber>,
+  amountType: 'number' | 'bigint' = 'number'
+): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L855-L857
   tx.ins = readInputs(bufferReader);
-  tx.outs = readOutputs(bufferReader);
+  tx.outs = readOutputs<TNumber>(bufferReader, amountType);
   tx.locktime = bufferReader.readUInt32();
 
   if (tx.isOverwinterCompatible()) {
@@ -100,7 +107,11 @@ export function fromBufferV4(bufferReader: BufferReader, tx: ZcashTransaction): 
   }
 }
 
-export function fromBufferV5(bufferReader: BufferReader, tx: ZcashTransaction): void {
+export function fromBufferV5<TNumber extends number | bigint>(
+  bufferReader: BufferReader,
+  tx: ZcashTransaction<TNumber>,
+  amountType: 'number' | 'bigint' = 'number'
+): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L815
   tx.consensusBranchId = bufferReader.readUInt32();
   tx.locktime = bufferReader.readUInt32();
@@ -108,7 +119,7 @@ export function fromBufferV5(bufferReader: BufferReader, tx: ZcashTransaction): 
 
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L828
   tx.ins = readInputs(bufferReader);
-  tx.outs = readOutputs(bufferReader);
+  tx.outs = readOutputs<TNumber>(bufferReader, amountType);
 
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L835
   readEmptySaplingBundle(bufferReader);
@@ -125,7 +136,10 @@ export function writeInputs(bufferWriter: BufferWriter, ins: TxInput[]): void {
   });
 }
 
-export function writeOutputs(bufferWriter: BufferWriter, outs: TxOutput[]): void {
+export function writeOutputs<TNumber extends number | bigint>(
+  bufferWriter: BufferWriter,
+  outs: TxOutput<TNumber>[]
+): void {
   bufferWriter.writeVarInt(outs.length);
   outs.forEach(function (txOut) {
     if ((txOut as any).valueBuffer) {
@@ -138,10 +152,13 @@ export function writeOutputs(bufferWriter: BufferWriter, outs: TxOutput[]): void
   });
 }
 
-export function toBufferV4(bufferWriter: BufferWriter, tx: ZcashTransaction): void {
+export function toBufferV4<TNumber extends number | bigint>(
+  bufferWriter: BufferWriter,
+  tx: ZcashTransaction<TNumber>
+): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L1083
   writeInputs(bufferWriter, tx.ins);
-  writeOutputs(bufferWriter, tx.outs);
+  writeOutputs<TNumber>(bufferWriter, tx.outs);
 
   bufferWriter.writeUInt32(tx.locktime);
 
@@ -160,13 +177,16 @@ export function toBufferV4(bufferWriter: BufferWriter, tx: ZcashTransaction): vo
   }
 }
 
-export function toBufferV5(bufferWriter: BufferWriter, tx: ZcashTransaction): void {
+export function toBufferV5<TNumber extends number | bigint>(
+  bufferWriter: BufferWriter,
+  tx: ZcashTransaction<TNumber>
+): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L825-L826
   bufferWriter.writeUInt32(tx.consensusBranchId);
   bufferWriter.writeUInt32(tx.locktime);
   bufferWriter.writeUInt32(tx.expiryHeight);
   writeInputs(bufferWriter, tx.ins);
-  writeOutputs(bufferWriter, tx.outs);
+  writeOutputs<TNumber>(bufferWriter, tx.outs);
 
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L1063
   writeEmptySamplingBundle(bufferWriter);
