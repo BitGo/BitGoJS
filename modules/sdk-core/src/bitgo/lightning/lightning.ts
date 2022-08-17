@@ -10,6 +10,8 @@ import {
   GetBalanceResponse,
   WithdrawResponse,
   DepositResponse,
+  GetInvoicesQuery,
+  GetInvoicesResponse,
 } from './iLightning';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
@@ -95,6 +97,20 @@ export class Lightning implements ILightning {
     const res = await this.wallet.send({ amount, address });
 
     return decodeOrElse(DepositResponse.name, DepositResponse, res, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
+  }
+
+  public async getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse> {
+    const queryParams: { status?: string; limit?: number } = {};
+    queryParams.status = query?.status;
+    queryParams.limit = query?.limit;
+
+    const body = await this.bitgo
+      .get(this.url + '/invoices')
+      .query(queryParams)
+      .result();
+    return decodeOrElse(GetInvoicesResponse.name, GetInvoicesResponse, body, (errors) => {
       throw new Error(`error(s) parsing response body: ${errors}`);
     });
   }

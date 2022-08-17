@@ -25,6 +25,11 @@ export interface PayInvoiceParams {
   feeLimit?: number;
 }
 
+export interface GetInvoicesQuery {
+  status?: string;
+  limit?: number;
+}
+
 export const WPTransferEntry = t.partial(
   {
     wallet: t.string,
@@ -128,6 +133,22 @@ export const GetBalanceResponse = t.strict(
 // eslint-disable-next-line no-redeclare
 export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 
+const InvoiceInfo = t.strict({
+  paymentHash: t.string,
+  walletId: t.string,
+  status: t.string,
+  value: t.number,
+  expiresAt: t.string,
+  createdAt: t.string,
+  updatedAt: t.string,
+  amtPaidSats: t.number,
+});
+
+export const GetInvoicesResponse = t.array(InvoiceInfo);
+
+// eslint-disable-next-line no-redeclare
+export type GetInvoicesResponse = t.TypeOf<typeof GetInvoicesResponse>;
+
 export interface ILightning {
   createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
   createDepositAddress(): Promise<CreateDepositAddressResponse>;
@@ -135,4 +156,5 @@ export interface ILightning {
   getBalance(): Promise<GetBalanceResponse>;
   withdraw(params: LightningWithdrawalParams): Promise<WithdrawResponse>;
   deposit(params: LightningDepositParams): Promise<DepositResponse>;
+  getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse>;
 }
