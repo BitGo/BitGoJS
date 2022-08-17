@@ -8,6 +8,7 @@ import {
   AlgoCoin,
   SolCoin,
   HederaToken,
+  PolygonERC20Token,
 } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
@@ -31,6 +32,7 @@ export interface BaseContractAddressConfig extends BaseNetworkConfig {
 
 export type AvaxcTokenConfig = BaseContractAddressConfig;
 export type CeloTokenConfig = BaseContractAddressConfig;
+export type EthLikeTokenConfig = BaseContractAddressConfig;
 export type EosTokenConfig = BaseContractAddressConfig;
 export type Erc20TokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
@@ -77,6 +79,9 @@ export interface Tokens {
     avaxc: {
       tokens: AvaxcTokenConfig[];
     };
+    polygon: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
@@ -108,6 +113,9 @@ export interface Tokens {
     };
     avaxc: {
       tokens: AvaxcTokenConfig[];
+    };
+    polygon: {
+      tokens: EthLikeTokenConfig[];
     };
     sol: {
       tokens: SolTokenConfig[];
@@ -231,6 +239,20 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof PolygonERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
@@ -310,6 +332,9 @@ export const tokens: Tokens = {
     avaxc: {
       tokens: formattedAvaxCTokens.filter((token) => token.network === 'Mainnet'),
     },
+    polygon: {
+      tokens: formattedPolygonTokens.filter((token) => token.network === 'Mainnet'),
+    },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
     },
@@ -342,6 +367,9 @@ export const tokens: Tokens = {
     },
     avaxc: {
       tokens: formattedAvaxCTokens.filter((token) => token.network === 'Testnet'),
+    },
+    polygon: {
+      tokens: formattedPolygonTokens.filter((token) => token.network === 'Testnet'),
     },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),
