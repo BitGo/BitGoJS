@@ -346,7 +346,10 @@ export class PendingApproval implements IPendingApproval {
       return signedTransaction;
     }
 
-    if (!_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)) {
+    if (
+      typeof recreatedParsedTransaction.implicitExternalSpendAmount !== 'bigint' &&
+      !_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)
+    ) {
       throw new Error('implicit external spend amount could not be determined');
     }
     if (
