@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.8...@bitgo/sdk-coin-near@1.1.2-rc.9) (2022-08-17)
+
+
+### Bug Fixes
+
+* **sdk-core:** tss wallet creation related bugs ([500c735](https://github.com/BitGo/BitGoJS/commit/500c73527edd902b65cfd784ea1022a21e0f6319))
+
+
+
+
+
 ## [1.1.2-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.7...@bitgo/sdk-coin-near@1.1.2-rc.8) (2022-08-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

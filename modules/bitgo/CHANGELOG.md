@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.11](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.10...bitgo@14.3.0-rc.11) (2022-08-17)
+
+
+### Bug Fixes
+
+* **sdk-core:** tss wallet creation related bugs ([500c735](https://github.com/BitGo/BitGoJS/commit/500c73527edd902b65cfd784ea1022a21e0f6319))
+
+
+### Features
+
+* **sdk-coin-polygon:** support tokens ([8870307](https://github.com/BitGo/BitGoJS/commit/8870307b63f460031019aecf30c60df4f2c0a112))
+* **sdk-core:** add deposit() to lightning object ([aeb483d](https://github.com/BitGo/BitGoJS/commit/aeb483d2cd2baf49659674f9b9ad7a9d37fcf672))
+
+
+
+
+
 # [14.3.0-rc.10](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.9...bitgo@14.3.0-rc.10) (2022-08-15)
 
 

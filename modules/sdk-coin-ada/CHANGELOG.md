@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.6...@bitgo/sdk-coin-ada@1.2.0-rc.7) (2022-08-17)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** fix blockhash validation ([7204e28](https://github.com/BitGo/BitGoJS/commit/7204e28e6993caa0ae874d951f457246ee9cb9e5))
+
+
+
+
+
 # [1.2.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.5...@bitgo/sdk-coin-ada@1.2.0-rc.6) (2022-08-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

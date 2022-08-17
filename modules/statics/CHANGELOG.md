@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.6...@bitgo/statics@8.0.0-rc.7) (2022-08-17)
+
+
+### Features
+
+* **sdk-coin-polygon:** support tokens ([8870307](https://github.com/BitGo/BitGoJS/commit/8870307b63f460031019aecf30c60df4f2c0a112))
+
+
+
+
+
 # [8.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.5...@bitgo/statics@8.0.0-rc.6) (2022-08-15)
 
 
