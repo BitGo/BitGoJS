@@ -21,13 +21,14 @@
       "@src/*": ["src/*"],
       "@images/*": ["src/images/*"],
       "@styles/*": ["src/styles/*"],
-      "@components/*": ["src/components/*"]
+      "@components/*": ["src/components/*"],
+      "buffer": ["../../node_modules/buffer/index"]
     },
     "removeComments": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "es6",
-    "types": ["node", "cypress", "@testing-library/cypress"]
+    "types": ["cypress", "@testing-library/cypress"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
