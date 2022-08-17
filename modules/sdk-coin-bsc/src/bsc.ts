@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
@@ -15,5 +15,15 @@ export class Bsc extends AbstractEthLikeCoin {
 
   protected getTransactionBuilder(): EthTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 }

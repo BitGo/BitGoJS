@@ -8,7 +8,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { BlsUtils, common, TssUtils } from '@bitgo/sdk-core';
+import { BlsUtils, common, ECDSAUtils, EDDSAUtils } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
@@ -243,29 +243,54 @@ describe('V2 Keychains', function () {
     });
 
     describe('Create TSS Keychains', function() {
-      it('should create TSS Keychains', async function () {
-        const stubbedKeychainsTriplet = {
-          userKeychain: {
-            id: '1',
-            pub: 'userPub',
-          },
-          backupKeychain: {
-            id: '2',
-            pub: 'userPub',
-          },
-          bitgoKeychain: {
-            id: '3',
-            pub: 'userPub',
-          },
-        };
-        sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-        const keychains = await bitgo.coin('tsol').keychains().createMpc({
-          multisigType: 'tss',
-          passphrase: 'password',
-          enterprise: 'enterprise',
-          originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      const stubbedKeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+        },
+      };
+
+      let sandbox;
+      beforeEach(function () {
+        sandbox = sinon.createSandbox();
+      });
+
+      afterEach(function () {
+        sandbox.restore();
+      });
+
+      ['tsol', 'tdot', 'tnear'].forEach((coin) => {
+        it('should create EDDSA TSS Keychains', async function () {
+          sandbox.stub(EDDSAUtils.default.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+          const keychains = await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            enterprise: 'enterprise',
+            originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          });
+          keychains.should.deepEqual(stubbedKeychainsTriplet);
         });
-        keychains.should.deepEqual(stubbedKeychainsTriplet);
+      });
+
+      ['tbsc'].forEach((coin) => {
+        it('should create ECDSA TSS Keychains', async function () {
+          sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+          const keychains = await bitgo.coin(coin).keychains().createMpc({
+            multisigType: 'tss',
+            passphrase: 'password',
+            enterprise: 'enterprise',
+            originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          });
+          keychains.should.deepEqual(stubbedKeychainsTriplet);
+        });
       });
     });
 

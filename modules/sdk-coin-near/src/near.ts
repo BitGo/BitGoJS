@@ -24,6 +24,7 @@ import {
   PublicKey,
   Environments,
   EDDSA,
+  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -153,6 +154,10 @@ export class Near extends BaseCoin {
    */
   supportsTss(): boolean {
     return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
   }
 
   supportsStaking(): boolean {

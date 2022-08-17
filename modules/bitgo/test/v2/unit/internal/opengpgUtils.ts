@@ -86,6 +86,17 @@ describe('OpenGPG Utils Tests', function () {
       await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, otherKey.privateKey)
         .should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
+
+    it('should encrypt, sign, and decrypt without previously clearing rejectedCurves', async function() {
+      openpgp.config.rejectCurves = new Set([openpgp.enums.curve.secp256k1]);
+
+      const text = 'original message';
+      const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
+      const decryptedMessage = await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, recipientKey.privateKey);
+      decryptedMessage.should.equal(text);
+
+      openpgp.config.rejectCurves = new Set();
+    });
   });
 
   describe('signatures and verification', function() {

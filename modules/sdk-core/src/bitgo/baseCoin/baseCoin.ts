@@ -25,6 +25,7 @@ import {
   ITransactionExplanation,
   KeychainsTriplet,
   KeyPair,
+  MPCAlgorithm,
   ParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
@@ -424,6 +425,13 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
     return Buffer.from(serializedTx);
+  }
+
+  /**
+   * Returns the MPC algorithm (ecdsa or eddsa) used for coins that support TSS
+   */
+  getMPCAlgorithm(): MPCAlgorithm {
+    throw new Error('no MPC algorithm is defined for this coin');
   }
 
   async recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction> {

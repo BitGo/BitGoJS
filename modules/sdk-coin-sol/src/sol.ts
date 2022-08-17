@@ -25,6 +25,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   PresignTransactionOptions,
   TokenEnablementConfig,
+  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 import { AtaInitializationBuilder, KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import { isValidAddress, isValidPrivateKey, isValidPublicKey } from './lib/utils';
@@ -109,6 +110,10 @@ export class Sol extends BaseCoin {
 
   supportsTss(): boolean {
     return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
   }
 
   supportsStaking(): boolean {
