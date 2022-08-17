@@ -12,6 +12,6 @@ it('renders the BitGoJS SDK', () => {
 });
 
 it('CR-686: uses the correct version of Buffer', () => {
-  const webBuffer: WebBuffer = new Buffer('') as unknown as WebBuffer;
+  const webBuffer = new Buffer('') as unknown as WebBuffer;
   expect(webBuffer.readBigUInt64BE).not.to.be.undefined;
 });
