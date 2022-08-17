@@ -366,8 +366,8 @@ export class Sol extends BaseCoin {
 
     const { tssUtils } = params;
 
-    await tssUtils.deleteSignatureShares(txRequestId);
-    const recreated = await tssUtils.getTxRequest(txRequestId);
+    await tssUtils!.deleteSignatureShares(txRequestId);
+    const recreated = await tssUtils!.getTxRequest(txRequestId);
 
     return Promise.resolve({
       ...params,

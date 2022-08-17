@@ -90,7 +90,7 @@ export class StakingWallet implements IStakingWallet {
    * @param transaction - staking transaction to build
    */
   async build(transaction: StakingTransaction): Promise<StakingPrebuildTransactionResult> {
-    if (this.wallet.baseCoin.supportsTss()) {
+    if (this.wallet.baseCoin.supportsTss() && this.wallet.baseCoin.getFamily() !== 'eth') {
       if (!transaction.txRequestId) {
         throw new Error('txRequestId is required to sign and send');
       }
