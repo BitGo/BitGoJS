@@ -5,7 +5,8 @@
 //
 
 import 'should';
-import { HDNode, hdPath } from '../../src/legacyBitcoin';
+import { bitcoin } from '@bitgo/sdk-core';
+const { HDNode, hdPath } = bitcoin;
 
 describe('HDNode', function () {
 
