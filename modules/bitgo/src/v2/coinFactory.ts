@@ -86,7 +86,6 @@ import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { tokens } from '../config';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
-import { AcaToken } from '@bitgo/sdk-coin-aca';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('aca', Aca.createInstance);
@@ -201,10 +200,6 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   HbarToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
-    globalCoinFactory.register(name, coinConstructor);
-  });
-
-  AcaToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 }
