@@ -24,12 +24,12 @@ describe('non-TSS Staking Wallet', function () {
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
-    baseCoin = bitgo.coin('eth');
+    baseCoin = bitgo.coin('avaxp');
     baseCoin.keychains();
     enterprise = new Enterprise(bitgo, baseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
     const walletData = {
       id: 'walletId',
-      coin: 'eth',
+      coin: 'avaxp',
       enterprise: enterprise.id,
       keys: ['5b3424f91bf349930e340175'],
     };

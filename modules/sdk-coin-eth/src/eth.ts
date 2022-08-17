@@ -40,6 +40,7 @@ import {
   Recipient,
   HalfSignedTransaction,
   FullySignedTransaction,
+  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
@@ -383,6 +384,15 @@ export class Eth extends BaseCoin {
         );
 
     return unsignedEthTx;
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   /**
