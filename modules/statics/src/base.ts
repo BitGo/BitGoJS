@@ -174,6 +174,7 @@ export enum UnderlyingAsset {
   EUR = 'eur',
   EUROC = 'euroc',
   GBP = 'gbp',
+  GTC = 'gtc',
   GTETH = 'gteth',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
@@ -243,6 +244,7 @@ export enum UnderlyingAsset {
   BIDL = 'bidl',
   BIRD = 'bird',
   BIT = 'bit',
+  BNB = 'bnb',
   BNK = 'bnk',
   BNL = 'bnl',
   BNT = 'bnt',
