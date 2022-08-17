@@ -1,6 +1,6 @@
 import TssUtils, { TssUtilsTypes, EddsaUtilsTypes } from './eddsa';
 export * as ECDSAUtils from './ecdsa';
-export * as EDDSAUtils from './ecdsa';
+export * as EDDSAUtils from './eddsa';
 
 /** @deprecated use EDDSAUtils */
 export { TssUtils };

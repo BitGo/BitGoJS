@@ -84,7 +84,18 @@ export class Lightning implements ILightning {
     });
   }
 
-  public async deposit(params?: LightningDepositParams): Promise<DepositResponse> {
-    throw new Error('method not implemented');
+  public async deposit(params: LightningDepositParams): Promise<DepositResponse> {
+    const { amount } = params;
+    let { address } = params;
+
+    if (address === undefined) {
+      address = (await this.createDepositAddress()).address;
+    }
+
+    const res = await this.wallet.send({ amount, address });
+
+    return decodeOrElse(DepositResponse.name, DepositResponse, res, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
   }
 }

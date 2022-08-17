@@ -3,9 +3,10 @@
  */
 import 'should';
 import * as bip32 from 'bip32';
-import { sanitizeLegacyPath } from '@bitgo/sdk-core';
+import { sanitizeLegacyPath, bitcoin } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
-import { HDNode, Derivable, hdPath } from '../../src/legacyBitcoin';
+const { HDNode, hdPath } = bitcoin;
+type Derivable = bitcoin.Derivable;
 
 describe('bip32util', function () {
   const seed = getSeed('bip32test');

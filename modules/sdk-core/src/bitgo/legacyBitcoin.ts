@@ -1,11 +1,7 @@
-/**
- * This file contains a compatability layer for some deprecated types and helper methods
- *
- * @prettier
- */
-import { bitcoinUtil, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
+import { sanitizeLegacyPath } from '../api';
+import * as bitcoinUtil from './bitcoin';
 
 interface ECPairCompat extends utxolib.ECPairInterface {
   getPublicKeyBuffer(): Buffer;

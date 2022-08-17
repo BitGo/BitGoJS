@@ -855,6 +855,10 @@ export enum UnderlyingAsset {
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
 
+  // Polygon testnet tokens
+  DERC20 = 'DERC20',
+  TESTWMATIC = 'TESTWMATIC',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
 

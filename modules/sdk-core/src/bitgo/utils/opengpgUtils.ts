@@ -165,6 +165,7 @@ export async function readSignedMessage(signed: string, publicArmor: string, pri
     verificationKeys: publicKey,
     decryptionKeys: privateKey,
     expectSigned: true,
+    config: { rejectCurves: new Set() },
   });
 
   return decrypted.data;

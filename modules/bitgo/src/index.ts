@@ -16,7 +16,7 @@ export * from './bitgo';
 
 // Expose legacy "bitcoin" API (mostly HDNode)
 /** @deprecated */
-export * as bitcoin from './legacyBitcoin';
+export { bitcoin } from '@bitgo/sdk-core';
 
 /** @deprecated */
 export const sjcl = require('@bitgo/sjcl');
