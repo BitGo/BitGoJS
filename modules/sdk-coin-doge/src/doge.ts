@@ -7,6 +7,9 @@ import {
   ParseTransactionOptions,
   ParsedTransaction,
   VerifyTransactionOptions,
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+  RecoverFromWrongChainOptions,
 } from '@bitgo/abstract-utxo';
 import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -68,5 +71,11 @@ export class Doge extends AbstractUtxoCoin {
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
     return super.explainTransaction(params);
+  }
+
+  async recoverFromWrongChain<TNumber extends number | bigint = bigint>(
+    params: RecoverFromWrongChainOptions
+  ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
+    return super.recoverFromWrongChain(params);
   }
 }
