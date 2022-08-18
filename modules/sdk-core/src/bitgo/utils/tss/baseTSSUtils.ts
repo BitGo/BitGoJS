@@ -89,7 +89,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     apiVersion: TxRequestVersion = 'lite',
     preview?: boolean
   ): Promise<TxRequest> {
+    console.log(`in prebuildtxwithintent ${JSON.stringify(params)}`);
     const intentOptions = this.populateIntent(this.baseCoin, params);
+    console.log('in prebuildtxwithintent1');
 
     const whitelistedParams = {
       intent: {
@@ -98,7 +100,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       apiVersion: apiVersion,
       preview,
     };
-
+    console.log('whitelisted params');
+    console.log(JSON.stringify(whitelistedParams));
     const unsignedTx = (await this.bitgo
       .post(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
       .send(whitelistedParams)

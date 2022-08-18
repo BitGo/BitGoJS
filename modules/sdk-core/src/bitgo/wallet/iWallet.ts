@@ -7,6 +7,8 @@ import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import { TokenEnablement } from '../utils';
 import { ILightning } from '../lightning';
+// import { EIP1559FeeOptions } from '../utils/tss/baseTypes';
+// import { number } from 'fp-ts';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -86,6 +88,9 @@ export interface PrebuildTransactionOptions {
   enableTokens?: TokenEnablement[];
   nonce?: string;
   preview?: boolean;
+  eip1559?: EIP1559;
+  gasLimit?: number;
+  lowFeeTxid?: string;
   isTss?: boolean;
 }
 
@@ -342,6 +347,15 @@ export interface RemoveUserOptions {
   userId?: string;
 }
 
+// export interface AccelerateTransactionAccountOptions {
+//   type: 'acceleration';
+//   lowFeeTxid?: string;
+//   gasPrice?: number;
+//   eip1559?: EIP1559;
+//   gasLimit?: number;
+//   // wallet?: Wallet;
+// }
+
 export interface AccelerateTransactionOptions {
   cpfpTxIds?: string[];
   cpfpFeeRate?: number;
@@ -413,6 +427,8 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   memo?: Memo;
   transferId?: number;
   [index: string]: unknown;
+  eip1559?: EIP1559;
+  gasLimit?: number;
 }
 
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';

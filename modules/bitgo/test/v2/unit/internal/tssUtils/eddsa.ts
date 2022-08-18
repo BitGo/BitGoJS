@@ -404,6 +404,7 @@ describe('TSS Utils:', async function () {
     });
 
     it('should build multiple recipients with memo tx', async function () {
+      console.log('in test');
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
         requestBody: {
@@ -433,6 +434,7 @@ describe('TSS Utils:', async function () {
         // don't care about the actual response - just need to make sure request body matches
         response: {},
       });
+      console.log('in test1');
 
       await tssUtils.prebuildTxWithIntent({
         reqId,
@@ -449,6 +451,7 @@ describe('TSS Utils:', async function () {
         },
         intentType: 'payment',
       });
+      console.log('in test2');
 
       nockedCreateTx.isDone().should.be.true();
     });

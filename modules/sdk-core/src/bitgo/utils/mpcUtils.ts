@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import assert from 'assert';
 import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -99,11 +100,17 @@ export abstract class MpcUtils {
    * @returns {Record<string, unknown>}
    */
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): Record<string, unknown> {
+    console.log('in populateIntent');
     const chain = this.baseCoin.getChain();
-    const intentRecipients = params.recipients.map((recipient) => ({
-      address: { address: recipient.address },
-      amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
-    }));
+
+    let intentRecipients;
+    if (params.intentType !== 'acceleration') {
+      assert(params.recipients, new Error('recipients is a required parameter'));
+      intentRecipients = params.recipients.map((recipient) => ({
+        address: { address: recipient.address },
+        amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
+      }));
+    }
 
     const baseIntent = {
       intentType: params.intentType,
@@ -112,22 +119,37 @@ export abstract class MpcUtils {
       nonce: params.nonce,
       recipients: intentRecipients,
     };
+
     if (baseCoin.getFamily() === 'eth') {
-      return {
-        ...baseIntent,
-        selfSend: params.selfSend,
-        feeOptions: params.feeOptions,
-        hopParams: params.hopParams,
-        isTss: params.isTss,
-        nonce: params.nonce,
-      };
+      switch (params.intentType) {
+        case 'payment':
+          return {
+            ...baseIntent,
+            selfSend: params.selfSend,
+            feeOptions: params.feeOptions,
+            hopParams: params.hopParams,
+            isTss: params.isTss,
+            nonce: params.nonce,
+          };
+        case 'acceleration':
+          return {
+            ...baseIntent,
+            txid: params.lowFeeTxid,
+            feeOptions: params.feeOptions,
+          };
+        default:
+          throw new Error(`Unsupported eth intent type ${params.intentType}`);
+      }
     }
 
-    return {
+    const ret = {
       ...baseIntent,
       memo: params.memo?.value,
       token: params.tokenName,
       enableTokens: params.enableTokens,
     };
+    console.log('ret');
+    console.log(JSON.stringify(ret));
+    return ret;
   }
 }

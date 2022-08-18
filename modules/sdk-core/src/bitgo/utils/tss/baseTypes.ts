@@ -35,7 +35,7 @@ export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
-  recipients: {
+  recipients?: {
     address: string;
     amount: string | number;
     tokenName?: string;
@@ -49,6 +49,7 @@ export interface PrebuildTransactionWithIntentOptions {
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
   isTss?: boolean;
+  lowFeeTxid?: string;
 }
 
 export type TxRequestState =

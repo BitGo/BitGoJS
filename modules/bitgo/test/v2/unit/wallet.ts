@@ -1414,7 +1414,7 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('TSS Wallets', function () {
+  describe('Custodial TSS Wallets', function () {
     const sandbox = sinon.createSandbox();
     const tsol = bitgo.coin('tsol');
     const walletData = {
@@ -1858,5 +1858,384 @@ describe('V2 Wallet:', function () {
         getKeyNock.isDone().should.be.True();
       });
     });
+  });
+
+  describe('TSS Hot Wallets', function () {
+    const sandbox = sinon.createSandbox();
+    const gteth = bitgo.coin('gteth');
+    const walletData = {
+      id: '5fbd75ed809e6d00166fe23c6082df91',
+      coin: 'gteth',
+      keys: [
+        '5fbd75de858847002430e25a7a19b676',
+        '5fbd75dfa8fcac0016192ca3d3ec8ea2',
+        '5f0d4ac94b333b01db5596a263dc6a35',
+      ],
+      coinSpecific: {},
+      multisigType: 'tss',
+      type: 'hot',
+    };
+    const tssWallet = new Wallet(bitgo, gteth, walletData);
+
+    const txRequestFull: TxRequest = {
+      txRequestId: 'id',
+      intent: {
+        intentType: 'payment',
+      },
+      date: new Date().toISOString(),
+      latest: true,
+      state: 'pendingUserSignature',
+      userId: 'userId',
+      walletId: 'walletId',
+      signatureShares: [],
+      version: 1,
+      policiesChecked: false,
+      walletType: 'hot',
+      transactions: [{
+        state: 'pendingSignature',
+        unsignedTx: {
+          serializedTxHex: 'ababcdcd',
+          signableHex: 'deadbeef',
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+          derivationPath: 'm/0',
+        },
+        signatureShares: [],
+      }],
+      unsignedTxs: [],
+      apiVersion: 'full',
+    };
+
+    afterEach(function () {
+      sandbox.verifyAndRestore();
+    });
+
+    describe('Transaction prebuilds', function () {
+      it('should build a single recipient transfer transaction', async function () {
+        const recipients = [{
+          address: '0xf0930c2317f12521bc903bf153faa5a5b85c2f4c',
+          amount: '1',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a multiple recipient transfer transaction with memo', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }, {
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '2000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.spy(TssUtils.prototype, 'prebuildTxWithIntent');
+        // const populateIntent = sandbox.spy(TssUtils.prototype, 'populateIntent');
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build an enable token transaction', async function () {
+        const recipients = [];
+        const tokenName = 'tcoin:tokenName';
+        const prebuildTxWithIntent = sandbox.spy(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'createAccount',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          tokenName,
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'enabletoken',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          tokenName,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'enabletoken',
+            tokenName,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should fail for non-transfer transaction types', async function () {
+        await tssWallet.prebuildTransaction({
+          reqId,
+          recipients: [{
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          }],
+          type: 'stake',
+        }).should.be.rejectedWith('transaction type not supported: stake');
+      });
+
+      it('should build a single recipient transfer transaction for full', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        }, 'full');
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+        // const txPrebuild = await custodialTssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+        });
+
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+    });
+
+    //   describe('Transaction signing', function () {
+    //     it('should sign transaction', async function () {
+    //       const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
+    //       signTxRequest.resolves(txRequest);
+    //       signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
+
+    //       const txPrebuild = {
+    //         walletId: tssWallet.id(),
+    //         wallet: tssWallet,
+    //         txRequestId: 'id',
+    //         txHex: 'ababcdcd',
+    //       };
+    //       const signedTransaction = await tssWallet.signTransaction({
+    //         reqId,
+    //         txPrebuild,
+    //         prv: 'sercretKey',
+    //       });
+    //       signedTransaction.should.deepEqual({
+    //         txRequestId: txRequest.txRequestId,
+    //       });
+    //     });
+
+    //     it('should fail to sign transaction without txRequestId', async function () {
+    //       const txPrebuild = {
+    //         walletId: tssWallet.id(),
+    //         wallet: tssWallet,
+    //         txHex: 'ababcdcd',
+    //       };
+    //       await tssWallet.signTransaction({
+    //         reqId,
+    //         txPrebuild,
+    //         prv: 'sercretKey',
+    //       }).should.be.rejectedWith('txRequestId required to sign transactions with TSS');
+    //     });
+    //   });
+
+    //   describe('Send Many', function () {
+    //     const sendManyInput = {
+    //       type: 'transfer',
+    //       recipients: [{
+    //         address: 'address',
+    //         amount: '1000',
+    //       }],
+    //     };
+
+    //     it('should send many', async function () {
+    //       const signedTransaction = {
+    //         txRequestId: 'txRequestId',
+    //       };
+
+    //       const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+    //       prebuildAndSignTransaction.resolves(signedTransaction);
+    //       prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+    //       const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+    //       sendTxRequest.resolves('sendTxResponse');
+    //       sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+    //       const sendMany = await tssWallet.sendMany(sendManyInput);
+    //       sendMany.should.deepEqual('sendTxResponse');
+    //     });
+
+    //     it('should send many and call create transfer api', async function () {
+    //       const signedTransaction = {
+    //         txRequestId: 'txRequestId',
+    //       };
+
+    //       const prebuildAndSignTransaction = sandbox.stub(custodialTssWallet, 'prebuildAndSignTransaction');
+    //       prebuildAndSignTransaction.resolves(signedTransaction);
+    //       prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+    //       const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+    //       sendTxRequest.resolves('sendTxResponse');
+    //       sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+    //       const createTransferNock = nock(bgUrl)
+    //         .persist()
+    //         .post(`/api/v2/wallet/${walletData.id}/txrequests/${signedTransaction.txRequestId}/transfers`)
+    //         .reply(200);
+
+    //       const sendMany = await custodialTssWallet.sendMany(sendManyInput);
+    //       sendMany.should.deepEqual('sendTxResponse');
+    //       createTransferNock.isDone().should.be.true();
+    //     });
+
+    //     it('should fail if txRequestId is missing from prebuild', async function () {
+    //       const signedTransaction = {
+    //         txHex: 'deadbeef',
+    //       };
+
+    //       const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+    //       prebuildAndSignTransaction.resolves(signedTransaction);
+    //       prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+    //       await tssWallet.sendMany(sendManyInput).should.be.rejectedWith('txRequestId missing from signed transaction');
+    //     });
+    //   });
+
+    //   describe('Wallet Sharing', function () {
+    //     it('should use keychain pub to share tss wallet', async function () {
+    //       const userId = '123';
+    //       const email = 'shareto@sdktest.com';
+    //       const permissions = 'view,spend';
+    //       const toKeychain = fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+    //       const path = 'm/999999/1/1';
+    //       const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+    //       const walletPassphrase = 'bitgo1234';
+
+    //       const getSharingKeyNock = nock(bgUrl)
+    //         .post('/api/v1/user/sharingkey', { email })
+    //         .reply(200, { userId, pubkey, path });
+
+    //       // commonPub + commonChaincode
+    //       const commonKeychain = randomBytes(32).toString('hex') + randomBytes(32).toString('hex');
+    //       const getKeyNock = nock(bgUrl)
+    //         .get(`/api/v2/tsol/key/${tssWallet.keyIds()[0]}`)
+    //         .reply(200, {
+    //           id: tssWallet.keyIds()[0],
+    //           commonKeychain: commonKeychain,
+    //           source: 'user',
+    //           encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+    //           coinSpecific: {},
+    //         });
+
+    //       const stub = sinon.stub(tssWallet, 'createShare').callsFake(
+    //         async (options) => {
+    //           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //           options!.keychain!.pub!.should.not.be.undefined();
+    //           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //           options!.keychain!.pub!.should.equal(TssUtils.getPublicKeyFromCommonKeychain(commonKeychain));
+    //           return undefined;
+    //         }
+    //       );
+    //       await tssWallet.shareWallet({ email, permissions, walletPassphrase });
+
+  //       stub.calledOnce.should.be.true();
+  //       getSharingKeyNock.isDone().should.be.True();
+  //       getKeyNock.isDone().should.be.True();
+  //     });
+  //   });
   });
 });

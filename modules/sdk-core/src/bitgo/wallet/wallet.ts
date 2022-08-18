@@ -27,7 +27,7 @@ import {
   TssUtils,
   TxRequest,
   EddsaUnsignedTransaction,
-  EIP1559FeeOptions,
+  // EIP1559FeeOptions,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
@@ -1959,10 +1959,19 @@ export class Wallet implements IWallet {
   async changeFee(params: ChangeFeeOptions = {}): Promise<any> {
     if (params.fee) common.validateParams(params, ['txid', 'fee'], []);
     if (params.eip1559) common.validateParams(params.eip1559, ['maxFeePerGas', 'maxPriorityFeePerGas']);
-    return await this.bitgo
-      .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
-      .send(params)
-      .result();
+    if (this._wallet.multisigType === 'tss') {
+      return await this.sendMany({
+        type: 'acceleration',
+        eip1559: params.eip1559,
+        gasPrice: Number(params.fee),
+        lowFeeTxid: params.txid,
+      });
+    } else {
+      return await this.bitgo
+        .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
+        .send(params)
+        .result();
+    }
   }
 
   /**
@@ -2452,8 +2461,9 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
-    // const apiVersion = this._wallet.type === 'custodial' ? 'full' : 'lite';
-    const apiVersion = 'full';
+    // all coins that use ECDSA should only support txerequest full
+    const apiVersion =
+      this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite';
 
     let txRequest: TxRequest;
     switch (params.type) {
@@ -2468,7 +2478,13 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             memo: params.memo,
             nonce: params.nonce,
-            feeOptions: params.feeOptions as EIP1559FeeOptions,
+            feeOptions: params.gasPrice
+              ? { gasPrice: params.gasPrice, gasLimit: params.gasLimit }
+              : {
+                  maxFeePerGas: Number(params.eip1559?.maxFeePerGas),
+                  maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
+                  gasLimit: params.gasLimit,
+                },
             isTss: params.isTss,
           },
           apiVersion,
@@ -2483,6 +2499,25 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             enableTokens: params.enableTokens,
             memo: params.memo,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'acceleration':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'acceleration',
+            lowFeeTxid: params.lowFeeTxid,
+            feeOptions: params.gasPrice
+              ? { gasPrice: params.gasPrice, gasLimit: params.gasLimit }
+              : {
+                  maxFeePerGas: Number(params.eip1559?.maxFeePerGas),
+                  maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
+                  gasLimit: params.gasLimit,
+                },
+            isTss: params.isTss,
           },
           apiVersion,
           params.preview
