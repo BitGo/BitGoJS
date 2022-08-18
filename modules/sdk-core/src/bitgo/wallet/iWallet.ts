@@ -99,6 +99,9 @@ export interface PrebuildTransactionOptions {
   enableTokens?: TokenEnablement[];
   nonce?: string;
   preview?: boolean;
+  eip1559?: EIP1559;
+  gasLimit?: number;
+  lowFeeTxid?: string;
   isTss?: boolean;
 }
 
@@ -436,6 +439,8 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   memo?: Memo;
   transferId?: number;
   [index: string]: unknown;
+  eip1559?: EIP1559;
+  gasLimit?: number;
 }
 
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';

@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import assert from 'assert';
 import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -100,7 +101,11 @@ export abstract class MpcUtils {
    */
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
-    const intentRecipients = params.recipients.map((recipient) => {
+
+    if (params.intentType !== 'acceleration') {
+      assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
+    }
+    const intentRecipients = params.recipients?.map((recipient) => {
       const formattedRecipient: IntentRecipient = {
         address: { address: recipient.address },
         amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
@@ -125,15 +130,28 @@ export abstract class MpcUtils {
       nonce: params.nonce,
       recipients: intentRecipients,
     };
+
     if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon') {
-      return {
-        ...baseIntent,
-        selfSend: params.selfSend,
-        feeOptions: params.feeOptions,
-        hopParams: params.hopParams,
-        isTss: params.isTss,
-        nonce: params.nonce,
-      };
+      switch (params.intentType) {
+        case 'payment':
+        case 'tokenTransfer':
+          return {
+            ...baseIntent,
+            selfSend: params.selfSend,
+            feeOptions: params.feeOptions,
+            hopParams: params.hopParams,
+            isTss: params.isTss,
+            nonce: params.nonce,
+          };
+        case 'acceleration':
+          return {
+            ...baseIntent,
+            txid: params.lowFeeTxid,
+            feeOptions: params.feeOptions,
+          };
+        default:
+          throw new Error(`Unsupported intent type ${params.intentType}`);
+      }
     }
 
     return {

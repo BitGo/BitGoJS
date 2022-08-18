@@ -22,7 +22,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction, EIP1559FeeOptions } from '../utils';
+import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -2472,6 +2472,24 @@ export class Wallet implements IWallet {
     const apiVersion =
       this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite';
 
+    // Two options different implementations of fees seems to now be supported, for now we will support both to be backwards compatible
+    // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
+    let feeOptions;
+    if (params.feeOptions) {
+      feeOptions = params.feeOptions;
+    } else if (params.gasPrice !== undefined || params.eip1559 !== undefined) {
+      feeOptions =
+        params.gasPrice !== undefined
+          ? { gasPrice: params.gasPrice, gasLimit: params.gasLimit }
+          : {
+              maxFeePerGas: Number(params.eip1559?.maxFeePerGas),
+              maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
+              gasLimit: params.gasLimit,
+            };
+    } else {
+      feeOptions = undefined;
+    }
+
     let txRequest: TxRequest;
     switch (params.type) {
       case 'transfer':
@@ -2484,7 +2502,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             memo: params.memo,
             nonce: params.nonce,
-            feeOptions: params.feeOptions as EIP1559FeeOptions,
+            feeOptions,
             isTss: params.isTss,
           },
           apiVersion,
@@ -2499,7 +2517,7 @@ export class Wallet implements IWallet {
             intentType: 'transferToken',
             recipients: params.recipients || [],
             nonce: params.nonce,
-            feeOptions: params.feeOptions as EIP1559FeeOptions,
+            feeOptions,
           },
           apiVersion,
           params.preview
@@ -2513,6 +2531,20 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             enableTokens: params.enableTokens,
             memo: params.memo,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'acceleration':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'acceleration',
+            comment: params.comment,
+            lowFeeTxid: params.lowFeeTxid,
+            feeOptions,
+            isTss: params.isTss,
           },
           apiVersion,
           params.preview
