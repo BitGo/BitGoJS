@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.12.6-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.6-rc.12...@bitgo/express@9.12.6-rc.13) (2022-08-18)
+
+
+### Bug Fixes
+
+* add ability to use unencrypted private key ([803e14e](https://github.com/BitGo/BitGoJS/commit/803e14ef5e6a2c50fbb0b7408a31561850c4961e))
+
+
+
+
+
 ## [9.12.6-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.6-rc.11...@bitgo/express@9.12.6-rc.12) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/express
