@@ -430,6 +430,17 @@ class Ethereum2 extends Mainnet implements AccountNetwork {
   accountExplorerUrl = 'https://beaconscan.com/address';
 }
 
+class EthereumW extends Mainnet implements EthereumNetwork {
+  name = 'Ethereum PoW';
+  family = CoinFamily.ETHW;
+  explorerUrl = '';
+  accountExplorerUrl = '';
+  chainId = NaN; // TODO BG-55520: This would be updated with the chain ID of a ETH PoW fork if it exists after the merge
+  batcherContractAddress = '';
+  forwarderFactoryAddress = '';
+  forwarderImplementationAddress = '';
+}
+
 class Pyrmont extends Testnet implements AccountNetwork {
   name = 'Pyrmont';
   family = CoinFamily.ETH2;
@@ -719,6 +730,7 @@ export const Networks = {
     ethereum: Object.freeze(new Ethereum()),
     ethereum2: Object.freeze(new Ethereum2()),
     ethereumClassic: Object.freeze(new EthereumClassic()),
+    ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
