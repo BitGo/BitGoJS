@@ -106,6 +106,7 @@ export const coins = CoinMap.fromCoins([
     ETH_FEATURES_WITH_STAKING
   ),
   account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
+  account('ethw', 'Ethereum PoW', Networks.main.ethereumW, 18, UnderlyingAsset.ETHW, AccountCoin.DEFAULT_FEATURES),
   account(
     'teth2',
     'Testnet Ethereum 2.0',
