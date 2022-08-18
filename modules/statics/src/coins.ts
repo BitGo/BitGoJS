@@ -1,5 +1,4 @@
 import {
-  acaToken,
   account,
   AccountCoin,
   algoToken,
@@ -23,7 +22,6 @@ import {
   tpolygonErc20,
   tronToken,
   tsolToken,
-  tacaToken,
   tstellarToken,
   ttronToken,
 } from './account';
@@ -1824,10 +1822,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
-  acaToken('aca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
-  acaToken('aca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
-  tacaToken('taca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
-  tacaToken('taca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
   // testnet polygon tokens
   tpolygonErc20(
     'DERC20',
