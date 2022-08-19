@@ -130,6 +130,13 @@ function run(
 
     const recoverUnspents = allUnspents.slice(0, -1);
 
+    if (coin.amountType === 'bigint') {
+      recoverUnspents.forEach((u) => {
+        // 1e8 * 9e7 < 9.007e15 but 2e8 * 9e7 > 9.007e15 to test both code paths in queryBlockchainUnspentsPath
+        u.value *= 9e7;
+      });
+    }
+
     before('mock', function () {
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
     });
@@ -159,7 +166,7 @@ function run(
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
-      recoveryTx = utxolib.bitgo.createTransactionFromHex(txHex as string, coin.network);
+      recoveryTx = utxolib.bitgo.createTransactionFromHex(txHex as string, coin.network, coin.amountType);
       recovery.txid = recoveryTx.getId();
     });
 

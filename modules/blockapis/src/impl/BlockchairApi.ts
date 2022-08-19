@@ -104,6 +104,9 @@ export class BlockchairApi implements AddressApi, UtxoApi {
       case 'dash':
         blockchain = 'dash';
         break;
+      case 'doge':
+        blockchain = 'dogecoin';
+        break;
       case 'zec':
         blockchain = 'zcash';
         break;
