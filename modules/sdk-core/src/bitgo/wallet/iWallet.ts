@@ -1,5 +1,12 @@
 import { IRequestTracer } from '../../api';
-import { IBaseCoin, SignedTransaction, TransactionPrebuild, VerificationOptions } from '../baseCoin';
+import {
+  IBaseCoin,
+  MessagePrebuild,
+  SignedMessage,
+  SignedTransaction,
+  TransactionPrebuild,
+  VerificationOptions,
+} from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
@@ -111,15 +118,22 @@ export interface CustomSigningFunction {
   (params: { coin: IBaseCoin; txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
 }
 
-export interface WalletSignTransactionOptions {
+export interface WalletSignBaseOptions {
   reqId?: IRequestTracer;
-  txPrebuild?: TransactionPrebuild;
   prv?: string;
   pubs?: string[];
   cosignerPub?: string;
   isLastSignature?: boolean;
   customSigningFunction?: CustomSigningFunction;
+}
+
+export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
+  txPrebuild?: TransactionPrebuild;
   [index: string]: unknown;
+}
+
+export interface WalletSignMessageOptions extends WalletSignBaseOptions {
+  messagePrebuild?: MessagePrebuild;
 }
 
 export interface GetUserPrvOptions {
@@ -569,4 +583,5 @@ export interface IWallet {
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
   lightning(): ILightning;
+  signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
 }

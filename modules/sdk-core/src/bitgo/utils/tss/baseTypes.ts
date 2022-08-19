@@ -90,6 +90,16 @@ export type UnsignedTransactionTss = SignableTransaction & {
   parsedTx?: unknown;
 };
 
+export type UnsignedMessageTss = {
+  derivationPath: string;
+  message: string;
+};
+
+export enum RequestType {
+  tx,
+  message,
+}
+
 export type TxRequest = {
   txRequestId: string;
   walletId: string;
@@ -105,6 +115,7 @@ export type TxRequest = {
   signatureShares?: SignatureShareRecord[];
   pendingTxHashes?: string[];
   txHashes?: string[];
+  unsignedMessages?: UnsignedMessageTss[];
   // Only available in 'lite' version
   unsignedTxs: UnsignedTransactionTss[]; // Should override with blockchain / sig scheme specific unsigned tx
   // Only available in 'full' version
@@ -128,6 +139,12 @@ export interface SignatureShareRecord {
   to: SignatureShareType;
   share: string;
 }
+
+export type TSSParams = {
+  txRequest: string | TxRequest; // can be either a string or TxRequest
+  prv: string;
+  reqId: IRequestTracer;
+};
 
 /**
  * Common Interface for implementing signature scheme specific
@@ -162,6 +179,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
+  signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;
   prebuildTxWithIntent(
     params: PrebuildTransactionWithIntentOptions,
     apiVersion?: TxRequestVersion,
