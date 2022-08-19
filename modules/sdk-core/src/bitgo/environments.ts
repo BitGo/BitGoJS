@@ -13,6 +13,7 @@ interface EnvironmentTemplate {
   etherscanBaseUrl: string;
   etherscanApiToken?: string;
   eth2ExplorerBaseUrl: string;
+  ethwExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   nearNodeUrls: string[];
@@ -78,6 +79,7 @@ const mainnetBase: EnvironmentTemplate = {
   etherscanBaseUrl: 'https://api.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
+  ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   tronNodes: {
@@ -96,6 +98,7 @@ const testnetBase: EnvironmentTemplate = {
   etherscanBaseUrl: 'https://api-goerli.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
+  ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
   // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
   eosNodeUrls: [
     'https://jungle3.cryptolions.io:443',
