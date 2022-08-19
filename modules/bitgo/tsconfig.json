@@ -96,6 +96,9 @@
       "path": "../sdk-coin-eth2"
     },
     {
+      "path": "../sdk-coin-ethw"
+    },
+    {
       "path": "../sdk-coin-hbar"
     },
     {
