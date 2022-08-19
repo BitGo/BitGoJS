@@ -435,7 +435,7 @@ class EthereumW extends Mainnet implements EthereumNetwork {
   family = CoinFamily.ETHW;
   explorerUrl = '';
   accountExplorerUrl = '';
-  chainId = NaN; // TODO BG-55520: This would be updated with the chain ID of a ETH PoW fork if it exists after the merge
+  chainId = 999999999999; // TODO BG-55520: This would be updated with the chain ID of a ETH PoW fork if it exists after the merge. Current value is not assigned to any testnet and is needed for UT to pass, since NaN will produce invalid tx due to "v" not being >= 37.
   batcherContractAddress = '';
   forwarderFactoryAddress = '';
   forwarderImplementationAddress = '';
