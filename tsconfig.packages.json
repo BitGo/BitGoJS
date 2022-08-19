@@ -83,6 +83,9 @@
       "path": "./modules/sdk-coin-eth2"
     },
     {
+      "path": "./modules/sdk-coin-ethw"
+    },
+    {
       "path": "./modules/sdk-coin-hbar"
     },
     {
