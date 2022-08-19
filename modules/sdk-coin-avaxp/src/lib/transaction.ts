@@ -68,6 +68,7 @@ export class Transaction extends BaseTransaction {
   public _fromAddresses: BufferAvax[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
+  public _fee: BN = new BN(0);
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -303,7 +304,7 @@ export class Transaction extends BaseTransaction {
       changeOutputs: txJson.changeOutputs.map((o) => ({ address: o.address, amount: o.value })),
       changeAmount,
       rewardAddresses: this.rewardAddresses,
-      fee: { fee: '0' },
+      fee: { fee: this._fee.toString() },
       type: txJson.type,
       memo: txJson.memo,
     };

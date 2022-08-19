@@ -45,6 +45,9 @@ export enum TransactionType {
   addDelegator,
   // Add validator to p-chain
   addValidator,
+  // Cross chain transfer at Avax
+  Export,
+  Import,
 }
 
 /**

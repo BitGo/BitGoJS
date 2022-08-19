@@ -10,7 +10,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.WalletInitialization;
+    return TransactionType.Send;
   }
 
   /** @inheritdoc */

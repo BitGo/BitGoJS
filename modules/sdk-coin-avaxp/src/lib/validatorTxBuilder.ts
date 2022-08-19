@@ -72,7 +72,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @protected
    */
   protected buildAvaxpTransaction(): void {
-    const { inputs, outputs, credentials } = this.createInputOutput();
+    const { inputs, outputs, credentials } = this.createInputOutput(this._stakeAmount);
     this.transaction.setTransaction(
       new Tx(
         new UnsignedTx(

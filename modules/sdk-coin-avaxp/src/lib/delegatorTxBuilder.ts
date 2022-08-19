@@ -7,18 +7,13 @@ import {
   ParseableOutput,
   PlatformVMConstants,
   SECPOwnerOutput,
-  SECPTransferInput,
   SECPTransferOutput,
-  SelectCredentialClass,
-  TransferableInput,
   TransferableOutput,
   Tx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN } from 'avalanche';
-import { DecodedUtxoObj } from './iface';
 import utils from './utils';
-import { Credential } from 'avalanche/dist/common';
 
 export class DelegatorTxBuilder extends TransactionBuilder {
   protected _nodeID: string;
@@ -150,7 +145,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     this._startTime = baseTx.getStartTime();
     this._endTime = baseTx.getEndTime();
     this._stakeAmount = baseTx.getStakeAmount();
-    this.transaction._utxos = this.recoverUtxos(baseTx.getIns());
+    this.transaction._rewardAddresses = baseTx.getRewardOwners().getOutput().getAddresses();
     return this;
   }
 
@@ -168,7 +163,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    */
   protected buildAvaxpTransaction(): void {
     this.validateStakeDuration(this._startTime, this._endTime);
-    const { inputs, outputs, credentials } = this.createInputOutput();
+    const { inputs, outputs, credentials } = this.createInputOutput(this._stakeAmount);
     this.transaction.setTransaction(
       new Tx(
         new UnsignedTx(
@@ -212,172 +207,5 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return new ParseableOutput(
       new SECPOwnerOutput(this.transaction._rewardAddresses, this.transaction._locktime, this.transaction._threshold)
     );
-  }
-
-  /**
-   * Inputs can be controlled but outputs get reordered in transactions
-   * In order to make sure that the mapping is always correct we create an addressIndx which matches to the appropiate
-   * signatureIdx
-   * @param inputs
-   * @protected
-   */
-  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
-    return utxos.map((utxo) => {
-      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
-
-      // use the same addressesIndex as existing ones in the inputs
-      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-
-      return {
-        outputID: 7,
-        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
-        txid: utils.cb58Encode(utxo.getTxID()),
-        amount: secpInput.getAmount().toString(),
-        threshold: this.transaction._threshold,
-        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
-        addressesIndex,
-      };
-    });
-  }
-
-  /**
-   * Threshold must be 2 and since output always get reordered we want to make sure we can always add signatures in the correct location
-   * To find the correct location for the signature, we use the ouput's addresses to create the signatureIdx in the order that we desire
-   * 0: user key, 1: hsm key, 2: recovery key
-   * @protected
-   */
-  protected createInputOutput(): {
-    inputs: TransferableInput[];
-    outputs: TransferableOutput[];
-    credentials: Credential[];
-  } {
-    const inputs: TransferableInput[] = [];
-    const outputs: TransferableOutput[] = [];
-
-    // amount spent so far
-    let currentTotal: BN = new BN(0);
-
-    // delegating and validating have no fees
-    const totalTarget = this._stakeAmount.clone();
-
-    const credentials: Credential[] = [];
-
-    // convert fromAddresses to string
-    // fromAddresses = bitgo order if we are in WP
-    // fromAddresses = onchain order if we are in from
-    const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
-      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
-    );
-
-    /* 
-    A = user key
-    B = hsm key
-    C = backup key
-    bitgoAddresses = bitgo addresses [ A, B, C ]
-    utxo.addresses = IMS addresses [ B, C, A ]
-    utxo.addressesIndex = [ 2, 0, 1 ]
-    we pick 0, 1 for non-recovery
-    we pick 1, 2 for recovery
-    */
-    this.transaction._utxos.forEach((utxo) => {
-      // in WP, output.addressesIndex is empty, so fill it
-      if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
-        utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
-      }
-      // in OVC, output.addressesIndex is defined correctly from the previous iteration
-    });
-
-    // validate the utxos
-    this.transaction._utxos.forEach((utxo) => {
-      if (!utxo) {
-        throw new BuildTransactionError('Utxo is undefined');
-      }
-      // addressesIndex should neve have a mismatch
-      if (utxo.addressesIndex?.includes(-1)) {
-        throw new BuildTransactionError('Addresses are inconsistent');
-      }
-      if (utxo.threshold !== this.transaction._threshold) {
-        throw new BuildTransactionError('Threshold is inconsistent');
-      }
-    });
-
-    // if we are in OVC, none of the utxos will have addresses since they come from
-    // deserialized inputs (which don't have addresses), not the IMS
-    const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
-
-    this.transaction._utxos.forEach((utxo, i) => {
-      if (utxo.outputID === 7) {
-        const txidBuf = utils.cb58Decode(utxo.txid);
-        const amt: BN = new BN(utxo.amount);
-        const outputidx = utils.cb58Decode(utxo.outputidx);
-        const addressesIndex = utxo.addressesIndex ?? [];
-
-        // either user (0) or recovery (2)
-        const firstIndex = this.recoverSigner ? 2 : 0;
-        const bitgoIndex = 1;
-        currentTotal = currentTotal.add(amt);
-
-        const secpTransferInput = new SECPTransferInput(amt);
-
-        if (!buildOutputs) {
-          addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
-        } else {
-          // if user/backup > bitgo
-          if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-            secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
-            secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
-            credentials.push(
-              SelectCredentialClass(
-                secpTransferInput.getCredentialID(), // 9
-                ['', this.transaction._fromAddresses[firstIndex].toString('hex')].map(utils.createSig)
-              )
-            );
-          } else {
-            secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
-            secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
-            credentials.push(
-              SelectCredentialClass(
-                secpTransferInput.getCredentialID(),
-                [this.transaction._fromAddresses[firstIndex].toString('hex'), ''].map(utils.createSig)
-              )
-            );
-          }
-        }
-
-        const input: TransferableInput = new TransferableInput(
-          txidBuf,
-          outputidx,
-          this.transaction._assetId,
-          secpTransferInput
-        );
-        inputs.push(input);
-      }
-    });
-
-    if (buildOutputs) {
-      if (currentTotal.lt(totalTarget)) {
-        throw new BuildTransactionError(
-          `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
-        );
-      } else if (currentTotal.gt(totalTarget)) {
-        outputs.push(
-          new TransferableOutput(
-            this.transaction._assetId,
-            new SECPTransferOutput(
-              currentTotal.sub(totalTarget),
-              this.transaction._fromAddresses,
-              this.transaction._locktime,
-              this.transaction._threshold
-            )
-          )
-        );
-      }
-    }
-    // get outputs and credentials from the deserialized transaction if we are in OVC
-    return {
-      inputs,
-      outputs: outputs.length === 0 ? this.transaction.avaxPTransaction.getOuts() : outputs,
-      credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
-    };
   }
 }

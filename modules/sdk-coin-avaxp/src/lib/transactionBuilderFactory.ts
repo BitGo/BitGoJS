@@ -5,6 +5,7 @@ import { ValidatorTxBuilder } from './validatorTxBuilder';
 import { Tx } from 'avalanche/dist/apis/platformvm';
 import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
+import { ExportTxBuilder } from './exportTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -20,6 +21,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     let transactionBuilder: TransactionBuilder;
     if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
       transactionBuilder = this.getValidatorBuilder();
+    } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+      transactionBuilder = this.getExportBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -35,11 +38,19 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /**
    * Initialize Validator builder
    *
-   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @returns {StakingTxBuilder} the builder initialized
+   * @returns {ValidatorTxBuilder} the builder initialized
    */
   getValidatorBuilder(): ValidatorTxBuilder {
     return new ValidatorTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export Cross chain transfer
+   *
+   * @returns {ExportTxBuilder} the builder initialized
+   */
+  getExportBuilder(): ExportTxBuilder {
+    return new ExportTxBuilder(this._coinConfig);
   }
 
   getWalletInitializationBuilder(): TransactionBuilder {
