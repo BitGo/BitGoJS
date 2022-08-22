@@ -12,27 +12,33 @@
  */
 
 const BitGoJS = require('bitgo');
-const bitgo = new BitGoJS.BitGo({ env: 'test' });
+const bitgo = new BitGoJS.BitGo({
+  env: 'custom',
+  customRootURI: 'https://testnet-07-app.bitgo-dev.com',
+//  customRootURI: 'https://app.bitgo-dev.com',
+});
 const Promise = require('bluebird');
-
 // TODO: set your access token here
-const accessToken = null;
+const accessToken = 'v2x0680ca96f57021d1e639a501d64f906fcad307f85f293eeb15836b523a2a5278';
 
 // TODO: set a label for your new wallet here
-const label = 'Example Test Wallet';
+const label = 'Stress Test Wallet';
 
 // TODO: set your passphrase for your new wallet here
 const passphrase = 'test_wallet_passphrase';
 
-const coin = 'tltc';
+const coin = 'tada';
 
 // Create the wallet
 Promise.coroutine(function *() {
   bitgo.authenticateWithAccessToken({ accessToken });
+  const passcodeEncryptionCode = bitgo.generateRandomPassword();
 
   const walletOptions = {
     label,
     passphrase,
+    passcodeEncryptionCode,
+    multisigType: 'tss',
   };
 
   const wallet = yield bitgo.coin(coin).wallets().generateWallet(walletOptions);

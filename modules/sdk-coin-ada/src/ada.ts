@@ -2,6 +2,7 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -64,5 +65,17 @@ export class Ada extends BaseCoin {
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Flag indicating if this coin supports TSS wallets.
+   * @returns {boolean} True if TSS Wallets can be created for this coin
+   */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
   }
 }
