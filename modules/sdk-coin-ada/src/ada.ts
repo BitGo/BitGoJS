@@ -6,6 +6,7 @@ import {
   BaseTransaction,
   BitGoBase,
   KeyPair,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
@@ -185,6 +186,16 @@ export class Ada extends BaseCoin {
     return {
       txHex: serializedTx,
     };
+  }
+
+  /** inherited doc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
   }
 
   private getBuilder(): TransactionBuilderFactory {
