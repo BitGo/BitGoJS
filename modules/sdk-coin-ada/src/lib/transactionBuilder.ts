@@ -13,6 +13,7 @@ import { Transaction, TransactionInput, TransactionOutput } from './transaction'
 import { KeyPair } from './keyPair';
 import util from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import { BigNum } from '@emurgo/cardano-serialization-lib-nodejs';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction!: Transaction;
@@ -21,7 +22,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transactionOutputs: TransactionOutput[] = [];
   private _txBuilder: CardanoWasm.TransactionBuilder;
   private _signatures: Signature[] = [];
+  private _changeAddress: string;
+  private _senderBalance: string;
   private _ttl = 0;
+  private _fee: BigNum;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -56,6 +60,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   ttl(t: number): this {
     this._ttl = t;
+    return this;
+  }
+
+  changeAddress(addr: string, totalInputBalance: string): this {
+    this._changeAddress = addr;
+    this._senderBalance = totalInputBalance;
     return this;
   }
 
@@ -102,21 +112,36 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         )
       );
     });
-    const outputs = CardanoWasm.TransactionOutputs.new();
+    let outputs = CardanoWasm.TransactionOutputs.new();
+    let totalAmountToSend = CardanoWasm.BigNum.zero();
     this._transactionOutputs.forEach((output) => {
+      const amount = CardanoWasm.BigNum.from_str(output.amount);
       outputs.add(
         CardanoWasm.TransactionOutput.new(
           CardanoWasm.Address.from_bech32(output.address),
-          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount))
+          CardanoWasm.Value.new(amount)
         )
       );
+      totalAmountToSend = totalAmountToSend.checked_add(amount);
     });
+
+    // add extra output for the change
+    if (this._changeAddress && this._senderBalance) {
+      const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+      const mockChange = CardanoWasm.TransactionOutput.new(
+        changeAddress,
+        CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(this._senderBalance)) // todo: subtract fixed amount
+      );
+      outputs.add(mockChange);
+    }
+
     const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, CardanoWasm.BigNum.zero());
     txBody.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
     const txHash = CardanoWasm.hash_transaction(txBody);
 
-    const witnessSet = CardanoWasm.TransactionWitnessSet.new();
-    const vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+    // we add witnesses once so that we can get the appropriate amount of signers for calculating the fee
+    let witnessSet = CardanoWasm.TransactionWitnessSet.new();
+    let vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
     this._signers.forEach((keyPair) => {
       const prv = keyPair.getKeys().prv as string;
       const vkeyWitness = CardanoWasm.make_vkey_witness(
@@ -130,9 +155,69 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
       vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
     });
+    if (vkeyWitnesses.len() === 0) {
+      const prv = CardanoWasm.PrivateKey.generate_ed25519();
+      const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
+      vkeyWitnesses.add(vkeyWitness);
+    }
     witnessSet.set_vkeys(vkeyWitnesses);
-    this.transaction.transaction = CardanoWasm.Transaction.new(txBody, witnessSet);
+    const txDraft = CardanoWasm.Transaction.new(txBody, witnessSet);
 
+    const linearFee = CardanoWasm.LinearFee.new(
+      CardanoWasm.BigNum.from_str('44'),
+      CardanoWasm.BigNum.from_str('155381')
+    );
+
+    // calculate the fee based off our dummy transaction
+    if (!this._fee) {
+      const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
+      this._fee = fee;
+    }
+
+    // now calculate the change based off of <utxoBalance> - <fee> - <amountToSend>
+    // reset the outputs collection because now our last output has changed
+
+    outputs = CardanoWasm.TransactionOutputs.new();
+    this._transactionOutputs.forEach((output) => {
+      outputs.add(
+        CardanoWasm.TransactionOutput.new(
+          CardanoWasm.Address.from_bech32(output.address),
+          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount))
+        )
+      );
+    });
+
+    if (this._changeAddress && this._senderBalance) {
+      const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+      const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
+      const change = utxoBalance.checked_sub(this._fee).checked_sub(totalAmountToSend);
+      const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+      outputs.add(changeOutput);
+    }
+    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+    txRaw.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
+    const txRawHash = CardanoWasm.hash_transaction(txRaw);
+
+    // now add the witnesses again this time for real. We need to do this again
+    // because now that we've added our real fee and change output, we have a difference transaction hash
+    witnessSet = CardanoWasm.TransactionWitnessSet.new();
+    vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+    this._signers.forEach((keyPair) => {
+      const prv = keyPair.getKeys().prv as string;
+      const vkeyWitness = CardanoWasm.make_vkey_witness(
+        txRawHash,
+        CardanoWasm.PrivateKey.from_normal_bytes(Buffer.from(prv, 'hex'))
+      );
+      vkeyWitnesses.add(vkeyWitness);
+    });
+    this._signatures.forEach((signature) => {
+      const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
+      const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
+      vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+    });
+    witnessSet.set_vkeys(vkeyWitnesses);
+
+    this.transaction.transaction = CardanoWasm.Transaction.new(txRaw, witnessSet);
     return this.transaction;
   }
 
@@ -150,6 +235,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
+  }
+
+  /** @inheritdoc */
+  get getFee(): string {
+    return this._fee.to_str();
   }
 
   /** @inheritdoc */

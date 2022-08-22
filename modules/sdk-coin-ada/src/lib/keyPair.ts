@@ -1,4 +1,4 @@
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, AddressFormat } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, AddressFormat, toUint8Array } from '@bitgo/sdk-core';
 import {
   PublicKey,
   PrivateKey,
@@ -6,6 +6,7 @@ import {
   NetworkInfo,
   StakeCredential,
 } from '@emurgo/cardano-serialization-lib-nodejs';
+import * as nacl from 'tweetnacl';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -55,5 +56,15 @@ export class KeyPair extends Ed25519KeyPair {
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
     const rawPub = PublicKey.from_bech32(pub).as_bytes();
     return { pub: toHex(rawPub) };
+  }
+
+  /** @inheritdoc */
+  signMessage(message: string): Uint8Array {
+    const messageToSign = new Uint8Array(Buffer.from(message, 'hex'));
+    const prv = this.keyPair?.prv;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(messageToSign, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }
