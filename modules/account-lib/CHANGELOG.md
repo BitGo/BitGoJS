@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.12...@bitgo/account-lib@2.21.0-rc.13) (2022-08-22)
+
+
+### Bug Fixes
+
+* **account-lib:** shamir secret indices validity ([4e22783](https://github.com/BitGo/BitGoJS/commit/4e227839d5c1fb84a583f17d8754b46324f4eef9))
+
+
+### Features
+
+* **account-lib:** custom salt shamir share ([fa34652](https://github.com/BitGo/BitGoJS/commit/fa346529b5dc9897b6bbf6fb4a05ac77f2f05b2d))
+
+
+
+
+
 # [2.21.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.11...@bitgo/account-lib@2.21.0-rc.12) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/account-lib

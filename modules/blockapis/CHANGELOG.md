@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.0.6-rc.4...@bitgo/blockapis@1.1.0-rc.0) (2022-08-22)
+
+
+### Features
+
+* **abstract-utxo:** backup key recovery service for doge ([612be53](https://github.com/BitGo/BitGoJS/commit/612be533836f33fdecb9584ddc0f5674df31dcb0))
+
+
+
+
+
 ## [1.0.6-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.0.6-rc.3...@bitgo/blockapis@1.0.6-rc.4) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/blockapis

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.8...@bitgo/sdk-coin-ada@1.2.0-rc.9) (2022-08-22)
+
+
+### Bug Fixes
+
+* **account-lib:** adding fee and change to sdk-coin-ada transactionBuilder ([1810eec](https://github.com/BitGo/BitGoJS/commit/1810eec6af3df4f1301594bf1402d50b965a54ca))
+
+
+### Features
+
+* **account-lib:** add tss to ada coin interface ([1a06746](https://github.com/BitGo/BitGoJS/commit/1a0674605af20785700799846829de0abc90691d))
+* **sdk-coin-ada:** implement ada sdk interface ([12ff431](https://github.com/BitGo/BitGoJS/commit/12ff431e4b694a9716a287639fbb8fd3088db719))
+
+
+
+
+
 # [1.2.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.7...@bitgo/sdk-coin-ada@1.2.0-rc.8) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

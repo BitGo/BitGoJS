@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/blockapis",
   "description": "Access public block explorer APIs for a variety of coins",
-  "version": "1.0.6-rc.4",
+  "version": "1.1.0-rc.0",
   "main": "dist/src/index.js",
   "files": [
     "dist/src/**/*"

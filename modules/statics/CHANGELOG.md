@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.7...@bitgo/statics@8.0.0-rc.8) (2022-08-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-polygon:** update polygon token names ([8bb61cf](https://github.com/BitGo/BitGoJS/commit/8bb61cf2112a668255746366a32f8e5c8105a481))
+
+
+### Features
+
+* **statics:** add trading tokens ([4ca3558](https://github.com/BitGo/BitGoJS/commit/4ca35584ee1429d510a5bd708e3985ec5e23bda1))
+* **statics:** bg-55026 enable sol staking flag ([f8b21a3](https://github.com/BitGo/BitGoJS/commit/f8b21a36a476750fc11205ffb9913bcb819e3452))
+
+
+### Reverts
+
+* Revert "chore: export AcaCoin in statics" ([a4d573e](https://github.com/BitGo/BitGoJS/commit/a4d573e816813280cf37b6b984bd2dd782c2e84d))
+* Revert "feat: add acala token config" ([9085421](https://github.com/BitGo/BitGoJS/commit/90854210ae82c41224c436ab9c6e3b4a4b606d29))
+
+
+
+
+
 # [8.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.6...@bitgo/statics@8.0.0-rc.7) (2022-08-17)
 
 

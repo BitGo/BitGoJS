@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.13](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.12...bitgo@14.3.0-rc.13) (2022-08-22)
+
+
+### Features
+
+* **abstract-utxo:** backup key recovery service for doge ([612be53](https://github.com/BitGo/BitGoJS/commit/612be533836f33fdecb9584ddc0f5674df31dcb0))
+* **abstract-utxo:** cross chain recovery support for bigint coins (doge) ([ad6bf71](https://github.com/BitGo/BitGoJS/commit/ad6bf71f58a4bae79f3bb014ee947a878f4b89d2))
+* **sdk-core:** add getInvoices to lightning object ([232bea3](https://github.com/BitGo/BitGoJS/commit/232bea30d95a4b6f9554cc0416c54f0f73a979ad))
+
+
+### Reverts
+
+* Revert "feat: add AcaToken in sdk-coin-aca" ([b574b2c](https://github.com/BitGo/BitGoJS/commit/b574b2c521b5a2152da4dbf327dddaeed47ef26d))
+
+
+
+
+
 # [14.3.0-rc.12](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.11...bitgo@14.3.0-rc.12) (2022-08-17)
 
 

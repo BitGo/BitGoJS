@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.0.3-rc.10...@bitgo/sdk-coin-dot@1.0.3-rc.11) (2022-08-22)
+
+
+### Reverts
+
+* Revert "feat: add keypair to acala module" ([ac4f700](https://github.com/BitGo/BitGoJS/commit/ac4f7001f7e77e6bfce4bb49d7fe4307d51c70b7))
+
+
+
+
+
 ## [1.0.3-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.0.3-rc.9...@bitgo/sdk-coin-dot@1.0.3-rc.10) (2022-08-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

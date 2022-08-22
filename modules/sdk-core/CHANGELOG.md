@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.6...@bitgo/sdk-core@2.0.0-rc.7) (2022-08-22)
+
+
+### Bug Fixes
+
+* **account-lib:** shamir secret indices validity ([4e22783](https://github.com/BitGo/BitGoJS/commit/4e227839d5c1fb84a583f17d8754b46324f4eef9))
+
+
+### Features
+
+* **account-lib:** custom salt shamir share ([fa34652](https://github.com/BitGo/BitGoJS/commit/fa346529b5dc9897b6bbf6fb4a05ac77f2f05b2d))
+* **sdk-core:** add getInvoices to lightning object ([232bea3](https://github.com/BitGo/BitGoJS/commit/232bea30d95a4b6f9554cc0416c54f0f73a979ad))
+
+
+### Reverts
+
+* Revert "feat: add keypair to acala module" ([ac4f700](https://github.com/BitGo/BitGoJS/commit/ac4f7001f7e77e6bfce4bb49d7fe4307d51c70b7))
+
+
+
+
+
 # [2.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.5...@bitgo/sdk-core@2.0.0-rc.6) (2022-08-17)
 
 

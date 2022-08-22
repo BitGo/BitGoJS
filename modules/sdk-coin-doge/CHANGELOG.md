@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.1.0-rc.4...@bitgo/sdk-coin-doge@1.1.0-rc.5) (2022-08-22)
+
+
+### Features
+
+* **abstract-utxo:** cross chain recovery support for bigint coins (doge) ([ad6bf71](https://github.com/BitGo/BitGoJS/commit/ad6bf71f58a4bae79f3bb014ee947a878f4b89d2))
+
+
+
+
+
 # [1.1.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.1.0-rc.3...@bitgo/sdk-coin-doge@1.1.0-rc.4) (2022-08-17)
 
 
