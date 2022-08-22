@@ -75,4 +75,13 @@ describe('lightning API requests', function () {
     const res = await wallet.lightning().deposit({ amount: 100000, address: 'fake_address' });
     assert.deepStrictEqual(res, fixtures.deposit);
   });
+
+  it('should fetch lightning invoices', async function () {
+    const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/invoices`)
+      .query({ status: 'settled', limit: 1 })
+      .reply(200, fixtures.invoices);
+    const res = await wallet.lightning().getInvoices({ status: 'settled', limit: 1 });
+    assert.deepStrictEqual(res, fixtures.invoices);
+    scope.done();
+  });
 });

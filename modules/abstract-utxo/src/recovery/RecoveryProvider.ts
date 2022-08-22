@@ -18,6 +18,7 @@ export interface RecoveryAccountData {
 export interface RecoveryProvider {
   getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]>;
   getAddressInfo(address: string): Promise<AddressInfo>;
+  getTransactionHex(txid: string): Promise<string>;
 }
 
 export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
@@ -30,6 +31,7 @@ export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
     case 'bsv':
     case 'btg':
     case 'dash':
+    case 'doge':
     case 'ltc':
     case 'zec':
       return BlockchairApi.forCoin(coinName, { apiToken });

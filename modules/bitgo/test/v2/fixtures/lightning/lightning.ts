@@ -9,6 +9,19 @@ export default {
     invoice: 'lntb1230n1p309pp3pp54l6up2ggkzamz6t8jcntgdszcz0r3xey93grt3zt8w0kzw5u4vdsdq5w3jhxapqwpshjmt9de6qcqzpgxqrrsssp56rek9prhjj64f6xvkzjffajmaf0dw472knfykafftklv8ljhjs9q9qyyssq2uznk85spdqfmgpsckx9hunxlgsvrzhwknq7ucpcnuan2fhr3fj567psz75vksynk3q03kt7hutm37tce8258hjqndljr0evuf04eyspz5kw0z',
   },
 
+  invoices: [
+    {
+      paymentHash: '8ba27020f969741b6dd967776d21d94b859ce8ff4896c42748a92dffde071c02',
+      walletId: '62b9b5d140bc322459967cf764949ae3',
+      status: 'settled',
+      value: 1000,
+      expiresAt: '2022-08-16T23:47:28.121Z',
+      createdAt: '2022-08-16T22:47:28.133Z',
+      updatedAt: '2022-08-16T22:47:28.133Z',
+      amtPaidSats: 1000,
+    },
+  ],
+
   payment: {
     transfer: {
       entries: [

@@ -41,7 +41,6 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-coin-dot": "^1.0.3-rc.10",
     "@bitgo/sdk-core": "^2.0.0-rc.6",
     "@bitgo/statics": "^8.0.0-rc.7"
   },

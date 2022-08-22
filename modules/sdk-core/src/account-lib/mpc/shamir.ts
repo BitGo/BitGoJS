@@ -1,4 +1,3 @@
-const assert = require('assert');
 const crypto = require('crypto');
 import Curve from './curves';
 import { bigIntFromBufferLE, bigIntToBufferLE, clamp } from './util';
@@ -17,22 +16,40 @@ export default class Shamir {
    * @param secret secret to split
    * @param threshold share threshold required to reconstruct secret
    * @param numShares total number of shares to split to split secret into
-   * @param indices
+   * @param indices optional indices which can be used while generating the shares
+   * @param salt optional salt which could be used while generating the shares
    * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares
    * representing that share's free term.
    */
-  split(secret: bigint, threshold: number, numShares: number, indices?: Array<number>): Record<number, bigint> {
+  split(
+    secret: bigint,
+    threshold: number,
+    numShares: number,
+    indices?: Array<number>,
+    salt = BigInt(0)
+  ): Record<number, bigint> {
     let bigIndices: Array<bigint>;
     if (indices) {
-      bigIndices = indices.map((i) => BigInt(i));
+      bigIndices = indices.map((i) => {
+        if (i < 1) {
+          throw new Error('Invalid value supplied for indices');
+        }
+        return BigInt(i);
+      });
     } else {
       // make range(1, n + 1)
       bigIndices = Array(numShares)
         .fill(null)
         .map((_, i) => BigInt(i + 1));
     }
-    assert(threshold > 1);
-    assert(threshold <= numShares);
+    if (threshold < 2) {
+      throw new Error('Threshold cannot be less than two');
+    }
+
+    if (threshold > numShares) {
+      throw new Error('Threshold cannot be greater than the total number of shares');
+    }
+
     const coefs: bigint[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
       const coeff = clamp(
@@ -62,30 +79,34 @@ export default class Shamir {
    * @returns secret
    */
   combine(shares: Record<number, bigint>): bigint {
-    let s = BigInt(0);
-    for (const i in shares) {
-      const yi = shares[i];
-      const xi = BigInt(i);
-      let num = BigInt(1);
-      let denum = BigInt(1);
+    try {
+      let s = BigInt(0);
+      for (const i in shares) {
+        const yi = shares[i];
+        const xi = BigInt(i);
+        let num = BigInt(1);
+        let denum = BigInt(1);
 
-      for (const j in shares) {
-        const xj = BigInt(j);
-        if (xi !== xj) {
-          num = this.curve.scalarMult(num, xj);
+        for (const j in shares) {
+          const xj = BigInt(j);
+          if (xi !== xj) {
+            num = this.curve.scalarMult(num, xj);
+          }
         }
-      }
-      for (const j in shares) {
-        const xj = BigInt(j);
-        if (xi !== xj) {
-          denum = this.curve.scalarMult(denum, this.curve.scalarSub(xj, xi));
+        for (const j in shares) {
+          const xj = BigInt(j);
+          if (xi !== xj) {
+            denum = this.curve.scalarMult(denum, this.curve.scalarSub(xj, xi));
+          }
         }
+        const inverted = this.curve.scalarInvert(denum);
+        const innerMultiplied = this.curve.scalarMult(num, inverted);
+        const multiplied = this.curve.scalarMult(innerMultiplied, yi);
+        s = this.curve.scalarAdd(multiplied, s);
       }
-      const inverted = this.curve.scalarInvert(denum);
-      const innerMultiplied = this.curve.scalarMult(num, inverted);
-      const multiplied = this.curve.scalarMult(innerMultiplied, yi);
-      s = this.curve.scalarAdd(multiplied, s);
+      return s;
+    } catch (error) {
+      throw new Error('Failed to combine Shamir shares , ' + error);
     }
-    return s;
   }
 }

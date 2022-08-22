@@ -44,9 +44,7 @@
     "@bitgo/sdk-coin-eth": "^2.0.0-rc.6",
     "@bitgo/sdk-core": "^2.0.0-rc.6",
     "@bitgo/statics": "^8.0.0-rc.7",
-    "@ethereumjs/common": "^2.4.0",
-    "bip32": "^2.0.6",
-    "ethereumjs-util": "7.1.5"
+    "@ethereumjs/common": "^2.4.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.1.2-rc.10",

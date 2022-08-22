@@ -16,6 +16,5 @@ export {
   AvaxERC20Token,
   SolCoin,
   HederaToken,
-  AcaCoin,
 } from './account';
 export { CoinMap } from './map';

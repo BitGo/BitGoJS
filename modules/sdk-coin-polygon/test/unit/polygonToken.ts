@@ -8,7 +8,7 @@ describe('Polygon Token: ', function () {
   let bitgo;
   let polygonToken;
   describe('Polygon tokens in test env:', function () {
-    const tokenName = 'DERC20';
+    const tokenName = 'tpolygon:derc20';
 
     before(function () {
       bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -20,7 +20,7 @@ describe('Polygon Token: ', function () {
     });
 
     it('should return constants', function () {
-      polygonToken.getChain().should.equal('DERC20');
+      polygonToken.getChain().should.equal('tpolygon:derc20');
       polygonToken.getBaseChain().should.equal('tpolygon');
       polygonToken.getFullName().should.equal('Polygon Token');
       polygonToken.type.should.equal(tokenName);

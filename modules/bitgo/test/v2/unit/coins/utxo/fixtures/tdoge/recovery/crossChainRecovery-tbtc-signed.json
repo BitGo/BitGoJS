@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "walletId": "5abacebe28d72fbd07e0b8cbba0ff39e",
+  "txHex": "010000000117debd497710d8fb88ae869004a43201d65e4194a7342b9e552a4bd6eb1032fa00000000b60047304402201719c56e2d140767105a1d6599f0a0c429e134ff62cf0f03955e2663ca2e0e3e022034247c75255305571cfc3790f0806052d8bb6e1a43e0487e3d58988b0779bcd10100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01f98996087114270017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+  "txInfo": {
+    "inputAmount": "10999999799999001",
+    "outputAmount": "10999999799659001",
+    "minerFee": "340000",
+    "spendAmount": "10999999799659001",
+    "inputs": [
+      {
+        "id": "fa3210ebd64b2a559e2b34a794415ed60132a4049086ae88fbd8107749bdde17:0",
+        "address": "2Mv1fGp8gHSqsiXYG7WqcYmHZdurDGVtUbn",
+        "value": "10999999799999001",
+        "valueString": "10999999799999001",
+        "chain": 0,
+        "index": 0,
+        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      }
+    ],
+    "unspents": [
+      {
+        "id": "fa3210ebd64b2a559e2b34a794415ed60132a4049086ae88fbd8107749bdde17:0",
+        "address": "2Mv1fGp8gHSqsiXYG7WqcYmHZdurDGVtUbn",
+        "value": "10999999799999001",
+        "valueString": "10999999799999001",
+        "chain": 0,
+        "index": 0,
+        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      }
+    ],
+    "outputs": [
+      {
+        "address": "2N7VWEhmfT8CzGSW2bCVeKJ3GCwSD1nsL2V",
+        "valueString": "10999999799659001",
+        "change": false
+      }
+    ],
+    "externalOutputs": [
+      {
+        "address": "2N7VWEhmfT8CzGSW2bCVeKJ3GCwSD1nsL2V",
+        "valueString": "10999999799659001",
+        "change": false
+      }
+    ],
+    "changeOutputs": [],
+    "payGoFee": 0
+  },
+  "sourceCoin": "tdoge",
+  "recoveryCoin": "tbtc",
+  "recoveryAmount": "10999999799659001",
+  "tx": {
+    "id": "8364aee26647e1e585fcf96345cb9f7d4e1444b7fc748ff4eb072299535f369b",
+    "hex": "010000000117debd497710d8fb88ae869004a43201d65e4194a7342b9e552a4bd6eb1032fa00000000b60047304402201719c56e2d140767105a1d6599f0a0c429e134ff62cf0f03955e2663ca2e0e3e022034247c75255305571cfc3790f0806052d8bb6e1a43e0487e3d58988b0779bcd10100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01f98996087114270017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+    "ins": [
+      {
+        "txid": "fa3210ebd64b2a559e2b34a794415ed60132a4049086ae88fbd8107749bdde17",
+        "index": 0,
+        "script": "0047304402201719c56e2d140767105a1d6599f0a0c429e134ff62cf0f03955e2663ca2e0e3e022034247c75255305571cfc3790f0806052d8bb6e1a43e0487e3d58988b0779bcd10100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
+        "witness": []
+      }
+    ],
+    "outs": [
+      {
+        "script": "a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f87",
+        "value": "10999999799659001"
+      }
+    ]
+  }
+}

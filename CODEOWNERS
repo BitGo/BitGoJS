@@ -9,16 +9,30 @@
 # Recovery
 modules/bitgo/src/v2/recovery.ts @BitGo/sdk-team
 
-# Coin Support
-modules/bitgo/src/v2/coins/*btc.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*bch.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*btg.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*bsv.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*ltc.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*dash.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/*zec.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/abstractUtxoCoin.ts @BitGo/btc-team
-modules/bitgo/src/v2/coins/utxo/* @BitGo/btc-team
+# UTXO coin modules
+modules/bitgo/test/v2/unit/coins/utxo/ @BitGo/btc-team
+modules/bitgo/test/v2/unit/lightning.ts @BitGo/btc-team
+modules/abstract-utxo/src/ @BitGo/btc-team
+modules/sdk-coin-bch/src/ @BitGo/btc-team
+modules/sdk-coin-bch/test/ @BitGo/btc-team
+modules/sdk-coin-bcha/src/ @BitGo/btc-team
+modules/sdk-coin-bcha/test/ @BitGo/btc-team
+modules/sdk-coin-bsv/src/ @BitGo/btc-team
+modules/sdk-coin-bsv/test/ @BitGo/btc-team
+modules/sdk-coin-btc/src/ @BitGo/btc-team
+modules/sdk-coin-btc/test/ @BitGo/btc-team
+modules/sdk-coin-btg/src/ @BitGo/btc-team
+modules/sdk-coin-btg/test/ @BitGo/btc-team
+modules/sdk-coin-dash/src/ @BitGo/btc-team
+modules/sdk-coin-dash/test/ @BitGo/btc-team
+modules/sdk-coin-ltc/src/ @BitGo/btc-team
+modules/sdk-coin-ltc/test/ @BitGo/btc-team
+modules/sdk-coin-zec/src/ @BitGo/btc-team
+modules/sdk-coin-zec/test/ @BitGo/btc-team
+modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
+modules/unspents/ @BitGo/btc-team
+modules/utxo-lib/ @BitGo/btc-team
+modules/utxo-bin/ @BitGo/btc-team
 
 # Eth
 modules/bitgo/src/v2/coins/abstractEthLikeCoin.ts @BitGo/eth-team
@@ -37,8 +51,8 @@ modules/bitgo/test/v2/unit/coins/*eth2.ts @BitGo/eth-team
 modules/bitgo/test/v2/unit/coins/*rbtc.ts @BitGo/eth-team
 modules/bitgo/test/v2/unit/coins/token.ts @BitGo/eth-team
 
-modules/bitgo/src/v2/coins/*xlm.ts @lcovar @argjv @BitGo/sdk-team
-modules/bitgo/src/v2/coins/*xrp.ts @lcovar @argjv @BitGo/sdk-team
+modules/bitgo/src/v2/coins/*xlm.ts @BitGo/sdk-team
+modules/bitgo/src/v2/coins/*xrp.ts @BitGo/sdk-team
 
 # Trading accounts
 modules/bitgo/src/v2/trading/*.ts @BitGo/sdk-team
@@ -53,8 +67,7 @@ modules/statics/* @BitGo/sdk-team
 modules/*/package*.json @BitGo/sdk-team
 
 # ACCOUNT LIB
-modules/account-lib/* @argjv @CapnMigraine
-modules/utxo-lib/* @BitGo/btc-team
+modules/account-lib/* @BitGo/sdk-team
 
 # Eth
 modules/account-lib/src/coin/celo/* @BitGo/eth-team
@@ -74,5 +87,4 @@ yarn.lock @BitGo/sdk-team
 modules/express/package-lock.json @BitGo/sdk-team
 
 # NOTHING BELOW THIS LINE
-CODEOWNERS @BitGo/git-admins @argjv @CapnMigraine @BitGo/sdk-team
-
+CODEOWNERS @BitGo/git-admins @BitGo/sdk-team

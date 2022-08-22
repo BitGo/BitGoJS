@@ -4,15 +4,16 @@
  * @format
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Ada } from './ada';
 
 export class Tada extends Ada {
-  protected constructor(bitgo: BitGoBase) {
-    super(bitgo);
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo, staticsCoin);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Tada(bitgo);
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Tada(bitgo, staticsCoin);
   }
 
   /**
