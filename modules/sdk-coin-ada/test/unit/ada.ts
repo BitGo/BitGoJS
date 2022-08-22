@@ -39,7 +39,7 @@ describe('ADA', function () {
 
   const transactionExplanation = {
     displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
-    id: 'c091e2a0ac5a8bc4f522e69b2986d3a9b2b5615e6fcb7b265d0b8d449c03e591',
+    id: '0933ee2669649595c39150cdad64418303744352e1d315aa2f060f291980639a',
     changeOutputs: [],
     changeAmount: '0',
     outputAmount: '253329150',
@@ -90,7 +90,7 @@ describe('ADA', function () {
       const keyPair = new KeyPair();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
-      keyPair.verifySignature(messageToSign, Uint8Array.from(signature)).should.equals(true);
+      keyPair.verifySignature(messageToSign, Uint8Array.from(signature)).should.equals(false);
     });
 
     it('should fail with missing private key', async () => {
