@@ -50,6 +50,7 @@ const SOL_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.STAKING,
 ];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
