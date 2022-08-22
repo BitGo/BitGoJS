@@ -5,6 +5,7 @@ export const address = {
   address3:
     '37btjrVyb4KDXBNC4haBVPCrro8AQPHwvCMp3RFhhSVWwfFmZ6wwzSK6JK1hY6wHNmtrpTf1kdbva8TCneM2YsiXT7mrzT21EacHnPpz5YyUdj64na',
   address4: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
+  address6: 'addr_test1vqje364ylpl3alxxcclnlt6dcp7ecumzzaxnuy3gg8kyd7ssaj27y',
 };
 
 export const blockHash = {
@@ -33,6 +34,7 @@ export const privateKeys = {
     'ed25519e_sk1qr4lgrte8t43m6ky2cjdcnle583y54ex9j7z85fshenq86g92d8u6a40tgkpl702gqrqdgcdlxa7wzkgm74pqyspck7wclawgeu3yjslnu7nz3sdlszl1ad',
   prvKey4: '00cebbe7db664726835a451e2cb8c1eba596369318b3e158656f54f76d747b7b',
   prvKey5WrongFormat: '3560s-vl.1axfsjfjt6sa-q23-dssddddagag',
+  prvKey6: '7b19c0d58eb57ab2ed7437c70de10e0b8c5842e35931d70e1be4fdfe7e1361a0',
 };
 
 export const publicKeys = {
@@ -40,6 +42,7 @@ export const publicKeys = {
   pubKey2: 'ba0fe12d67c2e111aaabc809f8a3ee3168522371ffca360a459e4043dd91eb08',
   pubKey3: 'ed25519_pk1eame4ge0x5yrwpuqs5eyw89kfmjpgfkfh02xzdx6c2k9k2swcr5sjq4kzj',
   pubKey4: 'sdfghjkiu87y6t5r4e3w2sdxcfghjui654',
+  pubKey6: '70c8b9b61e141d55fe105f4661b83b2523ba2b622719e2005b003d8c62e0a59c',
 };
 
 export const enterpriseAccounts = {
