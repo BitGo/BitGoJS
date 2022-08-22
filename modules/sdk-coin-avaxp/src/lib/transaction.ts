@@ -12,7 +12,6 @@ import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
 import { AddValidatorTx, AmountInput, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import * as createHash from 'create-hash';
 import { Credential } from 'avalanche/dist/common';
 
 // region utils to sign
@@ -200,12 +199,11 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    const txbuff = this._avaxpTransaction.getUnsignedTx().toBuffer();
-    return createHash.default('sha256').update(txbuff).digest();
+    return utils.sha256(this._avaxpTransaction.getUnsignedTx().toBuffer());
   }
 
   get id(): string {
-    return utils.cb58Encode(BufferAvax.from(utils.sha256(BufferAvax.from(this.toBroadcastFormat(), 'hex'))));
+    return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxpTransaction.toBuffer())));
   }
 
   get fromAddresses(): string[] {
