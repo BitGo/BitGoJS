@@ -1718,18 +1718,18 @@ export const coins = CoinMap.fromCoins([
   tacaToken('taca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
   // testnet polygon tokens
   tpolygonErc20(
-    'DERC20',
+    'tpolygon:derc20',
     'Polygon Test ERC20',
     18,
     '0xfe4f5145f6e09952a5ba9e956ed0c25e3fa4c7f1',
-    UnderlyingAsset.DERC20
+    UnderlyingAsset['tpolygon:derc20']
   ),
   tpolygonErc20(
-    'TESTWMATIC',
-    'Polygon Test WMATIC',
+    'tpolygon:link',
+    'Polygon Test LINK',
     18,
-    '0x9c3c9283d3e44854697cd22d3faa240cfb032889',
-    UnderlyingAsset.TESTWMATIC
+    '0x326c977e6efc84e512bb9c30f76e30c160ed06fb',
+    UnderlyingAsset['tpolygon:link']
   ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
