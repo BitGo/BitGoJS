@@ -1,6 +1,6 @@
 import * as address from '../../src/address';
 import { Network, getMainnet, networks, isZcash } from '../../src/networks';
-import { DashTransaction, UtxoTransaction, ZcashTransaction } from '../../src/bitgo';
+import { DashTransaction, UtxoTransaction, ZcashTransaction, getValueScaled } from '../../src/bitgo';
 
 import { RpcTransaction } from './generate/RpcTypes';
 
@@ -21,7 +21,10 @@ function toRegtestAddress(script: Buffer, network: { bech32?: string }): string 
   return address.fromOutputScript(script, network as Network);
 }
 
-export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network = tx.network): NormalizedObject {
+export function normalizeParsedTransaction<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
+  network: Network = tx.network
+): NormalizedObject {
   const normalizedTx: NormalizedObject = {
     txid: tx.getId(),
     version: tx.version,
@@ -57,7 +60,7 @@ export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network
           hex: o.script.toString('hex'),
           ...(address && { address }),
         },
-        value: o.value,
+        value: o.value.toString(),
       };
     }),
   };
@@ -70,15 +73,18 @@ export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network
       normalizedTx.weight = tx.weight();
       break;
     case networks.dash:
-      const dashTx = tx as DashTransaction;
+      const dashTx = tx as unknown as DashTransaction;
       normalizedTx.type = dashTx.type;
       if (dashTx.extraPayload && dashTx.extraPayload.length) {
         normalizedTx.extraPayload = dashTx.extraPayload.toString('hex');
         normalizedTx.extraPayloadSize = dashTx.extraPayload.length;
       }
       break;
+    case networks.dogecoin:
+      normalizedTx.vsize = tx.virtualSize();
+      break;
     case networks.zcash:
-      const zcashTx = tx as ZcashTransaction;
+      const zcashTx = tx as unknown as ZcashTransaction;
       normalizedTx.overwintered = !!zcashTx.overwintered;
       normalizedTx.versiongroupid = zcashTx.versionGroupId.toString(16);
       normalizedTx.expiryheight = zcashTx.expiryHeight;
@@ -111,7 +117,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       if (isZcash(network)) {
         delete v.valueZat;
       }
-      v.value = Math.round(v.value * 1e8);
+      v.value = getValueScaled<bigint>(v.value, 'bigint').toString();
       return v;
     }),
   };
@@ -121,6 +127,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
+    case networks.dogecoin:
     case networks.litecoin:
       // this is the normalized hash which is not implemented in utxolib
       delete normalizedTx.hash;

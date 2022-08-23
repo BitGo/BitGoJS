@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "walletId": "5abacebe28d72fbd07e0b8cbba0ff39e",
+  "txHex": "010000000198893311f7b5ac4e5c574ff6547320c326bb6297abbbbee30d2ed8b195b6a48c00000000b700483045022100f838f9ceb618e70975a0763cbc2d310d834a00341808e1d71191c0f600c2dd08022041da427e81dab6b18c22739b545ebb24dfaad43554c838844931425c62ffce270100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01d872f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+  "txInfo": {
+    "inputAmount": 99999000,
+    "outputAmount": 99971800,
+    "minerFee": 27200,
+    "spendAmount": 99971800,
+    "inputs": [
+      {
+        "id": "8ca4b695b1d82e0de3bebbab9762bb26c3207354f64f575c4eacb5f711338998:0",
+        "address": "34TTD5CefzLXWjuiSPDjvpJJRZe3Tqu2Mj",
+        "value": 99999000,
+        "chain": 0,
+        "index": 0,
+        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      }
+    ],
+    "unspents": [
+      {
+        "id": "8ca4b695b1d82e0de3bebbab9762bb26c3207354f64f575c4eacb5f711338998:0",
+        "address": "34TTD5CefzLXWjuiSPDjvpJJRZe3Tqu2Mj",
+        "value": 99999000,
+        "chain": 0,
+        "index": 0,
+        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      }
+    ],
+    "outputs": [
+      {
+        "address": "3FwJAxqdqfhe4esUv4smhM3zzbE3KAyD88",
+        "valueString": "99971800",
+        "change": false
+      }
+    ],
+    "externalOutputs": [
+      {
+        "address": "3FwJAxqdqfhe4esUv4smhM3zzbE3KAyD88",
+        "valueString": "99971800",
+        "change": false
+      }
+    ],
+    "changeOutputs": [],
+    "payGoFee": 0
+  },
+  "sourceCoin": "btc",
+  "recoveryCoin": "doge",
+  "recoveryAmount": 99971800,
+  "tx": {
+    "id": "a7269fe5336aefaed46fbe9ea9c6acf6955578497535ec10f3fb38539c51c0a5",
+    "hex": "010000000198893311f7b5ac4e5c574ff6547320c326bb6297abbbbee30d2ed8b195b6a48c00000000b700483045022100f838f9ceb618e70975a0763cbc2d310d834a00341808e1d71191c0f600c2dd08022041da427e81dab6b18c22739b545ebb24dfaad43554c838844931425c62ffce270100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01d872f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+    "ins": [
+      {
+        "txid": "8ca4b695b1d82e0de3bebbab9762bb26c3207354f64f575c4eacb5f711338998",
+        "index": 0,
+        "script": "00483045022100f838f9ceb618e70975a0763cbc2d310d834a00341808e1d71191c0f600c2dd08022041da427e81dab6b18c22739b545ebb24dfaad43554c838844931425c62ffce270100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
+        "witness": []
+      }
+    ],
+    "outs": [
+      {
+        "script": "a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f87",
+        "value": 99971800
+      }
+    ]
+  }
+}

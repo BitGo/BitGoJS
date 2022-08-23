@@ -5,7 +5,7 @@ import { createOutputScript2of3, scriptTypeForChain } from '../../../src/bitgo/o
 import { fromOutputScript } from '../../../src/address';
 
 import { getDefaultWalletKeys } from '../../testutil';
-import { defaultTestOutputAmount, mockTransactionId } from '../../transaction_util';
+import { mockTransactionId } from '../../transaction_util';
 
 export function mockOutputId(vout: number): string {
   return formatOutputId({
@@ -14,17 +14,11 @@ export function mockOutputId(vout: number): string {
   });
 }
 
-export function mockWalletUnspent(
+export function mockWalletUnspent<TNumber extends number | bigint = number>(
   network: Network,
-  {
-    chain = 0 as ChainCode,
-    index = 0,
-    value = defaultTestOutputAmount,
-    keys = getDefaultWalletKeys(),
-    vout = 0,
-    id = mockOutputId(vout),
-  } = {}
-): WalletUnspent {
+  value: TNumber,
+  { chain = 0 as ChainCode, index = 0, keys = getDefaultWalletKeys(), vout = 0, id = mockOutputId(vout) } = {}
+): WalletUnspent<TNumber> {
   const derivedKeys = keys.deriveForChainAndIndex(chain, index);
   return {
     id,

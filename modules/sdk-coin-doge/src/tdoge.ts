@@ -17,10 +17,6 @@ export class Tdoge extends Doge {
     return 'tdoge';
   }
 
-  getFamily(): string {
-    return 'tdoge';
-  }
-
   getFullName(): string {
     return 'Testnet Dogecoin';
   }

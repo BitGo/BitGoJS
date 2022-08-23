@@ -81,10 +81,6 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
 }
 
-export interface AcaCoinConstructorOptions extends AccountConstructorOptions {
-  tokenSymbol: string;
-}
-
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
@@ -306,26 +302,20 @@ export class SolCoin extends AccountCoinToken {
 }
 
 /**
- * The Aca network supports tokens
- * Aca tokens are identified by their token symbol. i.e: AUSD, LDOT
- *
- */
-export class AcaCoin extends AccountCoinToken {
-  public tokenSymbol: string;
-  constructor(options: AcaCoinConstructorOptions) {
-    super({
-      ...options,
-    });
-
-    this.tokenSymbol = options.tokenSymbol;
-  }
-}
-
-/**
  * The AVAX C Chain network support tokens
  * AVAX C Chain Tokens are ERC20 coins
  */
 export class AvaxERC20Token extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
+/**
+ * The Polygon Chain network support tokens
+ * Polygon Chain Tokens are ERC20 coins
+ */
+export class PolygonERC20Token extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {
     super(options);
   }
@@ -1171,76 +1161,6 @@ export function tsolToken(
 }
 
 /**
- * Factory function for aca token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenSymbol Token symbol of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Acala main network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
- */
-export function acaToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  tokenSymbol: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.aca,
-  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
-) {
-  return Object.freeze(
-    new AcaCoin({
-      name,
-      fullName,
-      network,
-      tokenSymbol,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-    })
-  );
-}
-
-/**
- * Factory function for testnet acala token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenSymbol Token symbol of this token i.e: AUSD
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the testnet Acala network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- */
-export function tacaToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  tokenSymbol: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.aca
-) {
-  return acaToken(name, fullName, decimalPlaces, tokenSymbol, asset, features, prefix, suffix, network);
-}
-
-/**
  * Factory function for avaxErc20 token instances.
  *
  * @param name unique identifier of the token
@@ -1310,6 +1230,89 @@ export function tavaxErc20(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return avaxErc20(
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for polygonErc20 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Polygon main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function polygonErc20(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.polygon,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new PolygonERC20Token({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for Mumbai testnet polygonErc20 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the Polygon test network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tpolygonErc20(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.polygon,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return polygonErc20(
     name,
     fullName,
     decimalPlaces,

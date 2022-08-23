@@ -4,7 +4,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent = utxolib.bitgo.Unspent;
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 export type TransactionObj = {
   id: string;
   hex: string;
@@ -16,18 +16,23 @@ export type TransactionObj = {
   }[];
   outs: {
     script: string;
-    value: number;
+    value: number | string;
   }[];
 };
 
-function toTxOutput(u: Unspent, network: utxolib.Network): utxolib.TxOutput {
+function toTxOutput<TNumber extends number | bigint = number>(
+  u: Unspent<TNumber>,
+  network: utxolib.Network
+): utxolib.TxOutput<TNumber> {
   return {
     script: utxolib.address.toOutputScript(u.address, network),
     value: u.value,
   };
 }
 
-export function transactionToObj(tx: utxolib.bitgo.UtxoTransaction): TransactionObj {
+export function transactionToObj<TNumber extends number | bigint = number>(
+  tx: utxolib.bitgo.UtxoTransaction<TNumber>
+): TransactionObj {
   return {
     id: tx.getId(),
     hex: tx.toBuffer().toString('hex'),
@@ -39,76 +44,86 @@ export function transactionToObj(tx: utxolib.bitgo.UtxoTransaction): Transaction
     })),
     outs: tx.outs.map((v) => ({
       script: v.script.toString('hex'),
-      value: v.value,
+      value: typeof v.value === 'bigint' ? v.value.toString() : (v.value as number),
     })),
   };
 }
 
-export function transactionHexToObj(txHex: string, network: utxolib.Network): TransactionObj {
-  const obj = transactionToObj(utxolib.bitgo.createTransactionFromBuffer(Buffer.from(txHex, 'hex'), network));
+export function transactionHexToObj(
+  txHex: string,
+  network: utxolib.Network,
+  amountType: 'number' | 'bigint' = 'number'
+): TransactionObj {
+  const obj = transactionToObj(
+    utxolib.bitgo.createTransactionFromBuffer(Buffer.from(txHex, 'hex'), network, undefined, amountType)
+  );
   if (obj.hex !== txHex) {
     throw new Error(`serialized txHex does not match input`);
   }
   return obj;
 }
 
-export function createPrebuildTransaction(
+export function createPrebuildTransaction<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   outputAddress: string
-): utxolib.bitgo.UtxoTransaction {
-  const txb = utxolib.bitgo.createTransactionBuilderForNetwork(network);
+): utxolib.bitgo.UtxoTransaction<TNumber> {
+  const txb = utxolib.bitgo.createTransactionBuilderForNetwork<TNumber>(network);
   unspents.forEach((u) => {
     const [txid, vin] = u.id.split(':');
     txb.addInput(txid, Number(vin));
   });
-  const unspentSum = Math.round(unspents.reduce((sum, u) => sum + u.value, 0));
-  txb.addOutput(outputAddress, unspentSum - 1000);
+  const amountType = unspents.length > 0 && typeof unspents[0].value === 'bigint' ? 'bigint' : 'number';
+  if (amountType === 'number') {
+    unspents.forEach((u) => (u.value = Math.round(u.value as number) as TNumber));
+  }
+  const unspentSum = utxolib.bitgo.unspentSum<TNumber>(unspents, amountType);
+  txb.addOutput(outputAddress, utxolib.bitgo.toTNumber<TNumber>(BigInt(unspentSum) - BigInt(1000), amountType));
   return txb.buildIncomplete();
 }
 
-function createTransactionBuilderWithSignedInputs(
+function createTransactionBuilderWithSignedInputs<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
-  inputTransaction: utxolib.bitgo.UtxoTransaction
-): utxolib.bitgo.UtxoTransactionBuilder {
-  const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction(
+  inputTransaction: utxolib.bitgo.UtxoTransaction<TNumber>
+): utxolib.bitgo.UtxoTransactionBuilder<TNumber> {
+  const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction<TNumber>(
     inputTransaction,
-    unspents.map((u) => toTxOutput(u, network))
+    unspents.map((u) => toTxOutput<TNumber>(u, network))
   );
   unspents.forEach((u, inputIndex) => {
-    if (isWalletUnspent(u)) {
-      signInputWithUnspent(txBuilder, inputIndex, u, signer);
+    if (isWalletUnspent<TNumber>(u)) {
+      signInputWithUnspent<TNumber>(txBuilder, inputIndex, u, signer);
     }
   });
   return txBuilder;
 }
 
-export function createHalfSignedTransaction(
+export function createHalfSignedTransaction<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   outputAddress: string,
   signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
-  prebuild?: utxolib.bitgo.UtxoTransaction
-): utxolib.bitgo.UtxoTransaction {
+  prebuild?: utxolib.bitgo.UtxoTransaction<TNumber>
+): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!prebuild) {
-    prebuild = createPrebuildTransaction(network, unspents, outputAddress);
+    prebuild = createPrebuildTransaction<TNumber>(network, unspents, outputAddress);
   }
-  return createTransactionBuilderWithSignedInputs(network, unspents, signer, prebuild).buildIncomplete();
+  return createTransactionBuilderWithSignedInputs<TNumber>(network, unspents, signer, prebuild).buildIncomplete();
 }
 
-export function createFullSignedTransaction(
+export function createFullSignedTransaction<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   outputAddress: string,
   signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
-  halfSigned?: utxolib.bitgo.UtxoTransaction
-): utxolib.bitgo.UtxoTransaction {
+  halfSigned?: utxolib.bitgo.UtxoTransaction<TNumber>
+): utxolib.bitgo.UtxoTransaction<TNumber> {
   if (!halfSigned) {
-    halfSigned = createHalfSignedTransaction(network, unspents, outputAddress, signer);
+    halfSigned = createHalfSignedTransaction<TNumber>(network, unspents, outputAddress, signer);
   }
-  return createTransactionBuilderWithSignedInputs(
+  return createTransactionBuilderWithSignedInputs<TNumber>(
     network,
     unspents,
     new utxolib.bitgo.WalletUnspentSigner(signer.walletKeys, signer.cosigner, signer.signer),

@@ -4,6 +4,9 @@ import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
   validateBlake2b(hash: string): boolean {
+    if (!hash) {
+      return false;
+    }
     if (hash.length !== 64) {
       return false;
     }

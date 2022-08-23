@@ -9,9 +9,9 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type Unspent = utxolib.bitgo.Unspent;
-type WalletUnspent = utxolib.bitgo.WalletUnspent;
-type WalletUnspentLegacy = utxolib.bitgo.WalletUnspentLegacy;
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
+type WalletUnspentLegacy<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspentLegacy<TNumber>;
 
 import { Dimensions } from '@bitgo/unspents';
 
@@ -37,13 +37,23 @@ export class BitgoPublicApi {
   /**
    * Fetch unspent transaction outputs using IMS unspents API
    * @param addresses
+   * @param amountType
    * @returns {*}
    */
-  async getUnspentInfo(addresses: string[]): Promise<Unspent[]> {
+  async getUnspentInfo<TNumber extends number | bigint = number>(
+    addresses: string[],
+    amountType: 'number' | 'bigint' = 'number'
+  ): Promise<Unspent<TNumber>[]> {
     const uniqueAddresses = _.uniq(addresses);
     try {
       const url = this.coin.url(`/public/addressUnspents/${uniqueAddresses.join(',')}`);
-      return (await request.get(url)).body as Unspent[];
+      const unspents = (await request.get(url)).body;
+      if (amountType === 'bigint') {
+        unspents.forEach((u) => {
+          u.value = BigInt(u.valueString);
+        });
+      }
+      return unspents as Unspent<TNumber>[];
     } catch (e) {
       if (e.status !== 404) {
         throw e;
@@ -51,10 +61,16 @@ export class BitgoPublicApi {
     }
     const res = await Bluebird.map(
       uniqueAddresses,
-      async (address): Promise<Unspent[]> => {
+      async (address): Promise<Unspent<TNumber>[]> => {
         try {
           const res = await request.get(this.coin.url(`/public/addressUnspents/${address}`));
-          return res.body;
+          const unspents = res.body;
+          if (amountType === 'bigint') {
+            unspents.forEach((u) => {
+              u.value = BigInt(u.valueString);
+            });
+          }
+          return unspents;
         } catch (e) {
           console.log(`error getting unspent for ${address}:`, e);
           return [];
@@ -62,7 +78,7 @@ export class BitgoPublicApi {
       },
       { concurrency: 4 }
     );
-    const unspents = res.flat() as Unspent[];
+    const unspents = res.flat() as Unspent<TNumber>[];
     if (unspents.length < 1) {
       throw new Error(`no unspents found for addresses: ${addresses}`);
     }
@@ -83,24 +99,24 @@ type FeeInfo = {
   payGoFee: number;
 };
 
-export interface CrossChainRecoveryUnsigned {
+export interface CrossChainRecoveryUnsigned<TNumber extends number | bigint = number> {
   txHex: string;
-  txInfo: TransactionInfo;
+  txInfo: TransactionInfo<TNumber>;
   walletId: string;
   feeInfo: FeeInfo;
   address: string;
   coin: string;
 }
 
-export interface CrossChainRecoverySigned {
+export interface CrossChainRecoverySigned<TNumber extends number | bigint = number> {
   version: 1 | 2;
   txHex: string;
-  txInfo: TransactionInfo;
+  txInfo: TransactionInfo<TNumber>;
   walletId: string;
   sourceCoin: string;
   recoveryCoin: string;
   recoveryAddress?: string;
-  recoveryAmount?: number;
+  recoveryAmount?: TNumber;
 }
 
 type WalletV1 = {
@@ -157,11 +173,14 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | W
  * @param txid
  * @return all unspents for transaction outputs, including outputs from other transactions
  */
-async function getAllRecoveryOutputs(coin: AbstractUtxoCoin, txid: string): Promise<Unspent[]> {
+async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
+  coin: AbstractUtxoCoin,
+  txid: string
+): Promise<Unspent<TNumber>[]> {
   const api = new BitgoPublicApi(coin);
   const info = await api.getTransactionInfo(txid);
   const addresses = new Set(info.outputs.map((o) => o.address));
-  return await api.getUnspentInfo([...addresses]);
+  return await api.getUnspentInfo<TNumber>([...addresses], coin.amountType);
 }
 
 /**
@@ -197,15 +216,15 @@ async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, s
  * @param wallet
  * @return walletUnspents
  */
-async function toWalletUnspents(
+async function toWalletUnspents<TNumber extends number | bigint = number>(
   sourceCoin: AbstractUtxoCoin,
   recoveryCoin: AbstractUtxoCoin,
-  unspents: Unspent[],
+  unspents: Unspent<TNumber>[],
   wallet: IWallet | WalletV1
-): Promise<WalletUnspent[]> {
+): Promise<WalletUnspent<TNumber>[]> {
   const addresses = new Set(unspents.map((u) => u.address));
   return (
-    await Bluebird.mapSeries(addresses, async (address): Promise<WalletUnspent[]> => {
+    await Bluebird.mapSeries(addresses, async (address): Promise<WalletUnspent<TNumber>[]> => {
       let scriptId;
       try {
         scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
@@ -238,6 +257,8 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
     tbtc: 80,
     ltc: 100,
     tltc: 100,
+    doge: 1000,
+    tdoge: 1000,
   }[coin.getChain()];
 
   if (!feeRate) {
@@ -282,41 +303,52 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
  * @param targetAddress
  * @param feeRateSatVB
  * @param signer - if set, sign transaction
+ * @param amountType
  * @return transaction spending full input amount to targetAddress
  */
-function createSweepTransaction(
+function createSweepTransaction<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: WalletUnspent[],
+  unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number,
-  signer?: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>
-): utxolib.bitgo.UtxoTransaction {
-  const inputValue = unspentSum(unspents);
+  signer?: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  amountType: 'number' | 'bigint' = 'number'
+): utxolib.bitgo.UtxoTransaction<TNumber> {
+  const inputValue = unspentSum<TNumber>(unspents, amountType);
   const vsize = Dimensions.fromUnspents(unspents)
     .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(targetAddress, network) }))
     .getVSize();
   const fee = vsize * feeRateSatVB;
 
-  const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(network);
-  transactionBuilder.addOutput(targetAddress, inputValue - fee);
+  const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork<TNumber>(network);
+  transactionBuilder.addOutput(
+    targetAddress,
+    utxolib.bitgo.toTNumber<TNumber>(BigInt(inputValue) - BigInt(fee), amountType)
+  );
   unspents.forEach((unspent) => {
     utxolib.bitgo.addToTransactionBuilder(transactionBuilder, unspent);
   });
   let transaction = transactionBuilder.buildIncomplete();
   if (signer) {
-    transaction = signAndVerifyWalletTransaction(transactionBuilder, unspents, signer, { isLastSignature: false });
+    transaction = signAndVerifyWalletTransaction<TNumber>(transactionBuilder, unspents, signer, {
+      isLastSignature: false,
+    });
   }
   return transaction;
 }
 
-function getTxInfo(
-  transaction: utxolib.bitgo.UtxoTransaction,
-  unspents: WalletUnspent[],
+function getTxInfo<TNumber extends number | bigint = number>(
+  transaction: utxolib.bitgo.UtxoTransaction<TNumber>,
+  unspents: WalletUnspent<TNumber>[],
   walletId: string,
-  walletKeys: RootWalletKeys
-): TransactionInfo {
-  const inputAmount = utxolib.bitgo.unspentSum(unspents);
-  const outputAmount = transaction.outs.reduce((sum, o) => sum + o.value, 0);
+  walletKeys: RootWalletKeys,
+  amountType: 'number' | 'bigint' = 'number'
+): TransactionInfo<TNumber> {
+  const inputAmount = utxolib.bitgo.unspentSum<TNumber>(unspents, amountType);
+  const outputAmount = utxolib.bitgo.toTNumber<TNumber>(
+    transaction.outs.reduce((sum, o) => sum + BigInt(o.value), BigInt(0)),
+    amountType
+  );
   const outputs = transaction.outs.map((o) => ({
     address: utxolib.address.fromOutputScript(o.script, transaction.network),
     valueString: o.value.toString(),
@@ -338,7 +370,7 @@ function getTxInfo(
       fromWallet: walletId,
       redeemScript: redeemScript?.toString('hex'),
       witnessScript: witnessScript?.toString('hex'),
-    } as WalletUnspentLegacy;
+    } as WalletUnspentLegacy<TNumber>;
   });
   return {
     inputAmount,
@@ -351,14 +383,18 @@ function getTxInfo(
     externalOutputs: outputs,
     changeOutputs: [],
     payGoFee: 0,
-  } /* cast to TransactionInfo to allow extra fields may be required by legacy consumers of this data */ as TransactionInfo;
+  } /* cast to TransactionInfo to allow extra fields may be required by legacy consumers of this data */ as TransactionInfo<TNumber>;
 }
 
-function getFeeInfo(transaction: utxolib.bitgo.UtxoTransaction, unspents: WalletUnspent[]): FeeInfo {
+function getFeeInfo<TNumber extends number | bigint = number>(
+  transaction: utxolib.bitgo.UtxoTransaction<TNumber>,
+  unspents: WalletUnspent<TNumber>[],
+  amountType: 'number' | 'bigint' = 'number'
+): FeeInfo {
   const vsize = Dimensions.fromUnspents(unspents).plus(Dimensions.fromOutputs(transaction.outs)).getVSize();
-  const inputAmount = utxolib.bitgo.unspentSum(unspents);
-  const outputAmount = transaction.outs.reduce((sum, o) => sum + o.value, 0);
-  const fee = inputAmount - outputAmount;
+  const inputAmount = utxolib.bitgo.unspentSum<TNumber>(unspents, amountType);
+  const outputAmount = transaction.outs.reduce((sum, o) => sum + BigInt(o.value), BigInt(0));
+  const fee = Number(BigInt(inputAmount) - outputAmount);
   return {
     size: vsize,
     fee,
@@ -394,13 +430,13 @@ type RecoverParams = {
  * @param {BitGoBase} bitgo
  * @param {RecoverParams} params
  */
-export async function recoverCrossChain(
+export async function recoverCrossChain<TNumber extends number | bigint = number>(
   bitgo: BitGoBase,
   params: RecoverParams
-): Promise<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
+): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
   const wallet = await getWallet(bitgo, params.recoveryCoin, params.walletId);
-  const unspents = await getAllRecoveryOutputs(params.sourceCoin, params.txid);
-  const walletUnspents = await toWalletUnspents(params.sourceCoin, params.recoveryCoin, unspents, wallet);
+  const unspents = await getAllRecoveryOutputs<TNumber>(params.sourceCoin, params.txid);
+  const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
   const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
   const prv =
     params.xprv || params.walletPassphrase ? await getPrv(params.xprv, params.walletPassphrase, wallet) : undefined;
@@ -408,16 +444,23 @@ export async function recoverCrossChain(
     ? new utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>(walletKeys, prv, walletKeys.bitgo)
     : undefined;
   const feeRateSatVB = await getFeeRateSatVB(params.sourceCoin);
-  const transaction = createSweepTransaction(
+  const transaction = createSweepTransaction<TNumber>(
     params.sourceCoin.network,
     walletUnspents,
     params.recoveryAddress,
     feeRateSatVB,
-    signer
+    signer,
+    params.sourceCoin.amountType
   );
   const recoveryAmount = transaction.outs[0].value;
   const txHex = transaction.toBuffer().toString('hex');
-  const txInfo = getTxInfo(transaction, walletUnspents, params.walletId, walletKeys);
+  const txInfo = getTxInfo<TNumber>(
+    transaction,
+    walletUnspents,
+    params.walletId,
+    walletKeys,
+    params.sourceCoin.amountType
+  );
   if (prv) {
     return {
       version: wallet instanceof Wallet ? 2 : 1,
@@ -433,7 +476,7 @@ export async function recoverCrossChain(
       txHex,
       txInfo,
       walletId: params.walletId,
-      feeInfo: getFeeInfo(transaction, walletUnspents),
+      feeInfo: getFeeInfo(transaction, walletUnspents, params.sourceCoin.amountType),
       address: params.recoveryAddress,
       coin: params.sourceCoin.getChain(),
     };

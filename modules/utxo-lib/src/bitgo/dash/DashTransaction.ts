@@ -4,7 +4,7 @@ import { crypto as bcrypto, Transaction } from 'bitcoinjs-lib';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { isDash, Network } from '../../networks';
 
-export class DashTransaction extends UtxoTransaction {
+export class DashTransaction<TNumber extends number | bigint = number> extends UtxoTransaction<TNumber> {
   static DASH_NORMAL = 0;
   static DASH_PROVIDER_REGISTER = 1;
   static DASH_PROVIDER_UPDATE_SERVICE = 2;
@@ -16,7 +16,7 @@ export class DashTransaction extends UtxoTransaction {
   public type = 0;
   public extraPayload?: Buffer;
 
-  constructor(network: Network, tx?: UtxoTransaction | DashTransaction) {
+  constructor(network: Network, tx?: UtxoTransaction<TNumber> | DashTransaction<TNumber>) {
     super(network, tx);
 
     if (!isDash(network)) {
@@ -36,12 +36,19 @@ export class DashTransaction extends UtxoTransaction {
     (this as any).__toBuffer = this.toBufferWithExtraPayload;
   }
 
-  static fromTransaction(tx: DashTransaction): DashTransaction {
+  static fromTransaction<TNumber extends number | bigint = number>(
+    tx: DashTransaction<TNumber>
+  ): DashTransaction<TNumber> {
     return new DashTransaction(tx.network, tx);
   }
 
-  static fromBuffer(buffer: Buffer, noStrict: boolean, network: Network): DashTransaction {
-    const baseTx = UtxoTransaction.fromBuffer(buffer, true, network);
+  static fromBuffer<TNumber extends number | bigint = number>(
+    buffer: Buffer,
+    noStrict: boolean,
+    amountType: 'number' | 'bigint' = 'number',
+    network: Network
+  ): DashTransaction<TNumber> {
+    const baseTx = UtxoTransaction.fromBuffer<TNumber>(buffer, true, amountType, network);
     const tx = new DashTransaction(network, baseTx);
     tx.version = baseTx.version & 0xffff;
     tx.type = baseTx.version >> 16;
@@ -52,7 +59,7 @@ export class DashTransaction extends UtxoTransaction {
     return tx;
   }
 
-  clone(): DashTransaction {
+  clone(): DashTransaction<TNumber> {
     return new DashTransaction(this.network, this);
   }
 

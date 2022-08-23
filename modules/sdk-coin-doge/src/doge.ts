@@ -1,10 +1,22 @@
-import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo/abstract-utxo';
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
+import {
+  AbstractUtxoCoin,
+  SignTransactionOptions,
+  ExplainTransactionOptions,
+  TransactionExplanation,
+  UtxoNetwork,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  VerifyTransactionOptions,
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+  RecoverFromWrongChainOptions,
+} from '@bitgo/abstract-utxo';
+import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export class Doge extends AbstractUtxoCoin {
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.dogecoin);
+    super(bitgo, network || utxolib.networks.dogecoin, 'bigint');
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {
@@ -25,5 +37,45 @@ export class Doge extends AbstractUtxoCoin {
 
   supportsBlockTarget(): boolean {
     return true;
+  }
+
+  /* amountType is set in constructor. Functions below override the default TNumber of AbstractUtxoCoin to bigint */
+
+  /* postProcessPrebuild, isBitGoTaintedUnspent, verifyCustomChangeKeySignatures do not care whether they receive number or bigint */
+
+  createTransactionFromHex<TNumber extends number | bigint = bigint>(
+    hex: string
+  ): utxolib.bitgo.UtxoTransaction<TNumber> {
+    return super.createTransactionFromHex<TNumber>(hex);
+  }
+
+  async parseTransaction<TNumber extends number | bigint = bigint>(
+    params: ParseTransactionOptions<TNumber>
+  ): Promise<ParsedTransaction<TNumber>> {
+    return super.parseTransaction<TNumber>(params);
+  }
+
+  async verifyTransaction<TNumber extends number | bigint = bigint>(
+    params: VerifyTransactionOptions<TNumber>
+  ): Promise<boolean> {
+    return super.verifyTransaction<TNumber>(params);
+  }
+
+  async signTransaction<TNumber extends number | bigint = bigint>(
+    params: SignTransactionOptions<TNumber>
+  ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
+    return super.signTransaction(params);
+  }
+
+  async explainTransaction<TNumber extends number | bigint = bigint>(
+    params: ExplainTransactionOptions<TNumber>
+  ): Promise<TransactionExplanation> {
+    return super.explainTransaction(params);
+  }
+
+  async recoverFromWrongChain<TNumber extends number | bigint = bigint>(
+    params: RecoverFromWrongChainOptions
+  ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
+    return super.recoverFromWrongChain(params);
   }
 }

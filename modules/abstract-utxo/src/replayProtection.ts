@@ -1,6 +1,4 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { bitgo } from '@bitgo/utxo-lib';
-type Unspent = bitgo.Unspent;
 
 export function getReplayProtectionAddresses(network: utxolib.Network): string[] {
   switch (network) {
@@ -15,6 +13,9 @@ export function getReplayProtectionAddresses(network: utxolib.Network): string[]
   return [];
 }
 
-export function isReplayProtectionUnspent(u: Unspent, network: utxolib.Network): boolean {
+export function isReplayProtectionUnspent<TNumber extends number | bigint>(
+  u: utxolib.bitgo.Unspent<TNumber>,
+  network: utxolib.Network
+): boolean {
   return getReplayProtectionAddresses(network).includes(u.address);
 }

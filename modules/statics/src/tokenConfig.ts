@@ -1,5 +1,4 @@
 import {
-  AcaCoin,
   Erc20Coin,
   StellarCoin,
   CeloCoin,
@@ -8,6 +7,7 @@ import {
   AlgoCoin,
   SolCoin,
   HederaToken,
+  PolygonERC20Token,
 } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
@@ -31,16 +31,13 @@ export interface BaseContractAddressConfig extends BaseNetworkConfig {
 
 export type AvaxcTokenConfig = BaseContractAddressConfig;
 export type CeloTokenConfig = BaseContractAddressConfig;
+export type EthLikeTokenConfig = BaseContractAddressConfig;
 export type EosTokenConfig = BaseContractAddressConfig;
 export type Erc20TokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
 
 export type SolTokenConfig = BaseNetworkConfig & {
   tokenAddress: string;
-};
-
-export type AcaTokenConfig = BaseNetworkConfig & {
-  tokenSymbol: string;
 };
 
 export type AlgoTokenConfig = BaseNetworkConfig & {
@@ -77,14 +74,14 @@ export interface Tokens {
     avaxc: {
       tokens: AvaxcTokenConfig[];
     };
+    polygon: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
     hbar: {
       tokens: HbarTokenConfig[];
-    };
-    aca: {
-      tokens: AcaTokenConfig[];
     };
   };
   testnet: {
@@ -109,14 +106,14 @@ export interface Tokens {
     avaxc: {
       tokens: AvaxcTokenConfig[];
     };
+    polygon: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
     hbar: {
       tokens: HbarTokenConfig[];
-    };
-    aca: {
-      tokens: AcaTokenConfig[];
     };
   };
 }
@@ -231,6 +228,20 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof PolygonERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
@@ -239,20 +250,6 @@ const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       tokenAddress: coin.tokenAddress,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
-
-const formattedAcaTokens = coins.reduce((acc: AcaTokenConfig[], coin) => {
-  if (coin instanceof AcaCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'aca' : 'taca',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenSymbol: coin.tokenSymbol,
       decimalPlaces: coin.decimalPlaces,
     });
   }
@@ -310,14 +307,14 @@ export const tokens: Tokens = {
     avaxc: {
       tokens: formattedAvaxCTokens.filter((token) => token.network === 'Mainnet'),
     },
+    polygon: {
+      tokens: formattedPolygonTokens.filter((token) => token.network === 'Mainnet'),
+    },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
     },
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    aca: {
-      tokens: formattedAcaTokens.filter((token) => token.network === 'Mainnet'),
     },
   },
   // network name for test environments
@@ -343,14 +340,14 @@ export const tokens: Tokens = {
     avaxc: {
       tokens: formattedAvaxCTokens.filter((token) => token.network === 'Testnet'),
     },
+    polygon: {
+      tokens: formattedPolygonTokens.filter((token) => token.network === 'Testnet'),
+    },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),
     },
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Testnet'),
-    },
-    aca: {
-      tokens: formattedAcaTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };

@@ -1,5 +1,4 @@
 import {
-  acaToken,
   account,
   AccountCoin,
   algoToken,
@@ -20,9 +19,9 @@ import {
   teosToken,
   terc20,
   terc721,
+  tpolygonErc20,
   tronToken,
   tsolToken,
-  tacaToken,
   tstellarToken,
   ttronToken,
 } from './account';
@@ -210,6 +209,8 @@ export const coins = CoinMap.fromCoins([
   ofc('ofceos', 'Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
   ofc('ofcetc', 'Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
   ofc('ofcstx', 'Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
+  ofc('ofcseth-h', 'Staked ETH Harbour', 18, UnderlyingAsset['SETH-H'], CoinKind.CRYPTO),
+  ofc('ofcreth-h', 'Reward ETH Harbour', 18, UnderlyingAsset['RETH-H'], CoinKind.CRYPTO),
   ofc('ofchbar', 'Mainnet Hedera HBAR', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   ofc('ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
@@ -1823,10 +1824,21 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
-  acaToken('aca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
-  acaToken('aca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
-  tacaToken('taca:AUSD', 'Acala USD', 12, 'AUSD', UnderlyingAsset.AUSD, AccountCoin.DEFAULT_FEATURES),
-  tacaToken('taca:LDOT', 'DOT Liquid Staking', 10, 'LDOT', UnderlyingAsset.LDOT, AccountCoin.DEFAULT_FEATURES),
+  // testnet polygon tokens
+  tpolygonErc20(
+    'DERC20',
+    'Polygon Test ERC20',
+    18,
+    '0xfe4f5145f6e09952a5ba9e956ed0c25e3fa4c7f1',
+    UnderlyingAsset.DERC20
+  ),
+  tpolygonErc20(
+    'TESTWMATIC',
+    'Polygon Test WMATIC',
+    18,
+    '0x9c3c9283d3e44854697cd22d3faa240cfb032889',
+    UnderlyingAsset.TESTWMATIC
+  ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
   fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),

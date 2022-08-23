@@ -19,7 +19,9 @@ export class SmartbitApi extends BaseApi {
     super(baseUrl);
   }
 
-  async getTransactionDetails(tx: utxolib.bitgo.UtxoTransaction): Promise<unknown> {
+  async getTransactionDetails<TNumber extends number | bigint>(
+    tx: utxolib.bitgo.UtxoTransaction<TNumber>
+  ): Promise<unknown> {
     const path = '/blockchain/decodetx';
     const res = await this.post<any>(path, { hex: tx.toBuffer().toString('hex') });
 
