@@ -1,4 +1,4 @@
-import { ECPair, networks } from 'bitcoinjs-lib';
+import { networks } from 'bitcoinjs-lib';
 import * as assert from 'assert';
 
 import {
@@ -8,6 +8,7 @@ import {
   isSupportedScriptType,
   scriptTypes2Of3,
 } from '../../src/bitgo/outputScripts';
+import { ECPair } from '../../src/noble_ecc';
 
 import { getKeyTriple } from '../testutil';
 import { getNetworkList, getNetworkName } from '../../src';

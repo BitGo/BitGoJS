@@ -11,7 +11,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
@@ -30,7 +31,7 @@ interface DecryptReceivedTravelRuleOptions {
   keychain?: {
     xprv?: string;
   };
-  hdnode?: bip32.BIP32Interface;
+  hdnode?: BIP32Interface;
 }
 
 interface Recipient {

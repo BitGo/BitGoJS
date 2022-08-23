@@ -45,7 +45,7 @@
     "@types/bluebird": "^3.5.25",
     "@types/lodash": "^4.14.121",
     "bignumber.js": "^9.0.2",
-    "bip32": "^2.0.6",
+    "bip32": "^3.0.1",
     "bitcoinjs-message": "^2.0.0",
     "bluebird": "^3.5.3",
     "debug": "^3.1.0",

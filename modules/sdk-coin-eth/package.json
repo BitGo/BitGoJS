@@ -42,10 +42,10 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.1.0",
     "@bitgo/statics": "^7.0.0",
+    "@bitgo/utxo-lib": "^2.4.1",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "bignumber.js": "^9.0.0",
-    "bip32": "^2.0.6",
     "bn.js": "^5.2.1",
     "debug": "^3.1.0",
     "ethereumjs-abi": "^0.6.5",

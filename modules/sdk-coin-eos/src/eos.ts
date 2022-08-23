@@ -2,7 +2,8 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -864,7 +865,7 @@ export class Eos extends BaseCoin {
    * @param signableTx
    * @param signingKey
    */
-  signTx(signableTx: string, signingKey: bip32.BIP32Interface): string {
+  signTx(signableTx: string, signingKey: BIP32Interface): string {
     const signBuffer = Buffer.from(signableTx, 'hex');
     const privateKeyBuffer = signingKey.privateKey;
     return ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();

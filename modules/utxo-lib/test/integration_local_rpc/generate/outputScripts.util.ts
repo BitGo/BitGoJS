@@ -1,4 +1,4 @@
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import { Transaction, TxOutput } from 'bitcoinjs-lib';
 import * as utxolib from '../../../src';
 import {
@@ -79,7 +79,7 @@ export function createSpendTransactionFromPrevOutputs<TNumber extends number | b
     signKeys = [keys[0], keys[2]],
     version,
     amountType,
-  }: { signKeys?: bip32.BIP32Interface[]; version?: number; amountType?: 'number' | 'bigint' } = {}
+  }: { signKeys?: BIP32Interface[]; version?: number; amountType?: 'number' | 'bigint' } = {}
 ): UtxoTransaction<TNumber> {
   if (signKeys.length !== 1 && signKeys.length !== 2) {
     throw new Error(`signKeys length must be 1 or 2`);

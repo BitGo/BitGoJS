@@ -1,7 +1,7 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
 import * as nock from 'nock';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as secp256k1 from 'secp256k1';
 import {
   common,

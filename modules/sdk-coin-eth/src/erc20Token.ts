@@ -11,7 +11,7 @@ import {
   NamedCoinConstructor,
 } from '@bitgo/sdk-core';
 import { Erc20TokenConfig, tokens } from '@bitgo/statics';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';

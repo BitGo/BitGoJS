@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 import * as should from 'should';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { getBuilder, Eth } from '@bitgo/account-lib';

@@ -1,5 +1,6 @@
-import * as bip32 from 'bip32';
-import { ECPair } from 'bitcoinjs-lib';
+import { bip32, ECPair } from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
+import { ECPairInterface } from 'ecpair';
 import * as Crypto from '../util/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
 import { BaseKeyPair } from './baseKeyPair';
@@ -10,7 +11,7 @@ import { NotImplementedError } from './errors';
  * Base class for SECP256K1 extended keypairs.
  */
 export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
-  static toKeyPair(hdNode: bip32.BIP32Interface): ECPair.ECPairInterface {
+  static toKeyPair(hdNode: BIP32Interface): ECPairInterface {
     if (hdNode.privateKey) {
       return ECPair.fromPrivateKey(hdNode.privateKey);
     } else {
@@ -20,8 +21,8 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
 
   // Implementation of the HD protocol (BIP32). Only available when creating a KeyPair from a seed,
   // or extended keys
-  protected hdNode?: bip32.BIP32Interface;
-  protected keyPair: ECPair.ECPairInterface;
+  protected hdNode?: BIP32Interface;
+  protected keyPair: ECPairInterface;
   protected source?: KeyPairOptions;
   /**
    * Public constructor. By default, creates a key pair with a random master seed.

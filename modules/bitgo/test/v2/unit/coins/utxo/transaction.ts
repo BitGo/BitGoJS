@@ -3,7 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
 
@@ -56,8 +56,8 @@ function run<TNumber extends number | bigint = number>(
 
     function getSignParams(
       prebuildHex: string,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): WalletSignTransactionOptions {
       const txInfo = {
         unspents: getUnspents(),
@@ -75,8 +75,8 @@ function run<TNumber extends number | bigint = number>(
 
     function createHalfSignedTransaction(
       prebuild: utxolib.bitgo.UtxoTransaction<TNumber>,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): Promise<HalfSignedUtxoTransaction> {
       // half-sign with the user key
       return wallet.signTransaction(
@@ -86,8 +86,8 @@ function run<TNumber extends number | bigint = number>(
 
     async function createFullSignedTransaction(
       halfSigned: HalfSignedUtxoTransaction,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): Promise<FullySignedTransaction> {
       return (await wallet.signTransaction({
         ...getSignParams(halfSigned.txHex, signer, cosigner),
@@ -148,10 +148,7 @@ function run<TNumber extends number | bigint = number>(
       );
     });
 
-    function testValidSignatures(
-      tx: HalfSignedUtxoTransaction | FullySignedTransaction,
-      signedBy: bip32.BIP32Interface[]
-    ) {
+    function testValidSignatures(tx: HalfSignedUtxoTransaction | FullySignedTransaction, signedBy: BIP32Interface[]) {
       const unspents = getUnspents();
       const prevOutputs = unspents.map(
         (u): utxolib.TxOutput<TNumber> => ({

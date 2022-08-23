@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import { script as bscript, classify, TxOutput } from '../../src';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet, Network, networks } from '../../src/networks';
@@ -42,15 +42,15 @@ async function readFixture<T>(
   );
 }
 
-function keyName(k: bip32.BIP32Interface): string | undefined {
+function keyName(k: BIP32Interface): string | undefined {
   return ['user', 'backup', 'bitgo'][fixtureKeys.indexOf(k)];
 }
 
 function runTestCheckScriptStructure<TNumber extends number | bigint = number>(
   network: Network,
   scriptType: ScriptType2Of3 | 'p2shP2pk',
-  signer1: bip32.BIP32Interface,
-  signer2?: bip32.BIP32Interface,
+  signer1: BIP32Interface,
+  signer2?: BIP32Interface,
   amountType: 'number' | 'bigint' = 'number'
 ) {
   it(`has expected script structure [${getNetworkName(network)} ${scriptType} ${keyName(signer1)} ${
@@ -120,8 +120,8 @@ function runTestCheckScriptStructure<TNumber extends number | bigint = number>(
 function runTestParseScript<TNumber extends number | bigint = number>(
   network: Network,
   scriptType: ScriptType,
-  k1: bip32.BIP32Interface,
-  k2: bip32.BIP32Interface,
+  k1: BIP32Interface,
+  k2: BIP32Interface,
   amountType: 'number' | 'bigint' = 'number'
 ) {
   async function testParseSignedInputs(
@@ -217,7 +217,7 @@ function assertVerifySignatureEquals<TNumber extends number | bigint>(
 function checkSignTransaction<TNumber extends number | bigint>(
   tx: UtxoTransaction<TNumber>,
   scriptType: ScriptType2Of3,
-  signKeys: bip32.BIP32Interface[],
+  signKeys: BIP32Interface[],
   testOutputAmount: TNumber
 ) {
   const prevOutputs = getPrevOutputs<TNumber>(scriptType, testOutputAmount) as TxOutput<TNumber>[];
@@ -284,8 +284,8 @@ function checkSignTransaction<TNumber extends number | bigint>(
 function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
   network: Network,
   scriptType: ScriptType2Of3,
-  k1?: bip32.BIP32Interface,
-  k2?: bip32.BIP32Interface,
+  k1?: BIP32Interface,
+  k2?: BIP32Interface,
   amountType: 'number' | 'bigint' = 'number'
 ) {
   if (k1 && k2) {

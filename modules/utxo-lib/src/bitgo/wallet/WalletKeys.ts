@@ -9,11 +9,11 @@
  * Since we never use other derivations for utxo address scripts, the classes defined here only
  * allow exactly one level of derivation.
  */
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import { Triple } from '../types';
 
-export function eqPublicKey(a: bip32.BIP32Interface, b: bip32.BIP32Interface): boolean {
+export function eqPublicKey(a: BIP32Interface, b: BIP32Interface): boolean {
   return a.publicKey.equals(b.publicKey);
 }
 
@@ -27,7 +27,7 @@ export class WalletKeys {
   /**
    * @param triple - bip32 key triple
    */
-  constructor(public readonly triple: Triple<bip32.BIP32Interface>) {
+  constructor(public readonly triple: Triple<BIP32Interface>) {
     triple.forEach((a, i) => {
       triple.forEach((b, j) => {
         if (eqPublicKey(a, b) && i !== j) {
@@ -39,15 +39,15 @@ export class WalletKeys {
     this.publicKeys = this.triple.map((k) => k.publicKey) as Triple<Buffer>;
   }
 
-  get user(): bip32.BIP32Interface {
+  get user(): BIP32Interface {
     return this.triple[0];
   }
 
-  get backup(): bip32.BIP32Interface {
+  get backup(): BIP32Interface {
     return this.triple[1];
   }
 
-  get bitgo(): bip32.BIP32Interface {
+  get bitgo(): BIP32Interface {
     return this.triple[2];
   }
 }
@@ -63,7 +63,7 @@ export class DerivedWalletKeys extends WalletKeys {
    * @param paths - paths to derive with
    */
   constructor(public parent: RootWalletKeys, public paths: Triple<string>) {
-    super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<bip32.BIP32Interface>);
+    super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<BIP32Interface>);
   }
 }
 
@@ -79,7 +79,7 @@ export class RootWalletKeys extends WalletKeys {
    *                             can have a nonstandard prefix.
    */
   constructor(
-    triple: Triple<bip32.BIP32Interface>,
+    triple: Triple<BIP32Interface>,
     public readonly derivationPrefixes: Triple<string> = [
       RootWalletKeys.defaultPrefix,
       RootWalletKeys.defaultPrefix,
@@ -101,7 +101,7 @@ export class RootWalletKeys extends WalletKeys {
    * @param index
    * @return full derivation path for key, including key-specific prefix
    */
-  getDerivationPath(key: bip32.BIP32Interface, chain: number, index: number): string {
+  getDerivationPath(key: BIP32Interface, chain: number, index: number): string {
     if (!this.derivationPrefixes) {
       throw new Error(`no derivation prefixes`);
     }

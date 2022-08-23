@@ -1,11 +1,10 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import { randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { networks } from '@bitgo/utxo-lib';
+import { bip32, networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import {
   BaseCoin,

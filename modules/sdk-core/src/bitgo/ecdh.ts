@@ -13,9 +13,9 @@
  */
 
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
-import * as utxolib from '@bitgo/utxo-lib';
+import { ECPairInterface } from 'ecpair';
+import { BIP32Interface } from 'bip32';
 
 /**
  * Calculate the Elliptic Curve Diffie Hellman
@@ -24,13 +24,13 @@ import * as utxolib from '@bitgo/utxo-lib';
  * @returns Buffer public key buffer that can be used as shared secret (see note)
  */
 export function getSharedSecret(
-  privateKey: bip32.BIP32Interface | utxolib.ECPair.ECPairInterface | Buffer,
-  publicKey: bip32.BIP32Interface | Buffer
+  privateKey: BIP32Interface | ECPairInterface | Buffer,
+  publicKey: BIP32Interface | Buffer
 ): Buffer {
-  function isBIP32Interface(k: any): k is bip32.BIP32Interface {
+  function isBIP32Interface(k: any): k is BIP32Interface {
     return k.constructor.name === 'BIP32';
   }
-  function isECPairInterface(k: any): k is utxolib.ECPair.ECPairInterface {
+  function isECPairInterface(k: any): k is ECPairInterface {
     return k.constructor.name === 'ECPair';
   }
   if (isBIP32Interface(privateKey)) {

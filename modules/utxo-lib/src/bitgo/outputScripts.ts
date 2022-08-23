@@ -5,6 +5,8 @@ import { Network, supportsSegwit, supportsTaproot } from '..';
 
 import { isTriple, Triple, Tuple } from './types';
 
+import { ecc as eccLib } from '../noble_ecc';
+
 export { scriptTypeForChain } from './wallet/chains';
 
 export const scriptTypeP2shP2pk = 'p2shP2pk';
@@ -179,17 +181,23 @@ function getTaptreeKeyCombinations(keys: Triple<Buffer>): Tuple<Buffer>[] {
 export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number): bitcoinjs.Payment {
   const keyCombinations2of2 = getTaptreeKeyCombinations(pubkeys);
   const redeems = keyCombinations2of2.map((pubkeys, index) =>
-    bitcoinjs.payments.p2tr_ns({
-      pubkeys,
-      weight: index === 0 ? 2 : 1,
-    })
+    bitcoinjs.payments.p2tr_ns(
+      {
+        pubkeys,
+        weight: index === 0 ? 2 : 1,
+      },
+      { eccLib }
+    )
   );
 
-  return bitcoinjs.payments.p2tr({
-    pubkeys: keyCombinations2of2[0],
-    redeems,
-    redeemIndex,
-  });
+  return bitcoinjs.payments.p2tr(
+    {
+      pubkeys: keyCombinations2of2[0],
+      redeems,
+      redeemIndex,
+    },
+    { eccLib }
+  );
 }
 
 export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {

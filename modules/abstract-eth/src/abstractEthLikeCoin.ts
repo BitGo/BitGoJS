@@ -3,7 +3,7 @@
  */
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
 import {

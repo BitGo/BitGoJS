@@ -44,11 +44,11 @@
     "@bitgo/sdk-coin-eth": "^1.1.0",
     "@bitgo/sdk-core": "^1.1.0",
     "@bitgo/statics": "^7.0.0",
+    "@bitgo/utxo-lib": "^2.4.1",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "bignumber.js": "^9.0.0",
     "ethereumjs-abi": "^0.6.5",
-    "bip32": "^2.0.6",
     "lodash": "^4.17.14"
   },
   "devDependencies": {

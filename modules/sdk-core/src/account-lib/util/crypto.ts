@@ -1,5 +1,4 @@
-import * as bip32 from 'bip32';
-import { ECPair, networks } from 'bitcoinjs-lib';
+import { bip32, ECPair, networks } from '@bitgo/utxo-lib';
 import * as nacl from 'tweetnacl';
 import * as hex from '@stablelib/hex';
 import * as bls from 'noble-bls12-381';

@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
