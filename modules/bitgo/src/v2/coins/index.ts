@@ -36,6 +36,8 @@ import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';
 export { Erc20Token, Eth, Gteth, Teth };
 import { Eth2, Teth2 } from '@bitgo/sdk-coin-eth2';
 export { Eth2, Teth2 };
+import { Ethw } from '@bitgo/sdk-coin-ethw';
+export { Ethw };
 import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
 export { Etc, Tetc };
 import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
