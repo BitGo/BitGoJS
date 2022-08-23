@@ -1,5 +1,5 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { Base58CheckResult, Bech32Result } from 'bitcoinjs-lib/types/address';
+import { Base58CheckResult, Bech32Result } from 'bitcoinjs-lib/src/address';
 
 import * as zcashAddress from '../src/bitgo/zcash/address';
 import { isValidNetwork, isZcash, Network } from './networks';

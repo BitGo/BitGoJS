@@ -1,5 +1,5 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
-import { ECPair } from '@bitgo/utxo-lib';
+import { ECPairInterface } from 'ecpair';
 
 export interface BitGoAPIOptions {
   accessToken?: string;
@@ -190,7 +190,7 @@ export interface VerifyShardsOptions {
 
 export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
-  eckey: ECPair.ECPairInterface;
+  eckey: ECPairInterface;
 }
 
 export interface ChangePasswordOptions {

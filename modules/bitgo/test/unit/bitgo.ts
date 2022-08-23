@@ -10,8 +10,7 @@ import * as BitGoJS from '../../src/index';
 import { common } from '@bitgo/sdk-core';
 const rp = require('request-promise');
 import * as _ from 'lodash';
-import * as bip32 from 'bip32';
-import { ECPair } from '@bitgo/utxo-lib';
+import { bip32, ECPair } from '@bitgo/utxo-lib';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';

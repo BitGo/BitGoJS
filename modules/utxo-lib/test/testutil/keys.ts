@@ -1,12 +1,15 @@
-import * as bip32 from 'bip32';
+import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';
 import * as crypto from 'crypto';
 
 import { Triple } from '../../src/bitgo';
 import { RootWalletKeys } from '../../src/bitgo/wallet/WalletKeys';
+import { ecc } from '../../src/noble_ecc';
 
-export type KeyTriple = Triple<bip32.BIP32Interface>;
+const bip32: BIP32API = BIP32Factory(ecc);
 
-function getKey(seed: string): bip32.BIP32Interface {
+export type KeyTriple = Triple<BIP32Interface>;
+
+function getKey(seed: string): BIP32Interface {
   return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
 }
 

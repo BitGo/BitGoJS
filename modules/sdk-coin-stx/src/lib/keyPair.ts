@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto';
-import * as bip32 from 'bip32';
-import { ECPair } from 'bitcoinjs-lib';
+import { bip32, ECPair } from '@bitgo/utxo-lib';
 import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
 import {
   DefaultKeys,

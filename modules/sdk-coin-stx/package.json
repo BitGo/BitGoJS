@@ -42,11 +42,10 @@
   "dependencies": {
     "@bitgo/sdk-core": "^2.0.0-rc.7",
     "@bitgo/statics": "^8.0.0-rc.8",
+    "@bitgo/utxo-lib": "^3.0.0-rc.2",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
     "bignumber.js": "^9.0.0",
-    "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.5",
     "bn.js": "^5.2.1",
     "elliptic": "^6.5.2",
     "ethereumjs-util": "7.1.5",

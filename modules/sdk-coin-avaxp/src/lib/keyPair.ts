@@ -12,8 +12,7 @@ import createHash from 'create-hash';
 import { Buffer as SafeBuffer } from 'safe-buffer';
 import { Buffer as BufferAvax } from 'avalanche';
 import { SECP256k1KeyPair } from 'avalanche/dist/common';
-import * as bip32 from 'bip32';
-import { ECPair } from 'bitcoinjs-lib';
+import { bip32, ECPair } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import utils from './utils';
 

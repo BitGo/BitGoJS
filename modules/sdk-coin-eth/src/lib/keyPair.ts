@@ -8,7 +8,7 @@ import {
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
 import { randomBytes } from 'crypto';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 
 const DEFAULT_SEED_SIZE_BYTES = 64;
 

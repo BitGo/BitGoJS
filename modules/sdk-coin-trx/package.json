@@ -51,7 +51,6 @@
     "@bitgo/utxo-lib": "^3.0.0-rc.2",
     "@stablelib/hex": "^1.0.0",
     "bignumber.js": "^9.0.0",
-    "bip32": "^2.0.6",
     "lodash": "^4.17.14",
     "protobufjs": "^6.8.9",
     "secp256k1": "^4.0.2",

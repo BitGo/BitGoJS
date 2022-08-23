@@ -1,19 +1,7 @@
 import * as opcodes from 'bitcoin-ops';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
-const ecc = require('tiny-secp256k1');
-
-import {
-  payments,
-  script,
-  Transaction,
-  TxInput,
-  schnorrBip340,
-  classify,
-  taproot,
-  TxOutput,
-  ScriptSignature,
-} from 'bitcoinjs-lib';
+import { payments, script, Transaction, TxInput, taproot, TxOutput, ScriptSignature } from 'bitcoinjs-lib';
 
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
@@ -26,7 +14,9 @@ import {
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
 import { isTriple, Triple } from './types';
+import { classify } from '../';
 import { getMainnet, Network, networks } from '../networks';
+import { ecc as eccLib } from '../noble_ecc';
 
 const inputTypes = [
   'multisig',
@@ -189,7 +179,7 @@ export function parseSignatureScript(
       throw new Error(`tapscript must be n of n multisig`);
     }
 
-    const publicKeys = payments.p2tr_ns({ output: tapscript }).pubkeys;
+    const publicKeys = payments.p2tr_ns({ output: tapscript }, { eccLib }).pubkeys;
     if (!publicKeys || publicKeys.length !== 2) {
       throw new Error('expected 2 pubkeys');
     }
@@ -486,7 +476,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       if (!controlBlock) {
         throw new Error('expected controlBlock');
       }
-      const leafHash = taproot.getTapleafHash(controlBlock, pubScript);
+      const leafHash = taproot.getTapleafHash(eccLib, controlBlock, pubScript);
       const signatureHash = transaction.hashForWitnessV1(
         inputIndex,
         prevOutputs.map(({ script }) => script),
@@ -496,7 +486,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       );
 
       const signedBy = publicKeys.filter(
-        (k) => Buffer.isBuffer(signatureBuffer) && schnorrBip340.verifySchnorr(signatureHash, k, signatureBuffer)
+        (k) => Buffer.isBuffer(signatureBuffer) && eccLib.verifySchnorr(signatureHash, k, signatureBuffer)
       );
 
       if (signedBy.length === 0) {
@@ -513,7 +503,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
         ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
         : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
       const signedBy = publicKeys.filter((publicKey) =>
-        ecc.verify(
+        eccLib.verify(
           transactionHash,
           publicKey,
           signature,
@@ -634,7 +624,7 @@ export function verifySignatureWithPublicKey<TNumber extends number | bigint>(
 export function signInputP2shP2pk<TNumber extends number | bigint>(
   txBuilder: UtxoTransactionBuilder<TNumber>,
   vin: number,
-  keyPair: bip32.BIP32Interface
+  keyPair: BIP32Interface
 ): void {
   const prevOutScriptType = 'p2sh-p2pk';
   const { redeemScript, witnessScript } = createOutputScriptP2shP2pk(keyPair.publicKey);
@@ -656,7 +646,7 @@ export function signInput2Of3<TNumber extends number | bigint>(
   vin: number,
   scriptType: ScriptType2Of3,
   pubkeys: Triple<Buffer>,
-  keyPair: bip32.BIP32Interface,
+  keyPair: BIP32Interface,
   cosigner: Buffer,
   amount: TNumber
 ): void {

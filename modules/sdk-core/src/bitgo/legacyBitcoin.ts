@@ -1,13 +1,15 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
+import { ECPairInterface } from 'ecpair';
 import { sanitizeLegacyPath } from '../api';
 import * as bitcoinUtil from './bitcoin';
 
-interface ECPairCompat extends utxolib.ECPairInterface {
+interface ECPairCompat extends ECPairInterface {
   getPublicKeyBuffer(): Buffer;
 }
 
-function createECPairCompat(ecPair: utxolib.ECPairInterface): ECPairCompat {
+function createECPairCompat(ecPair: ECPairInterface): ECPairCompat {
   return Object.assign(ecPair, {
     getPublicKeyBuffer(): Buffer {
       return ecPair.publicKey;
@@ -23,7 +25,7 @@ export function makeRandomKey(): ECPairCompat {
  * Implementation of legacy "HDNode" class as used by certain components
  */
 export class HDNode {
-  constructor(private bip32: bip32.BIP32Interface) {}
+  constructor(private bip32: BIP32Interface) {}
 
   get publicKey(): Buffer {
     return this.bip32.publicKey;

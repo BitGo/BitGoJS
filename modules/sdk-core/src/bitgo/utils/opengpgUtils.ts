@@ -13,6 +13,7 @@ import {
   verify,
 } from 'openpgp';
 import * as pgp from 'openpgp';
+import * as _ from 'lodash';
 import { BitGoBase } from '../bitgoBase';
 
 const sodium = require('libsodium-wrappers-sumo');
@@ -30,6 +31,127 @@ export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
 
   const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
   return await readKey({ armoredKey: bitgoPublicKeyStr });
+}
+
+/**
+ * Verify an Eddsa KeyShare Proof.
+ *
+ * @param senderPubKey public key of the sender of the privateShareProof
+ * @param privateShareProof u value proof
+ * @param uValue u value from an Eddsa keyshare
+ * @return {boolean} whether uValue proof actually was signed by sender as part of their subkeys
+ */
+export async function verifyEdShareProof(
+  senderPubKey: string,
+  privateShareProof: string,
+  uValue: string
+): Promise<boolean> {
+  const decodedProof = await pgp.readKey({ armoredKey: privateShareProof });
+  const senderGpgKey = await pgp.readKey({ armoredKey: senderPubKey });
+  if (!(await decodedProof.verifyPrimaryUser([senderGpgKey]))[0].valid) {
+    return false;
+  }
+  const proofSubkeys = decodedProof.getSubkeys()[1];
+  const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams['Q'].slice(1)).toString('hex');
+  const rawUValueProof = Buffer.from(
+    sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))
+  ).toString('hex');
+  return decodedUValueProof === rawUValueProof;
+}
+
+/**
+ * Verify a shared data proof.
+ *
+ * @param senderPubKeyArm public key of the signer of the key with proof data
+ * @param keyWithNotation signed reciever key with notation data
+ * @param dataToVerify data to be checked against notation data in the signed key
+ * @return {boolean} whether proof is valid
+ */
+export async function verifySharedDataProof(
+  senderPubKeyArm: string,
+  keyWithNotation: string,
+  dataToVerify: { name: string; value: string }[]
+): Promise<boolean> {
+  const senderPubKey = await pgp.readKey({ armoredKey: senderPubKeyArm });
+  const signedKey = await pgp.readKey({ armoredKey: keyWithNotation });
+  if (!(await signedKey.verifyPrimaryUser([senderPubKey]).then((values) => _.some(values, (value) => value.valid)))) {
+    return false;
+  }
+  const primaryUser = await signedKey.getPrimaryUser();
+  const anyInvalidProof = _.some(
+    // @ts-ignore
+    primaryUser.user.otherCertifications[0].rawNotations,
+    (notation) => dataToVerify.find((i) => i.name == notation.name)?.value !== Buffer.from(notation.value).toString()
+  );
+  return !anyInvalidProof;
+}
+
+/**
+ * Creates a proof through adding notation data to a GPG ceritifying signature.
+ *
+ * @param privateKeyArmored gpg private key in armor format of the sender
+ * @param publicKeyToCertArmored gpg public key in armor fomrat of the reciever
+ * @param notations data to be proofed
+ * @return {string} keyshare proof
+ */
+export async function createSharedDataProof(
+  privateKeyArmored: string,
+  publicKeyToCertArmored: string,
+  notations: { name: string; value: string }[]
+): Promise<string> {
+  const certifyingKey = await pgp.readKey({ armoredKey: privateKeyArmored });
+  const publicKeyToCert = await pgp.readKey({ armoredKey: publicKeyToCertArmored });
+  const dateTime = new Date();
+  // UserId Packet.
+  const userIdPkt = new pgp.UserIDPacket();
+  const primaryUser = await publicKeyToCert.getPrimaryUser();
+  // @ts-ignore
+  userIdPkt.userID = primaryUser.user.userID.userID;
+  // Signature packet.
+  const signaturePacket = new pgp.SignaturePacket();
+  signaturePacket.signatureType = pgp.enums.signature.certPositive;
+  signaturePacket.publicKeyAlgorithm = pgp.enums.publicKey.ecdsa;
+  signaturePacket.hashAlgorithm = pgp.enums.hash.sha256;
+  // @ts-ignore
+  signaturePacket.issuerFingerprint = await primaryUser.user.mainKey.keyPacket.getFingerprintBytes();
+  // @ts-ignore
+  signaturePacket.issuerKeyID = primaryUser.user.mainKey.keyPacket.keyID;
+  // @ts-ignore
+  signaturePacket.signingKeyID = primaryUser.user.mainKey.keyPacket.keyID;
+  // @ts-ignore
+  signaturePacket.signersUserID = primaryUser.user.userID.userID;
+  // @ts-ignore
+  signaturePacket.features = [1];
+  notations.forEach(({ name, value }) => {
+    // @ts-ignore
+    signaturePacket.rawNotations.push([
+      {
+        name: name,
+        value: new Uint8Array(Buffer.from(value)),
+        humanReadable: true,
+        critical: 0,
+      },
+    ]);
+  });
+
+  // Prepare signing data.
+  const keydataToSign = {};
+  // @ts-ignore
+  keydataToSign.key = publicKeyToCert.keyPacket;
+  // @ts-ignore
+  keydataToSign.userID = userIdPkt;
+
+  // Sign the data (create certification).
+  // @ts-ignore
+  await signaturePacket.sign(certifyingKey.keyPacket, keydataToSign, dateTime);
+
+  // Assemble packets together.
+  const publicKeyToCertPkts = publicKeyToCert.toPacketList();
+  const newKeyPktList = new pgp.PacketList();
+  newKeyPktList.push(...publicKeyToCertPkts.slice(0, 3), signaturePacket, ...publicKeyToCertPkts.slice(3));
+  // @ts-ignore
+  const newPubKey = new pgp.PublicKey(newKeyPktList);
+  return newPubKey.armor().replace(/\r\n/g, '\n');
 }
 
 /**

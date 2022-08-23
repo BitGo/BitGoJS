@@ -26,7 +26,7 @@ export class DashTransactionBuilder<TNumber extends number | bigint = number> ex
 
   static fromTransaction<TNumber extends number | bigint>(
     tx: DashTransaction<TNumber>,
-    network?: bitcoinjs.Network,
+    network?: Network,
     prevOutput?: bitcoinjs.TxOutput<TNumber>[]
   ): DashTransactionBuilder<TNumber> {
     const txb = new DashTransactionBuilder<TNumber>(

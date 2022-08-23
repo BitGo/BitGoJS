@@ -4,7 +4,7 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as ecc from 'eosjs-ecc';
 import * as _ from 'lodash';
 import should from 'should';

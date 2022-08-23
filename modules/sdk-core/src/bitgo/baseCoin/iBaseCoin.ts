@@ -5,7 +5,8 @@ import { Keychain, IKeychains } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
-import { ITssUtils } from '../utils';
+import { EcdsaUtils } from '../utils/tss/ecdsa';
+import EddsaUtils from '../utils/tss/eddsa';
 import { IWallet, IWallets, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
@@ -181,7 +182,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: ITssUtils;
+  tssUtils: EcdsaUtils | EddsaUtils | undefined;
   [index: string]: unknown;
 }
 

@@ -1,4 +1,4 @@
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import { DerivedWalletKeys, eqPublicKey, RootWalletKeys, WalletKeys } from './WalletKeys';
 import { Triple } from '../types';
@@ -8,16 +8,16 @@ export class WalletUnspentSigner<T extends WalletKeys> {
 
   static from(
     walletKeys: RootWalletKeys,
-    signer: bip32.BIP32Interface,
-    cosigner: bip32.BIP32Interface
+    signer: BIP32Interface,
+    cosigner: BIP32Interface
   ): WalletUnspentSigner<RootWalletKeys> {
     return new WalletUnspentSigner<RootWalletKeys>(walletKeys, signer, cosigner);
   }
 
   constructor(
-    walletKeys: WalletKeys | Triple<bip32.BIP32Interface>,
-    public signer: bip32.BIP32Interface,
-    public cosigner: bip32.BIP32Interface
+    walletKeys: WalletKeys | Triple<BIP32Interface>,
+    public signer: BIP32Interface,
+    public cosigner: BIP32Interface
   ) {
     if (Array.isArray(walletKeys)) {
       walletKeys = new RootWalletKeys(walletKeys);

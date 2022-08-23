@@ -1,9 +1,8 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import { ECPair } from '@bitgo/utxo-lib';
+import { bip32, ECPair } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';

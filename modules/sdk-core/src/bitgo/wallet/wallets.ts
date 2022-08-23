@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';

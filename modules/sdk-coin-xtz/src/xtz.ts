@@ -13,7 +13,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { Interface, Utils, KeyPair, TransactionBuilder } from './lib';
 
 export class Xtz extends BaseCoin {
