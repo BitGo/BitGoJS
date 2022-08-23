@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.5-rc.4...@bitgo/unspents@0.9.0-rc.0) (2022-08-23)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* **unspents:** remove bitcoinjs-lib.d.ts ([e4447d4](https://github.com/BitGo/BitGoJS/commit/e4447d4c815050fc405bf766d93f2246b90835c8))
+* **unspents:** use new bip32/BIP32Interface in tests ([9de0c78](https://github.com/BitGo/BitGoJS/commit/9de0c7855111e995a2f75709d16901c1760a7511))
+
+
+### Features
+
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+
+
+
+
+
 ## [0.8.5-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.5-rc.3...@bitgo/unspents@0.8.5-rc.4) (2022-08-17)
 
 

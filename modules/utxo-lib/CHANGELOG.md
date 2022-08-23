@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.2...@bitgo/utxo-lib@3.0.0-rc.3) (2022-08-23)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* format imported files ([2ba3302](https://github.com/BitGo/BitGoJS/commit/2ba330275e2149fce0e01f5fbc61592bca7453e3))
+* remove references to bitcoinjs.Network ([84c7fd9](https://github.com/BitGo/BitGoJS/commit/84c7fd9bccd71b2f7429690481dc3104d2ae0928))
+* **utxo-lib:** fix lint ([24bcf05](https://github.com/BitGo/BitGoJS/commit/24bcf05b1c6502c4788f6c95b6f63c096df09898))
+
+
+### Features
+
+* import transaction_builder, classify, etc. ([e08776e](https://github.com/BitGo/BitGoJS/commit/e08776ea8e20b50d879bf25909db31b0451bb029))
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+* **utxo-lib:** export ECPairAPI, BIP32API ([8f960fd](https://github.com/BitGo/BitGoJS/commit/8f960fd0adc61392ad7f40e4970e069267cd6f98))
+
+
+
+
+
 # [3.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.1...@bitgo/utxo-lib@3.0.0-rc.2) (2022-08-17)
 
 

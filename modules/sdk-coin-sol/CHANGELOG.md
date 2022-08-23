@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.12...@bitgo/sdk-coin-sol@2.0.0-rc.13) (2022-08-23)
+
+
+### Bug Fixes
+
+* **sdk-core:** eth supports tss ([c0ec96f](https://github.com/BitGo/BitGoJS/commit/c0ec96fac7c5b4131d4f32d09463a78c0e1f8900))
+
+
+
+
+
 # [2.0.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.11...@bitgo/sdk-coin-sol@2.0.0-rc.12) (2022-08-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

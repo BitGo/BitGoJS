@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.1.0-rc.9...@bitgo/sdk-coin-polygon@1.1.0-rc.10) (2022-08-23)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+
+
+
+
+
 # [1.1.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.1.0-rc.8...@bitgo/sdk-coin-polygon@1.1.0-rc.9) (2022-08-22)
 
 

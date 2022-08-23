@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.2.0-rc.5...@bitgo/abstract-utxo@1.2.0-rc.6) (2022-08-23)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+
+
+
+
+
 # [1.2.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.2.0-rc.4...@bitgo/abstract-utxo@1.2.0-rc.5) (2022-08-22)
 
 

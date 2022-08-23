@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.1.0-rc.9...@bitgo/utxo-bin@2.1.0-rc.10) (2022-08-23)
+
+
+### Bug Fixes
+
+* **utxo-bin:** fix test fixtures ([085ddb3](https://github.com/BitGo/BitGoJS/commit/085ddb3d874e928ae9649e13318acd7268a41de2))
+
+
+
+
+
 # [2.1.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.1.0-rc.8...@bitgo/utxo-bin@2.1.0-rc.9) (2022-08-22)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

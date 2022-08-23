@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@1.1.2-rc.11...@bitgo/sdk-coin-xtz@1.2.0-rc.0) (2022-08-23)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+
+
+### Features
+
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+
+
+
+
+
 ## [1.1.2-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@1.1.2-rc.10...@bitgo/sdk-coin-xtz@1.1.2-rc.11) (2022-08-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

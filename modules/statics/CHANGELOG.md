@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.8...@bitgo/statics@8.0.0-rc.9) (2022-08-23)
+
+
+### Features
+
+* adds new tokens ([078851d](https://github.com/BitGo/BitGoJS/commit/078851dadacf9d0e18539e7757ce189ba090969d))
+* **bitgo:** expose Ethw in core bitgo module ([183cda4](https://github.com/BitGo/BitGoJS/commit/183cda433f8c683722843e2c30bf46101a1cd677))
+* **statics:** add ETHw statics ([f49ef42](https://github.com/BitGo/BitGoJS/commit/f49ef4233ffb788765eac5b5d20232334fbd6203))
+* **statics:** added offchain tokens DAO, DENT, DEP, DFI ([c0257cf](https://github.com/BitGo/BitGoJS/commit/c0257cf86c5369f0db936acb990b3235b69dafcf))
+
+
+
+
+
 # [8.0.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.7...@bitgo/statics@8.0.0-rc.8) (2022-08-22)
 
 
