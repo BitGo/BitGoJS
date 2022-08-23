@@ -201,7 +201,7 @@ export default class Ecdsa {
     } else {
       throw new Error('Invalid config for Sign Convert');
     }
-    if (shareParticipant.i !== shareToBeSend.i) {
+    if (shareParticipant.i === shareToBeSend.i) {
       throw new Error('Shares from same participant');
     }
     if (shareToBeSend['alpha']) {
