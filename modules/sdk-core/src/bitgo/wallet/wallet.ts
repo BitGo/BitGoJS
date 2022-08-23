@@ -21,7 +21,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest, EddsaUnsignedTransaction } from '../utils';
+import { inferAddressType, RequestTracer, TssUtils, TxRequest, EddsaUnsignedTransaction } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -70,7 +70,8 @@ import {
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
-
+import EddsaUtils from '../utils/tss/eddsa';
+import { EcdsaUtils } from '../utils/tss/ecdsa';
 const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
@@ -79,7 +80,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   private _wallet: WalletData;
-  private readonly tssUtils: ITssUtils;
+  private readonly tssUtils: EcdsaUtils | EddsaUtils | undefined;
   private readonly _permissions?: string[];
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
@@ -91,7 +92,18 @@ export class Wallet implements IWallet {
       const userDetails = _.find(walletData.users, { user: userId });
       this._permissions = _.get(userDetails, 'permissions');
     }
-    this.tssUtils = new TssUtils(bitgo, baseCoin, this);
+    if (baseCoin?.supportsTss()) {
+      switch (baseCoin.getMPCAlgorithm()) {
+        case 'ecdsa':
+          this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
+          break;
+        case 'eddsa':
+          this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
+          break;
+        default:
+          this.tssUtils = undefined;
+      }
+    }
   }
 
   /**
@@ -2438,7 +2450,7 @@ export class Wallet implements IWallet {
     let txRequest: TxRequest;
     switch (params.type) {
       case 'transfer':
-        txRequest = await this.tssUtils.prebuildTxWithIntent(
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
             reqId,
             intentType: 'payment',
@@ -2453,7 +2465,7 @@ export class Wallet implements IWallet {
         );
         break;
       case 'enabletoken':
-        txRequest = await this.tssUtils.prebuildTxWithIntent(
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
             reqId,
             intentType: 'enableToken',
@@ -2514,7 +2526,7 @@ export class Wallet implements IWallet {
     }
 
     try {
-      const signedTxRequest = await this.tssUtils.signTxRequest({
+      const signedTxRequest = await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
@@ -2549,6 +2561,6 @@ export class Wallet implements IWallet {
         )
         .send();
     }
-    return this.tssUtils.sendTxRequest(signedTransaction.txRequestId);
+    return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
   }
 }
