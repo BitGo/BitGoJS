@@ -26,6 +26,42 @@ export interface StakeOptions {
 export interface UnstakeOptions {
   amount: string;
   clientId?: string;
+  delegationId?: string;
+}
+
+export interface DelegationOptions {
+  delegationStatus?: DelegationStatus;
+  delegationIds?: Set<string>;
+  page?: number;
+  pageSize?: number;
+  sortBy?: CREATED_DATE_DESC | CREATED_DATE_ASC;
+}
+
+export type CREATED_DATE_DESC = '-createdDate';
+export type CREATED_DATE_ASC = 'createdDate';
+
+export enum DelegationStatus {
+  PENDING = 'PENDING',
+  FAILED = 'FAILED',
+  REJECTED = 'REJECTED',
+  ACTIVE = 'ACTIVE',
+  COMPLETE = 'COMPLETE',
+}
+
+export interface DelegationResults {
+  delegations: Delegation[];
+  page: number;
+  totalPages: number;
+  totalElements: number;
+}
+export interface Delegation {
+  id: string;
+  delegationAddress: string;
+  withdrawalAddress: string;
+  delegated: number;
+  coin: string;
+  walletId: string;
+  status: DelegationStatus;
 }
 
 export interface TransactionsReadyToSign {
