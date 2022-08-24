@@ -40,7 +40,7 @@ export async function sendSignatureShare(
   signerShare?: string
 ): Promise<SignatureShareRecord> {
   return bitgo
-    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + '/signatureshares', 2))
+    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + '/transactions/0' + '/signatureshares', 2))
     .send({
       signatureShare,
       signerShare,

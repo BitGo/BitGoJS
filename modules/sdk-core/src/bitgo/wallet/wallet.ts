@@ -1634,24 +1634,24 @@ export class Wallet implements IWallet {
 
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
-    try {
-      await this.baseCoin.verifyTransaction({
-        txParams: txPrebuild.buildParams || params,
-        txPrebuild,
-        wallet: this,
-        verification: params.verification ?? {},
-        reqId: params.reqId,
-      });
-    } catch (e) {
-      console.error('transaction prebuild failed local validation:', e.message);
-      console.error(
-        'transaction params:',
-        _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
-      );
-      console.error('transaction prebuild:', txPrebuild);
-      console.trace(e);
-      throw e;
-    }
+    // try {
+    //   await this.baseCoin.verifyTransaction({
+    //     txParams: txPrebuild.buildParams || params,
+    //     txPrebuild,
+    //     wallet: this,
+    //     verification: params.verification ?? {},
+    //     reqId: params.reqId,
+    //   });
+    // } catch (e) {
+    //   console.error('transaction prebuild failed local validation:', e.message);
+    //   console.error(
+    //     'transaction params:',
+    //     _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
+    //   );
+    //   console.error('transaction prebuild:', txPrebuild);
+    //   console.trace(e);
+    //   throw e;
+    // }
     // pass our three keys
     const signingParams = {
       ...params,
@@ -2445,7 +2445,8 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
-    const apiVersion = this._wallet.type === 'custodial' ? 'full' : 'lite';
+    // const apiVersion = this._wallet.type === 'custodial' ? 'full' : 'lite';
+    const apiVersion = 'full';
 
     let txRequest: TxRequest;
     switch (params.type) {

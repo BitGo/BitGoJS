@@ -235,7 +235,8 @@ export async function getBitgoToUserLatestShare(
 ): Promise<SendShareToBitgoRT> {
   let responseFromBitgo: SendShareToBitgoRT;
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const userShares = txRequest.signatureShares;
+  const userShares = txRequest.transactions[0].signatureShares;
+  console.log(`************ txRequest: ${JSON.stringify(txRequest)}`);
   if (!userShares || !userShares.length) {
     throw new Error('user share is not present');
   }

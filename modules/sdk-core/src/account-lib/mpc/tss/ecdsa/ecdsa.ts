@@ -201,6 +201,8 @@ export default class Ecdsa {
     } else {
       throw new Error('Invalid config for Sign Convert');
     }
+    console.log(`*************** shareParticipant: ${JSON.stringify(shareParticipant)}`);
+    console.log(`*************** shareToBeSend: ${JSON.stringify(shareToBeSend)}`);
     if (shareParticipant.i !== shareToBeSend.i) {
       throw new Error('Shares from same participant');
     }
