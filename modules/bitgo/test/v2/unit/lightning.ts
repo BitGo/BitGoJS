@@ -1,10 +1,11 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, Wallet, encodeLnurl } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src/bitgo';
 import * as nock from 'nock';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import fixtures from '../fixtures/lightning/lightning';
+import invoices from '../fixtures/lightning/invoices';
 
 describe('lightning API requests', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
@@ -19,6 +20,7 @@ describe('lightning API requests', function () {
   const wallet = new Wallet(bitgo, basecoin, walletData);
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address = 'fake_address';
+  const testUrl = 'https://service.com';
 
   it('should return the balance of lightning wallet', async function () {
     const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/balance`).reply(200, {
@@ -83,5 +85,24 @@ describe('lightning API requests', function () {
     const res = await wallet.lightning().getInvoices({ status: 'settled', limit: 1 });
     assert.deepStrictEqual(res, fixtures.invoices);
     scope.done();
+  });
+  
+  it('should decode lnurl-pay', async function () {
+    const lnurl = encodeLnurl('https://service.com/api?q=fake');
+    const scope = nock(testUrl).get('/api').query({ q: 'fake' }).reply(200, fixtures.decodedLnurl);
+    const decodedLnurl = await wallet.lightning().decodeLnurlPay(lnurl);
+
+    assert.deepStrictEqual(decodedLnurl, { ...fixtures.decodedLnurl, domain: 'service.com' });
+    scope.done();
+  });
+
+  it('should fetch lnurl-pay invoice', async function () {
+    const callback = 'https://service.com/api?q=fake';
+    const { data: invoice } = invoices.lnurlPayInvoice;
+    const lnurlReqScope = nock(testUrl).get('/api').query({ q: 'fake', amount: 2000000000 }).reply(200, { pr: invoice });
+    const res = await wallet.lightning().fetchLnurlPayInvoice({ callback, milliSatAmount: '2000000000', metadata: 'One piece of chocolate cake, one icecream cone, one pickle, one slice of swiss cheese, one slice of salami, one lollypop, one piece of cherry pie, one sausage, one cupcake, and one slice of watermelon' });
+    
+    assert.deepStrictEqual(res, invoice);
+    lnurlReqScope.done();
   });
 });

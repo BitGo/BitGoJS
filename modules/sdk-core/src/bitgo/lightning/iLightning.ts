@@ -30,6 +30,12 @@ export interface GetInvoicesQuery {
   limit?: number;
 }
 
+export interface LnurlPayParams {
+  callback: string;
+  milliSatAmount: string;
+  metadata: string;
+}
+
 export const WPTransferEntry = t.partial(
   {
     wallet: t.string,
@@ -149,6 +155,28 @@ export const GetInvoicesResponse = t.array(InvoiceInfo);
 // eslint-disable-next-line no-redeclare
 export type GetInvoicesResponse = t.TypeOf<typeof GetInvoicesResponse>;
 
+export const LnurlPayResponse = t.strict({
+  tag: t.literal('payRequest'),
+  callback: t.string,
+  /** The maximum amount in millisatoshis we can pay for this LNRUL request */
+  maxSendable: t.number,
+  /** The minimum amount in millisatoshis we can pay for this LNRUL request */
+  minSendable: t.number,
+  /** A json array in string format describing the payment */
+  metadata: t.string,
+});
+
+// eslint-disable-next-line no-redeclare
+export type LnurlPayResponse = t.TypeOf<typeof LnurlPayResponse>;
+
+export type DecodedLnurlPayRequest = LnurlPayResponse & {
+  /**
+   * From https://github.com/fiatjaf/lnurl-rfc/blob/luds/06.md#pay-to-static-qrnfclink
+   * a payment dialog must include: Domain name extracted from LNURL query string.
+   */
+  domain: string;
+};
+
 export interface ILightning {
   createInvoice(params: CreateInvoiceParams): Promise<CreateInvoiceResponse>;
   createDepositAddress(): Promise<CreateDepositAddressResponse>;
@@ -157,4 +185,6 @@ export interface ILightning {
   withdraw(params: LightningWithdrawalParams): Promise<WithdrawResponse>;
   deposit(params: LightningDepositParams): Promise<DepositResponse>;
   getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse>;
+  decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest>;
+  fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string>;
 }
