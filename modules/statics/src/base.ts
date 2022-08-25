@@ -859,6 +859,10 @@ export enum UnderlyingAsset {
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
 
+  // BSC Token BEP-20
+  'bsc:busd' = 'bsc:busd',
+  'tbsc:busd' = 'tbsc:busd',
+
   // Polygon testnet tokens
   'tpolygon:derc20' = 'tpolygon:derc20',
   'tpolygon:link' = 'tpolygon:link',
