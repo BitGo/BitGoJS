@@ -37,6 +37,7 @@ export interface TxData {
 
 export class Transaction extends BaseTransaction {
   private _transaction: CardanoWasm.Transaction;
+  private _fee: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -151,6 +152,7 @@ export class Transaction extends BaseTransaction {
       this._transaction = txn;
       this._id = Buffer.from(CardanoWasm.hash_transaction(txn.body()).to_bytes()).toString('hex');
       this._type = TransactionType.Send;
+      this._fee = txn.body().fee().to_str();
       this.loadInputsAndOutputs();
     } catch (e) {
       throw new InvalidTransactionError('unable to build transaction from raw');
@@ -179,7 +181,23 @@ export class Transaction extends BaseTransaction {
       outputAmount: outputAmount,
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: '0' },
+      fee: { fee: this._fee },
     };
+  }
+
+  /**
+   * Get transaction fee
+   */
+  get getFee(): string {
+    return this._fee;
+  }
+
+  /**
+   * Set transaction fee
+   *
+   * @param fee
+   */
+  fee(fee: string) {
+    this._fee = fee;
   }
 }
