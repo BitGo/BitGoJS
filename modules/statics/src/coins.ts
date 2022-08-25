@@ -1647,6 +1647,7 @@ export const coins = CoinMap.fromCoins([
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
+  terc20('tmatic', 'Testnet Polygon', 18, '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae', UnderlyingAsset.TMATIC),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
   erc721('erc721:witch', 'Crypto Coven', '0x5180db8f5c931aae63c74266b211f580155ecac8'),
   terc721('terc721:bitgoerc721', 'Test BITGO ERC 721 Token', '0x8397b091514c1f7bebb9dea6ac267ea23b570605'),

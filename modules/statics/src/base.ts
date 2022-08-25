@@ -722,6 +722,7 @@ export enum UnderlyingAsset {
   TKNT = 'tknt',
   TKX = 'tkx',
   TLAB = 'tlab',
+  TMATIC = 'tmatic',
   TNT = 'tnt',
   TOK = 'tok',
   TRAC = 'trac',
