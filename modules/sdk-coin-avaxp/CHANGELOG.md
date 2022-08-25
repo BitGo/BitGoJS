@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.13...@bitgo/sdk-coin-avaxp@2.2.0-rc.14) (2022-08-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-avaxp:** run unit test with account lib ([7b392ab](https://github.com/BitGo/BitGoJS/commit/7b392ab55faba52251586ad0bcb5f80ca05c45ef))
+
+
+
+
+
 # [2.2.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.12...@bitgo/sdk-coin-avaxp@2.2.0-rc.13) (2022-08-23)
 
 

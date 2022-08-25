@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.8...@bitgo/sdk-core@2.0.0-rc.9) (2022-08-25)
+
+
+### Bug Fixes
+
+* allow token enablement for cold wallet ([557e79b](https://github.com/BitGo/BitGoJS/commit/557e79bb543dde8cbddd89ec13f424e9827aa4c3))
+
+
+### Features
+
+* **sdk-core:** add support for delegation in staking flow ([0c91edb](https://github.com/BitGo/BitGoJS/commit/0c91edb8ef4c76b577726abb3f4899f318f8ca17))
+
+
+
+
+
 # [2.0.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.7...@bitgo/sdk-core@2.0.0-rc.8) (2022-08-23)
 
 

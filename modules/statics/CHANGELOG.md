@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.9...@bitgo/statics@8.0.0-rc.10) (2022-08-25)
+
+
+### Features
+
+* **statics:** add testnet Polygon as ERC20 ([b0b4160](https://github.com/BitGo/BitGoJS/commit/b0b4160e2669171d65c7f589ce09f920d16e1442))
+
+
+
+
+
 # [8.0.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.8...@bitgo/statics@8.0.0-rc.9) (2022-08-23)
 
 
