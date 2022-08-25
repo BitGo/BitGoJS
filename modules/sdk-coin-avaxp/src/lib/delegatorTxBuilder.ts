@@ -29,6 +29,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     super(coinConfig);
     const network = coinConfig.network as AvalancheNetwork;
     this._stakeAmount = new BN(network.minStake);
+    this.transaction._fee = new BN(0);
   }
 
   /**
@@ -76,6 +77,10 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     this.validateStakeAmount(valueBN);
     this._stakeAmount = valueBN;
     return this;
+  }
+
+  protected get outsMethod(): string {
+    return 'getStakeOuts';
   }
 
   /**
@@ -149,12 +154,12 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
-    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
+  static get txType(): number {
+    return PlatformVMConstants.ADDVALIDATORTX;
   }
 
   verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
-    return DelegatorTxBuilder.verifyTxType(baseTx);
+    return baseTx.getTypeID() === DelegatorTxBuilder.txType;
   }
 
   /**

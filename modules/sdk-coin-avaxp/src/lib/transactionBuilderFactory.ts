@@ -6,6 +6,8 @@ import { Tx } from 'avalanche/dist/apis/platformvm';
 import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { ExportTxBuilder } from './exportTxBuilder';
+import { ImportTxBuilder } from './importTxBuilder';
+import { DelegatorTxBuilder } from './delegatorTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -19,13 +21,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const tx = new Tx();
     tx.fromBuffer(BufferAvax.from(raw, 'hex'));
     let transactionBuilder: TransactionBuilder;
-    if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-      transactionBuilder = this.getValidatorBuilder();
-    } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-      transactionBuilder = this.getExportBuilder();
-    } else {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    switch (tx.getUnsignedTx().getTransaction().getTypeID()) {
+      case ValidatorTxBuilder.txType:
+        transactionBuilder = this.getValidatorBuilder();
+        break;
+      case DelegatorTxBuilder.txType:
+        transactionBuilder = this.getDelegatorBuilder();
+        break;
+      case ExportTxBuilder.txType:
+        transactionBuilder = this.getExportBuilder();
+        break;
+      case ImportTxBuilder.txType:
+        transactionBuilder = this.getImportBuilder();
+        break;
+      default:
+        throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
+
     transactionBuilder.initBuilder(tx);
     return transactionBuilder;
   }
@@ -51,6 +63,24 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getExportBuilder(): ExportTxBuilder {
     return new ExportTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export Cross chain transfer
+   *
+   * @returns {ExportTxBuilder} the builder initialized
+   */
+  getImportBuilder(): ImportTxBuilder {
+    return new ImportTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Initialize staking delegation builder
+   *
+   * @returns {DelegatorTxBuilder} the builder initialized
+   */
+  getDelegatorBuilder(): DelegatorTxBuilder {
+    return new DelegatorTxBuilder(this._coinConfig);
   }
 
   getWalletInitializationBuilder(): TransactionBuilder {

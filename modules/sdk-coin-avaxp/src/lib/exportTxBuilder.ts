@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
+import { NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import {
   BaseTx,
   ExportTx,
@@ -10,32 +10,18 @@ import {
   Tx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
-import utils from './utils';
-import { BN, Buffer as BufferAvax } from 'avalanche';
+import { BN } from 'avalanche';
 import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 
-export class ExportTxBuilder extends TransactionBuilder {
+export class ExportTxBuilder extends AtomicTransactionBuilder {
   private _amount: BN;
-  private _targetChainId: BufferAvax;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.transaction._fee = new BN(this.transaction._network.txFee);
   }
 
   protected get transactionType(): TransactionType {
     return TransactionType.Export;
-  }
-
-  /**
-   *
-   * @param value
-   */
-  targetChainId(chainId: string | Buffer): this {
-    const newTargetChainId = typeof chainId === 'string' ? utils.cb58Decode(chainId) : BufferAvax.from(chainId);
-    this.validateChainId(newTargetChainId);
-    this._targetChainId = newTargetChainId;
-    return this;
   }
 
   /**
@@ -49,43 +35,27 @@ export class ExportTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  /**
-   *
-   * @param amount
-   */
-  validateAmount(amount: BN): void {
-    if (amount.lten(0)) {
-      throw new BuildTransactionError('Amount must be greater than 0');
-    }
-  }
-
-  /**
-   *
-   * @param chainID
-   */
-  private validateChainId(chainID: BufferAvax) {
-    if (chainID.length != 32) {
-      throw new BuildTransactionError('Chain id are 32 byte size');
-    }
-  }
-
   initBuilder(tx: Tx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-    this._targetChainId = baseTx.getDestinationChain();
+    this._externalChainId = baseTx.getDestinationChain();
     this._amount = (baseTx.getExportOutputs()[0].getOutput() as any as AmountOutput).getAmount();
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
-    return baseTx.getTypeID() === PlatformVMConstants.EXPORTTX;
+  static get txType(): number {
+    return PlatformVMConstants.EXPORTTX;
   }
 
   verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
-    return ExportTxBuilder.verifyTxType(baseTx);
+    return baseTx.getTypeID() === ExportTxBuilder.txType;
+  }
+
+  protected get outsMethod(): string {
+    return 'getExportOutputs';
   }
 
   /**
@@ -103,7 +73,7 @@ export class ExportTxBuilder extends TransactionBuilder {
             outputs,
             inputs,
             this.transaction._memo,
-            this._targetChainId,
+            this._externalChainId,
             this.exportedOutputs()
           )
         ),

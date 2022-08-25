@@ -4,10 +4,11 @@ import * as testData from '../../resources/avaxp';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
+import signFlowTest from './TheorySignFlowBuilderTest';
 
 describe('AvaxP Export P2C Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tavaxp'));
-  const data = testData.EXPORT_P_2_C;
+
   describe('validate txBuilder fields', () => {
     const txBuilder = factory.getExportBuilder();
     it('should fail amount low than zero', () => {
@@ -21,7 +22,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
     it('should fail target chain id length incorrect', () => {
       assert.throws(
         () => {
-          txBuilder.targetChainId(Buffer.from(testData.INVALID_CHAIN_ID));
+          txBuilder.externalChainId(Buffer.from(testData.INVALID_CHAIN_ID));
         },
         (e) => e.message === errorMessage.ERROR_CHAIN_ID_LENGTH
       );
@@ -30,7 +31,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
     it('should fail target chain id not a vaild base58 string', () => {
       assert.throws(
         () => {
-          txBuilder.targetChainId(testData.INVALID_CHAIN_ID);
+          txBuilder.externalChainId(testData.INVALID_CHAIN_ID);
         },
         (e) => e.message === errorMessage.ERROR_CHAIN_ID_NOT_BASE58
       );
@@ -39,7 +40,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
     it('should fail target chain id cb58 invalid checksum', () => {
       assert.throws(
         () => {
-          txBuilder.targetChainId(testData.VALID_C_CHAIN_ID.slice(2));
+          txBuilder.externalChainId(testData.VALID_C_CHAIN_ID.slice(2));
         },
         (e) => e.message === errorMessage.ERROR_CHAIN_ID_INVALID_CHECKSUM
       );
@@ -64,146 +65,98 @@ describe('AvaxP Export P2C Tx Builder', () => {
     });
   });
 
-  describe('should build ', () => {
-    const newTxBuilder = () =>
+  signFlowTest({
+    transactionType: 'Export P2C with changeoutput',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tavaxp')),
+    newTxBuilder: () =>
       new TransactionBuilderFactory(coins.get('tavaxp'))
         .getExportBuilder()
-        .threshold(data.threshold)
-        .locktime(data.locktime)
-        .fromPubKey(data.pAddresses)
-        .amount(data.amount)
-        .targetChainId(data.targetChainId)
-        .memo(data.memo)
-        .utxos(data.outputs);
-
-    it('Should create Export tx for same values', async () => {
-      const txBuilder = newTxBuilder();
-
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.unsignedTxHex);
-    });
-
-    it('Should recover export tx from raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.unsignedTxHex);
-    });
-
-    it('Should create half signed export tx for same values', async () => {
-      const txBuilder = newTxBuilder();
-
-      txBuilder.sign({ key: data.privKey.prv1 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.halfsigntxHex);
-    });
-
-    it('Should recover half signed export from raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.halfsigntxHex);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.halfsigntxHex);
-    });
-
-    it('Should half sign a export tx from unsigned raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
-      txBuilder.sign({ key: data.privKey.prv1 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.halfsigntxHex);
-    });
-
-    it('Should recover half signed export from half signed raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.halfsigntxHex);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.halfsigntxHex);
-    });
-
-    it('Should recover signed export from signed raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.fullsigntxHex);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.fullsigntxHex);
-    });
-
-    it('Should full sign a export tx for same values', async () => {
-      const txBuilder = newTxBuilder();
-
-      txBuilder.sign({ key: data.privKey.prv1 });
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.fullsigntxHex);
-    });
-
-    it('Should full sign a export tx from half signed raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.halfsigntxHex);
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.fullsigntxHex);
-    });
-
-    it('Should full sign a export tx from unsigned raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
-      txBuilder.sign({ key: data.privKey.prv1 });
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.fullsigntxHex);
-    });
-
-    it('Should full sign a export tx with recovery key for same values', async () => {
-      const txBuilder = newTxBuilder().recoverMode(true);
-
-      txBuilder.sign({ key: data.privKey.prv3 });
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.rFullsigntxHex);
-    });
-
-    it('Should recover half sign a export tx with recovery key from half signed raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.rHalfsigntxHex);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.rHalfsigntxHex);
-    });
-
-    it('Should full sign a export tx with recovery key from half signed raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.rHalfsigntxHex);
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.rFullsigntxHex);
-    });
-
-    it('Should full sign a export tx with recovery key from unsigned raw tx', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.rUnsignedTxHex);
-      // txBuilder.recoverMode()
-      txBuilder.sign({ key: data.privKey.prv3 });
-      txBuilder.sign({ key: data.privKey.prv2 });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(data.rFullsigntxHex);
-    });
-
-    xit('Compare size and location of signatures in credentials for halfsign', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
-      txBuilder.sign({ key: data.privKey.prv1 });
-      // look into credentials make sure that index 0 is signed with user key
-    });
-    xit('Compare size and location of signatures in credentials for full sign', async () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
-      txBuilder.sign({ key: data.privKey.prv1 });
-      txBuilder.sign({ key: data.privKey.prv1 });
-      // look into credentials make sure that index 0 and 2 is signed
-    });
+        .threshold(testData.EXPORT_P_2_C.threshold)
+        .locktime(testData.EXPORT_P_2_C.locktime)
+        .fromPubKey(testData.EXPORT_P_2_C.pAddresses)
+        .amount(testData.EXPORT_P_2_C.amount)
+        .externalChainId(testData.EXPORT_P_2_C.targetChainId)
+        .memo(testData.EXPORT_P_2_C.memo)
+        .utxos(testData.EXPORT_P_2_C.outputs),
+    unsignedTxHex: testData.EXPORT_P_2_C.unsignedTxHex,
+    halfsigntxHex: testData.EXPORT_P_2_C.halfsigntxHex,
+    fullsigntxHex: testData.EXPORT_P_2_C.fullsigntxHex,
+    privKey: {
+      prv1: testData.EXPORT_P_2_C.privKey.prv1,
+      prv2: testData.EXPORT_P_2_C.privKey.prv2,
+    },
   });
+
+  signFlowTest({
+    transactionType: 'Export P2C recovery with changeoutput',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tavaxp')),
+    newTxBuilder: () =>
+      new TransactionBuilderFactory(coins.get('tavaxp'))
+        .getExportBuilder()
+        .threshold(testData.EXPORT_P_2_C.threshold)
+        .locktime(testData.EXPORT_P_2_C.locktime)
+        .fromPubKey(testData.EXPORT_P_2_C.pAddresses)
+        .amount(testData.EXPORT_P_2_C.amount)
+        .externalChainId(testData.EXPORT_P_2_C.targetChainId)
+        .memo(testData.EXPORT_P_2_C.memo)
+        .utxos(testData.EXPORT_P_2_C.outputs)
+        .recoverMode(),
+    unsignedTxHex: testData.EXPORT_P_2_C.rUnsignedTxHex,
+    halfsigntxHex: testData.EXPORT_P_2_C.rHalfsigntxHex,
+    fullsigntxHex: testData.EXPORT_P_2_C.rFullsigntxHex,
+    privKey: {
+      prv1: testData.EXPORT_P_2_C.privKey.prv3,
+      prv2: testData.EXPORT_P_2_C.privKey.prv2,
+    },
+  });
+
+  signFlowTest({
+    transactionType: 'Export P2C without changeoutput',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tavaxp')),
+    newTxBuilder: () =>
+      new TransactionBuilderFactory(coins.get('tavaxp'))
+        .getExportBuilder()
+        .threshold(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.threshold)
+        .locktime(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.locktime)
+        .fromPubKey(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.pAddresses)
+        .amount(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.amount)
+        .externalChainId(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.targetChainId)
+        .memo(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.memo)
+        .utxos(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.outputs),
+    unsignedTxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.unsignedTxHex,
+    halfsigntxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.halfsigntxHex,
+    fullsigntxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.fullsigntxHex,
+    privKey: {
+      prv1: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.privKey.prv1,
+      prv2: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.privKey.prv2,
+    },
+  });
+
+  signFlowTest({
+    transactionType: 'Export P2C recovery without changeoutput',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tavaxp')),
+    newTxBuilder: () =>
+      new TransactionBuilderFactory(coins.get('tavaxp'))
+        .getExportBuilder()
+        .threshold(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.threshold)
+        .locktime(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.locktime)
+        .fromPubKey(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.pAddresses)
+        .amount(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.amount)
+        .externalChainId(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.targetChainId)
+        .memo(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.memo)
+        .utxos(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.outputs)
+        .recoverMode(),
+    unsignedTxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.rUnsignedTxHex,
+    halfsigntxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.rHalfsigntxHex,
+    fullsigntxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.rFullsigntxHex,
+    privKey: {
+      prv1: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.privKey.prv3,
+      prv2: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.privKey.prv2,
+    },
+  });
+
   describe('Key cannot sign the transaction ', () => {
+    const data = testData.EXPORT_P_2_C;
     it('Should full sign a export tx from unsigned raw tx', () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.unsignedTxHex);
       txBuilder.sign({ key: data.privKey.prv2 });
@@ -217,31 +170,6 @@ describe('AvaxP Export P2C Tx Builder', () => {
 
     it('Should 2 full sign a export tx from unsigned raw tx', () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.rUnsignedTxHex);
-      txBuilder.sign({ key: data.privKey.prv1 });
-      txBuilder
-        .build()
-        .then((ok) => assert.fail('it can sign'))
-        .catch((err) => {
-          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
-        });
-    });
-
-    // HSM expected empty credential, we cannot verify if the next signature is the correct.
-    xit('Should full sign a export tx from unsigned raw tx', () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.halfsigntxHex);
-      txBuilder.sign({ key: data.privKey.prv2 });
-
-      txBuilder
-        .build()
-        .then((ok) => assert.fail('it can sign'))
-        .catch((err) => {
-          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
-        });
-    });
-
-    // HSM expected empty credential, we cannot verify if the next signature is the correct.
-    xit('Should full sign a export tx from unsigned raw tx', () => {
-      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(data.rHalfsigntxHex);
       txBuilder.sign({ key: data.privKey.prv1 });
       txBuilder
         .build()
