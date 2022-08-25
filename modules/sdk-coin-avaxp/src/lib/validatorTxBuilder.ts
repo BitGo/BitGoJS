@@ -59,12 +59,12 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
+  static get txType(): number {
+    return PlatformVMConstants.ADDVALIDATORTX;
   }
 
   verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return ValidatorTxBuilder.verifyTxType(baseTx);
+    return baseTx.getTypeID() === ValidatorTxBuilder.txType;
   }
 
   /**

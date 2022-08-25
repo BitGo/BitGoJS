@@ -149,12 +149,12 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
-    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
+  static get txType(): number {
+    return PlatformVMConstants.ADDVALIDATORTX;
   }
 
   verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
-    return DelegatorTxBuilder.verifyTxType(baseTx);
+    return baseTx.getTypeID() === DelegatorTxBuilder.txType;
   }
 
   /**

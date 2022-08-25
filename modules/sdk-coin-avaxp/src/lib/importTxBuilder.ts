@@ -1,21 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
-import {
-  BaseTx,
-  ExportTx,
-  PlatformVMConstants,
-  SECPTransferOutput,
-  TransferableOutput,
-  Tx,
-  UnsignedTx,
-} from 'avalanche/dist/apis/platformvm';
+import { BaseTx, ImportTx, PlatformVMConstants, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 
-export class ExportTxBuilder extends TransactionBuilder {
-  private _amount: BN;
+export class ImportTxBuilder extends TransactionBuilder {
   private _targetChainId: BufferAvax;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -24,7 +14,7 @@ export class ExportTxBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.Export;
+    return TransactionType.Import;
   }
 
   /**
@@ -36,27 +26,6 @@ export class ExportTxBuilder extends TransactionBuilder {
     this.validateChainId(newTargetChainId);
     this._targetChainId = newTargetChainId;
     return this;
-  }
-
-  /**
-   *
-   * @param value
-   */
-  amount(value: BN | string): this {
-    const valueBN = BN.isBN(value) ? value : new BN(value);
-    this.validateAmount(valueBN);
-    this._amount = valueBN;
-    return this;
-  }
-
-  /**
-   *
-   * @param amount
-   */
-  validateAmount(amount: BN): void {
-    if (amount.lten(0)) {
-      throw new BuildTransactionError('Amount must be greater than 0');
-    }
   }
 
   /**
@@ -75,17 +44,17 @@ export class ExportTxBuilder extends TransactionBuilder {
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-    this._targetChainId = baseTx.getDestinationChain();
-    this._amount = (baseTx.getExportOutputs()[0].getOutput() as any as AmountOutput).getAmount();
+    this._targetChainId = baseTx.getSourceChain();
+    this.transaction._utxos = this.recoverUtxos(baseTx.getImportInputs());
     return this;
   }
 
   static get txType(): number {
-    return PlatformVMConstants.EXPORTTX;
+    return PlatformVMConstants.IMPORTTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
-    return baseTx.getTypeID() === ExportTxBuilder.txType;
+  verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+    return baseTx.getTypeID() === ImportTxBuilder.txType;
   }
 
   /**
@@ -93,36 +62,22 @@ export class ExportTxBuilder extends TransactionBuilder {
    * @protected
    */
   protected buildAvaxpTransaction(): void {
-    const { inputs, outputs, credentials } = this.createInputOutput(this._amount.add(this.transaction._fee));
+    const { inputs, outputs, credentials } = this.createInputOutput(this.transaction._fee);
     this.transaction.setTransaction(
       new Tx(
         new UnsignedTx(
-          new ExportTx(
+          new ImportTx(
             this.transaction._networkID,
             this.transaction._blockchainID,
             outputs,
-            inputs,
+            [], // P-Chain input
             this.transaction._memo,
             this._targetChainId,
-            this.exportedOutputs()
+            inputs
           )
         ),
         credentials
       )
     );
-  }
-
-  protected exportedOutputs(): TransferableOutput[] {
-    return [
-      new TransferableOutput(
-        this.transaction._assetId,
-        new SECPTransferOutput(
-          this._amount,
-          this.transaction._fromAddresses,
-          this.transaction._locktime,
-          this.transaction._threshold
-        )
-      ),
-    ];
   }
 }
