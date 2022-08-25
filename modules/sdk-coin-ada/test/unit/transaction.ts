@@ -51,7 +51,7 @@ describe('ADA Transaction', () => {
       explain.outputAmount.should.equal('253329150');
       explain.outputs[0].amount.should.equal(resources.rawTx.outputAddress1.value);
       explain.outputs[0].address.should.equal(resources.rawTx.outputAddress1.address);
-      explain.fee.fee.should.equal('0');
+      explain.fee.fee.should.equal('167085');
       explain.changeAmount.should.equal('0');
     });
 

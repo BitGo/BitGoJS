@@ -4,6 +4,7 @@ import * as testData from '../resources';
 import { TransactionBuilderFactory, KeyPair } from '../../src';
 import { coins } from '@bitgo/statics';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import { Transaction } from '../../src/lib/transaction';
 
 describe('ADA Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
@@ -62,8 +63,8 @@ describe('ADA Transaction Builder', async () => {
     txBuilder.changeAddress(testData.address.address2, '1000000000');
     txBuilder.ttl(800000000);
     txBuilder.sign({ key: testData.privateKeys.prvKey4 });
-    await txBuilder.build();
-    txBuilder.getFee.should.equal('168405');
+    const builtTx = (await txBuilder.build()) as Transaction;
+    builtTx.getFee.should.equal('168405');
   });
 
   it('should add a change address and a change output', async () => {
@@ -113,4 +114,93 @@ describe('ADA Transaction Builder', async () => {
     const sig2 = Buffer.from(keyPair.signMessage(txRaw)).toString('hex');
     should.equal(sig1, sig2);
   });
+
+  // NOTE: The two tests below have been commented out as they are for testing during development changes. We don't
+  // want full node tests as part of our sdk unit tests. If you are commenting these back in, add axios and
+  // AddressFormat imports.
+  // it('should submit a transaction', async () => {
+  //   const keyPair = new KeyPair({prv: testData.privateKeys.prvKey4});
+  //   const senderAddress = keyPair.getAddress(AddressFormat.testnet);
+  //
+  //   const axiosConfig = {
+  //     headers: {
+  //       'Content-Type': 'application/cbor',
+  //     },
+  //     timeout: 10000,
+  //   };
+  //
+  //   const txBuilder = factory.getTransferBuilder();
+  //   const utxoData = await axios.get('https://testnet.koios.rest/api/v0/address_info?_address=' + senderAddress);
+  //   const senderBalance = utxoData.data[0].balance;
+  //   txBuilder.changeAddress(senderAddress, senderBalance);
+  //   const utxoSet = utxoData.data[0].utxo_set;
+  //   for (const utxo of utxoSet) {
+  //     txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
+  //   }
+  //
+  //   txBuilder.output({
+  //     address:
+  //       'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp',
+  //     amount: '5000000',
+  //   });
+  //
+  //   txBuilder.ttl(800000000);
+  //   txBuilder.sign({ key: keyPair.getKeys().prv });
+  //
+  //   const tx = await txBuilder.build();
+  //   const serializedTx = tx.toBroadcastFormat();
+  //   const bytes = Uint8Array.from(Buffer.from(serializedTx, 'hex'));
+  //
+  //   try {
+  //     const res = await axios.post("https://testnet.koios.rest/api/v0/submittx", bytes, axiosConfig)
+  //     console.log(res.data);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // });
+
+  // it('should submit a transaction using signature interface', async () => {
+  //   const keyPair = new KeyPair({prv: testData.privateKeys.prvKey4});
+  //   const senderAddress = keyPair.getAddress(AddressFormat.testnet);
+  //   const axiosConfig = {
+  //     headers: {
+  //       'Content-Type': 'application/cbor',
+  //     },
+  //     timeout: 10000,
+  //   };
+  //   const txBuilder = factory.getTransferBuilder();
+  //   const utxoData = await await axios.get('https://testnet.koios.rest/api/v0/address_info?_address=' + senderAddress);
+  //   const senderBalance = utxoData.data[0].balance;
+  //   txBuilder.changeAddress(senderAddress, senderBalance);
+  //   const utxoSet = utxoData.data[0].utxo_set;
+  //   for (const utxo of utxoSet) {
+  //     txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
+  //   }
+  //   txBuilder.output({
+  //     address:
+  //       'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp',
+  //     amount: '5000000',
+  //   });
+  //
+  //   txBuilder.ttl(800000000);
+  //
+  //   const unsignedTx = await txBuilder.build();
+  //   const serializedTx = unsignedTx.toBroadcastFormat();
+  //
+  //   const txBuilder2 = factory.from(serializedTx);
+  //   const tx = await txBuilder2.build();
+  //   const signableHex = tx.signablePayload.toString('hex');
+  //   const signature = keyPair.signMessage(signableHex);
+  //   txBuilder2.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signature));
+  //   const signedTransaction = await txBuilder2.build();
+  //   const serializedTransaction = signedTransaction.toBroadcastFormat();
+  //   const bytes = Uint8Array.from(Buffer.from(serializedTransaction, 'hex'));
+  //
+  //   try {
+  //     const res = await axios.post('https://testnet.koios.rest/api/v0/submittx', bytes, axiosConfig);
+  //     console.log(res.data);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // });
 });

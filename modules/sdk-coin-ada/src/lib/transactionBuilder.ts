@@ -25,7 +25,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _changeAddress: string;
   private _senderBalance: string;
   private _ttl = 0;
-  private _fee: BigNum;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -169,10 +168,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     );
 
     // calculate the fee based off our dummy transaction
-    if (!this._fee) {
-      const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
-      this._fee = fee;
-    }
+    const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
+    this._transaction.fee(fee.to_str());
 
     // now calculate the change based off of <utxoBalance> - <fee> - <amountToSend>
     // reset the outputs collection because now our last output has changed
@@ -190,11 +187,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._changeAddress && this._senderBalance) {
       const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
       const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
-      const change = utxoBalance.checked_sub(this._fee).checked_sub(totalAmountToSend);
+      const change = utxoBalance.checked_sub(fee).checked_sub(totalAmountToSend);
       const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
       outputs.add(changeOutput);
     }
-    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, fee);
     txRaw.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
     const txRawHash = CardanoWasm.hash_transaction(txRaw);
 
@@ -235,11 +232,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
-  }
-
-  /** @inheritdoc */
-  get getFee(): string {
-    return this._fee.to_str();
   }
 
   /** @inheritdoc */

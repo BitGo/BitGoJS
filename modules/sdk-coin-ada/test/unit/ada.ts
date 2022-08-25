@@ -55,7 +55,7 @@ describe('ADA', function () {
       },
     ],
     fee: {
-      fee: '0',
+      fee: '167173',
     },
   };
 
