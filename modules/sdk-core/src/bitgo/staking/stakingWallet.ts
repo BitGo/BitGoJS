@@ -11,6 +11,8 @@ import {
   StakingSignOptions,
   StakeOptions,
   UnstakeOptions,
+  DelegationResults,
+  DelegationOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
@@ -51,7 +53,16 @@ export class StakingWallet implements IStakingWallet {
    * @return StakingRequest
    */
   async unstake(options: UnstakeOptions): Promise<StakingRequest> {
-    return await this.createStakingRequest(options.amount, 'UNSTAKE', options.clientId);
+    return await this.createStakingRequest(options.amount, 'UNSTAKE', options.clientId, options.delegationId);
+  }
+
+  /**
+   * Fetch delegations for a specific wallet
+   * @param options - unstake options
+   * @return StakingRequest
+   */
+  async delegations(options: DelegationOptions): Promise<DelegationResults> {
+    return await this.getDelegations(options);
   }
 
   /**
@@ -171,19 +182,33 @@ export class StakingWallet implements IStakingWallet {
       .result();
   }
 
-  private async createStakingRequest(amount: string, type: string, clientId?: string): Promise<StakingRequest> {
+  private async createStakingRequest(
+    amount: string,
+    type: string,
+    clientId?: string,
+    delegationId?: string
+  ): Promise<StakingRequest> {
     return await this.bitgo
       .post(this.bitgo.microservicesUrl(this.stakingRequestsURL()))
       .send({
         amount: amount,
         clientId: clientId,
         type: type,
+        delegationId: delegationId,
       })
       .result();
   }
 
   private stakingRequestsURL() {
     return `/api/staking/v1/${this.coin}/wallets/${this.walletId}/requests`;
+  }
+
+  private async getDelegations(options: DelegationOptions): Promise<DelegationResults> {
+    return await this.bitgo.get(this.bitgo.microservicesUrl(this.stakingDelegationsURL())).query(options).result();
+  }
+
+  private stakingDelegationsURL() {
+    return `/api/staking/v1/${this.coin}/wallets/${this.walletId}/delegations`;
   }
 
   private stakingRequestUrl(stakingRequestId: string): string {

@@ -2355,9 +2355,8 @@ export class Wallet implements IWallet {
    * Signs and sends a single unsigned token enablement transaction
    * @param params
    * @returns
-   *   - The response from sending the transaction for hot wallets
+   *   - The response from sending the transaction for hot/cold wallets
    *   - The response from initiating the transaction for custodial wallets
-   *   - The included prebuilt transaction for cold wallets
    */
   public async sendTokenEnablement(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
@@ -2374,11 +2373,9 @@ export class Wallet implements IWallet {
     } else {
       switch (this._wallet.type) {
         case 'hot':
+        case 'cold':
           const signedPrebuild = await this.prebuildAndSignTransaction(params);
           return await this.submitTransaction(signedPrebuild);
-        case 'cold':
-          // Don't sign or send and just return the built transaction
-          return params.txPrebuild;
         case 'custodial':
           const url = this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate');
           return await this.bitgo.post(url).send(params.prebuildTx.buildParams).result();

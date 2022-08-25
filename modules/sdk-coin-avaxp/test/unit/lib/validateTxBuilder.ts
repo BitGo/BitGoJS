@@ -210,7 +210,7 @@ describe('AvaxP Validate Tx Builder', () => {
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
@@ -220,7 +220,7 @@ describe('AvaxP Validate Tx Builder', () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
       );
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
@@ -231,7 +231,7 @@ describe('AvaxP Validate Tx Builder', () => {
         testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
       );
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
@@ -252,8 +252,8 @@ describe('AvaxP Validate Tx Builder', () => {
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
         .recoverMode();
 
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
@@ -272,7 +272,7 @@ describe('AvaxP Validate Tx Builder', () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
       );
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
@@ -283,8 +283,8 @@ describe('AvaxP Validate Tx Builder', () => {
         testData.ADDVALIDATOR_SAMPLES.recoveryUnsignedTxHex
       );
       // txBuilder.recoverMode()
-      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
