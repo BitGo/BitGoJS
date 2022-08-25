@@ -32,6 +32,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _instructionsData: InstructionParams[] = [];
   protected _signers: KeyPair[] = [];
   protected _memo?: string;
+  protected _feePayer?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -97,7 +98,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tx.signatures = this._transaction?.solTransaction?.signatures;
     }
 
-    tx.feePayer = new PublicKey(this._sender);
+    tx.feePayer = this._feePayer ? new PublicKey(this._feePayer) : new PublicKey(this._sender);
 
     if (this._nonceInfo) {
       tx.nonceInfo = {
