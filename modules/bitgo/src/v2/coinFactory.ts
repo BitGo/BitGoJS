@@ -13,6 +13,7 @@ import {
   AvaxP,
   Bch,
   Bsc,
+  BscToken,
   Bsv,
   Btc,
   Btg,
@@ -178,6 +179,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   }
 
   CeloToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  BscToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 
