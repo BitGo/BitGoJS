@@ -21,7 +21,14 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TssUtils, TxRequest, EddsaUnsignedTransaction } from '../utils';
+import {
+  inferAddressType,
+  RequestTracer,
+  TssUtils,
+  TxRequest,
+  EddsaUnsignedTransaction,
+  EIP1559FeeOptions,
+} from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -2460,6 +2467,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             memo: params.memo,
             nonce: params.nonce,
+            feeOptions: params.feeOptions as EIP1559FeeOptions,
           },
           apiVersion,
           params.preview
