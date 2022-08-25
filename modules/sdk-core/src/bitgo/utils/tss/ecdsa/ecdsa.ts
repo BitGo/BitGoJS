@@ -327,7 +327,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     console.log(`********* txRequestResolved: ${JSON.stringify(txRequestResolved)}`);
 
-    const signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.serializedTxHex, 'hex');
+    const signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
 
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
