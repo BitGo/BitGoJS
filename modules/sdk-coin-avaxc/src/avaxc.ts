@@ -644,7 +644,7 @@ export class AvaxC extends BaseCoin {
    * @param paramsArr The parameters to hash together for the digest
    */
   static getHopDigest(paramsArr: string[]): Buffer {
-    const hash = new Keccak('keccak256');
+    const hash = Keccak('keccak256');
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
   }
