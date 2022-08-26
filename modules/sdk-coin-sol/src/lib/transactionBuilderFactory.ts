@@ -11,6 +11,7 @@ import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { TransferBuilderV2 } from './transferBuilderV2';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -66,6 +67,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the transfer builder V2 to create a funds transfer transaction
+   */
+  getTransferBuilderV2(tx?: Transaction): TransferBuilderV2 {
+    return this.initializeBuilder(tx, new TransferBuilderV2(this._coinConfig));
   }
 
   /**

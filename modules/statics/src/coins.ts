@@ -3,6 +3,7 @@ import {
   AccountCoin,
   algoToken,
   avaxErc20,
+  bscToken,
   celoToken,
   eosToken,
   erc20,
@@ -15,6 +16,7 @@ import {
   stellarToken,
   talgoToken,
   tavaxErc20,
+  tbscToken,
   tceloToken,
   teosToken,
   terc20,
@@ -845,6 +847,13 @@ export const coins = CoinMap.fromCoins([
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
   erc20('zusd', 'Z.com Usd', 6, '0xc56c2b7e71b54d38aab6d52e94a04cbfa8f604fa', UnderlyingAsset.ZUSD),
   celoToken('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
+  bscToken(
+    'bsc:busd',
+    'Binance USD Token',
+    18,
+    '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+    UnderlyingAsset['bsc:busd']
+  ),
   ofcerc20('ofc1inch', '1Inch Token', 18, UnderlyingAsset['1INCH']),
   ofcerc20('ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
   ofcerc20('ofcaave', 'Aave', 18, UnderlyingAsset.AAVE),
@@ -1649,6 +1658,13 @@ export const coins = CoinMap.fromCoins([
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
   terc20('tmatic', 'Testnet Polygon', 18, '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae', UnderlyingAsset.TMATIC),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
+  tbscToken(
+    'tbsc:busd',
+    'Test Binance USD Token',
+    18,
+    '0x78867bbeef44f2326bf8ddd1941a4439382ef2a7',
+    UnderlyingAsset['tbsc:busd']
+  ),
   erc721('erc721:witch', 'Crypto Coven', '0x5180db8f5c931aae63c74266b211f580155ecac8'),
   terc721('terc721:bitgoerc721', 'Test BITGO ERC 721 Token', '0x8397b091514c1f7bebb9dea6ac267ea23b570605'),
   terc721('terc1155:bitgoerc1155', 'Test BITGO ERC 1155 Token', '0x87cd6a40640befdd96e563b788a6b1fb3e07a186'),
