@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.10...@bitgo/statics@8.0.0-rc.11) (2022-08-26)
+
+
+### Features
+
+* **sdk-coin-bsc:** support tokens for bsc ([44d2af8](https://github.com/BitGo/BitGoJS/commit/44d2af8f3f14bc61d31e6a0b8482a68db2a7d23e))
+
+
+
+
+
 # [8.0.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.9...@bitgo/statics@8.0.0-rc.10) (2022-08-25)
 
 

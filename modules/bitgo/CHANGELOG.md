@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.16](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.15...bitgo@14.3.0-rc.16) (2022-08-26)
+
+
+### Features
+
+* **sdk-coin-bsc:** support tokens for bsc ([44d2af8](https://github.com/BitGo/BitGoJS/commit/44d2af8f3f14bc61d31e6a0b8482a68db2a7d23e))
+
+
+
+
+
 # [14.3.0-rc.15](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.14...bitgo@14.3.0-rc.15) (2022-08-25)
 
 **Note:** Version bump only for package bitgo
