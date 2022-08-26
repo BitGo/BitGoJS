@@ -312,7 +312,7 @@ export default class Ecdsa {
    * @returns {SignRT}
    */
   sign(M: Buffer, oShare: OShare, dShare: DShare): SignRT {
-    const m = createHash('sha256').update(M).digest();
+    // const m = createHash('sha256').update(M).digest();
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
 
@@ -324,7 +324,7 @@ export default class Ecdsa {
     const r = pointR.x;
 
     const s = Ecdsa.curve.scalarAdd(
-      Ecdsa.curve.scalarMult(bigIntFromU8ABE(m), hexToBigInt(oShare.k)),
+      Ecdsa.curve.scalarMult(bigIntFromU8ABE(M), hexToBigInt(oShare.k)),
       Ecdsa.curve.scalarMult(r, hexToBigInt(oShare.omicron))
     );
     return {
