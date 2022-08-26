@@ -48,6 +48,7 @@ describe('Sol Associated Token Account Builder', () => {
   };
 
   const account = new KeyPair(testData.associatedTokenAccounts.accounts[0]).getKeys();
+  const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
   const sender = {
     pubkey: account.pub,
     ataPubkey: testData.associatedTokenAccounts.accounts[0].ata,
@@ -106,6 +107,35 @@ describe('Sol Associated Token Account Builder', () => {
 
         verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('build an associated token account init tx with durable nonce unsigned', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.memo('test memo please ignore');
+        txBuilder.sender(account.pub);
+        txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: account.pub });
+
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx);
+
+        should.equal(rawTx, testData.ATA_INIT_UNSIGNED_TX_DURABLE_NONCE);
+      });
+
+      it('build an associated token account init tx with durable nonce signed', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.memo('test memo please ignore');
+        txBuilder.sender(account.pub);
+        txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: account.pub });
+        txBuilder.sign({ key: account.prv });
+
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx);
+
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_DURABLE_NONCE);
       });
     });
 
@@ -467,6 +497,16 @@ describe('Sol Associated Token Account Builder', () => {
         const rawTx = tx.toBroadcastFormat();
 
         should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('build from an unsigned ATA init with durable nonce and sign it', async () => {
+        const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_TX_DURABLE_NONCE);
+        txBuilder.sign({ key: account.prv });
+
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_DURABLE_NONCE);
       });
     });
 
