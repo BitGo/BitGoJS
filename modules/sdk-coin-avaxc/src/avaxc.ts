@@ -6,184 +6,49 @@ import { bip32 } from '@bitgo/utxo-lib';
 import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
   common,
   FeeEstimateOptions,
-  FullySignedTransaction,
-  HalfSignedAccountTransaction,
   InvalidAddressError,
   IWallet,
   KeyPair,
-  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
-  PresignTransactionOptions as BasePresignTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
+  Recipient,
   TransactionExplanation,
-  TransactionFee,
-  TransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient,
+  Util,
   VerifyAddressOptions,
-  VerifyTransactionOptions,
-  Wallet,
 } from '@bitgo/sdk-core';
-import { optionalDeps, TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import {
+  GetSendMethodArgsOptions,
+  optionalDeps,
+  RecoverOptions,
+  RecoveryInfo,
+  SendMethodArgs,
+  TransactionBuilder as EthTransactionBuilder,
+  TransactionPrebuild,
+} from '@bitgo/sdk-coin-eth';
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
-
-// For precreateBitgo
-interface PrecreateBitGoOptions {
-  enterprise?: string;
-  newFeeAddress?: string;
-}
-
-// For explainTransaction
-export interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
-  feeInfo: TransactionFee;
-}
-
-interface AvaxcTransactionParams extends TransactionParams {
-  gasPrice?: number;
-  gasLimit?: number;
-  hopParams?: HopParams;
-  hop?: boolean;
-}
-
-interface VerifyAvaxcTransactionOptions extends VerifyTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  txParams: AvaxcTransactionParams;
-}
-
-// For preSign
-interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTransactionOptions {
-  wallet: Wallet;
-}
-
-interface EIP1559 {
-  maxPriorityFeePerGas: number;
-  maxFeePerGas: number;
-}
-
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  hopTransaction?: HopPrebuild;
-  buildParams: {
-    recipients: Recipient[];
-  };
-  recipients: TransactionRecipient[];
-  nextContractSequenceId: string;
-  gasPrice: number;
-  gasLimit: number;
-  isBatch: boolean;
-  coin: string;
-  token?: string;
-}
-
-// For createHopTransactionParams
-interface HopTransactionBuildOptions {
-  wallet: Wallet;
-  recipients: Recipient[];
-  walletPassphrase: string;
-}
-
-interface Recipient {
-  address: string;
-  amount: string;
-  data?: string;
-}
-
-// For getExtraPrebuildParams
-interface BuildOptions {
-  hop?: boolean;
-  wallet?: Wallet;
-  recipients?: Recipient[];
-  walletPassphrase?: string;
-  [index: string]: unknown;
-}
-
-// For FeeEstimate
-interface FeeEstimate {
-  gasLimitEstimate: number;
-  feeEstimate: number;
-}
-
-/**
- * The extra parameters to send to platform build route for hop transactions
- */
-interface HopParams {
-  hopParams: {
-    gasPriceMax: number;
-    userReqSig: string;
-    paymentId: string;
-  };
-  gasLimit: number;
-}
-
-/**
- * The prebuilt hop transaction returned from the HSM
- */
-interface HopPrebuild {
-  tx: string;
-  id: string;
-  signature: string;
-  paymentId: string;
-  gasPrice: number;
-  gasLimit: number;
-  amount: number;
-  recipient: string;
-  nonce: number;
-  userReqSig: string;
-  gasPriceMax: number;
-}
-
-// For txPreBuild
-export interface TxInfo {
-  recipients: Recipient[];
-  from: string;
-  txid: string;
-}
-
-export interface EthTransactionFee {
-  fee: string;
-  gasLimit?: string;
-}
-
-export interface TxPreBuild extends BaseTransactionPrebuild {
-  txHex: string;
-  txInfo: TxInfo;
-  feeInfo: EthTransactionFee;
-  source: string;
-  dataToSign: string;
-  nextContractSequenceId?: string;
-  expireTime?: number;
-  hopTransaction?: string;
-  eip1559?: EIP1559;
-}
-
-// For signTransaction
-export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
-  txPrebuild: TxPreBuild;
-  prv: string;
-  custodianTransactionId?: string;
-}
-
-export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
-  halfSigned: {
-    txHex?: never;
-    recipients: Recipient[];
-    expiration?: number;
-    eip1559?: EIP1559;
-  };
-}
-
-export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
+import request from 'superagent';
+import { bufferToHex } from 'ethereumjs-util';
+import { Buffer } from 'buffer';
+import {
+  AvaxSignTransactionOptions,
+  BuildOptions,
+  ExplainTransactionOptions,
+  FeeEstimate,
+  HopParams,
+  HopPrebuild,
+  HopTransactionBuildOptions,
+  PrecreateBitGoOptions,
+  PresignTransactionOptions,
+  SignedTransaction,
+  VerifyAvaxcTransactionOptions,
+} from './iface';
 
 export class AvaxC extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
@@ -360,15 +225,436 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
-   * Builds a funds recovery transaction without BitGo.
-   * We need to do three queries during this:
+   * Check whether gas limit passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param {number} userGasLimit - user defined gas limit
+   * @returns {number} the gas limit to use for this transaction
+   */
+  setGasLimit(userGasLimit?: number): number {
+    if (!userGasLimit) {
+      return ethGasConfigs.defaultGasLimit;
+    }
+    const gasLimitMax = ethGasConfigs.maximumGasLimit;
+    const gasLimitMin = ethGasConfigs.minimumGasLimit;
+    if (userGasLimit < gasLimitMin || userGasLimit > gasLimitMax) {
+      throw new Error(`Gas limit must be between ${gasLimitMin} and ${gasLimitMax}`);
+    }
+    return userGasLimit;
+  }
+
+  /**
+   * Check whether the gas price passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param {number} userGasPrice - user defined gas price
+   * @returns the gas price to use for this transaction
+   */
+  setGasPrice(userGasPrice?: number): number {
+    if (!userGasPrice) {
+      return ethGasConfigs.defaultGasPrice;
+    }
+
+    const gasPriceMax = ethGasConfigs.maximumGasPrice;
+    const gasPriceMin = ethGasConfigs.minimumGasPrice;
+    if (userGasPrice < gasPriceMin || userGasPrice > gasPriceMax) {
+      throw new Error(`Gas price must be between ${gasPriceMin} and ${gasPriceMax}`);
+    }
+    return userGasPrice;
+  }
+
+  /**
+   * Make a query to Snowtrace for information such as balance, token balance, solidity calls
+   * @param {Object} query — key-value pairs of parameters to append after /api
+   * @returns {Promise<Object>} response from Snowtrace
+   */
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
+    const token = common.Environments[this.bitgo.getEnv()].snowtraceApiToken;
+    if (token) {
+      query.apikey = token;
+    }
+    const response = await request.get(common.Environments[this.bitgo.getEnv()].snowtraceBaseUrl + '/api').query(query);
+
+    if (!response.ok) {
+      throw new Error('could not reach Snowtrace');
+    }
+
+    if (response.body.status === '0' && response.body.message === 'NOTOK') {
+      throw new Error('Snowtrace rate limit reached');
+    }
+    return response.body;
+  }
+
+  /**
+   * Queries public block explorer to get the next nonce that should be used for
+   * the given AVAXC address
+   * @param {string} address — address to fetch for
+   * @returns {number} address nonce
+   */
+  async getAddressNonce(address: string): Promise<number> {
+    // Get nonce for backup key (should be 0)
+    let nonce = 0;
+
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'txlist',
+      address,
+    });
+    if (!result || !Array.isArray(result.result)) {
+      throw new Error('Unable to find next nonce from Snowtrace, got: ' + JSON.stringify(result));
+    }
+    const backupKeyTxList = result.result;
+    if (backupKeyTxList.length > 0) {
+      // Calculate last nonce used
+      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
+      nonce = outgoingTxs.length;
+    }
+    return nonce;
+  }
+
+  /**
+   * Queries Snowtrace for the balance of an address
+   * @param {string} address - the AVAXC address
+   * @returns {Promise<BigNumber>} address balance
+   */
+  async queryAddressBalance(address: string): Promise<any> {
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'balance',
+      address: address,
+    });
+    // throw if the result does not exist or the result is not a valid number
+    if (!result || !result.result || isNaN(result.result)) {
+      throw new Error(`Could not obtain address balance for ${address} from Snowtrace, got: ${result.result}`);
+    }
+    return new optionalDeps.ethUtil.BN(result.result, 10);
+  }
+
+  /**
+   * Queries the contract (via Snowtrace) for the next sequence ID
+   * @param {string} address - address of the contract
+   * @returns {Promise<number>} sequence ID
+   */
+  async querySequenceId(address: string): Promise<number> {
+    // Get sequence ID using contract call
+    const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
+    const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
+    const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'proxy',
+      action: 'eth_call',
+      to: address,
+      data: sequenceIdData,
+      tag: 'latest',
+    });
+    if (!result || !result.result) {
+      throw new Error('Could not obtain sequence ID from Snowtrace, got: ' + result.result);
+    }
+    const sequenceIdHex = result.result;
+    return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+  }
+
+  /**
+   * @param {Object} recipient - recipient info
+   * @param {number} expireTime - expiry time
+   * @param {number} contractSequenceId - sequence id
+   * @returns {(string|Array)} operation array
+   */
+  getOperation(recipient: Recipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
+    return [
+      ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
+      [
+        'ETHER',
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
+        recipient.amount,
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.padToEven(recipient.data || '')), 'hex'),
+        expireTime,
+        contractSequenceId,
+      ],
+    ];
+  }
+
+  /**
+   * Calculate the operation hash in the same way solidity would
+   * @param {Recipient[]} recipients - tx recipients
+   * @param {number} expireTime - expiration time
+   * @param {number} contractSequenceId - contract sequence id
+   * @returns {string} operation hash
+   */
+  getOperationSha3ForExecuteAndConfirm(
+    recipients: Recipient[],
+    expireTime: number,
+    contractSequenceId: number
+  ): string {
+    if (!recipients || !Array.isArray(recipients)) {
+      throw new Error('expecting array of recipients');
+    }
+
+    // Right now we only support 1 recipient
+    if (recipients.length !== 1) {
+      throw new Error('must send to exactly 1 recipient');
+    }
+
+    if (!_.isNumber(expireTime)) {
+      throw new Error('expireTime must be number of seconds since epoch');
+    }
+
+    if (!_.isNumber(contractSequenceId)) {
+      throw new Error('contractSequenceId must be number');
+    }
+
+    // Check inputs
+    recipients.forEach(function (recipient) {
+      if (
+        !_.isString(recipient.address) ||
+        !optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(recipient.address))
+      ) {
+        throw new Error('Invalid address: ' + recipient.address);
+      }
+
+      let amount;
+      try {
+        amount = new BigNumber(recipient.amount);
+      } catch (e) {
+        throw new Error('Invalid amount for: ' + recipient.address + ' - should be numeric');
+      }
+
+      recipient.amount = amount.toFixed(0);
+
+      if (recipient.data && !_.isString(recipient.data)) {
+        throw new Error('Data for recipient ' + recipient.address + ' - should be of type hex string');
+      }
+    });
+
+    const recipient = recipients[0];
+    return optionalDeps.ethUtil.bufferToHex(
+      optionalDeps.ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId))
+    );
+  }
+
+  /**
+   * Default expire time for a contract call (1 week)
+   * @returns {number} Time in seconds
+   */
+  getDefaultExpireTime(): number {
+    return Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
+  }
+
+  /**
+   * Build arguments to call the send method on the wallet contract
+   * @param {Object} txInfo - data for send method args
+   * @returns {SendMethodArgs[]}
+   */
+  getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
+    // Method signature is
+    // sendMultiSig(address toAddress, uint value, bytes data, uint expireTime, uint sequenceId, bytes signature)
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: txInfo.recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint',
+        value: txInfo.recipient.amount,
+      },
+      {
+        name: 'data',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.recipient.data || '')),
+      },
+      {
+        name: 'expireTime',
+        type: 'uint',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
+      },
+    ];
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * Steps:
    * 1) Node query - how much money is in the account
    * 2) Build transaction - build our transaction for the amount
    * 3) Send signed build - send our signed build to a public node
-   * @param params The options with which to recover
+   * @param {Object} params The options with which to recover
+   * @param {string} params.userKey - [encrypted] xprv
+   * @param {string} params.backupKey - [encrypted] xprv or xpub if the xprv is held by a KRS provider
+   * @param {string} params.walletPassphrase - used to decrypt userKey and backupKey
+   * @param {string} params.walletContractAddress - the AVAXC address of the wallet contract
+   * @param {string} params.recoveryDestination - target address to send recovered funds to
+   * @returns {Promise<RecoveryInfo>} - recovery tx info
    */
-  async recover(params: any): Promise<any> {
-    throw new MethodNotImplementedError();
+  async recover(params: RecoverOptions): Promise<RecoveryInfo> {
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    // TODO (BG-56334): implement krs recovery and unsigned sweep
+
+    // Clean up whitespace from entered values
+    let userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Set new tx fees (using default config values from platform)
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userKey = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+
+    const userKeyPair = new AvaxcKeyPair({ prv: userKey });
+    const userPrv = userKeyPair.getKeys().prv!;
+
+    // Decrypt backup private key and get address
+    let backupPrv;
+
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+
+    const keyPair = new AvaxcKeyPair({ prv: backupPrv });
+    const prv = keyPair.getKeys().prv;
+    if (!prv) {
+      throw new Error('no private key');
+    }
+    const backupSigningKey = prv;
+    const backupKeyAddress = keyPair.getAddress();
+
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+
+    // get balance of backupKey to ensure funds are available to pay fees
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some AVAX to this address then retry.`
+      );
+    }
+
+    // get balance of wallet and deduct fees to get transaction amount
+    const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+
+    // build recipients object
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: txAmount.toString(10),
+      },
+    ];
+
+    // Get sequence ID using contract call
+    // we need to wait between making two snowtrace calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+
+    // Get operation hash and sign it
+    const operationHash = this.getOperationSha3ForExecuteAndConfirm(
+      recipients,
+      this.getDefaultExpireTime(),
+      sequenceId
+    );
+    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
+
+    try {
+      Util.ecRecoverEthAddress(operationHash, signature);
+    } catch (e) {
+      throw new Error('Invalid signature');
+    }
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: gasLimit.toString(10),
+    };
+
+    // calculate send data
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const sendMethodName = 'sendMultiSig';
+    const methodSignature = optionalDeps.ethAbi.methodID(sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    txBuilder.counter(backupKeyNonce);
+    txBuilder.contract(params.walletContractAddress);
+    let txFee;
+    if (params.eip1559) {
+      txFee = {
+        eip1559: {
+          maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+          maxFeePerGas: params.eip1559.maxFeePerGas,
+        },
+      };
+    } else {
+      txFee = { fee: gasPrice.toString() };
+    }
+    txBuilder.fee({
+      ...txFee,
+      gasLimit: gasLimit.toString(),
+    });
+    txBuilder
+      .transfer()
+      .amount(txAmount.toString(10))
+      .contractSequenceId(sequenceId)
+      .key(userPrv)
+      .expirationTime(this.getDefaultExpireTime())
+      .to(params.recoveryDestination)
+      .data(bufferToHex(sendData as Buffer));
+
+    txBuilder.sign({ key: backupSigningKey });
+    const signedTx = await txBuilder.build();
+
+    return {
+      id: signedTx.toJson().id,
+      tx: signedTx.toBroadcastFormat(),
+    };
   }
 
   /**
