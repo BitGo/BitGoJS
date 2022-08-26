@@ -54,7 +54,7 @@ supported versions described in the [`engines` property of the `bitgo` module pa
 
 We specifically limit our support to LTS versions of Node, not because this package won't work on other versions, but
 because LTS versions tend to be the most widely used in practice. It's possible the packages in this repository will
-work correctly on newer or older versions of Node, but we typeically don't run automated tests against non-LTS (odd
+work correctly on newer or older versions of Node, but we typically don't run automated tests against non-LTS (odd
 numbered) versions of Node, with the possible exception of the latest odd numbered version for advanced awareness of
 upcoming breaks in version support.
 
@@ -64,10 +64,12 @@ new major version of this package. We will not accept any requests to support an
 pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that
 allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes
 work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test
-suite on the latest release of the following versions of node:
+suite on the latest release of the following versions of `node`:
 
 * `14`
 * `16`
+
+And `yarn` version `v1.x`. (Not compatible with `yarn` >2 yet)
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning
 if your version of Node does not fall within the range specified by our node engines property. If you encounter issues
