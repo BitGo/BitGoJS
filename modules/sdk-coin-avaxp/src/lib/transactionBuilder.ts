@@ -12,16 +12,16 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { DecodedUtxoObj } from './iface';
+import { DecodedUtxoObj, Tx } from './iface';
 import {
   SECPTransferInput,
   SECPTransferOutput,
   SelectCredentialClass,
   TransferableInput,
   TransferableOutput,
-  Tx,
+  Tx as PVMTx,
 } from 'avalanche/dist/apis/platformvm';
-import { Credential } from 'avalanche/dist/common';
+import { Credential, StandardAmountInput, StandardTransferableInput } from 'avalanche/dist/common';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -96,27 +96,33 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     ) {
       throw new Error('Network or blockchain is not equals');
     }
-    this._transaction._memo = baseTx.getMemo();
-
-    // good assumption: addresses that unlock the outputs, will also be used to sign the transaction
-    // so pick the first utxo as the from address
-    const utxo = baseTx.getOuts()[0];
-
-    if (!utxo.getAssetID().equals(this._transaction._assetId)) {
-      throw new Error('AssetID are not equals');
+    if ('getMemo' in baseTx) {
+      this._transaction._memo = baseTx.getMemo();
     }
-    const secpOut = utxo.getOutput();
-    this._transaction._locktime = secpOut.getLocktime();
-    this._transaction._threshold = secpOut.getThreshold();
-    this._transaction._fromAddresses = secpOut.getAddresses();
-    this._transaction._utxos = this.recoverUtxos(baseTx.getIns());
+    if ('getOuts' in baseTx) {
+      // good assumption: addresses that unlock the outputs, will also be used to sign the transaction
+      // so pick the first utxo as the from address
+      const utxo = baseTx.getOuts()[0];
+
+      if (!utxo.getAssetID().equals(this._transaction._assetId)) {
+        throw new Error('AssetID are not equals');
+      }
+      const secpOut = utxo.getOutput();
+      this._transaction._locktime = secpOut.getLocktime();
+      this._transaction._threshold = secpOut.getThreshold();
+      this._transaction._fromAddresses = secpOut.getAddresses();
+    }
+    // EVM doesn't have Ints.
+    if ('getIns' in baseTx) {
+      this._transaction._utxos = this.recoverUtxos(baseTx.getIns());
+    }
     this._transaction.setTransaction(tx);
     return this;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Tx();
+    const tx = new PVMTx();
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
     return this.transaction;
@@ -270,29 +276,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       }
     });
 
-    if (buildOutputs) {
-      if (currentTotal.lt(totalTarget)) {
-        throw new BuildTransactionError(
-          `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
-        );
-      } else if (currentTotal.gt(totalTarget)) {
-        outputs.push(
-          new TransferableOutput(
-            this.transaction._assetId,
-            new SECPTransferOutput(
-              currentTotal.sub(totalTarget),
-              this.transaction._fromAddresses,
-              this.transaction._locktime,
-              this.transaction._threshold
-            )
+    if (currentTotal.lt(totalTarget)) {
+      throw new BuildTransactionError(
+        `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
+      );
+    } else if (currentTotal.gt(totalTarget)) {
+      outputs.push(
+        new TransferableOutput(
+          this.transaction._assetId,
+          new SECPTransferOutput(
+            currentTotal.sub(totalTarget),
+            this.transaction._fromAddresses,
+            this.transaction._locktime,
+            this.transaction._threshold
           )
-        );
-      }
+        )
+      );
     }
     // get outputs and credentials from the deserialized transaction if we are in OVC
     return {
       inputs,
-      outputs: outputs.length === 0 ? this.transaction.avaxPTransaction.getOuts() : outputs,
+      outputs,
       credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
     };
   }
@@ -304,9 +308,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param inputs
    * @protected
    */
-  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
+  protected recoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj[] {
     return utxos.map((utxo) => {
-      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
+      const secpInput = utxo.getInput() as StandardAmountInput;
 
       // use the same addressesIndex as existing ones in the inputs
       const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));

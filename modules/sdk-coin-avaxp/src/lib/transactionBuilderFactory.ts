@@ -2,12 +2,15 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
-import { Tx } from 'avalanche/dist/apis/platformvm';
+import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
+import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { ExportTxBuilder } from './exportTxBuilder';
 import { ImportTxBuilder } from './importTxBuilder';
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
+import { ImportInCTxBuilder } from './importInCTxBuilder';
+import { Tx } from './iface';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -18,7 +21,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
     utils.validateRawTransaction(raw);
-    const tx = new Tx();
+    let tx: Tx;
+    tx = new PVMTx();
     tx.fromBuffer(BufferAvax.from(raw, 'hex'));
     let transactionBuilder: TransactionBuilder;
     switch (tx.getUnsignedTx().getTransaction().getTypeID()) {
@@ -35,9 +39,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         transactionBuilder = this.getImportBuilder();
         break;
       default:
-        throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+        tx = new EVMTx();
+        tx.fromBuffer(BufferAvax.from(raw, 'hex'));
+        if (tx.getUnsignedTx().getTransaction().getTypeID() === ImportInCTxBuilder.txType) {
+          transactionBuilder = this.getImportInCBuilder();
+        } else {
+          throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+        }
     }
-
     transactionBuilder.initBuilder(tx);
     return transactionBuilder;
   }
@@ -74,6 +83,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new ImportTxBuilder(this._coinConfig);
   }
 
+  /**
+   * Export Cross chain transfer
+   *
+   * @returns {ExportTxBuilder} the builder initialized
+   */
+  getImportInCBuilder(): ImportInCTxBuilder {
+    return new ImportInCTxBuilder(this._coinConfig);
+  }
   /**
    * Initialize staking delegation builder
    *

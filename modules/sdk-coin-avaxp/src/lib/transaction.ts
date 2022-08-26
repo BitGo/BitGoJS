@@ -8,11 +8,12 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
-import { AddValidatorTx, AmountInput, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, TransactionExplanation, TxData, Tx, BaseTx } from './iface';
+
+import { AddValidatorTx } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { Credential } from 'avalanche/dist/common';
+import { Credential, StandardAmountOutput, StandardAmountInput } from 'avalanche/dist/common';
 
 // region utils to sign
 interface signatureSerialized {
@@ -53,6 +54,7 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
     };
   }
 }
+
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
@@ -69,6 +71,8 @@ export class Transaction extends BaseTransaction {
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
   public _fee: BN = new BN(0);
+  public _to: BufferAvax;
+  public _feeCost: number;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -91,7 +95,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get credentials(): Credential[] {
-    return this._avaxpTransaction.getCredentials();
+    return (this._avaxpTransaction as any).credentials;
   }
 
   get hasCredentials(): boolean {
@@ -168,6 +172,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
+    const memo = 'getMemo' in this.avaxPTransaction ? utils.bufferToString(this.avaxPTransaction.getMemo()) : undefined;
     return {
       id: this.id,
       inputs: this.inputs,
@@ -175,7 +180,7 @@ export class Transaction extends BaseTransaction {
       threshold: this._threshold,
       locktime: this._locktime.toString(),
       type: this.type,
-      memo: utils.bufferToString(this.avaxPTransaction.getMemo()),
+      memo,
       signatures: this.signature,
       stakedOutputs: this.stakedOutputs,
       changeOutputs: this.changeOutputs,
@@ -230,9 +235,10 @@ export class Transaction extends BaseTransaction {
   }
 
   get changeOutputs(): Entry[] {
+    if (!('getOuts' in this.avaxPTransaction)) return [];
     // general support any transaction type, but it's scoped yet
     return this.avaxPTransaction.getOuts().map((output) => {
-      const amountOutput = output.getOutput() as any as AmountOutput;
+      const amountOutput = output.getOutput() as any as StandardAmountOutput;
       const address = amountOutput
         .getAddresses()
         .map((a) => utils.addressToString(this._network.hrp, this._network.alias, a))
@@ -245,9 +251,10 @@ export class Transaction extends BaseTransaction {
   }
 
   get inputs(): Entry[] {
+    if (!('getIns' in this.avaxPTransaction)) return [];
     const bintools = BinTools.getInstance();
     return this.avaxPTransaction.getIns().map((input) => {
-      const amountInput = input.getInput() as any as AmountInput;
+      const amountInput = input.getInput() as any as StandardAmountInput;
       return {
         address: amountInput
           .getSigIdxs()

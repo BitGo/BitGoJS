@@ -1,4 +1,6 @@
 import { Entry, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
+import { BaseTx as PMVBaseTx, Tx as PMVTx } from 'avalanche/dist/apis/platformvm';
+import { EVMBaseTx, Tx as EMVTx } from 'avalanche/dist/apis/evm';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
@@ -25,7 +27,7 @@ export interface TxData {
   fromAddresses: string[];
   threshold: number;
   locktime: string;
-  memo: string;
+  memo?: string;
   signatures: string[];
   stakedOutputs: Entry[];
   changeOutputs: Entry[];
@@ -48,3 +50,6 @@ export type DecodedUtxoObj = {
   addresses: string[];
   addressesIndex?: number[];
 };
+
+export type Tx = PMVTx | EMVTx;
+export type BaseTx = PMVBaseTx | EVMBaseTx;

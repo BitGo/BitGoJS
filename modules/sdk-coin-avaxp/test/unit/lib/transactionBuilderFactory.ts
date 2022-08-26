@@ -46,7 +46,7 @@ describe('AvaxP Transaction Builder Factory', () => {
     let tx: BaseTransaction;
     before(async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
-        testData.ADD_VALIDATOR_ID_SAMPLE.fullsigntxHex
+        testData.ADDVALIDATOR_SAMPLES.fullsigntxHex
       );
       tx = await txBuilder.build();
     });
@@ -54,11 +54,11 @@ describe('AvaxP Transaction Builder Factory', () => {
     it('Should json stringifiy a transaction object', async () => {
       const txJson = tx.toJson();
       assert(typeof JSON.stringify(tx.toJson()), 'string');
-      txJson.id.should.equal(testData.ADD_VALIDATOR_ID_SAMPLE.txid);
+      txJson.id.should.equal(testData.ADDVALIDATOR_SAMPLES.txhash);
     });
 
     it('Should get a txid', async () => {
-      tx.id.should.equal(testData.ADD_VALIDATOR_ID_SAMPLE.txid);
+      tx.id.should.equal(testData.ADDVALIDATOR_SAMPLES.txhash);
     });
   });
 
