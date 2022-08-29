@@ -360,8 +360,8 @@ const ataInitInstructionKeysIndexes = {
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array<AtaInit | Memo> {
-  const instructionData: Array<AtaInit | Memo> = [];
+function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array<AtaInit | Memo | Nonce> {
+  const instructionData: Array<AtaInit | Memo | Nonce> = [];
   let memo: Memo | undefined;
 
   for (const instruction of instructions) {
@@ -369,6 +369,17 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
     switch (type) {
       case ValidInstructionTypesEnum.Memo:
         memo = { type: InstructionBuilderTypes.Memo, params: { memo: instruction.data.toString() } };
+        break;
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+        const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instruction);
+        const nonce: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: {
+            walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+            authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+          },
+        };
+        instructionData.push(nonce);
         break;
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
