@@ -1,6 +1,6 @@
 import * as paillierBigint from 'paillier-bigint';
 import * as secp from '@noble/secp256k1';
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes, createHash, Hash } from 'crypto';
 import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
@@ -307,10 +307,11 @@ export default class Ecdsa {
    * @param {Buffer} M Message to be signed
    * @param {OShare} oShare private omicron share of current participant
    * @param {DShare} dShare delta share received from the other participant
+   * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
    * @returns {SignRT}
    */
-  sign(M: Buffer, oShare: OShare, dShare: DShare): SignRT {
-    const m = createHash('sha256').update(M).digest();
+  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash): SignRT {
+    const m = (hash || createHash('sha256')).update(M).digest();
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
 
@@ -361,11 +362,12 @@ export default class Ecdsa {
    * Verify ecdsa signatures
    * @param {Buffer} message
    * @param {Signature } signature
+   * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
    * @returns {boolean} True if signature is valid; False otherwise
    */
-  verify(message: Buffer, signature: Signature): boolean {
+  verify(message: Buffer, signature: Signature, hash?: Hash): boolean {
     return Ecdsa.curve.verify(
-      createHash('sha256').update(message).digest(),
+      (hash || createHash('sha256')).update(message).digest(),
       Buffer.concat([
         bigIntToBufferBE(hexToBigInt(signature['r']), 32),
         bigIntToBufferBE(hexToBigInt(signature['s']), 32),
