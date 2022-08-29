@@ -9,9 +9,9 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { DecodedUtxoObj, TransactionExplanation, TxData, Tx, BaseTx } from './iface';
-import { AddValidatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
-import { ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
+import { BaseTx, DecodedUtxoObj, TransactionExplanation, Tx, TxData } from './iface';
+import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
+import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
@@ -34,7 +34,7 @@ function isEmptySignature(s: string): boolean {
  * @param signatures any signatures as samples to identify which signature required replace.
  */
 function generateSelectorSignature(signatures: signatureSerialized[]): CheckSignature {
-  if (signatures.every((sig) => isEmptySignature(sig.bytes))) {
+  if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig.bytes))) {
     // Look for address.
     return function (sig, address): boolean {
       try {
@@ -222,10 +222,15 @@ export class Transaction extends BaseTransaction {
       case TransactionType.Import:
         return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
       case TransactionType.Export:
-        return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
+        if (utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)) {
+          return (this.avaxPTransaction as EVMExportTx).getExportedOutputs().map(utils.mapOutputToEntry(this._network));
+        } else {
+          return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
+        }
+      case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
         // Get staked outputs
-        const addValidatorTx = this.avaxPTransaction as AddValidatorTx;
+        const addValidatorTx = this.avaxPTransaction as AddDelegatorTx;
         return [
           {
             address: addValidatorTx.getNodeIDString(),
@@ -245,8 +250,11 @@ export class Transaction extends BaseTransaction {
   }
 
   get changeOutputs(): Entry[] {
-    // Import Txs don't have change outputs
-    if (this.type === TransactionType.Import) {
+    // C-chain tx adn Import Txs don't have change outputs
+    if (
+      this.type === TransactionType.Import ||
+      utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)
+    ) {
       return [];
     }
     // general support any transaction type, but it's scoped yet
@@ -258,6 +266,15 @@ export class Transaction extends BaseTransaction {
     switch (this.type) {
       case TransactionType.Import:
         inputs = (this.avaxPTransaction as ImportTx | EVMImportTx).getImportInputs();
+        break;
+      case TransactionType.Export:
+        if (utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)) {
+          return (this.avaxPTransaction as EVMExportTx).getInputs().map((evmInput) => ({
+            address: '0x' + evmInput.getAddressString(),
+            value: evmInput.getAmount().toString(),
+          }));
+        }
+        inputs = (this.avaxPTransaction as PVMBaseTx).getIns();
         break;
       default:
         inputs = (this.avaxPTransaction as PVMBaseTx).getIns();

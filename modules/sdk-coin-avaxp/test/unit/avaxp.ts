@@ -8,7 +8,7 @@ import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
 import { keychains } from '../resources/keychains';
 import { Utils as KeyPairUtils } from '../../src/lib/utils';
-import { KeyPair } from '../../src/lib/keyPair';
+import { KeyPair } from '../../src/lib';
 import { Buffer as BufferAvax } from 'avalanche';
 import * as _ from 'lodash';
 
@@ -16,6 +16,7 @@ import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 import { IMPORT_P } from '../resources/tx/importP';
 import { ADDVALIDATOR_SAMPLES, EXPORT_P_2_C, EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT } from '../resources/avaxp';
 import { IMPORT_C } from '../resources/tx/importC';
+import { EXPORT_C } from '../resources/tx/exportC';
 
 describe('Avaxp', function () {
   const coinName = 'avaxp';
@@ -381,6 +382,32 @@ describe('Avaxp', function () {
       txExplain.outputAmount.should.equal((Number(testData.amount) - txExplain.fee?.fee).toString());
       txExplain.type.should.equal(TransactionType.Import);
       txExplain.outputs[0].address.should.equal(testData.to);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a unsigned export in C transaction', async () => {
+      const importInPFee = 1000000;
+      const testData = EXPORT_C;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.unsignedTxHex });
+      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.inputs[0].address.should.equal(testData.cHexAddress);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
+      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a signed export in C transaction', async () => {
+      const importInPFee = 1000000;
+      const testData = EXPORT_C;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.inputs[0].address.should.equal(testData.cHexAddress);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
+      txExplain.fee.fee.should.equal(testData.fee);
       txExplain.changeOutputs.should.be.empty();
       should.not.exist(txExplain.memo);
     });

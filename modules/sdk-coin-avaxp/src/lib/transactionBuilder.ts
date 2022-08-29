@@ -108,7 +108,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string | stirng[]} senderPubKey
    */
   fromPubKey(senderPubKey: string | string[]): this {
-    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : senderPubKey.split('~');
     this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
     return this;
   }
@@ -254,7 +254,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param chainID
    */
   validateChainId(chainID: BufferAvax): void {
-    if (chainID.length != 32) {
+    if (chainID.length !== 32) {
       throw new BuildTransactionError('Chain id are 32 byte size');
     }
   }

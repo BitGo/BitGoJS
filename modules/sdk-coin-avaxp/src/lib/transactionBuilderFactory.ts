@@ -9,6 +9,7 @@ import utils from './utils';
 import { ExportTxBuilder } from './exportTxBuilder';
 import { ImportTxBuilder } from './importTxBuilder';
 import { ImportInCTxBuilder } from './importInCTxBuilder';
+import { ExportInCTxBuilder } from './exportInCTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -51,6 +52,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else if (txSource === 'EVM') {
       if (ImportInCTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
         transactionBuilder = this.getImportInCBuilder();
+      } else if (ExportInCTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getExportInCBuilder();
       }
     }
     if (transactionBuilder === undefined) {
@@ -99,6 +102,15 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getImportInCBuilder(): ImportInCTxBuilder {
     return new ImportInCTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export in C chain Cross chain transfer
+   *
+   * @returns {ExportInCTxBuilder} the builder initialized
+   */
+  getExportInCBuilder(): ExportInCTxBuilder {
+    return new ExportInCTxBuilder(this._coinConfig);
   }
 
   /** @inheritdoc */

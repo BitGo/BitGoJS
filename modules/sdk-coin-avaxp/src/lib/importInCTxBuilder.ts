@@ -12,33 +12,25 @@ import {
   AmountInput,
 } from 'avalanche/dist/apis/evm';
 import { costImportTx } from 'avalanche/dist/utils';
-import utils from './utils';
-import { BN, Buffer as BufferAvax } from 'avalanche';
+import { BN } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
-import { Transaction } from './transaction';
-import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { recoverUtxos, utxoToInput } from './utxoEngine';
 import { BaseTx, Tx } from './iface';
+import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
+import utils from './utils';
 
-export class ImportInCTxBuilder extends AtomicTransactionBuilder {
+export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    // external chain id is P
-    this._externalChainId = utils.cb58Decode(this.transaction._network.blockchainID);
-    // chain id is C
-    this.transaction._blockchainID = utils.cb58Decode(this.transaction._network.cChainBlockchainID);
   }
 
-  feeRate(value: string | number): this {
-    const bnValue = new BN(value);
-    this.validateFee(bnValue);
-    this.transaction._fee.feeRate = bnValue.toNumber();
-    return this;
-  }
-
+  /**
+   * C-chain address who is target of the import.
+   * Address format is eth like
+   * @param {string} cAddress
+   */
   to(cAddress: string): this {
-    const toAddress = BufferAvax.from(cAddress.slice(2), 'hex');
-    this.transaction._to = [toAddress];
+    this.transaction._to = [utils.parseAddress(cAddress)];
     return this;
   }
 
@@ -46,6 +38,7 @@ export class ImportInCTxBuilder extends AtomicTransactionBuilder {
     return TransactionType.Import;
   }
 
+  /** @inheritdoc */
   initBuilder(tx: Tx): this {
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (
@@ -62,7 +55,7 @@ export class ImportInCTxBuilder extends AtomicTransactionBuilder {
     // The outputs is a signler C-Chain address result.
     // It's expected to have only one outputs to the destination C-Chain address.
     const outputs = baseTx.getOuts();
-    if (outputs.length != 1) {
+    if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one output');
     }
     const output = outputs[0];
@@ -100,7 +93,7 @@ export class ImportInCTxBuilder extends AtomicTransactionBuilder {
   }
 
   /**
-   *
+   * Build the import in C-chain transaction
    * @protected
    */
   protected buildAvaxpTransaction(): void {
@@ -140,14 +133,6 @@ export class ImportInCTxBuilder extends AtomicTransactionBuilder {
         credentials
       )
     );
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new EVMTx();
-    tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
-    this.initBuilder(tx);
-    return this.transaction;
   }
 
   /**
@@ -195,15 +180,5 @@ export class ImportInCTxBuilder extends AtomicTransactionBuilder {
     });
 
     return { ...result, amount };
-  }
-
-  /**
-   * Check that fee is grater than 0.
-   * @param {BN} fee
-   */
-  validateFee(fee: BN): void {
-    if (fee.lten(0)) {
-      throw new BuildTransactionError('Fee must be greater than 0');
-    }
   }
 }
