@@ -68,7 +68,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * Build the validator transaction
    * @protected
    */
-  protected buildAvaxpTransaction(): void {
+  protected buildAvaxTransaction(): void {
     const { inputs, outputs, credentials } = this.createInputOutput();
     this.transaction.setTransaction(
       new PVMTx(

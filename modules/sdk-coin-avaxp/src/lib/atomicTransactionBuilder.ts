@@ -21,7 +21,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.transaction._fee.fee = this.transaction._network.txFee;
+    this.transaction._fee.fee = this.fixedFee;
   }
 
   /**
@@ -35,6 +35,16 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
     this.validateChainId(newTargetChainId);
     this._externalChainId = newTargetChainId;
     return this;
+  }
+
+  /**
+   * Fee is fix for AVM atomic tx.
+   *
+   * @returns network.txFee
+   * @protected
+   */
+  protected get fixedFee(): string {
+    return this.transaction._network.txFee;
   }
 
   // region utxo engine

@@ -57,7 +57,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.buildAvaxpTransaction();
+    this.buildAvaxTransaction();
     this.transaction.setTransactionType(this.transactionType);
     if (this.hasSigner) {
       this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
@@ -66,9 +66,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Builds the avaxp transaction. transaction field is changed.
+   * Builds the avax transaction. transaction field is changed.
    */
-  protected abstract buildAvaxpTransaction(): void;
+  protected abstract buildAvaxTransaction(): void;
 
   // region Getters and Setters
   /**
@@ -254,7 +254,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param chainID
    */
   validateChainId(chainID: BufferAvax): void {
-    if (chainID.length != 32) {
+    if (chainID.length !== 32) {
       throw new BuildTransactionError('Chain id are 32 byte size');
     }
   }

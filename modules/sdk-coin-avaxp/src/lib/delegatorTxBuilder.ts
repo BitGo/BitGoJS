@@ -190,7 +190,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    *
    * @protected
    */
-  protected buildAvaxpTransaction(): void {
+  protected buildAvaxTransaction(): void {
     this.validateStakeDuration(this._startTime, this._endTime);
     const { inputs, outputs, credentials } = this.createInputOutput();
     this.transaction.setTransaction(

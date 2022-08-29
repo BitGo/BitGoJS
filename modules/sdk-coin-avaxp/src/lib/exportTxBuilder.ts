@@ -79,7 +79,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
    * Create the internal avalanche transaction.
    * @protected
    */
-  protected buildAvaxpTransaction(): void {
+  protected buildAvaxTransaction(): void {
     // if tx has credentials, tx shouldn't change
     if (this.transaction.hasCredentials) return;
     const { inputs, outputs, credentials } = this.createInputOutput(this._amount.add(new BN(this.transaction.fee.fee)));

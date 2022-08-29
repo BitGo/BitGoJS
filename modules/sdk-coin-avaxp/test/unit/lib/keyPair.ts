@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair } from '../../../src/lib/keyPair';
+import { KeyPair } from '../../../src/lib';
 import * as testData from '../../resources/avaxp';
 
 const pubKey = testData.ACCOUNT_1.pubkey;
