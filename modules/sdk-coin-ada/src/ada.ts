@@ -5,6 +5,7 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   ParsedTransaction,
@@ -105,7 +106,11 @@ export class Ada extends BaseCoin {
   }
 
   isWalletAddress(params: VerifyAddressOptions): boolean {
-    throw new Error('Method not implemented.');
+    const { address } = params;
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`Invalid Cardano Address: ${address}`);
+    }
+    return true;
   }
 
   /** @inheritDoc */
