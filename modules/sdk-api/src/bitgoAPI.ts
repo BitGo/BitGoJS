@@ -218,9 +218,13 @@ export class BitGoAPI implements BitGoBase {
     }
     this._env = this.env = env;
 
-    if (params.etherscanApiToken) {
-      common.Environments[env].etherscanApiToken = params.etherscanApiToken;
-    }
+    const supportedApiTokens = ['etherscanApiToken', 'polygonscanApiToken'];
+
+    Object.keys(params).forEach((key) => {
+      if (supportedApiTokens.includes(key)) {
+        common.Environments[env][key] = params[key];
+      }
+    });
 
     common.setNetwork(common.Environments[env].network);
 

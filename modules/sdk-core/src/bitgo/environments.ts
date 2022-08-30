@@ -16,6 +16,8 @@ interface EnvironmentTemplate {
   snowtraceApiToken?: string;
   eth2ExplorerBaseUrl: string;
   ethwExplorerBaseUrl: string;
+  polygonscanBaseUrl?: string;
+  polygonscanApiToken?: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   nearNodeUrls: string[];
@@ -84,6 +86,8 @@ const mainnetBase: EnvironmentTemplate = {
   snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
+  polygonscanBaseUrl: 'https://api.polygonscan.com',
+  polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   tronNodes: {
@@ -105,6 +109,8 @@ const testnetBase: EnvironmentTemplate = {
   snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
+  polygonscanBaseUrl: 'https://api-testnet.polygonscan.com',
+  polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
   eosNodeUrls: [
     'https://jungle3.cryptolions.io:443',
