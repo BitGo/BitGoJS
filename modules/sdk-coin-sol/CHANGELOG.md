@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.15...@bitgo/sdk-coin-sol@2.0.0-rc.16) (2022-08-30)
+
+
+### Bug Fixes
+
+* add support for durable nonces for sol ata init txns ([acf7cb8](https://github.com/BitGo/BitGoJS/commit/acf7cb86c16d58c735f623b7e6df34628f25ac01))
+* **sdk-coin-sol:** added missing member transferBuilderV2 ([cb47e5f](https://github.com/BitGo/BitGoJS/commit/cb47e5f26e019386d693a08a41b0c93c22c7a1e6))
+
+
+### Features
+
+* **sdk-coin-sol:** deserialize transferBuilderV2 tx ([4a72472](https://github.com/BitGo/BitGoJS/commit/4a724725c46c8d3472e4e41e98109f057845f3c9))
+* **sdk-coin-sol:** verifyTransaction allow native token txs ([e69f0e5](https://github.com/BitGo/BitGoJS/commit/e69f0e5fee560bf661b63d7082b2ab49e1712ebb))
+
+
+
+
+
 # [2.0.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.14...@bitgo/sdk-coin-sol@2.0.0-rc.15) (2022-08-26)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@1.1.2-rc.14...@bitgo/sdk-coin-avaxc@1.2.0-rc.0) (2022-08-30)
+
+
+### Features
+
+* **account-lib:** add support for additional hash algorithms ([4e2aefe](https://github.com/BitGo/BitGoJS/commit/4e2aefe8bb7754f891e5f9919f591ad1cc04b34d))
+
+
+
+
+
 ## [1.1.2-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@1.1.2-rc.13...@bitgo/sdk-coin-avaxc@1.1.2-rc.14) (2022-08-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

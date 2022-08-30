@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.12...@bitgo/sdk-coin-ada@1.2.0-rc.13) (2022-08-30)
+
+
+### Bug Fixes
+
+* **account-lib:** added validate address function to sdk-coin-ada ([95f4bdb](https://github.com/BitGo/BitGoJS/commit/95f4bdbf3ad0cc19beda6bc7939e7b7a8070a8a8))
+
+
+
+
+
 # [1.2.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.11...@bitgo/sdk-coin-ada@1.2.0-rc.12) (2022-08-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

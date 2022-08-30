@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.16...@bitgo/account-lib@2.21.0-rc.17) (2022-08-30)
+
+
+### Features
+
+* **account-lib:** add support for additional hash algorithms ([4e2aefe](https://github.com/BitGo/BitGoJS/commit/4e2aefe8bb7754f891e5f9919f591ad1cc04b34d))
+
+
+
+
+
 # [2.21.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.15...@bitgo/account-lib@2.21.0-rc.16) (2022-08-26)
 
 **Note:** Version bump only for package @bitgo/account-lib

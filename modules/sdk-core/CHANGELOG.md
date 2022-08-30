@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.10...@bitgo/sdk-core@2.0.0-rc.11) (2022-08-30)
+
+
+### Features
+
+* **account-lib:** add support for additional hash algorithms ([4e2aefe](https://github.com/BitGo/BitGoJS/commit/4e2aefe8bb7754f891e5f9919f591ad1cc04b34d))
+* **sdk-core:** support lnurl pay ([6df91a3](https://github.com/BitGo/BitGoJS/commit/6df91a3eac28bf55600d5e856a297dde6b56c826))
+
+
+
+
+
 # [2.0.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.9...@bitgo/sdk-core@2.0.0-rc.10) (2022-08-26)
 
 **Note:** Version bump only for package @bitgo/sdk-core
