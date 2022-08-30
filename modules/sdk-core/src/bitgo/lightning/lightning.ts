@@ -4,6 +4,7 @@ import {
   PayInvoiceParams,
   LightningWithdrawalParams,
   LightningDepositParams,
+  LnurlPayParams,
   CreateInvoiceResponse,
   CreateDepositAddressResponse,
   PayInvoiceResponse,
@@ -12,7 +13,9 @@ import {
   DepositResponse,
   GetInvoicesQuery,
   GetInvoicesResponse,
+  DecodedLnurlPayRequest,
 } from './iLightning';
+import { decodeLnurlPay, fetchLnurlPayInvoice } from './lightningUtils';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
 import { decodeOrElse } from '../utils/decode';
@@ -113,5 +116,13 @@ export class Lightning implements ILightning {
     return decodeOrElse(GetInvoicesResponse.name, GetInvoicesResponse, body, (errors) => {
       throw new Error(`error(s) parsing response body: ${errors}`);
     });
+  }
+
+  public async decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest> {
+    return await decodeLnurlPay(lnurl);
+  }
+
+  public async fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
+    return await fetchLnurlPayInvoice(params, this.wallet.coin());
   }
 }

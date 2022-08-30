@@ -14,9 +14,11 @@ describe('SOL:', function () {
   let basecoin: Sol;
   let keyPair;
   let newTxPrebuild;
+  let newTxPrebuildTokenTransfer;
   let newTxParams;
   let newTxParamsWithError;
   let newTxParamsWithExtraData;
+  let newTxParamsTokenTransfer;
   const badAddresses = resources.addresses.invalidAddresses;
   const goodAddresses = resources.addresses.validAddresses;
 
@@ -77,6 +79,31 @@ describe('SOL:', function () {
       },
     ],
   };
+  const txPrebuildTokenTransfer = {
+    recipients: [
+      {
+        address: 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg',
+        amount: '1',
+      },
+    ],
+    txHex: resources.TOKEN_TRANSFER_TO_NATIVE_UNSIGNED_TX_HEX,
+    txInfo: {
+      feePayer: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2',
+      nonce: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+    },
+    txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+    isVotingTransaction: false,
+    coin: 'tsol',
+  };
+  const txParamsTokenTransfer = {
+    txPrebuild,
+    recipients: [
+      {
+        address: 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg',
+        amount: '1',
+      },
+    ],
+  };
   const errorMemo = { value: 'different memo' };
   const errorFeePayer = '5hr5fisPi6DXCuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
   const factory = getBuilderFactory('tsol');
@@ -96,6 +123,9 @@ describe('SOL:', function () {
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);
     };
+    newTxPrebuildTokenTransfer = () => {
+      return _.cloneDeep(txPrebuildTokenTransfer);
+    };
     newTxParams = () => {
       return _.cloneDeep(txParams);
     };
@@ -104,6 +134,9 @@ describe('SOL:', function () {
     };
     newTxParamsWithExtraData = () => {
       return _.cloneDeep(txParamsWithExtraData);
+    };
+    newTxParamsTokenTransfer = () => {
+      return _.cloneDeep(txParamsTokenTransfer);
     };
   });
 
@@ -267,6 +300,75 @@ describe('SOL:', function () {
       const txPrebuild = newTxPrebuild();
       await basecoin
         .verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify token transaction with native address recipient', async function () {
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      txParams.recipients = [{ address, amount: '1', tokenName: 'tsol:usdc' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      const feePayerWalletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2',
+        },
+        multisigType: 'tss',
+      };
+      const feePayerWallet = new Wallet(bitgo, basecoin, feePayerWalletData);
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: feePayerWallet,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail to verify token transaction with different recipient tokenName', async function () {
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      txParams.recipients = [{ address, amount: '1', tokenName: 'tsol:usdt' }]; // Different tokenName, should fail to verify tx
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify token transaction with different recipient amounts', async function () {
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      txParams.recipients = [{ address, amount: '2', tokenName: 'tsol:usdt' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify token transaction with different native address', async function () {
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvX'; // Native SOL address, different than tx recipients
+      txParams.recipients = [{ address, amount: '1', tokenName: 'tsol:usdc' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as any)
         .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 

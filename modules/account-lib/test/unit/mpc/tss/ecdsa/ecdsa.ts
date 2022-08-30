@@ -1,8 +1,9 @@
 import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
 import * as sinon from 'sinon';
+import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
 import { paillerKeys, mockNShares, mockPShare, mockDKeyShare, mockEKeyShare, mockFKeyShare } from '../fixtures/ecdsa';
-import { randomBytes } from 'crypto';
+import { Hash, randomBytes } from 'crypto';
 /**
  * @prettier
  */
@@ -120,7 +121,7 @@ describe('TSS ECDSA TESTS', function () {
   });
 
   describe('ECDSA Signing', async function () {
-    let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined }[];
+    let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: Hash }[];
 
     before(async () => {
       const [A, B, C, D, E, F] = keyShares;
@@ -134,6 +135,9 @@ describe('TSS ECDSA TESTS', function () {
         { signerOne: D, signerTwo: E },
         { signerOne: E, signerTwo: F },
         { signerOne: F, signerTwo: D },
+
+        // Checks with specific hashing algorithm
+        { signerOne: A, signerTwo: B, hash: createKeccakHash('keccak256') },
       ];
     });
 
@@ -210,8 +214,8 @@ describe('TSS ECDSA TESTS', function () {
         // and delta share received from the other signer
 
         const [signA, signB] = [
-          MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
-          MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
+          MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, config[index].hash),
+          MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, config[index].hash),
         ];
 
         // Step Eight
@@ -222,7 +226,7 @@ describe('TSS ECDSA TESTS', function () {
         // Step Nine
         // Verify signature
 
-        const isValid = MPC.verify(MESSAGE, signature);
+        const isValid = MPC.verify(MESSAGE, signature, config[index].hash);
         isValid.should.equal(true);
       });
     }

@@ -1433,7 +1433,7 @@ export class Eth extends BaseCoin {
    * @param paramsArr The parameters to hash together for the digest
    */
   private static getHopDigest(paramsArr: string[]): Buffer {
-    const hash = new Keccak('keccak256');
+    const hash = Keccak('keccak256');
     hash.update([Eth.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
   }

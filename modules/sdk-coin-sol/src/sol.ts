@@ -9,26 +9,32 @@ import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as _ from 'lodash';
 import {
   BaseCoin,
-  BitGoBase,
   BaseTransaction,
-  Memo,
+  BitGoBase,
   KeyPair,
+  Memo,
   MethodNotImplementedError,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
+  PresignTransactionOptions,
   SignedTransaction,
+  SignTransactionOptions,
+  TokenEnablementConfig,
   TransactionExplanation,
+  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  SignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  PresignTransactionOptions,
-  TokenEnablementConfig,
-  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 import { AtaInitializationBuilder, KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
-import { isValidAddress, isValidPrivateKey, isValidPublicKey } from './lib/utils';
+import {
+  getAssociatedTokenAccountAddress,
+  getSolTokenFromTokenName,
+  isValidAddress,
+  isValidPrivateKey,
+  isValidPublicKey,
+} from './lib/utils';
 
 export interface TransactionFee {
   fee: string;
@@ -162,7 +168,52 @@ export class Sol extends BaseCoin {
       );
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
 
-      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+      if (filteredRecipients.length !== filteredOutputs.length) {
+        throw new Error('Number of tx outputs does not match with number of txParams recipients');
+      }
+
+      // For each recipient, check if it's a token tx (tokenName will exist if so)
+      // If it is a token tx, verify that the recipient address equals the derived address from explainedTx
+      // Derive the ATA if it is a native address and confirm it is equal to the explained tx recipient
+      const recipientChecks = await Promise.all(
+        filteredRecipients.map(async (recipientFromUser, index) => {
+          const recipientFromTx = filteredOutputs[index]; // This address should be an ATA
+
+          // Compare the amount string values because amount is (string | number)
+          const userAmountString = recipientFromUser.amount.toString();
+          const txAmountString = recipientFromTx.amount.toString();
+          if (userAmountString !== txAmountString) {
+            return false;
+          }
+
+          // Compare the addresses and tokenNames
+          // Else if the addresses are not the same, check the derived ATA for parity
+          if (
+            recipientFromUser.address === recipientFromTx.address &&
+            recipientFromUser.tokenName === recipientFromTx.tokenName
+          ) {
+            return true;
+          } else if (recipientFromUser.address !== recipientFromTx.address && recipientFromUser.tokenName) {
+            // Try to check if the user's derived ATA is equal to the tx recipient address
+            // If getAssociatedTokenAccountAddress throws an error, then we are unable to derive the ATA for that address.
+            // Return false and throw an error if that is the case.
+            try {
+              const tokenMintAddress = getSolTokenFromTokenName(recipientFromUser.tokenName);
+              return getAssociatedTokenAccountAddress(tokenMintAddress!.tokenAddress, recipientFromUser.address).then(
+                (ata: string) => {
+                  return ata === recipientFromTx.address;
+                }
+              );
+            } catch {
+              // Unable to derive ATA
+              return false;
+            }
+          }
+          return false;
+        })
+      );
+
+      if (recipientChecks.includes(false)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
     }

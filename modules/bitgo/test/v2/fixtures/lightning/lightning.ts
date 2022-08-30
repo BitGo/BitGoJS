@@ -184,4 +184,12 @@ export default {
     },
     status: 'signed',
   },
+
+  decodedLnurl: {
+    callback: 'https://service.com/api?q=fake',
+    maxSendable: 8000000,
+    minSendable: 1000000,
+    metadata: '[["text/plain", "lorem ipsum blah blah"]]',
+    tag: 'payRequest',
+  },
 };

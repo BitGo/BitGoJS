@@ -29,8 +29,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     try {
       switch (tx.type) {
         case TransactionType.Send:
-          if (tx.inputs[0].coin === 'sol' || tx.inputs[0].coin === 'tsol') {
-            return this.getTransferBuilder(tx);
+          const uniqueInputCoins = tx.inputs
+            .map((input) => input.coin)
+            .filter((coin, index, arr) => arr.indexOf(coin) === index);
+          if (uniqueInputCoins.includes('sol') || uniqueInputCoins.includes('tsol')) {
+            // multi-assets transfer tx including native and token transfer contains more than 1 unique input coin names
+            // native: 'sol'/'tsol', token: 'sol:<tokenName>'/'tsol:<tokenName>'
+            return uniqueInputCoins.length > 1 ? this.getTransferBuilderV2(tx) : this.getTransferBuilder(tx);
           } else {
             return this.getTokenTransferBuilder(tx);
           }
