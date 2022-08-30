@@ -1,7 +1,15 @@
 /**
  * @prettier
  */
-import { UnsupportedCoinError } from '@bitgo/sdk-core';
+import {
+  EddsaUtils,
+  CustomGShareGeneratingFunction,
+  CustomRShareGeneratingFunction,
+  UnsupportedCoinError,
+  GShare,
+  SignShare,
+  YShare,
+} from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
@@ -382,6 +390,51 @@ function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): 
   }
 }
 
+export async function handleV2GenerateShareTSS(req: express.Request): Promise<any> {
+  const walletId = req.body.txRequest.walletId;
+  if (!walletId) {
+    throw new Error('Missing required field: walletId');
+  }
+
+  const walletPw = getWalletPwFromEnv(walletId);
+  const { signerFileSystemPath } = req.config;
+
+  if (!signerFileSystemPath) {
+    throw new Error('Missing required configuration: signerFileSystemPath');
+  }
+
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+  const bitgo = req.bitgo;
+  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const coin = bitgo.coin(req.params.coin);
+  const eddUtils = new EddsaUtils(bitgo, coin);
+  req.body.prv = privKey;
+  try {
+    if (req.params.sharetype == 'R') {
+      return await eddUtils.createRShareFromTxRequest(req.body);
+    } else if (req.params.sharetype == 'G') {
+      return await eddUtils.createGShareFromTxRequest(req.body);
+    } else {
+      throw new Error('Share type not supported, only G and R share generation is supported.');
+    }
+  } catch (error) {
+    console.error('error while signing wallet transaction ', error);
+    throw error;
+  }
+}
+
+export async function handleV2SignTSSWalletTx(req: express.Request) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  try {
+    return await wallet.signTransaction(createTSSSendParams(req));
+  } catch (error) {
+    console.error('error while signing wallet transaction ', error);
+    throw error;
+  }
+}
+
 export async function handleV2Sign(req: express.Request) {
   const walletId = req.body.txPrebuild?.walletId;
 
@@ -618,6 +671,18 @@ function createSendParams(req: express.Request) {
     return {
       ...req.body,
       customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
+    };
+  } else {
+    return req.body;
+  }
+}
+
+function createTSSSendParams(req: express.Request) {
+  if (req.config.externalSignerUrl !== undefined) {
+    return {
+      ...req.body,
+      customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
+      customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
     };
   } else {
     return req.body;
@@ -872,6 +937,30 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
   };
 }
 
+export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
+  return async function (params): Promise<{ rShare: SignShare; signingKeyYShare: YShare }> {
+    const { body: rShare } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return rShare;
+  };
+}
+
+export function createCustomGShareGenerator(externalSignerUrl: string, coin: string): CustomGShareGeneratingFunction {
+  return async function (params): Promise<GShare> {
+    const { body: signedTx } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/G`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return signedTx;
+  };
+}
+
 export function setupAPIRoutes(app: express.Application, config: Config): void {
   // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
   // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
@@ -984,6 +1073,12 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
   app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
   app.post(
+    '/api/v2/:coin/wallet/:id/signtxtss',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2SignTSSWalletTx)
+  );
+  app.post(
     '/api/v2/:coin/wallet/:id/recovertoken',
     parseBody,
     prepareBitGo(config),
@@ -1048,4 +1143,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
   app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
+  app.post(
+    '/api/v2/:coin/tssshare/:sharetype',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2GenerateShareTSS)
+  );
 }

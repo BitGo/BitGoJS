@@ -3,7 +3,8 @@ import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet } from '../../baseCoin';
 import { Keychain } from '../../keychain';
 import { Memo, WalletType } from '../../wallet/iWallet';
-import { EDDSA } from '../../../account-lib/mpc/tss';
+import { EDDSA, GShare, SignShare } from '../../../account-lib/mpc/tss';
+import { YShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -29,6 +30,18 @@ export interface FeeOption {
 export interface TokenEnablement {
   name: string;
   address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
+}
+
+export interface CustomRShareGeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }>;
+}
+
+export interface CustomGShareGeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    userToBitgoRShare: SignShare;
+    bitgoToUserRShare: SignatureShareRecord;
+  }): Promise<GShare>;
 }
 
 export interface PrebuildTransactionWithIntentOptions {
@@ -180,6 +193,21 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;
+  signUsingExternalSigner(
+    txRequest: string | TxRequest,
+    externalSignerRShareGenerator: CustomRShareGeneratingFunction,
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+  ): Promise<TxRequest>;
+  createRShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+  }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }>;
+  createGShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+    bitgoToUserRShare: SignatureShareRecord;
+    userToBitgoRShare: SignShare;
+  }): Promise<GShare>;
   prebuildTxWithIntent(
     params: PrebuildTransactionWithIntentOptions,
     apiVersion?: TxRequestVersion,

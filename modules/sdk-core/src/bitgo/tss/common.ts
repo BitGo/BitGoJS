@@ -38,10 +38,11 @@ export async function sendSignatureShare(
   txRequestId: string,
   signatureShare: SignatureShareRecord,
   signerShare?: string,
-  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa'
+  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
+  apiMode: 'full' | 'lite' = 'lite'
 ): Promise<SignatureShareRecord> {
   let transactions = '';
-  if (mpcAlgorithm === 'ecdsa') {
+  if (mpcAlgorithm === 'ecdsa' || apiMode === 'full') {
     transactions = '/transactions/0';
   }
 
