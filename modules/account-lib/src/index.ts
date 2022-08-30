@@ -96,6 +96,8 @@ const coinBuilderMap = {
   tcelo: Celo.TransactionBuilder,
   avaxc: AvaxC.TransactionBuilder,
   tavaxc: AvaxC.TransactionBuilder,
+  bsc: Bsc.TransactionBuilder,
+  tbsc: Bsc.TransactionBuilder,
   avaxp: AvaxP.TransactionBuilderFactory,
   tavaxp: AvaxP.TransactionBuilderFactory,
   hbar: Hbar.TransactionBuilderFactory,
