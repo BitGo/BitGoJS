@@ -310,6 +310,25 @@ describe('Sol Token Transfer Builder', () => {
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.MULTI_ASSET_TOKEN_TRANSFER_UNSIGNED);
     });
+
+    it('build a transfer with large amount', async () => {
+      const amount = '18446744073709551615';
+      const account1 = new KeyPair({ prv: testData.extraAccounts.prv1 }).getKeys();
+      const txBuilder = factory.getTokenTransferBuilder();
+
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(owner);
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
+      const tx = await txBuilder.build();
+
+      tx.outputs.should.deepEqual([
+        {
+          address: account1.pub,
+          value: amount,
+          coin: nameUSDC,
+        },
+      ]);
+    });
   });
   describe('Fail', () => {
     it('for invalid sender', () => {
@@ -334,6 +353,15 @@ describe('Sol Token Transfer Builder', () => {
           tokenName: nameUSDC,
         })
       ).throwError('Invalid or missing amount, got: ' + invalidAmount);
+
+      const excessiveAmount = '18446744073709551616';
+      should(() =>
+        txBuilder.send({
+          address: nonceAccount.pub,
+          amount: excessiveAmount,
+          tokenName: nameUSDC,
+        })
+      ).throwError(`input amount ${excessiveAmount} exceeds big int limit 18446744073709551615`);
     });
   });
 });

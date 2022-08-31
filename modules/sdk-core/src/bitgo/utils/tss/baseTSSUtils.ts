@@ -11,6 +11,7 @@ import {
   ITssUtils,
   PrebuildTransactionWithIntentOptions,
   SignatureShareRecord,
+  TSSParams,
   TxRequest,
   TxRequestVersion,
 } from './baseTypes';
@@ -72,7 +73,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     throw new Error('Method not implemented.');
   }
 
-  signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest> {
+  signTxRequest(params: TSSParams): Promise<TxRequest> {
+    throw new Error('Method not implemented.');
+  }
+
+  signTxRequestForMessage(params: TSSParams): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }
 

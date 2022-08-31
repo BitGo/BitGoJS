@@ -12,6 +12,8 @@ interface EnvironmentTemplate {
   btcExplorerBaseUrl: string;
   etherscanBaseUrl: string;
   etherscanApiToken?: string;
+  snowtraceBaseUrl: string;
+  snowtraceApiToken?: string;
   eth2ExplorerBaseUrl: string;
   ethwExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
@@ -78,6 +80,8 @@ const mainnetBase: EnvironmentTemplate = {
   btcExplorerBaseUrl: 'https://blockstream.info/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+  snowtraceBaseUrl: 'https://api.snowtrace.io',
+  snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
@@ -97,6 +101,8 @@ const testnetBase: EnvironmentTemplate = {
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   etherscanBaseUrl: 'https://api-goerli.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+  snowtraceBaseUrl: 'https://api-testnet.snowtrace.io',
+  snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
   // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
@@ -153,6 +159,8 @@ export const Environments: Environments = {
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://api-goerli.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+    snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
+    snowtraceBaseUrl: 'https://api-testnet.snowtrace.fakeurl',
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   }),
   adminProd: Object.assign({}, mainnetBase, {

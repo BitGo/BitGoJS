@@ -50,7 +50,8 @@
     "ethereumjs-util": "7.1.5",
     "keccak": "^3.0.2",
     "lodash": "^4.17.14",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "superagent": "^3.8.3"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.1.2-rc.15",

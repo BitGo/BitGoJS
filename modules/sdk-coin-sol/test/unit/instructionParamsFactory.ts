@@ -6,7 +6,7 @@ import { InstructionParams } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
-import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction } from '@solana/spl-token';
 
 describe('Instruction Parser Tests: ', function () {
   describe('Succeed ', function () {
@@ -108,13 +108,11 @@ describe('Instruction Parser Tests: ', function () {
           sourceAddress: sourceUSDC,
         },
       };
-      const transferInstruction = Token.createTransferCheckedInstruction(
-        TOKEN_PROGRAM_ID,
+      const transferInstruction = createTransferCheckedInstruction(
         new PublicKey(sourceUSDC),
         new PublicKey(mintUSDC),
         new PublicKey(nonceAccount),
         new PublicKey(owner),
-        [],
         amount,
         decimals
       );
@@ -158,13 +156,11 @@ describe('Instruction Parser Tests: ', function () {
 
       ataParams.forEach((param) => {
         ataInstructions.push(
-          Token.createAssociatedTokenAccountInstruction(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            new PublicKey(param.mintAddress),
+          createAssociatedTokenAccountInstruction(
+            new PublicKey(param.payerAddress),
             new PublicKey(param.ataAddress),
             new PublicKey(param.ownerAddress),
-            new PublicKey(param.payerAddress)
+            new PublicKey(param.mintAddress)
           )
         );
 

@@ -619,4 +619,54 @@ describe('Avalanche C-Chain', function () {
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
     });
   });
+
+  // TODO(BG-56136): move to modules/bitgo/test/v2/integration/coins/avaxc.ts
+  describe('Recovery', function () {
+    it('should error when the backup key is unfunded (cannot pay gas)', async function () {
+      await tavaxCoin
+        .recover({
+          userKey:
+            '{"iv":"ntd9/urFjryqxd4rzREB2Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"LTqZ47b1BwE=","ct":"JSbJIBTkHoKR3L\n' +
+            'oT2QTkDx3X1OBIPxiSL6WoMiIrKA+aKTgmutXnWC2GTEIyfbLeajw6D2UZ+U0Y8viv7mgITgSz1\n' +
+            'u9Gdj97Btm8WsZ0e+KmsbdB/gYucCZoPUZCFqG4bEkdfZ8ZvDI9XvVv4xPzNb/AoSijosA="}',
+          backupKey:
+            '{"iv":"Axs+G9gsZ5PENUHx1YY5cg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"awQshUvFi7Q=","ct":"sWQ0bHmruUTI8C\n' +
+            'lwGneHObdNfo3WQ/mrz3p84Fo07HgizvgLd+E3wFA3Z1LRbHozRjfstV/qJMRqrFvEgKOcG+SKd\n' +
+            'gx6BbmXWfKhFHEerSYluBgU5OrXMfOkbExnMywEWrCKEvoNL+wyNHoRaMNbbDogo36J8PE="}',
+          walletContractAddress: '0x22c1ab44371985e49294d1a40e92c8ad00f5be8e',
+          // walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+          walletPassphrase: 'Ghghjkg!455544llll',
+          recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        })
+        .should.be.rejectedWith(
+          'Backup key address 0xdfd95d01fc9c2cb744e2852256385bbe6d87b72b has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some AVAX to this address then retry.'
+        );
+    });
+
+    it('should build tx for non-BitGo recovery', async function () {
+      const recovery = await tavaxCoin.recover({
+        userKey:
+          '{"iv":"o27pBl7IP+ibe39xYg/cXg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+          ':"ccm","adata":"","cipher":"aes","salt":"992R6padf2I=","ct":"6wkn1PdwtWcCWR\n' +
+          'VdOdaiGMCMS5RhurGI9eF4tdgzaMzOpgw56eYRmKTzldj5Vh1Cnz6RoqFlVSfnwR+tFjOyqDn3O\n' +
+          '8K3NUD5YlMGoCdfvcrCbPF3tCdKl2DyoLv+ZWPo5sKVjjgUOZgI7pn7iBtXRDvqaWylawY="}',
+        backupKey:
+          '{"iv":"mwj9ld8svgRBsWS+5NZQqA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+          ':"ccm","adata":"","cipher":"aes","salt":"XuMxbqa/yNg=","ct":"lqLnjsVSBR/4ue\n' +
+          'ztYahAvEEV+ltDXLoyIEMCmFMycba+3mPtiAM8HrF/84AzJOjwKyvK1pm+CFuuWCTXssAQxRCuc\n' +
+          'HujrBvrKunY4hfIJHJsyBr+l1PNNSUB/aYL1aW/n7tdvwL8fOCNqFqEPBCbxXoOlSgCAUw="}',
+        walletContractAddress: '0xe0b1fe098050f2745b450de419b5cafc7e826699',
+        walletPassphrase: 'Ghghjkg!455544llll',
+        recoveryDestination: '0xb5bff3a87cd71d2ed96ce41d05e6206600802854',
+        gasPrice: '30000000000',
+      });
+
+      // id and tx will always be different because of expireTime
+      recovery.should.not.be.undefined();
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+  });
 });

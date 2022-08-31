@@ -1,9 +1,10 @@
 /**
  * @prettier
  */
-import { AvaxC, TransactionPrebuild } from './avaxc';
+import { AvaxC } from './avaxc';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { AvaxcTokenConfig, coins, tokens } from '@bitgo/statics';
+import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
 
 export { AvaxcTokenConfig };
 

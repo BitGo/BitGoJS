@@ -245,11 +245,16 @@ describe('Sol Transfer Builder', () => {
       );
     });
 
-    it('for invalid amount', () => {
+    it('for invalid amount', async () => {
       const invalidAmount = 'randomstring';
       const txBuilder = transferBuilder();
       should(() => txBuilder.send({ address: nonceAccount.pub, amount: invalidAmount })).throwError(
         'Invalid or missing amount, got: ' + invalidAmount
+      );
+
+      const excessiveAmount = '9007199254740992';
+      should(() => txBuilder.send({ address: nonceAccount.pub, amount: excessiveAmount })).throwError(
+        `input amount ${excessiveAmount} exceeds max safe int 9007199254740991`
       );
     });
 

@@ -277,6 +277,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Check whether a coin supports message signing
+   * @returns {boolean}
+   */
+  supportsMessageSigning(): boolean {
+    return false;
+  }
+
+  /**
    * Hook to add additional parameters to the wallet generation
    * @param walletParams
    * @param keychains

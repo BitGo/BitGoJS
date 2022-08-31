@@ -31,7 +31,7 @@ import {
 } from '@bitgo/sdk-core';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
 
@@ -385,11 +385,6 @@ export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> |
  * @param ownerAddress The owner of the associated token account
  * */
 export async function getAssociatedTokenAccountAddress(tokenAddress: string, ownerAddress: string): Promise<string> {
-  const ataAddress = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    new PublicKey(tokenAddress),
-    new PublicKey(ownerAddress)
-  );
+  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenAddress), new PublicKey(ownerAddress));
   return ataAddress.toString();
 }

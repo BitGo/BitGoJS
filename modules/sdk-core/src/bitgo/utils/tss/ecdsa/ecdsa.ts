@@ -1,14 +1,13 @@
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
+import * as openpgp from 'openpgp';
 import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
-import * as openpgp from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import * as crypto from 'crypto';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
-import { TxRequest } from '../baseTypes';
-import { IRequestTracer } from '../../../../api';
+import { RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
 import { getBitgoGpgPubKey } from '../../opengpgUtils';
@@ -264,17 +263,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   }
 
   /**
-   * Signs the transaction associated to the transaction request.
+   * Gets signing key, txRequestResolved and txRequestId
    * @param {string | TxRequest} params.txRequest - transaction request object or id
    * @param {string} params.prv - decrypted private key
    * @param { string} params.reqId - request id
-   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   * @returns {Promise<ECDSASigningRequestBaseResult>}
    */
-  async signTxRequest(params: {
-    txRequest: string | TxRequest;
-    prv: string;
-    reqId: IRequestTracer;
-  }): Promise<TxRequest> {
+  private async signRequestBase(params: TSSParams, requestType: RequestType): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
@@ -325,7 +320,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userGammaAndMuShares.gShare as ECDSA.GShare
     );
 
-    const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+    let signablePayload;
+
+    if (requestType === RequestType.tx) {
+      signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+    } else if (requestType === RequestType.message) {
+      signablePayload = Buffer.from(txRequestResolved.unsignedMessages![0].message, 'hex');
+    }
 
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
@@ -342,5 +343,27 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userOmicronAndDeltaShare.dShare
     );
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+  }
+
+  /**
+   * Signs the transaction associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequest(params: TSSParams): Promise<TxRequest> {
+    return this.signRequestBase(params, RequestType.tx);
+  }
+
+  /**
+   * Signs the message associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequestForMessage(params: TSSParams): Promise<TxRequest> {
+    return this.signRequestBase(params, RequestType.message);
   }
 }
