@@ -23,7 +23,7 @@ import {
   WalletInit,
 } from './iface';
 import { coins, SolCoin } from '@bitgo/statics';
-import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createTransferCheckedInstruction, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 
 /**
  * Construct Solana instructions from instructions params
@@ -110,7 +110,7 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
   const transferInstruction = SystemProgram.transfer({
     fromPubkey: new PublicKey(fromAddress),
     toPubkey: new PublicKey(toAddress),
-    lamports: new BigNumber(amount).toNumber(),
+    lamports: parseInt(amount, 10),
   });
   return [transferInstruction];
 }
@@ -132,14 +132,12 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   assert(sourceAddress, 'Missing ata address');
   const token = coins.get(data.params.tokenName);
   assert(token instanceof SolCoin);
-  const transferInstruction = Token.createTransferCheckedInstruction(
-    TOKEN_PROGRAM_ID,
+  const transferInstruction = createTransferCheckedInstruction(
     new PublicKey(sourceAddress),
     new PublicKey(token.tokenAddress),
     new PublicKey(toAddress),
     new PublicKey(fromAddress),
-    [],
-    new BigNumber(amount).toNumber(),
+    BigInt(amount),
     token.decimalPlaces
   );
   return [transferInstruction];
@@ -267,13 +265,11 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
   assert(ownerAddress, 'Missing ownerAddress param');
   assert(payerAddress, 'Missing payerAddress param');
 
-  const associatedTokenAccountInstruction = Token.createAssociatedTokenAccountInstruction(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    new PublicKey(mintAddress),
+  const associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
+    new PublicKey(payerAddress),
     new PublicKey(ataAddress),
     new PublicKey(ownerAddress),
-    new PublicKey(payerAddress)
+    new PublicKey(mintAddress)
   );
   return [associatedTokenAccountInstruction];
 }

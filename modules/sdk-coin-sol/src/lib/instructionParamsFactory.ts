@@ -6,6 +6,7 @@ import {
   SystemInstruction,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { decodeTransferCheckedInstruction } from '@solana/spl-token';
 
 import { TransactionType, NotSupported } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
@@ -22,8 +23,6 @@ import {
   TokenTransfer,
 } from './iface';
 import { getInstructionType } from './utils';
-import { decodeTransferCheckedInstruction } from './tokenEncodeDecode';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import assert from 'assert';
 import { coins, SolCoin } from '@bitgo/statics';
 
@@ -128,7 +127,7 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
         instructionData.push(transfer);
         break;
       case ValidInstructionTypesEnum.TokenTransfer:
-        const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_PROGRAM_ID);
+        const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction);
         const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString());
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,

@@ -4,7 +4,7 @@ import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
 
 describe('Instruction Builder Tests: ', function () {
@@ -102,13 +102,11 @@ describe('Instruction Builder Tests: ', function () {
 
       const result = solInstructionFactory(createATAParams);
       should.deepEqual(result, [
-        Token.createAssociatedTokenAccountInstruction(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-          TOKEN_PROGRAM_ID,
-          new PublicKey(mintAddress),
+        createAssociatedTokenAccountInstruction(
+          new PublicKey(payerAddress),
           new PublicKey(ataAddress),
           new PublicKey(ownerAddress),
-          new PublicKey(payerAddress)
+          new PublicKey(mintAddress)
         ),
       ]);
     });
@@ -134,14 +132,12 @@ describe('Instruction Builder Tests: ', function () {
 
       const result = solInstructionFactory(transferParams);
       should.deepEqual(result, [
-        Token.createTransferCheckedInstruction(
-          TOKEN_PROGRAM_ID,
+        createTransferCheckedInstruction(
           new PublicKey(sourceAddress),
           new PublicKey(mintAddress),
           new PublicKey(toAddress),
           new PublicKey(fromAddress),
-          [],
-          new BigNumber(amount).toNumber(),
+          BigInt(amount),
           9
         ),
       ]);
