@@ -29,7 +29,7 @@ export async function decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequ
   };
 }
 
-export async function fetchLnurlPayInvoice(params: LnurlPayParams, coin: string): Promise<string> {
+export async function fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
   const { callback, milliSatAmount, metadata } = params;
   const { pr: invoice } = callback.includes('?')
     ? (await request.get(callback + `&amount=${milliSatAmount}`)).body

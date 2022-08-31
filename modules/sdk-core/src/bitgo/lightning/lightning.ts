@@ -118,11 +118,11 @@ export class Lightning implements ILightning {
     });
   }
 
-  public async decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest> {
-    return await decodeLnurlPay(lnurl);
+  public decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest> {
+    return decodeLnurlPay(lnurl);
   }
 
-  public async fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
-    return await fetchLnurlPayInvoice(params, this.wallet.coin());
+  public fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
+    return fetchLnurlPayInvoice(params);
   }
 }
