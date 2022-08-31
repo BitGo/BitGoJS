@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@1.2.0-rc.0...@bitgo/sdk-coin-avaxc@2.0.0-rc.0) (2022-08-31)
+
+
+### Features
+
+* **sdk-coin-avaxc:** add recover method for wrw ([40fb9a9](https://github.com/BitGo/BitGoJS/commit/40fb9a9b7a74ee043ee5d5a2618ecae065f8758b))
+
+
+### BREAKING CHANGES
+
+* **sdk-coin-avaxc:** The interface TransactionPrebuild is no longer exported
+from package. It's defined in @bitgo/sdk-coin-eth.
+
+
+
+
+
 # [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@1.1.2-rc.14...@bitgo/sdk-coin-avaxc@1.2.0-rc.0) (2022-08-30)
 
 

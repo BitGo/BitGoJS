@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.16...@bitgo/sdk-coin-sol@2.0.0-rc.17) (2022-08-31)
+
+
+### Bug Fixes
+
+* add max transfer amount limits for sol transactions ([5fe7dd3](https://github.com/BitGo/BitGoJS/commit/5fe7dd384511586f27f7541edc4f0a70407d8175))
+
+
+
+
+
 # [2.0.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.15...@bitgo/sdk-coin-sol@2.0.0-rc.16) (2022-08-30)
 
 

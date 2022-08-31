@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.11...@bitgo/sdk-core@2.0.0-rc.12) (2022-08-31)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix the signatures of lnurl pay methods ([6ffc17a](https://github.com/BitGo/BitGoJS/commit/6ffc17a025b9a79b33a334abdcbaa0f0d06e8a49))
+
+
+### Features
+
+* adding support for message signing ([01c6303](https://github.com/BitGo/BitGoJS/commit/01c63032d067e6ba5aef78804ea747b5e62709fe))
+* **sdk-coin-avaxc:** add recover method for wrw ([40fb9a9](https://github.com/BitGo/BitGoJS/commit/40fb9a9b7a74ee043ee5d5a2618ecae065f8758b))
+
+
+### BREAKING CHANGES
+
+* **sdk-coin-avaxc:** The interface TransactionPrebuild is no longer exported
+from package. It's defined in @bitgo/sdk-coin-eth.
+
+
+
+
+
 # [2.0.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.10...@bitgo/sdk-core@2.0.0-rc.11) (2022-08-30)
 
 

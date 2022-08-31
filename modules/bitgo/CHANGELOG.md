@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.18](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.17...bitgo@14.3.0-rc.18) (2022-08-31)
+
+
+### Features
+
+* adding support for message signing ([01c6303](https://github.com/BitGo/BitGoJS/commit/01c63032d067e6ba5aef78804ea747b5e62709fe))
+
+
+
+
+
 # [14.3.0-rc.17](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.16...bitgo@14.3.0-rc.17) (2022-08-30)
 
 

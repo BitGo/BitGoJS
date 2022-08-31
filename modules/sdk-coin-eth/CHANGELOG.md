@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.0.0-rc.11...@bitgo/sdk-coin-eth@2.0.0-rc.12) (2022-08-31)
+
+
+### Features
+
+* adding support for message signing ([01c6303](https://github.com/BitGo/BitGoJS/commit/01c63032d067e6ba5aef78804ea747b5e62709fe))
+
+
+
+
+
 # [2.0.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.0.0-rc.10...@bitgo/sdk-coin-eth@2.0.0-rc.11) (2022-08-30)
 
 
