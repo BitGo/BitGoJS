@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import {
   IBaseCoin,
+  SignedMessage,
   SignedTransaction,
   SignedTransactionRequest,
   TransactionPrebuild,
@@ -66,6 +67,7 @@ import {
   UpdateAddressOptions,
   WalletCoinSpecific,
   WalletData,
+  WalletSignMessageOptions,
   WalletSignTransactionOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
@@ -1555,6 +1557,24 @@ export class Wallet implements IWallet {
   }
 
   /**
+   *  Sign a message using TSS (not implemented for hot wallets)
+   * @param params
+   * - messagePrebuild
+   * - [keychain / key] (object) or prv (string)
+   * - walletPassphrase
+   */
+  async signMessage(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
+    if (!this.baseCoin.supportsMessageSigning()) {
+      throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
+    }
+    const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+    return this.signMessageTss(presign);
+  }
+
+  /**
    * Get the user private key from either a derivation or an encrypted keychain
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
@@ -2428,7 +2448,6 @@ export class Wallet implements IWallet {
     if (!this.baseCoin.supportsLightning()) {
       throw new Error(`Lightning not supported for ${this.coin()}`);
     }
-
     return new Lightning(this.bitgo, this);
   }
 
@@ -2533,6 +2552,38 @@ export class Wallet implements IWallet {
       };
     } catch (e) {
       throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a message from a TSS wallet.
+   *
+   * @param params signing options
+   */
+  private async signMessageTss(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
+    if (!params.messagePrebuild) {
+      throw new Error('messagePrebuild required to sign message with TSS');
+    }
+
+    if (!params.messagePrebuild.txRequestId) {
+      throw new Error('txRequestId required to sign message with TSS');
+    }
+
+    if (!params.prv) {
+      throw new Error('prv required to sign message with TSS');
+    }
+
+    try {
+      const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
+        txRequest: params.messagePrebuild.txRequestId,
+        prv: params.prv,
+        reqId: params.reqId || new RequestTracer(),
+      });
+      return {
+        txRequestId: signedMessageRequest.txRequestId,
+      };
+    } catch (e) {
+      throw new Error('failed to sign message ' + e);
     }
   }
 

@@ -6,7 +6,6 @@ import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
 import Eddsa from '../../../../account-lib/mpc/tss';
-import { IRequestTracer } from '../../../../api';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { encryptText, getBitgoGpgPubKey, createShareProof } from '../../opengpgUtils';
 import {
@@ -18,7 +17,7 @@ import {
   sendUserToBitgoGShare,
   SigningMaterial,
 } from '../../../tss';
-import { TxRequest } from '../baseTypes';
+import { TSSParams, TxRequest } from '../baseTypes';
 import { KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -268,11 +267,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: {
-    txRequest: string | TxRequest;
-    prv: string;
-    reqId: IRequestTracer;
-  }): Promise<TxRequest> {
+  async signTxRequest(params: TSSParams): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 

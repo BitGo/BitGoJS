@@ -9,7 +9,7 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet, ECDSAUtils } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
@@ -1428,7 +1428,20 @@ describe('V2 Wallet:', function () {
       coinSpecific: {},
       multisigType: 'tss',
     };
+
+    const ethWalletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coin: 'teth',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      multisigType: 'tss',
+    };
     const tssWallet = new Wallet(bitgo, tsol, walletData);
+
+    const tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
     const custodialTssWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
 
     const txRequest: TxRequest = {
@@ -1711,6 +1724,68 @@ describe('V2 Wallet:', function () {
           txPrebuild,
           prv: 'sercretKey',
         }).should.be.rejectedWith('txRequestId required to sign transactions with TSS');
+      });
+    });
+
+    describe('Message Signing', function () {
+      const txRequestForMessageSigning: TxRequest = {
+        txRequestId: 'id',
+        transactions: [],
+        intent: {
+          intentType: 'payment',
+        },
+        date: new Date().toISOString(),
+        latest: true,
+        state: 'pendingUserSignature',
+        userId: 'userId',
+        walletType: 'hot',
+        policiesChecked: false,
+        version: 1,
+        walletId: 'walletId',
+        unsignedTxs: [],
+        unsignedMessages: [],
+      };
+      let signTxRequestForMessage;
+
+      beforeEach(async function () {
+        signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
+        signTxRequestForMessage.resolves(txRequestForMessageSigning);
+        signTxRequestForMessage.calledOnceWithExactly({ txRequest: txRequestForMessageSigning, prv: 'secretKey', reqId });
+      });
+
+      it('should throw error for unsupported coins', async function () {
+
+        await tssWallet.signMessage({
+          reqId,
+          messagePrebuild: { message: 'test' },
+          prv: 'secretKey',
+        }).should.be.rejectedWith('Message signing not supported for Testnet Solana');
+      });
+
+      it('should sign message', async function () {
+
+        const signMessage = await tssEthWallet.signMessage({
+          reqId,
+          messagePrebuild: { message: 'test', txRequestId: 'id' },
+          prv: 'secretKey',
+        });
+        signMessage.should.deepEqual({ txRequestId: 'id' } );
+      });
+
+      it('should fail to sign message without txRequestId', async function() {
+        await tssEthWallet.signMessage({
+          reqId,
+          messagePrebuild: { message: '' },
+          prv: 'secretKey',
+        }).should.be.rejectedWith('txRequestId required to sign message with TSS');
+      });
+
+      it('should fail to sign message with empty prv', async function () {
+        await tssEthWallet.signMessage({
+          reqId,
+          messagePrebuild: { message: 'test', txRequestId: 'id' },
+          prv: '',
+        }).should.be.rejectedWith('prv required to sign message with TSS');
       });
     });
 

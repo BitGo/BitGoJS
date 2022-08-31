@@ -230,14 +230,21 @@ export interface KeychainsTriplet {
   bitgoKeychain: Keychain;
 }
 
-export interface TransactionPrebuild {
-  txBase64?: string;
-  txHex?: string;
-  txInfo?: unknown;
+interface BaseSignable {
   wallet?: IWallet;
   buildParams?: any;
   consolidateId?: string;
   txRequestId?: string;
+}
+
+export interface TransactionPrebuild extends BaseSignable {
+  txBase64?: string;
+  txHex?: string;
+  txInfo?: unknown;
+}
+
+export interface MessagePrebuild extends BaseSignable {
+  message: string;
 }
 
 export interface AddressCoinSpecific {
@@ -294,6 +301,8 @@ export type SignedTransaction =
   | HalfSignedUtxoTransaction
   | FullySignedTransaction
   | SignedTransactionRequest;
+
+export type SignedMessage = SignedTransactionRequest | string;
 
 export interface RecoverWalletTokenOptions {
   tokenContractAddress: string;
@@ -362,6 +371,7 @@ export interface IBaseCoin {
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
+  supportsMessageSigning(): boolean;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;
