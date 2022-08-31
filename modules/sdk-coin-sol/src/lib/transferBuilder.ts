@@ -52,6 +52,9 @@ export class TransferBuilder extends TransactionBuilder {
     if (!amount || !isValidAmount(amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + amount);
     }
+    if (BigInt(amount) > BigInt(Number.MAX_SAFE_INTEGER)) {
+      throw new BuildTransactionError(`input amount ${amount} exceeds max safe int ${Number.MAX_SAFE_INTEGER}`);
+    }
 
     this._sendParams.push({ address, amount });
 

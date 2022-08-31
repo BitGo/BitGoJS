@@ -13,6 +13,8 @@ export interface SendParams {
   tokenName?: string;
 }
 
+const UNSIGNED_BIGINT_MAX = BigInt('18446744073709551615');
+
 export class TransferBuilderV2 extends TransactionBuilder {
   private _sendParams: SendParams[] = [];
 
@@ -67,6 +69,13 @@ export class TransferBuilderV2 extends TransactionBuilder {
     validateAddress(sendParams.address, 'address');
     if (!sendParams.amount || !isValidAmount(sendParams.amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + sendParams.amount);
+    }
+    if (sendParams.tokenName && BigInt(sendParams.amount) > UNSIGNED_BIGINT_MAX) {
+      throw new BuildTransactionError(`input amount ${sendParams.amount} exceeds big int limit ${UNSIGNED_BIGINT_MAX}`);
+    } else if (!sendParams.tokenName && BigInt(sendParams.amount) > BigInt(Number.MAX_SAFE_INTEGER)) {
+      throw new BuildTransactionError(
+        `input amount ${sendParams.amount} exceeds max safe int ${Number.MAX_SAFE_INTEGER}`
+      );
     }
 
     this._sendParams.push(sendParams);
