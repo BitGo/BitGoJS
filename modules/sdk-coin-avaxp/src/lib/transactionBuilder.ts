@@ -12,53 +12,138 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { DecodedUtxoObj } from './iface';
-import { AddDelegatorTx, Tx } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
+import { SECPTransferInput, TransferableInput, Tx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   public _signer: KeyPair[] = [];
   protected recoverSigner = false;
 
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig);
+  }
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   * @returns itself
+   */
+  initBuilder(tx: Tx): this {
+    const baseTx = tx.getUnsignedTx().getTransaction();
+    if (
+      baseTx.getNetworkID() !== this._transaction._networkID ||
+      !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
+    ) {
+      throw new Error('Network or blockchain is not equals');
+    }
+    this._transaction._memo = baseTx.getMemo();
+    this._transaction.setTransaction(tx);
+    return this;
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string): Transaction {
+    const tx = new Tx();
+    tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
+    this.initBuilder(tx);
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildAvaxpTransaction();
+    this.transaction.setTransactionType(this.transactionType);
+    if (this.hasSigner) {
+      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+    }
+    return this.transaction;
+  }
+
+  /**
+   * Builds the avaxp transaction. transaction field is changed.
+   */
+  protected abstract buildAvaxpTransaction(): void;
+
+  // region utxo engine
+  /**
+   * Inputs can be controlled but outputs get reordered in transactions
+   * In order to make sure that the mapping is always correct we create an addressIndx which matches to the appropiate
+   * signatureIdx
+   * @param {TransferableInput[]} utxos as transaction ins.
+   * @protected
+   * @returns the list of UTXOs
+   */
+  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
+    return utxos.map((utxo) => {
+      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
+
+      // use the same addressesIndex as existing ones in the inputs
+      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
+
+      return {
+        outputID: SECP256K1_Transfer_Output,
+        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
+        txid: utils.cb58Encode(utxo.getTxID()),
+        amount: secpInput.getAmount().toString(),
+        threshold: this.transaction._threshold,
+        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
+        addressesIndex,
+      };
+    });
+  }
+  // endregion
+  // region Getters and Setters
   /**
    * When using recovery key must be set here
    * TODO: STLX-17317 recovery key signing
-   * @param recoverSigner
+   * @param {boolean} true if it's recovery signer, default true.
    */
   public recoverMode(recoverSigner = true): this {
     this.recoverSigner = recoverSigner;
     return this;
   }
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig);
-  }
-
+  /**
+   * Threshold is an int that names the number of unique signatures required to spend the output.
+   * Must be less than or equal to the length of Addresses.
+   * @param {number}
+   */
   threshold(value: number): this {
     this.validateThreshold(value);
     this._transaction._threshold = value;
     return this;
   }
 
+  /**
+   * Locktime is a long that contains the unix timestamp that this output can be spent after.
+   * The unix timestamp is specific to the second.
+   * @param value
+   */
   locktime(value: string | number): this {
     this.validateLocktime(new BN(value));
     this._transaction._locktime = new BN(value);
     return this;
   }
 
+  /**
+   * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output.
+   * @param {string | stirng[]} senderPubKey
+   */
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
     this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
     return this;
   }
 
-  rewardAddresses(address: string | string[]): this {
-    const rewardAddresses = address instanceof Array ? address : [address];
-    this._transaction._rewardAddresses = rewardAddresses.map(utils.parseAddress);
-    return this;
-  }
-
+  /**
+   * List of UTXO required as inputs.
+   * A UTXO is a standalone representation of a transaction output.
+   *
+   * @param {DecodedUtxoObj[]} list of UTXOS
+   */
   utxos(value: DecodedUtxoObj[]): this {
     this.validateUtxos(value);
     this._transaction._utxos = value;
@@ -76,71 +161,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Initialize the transaction builder fields using the decoded transaction data
-   *
-   * @param {Transaction} tx the transaction data
+   * Getter for know if build should sign
    */
-  initBuilder(tx: Tx): this {
-    const baseTx = tx.getUnsignedTx().getTransaction();
-    if (
-      baseTx.getNetworkID() !== this._transaction._networkID ||
-      !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
-    ) {
-      throw new Error('Network or blockchain is not equals');
-    }
-    this._transaction._memo = baseTx.getMemo();
-
-    // good assumption: addresses that unlock the outputs, will also be used to sign the transaction
-    // so pick the first utxo as the from address
-    const utxo = baseTx.getOuts()[0];
-
-    if (!utxo.getAssetID().equals(this._transaction._assetId)) {
-      throw new Error('AssetID are not equals');
-    }
-    const secpOut = utxo.getOutput();
-    this._transaction._locktime = secpOut.getLocktime();
-    this._transaction._threshold = secpOut.getThreshold();
-    this._transaction._fromAddresses = secpOut.getAddresses();
-    this._transaction._rewardAddresses = (baseTx as AddDelegatorTx).getRewardOwners().getOutput().getAddresses();
-    this._transaction.setTransaction(tx);
-    return this;
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Tx();
-    tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
-    this.initBuilder(tx);
-    return this.transaction;
-  }
-
   get hasSigner(): boolean {
     return this._signer !== undefined && this._signer.length > 0;
   }
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.buildAvaxpTransaction();
-    this.transaction.setTransactionType(this.transactionType);
-    if (this.hasSigner) {
-      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
-    }
-    return this.transaction;
-  }
 
-  /**
-   * Builds the avaxp transaction. transaction field is changed.
-   */
-  protected abstract buildAvaxpTransaction(): void;
-
-  // region Getters and Setters
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
   }
+
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
 
+  /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): BaseTransaction {
     this._signer.push(new KeyPair({ prv: key }));
     return this.transaction;
@@ -149,7 +185,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected abstract get transactionType(): TransactionType;
 
   // endregion
-
   // region Validators
 
   /**
@@ -208,6 +243,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Check the list of UTXOS is empty and check each UTXO.
+   * @param values
+   */
   validateUtxos(values: DecodedUtxoObj[]): void {
     if (values.length === 0) {
       throw new BuildTransactionError("Utxos can't be empty array");
@@ -215,10 +254,34 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     values.forEach(this.validateUtxo);
   }
 
+  /**
+   * Check the UTXO has expected fields.
+   * @param UTXO
+   */
   validateUtxo(value: DecodedUtxoObj): void {
     ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
       if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
     });
+  }
+
+  /**
+   * Check the amount is positive.
+   * @param amount
+   */
+  validateAmount(amount: BN): void {
+    if (amount.lten(0)) {
+      throw new BuildTransactionError('Amount must be greater than 0');
+    }
+  }
+
+  /**
+   * Check the buffer has 32 byte long.
+   * @param chainID
+   */
+  validateChainId(chainID: BufferAvax): void {
+    if (chainID.length != 32) {
+      throw new BuildTransactionError('Chain id are 32 byte size');
+    }
   }
 
   // endregion

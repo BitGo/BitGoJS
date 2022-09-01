@@ -48,3 +48,10 @@ export type DecodedUtxoObj = {
   addresses: string[];
   addressesIndex?: number[];
 };
+
+/**
+ * TypeId value for SECP256K1 Transfer Output
+ *
+ * {@link https://docs.avax.network/specs/platform-transaction-serialization#secp256k1-transfer-output-example }
+ */
+export const SECP256K1_Transfer_Output = 7;
