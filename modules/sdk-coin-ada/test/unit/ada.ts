@@ -9,7 +9,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { rawTx, enterpriseAccounts as accounts, privateKeys, publicKeys } from '../resources';
 import * as _ from 'lodash';
-import { Ada, KeyPair, Tada, Transaction } from '../../src';
+import { Ada, KeyPair, Tada } from '../../src';
 
 describe('ADA', function () {
   const coinName = 'ada';
@@ -201,40 +201,7 @@ describe('ADA', function () {
 
       await basecoin
         .verifyTransaction({ txParams, txPrebuild, verification })
-        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-
-    it('should fail verify transactions when total amount does not match with expected total amount field', async () => {
-      const stub = sinon.stub(Transaction.prototype, 'explainTransaction');
-      const txPrebuild = newTxPrebuild();
-      const txParams = newTxParams();
-      const verification = {};
-      stub.returns({
-        id: '1d0ac4a6496847341ddfd5087db6a687157cc6cc8ec9f999e72fbbc581a34523',
-        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
-        outputAmount: '90000',
-        changeAmount: '0',
-        changeOutputs: [],
-        outputs: [
-          {
-            address:
-              'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey',
-            amount: '5000000',
-          },
-          {
-            address: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
-            amount: '248329150',
-          },
-        ],
-        fee: {
-          fee: '',
-        },
-      });
-
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild, verification })
-        .should.be.rejectedWith('Tx total amount does not match with expected total amount field');
-      stub.restore();
+        .should.be.rejectedWith('cannot find recipient in expected output');
     });
 
     it('should verify when input `recipients` is absent', async function () {
