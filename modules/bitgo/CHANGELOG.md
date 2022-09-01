@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.19](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.18...bitgo@14.3.0-rc.19) (2022-09-01)
+
+
+### Features
+
+* **sdk-coin-ada:** create wallet script ([6263411](https://github.com/BitGo/BitGoJS/commit/626341127af23d7033261eed16a61b615fbc70d4))
+
+
+
+
+
 # [14.3.0-rc.18](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.17...bitgo@14.3.0-rc.18) (2022-08-31)
 
 
