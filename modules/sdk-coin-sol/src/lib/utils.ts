@@ -132,7 +132,7 @@ export function isValidMemo(memo: string): boolean {
 export function isValidRawTransaction(rawTransaction: string): boolean {
   try {
     const tx = SolTransaction.from(Buffer.from(rawTransaction, 'base64'));
-    tx.serialize({ requireAllSignatures: false });
+    tx.serialize({ requireAllSignatures: false, verifySignatures: false });
     return true;
   } catch (e) {
     return false;
