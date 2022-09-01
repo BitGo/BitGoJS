@@ -7,7 +7,7 @@ Included in the SDK are examples for how to use the API to manage your multi-sig
 
 Please email us at support@bitgo.com if you have questions or comments about this API.
 
-[![Known Vulnerabilities](https://snyk.io/test/npm/bitgo/badge.svg)](https://snyk.io/test/npm/bitgo) [![Build Status](https://cloud.drone.io/api/badges/BitGo/BitGoJS/status.svg)](https://cloud.drone.io/BitGo/BitGoJS)
+[![Known Vulnerabilities](https://snyk.io/test/github/BitGo/BitGoJS/badge.svg)](https://snyk.io/test/github/BitGo/BitGoJS) [![Build Status](https://cloud.drone.io/api/badges/BitGo/BitGoJS/status.svg)](https://cloud.drone.io/BitGo/BitGoJS)
 
 # Installation
 
