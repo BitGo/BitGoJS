@@ -66,10 +66,10 @@ describe('Sol Transaction', () => {
       const txJson = tx.toJson();
       txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData']);
       txJson.id?.should.equal(
-        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy'
+        'TPVcc18CYxPnM3eRgQhdb6V6ZLa34Dv3dU7MtvKPuy5ZPKLM1uZPFFEmF2m184PTWKRZ1Uq6NKFZWwr2krKk63f'
       );
       tx.signature.should.deepEqual([
-        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
+        'TPVcc18CYxPnM3eRgQhdb6V6ZLa34Dv3dU7MtvKPuy5ZPKLM1uZPFFEmF2m184PTWKRZ1Uq6NKFZWwr2krKk63f',
       ]);
       txJson.feePayer?.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
@@ -307,7 +307,10 @@ describe('Sol Transaction', () => {
         },
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -361,7 +364,10 @@ describe('Sol Transaction', () => {
         },
         memo: 'memo text',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -496,7 +502,10 @@ describe('Sol Transaction', () => {
         },
         memo: 'memo text',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -872,7 +881,10 @@ describe('Sol Transaction', () => {
         },
         memo: 'memo text',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
   });

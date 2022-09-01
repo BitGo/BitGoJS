@@ -140,20 +140,20 @@ describe('SOL util library', function () {
 
   describe('verifySignature', function () {
     it('should succeed for valid signature in a unsigned tx', function () {
-      const signature = '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT';
+      const signature = '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf';
       Utils.verifySignature(
-        testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
+        testData.TOKEN_TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.authAccount.pub
+        testData.associatedTokenAccounts.accounts[0].pub
       ).should.equal(true);
     });
 
     it('should succeed for valid signature in a signed tx', function () {
-      const signature = '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT';
+      const signature = '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf';
       Utils.verifySignature(
-        testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
+        testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.authAccount.pub
+        testData.associatedTokenAccounts.accounts[0].pub
       ).should.equal(true);
     });
 

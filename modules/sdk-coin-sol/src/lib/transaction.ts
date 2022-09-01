@@ -367,6 +367,17 @@ export class Transaction extends BaseTransaction {
         default:
           continue;
       }
+
+      // After deserializing a transaction, durable nonce details are populated in the nonceInfo field
+      if (!durableNonce && this._solTransaction.nonceInfo) {
+        const nonceAdvanceInstruction = SystemInstruction.decodeNonceAdvance(
+          this._solTransaction.nonceInfo.nonceInstruction
+        );
+        durableNonce = {
+          authWalletAddress: nonceAdvanceInstruction.authorizedPubkey.toString(),
+          walletNonceAddress: nonceAdvanceInstruction.noncePubkey.toString(),
+        };
+      }
     }
 
     return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce);
