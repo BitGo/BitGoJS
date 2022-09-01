@@ -82,7 +82,7 @@ describe('ADA', function () {
     localBasecoin = bitgo.coin(coinName);
     localBasecoin.should.be.an.instanceof(Ada);
     localBasecoin.getChain().should.equal(coinName);
-    localBasecoin.getFullName().should.equal('Ada');
+    localBasecoin.getFullName().should.equal('Cardano ADA');
   });
 
   describe('Sign Message', () => {
