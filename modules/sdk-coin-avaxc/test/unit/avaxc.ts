@@ -7,6 +7,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Eth } from '@bitgo/sdk-coin-eth';
+import { AvaxSignTransactionOptions } from '../../src/iface';
 
 nock.enableNetConnect();
 
@@ -622,51 +623,160 @@ describe('Avalanche C-Chain', function () {
 
   // TODO(BG-56136): move to modules/bitgo/test/v2/integration/coins/avaxc.ts
   describe('Recovery', function () {
-    it('should error when the backup key is unfunded (cannot pay gas)', async function () {
-      await tavaxCoin
-        .recover({
-          userKey:
-            '{"iv":"ntd9/urFjryqxd4rzREB2Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-            ':"ccm","adata":"","cipher":"aes","salt":"LTqZ47b1BwE=","ct":"JSbJIBTkHoKR3L\n' +
-            'oT2QTkDx3X1OBIPxiSL6WoMiIrKA+aKTgmutXnWC2GTEIyfbLeajw6D2UZ+U0Y8viv7mgITgSz1\n' +
-            'u9Gdj97Btm8WsZ0e+KmsbdB/gYucCZoPUZCFqG4bEkdfZ8ZvDI9XvVv4xPzNb/AoSijosA="}',
-          backupKey:
-            '{"iv":"Axs+G9gsZ5PENUHx1YY5cg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-            ':"ccm","adata":"","cipher":"aes","salt":"awQshUvFi7Q=","ct":"sWQ0bHmruUTI8C\n' +
-            'lwGneHObdNfo3WQ/mrz3p84Fo07HgizvgLd+E3wFA3Z1LRbHozRjfstV/qJMRqrFvEgKOcG+SKd\n' +
-            'gx6BbmXWfKhFHEerSYluBgU5OrXMfOkbExnMywEWrCKEvoNL+wyNHoRaMNbbDogo36J8PE="}',
-          walletContractAddress: '0x22c1ab44371985e49294d1a40e92c8ad00f5be8e',
-          // walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-          walletPassphrase: 'Ghghjkg!455544llll',
-          recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
-        })
-        .should.be.rejectedWith(
-          'Backup key address 0xdfd95d01fc9c2cb744e2852256385bbe6d87b72b has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some AVAX to this address then retry.'
-        );
-    });
-
-    it('should build tx for non-BitGo recovery', async function () {
-      const recovery = await tavaxCoin.recover({
-        userKey:
-          '{"iv":"o27pBl7IP+ibe39xYg/cXg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-          ':"ccm","adata":"","cipher":"aes","salt":"992R6padf2I=","ct":"6wkn1PdwtWcCWR\n' +
-          'VdOdaiGMCMS5RhurGI9eF4tdgzaMzOpgw56eYRmKTzldj5Vh1Cnz6RoqFlVSfnwR+tFjOyqDn3O\n' +
-          '8K3NUD5YlMGoCdfvcrCbPF3tCdKl2DyoLv+ZWPo5sKVjjgUOZgI7pn7iBtXRDvqaWylawY="}',
-        backupKey:
-          '{"iv":"mwj9ld8svgRBsWS+5NZQqA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-          ':"ccm","adata":"","cipher":"aes","salt":"XuMxbqa/yNg=","ct":"lqLnjsVSBR/4ue\n' +
-          'ztYahAvEEV+ltDXLoyIEMCmFMycba+3mPtiAM8HrF/84AzJOjwKyvK1pm+CFuuWCTXssAQxRCuc\n' +
-          'HujrBvrKunY4hfIJHJsyBr+l1PNNSUB/aYL1aW/n7tdvwL8fOCNqFqEPBCbxXoOlSgCAUw="}',
-        walletContractAddress: '0xe0b1fe098050f2745b450de419b5cafc7e826699',
-        walletPassphrase: 'Ghghjkg!455544llll',
-        recoveryDestination: '0xb5bff3a87cd71d2ed96ce41d05e6206600802854',
-        gasPrice: '30000000000',
+    describe('Non-BitGo', async function () {
+      it('should error when the backup key is unfunded (cannot pay gas)', async function () {
+        await tavaxCoin
+          .recover({
+            userKey:
+              '{"iv":"ntd9/urFjryqxd4rzREB2Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+              ':"ccm","adata":"","cipher":"aes","salt":"LTqZ47b1BwE=","ct":"JSbJIBTkHoKR3L\n' +
+              'oT2QTkDx3X1OBIPxiSL6WoMiIrKA+aKTgmutXnWC2GTEIyfbLeajw6D2UZ+U0Y8viv7mgITgSz1\n' +
+              'u9Gdj97Btm8WsZ0e+KmsbdB/gYucCZoPUZCFqG4bEkdfZ8ZvDI9XvVv4xPzNb/AoSijosA="}',
+            backupKey:
+              '{"iv":"Axs+G9gsZ5PENUHx1YY5cg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+              ':"ccm","adata":"","cipher":"aes","salt":"awQshUvFi7Q=","ct":"sWQ0bHmruUTI8C\n' +
+              'lwGneHObdNfo3WQ/mrz3p84Fo07HgizvgLd+E3wFA3Z1LRbHozRjfstV/qJMRqrFvEgKOcG+SKd\n' +
+              'gx6BbmXWfKhFHEerSYluBgU5OrXMfOkbExnMywEWrCKEvoNL+wyNHoRaMNbbDogo36J8PE="}',
+            walletContractAddress: '0x22c1ab44371985e49294d1a40e92c8ad00f5be8e',
+            // walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+            walletPassphrase: 'Ghghjkg!455544llll',
+            recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+          })
+          .should.be.rejectedWith(
+            'Backup key address 0xdfd95d01fc9c2cb744e2852256385bbe6d87b72b has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some AVAX to this address then retry.'
+          );
       });
 
-      // id and tx will always be different because of expireTime
-      recovery.should.not.be.undefined();
-      recovery.should.have.property('id');
-      recovery.should.have.property('tx');
+      it('should build recovery tx', async function () {
+        const recovery = await tavaxCoin.recover({
+          userKey:
+            '{"iv":"o27pBl7IP+ibe39xYg/cXg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"992R6padf2I=","ct":"6wkn1PdwtWcCWR\n' +
+            'VdOdaiGMCMS5RhurGI9eF4tdgzaMzOpgw56eYRmKTzldj5Vh1Cnz6RoqFlVSfnwR+tFjOyqDn3O\n' +
+            '8K3NUD5YlMGoCdfvcrCbPF3tCdKl2DyoLv+ZWPo5sKVjjgUOZgI7pn7iBtXRDvqaWylawY="}',
+          backupKey:
+            '{"iv":"mwj9ld8svgRBsWS+5NZQqA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"XuMxbqa/yNg=","ct":"lqLnjsVSBR/4ue\n' +
+            'ztYahAvEEV+ltDXLoyIEMCmFMycba+3mPtiAM8HrF/84AzJOjwKyvK1pm+CFuuWCTXssAQxRCuc\n' +
+            'HujrBvrKunY4hfIJHJsyBr+l1PNNSUB/aYL1aW/n7tdvwL8fOCNqFqEPBCbxXoOlSgCAUw="}',
+          walletContractAddress: '0xe0b1fe098050f2745b450de419b5cafc7e826699',
+          walletPassphrase: 'Ghghjkg!455544llll',
+          recoveryDestination: '0xb5bff3a87cd71d2ed96ce41d05e6206600802854',
+          gasPrice: '30000000000',
+        });
+
+        // id and tx will always be different because of expireTime
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
+      });
+    });
+
+    describe('Unsigned Sweep', function () {
+      const walletContractAddress = '0xe0b1fe098050f2745b450de419b5cafc7e826699';
+
+      it('should build unsigned sweep tx', async function () {
+        const recoveryDestination = '0xb5bff3a87cd71d2ed96ce41d05e6206600802854';
+        const recovery = await tavaxCoin.recover({
+          userKey:
+            'xpub661MyMwAqRbcG9dxXhJyHz4GjqTjUCAUMuF4tpCq3LTJf43QXa5sT81QsJ5VMdK8vnAK56gi7qy2cZ2dzYQfy7YP7x4uHQpuRViAv9CNbtS',
+          backupKey:
+            'xpub661MyMwAqRbcGrB1HmLowEQgbVxCPomJHWAkvundcB5gGteXtLLfEKmvSB9dKvRmh3LxpL2yvgqy37Z3ydqvHoViMWa2dwX3huwmmBuip7J',
+          walletContractAddress,
+          walletPassphrase: 'Ghghjkg!455544llll',
+          recoveryDestination,
+          gasPrice: '30000000000',
+        });
+
+        // id and tx will always be different because of expireTime
+        recovery.should.not.be.undefined();
+        recovery.should.have.properties('tx', 'userKey', 'backupKey');
+        recovery.recipients.length.should.equal(1);
+        recovery.recipients[0].address.should.equal(recoveryDestination);
+        recovery.walletContractAddress.should.equal(walletContractAddress);
+      });
+
+      it('should add a second signature', async function () {
+        // const txPrebuild = {
+        //   txHex: '0xf9024e808506fc23ac008307a12094e0b1fe098050f2745b450de419b5cafc7e82669980b9022439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631905fa00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631905fa000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830150f58080',
+        //   userKey: 'xpub661MyMwAqRbcG9dxXhJyHz4GjqTjUCAUMuF4tpCq3LTJf43QXa5sT81QsJ5VMdK8vnAK56gi7qy2cZ2dzYQfy7YP7x4uHQpuRViAv9CNbtS',
+        //   backupKey: 'xpub661MyMwAqRbcGrB1HmLowEQgbVxCPomJHWAkvundcB5gGteXtLLfEKmvSB9dKvRmh3LxpL2yvgqy37Z3ydqvHoViMWa2dwX3huwmmBuip7J',
+        //   coin: 'tavaxc',
+        //   gasPrice: '30000000000',
+        //   gasLimit: '500000',
+        //   recipients: [{
+        //     "address": "0xb5bff3a87cd71d2ed96ce41d05e6206600802854",
+        //     "amount": "0"
+        //   }],
+        //   walletContractAddress: '0xe0b1fe098050f2745b450de419b5cafc7e826699',
+        //   amount: '0',
+        //   backupKeyNonce: 0,
+        //   expireTime: 1600800540,
+        //   contractSequenceId: 1,
+        //   nextContractSequenceId: 1,
+        // };
+        const txPrebuild = {
+          // tx: "0xf9024e808506fc23ac008307a12094e0b1fe098050f2745b450de419b5cafc7e82669980b9022439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631a172300000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631a1723000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830150f58080",
+          txHex:
+            '0xf9024e808506fc23ac008307a12094e0b1fe098050f2745b450de419b5cafc7e82669980b9022439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631a172300000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010439125215000000000000000000000000b5bff3a87cd71d2ed96ce41d05e6206600802854000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000631a1723000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830150f58080',
+          userKey:
+            'xpub661MyMwAqRbcG9dxXhJyHz4GjqTjUCAUMuF4tpCq3LTJf43QXa5sT81QsJ5VMdK8vnAK56gi7qy2cZ2dzYQfy7YP7x4uHQpuRViAv9CNbtS',
+          backupKey:
+            'xpub661MyMwAqRbcGrB1HmLowEQgbVxCPomJHWAkvundcB5gGteXtLLfEKmvSB9dKvRmh3LxpL2yvgqy37Z3ydqvHoViMWa2dwX3huwmmBuip7J',
+          coin: 'tavaxc',
+          gasPrice: '30000000000',
+          gasLimit: '500000',
+          recipients: [
+            {
+              address: '0xb5bff3a87cd71d2ed96ce41d05e6206600802854',
+              amount: '0',
+            },
+          ],
+          walletContractAddress: '0xe0b1fe098050f2745b450de419b5cafc7e826699',
+          amount: '0',
+          backupKeyNonce: 0,
+          recipient: {
+            address: '0xb5bff3a87cd71d2ed96ce41d05e6206600802854',
+            amount: '0',
+          },
+          expireTime: 1662654243,
+          contractSequenceId: 3,
+          nextContractSequenceId: 3,
+        };
+        const gasPrice = 300000000000;
+        const gasLimit = 500000;
+        // const prv = 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'; // placeholder test prv
+        const userPrv =
+          'xprv9s21ZrQH143K3fZVRfmxvr7YBodF4jSczgKU6RoDUzvKnFiFz2mcuKgw1zYgvTGtLMBPAPonv5GzHnDXQK5Vk8BRHcN76TGgLwcNcFTy4kC';
+        const backupPrv =
+          'xprv9s21ZrQH143K4N6YBjooa6Tx3U7hzM3SvHFA8XP23qYhQ6KPLo2QgXTSasVpiMY4F6gMrstXBHRDso5WE7Gn37yZnW5qTRJZU6FPeXx1B69';
+        const params = {
+          txPrebuild,
+          prv: userPrv,
+        };
+        // sign transaction once
+        const halfSigned = await tavaxCoin.signTransaction(params);
+
+        const wrapper = {} as AvaxSignTransactionOptions;
+        wrapper.txPrebuild = halfSigned;
+        wrapper.txPrebuild.recipients = halfSigned.halfSigned.recipients;
+        wrapper.txPrebuild.gasPrice = gasPrice.toString();
+        wrapper.txPrebuild.gasLimit = gasLimit.toString();
+        wrapper.isLastSignature = true;
+        wrapper.walletContractAddress = walletContractAddress;
+        wrapper.prv = backupPrv;
+
+        // sign transaction twice with the "isLastSignature" flag
+        const finalSignedTx = await tavaxCoin.signTransaction(wrapper);
+        finalSignedTx.should.have.property('txHex');
+        const txBuilder = tavaxCoin.getTransactionBuilder() as TransactionBuilder;
+        txBuilder.from(finalSignedTx.txHex);
+        const rebuiltTx = await txBuilder.build();
+        rebuiltTx.signature.length.should.equal(2);
+        outputs.length.should.equal(1);
+        outputs[0].address.should.equal(txPrebuild.recipients[0].address);
+        outputs[0].amount.should.equal(txPrebuild.recipients[0].amount);
+      });
     });
   });
 });

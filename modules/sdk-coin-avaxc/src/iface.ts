@@ -48,6 +48,28 @@ export interface EIP1559 {
   maxFeePerGas: number;
 }
 
+// region Recovery
+export interface UnformattedTxInfo {
+  recipient: Recipient;
+}
+
+export interface OfflineVaultTxInfo {
+  nextContractSequenceId?: string;
+  contractSequenceId?: string;
+  tx: string;
+  userKey: string;
+  backupKey: string;
+  coin: string;
+  gasPrice: number;
+  gasLimit: number;
+  recipients: Recipient[];
+  walletContractAddress: string;
+  amount: string;
+  backupKeyNonce: number;
+  eip1559?: EIP1559;
+}
+// endregion
+
 // For createHopTransactionParams
 export interface HopTransactionBuildOptions {
   wallet: Wallet;
@@ -112,6 +134,12 @@ export interface EthTransactionFee {
 }
 
 export interface TxPreBuild extends BaseTransactionPrebuild {
+  halfSigned?: {
+    expireTime: number;
+    contractSequenceId: number;
+    backupKeyNonce?: number;
+    signature: string;
+  };
   txHex: string;
   txInfo: TxInfo;
   feeInfo: EthTransactionFee;
@@ -121,13 +149,37 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   expireTime?: number;
   hopTransaction?: string;
   eip1559?: EIP1559;
+  userKey?: string;
+  backupKey?: string;
+  coin?: string;
+  gasPrice?: string;
+  gasLimit?: string;
+  recipients?: Recipient[];
+  walletContractAddress?: string;
+  amount?: string;
+  backupKeyNonce?: number;
+  contractSequenceId?: string;
 }
 
 // For signTransaction
-export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
+export interface SignFinalOptions {
   txPrebuild: TxPreBuild;
+  signingKeyNonce: number;
+  walletContractAddress: string;
+  // nextContractSequenceId?: number;
+  // hopTransaction?: string;
+  // backupKeyNonce?: number;
+  // isBatch?: boolean;
+  txHex?: string;
+  // expireTime?: number;
+  prv: string;
+  recipients: Recipient[];
+}
+
+export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions, SignFinalOptions {
   prv: string;
   custodianTransactionId?: string;
+  isLastSignature?: boolean;
 }
 
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
