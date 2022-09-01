@@ -386,7 +386,8 @@ export class Sol extends BaseCoin {
         transactionBuilder.rentExemptAmount(params.tokenAccountRentExemptAmount);
       }
       rebuiltTransaction = await transactionBuilder.build();
-    } catch {
+    } catch (e) {
+      console.log(e);
       throw new Error('Invalid transaction');
     }
 

@@ -713,7 +713,10 @@ describe('SOL:', function () {
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -737,7 +740,7 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT',
+        id: '2XFxGfXddKWnqGaMAsfNL8HgXqDvjBL2Ae28KWrRvg9bQBmCrpHYVDacuZFeAUyYwjXG6ey2jTARX5VQCnj7SF4L',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -754,7 +757,10 @@ describe('SOL:', function () {
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -821,7 +827,7 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '2QdKALq4adaTahJH13AGzM5bAFuNshw43iQBdVS9D2Loq736zUgPXfHj32cNJKX6FyjUzYJhGfEyAAB5FgYUW6zR',
+        id: '7TkU8wLgXDeLFbVydtg6mqMsp9GatsetitSngysgjxFhofKSUcLPBoKPHciLeGEfJFMsqezpZmGRSFQTBy7ZDsg',
         type: 'WalletInitialization',
         changeOutputs: [],
         changeAmount: '0',
@@ -880,7 +886,10 @@ describe('SOL:', function () {
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
@@ -904,7 +913,7 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '4idioQZoVgSPARCHWL19vWtd1RJbf34pbFRSseypxMESBV9ffcimBiYmEyUdHfHys9rkuhZ41tJC5DgBerTvfpcz',
+        id: '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -922,7 +931,10 @@ describe('SOL:', function () {
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
-        durableNonce: undefined,
+        durableNonce: {
+          authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
+          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+        },
       });
     });
 
