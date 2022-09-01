@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { describe, it } from 'mocha';
 import { BIP32Interface } from 'bip32';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
