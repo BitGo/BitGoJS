@@ -15,6 +15,15 @@ export type ParsedLightningInvoice = {
   descriptionHash?: string;
 };
 
+/**
+ * Decodes an LNURL-pay request and makes an HTTP request to the decoded url
+ * to retrieve details for the requested payment.
+ * @param lnurl A bech32 encoded LNURL-pay request string
+ * @returns {DecodedLnurlPayRequest} An LNURL-pay request message specifying
+ * a min and max amount for the payment, metadata describing what the payment
+ * is for, and a callback that can be used to fetch a lightning invoice for
+ * the payment.
+ */
 export async function decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest> {
   const url = decodeLnurl(lnurl);
   const { body } = await request.get(url);
@@ -29,6 +38,13 @@ export async function decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequ
   };
 }
 
+/**
+ * Fetches a lightning invoice from an LNURL-pay callback server for a specified
+ * amount of millisatoshis.
+ * @param params {LnurlPayParams} An object specifying an amount and a callback
+ * url with which to request a lightning invoice for an LNURL-pay request.
+ * @returns {string} A BOLT #11 encoded lightning invoice
+ */
 export async function fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
   const { callback, milliSatAmount, metadata } = params;
   const { pr: invoice } = callback.includes('?')
