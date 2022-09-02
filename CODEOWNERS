@@ -11,8 +11,9 @@ modules/abstract-utxo/ @BitGo/btc-team
 modules/bitgo/test/v2/unit/coins/utxo/ @BitGo/btc-team
 modules/bitgo/test/v2/unit/lightning.ts @BitGo/btc-team
 modules/blockapis/ @BitGo/btc-team
-modules/bls-dkg/ @johnoliverdriscoll
+modules/bls-dkg/ @BitGo/hsm
 modules/sdk-coin-bch/ @BitGo/btc-team
+modules/sdk-coin-bcha/ @BitGo/btc-team
 modules/sdk-coin-bsv/ @BitGo/btc-team
 modules/sdk-coin-btc/ @BitGo/btc-team
 modules/sdk-coin-btg/ @BitGo/btc-team
@@ -41,7 +42,6 @@ modules/sdk-coin-ada/ @BitGo/coins
 modules/sdk-coin-algo/ @BitGo/coins
 modules/sdk-coin-avaxc/ @BitGo/coins
 modules/sdk-coin-avaxp/ @BitGo/coins
-modules/sdk-coin-bcha/ @BitGo/coins
 modules/sdk-coin-bsc/ @BitGo/coins
 modules/sdk-coin-cspr/ @BitGo/coins
 modules/sdk-coin-dot/ @BitGo/coins
