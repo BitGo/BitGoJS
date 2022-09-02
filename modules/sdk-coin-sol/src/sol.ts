@@ -179,10 +179,10 @@ export class Sol extends BaseCoin {
         filteredRecipients.map(async (recipientFromUser, index) => {
           const recipientFromTx = filteredOutputs[index]; // This address should be an ATA
 
-          // Compare the amount string values because amount is (string | number)
-          const userAmountString = recipientFromUser.amount.toString();
-          const txAmountString = recipientFromTx.amount.toString();
-          if (userAmountString !== txAmountString) {
+          // Compare the BigNumber values because amount is (string | number)
+          const userAmount = new BigNumber(recipientFromUser.amount);
+          const txAmount = new BigNumber(recipientFromTx.amount);
+          if (!userAmount.isEqualTo(txAmount)) {
             return false;
           }
 

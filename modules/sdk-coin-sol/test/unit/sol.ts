@@ -330,6 +330,33 @@ describe('SOL:', function () {
       validTransaction.should.equal(true);
     });
 
+    it('should succeed to verify token transaction with leading zero recipient amount', async function () {
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      txParams.recipients = [{ address, amount: '0001', tokenName: 'tsol:usdc' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      const feePayerWalletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2',
+        },
+        multisigType: 'tss',
+      };
+      const feePayerWallet = new Wallet(bitgo, basecoin, feePayerWalletData);
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: feePayerWallet,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
     it('should fail to verify token transaction with different recipient tokenName', async function () {
       const txParams = newTxParamsTokenTransfer();
       const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
