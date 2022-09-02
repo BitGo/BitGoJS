@@ -19,6 +19,23 @@ export function isWalletUnspent<TNumber extends number | bigint>(u: Unspent<TNum
   return (u as WalletUnspent<TNumber>).chain !== undefined;
 }
 
+export function getScriptsForUnspent(
+  network: Network,
+  unspent: WalletUnspent<bigint>,
+  unspentSigner: WalletUnspentSigner<RootWalletKeys>
+): Buffer {
+  const { walletKeys } = unspentSigner.deriveForChainAndIndex(unspent.chain, unspent.index);
+  const scriptType = scriptTypeForChain(unspent.chain);
+  const pubScript = createOutputScript2of3(walletKeys.publicKeys, scriptType).scriptPubKey;
+  const pubScriptExpected = toOutputScript(unspent.address, network);
+  if (!pubScript.equals(pubScriptExpected)) {
+    throw new Error(
+      `pubscript mismatch: expected ${pubScriptExpected.toString('hex')} got ${pubScript.toString('hex')}`
+    );
+  }
+  return pubScript;
+}
+
 export function signInputWithUnspent<TNumber extends number | bigint>(
   txBuilder: UtxoTransactionBuilder<TNumber>,
   inputIndex: number,
