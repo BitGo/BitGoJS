@@ -17,6 +17,8 @@ import { isTriple, Triple } from './types';
 import { classify } from '../';
 import { getMainnet, Network, networks } from '../networks';
 import { ecc as eccLib } from '../noble_ecc';
+// import { UtxoPsbt } from './UtxoPsbt';
+// import { ControlBlock } from 'bitcoinjs-lib/src/taproot';
 
 const inputTypes = [
   'multisig',
@@ -641,6 +643,23 @@ export function signInputP2shP2pk<TNumber extends number | bigint>(
   });
 }
 
+export function getScripts2Of3(
+  scriptType: ScriptType2Of3,
+  pubkeys: Triple<Buffer>,
+  keyPair: BIP32Interface,
+  cosigner: Buffer
+): {
+  controlBlock?: Buffer;
+  witnessScript?: Buffer;
+  redeemScript?: Buffer;
+} {
+  if (scriptType === 'p2tr') {
+    return createSpendScriptP2tr(pubkeys, [keyPair.publicKey, cosigner]);
+  } else {
+    return createOutputScript2of3(pubkeys, scriptType);
+  }
+}
+
 export function signInput2Of3<TNumber extends number | bigint>(
   txBuilder: UtxoTransactionBuilder<TNumber>,
   vin: number,
@@ -650,16 +669,8 @@ export function signInput2Of3<TNumber extends number | bigint>(
   cosigner: Buffer,
   amount: TNumber
 ): void {
-  let controlBlock;
-  let redeemScript;
-  let witnessScript;
-
   const prevOutScriptType = scriptType2Of3AsPrevOutType(scriptType);
-  if (scriptType === 'p2tr') {
-    ({ witnessScript, controlBlock } = createSpendScriptP2tr(pubkeys, [keyPair.publicKey, cosigner]));
-  } else {
-    ({ redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType));
-  }
+  const { controlBlock, witnessScript, redeemScript } = getScripts2Of3(scriptType, pubkeys, keyPair, cosigner);
 
   keyPair.network = txBuilder.network;
 

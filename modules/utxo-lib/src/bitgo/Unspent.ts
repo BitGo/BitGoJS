@@ -1,7 +1,10 @@
 import { TxOutput } from 'bitcoinjs-lib';
 import { Network } from '..';
 import { toOutputScript } from '../address';
+import { UtxoPsbt } from './UtxoPsbt';
+import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { isSegwit, RootWalletKeys, WalletUnspent, WalletUnspentSigner } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -108,6 +111,32 @@ export function addToTransactionBuilder<TNumber extends number | bigint>(
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, txb.network as Network);
   txb.addInput(txid, vout, sequence, script, value);
+}
+
+export function addToPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  u: WalletUnspent<bigint>,
+  signer: WalletUnspentSigner<RootWalletKeys>,
+  network: Network
+): void {
+  // if segwit
+  const { txid, vout, script, value } = toPrevOutput(u, network);
+  if (isSegwit(u.chain)) {
+    psbt.addInput({
+      hash: txid,
+      index: vout,
+      witnessUtxo: {
+        script,
+        value,
+      },
+    });
+  } else {
+    psbt.addInput({
+      hash: txid,
+      index: vout,
+      // Need to add utxo type for nonsegwit - they are all buffers - how do you encode this?
+    });
+  }
 }
 
 /**

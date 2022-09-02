@@ -7734,6 +7734,14 @@ ecpair@^2.0.1:
     typeforce "^1.18.0"
     wif "^2.0.6"
 
+"ecpair@git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431":
+  version "2.0.1"
+  resolved "git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431"
+  dependencies:
+    randombytes "^2.1.0"
+    typeforce "^1.18.0"
+    wif "^2.0.6"
+
 ecurve@1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/ecurve/-/ecurve-1.0.5.tgz#d148e8fe50a674f983bb5bae09da0ea23e10535e"
