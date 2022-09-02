@@ -1607,6 +1607,17 @@ export class Eth extends BaseCoin {
     return txPrebuild.coin === this.getChain();
   }
 
+  verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
+    const { txParams, txPrebuild, wallet } = params;
+    if (!txParams?.recipients || !wallet || !txPrebuild) {
+      throw new Error(`missing params`);
+    }
+    if (txParams.hop && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+    return true;
+  }
+
   /**
    * Verify that a transaction prebuild complies with the original intention
    *
@@ -1618,7 +1629,12 @@ export class Eth extends BaseCoin {
    */
   async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const ethNetwork = this.getNetwork();
-    const { txParams, txPrebuild, wallet } = params;
+    const { txParams, txPrebuild, wallet, walletType } = params;
+
+    if (walletType === 'tss') {
+      return this.verifyTssTransaction(params);
+    }
+
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error(`missing params`);
     }

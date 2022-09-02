@@ -7,24 +7,25 @@ export async function nockSendTxRequest(params: {coin:string, walletId: string, 
     .reply(200);
 }
 
-export async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: unknown, signerShare?: string}, status = 200): Promise<nock.Scope> {
+export async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: unknown, signerShare?: string, tssType?: 'eddsa' | 'ecdsa'}, status = 200): Promise<nock.Scope> {
+  const transactions = getRoute(params.tssType);
   return nock('https://bitgo.fakeurl')
     .persist(true)
-    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
+    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
     .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
 }
 
-export async function nockSendSignatureShareWithResponse(params: { walletId: string, txRequestId: string, signatureShare: unknown, response: unknown}, status = 200): Promise<nock.Scope> {
-
+export async function nockSendSignatureShareWithResponse(params: { walletId: string, txRequestId: string, signatureShare: unknown, response: unknown, tssType?: 'eddsa' | 'ecdsa'}, status = 200): Promise<nock.Scope> {
+  const transactions = getRoute(params.tssType);
   return nock('https://bitgo.fakeurl')
-    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
+    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
     .reply(status, (status === 200 ? params.response : { error: 'some error' }));
 }
 
-
-export async function nockDeleteSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: SignatureShareRecord}, status = 200): Promise<nock.Scope> {
+export async function nockDeleteSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: SignatureShareRecord, tssType?: 'eddsa' | 'ecdsa'}, status = 200): Promise<nock.Scope> {
+  const transactions = getRoute(params.tssType);
   return nock('https://bitgo.fakeurl')
-    .delete(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
+    .delete(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
     .reply(status, (status === 200 ? [params.signatureShare] : { error: 'some error' }));
 }
 
@@ -39,4 +40,12 @@ export async function nockGetTxRequest(params: {walletId: string, txRequestId: s
     .persist(true)
     .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
     .reply(200, params.response);
+}
+
+export function getRoute(tssType: 'eddsa' | 'ecdsa' = 'eddsa'): string {
+  if (tssType === 'ecdsa') {
+    return '/transactions/0';
+  }
+
+  return '';
 }
