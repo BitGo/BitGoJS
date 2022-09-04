@@ -68,7 +68,11 @@ const ecc = {
     throwToNull(() => necc.utils.pointAddScalar(p, tweak, defaultTrue(compressed))),
 
   privateAdd: (d: Uint8Array, tweak: Uint8Array): Uint8Array | null =>
-    throwToNull(() => necc.utils.privateAdd(d, tweak)),
+    throwToNull(() => {
+      const res = necc.utils.privateAdd(d, tweak);
+      if (res?.every((i) => i === 0)) return null;
+      return res;
+    }),
 
   privateNegate: (d: Uint8Array): Uint8Array => necc.utils.privateNegate(d),
 

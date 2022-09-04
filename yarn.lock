@@ -8109,7 +8109,7 @@ ecdsa-sig-formatter@1.0.11:
   dependencies:
     safe-buffer "^5.0.1"
 
-ecpair@^2.0.1, "ecpair@git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431":
+ecpair@^2.0.1:
   version "2.0.1"
   resolved "git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431"
   dependencies:
@@ -8117,9 +8117,9 @@ ecpair@^2.0.1, "ecpair@git+https://github.com/brandonblack/ecpair#2fd5696110aa8b
     typeforce "^1.18.0"
     wif "^2.0.6"
 
-"ecpair@git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431":
+"ecpair@git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38":
   version "2.0.1"
-  resolved "git+https://github.com/brandonblack/ecpair#2fd5696110aa8bba136c5a5240019cd1ced16431"
+  resolved "git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38"
   dependencies:
     randombytes "^2.1.0"
     typeforce "^1.18.0"
