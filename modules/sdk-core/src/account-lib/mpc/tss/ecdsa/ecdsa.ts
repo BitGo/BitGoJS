@@ -22,7 +22,6 @@ import {
   SignCombineRT,
   DShare,
   OShare,
-  SignRT,
   SShare,
   SignShareRT,
   KShare,
@@ -314,9 +313,9 @@ export default class Ecdsa {
    * @param {OShare} oShare private omicron share of current participant
    * @param {DShare} dShare delta share received from the other participant
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
-   * @returns {SignRT}
+   * @returns {SShare}
    */
-  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash): SignRT {
+  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash): SShare {
     const m = (hash || createHash('sha256')).update(M).digest();
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
@@ -335,7 +334,7 @@ export default class Ecdsa {
     return {
       i: oShare.i,
       y: oShare.y,
-      r: bigIntToBufferBE(r, 32).toString('hex'),
+      R: pointR.toHex(true),
       s: bigIntToBufferBE(s, 32).toString('hex'),
     };
   }
@@ -346,21 +345,23 @@ export default class Ecdsa {
    * @returns {Signature}
    */
   constructSignature(shares: SShare[]): Signature {
-    // Every r must match.
-    const r = shares[0]['r'];
-    const isRMatching = shares.map((share) => share['r'] === r).reduce((a, b) => a && b);
+    // Every R must match.
+    const R = shares[0]['R'];
+    const isRMatching = shares.map((share) => share['R'] === R).reduce((a, b) => a && b);
     if (!isRMatching) {
-      throw new Error('r value should be consistent across all shares');
+      throw new Error('R value should be consistent across all shares');
     }
 
     let s = shares.map((share) => hexToBigInt(share['s'])).reduce(Ecdsa.curve.scalarAdd);
+    const recid = (R.slice(0, 2) === '03' ? 1 : 0) ^ (s > Ecdsa.curve.order() / BigInt(2) ? 1 : 0);
 
     // Normalize s.
     s = s > Ecdsa.curve.order() / BigInt(2) ? Ecdsa.curve.order() - s : s;
     return {
       y: shares[0]['y'],
-      r: r,
+      r: R.slice(2),
       s: bigIntToBufferBE(s, 32).toString('hex'),
+      recid: recid,
     };
   }
 
@@ -375,6 +376,7 @@ export default class Ecdsa {
     return Ecdsa.curve.verify(
       (hash || createHash('sha256')).update(message).digest(),
       Buffer.concat([
+        Buffer.from([signature['recid']]),
         bigIntToBufferBE(hexToBigInt(signature['r']), 32),
         bigIntToBufferBE(hexToBigInt(signature['s']), 32),
       ]),
