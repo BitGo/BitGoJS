@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { networks } from '../../../src';
+import { Transaction, ecc, networks } from '../../../src';
 import {
   isWalletUnspent,
   formatOutputId,
@@ -123,7 +123,7 @@ describe('WalletUnspent', function () {
     unspents: WalletUnspent<bigint>[],
     signer: string,
     cosigner: string
-  ): UtxoTransaction<bigint> {
+  ): Transaction<bigint> {
     const psbt = createPsbtForNetwork(network);
     psbt.addOutput({
       address: getWalletAddress(walletKeys, 0, 100, network),
@@ -138,20 +138,11 @@ describe('WalletUnspent', function () {
       WalletUnspentSigner.from(walletKeys, walletKeys[cosigner], walletKeys[signer]),
     ].forEach((walletSigner, nSignature) => {
       unspents.forEach((u, i) => {
-        // Need to implement this....
-        signPsbtInputWithUnspent(psbt, i, unspents[i], walletSigner);
-      });
-      // const tx = nSignature === 0 ? psbt. : txb.build();
-      const tx = psbt.extractTransaction(); // Is this a correct substitution?
-      // Verify each signature for the unspent
-      unspents.forEach((u, i) => {
-        assert.deepStrictEqual(
-          // Need to implement this
-          verifySignatureWithUnspent(tx, i, unspents, walletKeys),
-          walletKeys.triple.map((k) => k === walletKeys[signer] || (nSignature === 1 && k === walletKeys[cosigner]))
-        );
+        const { signer } = walletSigner.deriveForChainAndIndex(u.chain, u.index);
+        psbt.signInput(i, signer);
       });
     });
+    assert(psbt.validateSignaturesOfAllInputs((p, m, s) => ecc.verify(m, p, s)));
     psbt.finalizeAllInputs();
     return psbt.extractTransaction(); // extract transaction has a return type of Transaction instead of UtxoTransaction
   }
@@ -210,8 +201,14 @@ describe('WalletUnspent', function () {
         }),
       ];
       const txbTransaction = constructAndSignTransactionUsingTransactionBuilder(unspents, signer, cosigner, amountType);
-      const psbtTransaction = constructAndSignTransactionUsingPsbt(unspents, signer, cosigner);
-      assert.deepStrictEqual(txbTransaction, psbtTransaction);
+      if (amountType === 'bigint') {
+        const psbtTransaction = constructAndSignTransactionUsingPsbt(
+          unspents as WalletUnspent<bigint>[],
+          signer,
+          cosigner
+        );
+        assert.deepStrictEqual(txbTransaction, psbtTransaction);
+      }
     });
   }
 

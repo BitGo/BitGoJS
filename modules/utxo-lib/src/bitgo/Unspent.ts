@@ -26,6 +26,16 @@ export interface Unspent<TNumber extends number | bigint = number> {
   value: TNumber;
 }
 
+export interface NonWitnessUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
+  prevTx: Buffer;
+}
+
+export function isNonWitnessUnspent<TNumber extends number | bigint = number>(
+  u: Unspent<TNumber>
+): u is NonWitnessUnspent<TNumber> {
+  return Buffer.isBuffer((u as NonWitnessUnspent<TNumber>).prevTx);
+}
+
 /**
  * @return TxOutput from Unspent
  */
@@ -131,10 +141,13 @@ export function addToPsbt(
       },
     });
   } else {
+    if (!isNonWitnessUnspent(u)) {
+      throw new Error('Error, require previous tx to add to PSBT');
+    }
     psbt.addInput({
       hash: txid,
       index: vout,
-      // Need to add utxo type for nonsegwit - they are all buffers - how do you encode this?
+      nonWitnessUtxo: u.prevTx,
     });
   }
 }

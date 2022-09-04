@@ -1,7 +1,14 @@
 import { Network, Transaction } from '../../../src';
-import { formatOutputId, WalletUnspent, ChainCode, createPsbtForNetwork, isSegwit } from '../../../src/bitgo';
+import {
+  formatOutputId,
+  WalletUnspent,
+  NonWitnessWalletUnspent,
+  ChainCode,
+  createPsbtForNetwork,
+} from '../../../src/bitgo';
 
 import { createOutputScript2of3, scriptTypeForChain } from '../../../src/bitgo/outputScripts';
+import { RootWalletKeys } from '../../../src/bitgo/wallet/WalletKeys';
 import { fromOutputScript } from '../../../src/address';
 
 import { getDefaultWalletKeys } from '../../testutil';
@@ -23,16 +30,19 @@ export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, ne
   const privKey = noble.utils.randomPrivateKey();
   const pubkey = Buffer.from(noble.getPublicKey(privKey, true));
   const payment = utxolib.payments.p2pkh({ pubkey });
+  const destOutput = payment.output;
+  if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
 
   for (let index = 0; index < vout; index++) {
     if (index === vout) {
       prevTx.addOutput(outputScript, value);
     } else {
-      prevTx.addOutput(payment.output!, value);
+      prevTx.addOutput(destOutput, value);
     }
   }
   prevTx.addInput(Buffer.alloc(32, 0x01), 0);
-  const sig = noble.signSync(prevTx.hashForSignature(0, payment.output!, utxolib.Transaction.SIGHASH_ALL), privKey);
+  // es-lint-ignore-next-line no-sync
+  const sig = noble.signSync(prevTx.hashForSignature(0, destOutput, utxolib.Transaction.SIGHASH_ALL), privKey);
   prevTx.ins[0].script = utxolib.script.compile([
     Buffer.concat([sig, Buffer.from([utxolib.Transaction.SIGHASH_ALL])]),
     pubkey,
@@ -43,25 +53,30 @@ export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, ne
 export function mockWalletUnspent<TNumber extends number | bigint>(
   network: Network,
   value: TNumber,
-  { chain = 0 as ChainCode, index = 0, keys = getDefaultWalletKeys(), vout = 0, id = undefined } = {}
-): WalletUnspent<TNumber> {
+  {
+    chain = 0,
+    index = 0,
+    keys = getDefaultWalletKeys(),
+    vout = 0,
+    id,
+  }: { chain?: ChainCode; index?: number; keys?: RootWalletKeys; vout?: number; id?: string } = {}
+): WalletUnspent<TNumber> | NonWitnessWalletUnspent<TNumber> {
   const derivedKeys = keys.deriveForChainAndIndex(chain, index);
-  const prevTx = mockPrevTx(
-    vout,
-    createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain), network).scriptPubKey,
-    BigInt(value),
+  const address = fromOutputScript(
+    createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain)).scriptPubKey,
     network
   );
-  const defaultId = !id ? mockOutputId(vout) : id;
-
-  return {
-    id: isSegwit(chain) && !id ? prevTx.getId() : defaultId,
-    address: fromOutputScript(
-      createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain)).scriptPubKey,
+  if (id && typeof id === 'string') {
+    return { id, address, chain, index, value };
+  } else {
+    const prevTransaction = mockPrevTx(
+      vout,
+      createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain), network).scriptPubKey,
+      BigInt(value),
       network
-    ),
-    chain,
-    index,
-    value,
-  };
+    );
+    id = formatOutputId({ txid: prevTransaction.getId(), vout });
+    const prevTx = prevTransaction.toBuffer();
+    return { id, address, chain, index, value, prevTx };
+  }
 }
