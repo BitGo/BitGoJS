@@ -4,12 +4,20 @@ import {
   BaseTransaction,
   Entry,
   InvalidTransactionError,
+  NotSupported,
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
-import { AddValidatorTx, AmountInput, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
+import {
+  AddValidatorTx,
+  AmountInput,
+  AmountOutput,
+  BaseTx,
+  PlatformVMConstants,
+  Tx,
+} from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
@@ -65,8 +73,8 @@ export class Transaction extends BaseTransaction {
   public _memo?: BufferAvax;
   public _threshold = 2;
   public _locktime: BN = new BN(0);
-  public _fromAddresses: BufferAvax[] = [];
-  public _rewardAddresses: BufferAvax[];
+  public _sender: BufferAvax[] = [];
+  public _rewardAddresses?: BufferAvax[] = undefined;
   public _utxos: DecodedUtxoObj[] = [];
   public _fee: BN;
 
@@ -100,15 +108,8 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
-    try {
-      const kp = new KeyPair({ prv: key });
-      const privateKey = kp.getPrivateKey();
-      if (!privateKey) return false;
-      const address = utils.parseAddress(kp.getAvaxPAddress(this._network.hrp));
-      return this._fromAddresses.find((a) => address.equals(a)) !== undefined;
-    } catch {
-      return false;
-    }
+    // TODO(BG-56700):  Improve canSign by check in addresses in empty credentials match signer
+    return true;
   }
 
   /**
@@ -171,7 +172,7 @@ export class Transaction extends BaseTransaction {
     return {
       id: this.id,
       inputs: this.inputs,
-      fromAddresses: this.fromAddresses,
+      fromAddresses: this.sender,
       threshold: this._threshold,
       locktime: this._locktime.toString(),
       type: this.type,
@@ -183,6 +184,27 @@ export class Transaction extends BaseTransaction {
   }
 
   setTransaction(tx: Tx): void {
+    const baseTx = tx.getUnsignedTx().getTransaction();
+    if (baseTx.getNetworkID() !== this._networkID || !baseTx.getBlockchainID().equals(this._blockchainID)) {
+      throw new Error('Network or blockchain is not equals');
+    }
+    this._memo = baseTx.getMemo();
+    switch (baseTx.getTypeID()) {
+      case PlatformVMConstants.ADDVALIDATORTX:
+        this._type = TransactionType.addValidator;
+        this._fee = new BN(0);
+        break;
+      case PlatformVMConstants.ADDDELEGATORTX:
+        this._type = TransactionType.addDelegator;
+        this._fee = new BN(0);
+        break;
+      case PlatformVMConstants.EXPORTTX:
+        this._type = TransactionType.Export;
+        this._fee = new BN(this._network.txFee);
+        break;
+      default:
+        throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
     this._avaxpTransaction = tx;
   }
 
@@ -207,12 +229,13 @@ export class Transaction extends BaseTransaction {
     return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxpTransaction.toBuffer())));
   }
 
-  get fromAddresses(): string[] {
-    return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+  get sender(): string[] {
+    return utils.addressesToString(this._network.hrp, this._network.alias, this._sender);
   }
 
   get rewardAddresses(): string[] {
-    return this._rewardAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+    // if there are no reward addresses, the sender gets the rewards
+    return utils.addressesToString(this._network.hrp, this._network.alias, this._rewardAddresses ?? this._sender);
   }
 
   /**

@@ -1,65 +1,30 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import BigNumber from 'bignumber.js';
-import {
-  BaseAddress,
-  BaseKey,
-  BaseTransactionBuilder,
-  TransactionType,
-  BuildTransactionError,
-  BaseTransaction,
-} from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
-import { SECPTransferInput, TransferableInput, Tx } from 'avalanche/dist/apis/platformvm';
+import {
+  SECPTransferInput,
+  SECPTransferOutput,
+  SelectCredentialClass,
+  TransferableInput,
+  TransferableOutput,
+} from 'avalanche/dist/apis/platformvm';
+import { SignerTransactionBuilder } from './signerTransactionBuilder';
+import { Credential } from 'avalanche/dist/common';
 
-export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
-  public _signer: KeyPair[] = [];
+export abstract class TransactionBuilder extends SignerTransactionBuilder {
   protected recoverSigner = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig);
-  }
-
-  /**
-   * Initialize the transaction builder fields using the decoded transaction data
-   *
-   * @param {Transaction} tx the transaction data
-   * @returns itself
-   */
-  initBuilder(tx: Tx): this {
-    const baseTx = tx.getUnsignedTx().getTransaction();
-    if (
-      baseTx.getNetworkID() !== this._transaction._networkID ||
-      !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
-    ) {
-      throw new Error('Network or blockchain is not equals');
-    }
-    this._transaction._memo = baseTx.getMemo();
-    this._transaction.setTransaction(tx);
-    return this;
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Tx();
-    tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
-    this.initBuilder(tx);
-    return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.buildAvaxpTransaction();
-    this.transaction.setTransactionType(this.transactionType);
-    if (this.hasSigner) {
-      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
-    }
-    return this.transaction;
+    return super.buildImplementation();
   }
 
   /**
@@ -67,34 +32,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract buildAvaxpTransaction(): void;
 
-  // region utxo engine
-  /**
-   * Inputs can be controlled but outputs get reordered in transactions
-   * In order to make sure that the mapping is always correct we create an addressIndx which matches to the appropiate
-   * signatureIdx
-   * @param {TransferableInput[]} utxos as transaction ins.
-   * @protected
-   * @returns the list of UTXOs
-   */
-  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
-    return utxos.map((utxo) => {
-      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
-
-      // use the same addressesIndex as existing ones in the inputs
-      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-
-      return {
-        outputID: SECP256K1_Transfer_Output,
-        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
-        txid: utils.cb58Encode(utxo.getTxID()),
-        amount: secpInput.getAmount().toString(),
-        threshold: this.transaction._threshold,
-        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
-        addressesIndex,
-      };
-    });
-  }
-  // endregion
   // region Getters and Setters
   /**
    * When using recovery key must be set here
@@ -113,7 +50,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   threshold(value: number): this {
     this.validateThreshold(value);
-    this._transaction._threshold = value;
+    this.transaction._threshold = value;
     return this;
   }
 
@@ -124,7 +61,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   locktime(value: string | number): this {
     this.validateLocktime(new BN(value));
-    this._transaction._locktime = new BN(value);
+    this.transaction._locktime = new BN(value);
+    return this;
+  }
+
+  /**
+   * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output.
+   * @param {string | stirng[]} senderPubKey
+   * @deprecated
+   * {@see sender}
+   */
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    this.transaction._sender = pubKeys.map(utils.parseAddress);
     return this;
   }
 
@@ -132,9 +81,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output.
    * @param {string | stirng[]} senderPubKey
    */
-  fromPubKey(senderPubKey: string | string[]): this {
+  sender(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
-    this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
+    this.transaction._sender = pubKeys.map(utils.parseAddress);
     return this;
   }
 
@@ -146,7 +95,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   utxos(value: DecodedUtxoObj[]): this {
     this.validateUtxos(value);
-    this._transaction._utxos = value;
+    this.transaction._utxos = value;
     return this;
   }
   /**
@@ -156,133 +105,133 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * set using Buffer.from("message")
    */
   memo(value: string): this {
-    this._transaction._memo = utils.stringToBuffer(value);
+    this.transaction._memo = utils.stringToBuffer(value);
     return this;
   }
-
-  /**
-   * Getter for know if build should sign
-   */
-  get hasSigner(): boolean {
-    return this._signer !== undefined && this._signer.length > 0;
-  }
-
-  /** @inheritdoc */
-  protected get transaction(): Transaction {
-    return this._transaction;
-  }
-
-  protected set transaction(transaction: Transaction) {
-    this._transaction = transaction;
-  }
-
-  /** @inheritdoc */
-  protected signImplementation({ key }: BaseKey): BaseTransaction {
-    this._signer.push(new KeyPair({ prv: key }));
-    return this.transaction;
-  }
-
-  protected abstract get transactionType(): TransactionType;
-
   // endregion
-  // region Validators
-
+  // region utxo engine
   /**
-   * Validates the threshold
-   * @param threshold
+   * Threshold must be 2 and since output always get reordered we want to make sure we can always add signatures in the correct location
+   * To find the correct location for the signature, we use the output's addresses to create the signatureIdx in the order that we desire
+   * 0: user key, 1: hsm key, 2: recovery key
+   * @protected
    */
-  validateThreshold(threshold: number): void {
-    if (!threshold || threshold !== 2) {
-      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
-    }
-  }
+  protected createInput(): {
+    inputs: TransferableInput[];
+    credentials: Credential[];
+    amount: BN;
+  } {
+    const inputs: TransferableInput[] = [];
 
-  /**
-   * Validates locktime
-   * @param locktime
-   */
-  validateLocktime(locktime: BN): void {
-    if (!locktime || locktime.lt(new BN(0))) {
-      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
-    }
-  }
+    // amount spent so far
+    let currentTotal: BN = new BN(0);
 
-  /** @inheritdoc */
-  validateAddress(address: BaseAddress, addressFormat?: string): void {
-    if (!utils.isValidAddress(address.address)) {
-      throw new BuildTransactionError('Invalid address');
-    }
-  }
+    const credentials: Credential[] = [];
 
-  /** @inheritdoc */
-  validateKey({ key }: BaseKey): void {
-    if (!new KeyPair({ prv: key })) {
-      throw new BuildTransactionError('Invalid key');
-    }
-  }
-
-  /**
-   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
-   * It overrides abstract method from BaseTransactionBuilder
-   *
-   * @param rawTransaction Transaction in any format
-   */
-  validateRawTransaction(rawTransaction: string): void {
-    utils.validateRawTransaction(rawTransaction);
-  }
-
-  /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    // throw new NotImplementedError('validateTransaction not implemented');
-  }
-
-  /** @inheritdoc */
-  validateValue(value: BigNumber): void {
-    if (value.isLessThan(0)) {
-      throw new BuildTransactionError('Value cannot be less than zero');
-    }
-  }
-
-  /**
-   * Check the list of UTXOS is empty and check each UTXO.
-   * @param values
-   */
-  validateUtxos(values: DecodedUtxoObj[]): void {
-    if (values.length === 0) {
-      throw new BuildTransactionError("Utxos can't be empty array");
-    }
-    values.forEach(this.validateUtxo);
-  }
-
-  /**
-   * Check the UTXO has expected fields.
-   * @param UTXO
-   */
-  validateUtxo(value: DecodedUtxoObj): void {
-    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
-      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
+    /*
+    A = user key
+    B = hsm key
+    C = backup key
+    bitgoAddresses = bitgo addresses [ A, B, C ]
+    utxo.addresses = IMS addresses [ B, C, A ]
+    utxo.addressesIndex = [ 2, 0, 1 ]
+    we pick 0, 1 for non-recovery
+    we pick 1, 2 for recovery
+    */
+    this.transaction._utxos.forEach((utxo) => {
+      // in WP, output.addressesIndex is empty, so fill it
+      if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
+        const utxoAddresses: BufferAvax[] = utxo.addresses.map((a) => utils.parseAddress(a));
+        utxo.addressesIndex = this.transaction._sender.map((a) => utxoAddresses.findIndex((u) => a.equals(u)));
+      }
+      // in OVC, output.addressesIndex is defined correctly from the previous iteration
     });
+
+    // validate the utxos
+    this.transaction._utxos.forEach((utxo) => {
+      if (!utxo) {
+        throw new BuildTransactionError('Utxo is undefined');
+      }
+      // addressesIndex should never have a mismatch
+      if (utxo.addressesIndex?.includes(-1)) {
+        throw new BuildTransactionError('Addresses are inconsistent: ' + utxo.txid);
+      }
+      if (utxo.threshold !== this.transaction._threshold) {
+        throw new BuildTransactionError('Threshold is inconsistent');
+      }
+    });
+
+    this.transaction._utxos.forEach((utxo, i) => {
+      if (utxo.outputID === SECP256K1_Transfer_Output) {
+        const txidBuf = utils.cb58Decode(utxo.txid);
+        const amt: BN = new BN(utxo.amount);
+        const outputidx = utils.cb58Decode(utxo.outputidx);
+        const addressesIndex = utxo.addressesIndex ?? [];
+
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0;
+        const bitgoIndex = 1;
+        currentTotal = currentTotal.add(amt);
+
+        const secpTransferInput = new SECPTransferInput(amt);
+
+        // if user/backup > bitgo
+        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+          secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._sender[bitgoIndex]);
+          secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._sender[firstIndex]);
+          credentials.push(
+            SelectCredentialClass(
+              secpTransferInput.getCredentialID(), // 9
+              ['', this.transaction._sender[firstIndex].toString('hex')].map(utils.createSig)
+            )
+          );
+        } else {
+          secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._sender[firstIndex]);
+          secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._sender[bitgoIndex]);
+          credentials.push(
+            SelectCredentialClass(
+              secpTransferInput.getCredentialID(),
+              [this.transaction._sender[firstIndex].toString('hex'), ''].map(utils.createSig)
+            )
+          );
+        }
+
+        const input: TransferableInput = new TransferableInput(
+          txidBuf,
+          outputidx,
+          this.transaction._assetId,
+          secpTransferInput
+        );
+        inputs.push(input);
+      }
+    });
+
+    return {
+      inputs,
+      credentials,
+      amount: currentTotal,
+    };
   }
 
   /**
-   * Check the amount is positive.
-   * @param amount
+   * Create the StakeOut where the recipient address are the sender.
+   * @protected
+   *
    */
-  validateAmount(amount: BN): void {
-    if (amount.lten(0)) {
-      throw new BuildTransactionError('Amount must be greater than 0');
-    }
+  protected changeOutputs(amount: BN): TransferableOutput[] {
+    // there are no chenge outputs.
+    if (amount.lten(0)) return [];
+    return [
+      new TransferableOutput(
+        this.transaction._assetId,
+        new SECPTransferOutput(
+          amount,
+          this.transaction._sender,
+          this.transaction._locktime,
+          this.transaction._threshold
+        )
+      ),
+    ];
   }
-
-  /**
-   * Check the buffer has 32 byte long.
-   * @param chainID
-   */
-  validateChainId(chainID: BufferAvax): void {
-    if (chainID.length != 32) {
-      throw new BuildTransactionError('Chain id are 32 byte size');
-    }
-  }
-
   // endregion
 }

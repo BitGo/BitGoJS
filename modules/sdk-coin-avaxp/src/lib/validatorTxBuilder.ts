@@ -1,7 +1,7 @@
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { BaseCoin } from '@bitgo/statics';
-import { AddValidatorTx, BaseTx, PlatformVMConstants, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { AddValidatorTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import utils from './utils';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
@@ -44,31 +44,19 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
     }
   }
 
-  /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
-    if (!this.verifyTxType(baseTx)) {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
-    }
-    this._delegationFeeRate = baseTx.getDelegationFee();
-    return this;
-  }
-
-  static verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
-  }
-
-  verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return ValidatorTxBuilder.verifyTxType(baseTx);
-  }
-
   /**
    * Build the validator transaction
    * @protected
    */
   protected buildAvaxpTransaction(): void {
-    const { inputs, outputs, credentials } = this.createInputOutput();
+    this.validateStakeDuration(this._startTime, this._endTime);
+    const { inputs, credentials, amount } = this.createInput();
+    if (amount.lt(this._stakeAmount)) {
+      throw new BuildTransactionError(
+        `Utxo outputs get ${amount.toString()} and ${this._stakeAmount.toString()} is required`
+      );
+    }
+    const outputs = this.changeOutputs(amount.sub(this._stakeAmount));
     this.transaction.setTransaction(
       new Tx(
         new UnsignedTx(

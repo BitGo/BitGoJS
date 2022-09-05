@@ -2,10 +2,9 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
-import { Tx } from 'avalanche/dist/apis/platformvm';
-import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { ExportTxBuilder } from './exportTxBuilder';
+import { SignerTransactionBuilder } from './signerTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -14,20 +13,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
+  from(raw: string): SignerTransactionBuilder {
     utils.validateRawTransaction(raw);
-    const tx = new Tx();
-    tx.fromBuffer(BufferAvax.from(raw, 'hex'));
-    let transactionBuilder: TransactionBuilder;
-    if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-      transactionBuilder = this.getValidatorBuilder();
-    } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-      transactionBuilder = this.getExportBuilder();
-    } else {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
-    }
-
-    transactionBuilder.initBuilder(tx);
+    const transactionBuilder = new SignerTransactionBuilder(this._coinConfig);
+    transactionBuilder.from(raw);
     return transactionBuilder;
   }
 

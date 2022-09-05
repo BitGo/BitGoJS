@@ -15,6 +15,7 @@ import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain'
 import { AvalancheNetwork } from '@bitgo/statics';
 import { Signature } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
+import { Buffer } from 'buffer';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -24,6 +25,8 @@ export class Utils implements BaseUtils {
   public bufferToString = this.binTools.bufferToString;
   public NodeIDStringToBuffer = NodeIDStringToBuffer;
   public addressToString = this.binTools.addressToString;
+  public addressesToString = (hrp: string, chainid: string, buffers: BufferAvax[]): string[] =>
+    buffers.map((buffer) => this.addressToString(hrp, chainid, buffer));
 
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
     return walletAddresses.map((a) => otxoOutputAddresses.includes(a)).reduce((a, b) => a && b, true);

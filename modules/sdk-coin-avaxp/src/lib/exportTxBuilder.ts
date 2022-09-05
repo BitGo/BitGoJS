@@ -1,17 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import {
-  BaseTx,
-  ExportTx,
-  PlatformVMConstants,
-  SECPTransferOutput,
-  TransferableOutput,
-  Tx,
-  UnsignedTx,
-} from 'avalanche/dist/apis/platformvm';
+import { ExportTx, SECPTransferOutput, TransferableOutput, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { BN } from 'avalanche';
-import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 import utils from './utils';
 
 export class ExportTxBuilder extends AtomicTransactionBuilder {
@@ -20,6 +11,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._externalChainId = utils.cb58Decode(this.transaction._network.cChainBlockchainID);
+    this._fee = new BN(this.transaction._network.txFee);
   }
 
   protected get transactionType(): TransactionType {
@@ -38,50 +30,19 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
     return this;
   }
 
-  /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
-    if (!this.verifyTxType(baseTx)) {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
-    }
-    // The ExportOutputs is a {@link exportedOutputs} result.
-    // It's expected to have only one outputs with the addresses of the sender.
-    const outputs = baseTx.getExportOutputs();
-    if (outputs.length != 1) {
-      throw new BuildTransactionError('Transaction can have one external output');
-    }
-    const output = outputs[0];
-    if (!output.getAssetID().equals(this.transaction._assetId)) {
-      throw new Error('The Asset ID of the output does not match the transaction');
-    }
-    const secpOut = output.getOutput();
-    this.transaction._locktime = secpOut.getLocktime();
-    this.transaction._threshold = secpOut.getThreshold();
-    // output addresses are the sender addresses
-    this.transaction._fromAddresses = secpOut.getAddresses();
-    this._externalChainId = baseTx.getDestinationChain();
-    this._amount = (secpOut as AmountOutput).getAmount();
-    this.transaction._utxos = this.recoverUtxos(baseTx.getIns());
-    return this;
-  }
-
-  static verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
-    return baseTx.getTypeID() === PlatformVMConstants.EXPORTTX;
-  }
-
-  verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
-    return ExportTxBuilder.verifyTxType(baseTx);
-  }
-
   /**
    * Create the internal avalanche transaction.
    * @protected
    */
   protected buildAvaxpTransaction(): void {
-    // if tx has credentials, tx shouldn't change
-    if (this.transaction.hasCredentials) return;
-    const { inputs, outputs, credentials } = this.createInputOutput(this._amount.add(this.transaction._fee));
+    const { inputs, credentials, amount } = this.createInput();
+    const requiredAmmount = this._amount.add(this._fee);
+    if (amount.lt(requiredAmmount)) {
+      throw new BuildTransactionError(
+        `Utxo outputs get ${amount.toString()} and ${requiredAmmount.toString()} is required`
+      );
+    }
+    const outputs = this.changeOutputs(amount.sub(requiredAmmount));
     this.transaction.setTransaction(
       new Tx(
         new UnsignedTx(
@@ -111,7 +72,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
         this.transaction._assetId,
         new SECPTransferOutput(
           this._amount,
-          this.transaction._fromAddresses,
+          this.transaction._sender,
           this.transaction._locktime,
           this.transaction._threshold
         )
