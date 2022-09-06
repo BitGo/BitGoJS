@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.18...@bitgo/sdk-coin-avaxp@2.2.0-rc.19) (2022-09-06)
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement export tx builder ([483d9ce](https://github.com/BitGo/BitGoJS/commit/483d9ce67b75ca5eb4c1330f59820b18043cdb6c))
+
+
+
+
+
 # [2.2.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.17...@bitgo/sdk-coin-avaxp@2.2.0-rc.18) (2022-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

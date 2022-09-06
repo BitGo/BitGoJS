@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.0.0-rc.1...@bitgo/sdk-coin-avaxc@2.0.0-rc.2) (2022-09-06)
+
+
+### Features
+
+* **sdk-coin-avaxc:** add recovery support for unsigned sweep ([f36efd1](https://github.com/BitGo/BitGoJS/commit/f36efd10ecbb93e476c947643097c75787972a8d))
+
+
+
+
+
 # [2.0.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.0.0-rc.0...@bitgo/sdk-coin-avaxc@2.0.0-rc.1) (2022-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

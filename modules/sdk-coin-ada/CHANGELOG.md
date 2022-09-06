@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.15...@bitgo/sdk-coin-ada@2.0.0-rc.0) (2022-09-06)
+
+
+### Bug Fixes
+
+* **account-lib:** update ada verifyTransaction ([2cb321f](https://github.com/BitGo/BitGoJS/commit/2cb321f52f48d310c507a113784ff00f6cc44036))
+
+
+### chore
+
+* **statics:** update fullname for ada coin ([39ec376](https://github.com/BitGo/BitGoJS/commit/39ec3761d013bcfec718535a6f86039a42651205))
+
+
+### BREAKING CHANGES
+
+* **statics:** updates coin names from `ADA`to `Cardano ADA`
+Ticket: BG-56343
+.
+
+
+
+
+
 # [1.2.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@1.2.0-rc.14...@bitgo/sdk-coin-ada@1.2.0-rc.15) (2022-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

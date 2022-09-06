@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.18...@bitgo/sdk-coin-sol@2.0.0-rc.19) (2022-09-06)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** update validateTransaction for leading zero transfer amounts ([861fed8](https://github.com/BitGo/BitGoJS/commit/861fed8458ed491f7f57b4459f9919eac51a385f))
+
+
+
+
+
 # [2.0.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.17...@bitgo/sdk-coin-sol@2.0.0-rc.18) (2022-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

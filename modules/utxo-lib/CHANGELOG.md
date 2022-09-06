@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.3...@bitgo/utxo-lib@3.0.0-rc.4) (2022-09-06)
+
+
+### Bug Fixes
+
+* **utxo-lib:** import describe/it from `parse.ts` ([5aba693](https://github.com/BitGo/BitGoJS/commit/5aba693b078faa33cd2b525fbd0c44701e771df8))
+
+
+### Features
+
+* **utxo-lib:** add round-trip test with high-precision values ([9c2bb77](https://github.com/BitGo/BitGoJS/commit/9c2bb7785656c2c22fb23e6c3516b9b351145744))
+
+
+
+
+
 # [3.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.2...@bitgo/utxo-lib@3.0.0-rc.3) (2022-08-23)
 
 

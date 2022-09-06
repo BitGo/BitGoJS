@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.11...@bitgo/statics@8.0.0-rc.12) (2022-09-06)
+
+
+### chore
+
+* **statics:** update fullname for ada coin ([39ec376](https://github.com/BitGo/BitGoJS/commit/39ec3761d013bcfec718535a6f86039a42651205))
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement export tx builder ([483d9ce](https://github.com/BitGo/BitGoJS/commit/483d9ce67b75ca5eb4c1330f59820b18043cdb6c))
+
+
+### BREAKING CHANGES
+
+* **statics:** updates coin names from `ADA`to `Cardano ADA`
+Ticket: BG-56343
+.
+
+
+
+
+
 # [8.0.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.10...@bitgo/statics@8.0.0-rc.11) (2022-08-26)
 
 
