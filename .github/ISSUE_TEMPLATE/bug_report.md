@@ -5,7 +5,13 @@ labels: 'bug'
 
 ---
 
-<!--- Provide a general summary of the issue in the Title above -->
+<!---
+Provide a general summary of the issue in the Title above.
+
+Upon completing your report, copy the link to this issue, and submit the information to: https://bitgo.freshdesk.com/.
+
+This will help us review, prioritize, and assign the issue to internal teams. Doing this helps us stay accountable to your submission in a timely manner. Thank you!
+-->
 
 ## Environment Details
 * **OS:** <!--- What is your operating system -->
