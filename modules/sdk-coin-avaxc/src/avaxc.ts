@@ -656,7 +656,7 @@ export class AvaxC extends BaseCoin {
     if (isUnsignedSweep) {
       const tx = await txBuilder.build();
       const response: OfflineVaultTxInfo = {
-        tx: tx.toBroadcastFormat(),
+        txHex: tx.toBroadcastFormat(),
         userKey,
         backupKey,
         coin: this.getChain(),

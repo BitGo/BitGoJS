@@ -56,7 +56,7 @@ export interface UnformattedTxInfo {
 export interface OfflineVaultTxInfo {
   nextContractSequenceId?: string;
   contractSequenceId?: string;
-  tx: string;
+  txHex: string;
   userKey: string;
   backupKey: string;
   coin: string;

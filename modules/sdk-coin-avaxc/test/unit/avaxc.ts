@@ -700,7 +700,7 @@ describe('Avalanche C-Chain', function () {
 
         // id and tx will always be different because of expireTime
         recovery.should.not.be.undefined();
-        recovery.should.have.properties('tx', 'userKey', 'backupKey');
+        recovery.should.have.properties('txHex', 'userKey', 'backupKey');
         recovery.recipients.length.should.equal(1);
         recovery.recipients[0].address.should.equal(recoveryDestination);
         recovery.walletContractAddress.should.equal(walletContractAddress);
@@ -716,7 +716,7 @@ describe('Avalanche C-Chain', function () {
         });
 
         const txPrebuild = {
-          txHex: recovery.tx,
+          txHex: recovery.txHex,
           userKey: userXpub,
           backupKey: backupXpub,
           coin: recovery.coin,
