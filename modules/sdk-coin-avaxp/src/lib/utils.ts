@@ -93,7 +93,7 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
-  public parseAddress = (pub: string): BufferAvax => this.binTools.parseAddress(pub, 'P');
+  public parseAddress = (pub: string): BufferAvax => this.binTools.stringToAddress(pub);
 
   /**
    * Returns whether or not the string is a valid protocol private key, or extended

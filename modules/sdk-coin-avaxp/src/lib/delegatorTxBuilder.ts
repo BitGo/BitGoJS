@@ -16,7 +16,7 @@ import {
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN } from 'avalanche';
-import { DecodedUtxoObj } from './iface';
+import { SECP256K1_Transfer_Output } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 
@@ -34,6 +34,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     super(coinConfig);
     const network = coinConfig.network as AvalancheNetwork;
     this._stakeAmount = new BN(network.minStake);
+    this.transaction._fee = new BN(0);
   }
 
   /**
@@ -42,6 +43,16 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    */
   protected get transactionType(): TransactionType {
     return TransactionType.addDelegator;
+  }
+
+  /**
+   * Addresses where reward should be deposit
+   * @param {string | string[]} address - single address or array of addresses to receive rewards
+   */
+  rewardAddresses(address: string | string[]): this {
+    const rewardAddresses = address instanceof Array ? address : [address];
+    this.transaction._rewardAddresses = rewardAddresses.map(utils.parseAddress);
+    return this;
   }
 
   /**
@@ -83,10 +94,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  /**
-   * region Validators
-   */
-
+  // region Validators
   /**
    * validates a correct NodeID is used
    * @param nodeID
@@ -140,12 +148,28 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
   // endregion
 
+  /** @inheritdoc */
   initBuilder(tx: Tx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
+    // The StakeOuts is a {@link stakeTransferOut} result.
+    // It's expected to have only one outputs with the addresses of the sender.
+    const outputs = baseTx.getStakeOuts();
+    if (outputs.length != 1) {
+      throw new BuildTransactionError('Transaction can have one external output');
+    }
+    const output = outputs[0];
+    if (!output.getAssetID().equals(this.transaction._assetId)) {
+      throw new Error('The Asset ID of the output does not match the transaction');
+    }
+    const secpOut = output.getOutput();
+    this.transaction._locktime = secpOut.getLocktime();
+    this.transaction._threshold = secpOut.getThreshold();
+    // output addresses are the sender addresses
+    this.transaction._fromAddresses = secpOut.getAddresses();
     this._nodeID = baseTx.getNodeIDString();
     this._startTime = baseTx.getStartTime();
     this._endTime = baseTx.getEndTime();
@@ -191,6 +215,11 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     );
   }
 
+  /**
+   * Create the StakeOut where the recipient address are the sender.
+   * @protected
+   *
+   */
   protected stakeTransferOut(): TransferableOutput {
     return new TransferableOutput(
       this.transaction._assetId,
@@ -212,32 +241,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return new ParseableOutput(
       new SECPOwnerOutput(this.transaction._rewardAddresses, this.transaction._locktime, this.transaction._threshold)
     );
-  }
-
-  /**
-   * Inputs can be controlled but outputs get reordered in transactions
-   * In order to make sure that the mapping is always correct we create an addressIndx which matches to the appropiate
-   * signatureIdx
-   * @param inputs
-   * @protected
-   */
-  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
-    return utxos.map((utxo) => {
-      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
-
-      // use the same addressesIndex as existing ones in the inputs
-      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-
-      return {
-        outputID: 7,
-        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
-        txid: utils.cb58Encode(utxo.getTxID()),
-        amount: secpInput.getAmount().toString(),
-        threshold: this.transaction._threshold,
-        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
-        addressesIndex,
-      };
-    });
   }
 
   /**
@@ -306,7 +309,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
 
     this.transaction._utxos.forEach((utxo, i) => {
-      if (utxo.outputID === 7) {
+      if (utxo.outputID === SECP256K1_Transfer_Output) {
         const txidBuf = utils.cb58Decode(utxo.txid);
         const amt: BN = new BN(utxo.amount);
         const outputidx = utils.cb58Decode(utxo.outputidx);
