@@ -44,11 +44,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
     }
   }
 
-  /**
-   * Initialize the builder
-   * @param tx BaseTx
-   * @returns ValidatorTxBuilder
-   */
+  /** @inheritdoc */
   initBuilder(tx: Tx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();

@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js';
-import * as _ from 'lodash';
 import assert from 'assert';
 import {
   BaseCoin,
@@ -76,9 +74,17 @@ export class Ada extends BaseCoin {
   getBaseChain(): string {
     return this.getChain();
   }
-
+  /**
+   * Verify that a transaction prebuild complies with the original intention
+   *  A prebuild transaction has to be parsed correctly and intended recipients has to be
+   *  in the transaction output
+   *
+   * @param params.txPrebuild prebuild transaction
+   * @param params.txParams transaction parameters
+   * @return true if verification success
+   *
+   */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
     const transaction = new Transaction(coinConfig);
@@ -89,17 +95,16 @@ export class Ada extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients !== undefined) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
-      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
-
-      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
-        throw new Error('Tx outputs does not match with expected txParams recipients');
-      }
-      for (const recipients of txParams.recipients) {
-        totalAmount = totalAmount.plus(recipients.amount);
-      }
-      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
-        throw new Error('Tx total amount does not match with expected total amount field');
+      for (const recipient of txParams.recipients) {
+        let find = false;
+        for (const output of explainedTx.outputs) {
+          if (recipient.address === output.address && recipient.amount === output.amount) {
+            find = true;
+          }
+        }
+        if (!find) {
+          throw new Error('cannot find recipient in expected output');
+        }
       }
     }
     return true;

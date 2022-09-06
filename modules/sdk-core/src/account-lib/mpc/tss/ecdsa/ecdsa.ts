@@ -1,4 +1,5 @@
 import * as paillierBigint from 'paillier-bigint';
+import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import * as secp from '@noble/secp256k1';
 import { randomBytes, createHash, Hash } from 'crypto';
 import { hexToBigInt } from '../../../util/crypto';
@@ -28,6 +29,9 @@ import {
   XShare,
   YShare,
 } from './types';
+
+const _1n = BigInt(1);
+const _3n = BigInt(3);
 
 /**
  * ECDSA TSS implementation supporting 2:n Threshold
@@ -225,15 +229,17 @@ export default class Ecdsa {
       let pk = getPaillierPublicKey(n);
       const k = hexToBigInt(shareToBeSend['k']);
 
-      const beta0 = Ecdsa.curve.scalarRandom();
-      shareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarReduce(Ecdsa.curve.scalarNegate(beta0)), 32).toString(
+      const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      shareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(beta0)), 32).toString(
         'hex'
       );
       const alpha = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.gamma)), pk.encrypt(beta0));
       shareToBeSend.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
 
-      const nu0 = Ecdsa.curve.scalarRandom();
-      shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(nu0), 32).toString('hex');
+      const nu0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(nu0)), 32).toString(
+        'hex'
+      );
       const mu = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.w)), pk.encrypt(nu0));
       shareToBeSend.mu = bigIntToBufferBE(mu, 32).toString('hex');
       if (shareParticipant['alpha']) {

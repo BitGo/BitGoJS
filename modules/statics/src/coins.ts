@@ -78,8 +78,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tdoge', 'Testnet Dogecoin', Networks.test.dogecoin, UnderlyingAsset.DOGE),
   avaxp('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, UnderlyingAsset.AVAXP),
   avaxp('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, UnderlyingAsset.AVAXP),
-  ada('ada', 'Ada', Networks.main.ada, UnderlyingAsset.ADA),
-  ada('tada', 'tAda', Networks.test.ada, UnderlyingAsset.ADA),
+  ada('ada', 'Cardano ADA', Networks.main.ada, UnderlyingAsset.ADA),
+  ada('tada', 'Testnet Cardano ADA', Networks.test.ada, UnderlyingAsset.ADA),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, ALGO_FEATURES, KeyCurve.Ed25519),
   account(
     'talgo',

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { describe, it } from 'mocha';
 import { BIP32Interface } from 'bip32';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
@@ -46,7 +47,7 @@ function runTestParse<TNumber extends number | bigint>(
   protocol: Protocol,
   txType: FixtureTxType,
   scriptType: ScriptType,
-  amountType: 'number' | 'bigint' = 'number'
+  amountType: 'number' | 'bigint'
 ) {
   if (txType === 'deposit' && !isSupportedDepositType(protocol.network, scriptType)) {
     return;
@@ -57,7 +58,7 @@ function runTestParse<TNumber extends number | bigint>(
   }
 
   const fixtureName = `${txType}_${scriptType}.json`;
-  describe(fixtureName, function () {
+  describe(`${fixtureName} amountType=${amountType}`, function () {
     let fixture: TransactionFixtureWithInputs;
     let parsedTx: UtxoTransaction<TNumber>;
 
@@ -121,6 +122,27 @@ function runTestParse<TNumber extends number | bigint>(
         getPrevOutputs(),
         amountType
       );
+    });
+
+    it(`round-trip (high-precision values)`, function () {
+      if (amountType !== 'bigint') {
+        return;
+      }
+      const tx = createTransactionFromBuffer<TNumber>(
+        Buffer.from(fixture.transaction.hex, 'hex'),
+        protocol.network,
+        {},
+        amountType
+      );
+      tx.outs.forEach((o) => {
+        o.value = (BigInt(1e16) + BigInt(1)) as TNumber;
+        assert.notStrictEqual(BigInt(Number(o.value)), o.value);
+      });
+      const txRoundTrip = parseTransactionRoundTrip(tx.toBuffer(), protocol.network, undefined, amountType);
+      assert.strictEqual(txRoundTrip.outs.length, tx.outs.length);
+      txRoundTrip.outs.forEach((o, i) => {
+        assert.deepStrictEqual(o, tx.outs[i]);
+      });
     });
 
     it(`recreate from unsigned hex`, function () {

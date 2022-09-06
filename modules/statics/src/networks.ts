@@ -33,6 +33,7 @@ export interface AdaNetwork extends BaseNetwork {
 export interface AvalancheNetwork extends BaseNetwork {
   readonly alias: string;
   readonly blockchainID: string;
+  readonly cChainBlockchainID: string;
   readonly networkID: number;
   readonly hrp: string;
   readonly vm: string;
@@ -173,6 +174,7 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
   explorerUrl = 'https://explorer-xp.avax.network/tx/';
   accountExplorerUrl = 'https://explorer-xp.avax.network/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
   avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
   networkID = 1;
   hrp = 'avax';
@@ -198,6 +200,7 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   explorerUrl = 'https://explorer-xp.avax-test.network/tx/';
   accountExplorerUrl = 'https://explorer-xp.avax-test.network/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = 'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp';
   avaxAssetID = 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
   networkID = 5;
   alias = 'P';

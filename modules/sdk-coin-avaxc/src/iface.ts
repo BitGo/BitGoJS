@@ -48,6 +48,28 @@ export interface EIP1559 {
   maxFeePerGas: number;
 }
 
+// region Recovery
+export interface UnformattedTxInfo {
+  recipient: Recipient;
+}
+
+export interface OfflineVaultTxInfo {
+  nextContractSequenceId?: string;
+  contractSequenceId?: string;
+  tx: string;
+  userKey: string;
+  backupKey: string;
+  coin: string;
+  gasPrice: number;
+  gasLimit: number;
+  recipients: Recipient[];
+  walletContractAddress: string;
+  amount: string;
+  backupKeyNonce: number;
+  eip1559?: EIP1559;
+}
+// endregion
+
 // For createHopTransactionParams
 export interface HopTransactionBuildOptions {
   wallet: Wallet;
@@ -121,13 +143,28 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   expireTime?: number;
   hopTransaction?: string;
   eip1559?: EIP1559;
+  txPrebuild?: {
+    halfSigned: {
+      txHex: string;
+    };
+  };
 }
 
 // For signTransaction
+export interface SignFinalOptions {
+  txPrebuild: {
+    halfSigned: {
+      txHex: string;
+    };
+  };
+  prv: string;
+}
+
 export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TxPreBuild;
   prv: string;
   custodianTransactionId?: string;
+  isLastSignature?: boolean;
 }
 
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
