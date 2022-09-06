@@ -15,6 +15,7 @@ export type CreateUserGammaAndMuShareRT = ECDSA.SignConvertRT;
 export type CreateUserOmicronAndDeltaShareRT = ECDSA.SignCombineRT;
 export type SignatureShare = ECDSA.SignRT;
 export type Signature = ECDSA.Signature;
+export type BShare = ECDSA.BShare;
 
 export enum SendShareType {
   KShare = 'KShare',
