@@ -129,16 +129,19 @@ export function addToPsbt(
   signer: WalletUnspentSigner<RootWalletKeys>,
   network: Network
 ): void {
-  // if segwit
   const { txid, vout, script, value } = toPrevOutput(u, network);
   if (isSegwit(u.chain)) {
-    psbt.addInput({
+    const input = {
       hash: txid,
       index: vout,
       witnessUtxo: {
         script,
         value,
       },
+    };
+    psbt.addInput({
+      ...input,
+      ...(isNonWitnessUnspent(u) && { nonWitnessUtxo: u.prevTx }),
     });
   } else {
     if (!isNonWitnessUnspent(u)) {
