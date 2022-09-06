@@ -12,6 +12,8 @@ import {
   BitGoBase,
   common,
   FeeEstimateOptions,
+  FullySignedTransaction,
+  getIsUnsignedSweep,
   InvalidAddressError,
   IWallet,
   KeyPair,
@@ -44,9 +46,11 @@ import {
   HopParams,
   HopPrebuild,
   HopTransactionBuildOptions,
+  OfflineVaultTxInfo,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
   SignedTransaction,
+  SignFinalOptions,
   VerifyAvaxcTransactionOptions,
 } from './iface';
 
@@ -494,7 +498,7 @@ export class AvaxC extends BaseCoin {
    * @param {string} params.recoveryDestination - target address to send recovered funds to
    * @returns {Promise<RecoveryInfo>} - recovery tx info
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo> {
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -515,7 +519,8 @@ export class AvaxC extends BaseCoin {
       throw new Error('invalid recoveryDestination');
     }
 
-    // TODO (BG-56334): implement krs recovery and unsigned sweep
+    // TODO (BG-56531): add support for krs
+    const isUnsignedSweep = getIsUnsignedSweep(params);
 
     // Clean up whitespace from entered values
     let userKey = params.userKey.replace(/\s/g, '');
@@ -537,29 +542,31 @@ export class AvaxC extends BaseCoin {
       }
     }
 
-    const userKeyPair = new AvaxcKeyPair({ prv: userKey });
-    const userPrv = userKeyPair.getKeys().prv!;
+    let backupKeyAddress;
+    let backupSigningKey;
+    if (isUnsignedSweep) {
+      const backupKeyPair = new AvaxcKeyPair({ pub: backupKey });
+      backupKeyAddress = backupKeyPair.getAddress();
+    } else {
+      // Decrypt backup private key and get address
+      let backupPrv;
 
-    // Decrypt backup private key and get address
-    let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
 
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      const keyPair = new AvaxcKeyPair({ prv: backupPrv });
+      backupSigningKey = keyPair.getKeys().prv;
+      if (!backupSigningKey) {
+        throw new Error('no private key');
+      }
+      backupKeyAddress = keyPair.getAddress();
     }
-
-    const keyPair = new AvaxcKeyPair({ prv: backupPrv });
-    const prv = keyPair.getKeys().prv;
-    if (!prv) {
-      throw new Error('no private key');
-    }
-    const backupSigningKey = prv;
-    const backupKeyAddress = keyPair.getAddress();
-
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
 
     // get balance of backupKey to ensure funds are available to pay fees
@@ -591,26 +598,25 @@ export class AvaxC extends BaseCoin {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(params.walletContractAddress);
 
+    let operationHash, signature;
     // Get operation hash and sign it
-    const operationHash = this.getOperationSha3ForExecuteAndConfirm(
-      recipients,
-      this.getDefaultExpireTime(),
-      sequenceId
-    );
-    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
+    if (!isUnsignedSweep) {
+      operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
 
-    try {
-      Util.ecRecoverEthAddress(operationHash, signature);
-    } catch (e) {
-      throw new Error('Invalid signature');
+      try {
+        Util.ecRecoverEthAddress(operationHash, signature);
+      } catch (e) {
+        throw new Error('Invalid signature');
+      }
     }
 
     const txInfo = {
       recipient: recipients[0],
       expireTime: this.getDefaultExpireTime(),
       contractSequenceId: sequenceId,
-      operationHash: operationHash,
-      signature: signature,
+      operationHash,
+      signature,
       gasLimit: gasLimit.toString(10),
     };
 
@@ -641,13 +647,34 @@ export class AvaxC extends BaseCoin {
     });
     txBuilder
       .transfer()
-      .amount(txAmount.toString(10))
+      .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
-      .key(userPrv)
       .expirationTime(this.getDefaultExpireTime())
       .to(params.recoveryDestination)
       .data(bufferToHex(sendData as Buffer));
 
+    if (isUnsignedSweep) {
+      const tx = await txBuilder.build();
+      const response: OfflineVaultTxInfo = {
+        tx: tx.toBroadcastFormat(),
+        userKey,
+        backupKey,
+        coin: this.getChain(),
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit,
+        recipients: [txInfo.recipient],
+        walletContractAddress: tx.toJson().to,
+        amount: txInfo.recipient.amount,
+        backupKeyNonce,
+        eip1559: params.eip1559,
+      };
+      _.extend(response, txInfo);
+      response.nextContractSequenceId = response.contractSequenceId;
+      return response;
+    }
+
+    const userKeyPair = new AvaxcKeyPair({ prv: userKey });
+    txBuilder.transfer().key(userKeyPair.getKeys().prv!);
     txBuilder.sign({ key: backupSigningKey });
     const signedTx = await txBuilder.build();
 
@@ -786,11 +813,46 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
+   * Helper function for signTransaction for the rare case that SDK is doing the second signature
+   * Note: we are expecting this to be called from the offline vault
+   * @param params.txPrebuild
+   * @param params.prv
+   * @returns {{txHex: string}}
+   */
+  async signFinal(params: SignFinalOptions): Promise<FullySignedTransaction> {
+    const keyPair = new AvaxcKeyPair({ prv: params.prv });
+    const signingKey = keyPair.getKeys().prv;
+    if (_.isUndefined(signingKey)) {
+      throw new Error('missing private key');
+    }
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    try {
+      txBuilder.from(params.txPrebuild!.halfSigned!.txHex);
+    } catch (e) {
+      throw new Error('invalid half-signed transaction');
+    }
+
+    txBuilder.sign({ key: signingKey });
+    const tx = await txBuilder.build();
+    return {
+      txHex: tx.toBroadcastFormat(),
+    };
+  }
+
+  /**
    * Assemble half-sign prebuilt transaction
    * @param params
    */
   async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
-    const txBuilder = this.getTransactionBuilder();
+    // Normally the SDK provides the first signature for an AVAXC tx,
+    // but for unsigned sweep recoveries it can provide the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return await this.signFinal(params as unknown as SignFinalOptions);
+    }
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new AvaxcKeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
@@ -801,7 +863,7 @@ export class AvaxC extends BaseCoin {
       eip1559: params.txPrebuild.eip1559,
       txHex: transaction.toBroadcastFormat(),
       recipients: recipients,
-      expiration: params.txPrebuild.expireTime,
+      expireTime: params.txPrebuild.expireTime,
       hopTransaction: params.txPrebuild.hopTransaction,
       custodianTransactionId: params.custodianTransactionId,
     };
