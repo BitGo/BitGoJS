@@ -28,6 +28,7 @@ import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { getTxRequest, sendSignatureShare } from '../common';
+import createKeccakHash from 'keccak';
 
 const MPC = new Ecdsa();
 
@@ -164,7 +165,7 @@ export async function createUserSignatureShare(
   if (dShare.i !== ShareKeyPosition.USER || dShare.j !== ShareKeyPosition.BITGO) {
     throw new Error(`Invalid DShare, doesn't seem to be from BitGo`);
   }
-  return MPC.sign(message, oShare, dShare);
+  return MPC.sign(message, oShare, dShare, createKeccakHash('keccak256'));
 }
 
 /**
@@ -193,13 +194,13 @@ export async function sendShareToBitgo(
     case SendShareType.KShare:
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
       responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.AShare);
       break;
     case SendShareType.MUShare:
       const muShare = share as MUShare;
       signatureShare = convertMuShare(muShare);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
       responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.DShare);
       break;
     case SendShareType.SShare:
@@ -211,7 +212,7 @@ export async function sendShareToBitgo(
       }
       const sShare = share as SShare;
       signatureShare = convertSDShare({ sShare, dShare });
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
       responseFromBitgo = sShare;
       break;
     default:
@@ -237,7 +238,7 @@ export async function getBitgoToUserLatestShare(
 ): Promise<SendShareToBitgoRT> {
   let responseFromBitgo: SendShareToBitgoRT;
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const userShares = txRequest.signatureShares;
+  const userShares = txRequest.transactions[0].signatureShares;
   if (!userShares || !userShares.length) {
     throw new Error('user share is not present');
   }
@@ -514,7 +515,19 @@ export function convertCombinedSignature(signature: Signature, userIndex: number
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(userIndex),
-    share: `${signature.recid}${signature.r}${delimeter}${signature.s}${delimeter}${signature.y}`,
+    share: `${signature.recid}${delimeter}${signature.r}${delimeter}${signature.s}${delimeter}${signature.y}`,
+  };
+}
+
+export function parseCombinedSignature(share: SignatureShareRecord): Signature {
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 3, 'Signature');
+
+  return {
+    recid: Number(shares[0]),
+    r: shares[1],
+    s: shares[2],
+    y: shares[3],
   };
 }
 

@@ -119,6 +119,7 @@ export abstract class MpcUtils {
         feeOptions: params.feeOptions,
         hopParams: params.hopParams,
         isTss: params.isTss,
+        nonce: params.nonce,
       };
     }
 
