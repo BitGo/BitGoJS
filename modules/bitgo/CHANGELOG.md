@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.21](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.20...bitgo@14.3.0-rc.21) (2022-09-07)
+
+
+### Features
+
+* **sdk-core:** ecdsa type converters ([800b01b](https://github.com/BitGo/BitGoJS/commit/800b01b02194011bc0ac608a5d75094f935d6235))
+
+
+
+
+
 # [14.3.0-rc.20](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.19...bitgo@14.3.0-rc.20) (2022-09-06)
 
 **Note:** Version bump only for package bitgo

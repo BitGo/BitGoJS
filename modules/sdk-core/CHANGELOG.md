@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.14...@bitgo/sdk-core@2.0.0-rc.15) (2022-09-07)
+
+
+### Features
+
+* **sdk-core:** ecdsa type converters ([800b01b](https://github.com/BitGo/BitGoJS/commit/800b01b02194011bc0ac608a5d75094f935d6235))
+
+
+
+
+
 # [2.0.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.13...@bitgo/sdk-core@2.0.0-rc.14) (2022-09-06)
 
 
