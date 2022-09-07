@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.12...@bitgo/statics@8.0.0-rc.13) (2022-09-07)
+
+
+### Features
+
+* add tokens to trading ([33887f7](https://github.com/BitGo/BitGoJS/commit/33887f73ca40136edaa02a2cf8bf346be63339a8))
+
+
+
+
+
 # [8.0.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.11...@bitgo/statics@8.0.0-rc.12) (2022-09-06)
 
 

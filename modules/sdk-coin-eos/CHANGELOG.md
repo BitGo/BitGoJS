@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.0.3-rc.19...@bitgo/sdk-coin-eos@1.0.3-rc.20) (2022-09-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-eos:** fix precision for EOS:CHEX tokens ([0e60ec9](https://github.com/BitGo/BitGoJS/commit/0e60ec9e92a9c737fd65d89476f080b99a0fa842))
+
+
+
+
+
 ## [1.0.3-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.0.3-rc.18...@bitgo/sdk-coin-eos@1.0.3-rc.19) (2022-09-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eos

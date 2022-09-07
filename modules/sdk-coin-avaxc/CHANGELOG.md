@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.0.0-rc.3...@bitgo/sdk-coin-avaxc@2.0.0-rc.4) (2022-09-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-avaxc:** fix unsigned sweep format for ovc ([564ca4d](https://github.com/BitGo/BitGoJS/commit/564ca4d80ab47de011f9790a536469355a86a86a))
+
+
+
+
+
 # [2.0.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.0.0-rc.2...@bitgo/sdk-coin-avaxc@2.0.0-rc.3) (2022-09-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

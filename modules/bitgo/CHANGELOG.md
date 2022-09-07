@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.22](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.21...bitgo@14.3.0-rc.22) (2022-09-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-eos:** fix precision for EOS:CHEX tokens ([0e60ec9](https://github.com/BitGo/BitGoJS/commit/0e60ec9e92a9c737fd65d89476f080b99a0fa842))
+
+
+
+
+
 # [14.3.0-rc.21](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.20...bitgo@14.3.0-rc.21) (2022-09-07)
 
 
