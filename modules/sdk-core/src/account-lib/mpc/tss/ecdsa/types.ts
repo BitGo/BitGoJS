@@ -144,9 +144,9 @@ export interface DShare {
 
 export interface SShare {
   i: number;
-  y: string;
-  r: string;
+  R: string;
   s: string;
+  y: string;
 }
 
 export interface SignCombine {
@@ -164,13 +164,7 @@ export interface SignCombineRT {
 
 export interface Signature {
   y: string;
-  r: string;
-  s: string;
-}
-
-export interface SignRT {
-  i: number;
-  y: string;
+  recid: number;
   r: string;
   s: string;
 }

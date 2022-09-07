@@ -51,7 +51,9 @@ export class Secp256k1Curve implements BaseCurve {
   }
 
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean {
-    return secp.verify(signature, message, bigIntToBufferBE(publicKey, 33));
+    return Buffer.from(secp.recoverPublicKey(message, signature.subarray(1), signature[0], true)).equals(
+      bigIntToBufferBE(publicKey, 33)
+    );
   }
 
   order(): bigint {

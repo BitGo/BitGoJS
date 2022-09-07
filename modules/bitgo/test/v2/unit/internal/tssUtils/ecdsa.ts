@@ -362,7 +362,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const signatureShareThreeFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
-        share: userSShare.r + userSShare.s + userSShare.y + userOmicronAndDeltaShare.dShare.delta + userOmicronAndDeltaShare.dShare.Gamma,
+        share: userSShare.R + userSShare.s + userSShare.y + userOmicronAndDeltaShare.dShare.delta + userOmicronAndDeltaShare.dShare.Gamma,
       };
       const getBitGoSShare = MPC.sign(signablePayload, getBitgoOShareAndDShares.oShare, userOmicronAndDeltaShare.dShare);
       const getBitGoFinalSignature = MPC.constructSignature([getBitGoSShare, userSShare]);

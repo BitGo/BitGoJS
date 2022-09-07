@@ -13,9 +13,10 @@ export type OShare = ECDSA.OShare;
 export type DShare = ECDSA.DShare;
 export type CreateUserGammaAndMuShareRT = ECDSA.SignConvertRT;
 export type CreateUserOmicronAndDeltaShareRT = ECDSA.SignCombineRT;
-export type SignatureShare = ECDSA.SignRT;
+export type SignatureShare = ECDSA.SShare;
 export type Signature = ECDSA.Signature;
 export type BShare = ECDSA.BShare;
+export type SShare = ECDSA.SShare;
 
 export enum SendShareType {
   KShare = 'KShare',
@@ -66,4 +67,4 @@ export type CreateCombinedKeyParams = {
   commonKeychain: string;
 };
 
-export type SendShareToBitgoRT = AShare | DShare | Signature;
+export type SendShareToBitgoRT = AShare | DShare | SShare | Signature;
