@@ -227,6 +227,10 @@ export class Eos extends BaseCoin {
     return 1e4;
   }
 
+  get decimalPlaces() {
+    return 4;
+  }
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
@@ -365,7 +369,7 @@ export class Eos extends BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    return bigNumber.toFormat(4, null as any, { groupSeparator: '', decimalSeparator: '.' });
+    return bigNumber.toFormat(this.decimalPlaces, null as any, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
