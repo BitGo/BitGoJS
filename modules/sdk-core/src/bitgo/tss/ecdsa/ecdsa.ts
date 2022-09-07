@@ -20,6 +20,8 @@ import {
   YShare,
   SendShareToBitgoRT,
   ReceivedShareType,
+  BShare,
+  Signature,
 } from './types';
 import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType } from './../../utils';
 import { ShareKeyPosition } from '../types';
@@ -325,25 +327,12 @@ export function getPublicKey(commonKeyChain: string): string {
   return commonKeyChain.slice(0, 66);
 }
 
-/**
- * validates signature share record
- * @param share - signature share record to validate
- * @param shareLength - share record expected length
- * @param isExactLength - if this false then share length can be greater.
- */
-function validateShare(share: SignatureShareRecord, shareLength: number, isExactLength = true): void {
-  const error = (message: string) => new Error(message);
+export const delimeter = ':';
+export const secondaryDelimeter = '-';
 
-  if (share.share.length < shareLength) {
-    throw error(`Excepted share length to be greater than or equal ${shareLength} but got ${share.share.length}.`);
-  }
-
-  if (isExactLength && share.share.length !== shareLength) {
-    throw error(`Excepted share length to be ${shareLength} but got ${share.share.length}.`);
-  }
-
-  if (share.from === share.to) {
-    throw error(`Key share sender and receiver cannot be the same.`);
+function validateSharesLength(shares: string[], expectedLength: number, shareName: string) {
+  if (shares.length < expectedLength) {
+    throw new Error(`Invalid ${shareName} share`);
   }
 }
 
@@ -353,13 +342,15 @@ function validateShare(share: SignatureShareRecord, shareLength: number, isExact
  * @returns K Share
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
-  validateShare(share, 1536, false);
+  const shares = share.share.split(delimeter);
+
+  validateSharesLength(shares, 2, 'K');
 
   return {
-    i: getParticapantIndex(share.to),
-    j: getParticapantIndex(share.from),
-    k: share.share.substring(0, 1536),
-    n: share.share.substring(1536),
+    i: getParticipantIndex(share.to),
+    j: getParticipantIndex(share.from),
+    k: shares[0],
+    n: shares[1],
   };
 }
 
@@ -370,9 +361,9 @@ export function parseKShare(share: SignatureShareRecord): KShare {
  */
 export function convertKShare(share: KShare): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.i),
-    from: getParticapantFromIndex(share.j),
-    share: share.k + share.n,
+    to: getParticipantFromIndex(share.i),
+    from: getParticipantFromIndex(share.j),
+    share: `${share.k}${delimeter}${share.n}`,
   };
 }
 
@@ -382,14 +373,16 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  * @returns A Share
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
-  validateShare(share, 4608, false);
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 4, 'A');
+
   return {
-    i: getParticapantIndex(share.to),
-    j: getParticapantIndex(share.from),
-    k: share.share.slice(0, 1536),
-    alpha: share.share.slice(1536, 3072),
-    mu: share.share.slice(3072, 4608),
-    n: share.share.slice(4608),
+    i: getParticipantIndex(share.to),
+    j: getParticipantIndex(share.from),
+    k: shares[0],
+    alpha: shares[1],
+    mu: shares[2],
+    n: shares[3],
   };
 }
 
@@ -400,9 +393,9 @@ export function parseAShare(share: SignatureShareRecord): AShare {
  */
 export function convertAShare(share: AShare): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.i),
-    from: getParticapantFromIndex(share.j),
-    share: share.k! + share.alpha! + share.mu! + share.n!,
+    to: getParticipantFromIndex(share.i),
+    from: getParticipantFromIndex(share.j),
+    share: `${share.k}${delimeter}${share.alpha}${delimeter}${share.mu}${delimeter}${share.n}`,
   };
 }
 
@@ -412,12 +405,14 @@ export function convertAShare(share: AShare): SignatureShareRecord {
  * @returns Mu Share
  */
 export function parseMuShare(share: SignatureShareRecord): MUShare {
-  validateShare(share, 3072);
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 2, 'Mu');
+
   return {
-    i: getParticapantIndex(share.to),
-    j: getParticapantIndex(share.from),
-    alpha: share.share.slice(0, 1536),
-    mu: share.share.slice(1536, 3072),
+    i: getParticipantIndex(share.to),
+    j: getParticipantIndex(share.from),
+    alpha: shares[0],
+    mu: shares[1],
   };
 }
 
@@ -428,9 +423,9 @@ export function parseMuShare(share: SignatureShareRecord): MUShare {
  */
 export function convertMuShare(share: MUShare): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.i),
-    from: getParticapantFromIndex(share.j),
-    share: share.alpha + share.mu,
+    to: getParticipantFromIndex(share.i),
+    from: getParticipantFromIndex(share.j),
+    share: `${share.alpha}${delimeter}${share.mu}`,
   };
 }
 
@@ -440,12 +435,14 @@ export function convertMuShare(share: MUShare): SignatureShareRecord {
  * @returns D Share
  */
 export function parseDShare(share: SignatureShareRecord): DShare {
-  validateShare(share, 130);
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 2, 'D');
+
   return {
-    i: getParticapantIndex(share.to),
-    j: getParticapantIndex(share.from),
-    delta: share.share.slice(0, 64),
-    Gamma: share.share.slice(64, 130),
+    i: getParticipantIndex(share.to),
+    j: getParticipantIndex(share.from),
+    delta: shares[0],
+    Gamma: shares[1],
   };
 }
 
@@ -456,9 +453,9 @@ export function parseDShare(share: SignatureShareRecord): DShare {
  */
 export function convertDShare(share: DShare): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.i),
-    from: getParticapantFromIndex(share.j),
-    share: share.delta + share.Gamma,
+    to: getParticipantFromIndex(share.i),
+    from: getParticipantFromIndex(share.j),
+    share: `${share.delta}${delimeter}${share.Gamma}`,
   };
 }
 
@@ -468,10 +465,12 @@ export function convertDShare(share: DShare): SignatureShareRecord {
  * @returns Object containing S and D Share
  */
 export function parseSDShare(share: SignatureShareRecord): { sShare: SignatureShare; dShare: DShare } {
-  validateShare(share, 324);
+  const shares = share.share.split(secondaryDelimeter);
+  validateSharesLength(shares, 2, 'SD');
+
   return {
-    sShare: parseSignatureShare({ to: share.to, from: share.from, share: share.share.slice(0, 194) }),
-    dShare: parseDShare({ to: share.to, from: share.from, share: share.share.slice(194) }),
+    sShare: parseSignatureShare({ to: share.to, from: share.from, share: shares[0] }),
+    dShare: parseDShare({ to: share.to, from: share.from, share: shares[1] }),
   };
 }
 
@@ -482,9 +481,9 @@ export function parseSDShare(share: SignatureShareRecord): { sShare: SignatureSh
  */
 export function convertSDShare(share: { sShare: SignatureShare; dShare: DShare }): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.dShare.i),
-    from: getParticapantFromIndex(share.dShare.j),
-    share: share.sShare.r + share.sShare.s + share.sShare.y + share.dShare.delta + share.dShare.Gamma,
+    to: getParticipantFromIndex(share.dShare.i),
+    from: getParticipantFromIndex(share.dShare.j),
+    share: `${share.sShare.r}${delimeter}${share.sShare.s}${delimeter}${share.sShare.y}${secondaryDelimeter}${share.dShare.delta}${delimeter}${share.dShare.Gamma}`,
   };
 }
 
@@ -494,34 +493,118 @@ export function convertSDShare(share: { sShare: SignatureShare; dShare: DShare }
  * @returns Signature Share
  */
 export function parseSignatureShare(share: SignatureShareRecord): SignatureShare {
-  validateShare(share, 194);
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 3, 'Signature');
+
   return {
-    i: getParticapantIndex(share.to),
-    r: share.share.substring(0, 64),
-    s: share.share.substring(64, 128),
-    y: share.share.substring(128, 194),
+    i: getParticipantIndex(share.to),
+    r: shares[0],
+    s: shares[1],
+    y: shares[2],
+  };
+}
+
+/**
+ * convets combined signature to signature share record
+ * @param signature - combined signature share
+ * @param userIndex - user index, either 1 (user) or 2 (backup)
+ * @returns signature share record
+ */
+export function convertCombinedSignature(signature: Signature, userIndex: number): SignatureShareRecord {
+  return {
+    to: SignatureShareType.BITGO,
+    from: getParticipantFromIndex(userIndex),
+    share: `${signature.r}${delimeter}${signature.s}${delimeter}${signature.y}`,
   };
 }
 
 /**
  * convert signature share to signature share record
- * @param share - K share
+ * @param share - Signature share
  * @returns signature share record
  */
 export function convertSignatureShare(share: SignatureShare, senderIndex: number): SignatureShareRecord {
   return {
-    to: getParticapantFromIndex(share.i),
-    from: getParticapantFromIndex(senderIndex),
-    share: share.r + share.s + share.y,
+    to: getParticipantFromIndex(share.i),
+    from: getParticipantFromIndex(senderIndex),
+    share: `${share.r}${delimeter}${share.s}${delimeter}${share.y}`,
   };
 }
 
 /**
- * gets particapant index
+ * converts B share to signature share record
+ * @param share - B share
+ * @returns signature share record
+ */
+export function convertBShare(share: BShare): SignatureShareRecord {
+  return {
+    to: SignatureShareType.BITGO,
+    from: getParticipantFromIndex(share.i),
+    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}`,
+  };
+}
+
+/**
+ * parses B share from signature share record
+ * @param share B share record
+ * @returns B Share
+ */
+export function parseBShare(share: SignatureShareRecord): BShare {
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 9, 'B');
+
+  return {
+    i: getParticipantIndex(share.to),
+    beta: shares[0],
+    gamma: shares[1],
+    k: shares[2],
+    nu: shares[3],
+    w: shares[4],
+    y: shares[5],
+    l: shares[6],
+    m: shares[7],
+    n: shares[8],
+  };
+}
+
+/**
+ * converts O share to signature share record
+ * @param share O share
+ * @returns signature share record
+ */
+export function convertOShare(share: OShare): SignatureShareRecord {
+  return {
+    to: SignatureShareType.BITGO,
+    from: getParticipantFromIndex(share.i),
+    share: `${share.Gamma}${delimeter}${share.delta}${delimeter}${share.k}${delimeter}${share.omicron}${delimeter}${share.y}`,
+  };
+}
+
+/**
+ * parses O share from signature share record
+ * @param share O share record
+ * @returns O Share
+ */
+export function parseOShare(share: SignatureShareRecord): OShare {
+  const shares = share.share.split(delimeter);
+  validateSharesLength(shares, 5, 'O');
+
+  return {
+    i: getParticipantIndex(share.to),
+    Gamma: shares[0],
+    delta: shares[1],
+    k: shares[2],
+    omicron: shares[3],
+    y: shares[4],
+  };
+}
+
+/**
+ * gets participant index
  * @param participant - participants (user, backup, or bitgo)
  * @returns index (1, 2, 0r 3)
  */
-export function getParticapantIndex(participant: 'user' | 'backup' | 'bitgo'): number {
+export function getParticipantIndex(participant: 'user' | 'backup' | 'bitgo'): number {
   switch (participant) {
     case 'user':
       return 1;
@@ -535,11 +618,11 @@ export function getParticapantIndex(participant: 'user' | 'backup' | 'bitgo'): n
 }
 
 /**
- * gets particapant name by index
- * @param index particapant index
- * @returns particapant name
+ * gets participant name by index
+ * @param index participant index
+ * @returns participant name
  */
-export function getParticapantFromIndex(index: number): SignatureShareType {
+export function getParticipantFromIndex(index: number): SignatureShareType {
   switch (index) {
     case 1:
       return SignatureShareType.USER;
@@ -548,6 +631,6 @@ export function getParticapantFromIndex(index: number): SignatureShareType {
     case 3:
       return SignatureShareType.BITGO;
     default:
-      throw new Error(`Unknown particapant index ${index}`);
+      throw new Error(`Unknown participant index ${index}`);
   }
 }
