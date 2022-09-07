@@ -6,6 +6,7 @@ import { Tx } from 'avalanche/dist/apis/platformvm';
 import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { ExportTxBuilder } from './exportTxBuilder';
+import { ImportTxBuilder } from './importTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -23,6 +24,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       transactionBuilder = this.getValidatorBuilder();
     } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
       transactionBuilder = this.getExportBuilder();
+    } else if (ImportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+      transactionBuilder = this.getImportBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -52,6 +55,15 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getExportBuilder(): ExportTxBuilder {
     return new ExportTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Import Cross chain transfer
+   *
+   * @returns {ImportTxBuilder} the builder initialized
+   */
+  getImportBuilder(): ImportTxBuilder {
+    return new ImportTxBuilder(this._coinConfig);
   }
 
   /** @inheritdoc */
