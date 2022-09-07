@@ -18,9 +18,12 @@ describe('V2 Base Coin:', function () {
   let basecoinBtc;
   let basecoinXlm;
   let basecoinNear;
+  let basecoinEos;
+  let basecoinEosChex;
   let basecoinErc20TokenWithName;
   let basecoinErc20TokenWithContractHash;
   let baseCoinStellarToken;
+
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
@@ -29,6 +32,8 @@ describe('V2 Base Coin:', function () {
     basecoinBtc = bitgo.coin('tbtc');
     basecoinXlm = bitgo.coin('txlm');
     basecoinNear = bitgo.coin('tnear');
+    basecoinEos = bitgo.coin('teos');
+    basecoinEosChex = bitgo.coin('teos:CHEX');
     basecoinEth.keychains();
     basecoinErc20TokenWithName = bitgo.coin('terc');
     basecoinErc20TokenWithContractHash = bitgo.coin('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
@@ -79,6 +84,21 @@ describe('V2 Base Coin:', function () {
 
       basecoinNear.baseUnitsToBigUnits('197895229538867437499999802').should.equal('197.895229538867437499999802');
 
+    });
+
+    it('should convert amounts to EOS', function () {
+      basecoinEos.baseUnitsToBigUnits('1').should.equal('0.0001');
+
+      basecoinEos.baseUnitsToBigUnits('1234').should.equal('0.1234');
+
+      basecoinEos.baseUnitsToBigUnits('123456788').should.equal('12345.6788');
+
+      // for chex token, we need to round to 8 decimal places
+      basecoinEosChex.baseUnitsToBigUnits('1').should.equal('0.00000001');
+
+      basecoinEosChex.baseUnitsToBigUnits('1234').should.equal('0.00001234');
+
+      basecoinEosChex.baseUnitsToBigUnits('123456788').should.equal('1.23456788');
     });
 
   });
