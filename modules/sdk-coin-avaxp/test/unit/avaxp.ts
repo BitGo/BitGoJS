@@ -424,19 +424,39 @@ describe('Avaxp', function () {
       }
     });
 
-    it('should validate address', function () {
+    it('should validate an array address', function () {
       const validAddresses = [
         'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
         'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
         'NodeID-143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
       ];
 
-      for (const address of validAddresses) {
-        basecoin.isValidAddress(address).should.be.true();
-      }
+      basecoin.isValidAddress(validAddresses).should.be.true();
     });
 
-    it('should verify address', function () {
+    it('should fail to validate an array address with invalid addresss', function () {
+      const validAddresses = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+        'invalid-address',
+      ];
+
+      basecoin.isValidAddress(validAddresses).should.be.false();
+    });
+
+    it('should validate a multsig address string', function () {
+      const multiSigValidAddress =
+        'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59~P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822~P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4';
+      basecoin.isValidAddress(multiSigValidAddress).should.be.true();
+    });
+
+    it('should fail to validate a multsig address string with invalid address', function () {
+      const multiSigValidAddress =
+        'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59~invalid-address~P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4';
+      basecoin.isValidAddress(multiSigValidAddress).should.be.false();
+    });
+
+    it('should throw when verifying address if address length doesnt match keychain length', function () {
       const validAddresses = [
         {
           address: 'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
@@ -449,7 +469,7 @@ describe('Avaxp', function () {
       ];
 
       for (const addressParams of validAddresses) {
-        basecoin.verifyAddress(addressParams).should.be.true();
+        should.throws(() => basecoin.verifyAddress(addressParams));
       }
     });
 
@@ -468,6 +488,34 @@ describe('Avaxp', function () {
       for (const address of invalidAddresses) {
         should.throws(() => basecoin.verifyAddress(address));
       }
+    });
+
+    it('should successfully verify is wallet address', function () {
+      basecoin
+        .isWalletAddress({
+          address:
+            'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex~P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4~P-fuji1cjk4cvdfy6ffd4fh8umpnnrmjt0xdap02tcep6',
+          keychains,
+        })
+        .should.be.true();
+    });
+
+    it('should throw when address length and keychain length dont match', function () {
+      should.throws(() =>
+        basecoin.isWalletAddress({
+          address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4~P-fuji1cjk4cvdfy6ffd4fh8umpnnrmjt0xdap02tcep6',
+          keychains,
+        })
+      );
+    });
+
+    it('should throw when keychain is not of length 3', function () {
+      should.throws(() =>
+        basecoin.isWalletAddress({
+          address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4',
+          keychains: keychains[0],
+        })
+      );
     });
   });
 });
