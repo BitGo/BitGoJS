@@ -319,14 +319,14 @@ export const mockDShareToBitgo = {
 export const mockSShare = {
   i: 3,
   y: '0362c0f94da66b5cb2880d1bd8c0c407cfa417be23cfc29d3d02aec83a70f6d8ab',
-  r: '181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
+  R: '02181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
   s: '549291233abb0a8f8cf6948b956a596c90b16f9ae15554d77e7a8f69e04ac311',
 };
 
-export const mockSignature = {
+export const mockSShareFromUser = {
   i: 1,
   y: '0362c0f94da66b5cb2880d1bd8c0c407cfa417be23cfc29d3d02aec83a70f6d8ab',
-  r: '181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
+  R: '02181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
   s: '4ffc4eb69700daa897662db238e06a856c697807ab22a3824ad472eb59e7d86f',
 };
 

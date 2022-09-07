@@ -236,7 +236,8 @@ export class Transaction extends BaseTransaction {
       const address = amountOutput
         .getAddresses()
         .map((a) => utils.addressToString(this._network.hrp, this._network.alias, a))
-        .join(', ');
+        .sort()
+        .join('~');
       return {
         value: amountOutput.getAmount().toString(),
         address,
@@ -252,6 +253,8 @@ export class Transaction extends BaseTransaction {
         address: amountInput
           .getSigIdxs()
           .map((i) => bintools.fromBufferToBN(bintools.b58ToBuffer(i.toString())).toString())
+          .sort()
+          .join('~')
           .toString(),
         value: amountInput.getAmount().toString(),
       };

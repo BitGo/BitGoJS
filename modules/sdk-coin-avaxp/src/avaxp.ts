@@ -108,21 +108,44 @@ export class AvaxP extends BaseCoin {
    */
   isWalletAddress(params: VerifyAddressOptions): boolean {
     const { address, keychains } = params;
+
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
     if (!keychains || keychains.length !== 3) {
       throw new Error('Invalid keychains');
     }
+
+    // multisig addresses are separated by ~
+    const splitAddresses = address.split('~');
+
+    // derive addresses from keychain
     const unlockAddresses = keychains.map((keychain) =>
       new AvaxpLib.KeyPair({ pub: keychain.pub }).getAddress(this._staticsCoin.network.type)
     );
 
-    if (!unlockAddresses.some((unlockAddress) => unlockAddress === address)) {
+    if (splitAddresses.length !== unlockAddresses.length) {
+      throw new UnexpectedAddressError(`address validation failure: multisig address length does not match`);
+    }
+
+    if (!this.adressesArraysMatch(splitAddresses, unlockAddresses)) {
       throw new UnexpectedAddressError(`address validation failure: ${address} is not of this wallet`);
     }
+
     return true;
   }
+
+  /**
+   * Validate that two multisig address arrays have the same elements, order doesnt matter
+   * @param addressArray1
+   * @param addressArray2
+   * @returns true if address arrays have the same addresses
+   * @private
+   */
+  private adressesArraysMatch(addressArray1: string[], addressArray2: string[]) {
+    return JSON.stringify(addressArray1.sort()) === JSON.stringify(addressArray2.sort());
+  }
+
   /**
    * Generate Avaxp key pair
    *
@@ -173,8 +196,21 @@ export class AvaxP extends BaseCoin {
     }
   }
 
-  isValidAddress(address: string): boolean {
-    return AvaxpLib.Utils.isValidAddress(address);
+  isValidAddress(address: string | string[]): boolean {
+    if (address === undefined) {
+      return false;
+    }
+
+    const addressArr: string[] = Array.isArray(address) ? address : address.split('~');
+
+    // multisig wallet have an array of addresses. validate each address
+    for (const address of addressArr) {
+      if (!AvaxpLib.Utils.isValidAddress(address)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**

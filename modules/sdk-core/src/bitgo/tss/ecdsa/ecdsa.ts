@@ -479,11 +479,11 @@ export function parseSDShare(share: SignatureShareRecord): { sShare: SignatureSh
  * @param share - S and D share in a object
  * @returns signature share record
  */
-export function convertSDShare(share: { sShare: SignatureShare; dShare: DShare }): SignatureShareRecord {
+export function convertSDShare(share: { sShare: SShare; dShare: DShare }): SignatureShareRecord {
   return {
     to: getParticipantFromIndex(share.dShare.i),
     from: getParticipantFromIndex(share.dShare.j),
-    share: `${share.sShare.r}${delimeter}${share.sShare.s}${delimeter}${share.sShare.y}${secondaryDelimeter}${share.dShare.delta}${delimeter}${share.dShare.Gamma}`,
+    share: `${share.sShare.R}${delimeter}${share.sShare.s}${delimeter}${share.sShare.y}${secondaryDelimeter}${share.dShare.delta}${delimeter}${share.dShare.Gamma}`,
   };
 }
 
@@ -498,7 +498,7 @@ export function parseSignatureShare(share: SignatureShareRecord): SignatureShare
 
   return {
     i: getParticipantIndex(share.to),
-    r: shares[0],
+    R: shares[0],
     s: shares[1],
     y: shares[2],
   };
@@ -514,7 +514,7 @@ export function convertCombinedSignature(signature: Signature, userIndex: number
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(userIndex),
-    share: `${signature.r}${delimeter}${signature.s}${delimeter}${signature.y}`,
+    share: `${signature.recid}${signature.r}${delimeter}${signature.s}${delimeter}${signature.y}`,
   };
 }
 
@@ -527,7 +527,7 @@ export function convertSignatureShare(share: SignatureShare, senderIndex: number
   return {
     to: getParticipantFromIndex(share.i),
     from: getParticipantFromIndex(senderIndex),
-    share: `${share.r}${delimeter}${share.s}${delimeter}${share.y}`,
+    share: `${share.R}${delimeter}${share.s}${delimeter}${share.y}`,
   };
 }
 
