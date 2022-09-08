@@ -56,6 +56,7 @@ const SOL_FEATURES = [
 ];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
+const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -559,7 +560,14 @@ export const coins = CoinMap.fromCoins([
   erc20('lyn', 'Lynchpin', 18, '0xb0b1685f55843d03739c7d9b0a230f1b7dcf03d5', UnderlyingAsset.LYN),
   erc20('mana', 'Decentraland', 18, '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', UnderlyingAsset.MANA),
   erc20('maps', 'Maps', 6, '0x2b915b505c017abb1547aa5ab355fbe69865cc6d', UnderlyingAsset.MAPS),
-  erc20('matic', 'Matic Token', 18, '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', UnderlyingAsset.MATIC),
+  erc20(
+    'matic',
+    'Matic Token',
+    18,
+    '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+    UnderlyingAsset.MATIC,
+    MATIC_FEATURES
+  ),
   erc20('mcdai', 'Dai', 18, '0x6b175474e89094c44da98b954eedeac495271d0f', UnderlyingAsset.MCDAI),
   erc20('mco', 'Crypto.com', 8, '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', UnderlyingAsset.MCO),
   erc20('mco2', 'Moss Carbon Credit', 18, '0xfc98e825a2264d890f9a1e68ed50e1526abccacd', UnderlyingAsset.MCO2),
@@ -1657,7 +1665,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae',
     UnderlyingAsset.TMATIC,
-    undefined,
+    MATIC_FEATURES,
     undefined,
     undefined,
     Networks.test.goerli
