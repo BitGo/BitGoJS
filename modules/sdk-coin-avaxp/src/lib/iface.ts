@@ -27,7 +27,7 @@ export interface TxData {
   locktime: string;
   memo: string;
   signatures: string[];
-  stakedOutputs: Entry[];
+  outputs: Entry[];
   changeOutputs: Entry[];
 }
 
