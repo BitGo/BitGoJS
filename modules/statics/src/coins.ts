@@ -56,6 +56,7 @@ const SOL_FEATURES = [
 ];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
+const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -559,7 +560,14 @@ export const coins = CoinMap.fromCoins([
   erc20('lyn', 'Lynchpin', 18, '0xb0b1685f55843d03739c7d9b0a230f1b7dcf03d5', UnderlyingAsset.LYN),
   erc20('mana', 'Decentraland', 18, '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', UnderlyingAsset.MANA),
   erc20('maps', 'Maps', 6, '0x2b915b505c017abb1547aa5ab355fbe69865cc6d', UnderlyingAsset.MAPS),
-  erc20('matic', 'Matic Token', 18, '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', UnderlyingAsset.MATIC),
+  erc20(
+    'matic',
+    'Matic Token',
+    18,
+    '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+    UnderlyingAsset.MATIC,
+    MATIC_FEATURES
+  ),
   erc20('mcdai', 'Dai', 18, '0x6b175474e89094c44da98b954eedeac495271d0f', UnderlyingAsset.MCDAI),
   erc20('mco', 'Crypto.com', 8, '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', UnderlyingAsset.MCO),
   erc20('mco2', 'Moss Carbon Credit', 18, '0xfc98e825a2264d890f9a1e68ed50e1526abccacd', UnderlyingAsset.MCO2),
@@ -1651,6 +1659,17 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+  terc20(
+    'tmatic',
+    'Test Polygon',
+    18,
+    '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae',
+    UnderlyingAsset.TMATIC,
+    MATIC_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
@@ -1659,7 +1678,6 @@ export const coins = CoinMap.fromCoins([
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
-  terc20('tmatic', 'Testnet Polygon', 18, '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae', UnderlyingAsset.TMATIC),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
   tbscToken(
     'tbsc:busd',

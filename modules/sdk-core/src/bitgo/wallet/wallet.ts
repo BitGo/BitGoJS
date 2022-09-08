@@ -22,7 +22,14 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TssUtils, TxRequest, EddsaUnsignedTransaction } from '../utils';
+import {
+  inferAddressType,
+  RequestTracer,
+  TssUtils,
+  TxRequest,
+  EddsaUnsignedTransaction,
+  EIP1559FeeOptions,
+} from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -1661,6 +1668,7 @@ export class Wallet implements IWallet {
         wallet: this,
         verification: params.verification ?? {},
         reqId: params.reqId,
+        walletType: this._wallet.multisigType,
       });
     } catch (e) {
       console.error('transaction prebuild failed local validation:', e.message);
@@ -2461,7 +2469,8 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
-    const apiVersion = this._wallet.type === 'custodial' ? 'full' : 'lite';
+    const apiVersion =
+      this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite';
 
     let txRequest: TxRequest;
     switch (params.type) {
@@ -2475,6 +2484,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             memo: params.memo,
             nonce: params.nonce,
+            feeOptions: params.feeOptions as EIP1559FeeOptions,
           },
           apiVersion,
           params.preview

@@ -387,3 +387,10 @@ export const mockedUserOAndDShare = {
     Gamma: '02d568871f7628ddb5b2bfd363f8e21f15ec52cd0460aaa9fa1f57a674c3bea16a',
   },
 };
+
+export const mockCombinedSignature = {
+  y: '0362c0f94da66b5cb2880d1bd8c0c407cfa417be23cfc29d3d02aec83a70f6d8ab',
+  r: '181273015b236d9b4de9811a76167db16e20bd34b9bde369ccd352e7bffbbc7f',
+  s: '5b7120262e441ac7dba33dc231b53c0cbd93f54422d0a7e1f6835c379603a5c1',
+  recid: 1,
+};

@@ -2,6 +2,7 @@
  * @prettier
  */
 import { bip32 } from '@bitgo/utxo-lib';
+import request from 'superagent';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 import {
   Eth,
@@ -13,13 +14,25 @@ import {
   SignFinalOptions,
   SignTransactionOptions,
   SignedTransaction,
+  RecoverOptions,
+  RecoveryInfo,
+  OfflineVaultTxInfo,
 } from '@bitgo/sdk-coin-eth';
-import { BaseCoin, BitGoBase, TransactionExplanation, FullySignedTransaction } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  common,
+  TransactionExplanation,
+  FullySignedTransaction,
+  getIsUnsignedSweep,
+  Util,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { KeyPair, TransactionBuilder } from './lib';
 import _ from 'lodash';
 import type * as EthTxLib from '@ethereumjs/tx';
+import { bufferToHex } from 'ethereumjs-util';
 
 export class Polygon extends Eth {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -154,7 +167,7 @@ export class Polygon extends Eth {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): TransactionBuilder {
+  public getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
@@ -224,60 +237,25 @@ export class Polygon extends Eth {
    * Helper function for signTransaction for the rare case that SDK is doing the second signature
    * Note: we are expecting this to be called from the offline vault
    * @param params.txPrebuild
-   * @param params.signingKeyNonce
-   * @param params.walletContractAddress
    * @param params.prv
-   * @returns {{txHex: *}}
+   * @returns {{txHex: string}}
    */
-  signFinal(params: SignFinalOptions): FullySignedTransaction {
-    const txPrebuild = params.txPrebuild;
-
-    if (!_.isNumber(params.signingKeyNonce) && !_.isNumber(params.txPrebuild.halfSigned.backupKeyNonce)) {
-      throw new Error(
-        'must have at least one of signingKeyNonce and backupKeyNonce as a parameter, and it must be a number'
-      );
-    }
-    if (_.isUndefined(params.walletContractAddress)) {
-      throw new Error('params must include walletContractAddress, but got undefined');
-    }
-
-    const signingNode = bip32.fromBase58(params.prv);
-    const signingKey = signingNode.privateKey;
+  async signFinalPolygon(params: SignFinalOptions): Promise<FullySignedTransaction> {
+    const signingKey = new KeyPair({ prv: params.prv }).getKeys().prv;
     if (_.isUndefined(signingKey)) {
       throw new Error('missing private key');
     }
-
-    const txInfo = {
-      recipient: txPrebuild.recipients[0],
-      expireTime: txPrebuild.halfSigned.expireTime,
-      contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
-      signature: txPrebuild.halfSigned.signature,
+    const txBuilder = this.getTransactionBuilder();
+    try {
+      txBuilder.from(params.txPrebuild.halfSigned.txHex);
+    } catch (e) {
+      throw new Error('invalid half-signed transaction');
+    }
+    txBuilder.sign({ key: signingKey });
+    const tx = await txBuilder.build();
+    return {
+      txHex: tx.toBroadcastFormat(),
     };
-
-    const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
-    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
-    const sendData = Buffer.concat([methodSignature, encodedArgs]);
-
-    const ethTxParams = {
-      to: params.walletContractAddress,
-      nonce:
-        params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned.backupKeyNonce,
-      value: 0,
-      gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
-      gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
-      data: sendData,
-    };
-
-    const unsignedEthTx = Polygon.buildTransaction({
-      ...ethTxParams,
-      eip1559: params.txPrebuild.eip1559,
-      replayProtectionOptions: params.txPrebuild.replayProtectionOptions,
-    });
-
-    const ethTx = unsignedEthTx.sign(signingKey);
-
-    return { txHex: ethTx.serialize().toString('hex') };
   }
 
   /**
@@ -285,6 +263,11 @@ export class Polygon extends Eth {
    * @param params
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    // Normally the SDK provides the first signature for an POLYGON tx, but occasionally it provides the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return await this.signFinalPolygon(params);
+    }
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new KeyPair({ prv: params.prv }).getKeys().prv!);
@@ -305,5 +288,203 @@ export class Polygon extends Eth {
     };
 
     return { halfSigned: txParams };
+  }
+
+  /**
+   * Make a query to Polygonscan for information such as balance, token balance, solidity calls
+   * @param {Object} query key-value pairs of parameters to append after /api
+   * @returns {Promise<Object>} response from Polygonscan
+   */
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
+    const token = common.Environments[this.bitgo.getEnv()].polygonscanApiToken;
+    if (token) {
+      query.apikey = token;
+    }
+    const response = await request
+      .get(common.Environments[this.bitgo.getEnv()].polygonscanBaseUrl + '/api')
+      .query(query);
+
+    if (!response.ok) {
+      throw new Error('could not reach Polygonscan');
+    }
+
+    if (response.body.status === '0' && response.body.message === 'NOTOK') {
+      throw new Error('Polygonscan rate limit reached');
+    }
+    return response.body;
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   * @param {String} params.userKey [encrypted] xprv or xpub
+   * @param {String} params.backupKey [encrypted] xprv or xpub if the xprv is held by a KRS provider
+   * @param {String} params.walletPassphrase used to decrypt userKey and backupKey
+   * @param {String} params.walletContractAddress the Polygon address of the wallet contract
+   * @param {String} params.krsProvider necessary if backup key is held by KRS
+   * @param {String} params.recoveryDestination target address to send recovered funds to
+   * @returns {Promise<RecoveryInfo | OfflineVaultTxInfo>}
+   */
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    this.validateRecoveryParams(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    // Clean up whitespace from entered values
+    let userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userKey = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+    let backupKeyAddress;
+    let backupSigningKey;
+    if (isUnsignedSweep) {
+      const backupHDNode = bip32.fromBase58(backupKey);
+      backupSigningKey = backupHDNode.publicKey;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+    } else {
+      // Decrypt backup private key and get address
+      let backupPrv;
+
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+
+      const keyPair = new KeyPair({ prv: backupPrv });
+      backupSigningKey = keyPair.getKeys().prv;
+      if (!backupSigningKey) {
+        throw new Error('no private key');
+      }
+      backupKeyAddress = keyPair.getAddress();
+    }
+
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    // get balance of backupKey to ensure funds are available to pay fees
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some MATIC to this address then retry.`
+      );
+    }
+
+    // get balance of wallet
+    const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+
+    // build recipients object
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: txAmount.toString(10),
+      },
+    ];
+
+    // Get sequence ID using contract call
+    // we need to wait between making two polygonscan calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+
+    let operationHash, signature;
+    // Get operation hash and sign it
+    if (!isUnsignedSweep) {
+      operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
+
+      try {
+        Util.ecRecoverEthAddress(operationHash, signature);
+      } catch (e) {
+        throw new Error('Invalid signature');
+      }
+    }
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: gasLimit.toString(10),
+    };
+
+    // calculate send data
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    txBuilder.counter(backupKeyNonce);
+    txBuilder.contract(params.walletContractAddress);
+    let txFee;
+    if (params.eip1559) {
+      txFee = {
+        eip1559: {
+          maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+          maxFeePerGas: params.eip1559.maxFeePerGas,
+        },
+      };
+    } else {
+      txFee = { fee: gasPrice.toString() };
+    }
+    txBuilder.fee({
+      ...txFee,
+      gasLimit: gasLimit.toString(),
+    });
+    txBuilder
+      .transfer()
+      .amount(recipients[0].amount)
+      .contractSequenceId(sequenceId)
+      .expirationTime(this.getDefaultExpireTime())
+      .to(params.recoveryDestination)
+      .data(bufferToHex(sendData as Buffer));
+
+    const tx = await txBuilder.build();
+    if (isUnsignedSweep) {
+      const response: OfflineVaultTxInfo = {
+        txHex: tx.toBroadcastFormat(),
+        userKey,
+        backupKey,
+        coin: this.getChain(),
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit,
+        recipients: [txInfo.recipient],
+        walletContractAddress: tx.toJson().to,
+        amount: txInfo.recipient.amount,
+        backupKeyNonce,
+        eip1559: params.eip1559,
+      };
+      _.extend(response, txInfo);
+      response.nextContractSequenceId = response.contractSequenceId;
+      return response;
+    }
+
+    txBuilder.transfer().key(new KeyPair({ prv: userKey }).getKeys().prv as string);
+    txBuilder.sign({ key: backupSigningKey });
+
+    const signedTx = await txBuilder.build();
+
+    return {
+      id: signedTx.toJson().id,
+      tx: signedTx.toBroadcastFormat(),
+    };
   }
 }

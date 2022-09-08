@@ -21,6 +21,7 @@ import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
+import nock = require('nock');
 
 describe('test tss helper functions', function () {
   let mpc: Eddsa;
@@ -79,6 +80,10 @@ describe('test tss helper functions', function () {
         },
       ],
     });
+  });
+
+  after(function () {
+    nock.cleanAll();
   });
 
   describe('encryptYShare', function () {

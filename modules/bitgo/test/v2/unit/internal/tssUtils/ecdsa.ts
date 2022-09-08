@@ -135,6 +135,10 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   describe('TSS key chains', async function() {
+    after(function () {
+      nock.cleanAll();
+    });
+
     it('should generate TSS key chains', async function () {
       const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
@@ -237,7 +241,15 @@ describe('TSS Ecdsa Utils:', async function () {
     const txRequestId = 'randomidEcdsa';
     const txRequest: TxRequest = {
       txRequestId,
-      transactions: [],
+      transactions: [{
+        unsignedTx: {
+          serializedTxHex: 'TOO MANY SECRETS',
+          signableHex: 'TOO MANY SECRETS',
+          derivationPath: '', // Needs this when key derivation is supported
+        },
+        state: 'pendingSignature',
+        signatureShares: [],
+      }],
       unsignedTxs: [
         {
           serializedTxHex: 'TOO MANY SECRETS',
@@ -297,6 +309,7 @@ describe('TSS Ecdsa Utils:', async function () {
         txRequestId: txRequest.txRequestId,
         signatureShare: signatureShareOneFromUser,
         response: signatureShareOneFromBitgo,
+        tssType: 'ecdsa',
       });
       /**  END STEP ONE */
 
@@ -341,6 +354,7 @@ describe('TSS Ecdsa Utils:', async function () {
         txRequestId: txRequest.txRequestId,
         signatureShare: signatureShareTwoFromUser,
         response: signatureShareTwoFromBitgo,
+        tssType: 'ecdsa',
       });
       /**  END STEP TWO */
 
@@ -377,8 +391,13 @@ describe('TSS Ecdsa Utils:', async function () {
         txRequestId: txRequest.txRequestId,
         signatureShare: signatureShareThreeFromUser,
         response: signatureShareThreeFromBitgo,
+        tssType: 'ecdsa',
       });
       /* END STEP THREE */
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
@@ -450,18 +469,18 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     async function setupSignTxRequestNocks(isTxRequest = true) {
-      let response = { txRequests: [{ ...txRequest }] };
+      let response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex } }] }] };
       if (isTxRequest) {
         await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       }
       const aRecord = ECDSAMethods.convertAShare(mockAShare);
       const signatureShares = [aRecord];
       txRequest.signatureShares = signatureShares;
-      response = { txRequests: [{ ...txRequest }] };
+      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex } }] }] };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       const dRecord = ECDSAMethods.convertDShare(mockDShare);
       signatureShares.push(dRecord);
-      response = { txRequests: [{ ...txRequest }] };
+      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex } }] }] };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
     }

@@ -14,7 +14,8 @@ import * as should from 'should';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
-import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare } from '../../fixtures/tss/ecdsaFixtures';
+import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
+import nock = require('nock');
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -74,7 +75,15 @@ describe('Ecdsa tss helper functions tests', function () {
     bitgoGpgKeypair = gpgKeypairs[2];
   });
 
+  after(function () {
+    nock.cleanAll();
+  });
+
   describe('encryptNShare and decryptNShare', function () {
+    after(function () {
+      nock.cleanAll();
+    });
+
     it('should encrypt n shares foreach user', async function () {
       for (let i = 2; i <= 3; i++) {
         const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey, userGpgKeypair.privateKey);
@@ -105,6 +114,10 @@ describe('Ecdsa tss helper functions tests', function () {
   });
 
   describe('createCombinedKey', function () {
+    after(function () {
+      nock.cleanAll();
+    });
+
     it('should create combined user key', async function () {
       const bitgoToUserShare = await encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey,);
       const backupToUserShare = await encryptNShare(backupKeyShare, 1,
@@ -324,6 +337,10 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     describe('createUserSignatureShare:', async function () {
+      afterEach(function () {
+        nock.cleanAll();
+      });
+
       it('should succeed to create User Signature Share', async function () {
         const userSignatureShare = await ECDSAMethods.createUserSignatureShare(createUserSignatureParams.oShare, createUserSignatureParams.dShare, signablePayload);
         const { R, s, y, i } = userSignatureShare;
@@ -342,6 +359,10 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     describe('sendSignatureShare Tests', async function () {
+      afterEach(function () {
+        nock.cleanAll();
+      });
+
       const mockAShareString = `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}`;
       const mockDShareString = `${mockDShare.delta}${ECDSAMethods.delimeter}${mockDShare.Gamma}`;
       const config = [
@@ -354,9 +375,9 @@ describe('Ecdsa tss helper functions tests', function () {
           it(`should succeed to send ${config[index].shareToSend}`, async function () {
             const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
             const shareRecord = { from: 'bitgo', to: 'user', share: config[index].mockShareAsResponseString } as SignatureShareRecord;
-            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: shareRecord });
+            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: shareRecord, tssType: 'ecdsa' });
             txRequest.signatureShares = [shareRecord];
-            const response = { txRequests: [{ ...txRequest }] };
+            const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
             const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend);
             responseAShare.should.deepEqual(config[index].mockShareAsResponse);
@@ -365,9 +386,9 @@ describe('Ecdsa tss helper functions tests', function () {
           it(`should fail if we get an invalid ${config[index].shareReceived} as response`, async function () {
             const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
             const invalidSignatureShare = { from: 'bitgo', to: 'user', share: JSON.stringify(config[index].incorrectReceivedShareString) } as SignatureShareRecord;
-            const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare }, 200);
+            const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare, tssType: 'ecdsa' }, 200);
             txRequest.signatureShares = [invalidSignatureShare];
-            const response = { txRequests: [{ ...txRequest }] };
+            const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
             await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend).should.be.rejectedWith(/Invalid .* share/g); // `Invalid ${shareName} share`
             nock.isDone().should.equal(true);
@@ -377,6 +398,10 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     describe('getTxRequest:', async function () {
+      afterEach(function () {
+        nock.cleanAll();
+      });
+
       it('should succeed to get txRequest by id', async function () {
         const response = { txRequests: [txRequest] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
@@ -394,6 +419,10 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     describe('signing share parsers and converters', function() {
+      afterEach(function () {
+        nock.cleanAll();
+      });
+
       it('should successfully parse K share', function () {
         const bitgoKShare = mockSignRT.kShare;
         const share = {
@@ -488,7 +517,7 @@ describe('Ecdsa tss helper functions tests', function () {
         dShare.delta.should.equal(mockDShareToBitgo.delta);
         dShare.Gamma.should.equal(mockDShareToBitgo.Gamma);
       });
-  
+
       it('should successfully convert D share to signature share record', function () {
         const share = {
           to: SignatureShareType.BITGO,
@@ -541,6 +570,20 @@ describe('Ecdsa tss helper functions tests', function () {
         signature.R.should.equal(mockSShareFromUser.R);
         signature.s.should.equal(mockSShareFromUser.s);
         signature.y.should.equal(mockSShareFromUser.y);
+      });
+
+      it('should succuesfully parse combined signature', function() {
+        const mockCombinedSignature = mpc.constructSignature([mockSShareFromUser, mockSShare]);
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: `${mockCombinedSignature.recid}${ECDSAMethods.delimeter}${mockCombinedSignature.r}${ECDSAMethods.delimeter}${mockCombinedSignature.s}${ECDSAMethods.delimeter}${mockCombinedSignature.y}`,
+        } as SignatureShareRecord;
+        const signature = ECDSAMethods.parseCombinedSignature(share);
+        signature.recid.should.equal(mockCombinedSignature.recid);
+        signature.r.should.equal(mockCombinedSignature.r);
+        signature.s.should.equal(mockCombinedSignature.s);
+        signature.y.should.equal(mockCombinedSignature.y);
       });
 
       it('should successfully convert signature share to signature share record', function () {

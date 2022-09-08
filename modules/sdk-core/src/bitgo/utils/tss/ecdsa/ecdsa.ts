@@ -323,7 +323,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let signablePayload;
 
     if (requestType === RequestType.tx) {
-      signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+      signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
       signablePayload = Buffer.from(txRequestResolved.unsignedMessages![0].message, 'hex');
     }

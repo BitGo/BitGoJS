@@ -145,6 +145,7 @@ export interface SignFinalOptions {
       contractSequenceId: number;
       backupKeyNonce?: number;
       signature: string;
+      txHex?: string;
     };
     nextContractSequenceId?: number;
     hopTransaction?: string;
@@ -175,10 +176,11 @@ interface PrecreateBitGoOptions {
   newFeeAddress?: string;
 }
 
-interface OfflineVaultTxInfo {
+export interface OfflineVaultTxInfo {
   nextContractSequenceId?: string;
   contractSequenceId?: string;
-  tx: string;
+  tx?: string;
+  txHex?: string;
   userKey: string;
   backupKey: string;
   coin: string;
@@ -904,17 +906,7 @@ export class Eth extends BaseCoin {
     return userGasLimit;
   }
 
-  /**
-   * Builds a funds recovery transaction without BitGo
-   * @param params
-   * @param params.userKey {String} [encrypted] xprv
-   * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS provider
-   * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
-   * @param params.walletContractAddress {String} the ETH address of the wallet contract
-   * @param params.krsProvider {String} necessary if backup key is held by KRS
-   * @param params.recoveryDestination {String} target address to send recovered funds to
-   */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  validateRecoveryParams(params: RecoverOptions): void {
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -934,7 +926,20 @@ export class Eth extends BaseCoin {
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
+  }
 
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   * @param params.userKey {String} [encrypted] xprv
+   * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS provider
+   * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
+   * @param params.walletContractAddress {String} the ETH address of the wallet contract
+   * @param params.krsProvider {String} necessary if backup key is held by KRS
+   * @param params.recoveryDestination {String} target address to send recovered funds to
+   */
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    this.validateRecoveryParams(params);
     const isKrsRecovery = getIsKrsRecovery(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
@@ -1607,6 +1612,17 @@ export class Eth extends BaseCoin {
     return txPrebuild.coin === this.getChain();
   }
 
+  verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
+    const { txParams, txPrebuild, wallet } = params;
+    if (!txParams?.recipients || !wallet || !txPrebuild) {
+      throw new Error(`missing params`);
+    }
+    if (txParams.hop && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+    return true;
+  }
+
   /**
    * Verify that a transaction prebuild complies with the original intention
    *
@@ -1618,7 +1634,12 @@ export class Eth extends BaseCoin {
    */
   async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const ethNetwork = this.getNetwork();
-    const { txParams, txPrebuild, wallet } = params;
+    const { txParams, txPrebuild, wallet, walletType } = params;
+
+    if (walletType === 'tss') {
+      return this.verifyTssTransaction(params);
+    }
+
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error(`missing params`);
     }

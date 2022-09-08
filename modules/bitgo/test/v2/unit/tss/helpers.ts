@@ -1,14 +1,16 @@
 import { SignatureShareRecord } from '@bitgo/sdk-core';
+import { getRoute } from '../internal/tssUtils/common';
 import * as nock from 'nock';
 
-export async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any, signerShare?: string, response?: SignatureShareRecord}, status = 200): Promise<nock.Scope> {
-  const { signatureShare, signerShare } = params;
+export async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any, signerShare?: string, response?: SignatureShareRecord, tssType?: 'ecdsa' | 'eddsa'}, status = 200): Promise<nock.Scope> {
+  const { signatureShare, signerShare, tssType } = params;
+  const transactions = getRoute(tssType);
   const requestBody = signerShare === undefined ?
     { signatureShare } :
     { signatureShare, signerShare };
 
   return nock('https://bitgo.fakeurl')
-    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, requestBody)
+    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`, requestBody)
     .reply(status, (status === 200 ? (params.response ? params.response : params.signatureShare) : { error: 'some error' }));
 }
 

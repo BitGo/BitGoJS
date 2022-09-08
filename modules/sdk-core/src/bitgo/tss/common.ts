@@ -37,10 +37,16 @@ export async function sendSignatureShare(
   walletId: string,
   txRequestId: string,
   signatureShare: SignatureShareRecord,
-  signerShare?: string
+  signerShare?: string,
+  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa'
 ): Promise<SignatureShareRecord> {
+  let transactions = '';
+  if (mpcAlgorithm === 'ecdsa') {
+    transactions = '/transactions/0';
+  }
+
   return bitgo
-    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + '/signatureshares', 2))
+    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + transactions + '/signatureshares', 2))
     .send({
       signatureShare,
       signerShare,

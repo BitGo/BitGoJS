@@ -140,6 +140,7 @@ export interface VerifyTransactionOptions {
   wallet: IWallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
+  walletType?: 'onchain' | 'tss';
 }
 
 export interface SupplementGenerateWalletOptions {
