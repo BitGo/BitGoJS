@@ -2458,6 +2458,7 @@ export class Wallet implements IWallet {
     let txRequest: TxRequest;
     switch (params.type) {
       case 'transfer':
+        console.log(`params.nonce ${params.nonce}`);
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
             reqId,
@@ -2468,6 +2469,7 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
             feeOptions: params.feeOptions as EIP1559FeeOptions,
+            isTss: params.isTss,
           },
           apiVersion,
           params.preview
