@@ -1651,6 +1651,17 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+  terc20(
+    'tmatic',
+    'Test Polygon',
+    18,
+    '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae',
+    UnderlyingAsset.TMATIC,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
@@ -1659,7 +1670,6 @@ export const coins = CoinMap.fromCoins([
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
-  terc20('tmatic', 'Testnet Polygon', 18, '0x499d11e0b6eac7c0593d8fb292dcbbf815fb29ae', UnderlyingAsset.TMATIC),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
   tbscToken(
     'tbsc:busd',
