@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.17...@bitgo/sdk-core@2.0.0-rc.18) (2022-09-08)
+
+
+### Bug Fixes
+
+* **sdk-core:** tss tx signing ([ab7eb80](https://github.com/BitGo/BitGoJS/commit/ab7eb8079ea37e347727db106d01fe9362f36374))
+
+
+### Features
+
+* **sdk-coin-polygon:** support recovery ([15d6021](https://github.com/BitGo/BitGoJS/commit/15d602164d3a2b504d7995e65aa0fbcb38f98e89))
+
+
+
+
+
 # [2.0.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.15...@bitgo/sdk-core@2.0.0-rc.16) (2022-09-07)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.1.0-rc.19...@bitgo/sdk-coin-polygon@1.1.0-rc.20) (2022-09-08)
+
+
+### Features
+
+* **sdk-coin-polygon:** support recovery ([15d6021](https://github.com/BitGo/BitGoJS/commit/15d602164d3a2b504d7995e65aa0fbcb38f98e89))
+
+
+
+
+
 # [1.1.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.1.0-rc.17...@bitgo/sdk-coin-polygon@1.1.0-rc.18) (2022-09-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

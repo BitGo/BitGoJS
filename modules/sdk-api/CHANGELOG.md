@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.2-rc.21...@bitgo/sdk-api@1.2.0-rc.0) (2022-09-08)
+
+
+### Features
+
+* **sdk-coin-polygon:** support recovery ([15d6021](https://github.com/BitGo/BitGoJS/commit/15d602164d3a2b504d7995e65aa0fbcb38f98e89))
+
+
+
+
+
 ## [1.1.2-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.2-rc.19...@bitgo/sdk-api@1.1.2-rc.20) (2022-09-07)
 
 **Note:** Version bump only for package @bitgo/sdk-api

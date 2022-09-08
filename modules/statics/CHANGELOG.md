@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.13...@bitgo/statics@8.0.0-rc.14) (2022-09-08)
+
+
+### Features
+
+* **statics:** adds test polygon as erc20 token for goerli ([ec5ea83](https://github.com/BitGo/BitGoJS/commit/ec5ea83bb1cef8bbf045dd5c2d42bb8e17c90ff8))
+* **statics:** adds test polygon as erc20 token for goerli and staking feature ([629cd1b](https://github.com/BitGo/BitGoJS/commit/629cd1b7d6889f2cda0112f6a7d7e317941ca5a9))
+
+
+### BREAKING CHANGES
+
+* **statics:** adds test polygon as erc20 token for goerli because we are deprecating kovan
+BOS-556
+
+staking feature for matic
+
+
+
+
+
 # [8.0.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.12...@bitgo/statics@8.0.0-rc.13) (2022-09-07)
 
 
