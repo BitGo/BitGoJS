@@ -103,6 +103,7 @@ export function setPsbtDefaults(
       if (version !== 1) {
         throw new Error(`invalid version`);
       }
+      psbt.setVersion(version);
   }
 }
 
