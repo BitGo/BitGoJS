@@ -6,6 +6,7 @@ import { Network, supportsSegwit, supportsTaproot } from '..';
 import { isTriple, Triple, Tuple } from './types';
 
 import { ecc as eccLib } from '../noble_ecc';
+import { parseControlBlock } from 'bitcoinjs-lib/src/taproot';
 
 export { scriptTypeForChain } from './wallet/chains';
 
@@ -73,6 +74,7 @@ export type SpendableScript = {
 export type SpendScriptP2tr = {
   controlBlock: Buffer;
   witnessScript: Buffer;
+  leafVersion: number;
 };
 
 /**
@@ -218,9 +220,13 @@ export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: T
   assert(payment.redeem);
   const output = payment.redeem.output;
   assert(Buffer.isBuffer(output));
+
+  const { leafVersion } = parseControlBlock(eccLib, controlBlock);
+
   return {
     controlBlock,
     witnessScript: output,
+    leafVersion,
   };
 }
 

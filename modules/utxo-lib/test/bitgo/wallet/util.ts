@@ -33,7 +33,7 @@ export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, ne
   const destOutput = payment.output;
   if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
 
-  for (let index = 0; index < vout; index++) {
+  for (let index = 0; index <= vout; index++) {
     if (index === vout) {
       prevTx.addOutput(outputScript, value);
     } else {

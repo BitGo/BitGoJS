@@ -1,10 +1,11 @@
 import { TxOutput } from 'bitcoinjs-lib';
 import { Network } from '..';
 import { toOutputScript } from '../address';
+import { createOutputScript2of3, createSpendScriptP2tr } from './outputScripts';
 import { UtxoPsbt } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
-import { isSegwit, RootWalletKeys, WalletUnspent, WalletUnspentSigner } from './wallet';
+import { isSegwit, RootWalletKeys, scriptTypeForChain, WalletUnspent, WalletUnspentSigner } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -126,32 +127,48 @@ export function addToTransactionBuilder<TNumber extends number | bigint>(
 export function addToPsbt(
   psbt: UtxoPsbt<UtxoTransaction<bigint>>,
   u: WalletUnspent<bigint>,
-  signer: WalletUnspentSigner<RootWalletKeys>,
+  rootSigner: WalletUnspentSigner<RootWalletKeys>,
   network: Network
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, network);
+  const { walletKeys, signer, cosigner } = rootSigner.deriveForChainAndIndex(u.chain, u.index);
+  const scriptType = scriptTypeForChain(u.chain);
+  const input = {
+    hash: txid,
+    index: vout,
+  };
+  psbt.addInput(input);
+  const inputIndex = psbt.inputCount - 1;
   if (isSegwit(u.chain)) {
-    const input = {
-      hash: txid,
-      index: vout,
+    psbt.updateInput(inputIndex, {
       witnessUtxo: {
         script,
         value,
       },
-    };
-    psbt.addInput({
-      ...input,
-      ...(isNonWitnessUnspent(u) && { nonWitnessUtxo: u.prevTx }),
     });
   } else {
     if (!isNonWitnessUnspent(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }
-    psbt.addInput({
-      hash: txid,
-      index: vout,
-      nonWitnessUtxo: u.prevTx,
-    });
+    psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
+  }
+
+  if (scriptType === 'p2tr') {
+    const { controlBlock, witnessScript, leafVersion } = createSpendScriptP2tr(walletKeys.publicKeys, [
+      signer.publicKey,
+      cosigner.publicKey,
+    ]);
+    psbt.updateInput(inputIndex, { tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }] });
+  } else {
+    const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+    if (witnessScript) {
+      psbt.updateInput(inputIndex, { witnessScript });
+    }
+    if (redeemScript) {
+      // console.log('------psbt')
+      // console.log(redeemScript?.toString('hex'))
+      psbt.updateInput(inputIndex, { redeemScript });
+    }
   }
 }
 

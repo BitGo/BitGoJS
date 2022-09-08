@@ -672,6 +672,8 @@ export function signInput2Of3<TNumber extends number | bigint>(
   const prevOutScriptType = scriptType2Of3AsPrevOutType(scriptType);
   const { controlBlock, witnessScript, redeemScript } = getScripts2Of3(scriptType, pubkeys, keyPair, cosigner);
 
+  // console.log('------txbuilder')
+  // console.log(redeemScript?.toString('hex'))
   keyPair.network = txBuilder.network;
 
   txBuilder.sign({
