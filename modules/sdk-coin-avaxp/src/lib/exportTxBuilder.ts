@@ -2,17 +2,18 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import {
-  BaseTx,
   ExportTx,
   PlatformVMConstants,
   SECPTransferOutput,
   TransferableOutput,
-  Tx,
+  Tx as PVMTx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BN } from 'avalanche';
 import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 import utils from './utils';
+import { recoverUtxos } from './utxoEngine';
+import { Tx, BaseTx } from './iface';
 
 export class ExportTxBuilder extends AtomicTransactionBuilder {
   private _amount: BN;
@@ -62,7 +63,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
     this.transaction._fromAddresses = secpOut.getAddresses();
     this._externalChainId = baseTx.getDestinationChain();
     this._amount = (secpOut as AmountOutput).getAmount();
-    this.transaction._utxos = this.recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = recoverUtxos(baseTx.getIns());
     return this;
   }
 
@@ -81,9 +82,9 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
   protected buildAvaxpTransaction(): void {
     // if tx has credentials, tx shouldn't change
     if (this.transaction.hasCredentials) return;
-    const { inputs, outputs, credentials } = this.createInputOutput(this._amount.add(this.transaction._fee));
+    const { inputs, outputs, credentials } = this.createInputOutput(this._amount.add(new BN(this.transaction.fee.fee)));
     this.transaction.setTransaction(
-      new Tx(
+      new PVMTx(
         new UnsignedTx(
           new ExportTx(
             this.transaction._networkID,

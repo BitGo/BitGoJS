@@ -3,7 +3,7 @@ import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import {
   AddDelegatorTx,
-  BaseTx,
+  BaseTx as PVMBaseTx,
   ParseableOutput,
   PlatformVMConstants,
   SECPOwnerOutput,
@@ -12,13 +12,14 @@ import {
   SelectCredentialClass,
   TransferableInput,
   TransferableOutput,
-  Tx,
+  Tx as PVMTx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN } from 'avalanche';
-import { SECP256K1_Transfer_Output } from './iface';
+import { SECP256K1_Transfer_Output, Tx, BaseTx } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
+import { recoverUtxos } from './utxoEngine';
 
 export class DelegatorTxBuilder extends TransactionBuilder {
   protected _nodeID: string;
@@ -34,7 +35,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     super(coinConfig);
     const network = coinConfig.network as AvalancheNetwork;
     this._stakeAmount = new BN(network.minStake);
-    this.transaction._fee = new BN(0);
   }
 
   /**
@@ -174,7 +174,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     this._startTime = baseTx.getStartTime();
     this._endTime = baseTx.getEndTime();
     this._stakeAmount = baseTx.getStakeAmount();
-    this.transaction._utxos = this.recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = recoverUtxos(baseTx.getIns());
     return this;
   }
 
@@ -194,7 +194,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     this.validateStakeDuration(this._startTime, this._endTime);
     const { inputs, outputs, credentials } = this.createInputOutput();
     this.transaction.setTransaction(
-      new Tx(
+      new PVMTx(
         new UnsignedTx(
           new AddDelegatorTx(
             this.transaction._networkID,
@@ -379,7 +379,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     // get outputs and credentials from the deserialized transaction if we are in OVC
     return {
       inputs,
-      outputs: outputs.length === 0 ? this.transaction.avaxPTransaction.getOuts() : outputs,
+      outputs: outputs.length === 0 ? (this.transaction.avaxPTransaction as PVMBaseTx).getOuts() : outputs,
       credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
     };
   }

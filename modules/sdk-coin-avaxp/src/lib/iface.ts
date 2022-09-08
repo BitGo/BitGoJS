@@ -1,4 +1,6 @@
 import { Entry, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
+import { BaseTx as PMVBaseTx, TransferableOutput, Tx as PMVTx } from 'avalanche/dist/apis/platformvm';
+import { EVMBaseTx, EVMOutput, Tx as EMVTx } from 'avalanche/dist/apis/evm';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
@@ -25,7 +27,7 @@ export interface TxData {
   fromAddresses: string[];
   threshold: number;
   locktime: string;
-  memo: string;
+  memo?: string;
   signatures: string[];
   outputs: Entry[];
   changeOutputs: Entry[];
@@ -55,3 +57,7 @@ export type DecodedUtxoObj = {
  * {@link https://docs.avax.network/specs/platform-transaction-serialization#secp256k1-transfer-output-example }
  */
 export const SECP256K1_Transfer_Output = 7;
+
+export type Tx = PMVTx | EMVTx;
+export type BaseTx = PMVBaseTx | EVMBaseTx;
+export type Output = TransferableOutput | EVMOutput;

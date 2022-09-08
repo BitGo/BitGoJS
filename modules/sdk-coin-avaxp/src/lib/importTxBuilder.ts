@@ -1,8 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import { BaseTx, ImportTx, PlatformVMConstants, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { ImportTx, PlatformVMConstants, Tx as PVMTx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';
+import { BN } from 'avalanche';
+import { recoverUtxos } from './utxoEngine';
+import { Tx, BaseTx } from './iface';
 
 export class ImportTxBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -25,7 +28,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
     // {@link createInputOutput} result a single item array.
     // It's expected to have only one outputs with the addresses of the sender.
     const outputs = baseTx.getOuts();
-    if (outputs.length != 1) {
+    if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
     }
     const output = outputs[0];
@@ -38,7 +41,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
     // output addresses are the sender addresses
     this.transaction._fromAddresses = secpOut.getAddresses();
     this._externalChainId = baseTx.getSourceChain();
-    this.transaction._utxos = this.recoverUtxos(baseTx.getImportInputs());
+    this.transaction._utxos = recoverUtxos(baseTx.getImportInputs());
     return this;
   }
 
@@ -57,9 +60,9 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
   protected buildAvaxpTransaction(): void {
     // if tx has credentials, tx shouldn't change
     if (this.transaction.hasCredentials) return;
-    const { inputs, outputs, credentials } = this.createInputOutput(this.transaction._fee);
+    const { inputs, outputs, credentials } = this.createInputOutput(new BN(this.transaction.fee.fee));
     this.transaction.setTransaction(
-      new Tx(
+      new PVMTx(
         new UnsignedTx(
           new ImportTx(
             this.transaction._networkID,
