@@ -70,12 +70,10 @@ function runTestParse<TNumber extends number | bigint>(
         },
         fixtureName
       );
-      parsedTx = createTransactionFromBuffer<TNumber>(
-        Buffer.from(fixture.transaction.hex, 'hex'),
-        protocol.network,
-        { version: protocol.version },
-        amountType
-      );
+      parsedTx = createTransactionFromBuffer<TNumber>(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+        version: protocol.version,
+        amountType,
+      });
     });
 
     type InputLookup = { txid?: string; hash?: Buffer; index: number };
@@ -128,12 +126,9 @@ function runTestParse<TNumber extends number | bigint>(
       if (amountType !== 'bigint') {
         return;
       }
-      const tx = createTransactionFromBuffer<TNumber>(
-        Buffer.from(fixture.transaction.hex, 'hex'),
-        protocol.network,
-        {},
-        amountType
-      );
+      const tx = createTransactionFromBuffer<TNumber>(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+        amountType,
+      });
       tx.outs.forEach((o) => {
         o.value = (BigInt(1e16) + BigInt(1)) as TNumber;
         assert.notStrictEqual(BigInt(Number(o.value)), o.value);
@@ -157,12 +152,10 @@ function runTestParse<TNumber extends number | bigint>(
         txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), getValueScaled<TNumber>(o.value, amountType));
       });
 
-      const tx = createTransactionFromBuffer<TNumber>(
-        txbUnsigned.buildIncomplete().toBuffer(),
-        protocol.network,
-        { version: protocol.version },
-        amountType
-      );
+      const tx = createTransactionFromBuffer<TNumber>(txbUnsigned.buildIncomplete().toBuffer(), protocol.network, {
+        version: protocol.version,
+        amountType,
+      });
       const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());
       const signKeys = [fixtureKeys[0], fixtureKeys[2]];
       const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;

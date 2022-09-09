@@ -12,8 +12,7 @@ import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
   network: Network,
-  { version }: { version?: number } = {},
-  amountType: 'number' | 'bigint' = 'number'
+  { version, amountType = 'number' }: { version?: number; amountType?: 'number' | 'bigint' } = {}
 ): UtxoTransaction<TNumber> {
   if (amountType !== 'number' && (getMainnet(network) === networks.dash || getMainnet(network) === networks.zcash)) {
     throw new Error('dash and zcash must use number amount type; bigint amount type is recommended for doge only');
@@ -40,9 +39,9 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
 export function createTransactionFromHex<TNumber extends number | bigint = number>(
   hex: string,
   network: Network,
-  amountType: 'number' | 'bigint' = 'number'
+  { amountType = 'number' }: { amountType?: 'number' | 'bigint' } = {}
 ): UtxoTransaction<TNumber> {
-  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, {}, amountType);
+  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, { amountType });
 }
 
 export function getDefaultTransactionVersion(network: Network): number {

@@ -41,7 +41,7 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
   inputs?: (TxOutPoint & TxOutput<TNumber>)[],
   amountType: 'number' | 'bigint' = 'number'
 ): T {
-  const tx = createTransactionFromBuffer<TNumber>(buf, network, {}, amountType);
+  const tx = createTransactionFromBuffer<TNumber>(buf, network, { amountType });
   assert.strictEqual(tx.byteLength(), buf.length);
   assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
 

@@ -417,7 +417,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   createTransactionFromHex<TNumber extends number | bigint = number>(
     hex: string
   ): utxolib.bitgo.UtxoTransaction<TNumber> {
-    return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+    return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, { amountType: this.amountType });
   }
 
   /**
