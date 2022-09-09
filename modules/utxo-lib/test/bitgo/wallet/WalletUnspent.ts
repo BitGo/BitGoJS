@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Transaction, ecc, networks } from '../../../src';
+import { Transaction, networks } from '../../../src';
 import {
   isWalletUnspent,
   formatOutputId,
@@ -135,7 +135,7 @@ describe('WalletUnspent', function () {
     });
     psbt.signAllInputsHD(walletKeys[signer]);
     psbt.signAllInputsHD(walletKeys[cosigner]);
-    assert(psbt.validateSignaturesOfAllInputs((p, m, s) => ecc.verify(m, p, s)));
+    assert(psbt.validateSignaturesOfAllInputs());
     psbt.finalizeAllInputs();
     return psbt.extractTransaction(); // extract transaction has a return type of Transaction instead of UtxoTransaction
   }
@@ -200,10 +200,7 @@ describe('WalletUnspent', function () {
           signer,
           cosigner
         );
-        assert.deepStrictEqual(
-          Transaction.fromBuffer<bigint>(txbTransaction.toBuffer(), undefined, 'bigint'),
-          Transaction.fromBuffer<bigint>(psbtTransaction.toBuffer(), undefined, 'bigint')
-        );
+        assert.deepStrictEqual(txbTransaction.toBuffer(), psbtTransaction.toBuffer());
       }
     });
   }

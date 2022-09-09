@@ -11,6 +11,8 @@ import { checkForInput } from 'bip174/src/lib/utils';
 import { Psbt as PsbtBase } from 'bip174';
 import { Network } from '..';
 import { ecc as eccLib, script as bscript, payments } from '..';
+import * as opcodes from 'bitcoin-ops';
+import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -68,6 +70,91 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
 
   get tx(): Tx {
     return (this.data.globalMap.unsignedTx as PsbtTransaction).tx as Tx;
+  }
+
+  /**
+   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
+   */
+  finalizeAllInputs(): this {
+    checkForInput(this.data.inputs, 0); // making sure we have at least one
+    this.data.inputs.map((input, idx) => {
+      return input.tapScriptSig?.length ? this.finalizeTaprootInput(idx) : this.finalizeInput(idx);
+    });
+    return this;
+  }
+
+  finalizeTaprootInput(inputIndex: number): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    // witness = control-block script first-sig second-sig
+    if (input.tapLeafScript?.length !== 1) {
+      throw new Error('Only one leaf script supported for finalizing');
+    }
+    const { controlBlock, script } = input.tapLeafScript[0];
+    const witness: Buffer[] = [script, controlBlock];
+    const decompiled = bscript.decompile(script);
+    if (!decompiled || decompiled?.length !== 4) {
+      throw new Error('Not a valid bitgo n-of-n script.');
+    }
+    const [pubkey1, op_checksigverify, pubkey2, op_checksig] = decompiled;
+    if (!Buffer.isBuffer(pubkey1) || !Buffer.isBuffer(pubkey2)) {
+      throw new Error('Public Keys are not buffers.');
+    }
+    if (op_checksigverify !== opcodes.OP_CHECKSIGVERIFY || op_checksig !== opcodes.OP_CHECKSIG) {
+      throw new Error('Opcodes do not correspond to a valid bitgo script');
+    }
+    const sig1 = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pubkey1));
+    const sig2 = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pubkey2));
+    if (!sig1 || !sig2) {
+      throw new Error('Could not find signatures in Script Sig.');
+    }
+    witness.unshift(sig1.signature);
+    witness.unshift(sig2.signature);
+
+    const size = witness.reduce((s, b) => s + b.length + varuint.encodingLength(b.length), 1);
+
+    const bufferWriter = BufferWriter.withCapacity(size);
+    bufferWriter.writeVector(witness);
+
+    this.data.updateInput(inputIndex, { finalScriptWitness: bufferWriter.end() });
+    this.data.clearFinalizedInput(inputIndex);
+
+    return this;
+  }
+
+  /**
+   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
+   */
+  validateSignaturesOfAllInputs(): boolean {
+    checkForInput(this.data.inputs, 0); // making sure we have at least one
+    const results = this.data.inputs.map((input, idx) => {
+      return input.tapScriptSig?.length
+        ? this.validateTaprootSignaturesOfInput(idx)
+        : this.validateSignaturesOfInput(idx, (p, m, s) => eccLib.verify(m, p, s));
+    });
+    return results.reduce((final, res) => res && final, true);
+  }
+
+  validateTaprootSignaturesOfInput(inputIndex: number): boolean {
+    const input = this.data.inputs[inputIndex];
+    const mySigs = (input || {}).tapScriptSig;
+    if (!input || !mySigs || mySigs.length < 1) throw new Error('No signatures to validate');
+    const results: boolean[] = [];
+
+    for (const pSig of mySigs) {
+      const { signature, leafHash, pubkey } = pSig;
+      let sigHashType: number;
+      let sig: Buffer;
+      if (signature.length === 65) {
+        sigHashType = signature[64];
+        sig = signature.slice(0, 64);
+      } else {
+        sigHashType = Transaction.SIGHASH_DEFAULT;
+        sig = signature;
+      }
+      const { hash } = this.getTaprootHashForSig(inputIndex, true, [sigHashType], leafHash);
+      results.push(eccLib.verifySchnorr(hash, pubkey, sig));
+    }
+    return results.every((res) => res === true);
   }
 
   /**
