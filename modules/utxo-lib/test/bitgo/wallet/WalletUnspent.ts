@@ -133,15 +133,8 @@ describe('WalletUnspent', function () {
     unspents.forEach((u) => {
       addToPsbt(psbt, u, WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]), network);
     });
-    [
-      WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]),
-      WalletUnspentSigner.from(walletKeys, walletKeys[cosigner], walletKeys[signer]),
-    ].forEach((walletSigner, nSignature) => {
-      unspents.forEach((u, i) => {
-        const { signer } = walletSigner.deriveForChainAndIndex(u.chain, u.index);
-        psbt.signInput(i, signer);
-      });
-    });
+    psbt.signAllInputsHD(walletKeys[signer]);
+    psbt.signAllInputsHD(walletKeys[cosigner]);
     assert(psbt.validateSignaturesOfAllInputs((p, m, s) => ecc.verify(m, p, s)));
     psbt.finalizeAllInputs();
     return psbt.extractTransaction(); // extract transaction has a return type of Transaction instead of UtxoTransaction
@@ -216,26 +209,14 @@ describe('WalletUnspent', function () {
   }
 
   outputScripts.scriptTypes2Of3.forEach((t) => {
-    /**
-     * p2sh:
-     *    This has a problem with either the bitcoinjs-lib module or how it is being constructed - although I think it is much
-     *    more likely the former:
-     *        TypeError: Cannot read property 'script' of undefined
-     *            at getHashForSig (/Users/davidkaplan/Documents/BitGoJS/node_modules/bitcoinjs-lib/src/psbt.js:978:13)
-     * p2wsh:
-     *    This is having the same problems
-     *
-     */
-    if (t === 'p2sh') {
-      const keyNames = ['user', 'backup', 'bitgo'];
-      keyNames.forEach((signer) => {
-        keyNames.forEach((cosigner) => {
-          if (signer !== cosigner) {
-            // runTestSignUnspent(t, signer, cosigner);
-            runTestSignUnspent<bigint>(t, signer, cosigner, 'bigint', BigInt('10000000000000000'));
-          }
-        });
+    const keyNames = ['user', 'backup', 'bitgo'];
+    keyNames.forEach((signer) => {
+      keyNames.forEach((cosigner) => {
+        if (signer !== cosigner) {
+          // runTestSignUnspent(t, signer, cosigner);
+          runTestSignUnspent<bigint>(t, signer, cosigner, 'bigint', BigInt('10000000000000000'));
+        }
       });
-    }
+    });
   });
 });

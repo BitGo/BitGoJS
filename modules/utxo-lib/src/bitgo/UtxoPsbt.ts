@@ -1,14 +1,39 @@
 import { UtxoTransaction } from './UtxoTransaction';
-import { taproot, Psbt, PsbtTransaction, Stack, Transaction } from '../';
+import { taproot, HDSigner, Psbt, PsbtTransaction, Stack, Transaction } from '../';
 import {
   PartialSig,
   PsbtInputUpdate,
+  TapBip32Derivation,
   Transaction as ITransaction,
   TransactionFromBuffer,
 } from 'bip174/src/lib/interfaces';
+import { checkForInput } from 'bip174/src/lib/utils';
 import { Psbt as PsbtBase } from 'bip174';
 import { Network } from '..';
 import { ecc as eccLib, script as bscript, payments } from '..';
+
+export interface HDTaprootSigner extends HDSigner {
+  /**
+   * The path string must match /^m(\/\d+'?)+$/
+   * ex. m/44'/0'/0'/1/23 levels with ' must be hard derivations
+   */
+  derivePath(path: string): HDTaprootSigner;
+  /**
+   * Input hash (the "message digest") for the signature algorithm
+   * Return a 64 byte signature (32 byte r and 32 byte s in that order)
+   */
+  signSchnorr(hash: Buffer): Buffer;
+}
+
+export interface SchnorrSigner {
+  publicKey: Buffer;
+  signSchnorr(hash: Buffer): Buffer;
+}
+
+export interface TaprootSigner {
+  leafHashes: Buffer[];
+  signer: SchnorrSigner;
+}
 
 export interface PsbtOpts {
   network: Network;
@@ -43,6 +68,167 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
 
   get tx(): Tx {
     return (this.data.globalMap.unsignedTx as PsbtTransaction).tx as Tx;
+  }
+
+  /**
+   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
+   */
+  signAllInputsHD(
+    hdKeyPair: HDTaprootSigner,
+    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+  ): this {
+    if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
+      throw new Error('Need HDSigner to sign input');
+    }
+
+    const results: boolean[] = [];
+    for (let i = 0; i < this.data.inputs.length; i++) {
+      try {
+        if (this.data.inputs[i].tapBip32Derivation?.length) {
+          this.signTaprootInputHD(i, hdKeyPair, sighashTypes);
+        } else {
+          this.signInputHD(i, hdKeyPair, sighashTypes);
+        }
+        results.push(true);
+      } catch (err) {
+        results.push(false);
+      }
+    }
+    if (results.every((v) => v === false)) {
+      throw new Error('No inputs were signed');
+    }
+    return this;
+  }
+
+  /**
+   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts:signInputHD
+   */
+  signTaprootInputHD(
+    inputIndex: number,
+    hdKeyPair: HDTaprootSigner,
+    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+  ): this {
+    if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
+      throw new Error('Need HDSigner to sign input');
+    }
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.tapBip32Derivation || input.tapBip32Derivation.length === 0) {
+      throw new Error('Need tapBip32Derivation to sign Taproot with HD');
+    }
+    const myDerivations = input.tapBip32Derivation
+      .map((bipDv) => {
+        if (bipDv.masterFingerprint.equals(hdKeyPair.fingerprint)) {
+          return bipDv;
+        }
+      })
+      .filter((v) => !!v) as TapBip32Derivation[];
+    if (myDerivations.length === 0) {
+      throw new Error('Need one tapBip32Derivation masterFingerprint to match the HDSigner fingerprint');
+    }
+    const signers: TaprootSigner[] = myDerivations.map((bipDv) => {
+      const node = hdKeyPair.derivePath(bipDv.path);
+      if (!bipDv.pubkey.equals(node.publicKey.slice(1))) {
+        throw new Error('pubkey did not match tapBip32Derivation');
+      }
+      return { signer: node, leafHashes: bipDv.leafHashes };
+    });
+    signers.forEach(({ signer, leafHashes }) => this.signTaprootInput(inputIndex, signer, leafHashes, sighashTypes));
+    return this;
+  }
+
+  signTaprootInput(
+    inputIndex: number,
+    signer: SchnorrSigner,
+    leafHashes: Buffer[],
+    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+  ): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    // Figure out if this is script path or not, if not, tweak the private key
+    if (!input.tapLeafScript?.length) {
+      // See BitGo/BitGoJS/modules/utxo_lib/src/transaction_builder.ts:trySign for how to support it.
+      throw new Error('Taproot key path signing is not supported.');
+    }
+    if (input.tapLeafScript.length !== 1) {
+      throw new Error('Only one leaf script supported for signing');
+    }
+    const tapLeafScript = input.tapLeafScript[0];
+    const parsedControlBlock = taproot.parseControlBlock(eccLib, tapLeafScript.controlBlock);
+    const { leafVersion } = parsedControlBlock;
+    if (leafVersion !== tapLeafScript.leafVersion) {
+      throw new Error('Tap script leaf version mismatch with control block');
+    }
+    const leafHash = taproot.getTapleafHash(eccLib, parsedControlBlock, tapLeafScript.script);
+    if (!leafHashes.find((l) => l.equals(leafHash))) {
+      throw new Error(`Signer cannot sign for leaf hash ${leafHash.toString('hex')}`);
+    }
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, false, sighashTypes, leafHash);
+    let signature = signer.signSchnorr(hash);
+    if (sighashType !== Transaction.SIGHASH_DEFAULT) {
+      signature = Buffer.concat([signature, Buffer.of(sighashType)]);
+    }
+    this.data.updateInput(inputIndex, {
+      tapScriptSig: [
+        {
+          pubkey: signer.publicKey.slice(1),
+          signature,
+          leafHash,
+        },
+      ],
+    });
+    return this;
+  }
+
+  private getTaprootHashForSig(
+    inputIndex: number,
+    forValidate: boolean,
+    sighashTypes?: number[],
+    leafHash?: Buffer
+  ): {
+    hash: Buffer;
+    sighashType: number;
+  } {
+    const unsignedTx = this.tx;
+    const sighashType = this.data.inputs[inputIndex].sighashType || Transaction.SIGHASH_DEFAULT;
+    if (sighashTypes && sighashTypes.indexOf(sighashType) < 0) {
+      throw new Error(
+        `Sighash type is not allowed. Retry the sign method passing the ` +
+          `sighashTypes array of whitelisted types. Sighash type: ${sighashType}`
+      );
+    }
+    const prevoutScripts: Buffer[] = [];
+    const prevoutValues: bigint[] = [];
+
+    for (const input of this.data.inputs) {
+      let prevout;
+      if (input.nonWitnessUtxo) {
+        // TODO: This could be costly, either cache it here, or find a way to share with super
+        const nonWitnessUtxoTx = (this.constructor as typeof UtxoPsbt).transactionFromBuffer(
+          input.nonWitnessUtxo,
+          unsignedTx.network
+        );
+
+        const prevoutHash = unsignedTx.ins[inputIndex].hash;
+        const utxoHash = nonWitnessUtxoTx.getHash();
+
+        // If a non-witness UTXO is provided, its hash must match the hash specified in the prevout
+        if (!prevoutHash.equals(utxoHash)) {
+          throw new Error(
+            `Non-witness UTXO hash for input #${inputIndex} doesn't match the hash specified in the prevout`
+          );
+        }
+
+        const prevoutIndex = unsignedTx.ins[inputIndex].index;
+        prevout = nonWitnessUtxoTx.outs[prevoutIndex];
+      } else if (input.witnessUtxo) {
+        prevout = input.witnessUtxo;
+      } else {
+        throw new Error('Need a Utxo input item for signing');
+      }
+      prevoutScripts.push(prevout.script);
+      prevoutValues.push(prevout.value);
+    }
+    const hash = unsignedTx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
+    return { hash, sighashType };
   }
 }
 

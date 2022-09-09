@@ -8,35 +8,59 @@ export class WalletUnspentSigner<T extends WalletKeys> {
 
   static from(
     walletKeys: RootWalletKeys,
-    signer: BIP32Interface,
-    cosigner: BIP32Interface
+    signer: number | BIP32Interface,
+    cosigner: number | BIP32Interface
   ): WalletUnspentSigner<RootWalletKeys> {
+    if (typeof signer !== 'number') {
+      for (let i = 0; i < 3; i++) {
+        if (eqPublicKey(walletKeys.triple[i], signer)) {
+          signer = i;
+          break;
+        }
+      }
+    }
+    if (typeof signer !== 'number') {
+      throw new Error('signer must be in wallet keys');
+    }
+    if (typeof cosigner !== 'number') {
+      for (let i = 0; i < 3; i++) {
+        if (eqPublicKey(walletKeys.triple[i], cosigner)) {
+          cosigner = i;
+          break;
+        }
+      }
+    }
+    if (typeof cosigner !== 'number') {
+      throw new Error('cosigner must be in wallet keys');
+    }
     return new WalletUnspentSigner<RootWalletKeys>(walletKeys, signer, cosigner);
   }
 
   constructor(
     walletKeys: WalletKeys | Triple<BIP32Interface>,
-    public signer: BIP32Interface,
-    public cosigner: BIP32Interface
+    public readonly signerIndex: number,
+    public readonly cosignerIndex: number
   ) {
     if (Array.isArray(walletKeys)) {
       walletKeys = new RootWalletKeys(walletKeys);
     }
-    if (!walletKeys.triple.some((k) => eqPublicKey(k, signer))) {
-      throw new Error(`signer not part of walletKeys`);
-    }
-    if (!walletKeys.triple.some((k) => eqPublicKey(k, cosigner))) {
-      throw new Error(`cosigner not part of walletKeys`);
-    }
 
     this.walletKeys = walletKeys as T;
 
-    if (eqPublicKey(signer, cosigner)) {
+    if (signerIndex === cosignerIndex) {
       throw new Error(`signer must not equal cosigner`);
     }
-    if (signer.isNeutered()) {
+    if (walletKeys.triple[signerIndex].isNeutered()) {
       throw new Error(`signer must have private key`);
     }
+  }
+
+  get signer(): BIP32Interface {
+    return this.walletKeys.triple[this.signerIndex];
+  }
+
+  get cosigner(): BIP32Interface {
+    return this.walletKeys.triple[this.cosignerIndex];
   }
 
   /**
@@ -52,8 +76,8 @@ export class WalletUnspentSigner<T extends WalletKeys> {
     if (this.walletKeys instanceof RootWalletKeys) {
       return new WalletUnspentSigner(
         this.walletKeys.deriveForChainAndIndex(chain, index),
-        this.signer.derivePath(this.walletKeys.getDerivationPath(this.signer, chain, index)),
-        this.cosigner.derivePath(this.walletKeys.getDerivationPath(this.cosigner, chain, index))
+        this.signerIndex,
+        this.cosignerIndex
       );
     }
 

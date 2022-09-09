@@ -131,7 +131,7 @@ export function addToPsbt(
   network: Network
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, network);
-  const { walletKeys, signer, cosigner } = rootSigner.deriveForChainAndIndex(u.chain, u.index);
+  const { walletKeys, signerIndex, cosignerIndex } = rootSigner.deriveForChainAndIndex(u.chain, u.index);
   const scriptType = scriptTypeForChain(u.chain);
   const input = {
     hash: txid,
@@ -154,19 +154,32 @@ export function addToPsbt(
   }
 
   if (scriptType === 'p2tr') {
-    const { controlBlock, witnessScript, leafVersion } = createSpendScriptP2tr(walletKeys.publicKeys, [
-      signer.publicKey,
-      cosigner.publicKey,
+    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2tr(walletKeys.publicKeys, [
+      walletKeys.triple[signerIndex].publicKey,
+      walletKeys.triple[cosignerIndex].publicKey,
     ]);
-    psbt.updateInput(inputIndex, { tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }] });
+    psbt.updateInput(inputIndex, {
+      tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
+      tapBip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+        leafHashes: [leafHash],
+        pubkey: walletKeys.triple[idx].publicKey.slice(1), // 32-byte x-only
+        path: walletKeys.paths[idx],
+        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+      })),
+    });
   } else {
     const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+    psbt.updateInput(inputIndex, {
+      bip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+        pubkey: walletKeys.triple[idx].publicKey,
+        path: walletKeys.paths[idx],
+        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+      })),
+    });
     if (witnessScript) {
       psbt.updateInput(inputIndex, { witnessScript });
     }
     if (redeemScript) {
-      // console.log('------psbt')
-      // console.log(redeemScript?.toString('hex'))
       psbt.updateInput(inputIndex, { redeemScript });
     }
   }
