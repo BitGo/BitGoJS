@@ -6,5 +6,7 @@
     "version": {
       "message": "chore(release): publish modules"
     }
-  }
+  },
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "useNx": false
 }
