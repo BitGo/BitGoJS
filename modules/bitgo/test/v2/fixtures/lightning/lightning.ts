@@ -20,6 +20,26 @@ export default {
       updatedAt: '2022-08-16T22:47:28.133Z',
       amtPaidSats: 1000,
     },
+    {
+      paymentHash: '03c34d3a86bbcdb84d5c4a05419f58aa360735bd5d093b68e39782d57d070d33',
+      walletId: '62b9b5d140bc322459967cf764949ae3',
+      status: 'settled',
+      value: 2500,
+      expiresAt: '2022-09-13T05:29:18.199Z',
+      createdAt: '2022-09-13T05:29:18.199Z',
+      updatedAt: '2022-09-13T05:29:18.199Z',
+      amtPaidSats: 2500,
+    },
+    {
+      paymentHash: '3ba07eca2d45a76a38ce9cf5c8e99f0c46a5f6188833a7d8def3f9cbc7c3ffa6',
+      walletId: '62b9b5d140bc322459967cf764949ae3',
+      status: 'open',
+      value: 50000,
+      expiresAt: '2022-09-13T05:30:06Z.723Z',
+      createdAt: '2022-09-13T05:30:06Z.723Z',
+      updatedAt: '2022-09-13T05:30:06Z.723Z',
+      amtPaidSats: undefined,
+    },
   ],
 
   payment: {

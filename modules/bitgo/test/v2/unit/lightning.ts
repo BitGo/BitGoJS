@@ -80,10 +80,18 @@ describe('lightning API requests', function () {
 
   it('should fetch lightning invoices', async function () {
     const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/invoices`)
-      .query({ status: 'settled', limit: 1 })
       .reply(200, fixtures.invoices);
-    const res = await wallet.lightning().getInvoices({ status: 'settled', limit: 1 });
+    const res = await wallet.lightning().getInvoices();
     assert.deepStrictEqual(res, fixtures.invoices);
+    scope.done();
+  });
+
+  it('should fetch filtered lightning invoices', async function () {
+    const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/invoices`)
+      .query({ status: 'settled', limit: 1 })
+      .reply(200, [fixtures.invoices[0]]);
+    const res = await wallet.lightning().getInvoices({ status: 'settled', limit: 1 });
+    assert.deepStrictEqual(res, [fixtures.invoices[0]]);
     scope.done();
   });
   
