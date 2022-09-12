@@ -54,6 +54,7 @@
     "yeoman-generator": "^5.6.1"
   },
   "resolutions": {
+    "@noble/secp256k1": "1.6.3",
     "@types/react": "17.0.24",
     "@types/react-dom": "17.0.16",
     "buffer": "^6.0.3",
