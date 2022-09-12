@@ -4,6 +4,7 @@ import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
+import { IMPORT_P } from '../../resources/tx/importP';
 
 describe('AvaxP Transaction Builder Factory', () => {
   const factory = new TransactionBuilderFactory(coins.get('tavaxp'));
@@ -43,6 +44,15 @@ describe('AvaxP Transaction Builder Factory', () => {
   });
 
   describe('Transaction readable', () => {
+    const rawTxs = [
+      testData.ADD_VALIDATOR_ID_SAMPLE.fullsigntxHex,
+      testData.EXPORT_P_2_C.fullsigntxHex,
+      testData.EXPORT_P_2_C.halfsigntxHex,
+      testData.EXPORT_P_2_C.unsignedTxHex,
+      IMPORT_P.fullsigntxHex,
+      IMPORT_P.halfsigntxHex,
+      IMPORT_P.unsignedTxHex,
+    ];
     let tx: BaseTransaction;
     before(async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
@@ -51,7 +61,16 @@ describe('AvaxP Transaction Builder Factory', () => {
       tx = await txBuilder.build();
     });
 
-    it('Should json stringifiy a transaction object', async () => {
+    it('Should json stringifiy any transaction object', async () => {
+      for (const rawTx of rawTxs) {
+        const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(rawTx);
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        assert(typeof JSON.stringify(txJson), 'string');
+      }
+    });
+
+    it('Should json stringifiy addValidator transaction', async () => {
       const txJson = tx.toJson();
       assert(typeof JSON.stringify(tx.toJson()), 'string');
       txJson.id.should.equal(testData.ADD_VALIDATOR_ID_SAMPLE.txid);

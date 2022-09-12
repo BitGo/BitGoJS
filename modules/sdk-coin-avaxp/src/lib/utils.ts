@@ -5,11 +5,19 @@ import {
   BaseUtils,
   InvalidTransactionError,
   ParseTransactionError,
+  Entry,
 } from '@bitgo/sdk-core';
 import { BinTools, Buffer as BufferAvax } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
-import { BaseTx, SelectCredentialClass, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import {
+  AmountOutput,
+  BaseTx,
+  SelectCredentialClass,
+  TransferableOutput,
+  Tx,
+  UnsignedTx,
+} from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common/credentials';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
@@ -93,6 +101,7 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
+
   public parseAddress = (pub: string): BufferAvax => this.binTools.stringToAddress(pub);
 
   /**
@@ -258,6 +267,26 @@ export class Utils implements BaseUtils {
     if (!utils.allHexChars(rawTransaction)) {
       throw new ParseTransactionError('Raw transaction is not hex string');
     }
+  }
+
+  /**
+   * Return a mapper function to that network address representation.
+   * @param network required to stringify addresses
+   * @return mapper function
+   */
+  mapOutputToEntry(network: AvalancheNetwork): (TransferableOutput) => Entry {
+    return (output: TransferableOutput) => {
+      const amountOutput = output.getOutput() as any as AmountOutput;
+      const address = amountOutput
+        .getAddresses()
+        .map((a) => this.addressToString(network.hrp, network.alias, a))
+        .sort()
+        .join('~');
+      return {
+        value: amountOutput.getAmount().toString(),
+        address,
+      };
+    };
   }
 }
 

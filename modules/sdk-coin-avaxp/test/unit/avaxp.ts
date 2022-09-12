@@ -13,6 +13,8 @@ import { Buffer as BufferAvax } from 'avalanche';
 import * as _ from 'lodash';
 
 import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
+import { IMPORT_P } from '../resources/tx/importP';
+import { ADDVALIDATOR_SAMPLES, EXPORT_P_2_C, EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT } from '../resources/avaxp';
 
 describe('Avaxp', function () {
   const coinName = 'avaxp';
@@ -279,23 +281,87 @@ describe('Avaxp', function () {
 
   describe('Explain Transaction', () => {
     it('should explain a half signed AddValidator transaction', async () => {
-      const txExplain = await basecoin.explainTransaction({
-        halfSigned: { txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex },
-      });
-      txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
-      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
-      txExplain.memo.should.equal(testData.ADDVALIDATOR_SAMPLES.memo);
+      txExplain.memo.should.equal(testData.memo);
     });
 
     it('should explain a signed AddValidator transaction', async () => {
-      const txExplain = await basecoin.explainTransaction({ txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex });
-      txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
       txExplain.type.should.equal(TransactionType.addValidator);
-      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
-      txExplain.memo.should.equal(testData.ADDVALIDATOR_SAMPLES.memo);
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a half signed export transaction', async () => {
+      const testData = EXPORT_P_2_C;
+      const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
+      txExplain.outputAmount.should.equal(testData.amount);
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a signed export transaction', async () => {
+      const testData = EXPORT_P_2_C;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.amount);
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a half signed export transaction without cahngeoutput ', async () => {
+      const testData = EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT;
+      const txExplain = await basecoin.explainTransaction({
+        halfSigned: { txHex: testData.halfsigntxHex },
+      });
+      txExplain.outputAmount.should.equal(testData.amount);
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs.should.be.empty();
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a signed export transaction without cahngeoutput ', async () => {
+      const testData = EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.amount);
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs.should.be.empty();
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a half signed import transaction', async () => {
+      const testData = IMPORT_P;
+      const txExplain = await basecoin.explainTransaction({
+        halfSigned: { txHex: testData.halfsigntxHex },
+      });
+      txExplain.outputAmount.should.equal((Number(testData.amount) - txExplain.fee?.fee).toString());
+      txExplain.type.should.equal(TransactionType.Import);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs.should.be.empty();
+      txExplain.memo.should.equal(testData.memo);
+    });
+
+    it('should explain a signed import transaction', async () => {
+      const testData = IMPORT_P;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal((Number(testData.amount) - txExplain.fee?.fee).toString());
+      txExplain.type.should.equal(TransactionType.Import);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
+      txExplain.changeOutputs.should.be.empty();
+      txExplain.memo.should.equal(testData.memo);
     });
 
     it('should fail when a tx is not passed as parameter', async () => {
