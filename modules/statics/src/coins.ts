@@ -974,7 +974,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofccra', 'Crabada', 18, UnderlyingAsset.CRA),
   ofcerc20('ofcstmx', 'StormX', 18, UnderlyingAsset.STMX),
   ofcerc20('ofccoti', 'Coti Token', 18, UnderlyingAsset.COTI),
-  ofcerc20('ofchusd', 'Coti Token', 8, UnderlyingAsset.HUSD),
+  ofcerc20('ofchusd', 'Husd Token', 8, UnderlyingAsset.HUSD),
   ofcerc20('ofcqkc', 'QuarkChain', 18, UnderlyingAsset.QKC),
   ofcerc20('ofcrsr', 'Reserve Rights', 18, UnderlyingAsset.RSR),
   ofcerc20('ofcspell', 'Spell Token', 18, UnderlyingAsset.SPELL),
