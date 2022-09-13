@@ -142,12 +142,12 @@ export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 const InvoiceInfo = t.strict({
   paymentHash: t.string,
   walletId: t.string,
-  status: t.string,
+  status: t.union([t.literal('open'), t.literal('settled'), t.literal('canceled')]),
   value: t.number,
   expiresAt: t.string,
   createdAt: t.string,
   updatedAt: t.string,
-  amtPaidSats: t.number,
+  amtPaidSats: t.union([t.number, t.undefined]),
 });
 
 export const GetInvoicesResponse = t.array(InvoiceInfo);
