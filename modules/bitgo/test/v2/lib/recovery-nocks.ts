@@ -601,8 +601,8 @@ module.exports.nockTronRecovery = function () {
 };
 
 module.exports.nockEosRecovery = function () {
-  nock('https://jungle3.cryptolions.io:443').post('*').reply(502);
-  nock('https://jungle3.eosdac.io:443')
+  nock('https://kylin.eosn.io').post('*').reply(502);
+  nock('https://kylin.eosn.io')
     .post('/v1/chain/get_info')
     .reply(200, {
       server_version: '14185431',

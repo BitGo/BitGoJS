@@ -111,12 +111,10 @@ const testnetBase: EnvironmentTemplate = {
   ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
   polygonscanBaseUrl: 'https://api-testnet.polygonscan.com',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
-  // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
-  eosNodeUrls: [
-    'https://jungle3.cryptolions.io:443',
-    'https://jungle3.eosdac.io:443',
-    'https://jungleapi.nodeone.io:443',
-  ],
+  // kylin eos endpoints found here
+  // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
+  // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
+  eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://rpc.testnet.near.org'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
