@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.4...@bitgo/utxo-lib@3.0.0-rc.5) (2022-09-13)
+
+
+### Bug Fixes
+
+* **utxo-lib:** pin noble-secp256k1 ([92727bf](https://github.com/BitGo/BitGoJS/commit/92727bf173aee1437f03af542ecd4e8a153a8841))
+
+
+
+
+
 # [3.0.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.3...@bitgo/utxo-lib@3.0.0-rc.4) (2022-09-06)
 
 

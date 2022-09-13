@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.26](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.25...bitgo@14.3.0-rc.26) (2022-09-13)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow undefined for amtPaidSats ([7e9e9ea](https://github.com/BitGo/BitGoJS/commit/7e9e9eac7cab9ef41bc08e82704b90a8aeb46de9))
+
+
+
+
+
 # [14.3.0-rc.24](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.23...bitgo@14.3.0-rc.24) (2022-09-08)
 
 
