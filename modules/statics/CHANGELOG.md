@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.15...@bitgo/statics@8.0.0-rc.16) (2022-09-14)
+
+
+### Bug Fixes
+
+* **sdk-coin-ethw:** update chainid for EthW ([4b5339c](https://github.com/BitGo/BitGoJS/commit/4b5339c19bb17f11b9453b188e5afd35f619e749))
+
+
+### Features
+
+* **statics:** fix bpt, seth-h and reth-h tokens ([d864033](https://github.com/BitGo/BitGoJS/commit/d864033d745ba81e33efcc64b80520ab13954ca4))
+
+
+
+
+
 # [8.0.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.13...@bitgo/statics@8.0.0-rc.14) (2022-09-08)
 
 
