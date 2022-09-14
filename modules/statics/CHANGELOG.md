@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.16...@bitgo/statics@8.0.0-rc.17) (2022-09-14)
+
+
+### Features
+
+* **statics:** fix erc20 token ([27edf13](https://github.com/BitGo/BitGoJS/commit/27edf13dfe66962f61014821a74ed52d0922c3d3))
+
+
+
+
+
 # [8.0.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.15...@bitgo/statics@8.0.0-rc.16) (2022-09-14)
 
 
