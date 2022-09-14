@@ -44,7 +44,19 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - the validation result
    */
   /** @inheritdoc */
-  isValidAddress(address: string): boolean {
+  isValidAddress(address: string | string[]): boolean {
+    const addressArr: string[] = Array.isArray(address) ? address : address.split('~');
+
+    for (const address of addressArr) {
+      if (!this.isValidAddressRegex(address)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private isValidAddressRegex(address: string): boolean {
     return /^(^P||NodeID)-[a-zA-Z0-9]+$/.test(address);
   }
 
