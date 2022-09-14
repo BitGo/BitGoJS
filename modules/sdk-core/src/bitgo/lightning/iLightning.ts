@@ -14,7 +14,6 @@ export interface LightningWithdrawalParams {
 
 export interface LightningDepositParams {
   amount: number;
-  address?: string;
 }
 
 export interface PayInvoiceParams {
