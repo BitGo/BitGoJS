@@ -963,7 +963,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcxsgd', 'StraitsX', 6, UnderlyingAsset.XSGD),
   ofcerc20('ofctel', 'Telcoin', 2, UnderlyingAsset.TEL),
   ofcerc20('ofcygg', 'Yield Guild Games', 18, UnderlyingAsset.YGG),
-  ofcerc20('ofczrc', '0x Token', 18, UnderlyingAsset.ZRX),
+  ofcerc20('ofczrx', '0x Token', 18, UnderlyingAsset.ZRX),
   ofcerc20('ofcthreshold', 'Threshold', 18, UnderlyingAsset.THRESHOLD),
   ofcerc20('ofctrac', 'OriginTrails', 18, UnderlyingAsset.TRAC),
   ofcerc20('ofcmco2', 'Moss Carbon Credit', 18, UnderlyingAsset.MCO2),
