@@ -32,7 +32,7 @@ describe('EOS Token:', function () {
     eosTokenCoin.getFullName().should.equal('EOS Token');
     eosTokenCoin.coin.should.equal('teos');
     eosTokenCoin.decimalPlaces.should.equal(8);
-    eosTokenCoin.tokenContractAddress.should.equal('testtoken111');
+    eosTokenCoin.tokenContractAddress.should.equal('testtoken113');
   });
 
   describe('verify transaction', function () {
