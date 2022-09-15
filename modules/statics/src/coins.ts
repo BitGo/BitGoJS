@@ -338,7 +338,7 @@ export const coins = CoinMap.fromCoins([
   erc20('cel', 'Celsius', 4, '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d', UnderlyingAsset.CEL),
   erc20('celr', 'Celer Network', 18, '0x4f9254c83eb525f9fcf346490bbb3ed28a81c667', UnderlyingAsset.CELR),
   erc20('ceth', 'Compound Ether', 8, '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', UnderlyingAsset.CETH),
-  erc20('cho', 'choise.com', 8, '0xbba39fd2935d5769116ce38d46a71bde9cf03099', UnderlyingAsset.CHO),
+  erc20('cho', 'choise.com', 18, '0xbba39fd2935d5769116ce38d46a71bde9cf03099', UnderlyingAsset.CHO),
   erc20('chfx', 'eToro Swiss Frank', 18, '0xe435502c85a4e7e79cfab4167af566c27a7a0784', UnderlyingAsset.CHFX),
   erc20('chsb', 'SwissBorg', 8, '0xba9d4199fab4f26efe3551d490e3821486f135ba', UnderlyingAsset.CHSB),
   erc20('chz', 'Chiliz', 18, '0x3506424f91fd33084466f402d5d97f05f8e3b4af', UnderlyingAsset.CHZ),
