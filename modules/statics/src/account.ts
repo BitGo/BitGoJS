@@ -81,6 +81,11 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
 }
 
+export interface AdaCoinConstructorOptions extends AccountConstructorOptions {
+  policyId: string;
+  assetName: string;
+}
+
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
@@ -303,6 +308,24 @@ export class SolCoin extends AccountCoinToken {
     });
 
     this.tokenAddress = options.tokenAddress;
+  }
+}
+
+/**
+ * The Ada network supports tokens
+ * Ada tokens are identified by their policy ID and asset name
+ *
+ */
+export class AdaCoin extends AccountCoinToken {
+  public policyId: string;
+  public assetName: string;
+  constructor(options: AdaCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.policyId = options.policyId;
+    this.assetName = options.assetName;
   }
 }
 
@@ -1233,6 +1256,79 @@ export function tsolToken(
   network: AccountNetwork = Networks.test.sol
 ) {
   return solToken(name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for ada token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param tokenSymbol Token symbol of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Cardano main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function adaToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  policyId: string,
+  assetName: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.ada,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new AdaCoin({
+      name,
+      fullName,
+      network,
+      policyId,
+      assetName,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet cardano token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param tokenSymbol Token symbol of this token i.e: AUSD
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet Cardano network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ */
+export function tadaToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  policyId: string,
+  assetName: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.ada
+) {
+  return adaToken(name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
 }
 
 /**
