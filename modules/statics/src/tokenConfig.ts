@@ -9,6 +9,7 @@ import {
   HederaToken,
   PolygonERC20Token,
   BscCoin,
+  AdaCoin,
 } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
@@ -39,6 +40,11 @@ export type StellarTokenConfig = BaseNetworkConfig;
 
 export type SolTokenConfig = BaseNetworkConfig & {
   tokenAddress: string;
+};
+
+export type AdaTokenConfig = BaseNetworkConfig & {
+  policyId: string;
+  assetName: string;
 };
 
 export type AlgoTokenConfig = BaseNetworkConfig & {
@@ -87,6 +93,9 @@ export interface Tokens {
     hbar: {
       tokens: HbarTokenConfig[];
     };
+    ada: {
+      tokens: AdaTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -121,6 +130,9 @@ export interface Tokens {
     };
     hbar: {
       tokens: HbarTokenConfig[];
+    };
+    ada: {
+      tokens: AdaTokenConfig[];
     };
   };
 }
@@ -304,6 +316,21 @@ const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
+  if (coin instanceof AdaCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      policyId: coin.policyId,
+      assetName: coin.assetName,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -340,6 +367,9 @@ export const tokens: Tokens = {
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Mainnet'),
     },
+    ada: {
+      tokens: formattedAdaTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -375,6 +405,9 @@ export const tokens: Tokens = {
     },
     hbar: {
       tokens: formattedHbarTokens.filter((token) => token.network === 'Testnet'),
+    },
+    ada: {
+      tokens: formattedAdaTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
