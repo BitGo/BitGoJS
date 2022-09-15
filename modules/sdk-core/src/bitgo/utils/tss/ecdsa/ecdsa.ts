@@ -10,7 +10,7 @@ import { DecryptableNShare, KeyShare } from './types';
 import { RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
-import { getBitgoGpgPubKey } from '../../opengpgUtils';
+import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 
@@ -290,6 +290,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     if (!userSigningMaterial.backupNShare) {
       throw new Error('Invalid user key - missing backupNShare');
     }
+
     const MPC = new Ecdsa();
     const signingKey = MPC.keyCombine(userSigningMaterial.pShare, [
       userSigningMaterial.bitgoNShare,
@@ -297,28 +298,33 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     ]);
 
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
+    const signerShare = userSigningMaterial.bitgoNShare.u + userSigningMaterial.bitgoNShare.chaincode;
+    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
       txRequestId,
       SendShareType.KShare,
-      userSignShare.kShare
+      userSignShare.kShare,
+      encryptedSignerShare
     )) as AShare;
 
     const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
+    const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
+      userGammaAndMuShares.gShare as ECDSA.GShare
+    );
 
+    const muShare = userGammaAndMuShares.muShare!;
+    const dShare = userOmicronAndDeltaShare.dShare;
     const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
       txRequestId,
       SendShareType.MUShare,
-      userGammaAndMuShares.muShare as ECDSA.MUShare
+      { muShare, dShare, i: muShare.i }
     )) as DShare;
-
-    const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
-      userGammaAndMuShares.gShare as ECDSA.GShare
-    );
 
     let signablePayload;
 
@@ -334,14 +340,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload
     );
 
-    await ECDSAMethods.sendShareToBitgo(
-      this.bitgo,
-      this.wallet.id(),
-      txRequestId,
-      SendShareType.SShare,
-      userSShare,
-      userOmicronAndDeltaShare.dShare
-    );
+    await ECDSAMethods.sendShareToBitgo(this.bitgo, this.wallet.id(), txRequestId, SendShareType.SShare, userSShare);
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 
