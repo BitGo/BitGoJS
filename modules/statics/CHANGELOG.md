@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.17...@bitgo/statics@8.0.0-rc.18) (2022-09-15)
+
+
+### Features
+
+* **statics:** fix decimals token CHO ([e7bb6fb](https://github.com/BitGo/BitGoJS/commit/e7bb6fba337dfe58354c535c2dc65964248d8cd7))
+
+
+
+
+
 # [8.0.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.16...@bitgo/statics@8.0.0-rc.17) (2022-09-14)
 
 

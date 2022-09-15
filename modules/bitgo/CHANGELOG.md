@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.29](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.28...bitgo@14.3.0-rc.29) (2022-09-15)
+
+
+### Bug Fixes
+
+* **sdk-core:** ecdsa tss signing flow update ([226586c](https://github.com/BitGo/BitGoJS/commit/226586ce2f1af6f5593bb97c3a297f332aee3b34))
+
+
+
+
+
 # [14.3.0-rc.28](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.27...bitgo@14.3.0-rc.28) (2022-09-14)
 
 **Note:** Version bump only for package bitgo
