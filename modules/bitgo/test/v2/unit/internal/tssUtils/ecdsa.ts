@@ -135,10 +135,6 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   describe('TSS key chains', async function() {
-    after(function () {
-      nock.cleanAll();
-    });
-
     it('should generate TSS key chains', async function () {
       const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
@@ -394,10 +390,6 @@ describe('TSS Ecdsa Utils:', async function () {
         tssType: 'ecdsa',
       });
       /* END STEP THREE */
-    });
-
-    afterEach(function () {
-      nock.cleanAll();
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {

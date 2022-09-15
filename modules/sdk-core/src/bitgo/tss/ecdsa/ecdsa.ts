@@ -29,6 +29,7 @@ import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
+import assert from 'assert';
 
 const MPC = new Ecdsa();
 
@@ -168,6 +169,8 @@ export async function createUserSignatureShare(
   return MPC.sign(message, oShare, dShare, createKeccakHash('keccak256'));
 }
 
+export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition };
+
 /**
  * Sends Share To Bitgo
  * @param {BitGoBase} bitgo - the bitgo instance
@@ -181,8 +184,8 @@ export async function sendShareToBitgo(
   walletId: string,
   txRequestId: string,
   shareType: SendShareType,
-  share: SShare | MUShare | KShare,
-  dShare?: DShare
+  share: SShare | MuDShare | KShare,
+  signerShare?: string
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -192,27 +195,28 @@ export async function sendShareToBitgo(
 
   switch (shareType) {
     case SendShareType.KShare:
+      assert(signerShare, `signer share must be present`);
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, signerShare, 'ecdsa');
       responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.AShare);
       break;
     case SendShareType.MUShare:
-      const muShare = share as MUShare;
-      signatureShare = convertMuShare(muShare);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
+      const shareToSend = share as MuDShare;
+      const muShareRecord = convertMuShare(shareToSend.muShare);
+      const dShareRecord = convertDShare(shareToSend.dShare);
+      signatureShare = {
+        to: SignatureShareType.BITGO,
+        from: getParticipantFromIndex(shareToSend.dShare.i),
+        share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
+      };
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, signerShare, 'ecdsa');
       responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.DShare);
       break;
     case SendShareType.SShare:
-      if (!dShare) {
-        throw new Error('DShare not provided');
-      }
-      if (dShare.i !== ShareKeyPosition.BITGO || dShare.j !== ShareKeyPosition.USER) {
-        throw new Error('Invalid DShare provided');
-      }
       const sShare = share as SShare;
-      signatureShare = convertSDShare({ sShare, dShare });
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'ecdsa');
+      signatureShare = convertSignatureShare(sShare, share.i);
+      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, signerShare, 'ecdsa');
       responseFromBitgo = sShare;
       break;
     default:

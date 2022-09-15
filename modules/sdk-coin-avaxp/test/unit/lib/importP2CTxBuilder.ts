@@ -57,7 +57,6 @@ describe('AvaxP Import P2C Tx Builder', () => {
       );
     });
   });
-  IMPORT_P;
 
   signFlowTest({
     transactionType: 'Import P2C',

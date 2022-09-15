@@ -201,16 +201,7 @@ export class AvaxP extends BaseCoin {
       return false;
     }
 
-    const addressArr: string[] = Array.isArray(address) ? address : address.split('~');
-
-    // multisig wallet have an array of addresses. validate each address
-    for (const address of addressArr) {
-      if (!AvaxpLib.Utils.isValidAddress(address)) {
-        return false;
-      }
-    }
-
-    return true;
+    return AvaxpLib.Utils.isValidAddress(address);
   }
 
   /**

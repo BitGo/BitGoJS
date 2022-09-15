@@ -1,7 +1,8 @@
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { BaseCoin } from '@bitgo/statics';
-import { AddValidatorTx, BaseTx, PlatformVMConstants, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { AddValidatorTx, PlatformVMConstants, UnsignedTx, Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { Tx, BaseTx } from './iface';
 import utils from './utils';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
@@ -70,7 +71,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
   protected buildAvaxpTransaction(): void {
     const { inputs, outputs, credentials } = this.createInputOutput();
     this.transaction.setTransaction(
-      new Tx(
+      new PVMTx(
         new UnsignedTx(
           new AddValidatorTx(
             this.transaction._networkID,

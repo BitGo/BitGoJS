@@ -208,6 +208,11 @@ export class Ada extends BaseCoin {
     return 'eddsa';
   }
 
+  /** inherited doc */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
   }

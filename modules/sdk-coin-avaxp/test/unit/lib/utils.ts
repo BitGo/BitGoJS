@@ -27,15 +27,21 @@ describe('Avaxp Utils', () => {
       Utils.isValidAddress(address).should.be.false();
     });
 
-    it('should validate an address', function () {
+    it('should validate an address array', function () {
       const validAddresses = [
         'P-fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa',
         'NodeID-MdteS9U987PY7iwA5Pcz3sKVprJAbAvE7',
         'NodeID-P1KjdPNrap8LHfx5AstcXxsHjk3jbbyF',
       ];
-      for (const address of validAddresses) {
-        Utils.isValidAddress(address).should.be.true();
-      }
+
+      Utils.isValidAddress(validAddresses).should.be.true();
+    });
+
+    it('should validate an address multiSig string', function () {
+      const stringMultiSigAddress =
+        'P-fuji15jamwukfqkwhe8z26tjqxejtjd3jk9vj4kmxwa~NodeID-MdteS9U987PY7iwA5Pcz3sKVprJAbAvE7~NodeID-P1KjdPNrap8LHfx5AstcXxsHjk3jbbyF';
+
+      Utils.isValidAddress(stringMultiSigAddress).should.be.true();
     });
 
     it('should fail to validate an invalid block id', function () {
