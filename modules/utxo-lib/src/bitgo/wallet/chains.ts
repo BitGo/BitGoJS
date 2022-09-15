@@ -102,3 +102,11 @@ export function isExternalChainCode(v: ChainCode): boolean {
 export function isInternalChainCode(v: ChainCode): boolean {
   return toChainPair(v).indexOf(v) === 1;
 }
+
+/**
+ * @return true iff chain code is a segwit address
+ */
+export function isSegwit(v: ChainCode): boolean {
+  const segwitCodes: ChainCode[] = [...chainCodesP2shP2wsh, ...chainCodesP2wsh, ...chainCodesP2tr];
+  return segwitCodes.includes(v);
+}
