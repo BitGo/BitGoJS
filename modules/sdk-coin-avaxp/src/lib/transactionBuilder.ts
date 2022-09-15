@@ -12,8 +12,8 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
-import { SECPTransferInput, TransferableInput, Tx } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, Tx } from './iface';
+import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -39,14 +39,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     ) {
       throw new Error('Network or blockchain is not equals');
     }
-    this._transaction._memo = baseTx.getMemo();
+    // EVMBaseTx has not memo.
+    if ('getMemo' in baseTx) {
+      this._transaction._memo = baseTx.getMemo();
+    }
     this._transaction.setTransaction(tx);
     return this;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Tx();
+    const tx = new PVMTx();
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
     return this.transaction;
@@ -67,34 +70,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract buildAvaxpTransaction(): void;
 
-  // region utxo engine
-  /**
-   * Inputs can be controlled but outputs get reordered in transactions
-   * In order to make sure that the mapping is always correct we create an addressIndx which matches to the appropiate
-   * signatureIdx
-   * @param {TransferableInput[]} utxos as transaction ins.
-   * @protected
-   * @returns the list of UTXOs
-   */
-  protected recoverUtxos(utxos: TransferableInput[]): DecodedUtxoObj[] {
-    return utxos.map((utxo) => {
-      const secpInput: SECPTransferInput = utxo.getInput() as SECPTransferInput;
-
-      // use the same addressesIndex as existing ones in the inputs
-      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-
-      return {
-        outputID: SECP256K1_Transfer_Output,
-        outputidx: utils.cb58Encode(utxo.getOutputIdx()),
-        txid: utils.cb58Encode(utxo.getTxID()),
-        amount: secpInput.getAmount().toString(),
-        threshold: this.transaction._threshold,
-        addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
-        addressesIndex,
-      };
-    });
-  }
-  // endregion
   // region Getters and Setters
   /**
    * When using recovery key must be set here

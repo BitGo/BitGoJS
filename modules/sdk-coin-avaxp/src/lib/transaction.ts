@@ -5,11 +5,13 @@ import {
   Entry,
   InvalidTransactionError,
   SigningError,
+  TransactionFee,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
-import { AddValidatorTx, AmountInput, BaseTx, ExportTx, ImportTx, Tx } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, TransactionExplanation, TxData, Tx, BaseTx } from './iface';
+import { AddValidatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
+import { ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
@@ -68,7 +70,8 @@ export class Transaction extends BaseTransaction {
   public _fromAddresses: BufferAvax[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
-  public _fee: BN;
+  public _to: BufferAvax[];
+  public _fee: Partial<TransactionFee> = {};
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -91,7 +94,8 @@ export class Transaction extends BaseTransaction {
   }
 
   get credentials(): Credential[] {
-    return this._avaxpTransaction?.getCredentials();
+    // it should be this._avaxpTransaction?.getCredentials(), but EVMTx doesn't have it
+    return (this._avaxpTransaction as any)?.credentials;
   }
 
   get hasCredentials(): boolean {
@@ -100,15 +104,8 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
-    try {
-      const kp = new KeyPair({ prv: key });
-      const privateKey = kp.getPrivateKey();
-      if (!privateKey) return false;
-      const address = utils.parseAddress(kp.getAvaxPAddress(this._network.hrp));
-      return this._fromAddresses.find((a) => address.equals(a)) !== undefined;
-    } catch {
-      return false;
-    }
+    // TODO(BG-56700):  Improve canSign by check in addresses in empty credentials match signer
+    return true;
   }
 
   /**
@@ -168,6 +165,8 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
+    // EVMTx do not have memo.
+    const memo = 'getMemo' in this.avaxPTransaction ? utils.bufferToString(this.avaxPTransaction.getMemo()) : undefined;
     return {
       id: this.id,
       inputs: this.inputs,
@@ -175,7 +174,7 @@ export class Transaction extends BaseTransaction {
       threshold: this._threshold,
       locktime: this._locktime.toString(),
       type: this.type,
-      memo: utils.bufferToString(this.avaxPTransaction.getMemo()),
+      memo,
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
@@ -221,7 +220,7 @@ export class Transaction extends BaseTransaction {
   get outputs(): Entry[] {
     switch (this.type) {
       case TransactionType.Import:
-        return this.avaxPTransaction.getOuts().map(utils.mapOutputToEntry(this._network));
+        return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
       case TransactionType.Export:
         return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
       case TransactionType.addValidator:
@@ -238,23 +237,30 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Get a Transasction Fee.
+   */
+  get fee(): TransactionFee {
+    return { fee: '0', ...this._fee };
+  }
+
   get changeOutputs(): Entry[] {
     // Import Txs don't have change outputs
     if (this.type === TransactionType.Import) {
       return [];
     }
     // general support any transaction type, but it's scoped yet
-    return this.avaxPTransaction.getOuts().map(utils.mapOutputToEntry(this._network));
+    return (this.avaxPTransaction as PVMBaseTx).getOuts().map(utils.mapOutputToEntry(this._network));
   }
 
   get inputs(): Entry[] {
     let inputs;
     switch (this.type) {
       case TransactionType.Import:
-        inputs = (this.avaxPTransaction as ImportTx).getImportInputs();
+        inputs = (this.avaxPTransaction as ImportTx | EVMImportTx).getImportInputs();
         break;
       default:
-        inputs = this.avaxPTransaction.getIns();
+        inputs = (this.avaxPTransaction as PVMBaseTx).getIns();
     }
     return inputs.map((input) => {
       const amountInput = input.getInput() as any as AmountInput;
@@ -312,7 +318,7 @@ export class Transaction extends BaseTransaction {
       changeOutputs: txJson.changeOutputs.map((o) => ({ address: o.address, amount: o.value })),
       changeAmount,
       rewardAddresses,
-      fee: { fee: this._fee.toString() },
+      fee: this.fee,
       type: txJson.type,
       memo: txJson.memo,
     };

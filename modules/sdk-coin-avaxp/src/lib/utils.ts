@@ -7,22 +7,17 @@ import {
   ParseTransactionError,
   Entry,
 } from '@bitgo/sdk-core';
-import { BinTools, Buffer as BufferAvax } from 'avalanche';
+import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
-import {
-  AmountOutput,
-  BaseTx,
-  SelectCredentialClass,
-  TransferableOutput,
-  Tx,
-  UnsignedTx,
-} from 'avalanche/dist/apis/platformvm';
+import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common/credentials';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
 import { Signature } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
+import { EVMOutput } from 'avalanche/dist/apis/evm';
+import { Output, Tx } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -161,18 +156,6 @@ export class Utils implements BaseUtils {
     return tx.getIns().map((ins) => SelectCredentialClass(ins.getInput().getCredentialID()));
   }
 
-  from(raw: string): Tx {
-    const tx = new Tx();
-    try {
-      tx.fromString(raw);
-      return tx;
-    } catch (err) {
-      const utx = new UnsignedTx();
-      utx.fromBuffer(utils.cb58Decode(raw));
-      return new Tx(utx, []);
-    }
-  }
-
   /**
    * Avaxp wrapper to create signature and return it for credentials using Avalanche's buffer
    * @param network
@@ -282,22 +265,53 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Check if tx is for the blockchainId
+   *
+   * @param {Tx} tx
+   * @param {string} blockchainId
+   * @returns true if tx is for blockchainId
+   */
+  isTransactionOf(tx: Tx, blockchainId: string): boolean {
+    return utils.cb58Encode(tx.getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
+  }
+
+  /**
+   * Check if Output is from PVM.
+   * Output could be EVM or PVM output.
+   * @param {Output} output
+   * @returns {boolean} output is TransferableOutput
+   */
+  isTransferableOutput(output: Output): output is TransferableOutput {
+    return 'getOutput' in output;
+  }
+
+  /**
    * Return a mapper function to that network address representation.
    * @param network required to stringify addresses
    * @return mapper function
    */
-  mapOutputToEntry(network: AvalancheNetwork): (TransferableOutput) => Entry {
-    return (output: TransferableOutput) => {
-      const amountOutput = output.getOutput() as any as AmountOutput;
-      const address = amountOutput
-        .getAddresses()
-        .map((a) => this.addressToString(network.hrp, network.alias, a))
-        .sort()
-        .join('~');
-      return {
-        value: amountOutput.getAmount().toString(),
-        address,
-      };
+  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
+    return (output: Output) => {
+      if (this.isTransferableOutput(output)) {
+        const amountOutput = output.getOutput() as AmountOutput;
+        const address = amountOutput
+          .getAddresses()
+          .map((a) => this.addressToString(network.hrp, network.alias, a))
+          .sort()
+          .join('~');
+        return {
+          value: amountOutput.getAmount().toString(),
+          address,
+        };
+      } else {
+        const evmOutput = output as EVMOutput;
+        return {
+          // it should be evmOuput.getAmount(), but it returns a 0.
+          value: new BN((evmOutput as any).amount).toString(),
+          // C-Chain address.
+          address: '0x' + evmOutput.getAddressString(),
+        };
+      }
     };
   }
 }
