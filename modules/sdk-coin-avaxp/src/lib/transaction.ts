@@ -223,7 +223,7 @@ export class Transaction extends BaseTransaction {
         return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
       case TransactionType.Export:
         return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
-      case TransactionType.addValidator:
+      case TransactionType.AddValidator:
         // Get staked outputs
         const addValidatorTx = this.avaxPTransaction as AddValidatorTx;
         return [
@@ -304,7 +304,7 @@ export class Transaction extends BaseTransaction {
     const changeAmount = txJson.changeOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
 
     let rewardAddresses;
-    if ([TransactionType.addValidator, TransactionType.addDelegator].includes(txJson.type)) {
+    if ([TransactionType.AddValidator, TransactionType.AddDelegator].includes(txJson.type)) {
       rewardAddresses = this.rewardAddresses;
       displayOrder.splice(6, 0, 'rewardAddresses');
     }

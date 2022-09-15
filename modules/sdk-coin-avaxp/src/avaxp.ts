@@ -80,8 +80,8 @@ export class AvaxP extends BaseCoin {
       throw new Error('Tx memo does not match with expected txParams memo');
     }
     switch (explainedTx.type) {
-      case TransactionType.addDelegator:
-      case TransactionType.addValidator:
+      case TransactionType.AddDelegator:
+      case TransactionType.AddValidator:
         if (!params.txParams.recipients || params.txParams.recipients.length === 0) {
           const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
           const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
