@@ -1,7 +1,11 @@
 import { TxOutput } from 'bitcoinjs-lib';
 import { Network } from '..';
 import { toOutputScript } from '../address';
+import { createOutputScript2of3, createSpendScriptP2tr } from './outputScripts';
+import { UtxoPsbt } from './UtxoPsbt';
+import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { isSegwit, RootWalletKeys, scriptTypeForChain, WalletUnspent, WalletUnspentSigner } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -21,6 +25,16 @@ export interface Unspent<TNumber extends number | bigint = number> {
    * The amount in satoshi.
    */
   value: TNumber;
+}
+
+export interface NonWitnessUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
+  prevTx: Buffer;
+}
+
+export function isNonWitnessUnspent<TNumber extends number | bigint = number>(
+  u: Unspent<TNumber>
+): u is NonWitnessUnspent<TNumber> {
+  return Buffer.isBuffer((u as NonWitnessUnspent<TNumber>).prevTx);
 }
 
 /**
@@ -108,6 +122,66 @@ export function addToTransactionBuilder<TNumber extends number | bigint>(
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, txb.network as Network);
   txb.addInput(txid, vout, sequence, script, value);
+}
+
+export function addToPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  u: WalletUnspent<bigint>,
+  rootSigner: WalletUnspentSigner<RootWalletKeys>,
+  network: Network
+): void {
+  const { txid, vout, script, value } = toPrevOutput(u, network);
+  const { walletKeys, signerIndex, cosignerIndex } = rootSigner.deriveForChainAndIndex(u.chain, u.index);
+  const scriptType = scriptTypeForChain(u.chain);
+  psbt.addInput({
+    hash: txid,
+    index: vout,
+  });
+  const inputIndex = psbt.inputCount - 1;
+  if (isSegwit(u.chain)) {
+    psbt.updateInput(inputIndex, {
+      witnessUtxo: {
+        script,
+        value,
+      },
+    });
+  } else {
+    if (!isNonWitnessUnspent(u)) {
+      throw new Error('Error, require previous tx to add to PSBT');
+    }
+    psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
+  }
+
+  if (scriptType === 'p2tr') {
+    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2tr(walletKeys.publicKeys, [
+      walletKeys.triple[signerIndex].publicKey,
+      walletKeys.triple[cosignerIndex].publicKey,
+    ]);
+    psbt.updateInput(inputIndex, {
+      tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
+      tapBip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+        leafHashes: [leafHash],
+        pubkey: walletKeys.triple[idx].publicKey.slice(1), // 32-byte x-only
+        path: walletKeys.paths[idx],
+        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+      })),
+    });
+  } else {
+    const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+    psbt.updateInput(inputIndex, {
+      bip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+        pubkey: walletKeys.triple[idx].publicKey,
+        path: walletKeys.paths[idx],
+        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+      })),
+    });
+    if (witnessScript) {
+      psbt.updateInput(inputIndex, { witnessScript });
+    }
+    if (redeemScript) {
+      psbt.updateInput(inputIndex, { redeemScript });
+    }
+  }
 }
 
 /**

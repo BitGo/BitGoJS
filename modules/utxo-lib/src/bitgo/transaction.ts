@@ -8,6 +8,7 @@ import { DashTransaction } from './dash/DashTransaction';
 import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
+import { UtxoPsbt } from './UtxoPsbt';
 
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
@@ -80,6 +81,61 @@ export function setTransactionBuilderDefaults<TNumber extends number | bigint>(
         throw new Error(`invalid version`);
       }
   }
+}
+
+export function setPsbtDefaults(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  network: Network,
+  { version = getDefaultTransactionVersion(network) }: { version?: number } = {}
+): void {
+  switch (getMainnet(network)) {
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+      if (version !== 2) {
+        throw new Error(`invalid version`);
+      }
+      break;
+    case networks.zcash:
+      throw new Error('Zcash psbt not implemented');
+    default:
+      if (version !== 1) {
+        throw new Error(`invalid version`);
+      }
+  }
+  // FIXME: Always call this, because there's a bug in the upstream PSBT that
+  // defaults transactions to v2.
+  psbt.setVersion(version);
+}
+
+export function createPsbtForNetwork(
+  network: Network,
+  { version }: { version?: number } = {}
+): UtxoPsbt<UtxoTransaction<bigint>> {
+  let psbt;
+
+  switch (getMainnet(network)) {
+    case networks.bitcoin:
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+    case networks.dogecoin:
+    case networks.litecoin: {
+      psbt = new UtxoPsbt({ network });
+      break;
+    }
+    case networks.dash:
+      throw new Error('Dash psbt not implemented');
+    case networks.zcash: {
+      throw new Error('Zcash psbt not implemented');
+    }
+    default:
+      throw new Error(`unsupported network`);
+  }
+
+  setPsbtDefaults(psbt, network, { version });
+
+  return psbt;
 }
 
 export function createTransactionBuilderForNetwork<TNumber extends number | bigint = number>(
