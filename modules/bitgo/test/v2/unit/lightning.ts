@@ -73,9 +73,13 @@ describe('lightning API requests', function () {
   });
 
   it('should deposit an amount from on-chain wallet to lightning wallet', async function () {
+    const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/address`).reply(200, {
+      address,
+    });
     sinon.stub(wallet, 'send').resolves(fixtures.deposit);
-    const res = await wallet.lightning().deposit({ amount: 100000, address: 'fake_address' });
+    const res = await wallet.lightning().deposit({ amount: 100000 });
     assert.deepStrictEqual(res, fixtures.deposit);
+    scope.done();
   });
 
   it('should fetch lightning invoices', async function () {

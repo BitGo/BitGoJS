@@ -91,11 +91,7 @@ export class Lightning implements ILightning {
 
   public async deposit(params: LightningDepositParams): Promise<DepositResponse> {
     const { amount } = params;
-    let { address } = params;
-
-    if (address === undefined) {
-      address = (await this.createDepositAddress()).address;
-    }
+    const address = (await this.createDepositAddress()).address;
 
     const res = await this.wallet.send({ amount, address });
 
