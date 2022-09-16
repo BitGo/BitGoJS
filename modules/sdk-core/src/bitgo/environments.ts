@@ -15,7 +15,7 @@ interface EnvironmentTemplate {
   snowtraceBaseUrl: string;
   snowtraceApiToken?: string;
   eth2ExplorerBaseUrl: string;
-  ethwExplorerBaseUrl: string;
+  ethwFullNodeRPCBaseUrl: string;
   polygonscanBaseUrl?: string;
   polygonscanApiToken?: string;
   stellarFederationServerUrl?: string;
@@ -85,7 +85,7 @@ const mainnetBase: EnvironmentTemplate = {
   snowtraceBaseUrl: 'https://api.snowtrace.io',
   snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
-  ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
+  ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
   polygonscanBaseUrl: 'https://api.polygonscan.com',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
@@ -108,7 +108,7 @@ const testnetBase: EnvironmentTemplate = {
   snowtraceBaseUrl: 'https://api-testnet.snowtrace.io',
   snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
-  ethwExplorerBaseUrl: '', // TODO BG-55611: Update this URL once a ETHW Explorer is announced
+  ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
   polygonscanBaseUrl: 'https://api-testnet.polygonscan.com',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   // kylin eos endpoints found here
