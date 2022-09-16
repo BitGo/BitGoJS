@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.9...@bitgo/sdk-coin-ada@2.0.0-rc.10) (2022-09-16)
+
+
+### Features
+
+* **sdk-coin-ada:** add cardano token config ([00fcd72](https://github.com/BitGo/BitGoJS/commit/00fcd72d5feed500d69f208254c6b61815f51a16))
+
+
+
+
+
 # [2.0.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.8...@bitgo/sdk-coin-ada@2.0.0-rc.9) (2022-09-15)
 
 

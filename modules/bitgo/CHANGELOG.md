@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.30](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.29...bitgo@14.3.0-rc.30) (2022-09-16)
+
+
+### Features
+
+* **bitgo:** add lightning and lnurl examples ([8894bac](https://github.com/BitGo/BitGoJS/commit/8894bac0fd47eb9841e545011dc25d516dd72e9c))
+
+
+
+
+
 # [14.3.0-rc.29](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.28...bitgo@14.3.0-rc.29) (2022-09-15)
 
 
