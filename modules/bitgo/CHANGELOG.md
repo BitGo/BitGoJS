@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.31](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.30...bitgo@14.3.0-rc.31) (2022-09-16)
+
+
+### Bug Fixes
+
+* **bitgo:** remove address param from lightning().deposit ([b49ec63](https://github.com/BitGo/BitGoJS/commit/b49ec638e130633508cdc64fe6a3bdaaafed5aef))
+
+
+
+
+
 # [14.3.0-rc.30](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.29...bitgo@14.3.0-rc.30) (2022-09-16)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.24...@bitgo/sdk-core@2.0.0-rc.25) (2022-09-16)
+
+
+### Bug Fixes
+
+* **bitgo:** remove address param from lightning().deposit ([b49ec63](https://github.com/BitGo/BitGoJS/commit/b49ec638e130633508cdc64fe6a3bdaaafed5aef))
+
+
+
+
+
 # [2.0.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.23...@bitgo/sdk-core@2.0.0-rc.24) (2022-09-16)
 
 **Note:** Version bump only for package @bitgo/sdk-core

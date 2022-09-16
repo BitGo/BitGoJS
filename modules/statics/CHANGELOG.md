@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.19...@bitgo/statics@8.0.0-rc.20) (2022-09-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-polygon:** staking features ([41a3959](https://github.com/BitGo/BitGoJS/commit/41a3959ab737155a7c06a499fd19e9182e06863e))
+
+
+### Features
+
+* **sdk-coin-dot:** enable DOT staking ([0e9209b](https://github.com/BitGo/BitGoJS/commit/0e9209bd9c6f855cbc11e5d602253509fd0099c3))
+
+
+
+
+
 # [8.0.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.18...@bitgo/statics@8.0.0-rc.19) (2022-09-16)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.0.3-rc.28...@bitgo/sdk-coin-dot@1.1.0-rc.0) (2022-09-16)
+
+
+### Features
+
+* **sdk-coin-dot:** enable DOT staking ([0e9209b](https://github.com/BitGo/BitGoJS/commit/0e9209bd9c6f855cbc11e5d602253509fd0099c3))
+
+
+
+
+
 ## [1.0.3-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.0.3-rc.27...@bitgo/sdk-coin-dot@1.0.3-rc.28) (2022-09-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot
