@@ -26,6 +26,7 @@ import {
   FullySignedTransaction,
   getIsUnsignedSweep,
   Util,
+  MPCAlgorithm,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -486,5 +487,15 @@ export class Polygon extends Eth {
       id: signedTx.toJson().id,
       tx: signedTx.toBroadcastFormat(),
     };
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 }

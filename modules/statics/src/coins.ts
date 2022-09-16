@@ -43,7 +43,7 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 );
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const ACA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const HBAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -151,8 +151,8 @@ export const coins = CoinMap.fromCoins([
   account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, ETH_FEATURES),
   account('tbsc', 'Testnet Binance Smart Chain', Networks.test.bsc, 18, UnderlyingAsset.BSC, ETH_FEATURES),
-  account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES),
-  account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES),
+  account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES_WITH_STAKING),
+  account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, ETH_FEATURES_WITH_STAKING),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
