@@ -114,3 +114,50 @@ export const unsignedTransaction = {
     outputValue: '90034235235350',
   },
 };
+
+export const westendBlock = {
+  blockNumber: 12640277,
+  hash: '0x3771101969cc5cf1b37db0bdce589fe9174a1b820341c4d3673ce301352a3d42',
+};
+
+export const wrwUser = {
+  userKey:
+    '{"iv":"BJifMTDKIWs26T0sLhmQNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"CR5VO6Zc1no=","ct":"g8M2XrlRYkL4Io\n' +
+    'Y5fmZeNdnsBXymx7o5xR5Ei9zRNd8mgCz2cBYPGsNCMjm588XwuIi7Wboil3DZy1+sPni66UXgl\n' +
+    '6N14mPfz7WjGkQSfitVto/QEkupTFXMO8+8px11FkRvnJ7niI0hYYKMMiqttC0Dr21XIqey5c9J\n' +
+    'QtKvyH7vMjAvUMKNOx1RFeBH8CWhcxZqcJ6pktjxYM3zbwiAdQPynh6HYK91ljqBJ1EUke6a/hM\n' +
+    'IDpptUU73tzrfarBtHV/7qKIAHDbFsSUV341Nus3yMQpJ5Iegn+5plbgKXlMxRhU3WQrk18DFFZ\n' +
+    'b3czHicGdFlFQ3FQk4iXkadBSIYU0Svxd1Jvw1p+gkhPKMBgsFQ8CT2bObkh6unXJ5WuqSJ6hWc\n' +
+    '9eCeJfzunz6zvPAjJ5yB3nxx0p86Ai2G8gqJlJBRXa7pnJcpsrcLxfYo7p2q/nbrLvdYxecvGop\n' +
+    '4W2bfXpSv+3Oq/IaKtu+xcFdE3uytW1AAiEEOWjz3W+tlgRjrYXCJ8rezZ5gs8R2xUeZUKJfpgF\n' +
+    '89INGPK6xUtbFRYomCIxEj1QBMwaS0uKYfwJKkFg07TE7uURnzTUOnfqpJJzOThHDOMwIE/xulB\n' +
+    '6Kfk6GUn7PTXGFgAIgi7pPIbOMPfvZSkQjU+MRfVB/saretRlHKssUOo2V6FHaqy/T0sC7vdxZY\n' +
+    'taUidSTGzYU/13SvZ3isguGnbZVADDIA6pyMxl2sgo4WaZEdSOZK8Ge31c+8bsAXF/zoIEYd0wv\n' +
+    'fi3nST/hgM4fUpPYYvUTKS+CVT71prGy5mvHTx1mf1/VtDVuOG6dFNQcsacuL8oTHNRLyd0/r80\n' +
+    '6qXrVQ4Nb3Y0cUD0kFpCXh/fxo/eGECdhQdc9s7ASarwHmD7C41FcEI5TodBUvoLtOsDjSlkYY1\n' +
+    'Gh8lOrCcpo/qKRJllgKBiOHfKn3AAOx3yPZa7zQTPRX5AlTVtPMV/FIwWjsfxXPCGuxFCpSeRAo\n' +
+    'Mk4JYZ+t2wwFCiJl55II3SoCVg="}',
+  backupKey:
+    '{"iv":"7ImZQkc5WKJpMcRvEFIR4Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"7W6tMEuyvyA=","ct":"igLPbrjaR1vyLM\n' +
+    'LaYeVuluRqMQftsn82djpiaJiY+RlAF8VMlJP1+TQFNDjRfwQicfucuGX/m5icmxLuZmW3eTXuU\n' +
+    'L2sQ9hBk4HaFN3ic8ckNiaG2ssY/Aj3HNno8D+l4mGTmBrlaNl1qob4Ccl9AK94jYhDoViGg18Z\n' +
+    '8UIRqXDo91oz4omFE0GTclfiHh/OytS3Pc92aGb8Zt5JIzOAwju7vy0R52m6G4y2I3t4Q2hyiRX\n' +
+    '6uIRuRyUBj4UnXcbV5vC7HHyQIGsdPbQJb4zvXi2MQRjXwybnnUdJEXCCkufNkuKn/VelFtkrZp\n' +
+    'l7Poz8RBHKQs3WAniYoyq/OBgiNbFallXqVqVBVOK/rgNbN81m1P9yFRXaxMM5X59W1MjLS2nvH\n' +
+    'KWoe7Mgg9auLe1YYy72eEyqaUcnywN4mfwfXX0GRr6NwIna+X3LbgIpYqytJuj7e9YdBxI6oBlN\n' +
+    'XIGErEYQJSJhT5AEIwkDreI2PcOeOw3aOG5LFJmHeVWksWQdklWCXjXOQMCUs/Bwk0z74Mfmkot\n' +
+    'koi8h/Wp40i1oYF3NC4GQawDVxZ+NECLtsZma6R96SswI/RXsKC102nELM/3D4/RjXzB/OFZO8k\n' +
+    'uTLdpAH4c6S39mbDai/XYm+fxYJxtJVaL28TNRZHYc6p6tzO7fHozUjh/CrGEJa4IksYXNVQRaH\n' +
+    'k1fBugDw0co54vOdsJEIiZ4uj718/VEWw5q9qS00I47bZGO6cjyoJejzy70f3U2At28B3K+VLvT\n' +
+    'CKmEWNhnZsGJavjONp8DGJyWQMqSpmzkNTuP6pRRfzaU5yF95jvr+0oZG64lRQhaal5B2Zp5LJo\n' +
+    '6c8bdYRNzZw6b3omk0RHtltv4avS7K9gsgV5S9BccLUKC3oM8jBkuzxps7ZzJUZoyNIvOD9/U8E\n' +
+    'c1rkxh/+bBcACIWGNxDt9AmC87f1+098VtbTBOm3ju/8hhTSVtEdwLXhZuhFH4NwMMTOKIMgEp0\n' +
+    'RtdCxRIZJQCcn9qiaG7oWHX"}',
+  bitgoKey:
+    '2f209ca7f5c749d36813468dced481af1bc843fc45d990241bd57eee7991f9ea109f534e543\n' +
+    '6a45cbe94bb61ba64e103389f18333004efd4cd15457957b5ff67',
+  walletPassphrase: 'Ghghjkg!455544llll',
+  walletAddress: '5DT27GZcKRumteFW6PDpLaA64TbnKGoHpYbSYrCrFfTLhsq2',
+};

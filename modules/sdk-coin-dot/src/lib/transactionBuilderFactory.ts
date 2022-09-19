@@ -74,7 +74,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     });
 
     const methodName = decodedTxn.method?.name;
-    if (methodName === MethodNames.TransferKeepAlive || methodName === MethodNames.Proxy) {
+    if (
+      methodName === MethodNames.TransferKeepAlive ||
+      methodName === MethodNames.TransferAll ||
+      methodName === MethodNames.Proxy
+    ) {
       return this.getTransferBuilder();
     } else if (methodName === MethodNames.Bond) {
       return this.getStakingBuilder();

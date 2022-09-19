@@ -13,7 +13,7 @@ import { construct } from '@substrate/txwrapper-polkadot';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
-import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferAllArgs, TransferArgs, TxMethod } from './iface';
 import { KeyPair } from '.';
 
 const PROXY_METHOD_ARG = 2;
@@ -258,6 +258,10 @@ export class Utils implements BaseUtils {
 
   isTransfer(arg: TxMethod['args']): arg is TransferArgs {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
+  }
+
+  isTransferAll(arg: TxMethod['args']): arg is TransferAllArgs {
+    return (arg as TransferAllArgs).dest?.id !== undefined && (arg as TransferAllArgs).keepAlive !== undefined;
   }
 
   /**
