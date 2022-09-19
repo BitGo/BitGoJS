@@ -61,7 +61,7 @@
     "eventsource": "2.0.2",
     "minimist": "1.2.6",
     "parse-path": "^5.0.0",
-    "parse-url": "6.0.2",
+    "parse-url": "6.0.2 - 7.0.2",
     "terser": "^5.14.2"
   },
   "workspaces": [
