@@ -1,6 +1,7 @@
 import * as address from '../../src/address';
 import { Network, getMainnet, networks, isZcash } from '../../src/networks';
-import { DashTransaction, UtxoTransaction, ZcashTransaction, getValueScaled } from '../../src/bitgo';
+import { DashTransaction, UtxoTransaction, ZcashTransaction } from '../../src/bitgo';
+import { decimalCoinsToSats } from '../testutil';
 
 import { RpcTransaction } from './generate/RpcTypes';
 
@@ -117,7 +118,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       if (isZcash(network)) {
         delete v.valueZat;
       }
-      v.value = getValueScaled<bigint>(v.value, 'bigint').toString();
+      v.value = decimalCoinsToSats<bigint>(v.value, 'bigint').toString();
       return v;
     }),
   };

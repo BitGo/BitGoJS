@@ -18,7 +18,6 @@ import {
   TxOutPoint,
   UtxoTransaction,
   verifySignature,
-  getValueScaled,
 } from '../../src/bitgo';
 import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
@@ -38,7 +37,7 @@ import {
 } from './generate/fixtures';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
-import { getDefaultCosigner } from '../testutil';
+import { getDefaultCosigner, decimalCoinsToSats } from '../testutil';
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
@@ -100,7 +99,7 @@ function runTestParse<TNumber extends number | bigint>(
     }
 
     function getPrevOutputValue(input: InputLookup): TNumber {
-      return getValueScaled<TNumber>(getPrevOutput(input).value, amountType);
+      return decimalCoinsToSats<TNumber>(getPrevOutput(input).value, amountType);
     }
 
     function getPrevOutputScript(input: InputLookup): Buffer {
@@ -154,7 +153,7 @@ function runTestParse<TNumber extends number | bigint>(
         txbUnsigned.addInput(o.txid, o.vout);
       });
       fixture.transaction.vout.forEach((o) => {
-        txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), getValueScaled<TNumber>(o.value, amountType));
+        txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), decimalCoinsToSats<TNumber>(o.value, amountType));
       });
 
       const tx = createTransactionFromBuffer<TNumber>(

@@ -24,31 +24,3 @@ export function toTNumber<TNumber extends number | bigint>(
   }
   throw new Error('amountType must be either "number" or "bigint"');
 }
-
-/**
- * Multiply a decimal amount (optionally to a bigint)
- * Throws error if resulting value is not a safe integer number
- * @param value - decimal amount
- * @param amountType - desired output type
- * @param scaleFactor - scale amount
- * @return value * scaleFactor, cast to amountType
- */
-export function getValueScaled<TNumber extends number | bigint>(
-  value: number,
-  amountType: 'number' | 'bigint' = 'number',
-  scaleFactor = 1e8
-): TNumber {
-  if (amountType === 'number') {
-    const scaledValue = Number(value) * scaleFactor;
-    if (!Number.isSafeInteger(scaledValue)) {
-      throw new Error('input value cannot be scaled to safe integer number');
-    }
-    return scaledValue as TNumber;
-  } else {
-    const integerPart = Math.floor(value);
-    let decimalPart = value - integerPart;
-    decimalPart = Math.round(decimalPart * scaleFactor); // scale and fix floating point
-
-    return (BigInt(integerPart) * BigInt(scaleFactor) + BigInt(decimalPart)) as TNumber;
-  }
-}
