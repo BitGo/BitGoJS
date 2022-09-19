@@ -1,2 +1,1 @@
-// this is only a med severity in a dev dep, not affecting us
-GHSA-pqw5-jmp5-px4v
+// list GH advisories here we don't care about
