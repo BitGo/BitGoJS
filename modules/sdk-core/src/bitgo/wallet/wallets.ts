@@ -179,7 +179,7 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    const isTss = params.multisigType ? params.multisigType === 'tss' : this.baseCoin.supportsTss();
+    const isTss = params.multisigType === 'tss' && this.baseCoin.supportsTss();
     const label = params.label;
     const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';

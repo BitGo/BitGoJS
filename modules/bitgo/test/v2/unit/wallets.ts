@@ -381,19 +381,30 @@ describe('V2 Wallets:', function () {
     });
 
     it('should fail to create TSS wallet with invalid inputs', async function () {
-
-
       const tbtc = bitgo.coin('tbtc');
+      const params = {
+        label: 'my-cold-wallet',
+        passphrase: 'test123',
+        userKey: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        coldDerivationSeed: '123',
+      };
       const wallets = new Wallets(bitgo, tbtc);
 
-      await wallets.generateWallet({
-        label: 'tss wallet',
-        passphrase: 'passphrase',
-        multisigType: 'tss',
-      }).should.be.rejectedWith('coin btc does not support TSS at this time');
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200);
+
+      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({ derivedFromParentWithSeed: params.coldDerivationSeed })).reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({ source: 'backup' })).reply(200);
+
+      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
+
+      // create a non tss wallet for coin that doesn't support tss even though multisigType is set to tss
+      await wallets.generateWallet({ ...params, multisigType: 'tss' });
 
       const tsolWallets = new Wallets(bitgo, tsol);
       await tsolWallets.generateWallet({
+        multisigType: 'tss',
         label: 'tss wallet',
       }).should.be.rejectedWith('cannot generate TSS keys without passphrase');
 
@@ -401,6 +412,7 @@ describe('V2 Wallets:', function () {
         label: 'tss cold wallet',
         passphrase: 'passphrase',
         userKey: 'user key',
+        multisigType: 'tss',
       }).should.be.rejectedWith('TSS cold wallets are not supported at this time');
     });
   });
