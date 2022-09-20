@@ -49,6 +49,10 @@ describe('Ethereum pow', function () {
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        replayProtectionOptions: {
+          chain: 10001,
+          hardfork: 'london',
+        },
       };
     });
 
