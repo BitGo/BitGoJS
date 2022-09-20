@@ -30,7 +30,7 @@ export interface MaximumSpendableOptions {
   maxFeeRate?: number;
   recipientAddress?: string;
   limit?: number;
-  target?: number;
+  target?: number | string;
   plainTarget?: number;
 }
 
@@ -65,8 +65,8 @@ export interface PrebuildTransactionOptions {
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
   targetWalletUnspents?: number;
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   sequenceId?: string;
   lastLedgerSequence?: number;
   ledgerSequenceDelta?: number;
@@ -194,11 +194,11 @@ export interface TransferBySequenceIdOptions {
 }
 
 export interface UnspentsOptions extends PaginationOptions {
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   minHeight?: number;
   minConfirms?: number;
-  target?: number;
+  target?: number | string;
   segwit?: boolean;
   chains?: number[];
 }
@@ -206,8 +206,8 @@ export interface UnspentsOptions extends PaginationOptions {
 export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions {
   walletPassphrase?: string;
   xprv?: string;
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   minHeight?: number;
   numUnspentsToMake?: number;
   feeTxConfirmTarget?: number;
@@ -226,8 +226,8 @@ export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions
 export interface FanoutUnspentsOptions extends WalletSignTransactionOptions {
   walletPassphrase?: string;
   xprv?: string;
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   minHeight?: number;
   maxNumInputsToUse?: number;
   numUnspentsToMake?: number;
@@ -421,8 +421,8 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   enforceMinConfirmsForChange?: boolean;
   targetWalletUnspents?: number;
   message?: string;
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   sequenceId?: string;
   lastLedgerSequence?: number;
   ledgerSequenceDelta?: number;
