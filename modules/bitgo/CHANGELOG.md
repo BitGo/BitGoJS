@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.33](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.32...bitgo@14.3.0-rc.33) (2022-09-20)
+
+
+### Features
+
+* **statics:** add solana ([b46780e](https://github.com/BitGo/BitGoJS/commit/b46780ef7188b0f4451632c2fe2c3be86cdef9a7))
+
+
+
+
+
 # [14.3.0-rc.32](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.31...bitgo@14.3.0-rc.32) (2022-09-20)
 
 **Note:** Version bump only for package bitgo

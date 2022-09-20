@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethw@1.1.0-rc.18...@bitgo/sdk-coin-ethw@1.1.0-rc.19) (2022-09-20)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** create custom ETH common for unsupported chain ids ([9329162](https://github.com/BitGo/BitGoJS/commit/93291625150a0ae1f2f69432a3910845ee933e9d))
+
+
+
+
+
 # [1.1.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethw@1.1.0-rc.17...@bitgo/sdk-coin-ethw@1.1.0-rc.18) (2022-09-20)
 
 

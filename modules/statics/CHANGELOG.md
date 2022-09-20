@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.20...@bitgo/statics@8.0.0-rc.21) (2022-09-20)
+
+
+### Features
+
+* **statics:** add solana ([b46780e](https://github.com/BitGo/BitGoJS/commit/b46780ef7188b0f4451632c2fe2c3be86cdef9a7))
+* **statics:** adds new tokens ([83ebf4a](https://github.com/BitGo/BitGoJS/commit/83ebf4a65962afed6c071300d80610645f3f0be8))
+
+
+
+
+
 # [8.0.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.19...@bitgo/statics@8.0.0-rc.20) (2022-09-16)
 
 

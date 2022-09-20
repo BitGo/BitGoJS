@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3-rc.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.0.3-rc.30...@bitgo/sdk-coin-cspr@1.0.3-rc.31) (2022-09-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cspr
+
+
+
+
+
 ## [1.0.3-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.0.3-rc.29...@bitgo/sdk-coin-cspr@1.0.3-rc.30) (2022-09-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cspr
