@@ -32,7 +32,7 @@ describe('Avaxp', function () {
 
   const txParams = {
     recipients: [],
-    type: 'addValidator',
+    type: 'AddValidator',
     stakingOptions: {
       startTime: testData.ADDVALIDATOR_SAMPLES.startTime,
       endTime: testData.ADDVALIDATOR_SAMPLES.endTime,
@@ -285,7 +285,7 @@ describe('Avaxp', function () {
       const testData = ADDVALIDATOR_SAMPLES;
       const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
       txExplain.outputAmount.should.equal(testData.minValidatorStake);
-      txExplain.type.should.equal(TransactionType.addValidator);
+      txExplain.type.should.equal(TransactionType.AddValidator);
       txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
       txExplain.memo.should.equal(testData.memo);
@@ -295,7 +295,7 @@ describe('Avaxp', function () {
       const testData = ADDVALIDATOR_SAMPLES;
       const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
       txExplain.outputAmount.should.equal(testData.minValidatorStake);
-      txExplain.type.should.equal(TransactionType.addValidator);
+      txExplain.type.should.equal(TransactionType.AddValidator);
       txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
       txExplain.memo.should.equal(testData.memo);

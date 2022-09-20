@@ -20,7 +20,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @protected
    */
   protected get transactionType(): TransactionType {
-    return TransactionType.addValidator;
+    return TransactionType.AddValidator;
   }
 
   /**
