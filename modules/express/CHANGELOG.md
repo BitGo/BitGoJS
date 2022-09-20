@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.13.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.6-rc.32...@bitgo/express@9.13.0-rc.0) (2022-09-20)
+
+
+### Features
+
+* **express:** adding EdDSA TSS support to external signer ([dbccabc](https://github.com/BitGo/BitGoJS/commit/dbccabc7b1b2c1258108e6b38f853c676f8a6562))
+
+
+
+
+
 ## [9.12.6-rc.32](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.6-rc.31...@bitgo/express@9.12.6-rc.32) (2022-09-16)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.30...@bitgo/sdk-coin-avaxp@3.0.0-rc.0) (2022-09-20)
+
+
+### Features
+
+* **sdk-core:** capitalize transaction type enum ([bce263e](https://github.com/BitGo/BitGoJS/commit/bce263e01ebf70119ddefd572f55c3a69f15751c))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** change to upper case first char of addDelegator and addValidator
+BG-56847
+
+
+
+
+
 # [2.2.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.2.0-rc.29...@bitgo/sdk-coin-avaxp@2.2.0-rc.30) (2022-09-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

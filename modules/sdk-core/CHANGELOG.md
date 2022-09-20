@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.25...@bitgo/sdk-core@2.0.0-rc.26) (2022-09-20)
+
+
+### Features
+
+* **express:** adding EdDSA TSS support to external signer ([dbccabc](https://github.com/BitGo/BitGoJS/commit/dbccabc7b1b2c1258108e6b38f853c676f8a6562))
+* **sdk-coin-ethw:** use ETHw full node RPC queries to recover funds ([7db9bcd](https://github.com/BitGo/BitGoJS/commit/7db9bcd61549e4e96d8f745211717586eec4535c))
+* **sdk-core:** capitalize transaction type enum ([bce263e](https://github.com/BitGo/BitGoJS/commit/bce263e01ebf70119ddefd572f55c3a69f15751c))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** change to upper case first char of addDelegator and addValidator
+BG-56847
+
+
+
+
+
 # [2.0.0-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.24...@bitgo/sdk-core@2.0.0-rc.25) (2022-09-16)
 
 
