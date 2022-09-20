@@ -1,6 +1,7 @@
 import * as openpgp from 'openpgp';
-import 'should';
+import * as should from 'should';
 import * as crypto from 'crypto';
+import * as assert from 'assert';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
 
@@ -171,4 +172,46 @@ describe('OpenGPG Utils Tests', function () {
       isValidSignature.should.be.false();
     });
   });
+
+  describe('GPG key generation', function() {
+    it('should generate a a GPG key for secp256k1 with random name and email', async function () {
+      const gpgKey = await openpgpUtils.generateGPGKeyPair('secp256k1');
+
+      should.exist(gpgKey);
+      should.exist(gpgKey.privateKey);
+      should.exist(gpgKey.publicKey);
+    });
+
+    it('should generate a a GPG key for  with random name and email', async function () {
+      const gpgKey = await openpgpUtils.generateGPGKeyPair('ed25519');
+
+      should.exist(gpgKey);
+      should.exist(gpgKey.privateKey);
+      should.exist(gpgKey.publicKey);
+    });
+
+    it('should generate a a GPG key with provided name and email', async function () {
+      const userName = 'John Doe';
+      const userEmail = 'john.doe@example.com';
+      const gpgKey = await openpgpUtils.generateGPGKeyPair('secp256k1', userName, userEmail);
+
+      should.exist(gpgKey);
+      should.exist(gpgKey.privateKey);
+      should.exist(gpgKey.publicKey);
+
+      const parsedKey = await openpgp.readKey({ armoredKey: gpgKey.publicKey });
+      should.exist(parsedKey);
+
+      assert(parsedKey);
+      const primaryUser = await parsedKey.getPrimaryUser();
+      primaryUser.user.userID?.name?.should.equal(userName);
+      primaryUser.user.userID?.email?.should.equal(userEmail);
+    });
+
+    it('should fail to generate a a GPG key for unknown curve', async function () {
+      await openpgpUtils.generateGPGKeyPair('unknownCurve' as openpgp.EllipticCurveName)
+        .should.be.rejectedWith('Error generating keypair: Invalid curve');
+    });
+  });
+
 });
