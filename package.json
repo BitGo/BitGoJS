@@ -36,6 +36,7 @@
     "mocha": "^9.2.0",
     "nock": "=9.0.28",
     "nyc": "^15.1.0",
+    "parse-url": "^8.1.0",
     "prettier": "^2.3.0",
     "process": "^0.11.10",
     "rimraf": "^3.0.2",
@@ -61,7 +62,7 @@
     "eventsource": "2.0.2",
     "minimist": "1.2.6",
     "parse-path": "^5.0.0",
-    "parse-url": "6.0.2",
+    "parse-url": "8.1.0",
     "terser": "^5.14.2"
   },
   "workspaces": [

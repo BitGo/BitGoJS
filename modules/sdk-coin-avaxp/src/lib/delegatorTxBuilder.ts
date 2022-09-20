@@ -42,7 +42,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * @protected
    */
   protected get transactionType(): TransactionType {
-    return TransactionType.addDelegator;
+    return TransactionType.AddDelegator;
   }
 
   /**

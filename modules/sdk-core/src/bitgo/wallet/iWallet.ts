@@ -12,7 +12,7 @@ import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
-import { TokenEnablement } from '../utils';
+import { CustomGShareGeneratingFunction, CustomRShareGeneratingFunction, TokenEnablement } from '../utils';
 import { ILightning } from '../lightning';
 
 export interface MaximumSpendableOptions {
@@ -122,6 +122,7 @@ export interface WalletSignBaseOptions {
   reqId?: IRequestTracer;
   prv?: string;
   pubs?: string[];
+  txRequestId?: string;
   cosignerPub?: string;
   isLastSignature?: boolean;
   customSigningFunction?: CustomSigningFunction;
@@ -129,6 +130,8 @@ export interface WalletSignBaseOptions {
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   txPrebuild?: TransactionPrebuild;
+  customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
+  customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
   [index: string]: unknown;
 }
 

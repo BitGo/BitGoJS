@@ -156,7 +156,8 @@ export async function offerUserToBitgoRShare(
   walletId: string,
   txRequestId: string,
   userSignShare: SignShare,
-  encryptedSignerShare: string
+  encryptedSignerShare: string,
+  apiMode: 'full' | 'lite' = 'lite'
 ): Promise<void> {
   const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
   if (_.isNil(rShare)) {
@@ -170,8 +171,7 @@ export async function offerUserToBitgoRShare(
     to: SignatureShareType.BITGO,
     share: rShare.r + rShare.R,
   };
-
-  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, encryptedSignerShare);
+  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, encryptedSignerShare, 'eddsa', apiMode);
 }
 
 /**
@@ -216,7 +216,8 @@ export async function sendUserToBitgoGShare(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
-  userToBitgoGShare: GShare
+  userToBitgoGShare: GShare,
+  apiMode: 'full' | 'lite' = 'lite'
 ): Promise<void> {
   if (userToBitgoGShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid GShare, doesnt belong to the User');
@@ -227,7 +228,7 @@ export async function sendUserToBitgoGShare(
     share: userToBitgoGShare.R + userToBitgoGShare.gamma,
   };
 
-  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare);
+  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'eddsa', apiMode);
 }
 
 /**

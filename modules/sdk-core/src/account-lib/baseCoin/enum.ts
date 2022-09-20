@@ -42,9 +42,9 @@ export enum TransactionType {
   // Claim the staking rewards
   StakingClaim,
   // Add delegator to p-chain
-  addDelegator,
+  AddDelegator,
   // Add validator to p-chain
-  addValidator,
+  AddValidator,
   // Cross chain transfer at Avax
   Export,
   Import,

@@ -5,7 +5,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Ethw } from '../../src/index';
-import { nockEthwRecovery, nockExplorerRateLimitError } from '../lib/recovery-nocks';
+import { nockEthwRecovery } from '../lib/recovery-nocks';
 
 nock.disableNetConnect();
 
@@ -67,26 +67,28 @@ describe('Ethereum pow', function () {
       const nockUnsuccessfulEtherscanData: any[] = [
         {
           params: {
-            module: 'account',
-            action: 'txlist',
-            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+            method: 'eth_getTransactionCount',
+            params: ['0x74c2137d54b0fc9f907e13f14e0dd18485fee924', 'latest'],
           },
           response: {
-            status: '0',
-            message: 'No transactions found',
-            result: [],
+            result: '0x0',
+            id: 0,
+            jsonrpc: '2.0',
           },
         },
         {
           params: {
-            module: 'account',
-            action: 'balance',
-            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+            method: 'eth_getBalance',
+            params: ['0x74c2137d54b0fc9f907e13f14e0dd18485fee924', 'latest'],
           },
           response: {
-            status: '1',
-            message: 'NOTOK',
-            result: 'Rate limit exceeded',
+            error: {
+              code: -32602,
+              message:
+                'invalid argument 0: json: cannot unmarshal hex string of odd length into Go value of type common.Address',
+            },
+            id: 0,
+            jsonrpc: '2.0',
           },
         },
       ];
@@ -94,7 +96,7 @@ describe('Ethereum pow', function () {
       await basecoin
         .recover(recoveryParams)
         .should.be.rejectedWith(
-          'Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from Etherscan, got: Rate limit exceeded'
+          'ETHW full node error: -32602 - invalid argument 0: json: cannot unmarshal hex string of odd length into Go value of type common.Address'
         );
     });
 
@@ -102,26 +104,24 @@ describe('Ethereum pow', function () {
       const insufficientFeeData: any[] = [
         {
           params: {
-            module: 'account',
-            action: 'txlist',
-            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+            method: 'eth_getTransactionCount',
+            params: ['0x74c2137d54b0fc9f907e13f14e0dd18485fee924', 'latest'],
           },
           response: {
-            status: '0',
-            message: 'No transactions found',
-            result: [],
+            id: 0,
+            jsonrpc: '2.0',
+            result: '0x0',
           },
         },
         {
           params: {
-            module: 'account',
-            action: 'balance',
-            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+            method: 'eth_getBalance',
+            params: ['0x74c2137d54b0fc9f907e13f14e0dd18485fee924', 'latest'],
           },
           response: {
-            status: '1',
-            message: 'OK',
-            result: '1234',
+            id: 0,
+            jsonrpc: '2.0',
+            result: '0x4d2',
           },
         },
       ];
@@ -210,11 +210,6 @@ describe('Ethereum pow', function () {
         .should.be.rejectedWith(
           'Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.'
         );
-    });
-
-    it('should throw error when the explorer rate limit is reached', async function () {
-      nockExplorerRateLimitError();
-      await basecoin.recover(recoveryParams).should.be.rejectedWith('ETHW Explorer rate limit reached');
     });
 
     it('should generate an ETH unsigned sweep', async function () {

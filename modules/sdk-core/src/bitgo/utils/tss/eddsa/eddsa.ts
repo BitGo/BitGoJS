@@ -5,7 +5,7 @@ import * as bs58 from 'bs58';
 import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
-import Eddsa from '../../../../account-lib/mpc/tss';
+import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { encryptText, getBitgoGpgPubKey, createShareProof } from '../../opengpgUtils';
 import {
@@ -17,7 +17,13 @@ import {
   sendUserToBitgoGShare,
   SigningMaterial,
 } from '../../../tss';
-import { TSSParams, TxRequest } from '../baseTypes';
+import {
+  CustomGShareGeneratingFunction,
+  CustomRShareGeneratingFunction,
+  SignatureShareRecord,
+  TSSParams,
+  TxRequest,
+} from '../baseTypes';
 import { KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -257,6 +263,110 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     };
 
     return keychains;
+  }
+
+  async createRShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+  }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }> {
+    const { txRequest, prv } = params;
+    const txRequestResolved: TxRequest = txRequest;
+
+    const hdTree = await Ed25519BIP32.initialize();
+    const MPC = await Eddsa.initialize(hdTree);
+
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
+    const unsignedTx =
+      txRequestResolved.apiVersion === 'full'
+        ? txRequestResolved.transactions[0].unsignedTx
+        : txRequestResolved.unsignedTxs[0];
+
+    const signingKey = MPC.keyDerive(
+      userSigningMaterial.uShare,
+      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
+      unsignedTx.derivationPath
+    );
+
+    const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+
+    const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
+
+    return { rShare: userSignShare, signingKeyYShare: signingKey.yShares[3] };
+  }
+
+  async createGShareFromTxRequest(params: {
+    txRequest: string | TxRequest;
+    prv: string;
+    bitgoToUserRShare: SignatureShareRecord;
+    userToBitgoRShare: SignShare;
+  }): Promise<GShare> {
+    let txRequestResolved: TxRequest;
+
+    const { txRequest, prv, bitgoToUserRShare, userToBitgoRShare } = params;
+
+    if (typeof txRequest === 'string') {
+      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
+    } else {
+      txRequestResolved = txRequest;
+    }
+
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
+    const unsignedTx =
+      txRequestResolved.apiVersion === 'full'
+        ? txRequestResolved.transactions[0].unsignedTx
+        : txRequestResolved.unsignedTxs[0];
+
+    const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+
+    const userToBitGoGShare = await createUserToBitGoGShare(
+      userToBitgoRShare,
+      bitgoToUserRShare,
+      userSigningMaterial.backupYShare,
+      userSigningMaterial.bitgoYShare,
+      signablePayload
+    );
+    return userToBitGoGShare;
+  }
+
+  async signUsingExternalSigner(
+    txRequest: string | TxRequest,
+    externalSignerRShareGenerator: CustomRShareGeneratingFunction,
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+  ): Promise<TxRequest> {
+    let txRequestResolved: TxRequest;
+    let txRequestId: string;
+    if (typeof txRequest === 'string') {
+      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
+      txRequestId = txRequestResolved.txRequestId;
+    } else {
+      txRequestResolved = txRequest;
+      txRequestId = txRequest.txRequestId;
+    }
+    const rSignShareTransactionParams = {
+      txRequest: txRequestResolved,
+    };
+    const { rShare, signingKeyYShare } = await externalSignerRShareGenerator(rSignShareTransactionParams);
+    const signerShare = signingKeyYShare.u + signingKeyYShare.chaincode;
+    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+    await offerUserToBitgoRShare(this.bitgo, this.wallet.id(), txRequestId, rShare, encryptedSignerShare, 'full');
+    const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
+    const gSignShareTransactionParams = {
+      txRequest: txRequestResolved,
+      bitgoToUserRShare: bitgoToUserRShare,
+      userToBitgoRShare: rShare,
+    };
+    const gShare = await externalSignerGShareGenerator(gSignShareTransactionParams);
+    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, gShare, 'full');
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 
   /**

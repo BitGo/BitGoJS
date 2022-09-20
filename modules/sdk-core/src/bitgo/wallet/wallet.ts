@@ -1525,8 +1525,14 @@ export class Wallet implements IWallet {
    * - walletPassphrase
    * @return {*}
    */
-  async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction> {
+  async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
     const { txPrebuild } = params;
+
+    if (_.isFunction(params.customGShareGeneratingFunction) && _.isFunction(params.customRShareGeneratingFunction)) {
+      // invoke external signer TSS for EdDSA workflow
+      return this.signTransactionTssExternalSignerEdDSA(params, this.baseCoin);
+    }
+
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
     }
@@ -2531,6 +2537,39 @@ export class Wallet implements IWallet {
       buildParams: whitelistedParams,
       feeInfo: unsignedTx.feeInfo,
     };
+  }
+
+  /**
+   * Signs a transaction from a TSS wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerEdDSA(
+    params: WalletSignTransactionOptions = {},
+    coin: IBaseCoin
+  ): Promise<TxRequest> {
+    if (!params.txRequestId) {
+      throw new Error('txRequestId required to sign transactions with TSS');
+    }
+
+    if (!params.customRShareGeneratingFunction) {
+      throw new Error('Generator function for R share required to sign transactions with External Signer');
+    }
+
+    if (!params.customGShareGeneratingFunction) {
+      throw new Error('Generator function for G share required to sign transactions with External Signer');
+    }
+
+    try {
+      const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
+        params.txRequestId,
+        params.customRShareGeneratingFunction,
+        params.customGShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
   }
 
   /**
