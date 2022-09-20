@@ -116,6 +116,15 @@ describe('OFC:', function () {
     ofcterc.isValidAddress(notValidAddress03).should.be.false;
   });
 
+  it('test crypto coins for ofcsol', function () {
+    const sol = bitgo.coin('ofcsol');
+    sol.getChain().should.equal('ofcsol');
+    sol.getFullName().should.equal('Solana');
+    sol.getBaseFactor().should.equal(PRECISION_9);
+    sol.isValidAddress('5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo').should.be.true;
+    sol.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+  });
+
   describe('check ofc tokens for Casper network', function () {
     describe('for main network', function () {
       const coin = 'ofccspr';

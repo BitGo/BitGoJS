@@ -354,10 +354,17 @@ export class Eth extends BaseCoin {
 
     // if replay protection options are set, override the default common setting
     const ethCommon = params.replayProtectionOptions
-      ? new optionalDeps.EthCommon.default({
-          chain: params.replayProtectionOptions.chain,
-          hardfork: params.replayProtectionOptions.hardfork,
-        })
+      ? optionalDeps.EthCommon.default.isSupportedChainId(
+          new optionalDeps.ethUtil.BN(params.replayProtectionOptions.chain)
+        )
+        ? new optionalDeps.EthCommon.default({
+            chain: params.replayProtectionOptions.chain,
+            hardfork: params.replayProtectionOptions.hardfork,
+          })
+        : optionalDeps.EthCommon.default.custom({
+            chainId: new optionalDeps.ethUtil.BN(params.replayProtectionOptions.chain),
+            defaultHardfork: params.replayProtectionOptions.hardfork,
+          })
       : defaultCommon;
 
     const baseParams = {
