@@ -5,7 +5,7 @@ import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
 import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType, CreateBackupOptions } from '../../../keychain';
 import { encryptText, getBitgoGpgPubKey, createShareProof, generateGPGKeyPair } from '../../opengpgUtils';
 import {
   createUserSignShare,
@@ -26,6 +26,7 @@ import {
 import { KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
+
 /**
  * Utility functions for TSS work flows.
  */
@@ -33,12 +34,13 @@ import { KeychainsTriplet } from '../../../baseCoin';
 export class EddsaUtils extends baseTSSUtils<KeyShare> {
   /**
    * Creates a Keychain containing the User's TSS signing materials.
+   * We need to have the passphrase be optional to allow for the client to store their backup key on their premises
    *
    * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - user's TSS key share
    * @param backupKeyShare - backup's TSS key share
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
-   * @param passphrase - wallet passphrase used to encrypt user's signing materials
+   * @param [passphrase] - optional wallet passphrase used to encrypt user's signing materials
    * @param [originalPasscodeEncryptionCode] - optional encryption code needed for wallet password reset for hot wallets
    */
   async createUserKeychain(
@@ -46,7 +48,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string,
+    passphrase?: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
@@ -87,28 +89,34 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       source: 'user',
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
-      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
       originalPasscodeEncryptionCode,
     };
+    if (passphrase !== undefined) {
+      userKeychainParams.encryptedPrv = this.bitgo.encrypt({
+        input: JSON.stringify(userSigningMaterial),
+        password: passphrase,
+      });
+    }
 
     return await this.baseCoin.keychains().add(userKeychainParams);
   }
 
   /**
    * Creates a Keychain containing the Backup party's TSS signing materials.
+   * We need to have the passphrase be optional to allow for the client to store their backup key on their premises
    *
    * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - User's TSS Keyshare
    * @param backupKeyShare - Backup's TSS Keyshare
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
-   * @param passphrase - wallet passphrase used to encrypt user's signing materials
+   * @param [passphrase] - optional wallet passphrase used to encrypt user's signing materials
    */
   async createBackupKeychain(
     userGpgKey: openpgp.SerializedKeyPair<string>,
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase?: string
   ): Promise<Keychain> {
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -145,13 +153,18 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     };
     const prv = JSON.stringify(backupSigningMaterial);
 
-    return await this.baseCoin.keychains().createBackup({
+    const params: CreateBackupOptions = {
       source: 'backup',
       keyType: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
-      encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
-    });
+    };
+
+    if (passphrase !== undefined) {
+      params.encryptedPrv = this.bitgo.encrypt({ input: prv, password: passphrase });
+    }
+
+    return await this.baseCoin.keychains().createBackup(params);
   }
 
   /**
@@ -211,7 +224,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param params.passphrase - passphrase used to encrypt signing materials created for User and Backup
    */
   async createKeychains(params: {
-    passphrase: string;
+    passphrase?: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {

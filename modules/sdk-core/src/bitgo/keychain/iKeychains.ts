@@ -100,7 +100,7 @@ export interface CreateBitGoOptions {
 
 export interface CreateMpcOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
-  passphrase: string;
+  passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
 }

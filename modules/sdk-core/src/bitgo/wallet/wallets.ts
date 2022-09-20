@@ -183,7 +183,7 @@ export class Wallets implements IWallets {
     const label = params.label;
     const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
-    const isCold = !canEncrypt || !!params.userKey;
+    const isCold = !!params.userKey;
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
       m: 2,
@@ -206,10 +206,6 @@ export class Wallets implements IWallets {
     }
 
     if (isTss) {
-      if (!canEncrypt) {
-        throw new Error('cannot generate TSS keys without passphrase');
-      }
-
       if (isCold) {
         throw new Error('TSS cold wallets are not supported at this time');
       }
@@ -221,7 +217,7 @@ export class Wallets implements IWallets {
       return this.generateMpcWallet({
         multisigType: 'tss',
         label,
-        passphrase: passphrase!,
+        passphrase,
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise: params.enterprise,
         walletVersion: params.walletVersion,
@@ -242,7 +238,7 @@ export class Wallets implements IWallets {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support BLS-DKG at this time`);
       }
 
-      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase: passphrase! });
+      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase });
     }
 
     const hasBackupXpub = !!params.backupXpub;
