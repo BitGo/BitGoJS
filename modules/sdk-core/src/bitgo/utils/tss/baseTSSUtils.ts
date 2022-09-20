@@ -8,6 +8,8 @@ import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
 import * as _ from 'lodash';
 import {
+  CustomGShareGeneratingFunction,
+  CustomRShareGeneratingFunction,
   ITssUtils,
   PrebuildTransactionWithIntentOptions,
   SignatureShareRecord,
@@ -15,6 +17,7 @@ import {
   TxRequest,
   TxRequestVersion,
 } from './baseTypes';
+import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -78,6 +81,54 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Signs a transaction using TSS for EdDSA and through utilization of custom share generators
+   *
+   * @param {string | TxRequest} txRequest - transaction request with unsigned transaction
+   * @param {CustomRShareGeneratingFunction} externalSignerRShareGenerator a function that creates R shares in the EdDSA TSS flow
+   * @param {CustomGShareGeneratingFunction} externalSignerGShareGenerator a function that creates G shares in the EdDSA TSS flow
+   * @returns {Promise<TxRequest>} - a signed tx request
+   */
+  signUsingExternalSigner(
+    txRequest: string | TxRequest,
+    externalSignerRShareGenerator: CustomRShareGeneratingFunction,
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+  ): Promise<TxRequest> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Create an R (User to BitGo) share from an unsigned transaction and private user signing material
+   *
+   * @param {TxRequest} txRequest - transaction request with unsigned transaction
+   * @param {string} prv - user signing material
+   * @returns {Promise<{ rShare: SignShare; signingKeyYShare: YShare }>} - R Share and the Signing Key's Y share to BitGo
+   */
+  createRShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+  }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Create a G (User to BitGo) share from an unsigned transaction and private user signing material
+   *
+   * @param {TxRequest} txRequest - transaction request with unsigned transaction
+   * @param {string} prv - user signing material
+   * @param {SignatureShareRecord} bitgoToUserRShare - BitGo to User R Share
+   * @param {SignShare} userToBitgoRShare - User to BitGo R Share
+   * @returns {Promise<GShare>} - GShare from User to BitGo
+   */
+  createGShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+    bitgoToUserRShare: SignatureShareRecord;
+    userToBitgoRShare: SignShare;
+  }): Promise<GShare> {
     throw new Error('Method not implemented.');
   }
 
