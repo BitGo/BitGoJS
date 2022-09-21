@@ -51,7 +51,7 @@
     "bip32": "^3.0.1",
     "bip174": "npm:@bitgo/bip174@3.0.0",
     "bitcoin-ops": "^1.3.0",
-    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib#1afb49753714b92f1078bf2a7afe6a5ef3280e2d",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@7.0.0-rc.1",
     "bn.js": "^5.2.1",
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
