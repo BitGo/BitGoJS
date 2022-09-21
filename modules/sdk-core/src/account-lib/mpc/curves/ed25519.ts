@@ -65,7 +65,7 @@ export class Ed25519Curve implements BaseCurve {
     const signedMessage = Buffer.concat([signature, message]);
     try {
       // Returns the message which was signed if the signature is valid
-      const result = Buffer.from(sodium.crypto_sign_open(signedMessage, bigIntToBufferLE(publicKey)));
+      const result = Buffer.from(sodium.crypto_sign_open(signedMessage, bigIntToBufferLE(publicKey, 32)));
       return Buffer.compare(message, result) === 0;
     } catch (error) {
       // Invalid signature causes an exception
