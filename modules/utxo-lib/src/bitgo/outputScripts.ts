@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 
-import { Network, supportsSegwit, supportsTaproot, taproot } from '..';
+import { Network, supportsSegwit, supportsTaproot } from '..';
 
 import { isTriple, Triple, Tuple } from './types';
 
@@ -73,8 +73,6 @@ export type SpendableScript = {
 export type SpendScriptP2tr = {
   controlBlock: Buffer;
   witnessScript: Buffer;
-  leafVersion: number;
-  leafHash: Buffer;
 };
 
 /**
@@ -218,18 +216,11 @@ export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: T
   assert(Buffer.isBuffer(controlBlock));
 
   assert(payment.redeem);
-  const leafScript = payment.redeem.output;
-  assert(Buffer.isBuffer(leafScript));
-
-  const parsedControlBlock = taproot.parseControlBlock(eccLib, controlBlock);
-  const { leafVersion } = parsedControlBlock;
-  const leafHash = taproot.getTapleafHash(eccLib, parsedControlBlock, leafScript);
-
+  const output = payment.redeem.output;
+  assert(Buffer.isBuffer(output));
   return {
     controlBlock,
-    witnessScript: leafScript,
-    leafVersion,
-    leafHash,
+    witnessScript: output,
   };
 }
 

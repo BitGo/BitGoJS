@@ -14,9 +14,6 @@ export class WalletUnspentSigner<T extends WalletKeys> {
     return new WalletUnspentSigner<RootWalletKeys>(walletKeys, signer, cosigner);
   }
 
-  readonly signerIndex;
-  readonly cosignerIndex;
-
   constructor(
     walletKeys: WalletKeys | Triple<BIP32Interface>,
     public signer: BIP32Interface,
@@ -25,12 +22,10 @@ export class WalletUnspentSigner<T extends WalletKeys> {
     if (Array.isArray(walletKeys)) {
       walletKeys = new RootWalletKeys(walletKeys);
     }
-    this.signerIndex = walletKeys.triple.findIndex((k) => eqPublicKey(k, signer));
-    if (this.signerIndex === undefined) {
+    if (!walletKeys.triple.some((k) => eqPublicKey(k, signer))) {
       throw new Error(`signer not part of walletKeys`);
     }
-    this.cosignerIndex = walletKeys.triple.findIndex((k) => eqPublicKey(k, cosigner));
-    if (this.cosignerIndex === undefined) {
+    if (!walletKeys.triple.some((k) => eqPublicKey(k, cosigner))) {
       throw new Error(`cosigner not part of walletKeys`);
     }
 

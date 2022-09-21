@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Transaction, networks } from '../../../src';
+import { networks } from '../../../src';
 import {
   isWalletUnspent,
   formatOutputId,
@@ -19,10 +19,6 @@ import {
   getWalletAddress,
   verifySignatureWithUnspent,
   toTNumber,
-  WalletUnspent,
-  UtxoTransaction,
-  createPsbtForNetwork,
-  addToPsbt,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
@@ -119,60 +115,6 @@ describe('WalletUnspent', function () {
     });
   });
 
-  function constructAndSignTransactionUsingPsbt(
-    unspents: WalletUnspent<bigint>[],
-    signer: string,
-    cosigner: string
-  ): Transaction<bigint> {
-    const psbt = createPsbtForNetwork(network);
-    psbt.addOutput({
-      address: getWalletAddress(walletKeys, 0, 100, network),
-      value: BigInt(unspentSum<bigint>(unspents, 'bigint')) - BigInt(100),
-    });
-
-    unspents.forEach((u) => {
-      addToPsbt(psbt, u, WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]), network);
-    });
-    psbt.signAllInputsHD(walletKeys[signer]);
-    psbt.signAllInputsHD(walletKeys[cosigner]);
-    assert(psbt.validateSignaturesOfAllInputs());
-    psbt.finalizeAllInputs();
-    return psbt.extractTransaction(); // extract transaction has a return type of Transaction instead of UtxoTransaction
-  }
-
-  function constructAndSignTransactionUsingTransactionBuilder<TNumber extends number | bigint>(
-    unspents: WalletUnspent<TNumber>[],
-    signer: string,
-    cosigner: string,
-    amountType: 'number' | 'bigint' = 'number'
-  ): UtxoTransaction<TNumber> {
-    const txb = createTransactionBuilderForNetwork<TNumber>(network);
-    txb.addOutput(
-      getWalletAddress(walletKeys, 0, 100, network),
-      toTNumber<TNumber>(BigInt(unspentSum<TNumber>(unspents, amountType)) - BigInt(100), amountType)
-    );
-    unspents.forEach((u) => {
-      addToTransactionBuilder(txb, u);
-    });
-    [
-      WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]),
-      WalletUnspentSigner.from(walletKeys, walletKeys[cosigner], walletKeys[signer]),
-    ].forEach((walletSigner, nSignature) => {
-      unspents.forEach((u, i) => {
-        signInputWithUnspent(txb, i, unspents[i], walletSigner);
-      });
-      const tx = nSignature === 0 ? txb.buildIncomplete() : txb.build();
-      // Verify each signature for the unspent
-      unspents.forEach((u, i) => {
-        assert.deepStrictEqual(
-          verifySignatureWithUnspent(tx, i, unspents, walletKeys),
-          walletKeys.triple.map((k) => k === walletKeys[signer] || (nSignature === 1 && k === walletKeys[cosigner]))
-        );
-      });
-    });
-    return txb.build();
-  }
-
   function runTestSignUnspent<TNumber extends number | bigint>(
     scriptType: outputScripts.ScriptType2Of3,
     signer: string,
@@ -193,15 +135,29 @@ describe('WalletUnspent', function () {
           vout: 1,
         }),
       ];
-      const txbTransaction = constructAndSignTransactionUsingTransactionBuilder(unspents, signer, cosigner, amountType);
-      if (amountType === 'bigint') {
-        const psbtTransaction = constructAndSignTransactionUsingPsbt(
-          unspents as WalletUnspent<bigint>[],
-          signer,
-          cosigner
-        );
-        assert.deepStrictEqual(txbTransaction.toBuffer(), psbtTransaction.toBuffer());
-      }
+      const txb = createTransactionBuilderForNetwork<TNumber>(network);
+      txb.addOutput(
+        getWalletAddress(walletKeys, 0, 100, network),
+        toTNumber<TNumber>(BigInt(unspentSum<TNumber>(unspents, amountType)) - BigInt(100), amountType)
+      );
+      unspents.forEach((u) => {
+        addToTransactionBuilder(txb, u);
+      });
+      [
+        WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]),
+        WalletUnspentSigner.from(walletKeys, walletKeys[cosigner], walletKeys[signer]),
+      ].forEach((walletSigner, nSignature) => {
+        unspents.forEach((u, i) => {
+          signInputWithUnspent(txb, i, unspents[i], walletSigner);
+        });
+        const tx = nSignature === 0 ? txb.buildIncomplete() : txb.build();
+        unspents.forEach((u, i) => {
+          assert.deepStrictEqual(
+            verifySignatureWithUnspent(tx, i, unspents, walletKeys),
+            walletKeys.triple.map((k) => k === walletKeys[signer] || (nSignature === 1 && k === walletKeys[cosigner]))
+          );
+        });
+      });
     });
   }
 

@@ -68,13 +68,7 @@ const ecc = {
     throwToNull(() => necc.utils.pointAddScalar(p, tweak, defaultTrue(compressed))),
 
   privateAdd: (d: Uint8Array, tweak: Uint8Array): Uint8Array | null =>
-    throwToNull(() => {
-      const res = necc.utils.privateAdd(d, tweak);
-      // tiny-secp256k1 returns null rather than allowing a 0 private key to be returned
-      // ECPair.testEcc() requires that behavior.
-      if (res?.every((i) => i === 0)) return null;
-      return res;
-    }),
+    throwToNull(() => necc.utils.privateAdd(d, tweak)),
 
   privateNegate: (d: Uint8Array): Uint8Array => necc.utils.privateNegate(d),
 
