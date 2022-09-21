@@ -272,7 +272,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
       utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
     );
 
-    /* 
+    /*
     A = user key
     B = hsm key
     C = backup key
@@ -379,7 +379,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     // get outputs and credentials from the deserialized transaction if we are in OVC
     return {
       inputs,
-      outputs: outputs.length === 0 ? (this.transaction.avaxPTransaction as PVMBaseTx).getOuts() : outputs,
+      outputs: !buildOutputs ? (this.transaction.avaxPTransaction as PVMBaseTx).getOuts() : outputs,
       credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
     };
   }
