@@ -4,15 +4,15 @@ import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
-import * as crypto from 'crypto';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
 import { RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
-import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
+import { encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
+import assert from 'assert';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -38,7 +38,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       }
     }
 
-    return this.bitgoPublicGpgKey!;
+    return this.bitgoPublicGpgKey;
   }
 
   /** @inheritdoc */
@@ -54,18 +54,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userKeyShare = await MPC.keyShare(1, m, n);
     const backupKeyShare = await MPC.keyShare(2, m, n);
 
-    const randomHexString = crypto.randomBytes(12).toString('hex');
-    openpgp.config.rejectCurves = new Set();
-
-    const userGpgKey = await openpgp.generateKey({
-      userIDs: [
-        {
-          name: randomHexString,
-          email: `user-${randomHexString}@${randomHexString}.com`,
-        },
-      ],
-      curve: 'secp256k1',
-    });
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
 
     const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
     const userKeychainPromise = this.createParticipantKeychain(
@@ -331,7 +320,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     if (requestType === RequestType.tx) {
       signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.serializedTxHex, 'hex');
     } else if (requestType === RequestType.message) {
-      signablePayload = Buffer.from(txRequestResolved.unsignedMessages![0].message, 'hex');
+      assert(txRequestResolved.unsignedMessages?.[0]);
+      signablePayload = Buffer.from(txRequestResolved.unsignedMessages[0].message, 'hex');
     }
 
     const userSShare = await ECDSAMethods.createUserSignatureShare(

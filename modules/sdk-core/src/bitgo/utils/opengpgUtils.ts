@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import * as pgp from 'openpgp';
 import {
   createMessage,
   decrypt,
@@ -12,9 +13,9 @@ import {
   sign,
   verify,
 } from 'openpgp';
-import * as pgp from 'openpgp';
 import * as _ from 'lodash';
 import { BitGoBase } from '../bitgoBase';
+import crypto from 'crypto';
 
 const sodium = require('libsodium-wrappers-sumo');
 
@@ -81,7 +82,7 @@ export async function verifySharedDataProof(
   const anyInvalidProof = _.some(
     // @ts-ignore
     primaryUser.user.otherCertifications[0].rawNotations,
-    (notation) => dataToVerify.find((i) => i.name == notation.name)?.value !== Buffer.from(notation.value).toString()
+    (notation) => dataToVerify.find((i) => i.name === notation.name)?.value !== Buffer.from(notation.value).toString()
   );
   return !anyInvalidProof;
 }
@@ -340,4 +341,35 @@ export async function verifySignature(text: string, armoredSignature: string, pu
   } catch {
     return false;
   }
+}
+
+/**
+ * Generate a GPG key pair
+ *
+ * @param: keyCurve the curve to create a key with
+ * @param: username name of the user (optional)
+ * @param: email email of the user (optional)
+ */
+export async function generateGPGKeyPair(
+  keyCurve: pgp.EllipticCurveName,
+  username?: string | undefined,
+  email?: string | undefined
+): Promise<pgp.SerializedKeyPair<string>> {
+  const randomHexString = crypto.randomBytes(12).toString('hex');
+  username = username ?? randomHexString;
+  email = email ?? `user-${randomHexString}@${randomHexString}.com`;
+
+  // Allow generating secp256k1 key pairs
+  pgp.config.rejectCurves = new Set();
+  const gpgKey = await pgp.generateKey({
+    userIDs: [
+      {
+        name: username,
+        email,
+      },
+    ],
+    curve: keyCurve,
+  });
+
+  return gpgKey;
 }
