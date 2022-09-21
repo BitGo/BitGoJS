@@ -14,7 +14,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { Eth, optionalDeps, SignedTransaction, SignTransactionOptions, TransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { Eth, optionalDeps, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
 type FullNodeResponseBody = {
@@ -55,9 +55,6 @@ export class Ethw extends Eth {
     throw new Error('Method not implemented.');
   }
   generateKeyPair(seed?: Buffer | undefined): KeyPair {
-    throw new Error('Method not implemented.');
-  }
-  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     throw new Error('Method not implemented.');
   }
 

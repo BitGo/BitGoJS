@@ -33,7 +33,7 @@ export enum CoinFamily {
   DOT = 'dot',
   ETH = 'eth',
   ETH2 = 'eth2',
-  ETHW = 'ethw',
+  ETHW = 'eth',
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
