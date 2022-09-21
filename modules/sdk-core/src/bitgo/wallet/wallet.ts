@@ -151,6 +151,7 @@ export class Wallet implements IWallet {
   prebuildWhitelistedParams(): string[] {
     return [
       'addressType',
+      'apiVersion',
       'changeAddress',
       'consolidateAddresses',
       'cpfpFeeRate',
@@ -1537,7 +1538,7 @@ export class Wallet implements IWallet {
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
-    const { txPrebuild } = params;
+    const { txPrebuild, apiVersion } = params;
 
     if (_.isFunction(params.customGShareGeneratingFunction) && _.isFunction(params.customRShareGeneratingFunction)) {
       // invoke external signer TSS for EdDSA workflow
@@ -1555,7 +1556,7 @@ export class Wallet implements IWallet {
     });
 
     if (this._wallet.multisigType === 'tss') {
-      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions) });
+      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions), apiVersion });
     }
 
     let { pubs } = params;
@@ -2526,8 +2527,16 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+    if (
+      params.apiVersion === 'lite' &&
+      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa')
+    ) {
+      throw new Error(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
+    }
+
     const apiVersion =
-      this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite';
+      params.apiVersion ||
+      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite');
 
     // Two options different implementations of fees seems to now be supported, for now we will support both to be backwards compatible
     // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
@@ -2704,6 +2713,7 @@ export class Wallet implements IWallet {
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
+        apiVersion: params.apiVersion,
       });
       return {
         txRequestId: signedTxRequest.txRequestId,
@@ -2789,7 +2799,7 @@ export class Wallet implements IWallet {
     }
 
     // ECDSA TSS uses TxRequestFull
-    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full') {
       return signedTransaction;
     }
 

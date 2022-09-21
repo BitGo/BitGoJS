@@ -2,7 +2,7 @@ import { SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
-import { Memo, WalletType } from '../../wallet';
+import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 
@@ -227,6 +227,7 @@ export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
   prv: string;
   reqId: IRequestTracer;
+  apiVersion?: ApiVersion;
 };
 
 export type TSSParamsForMessage = TSSParams & {

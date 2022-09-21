@@ -457,7 +457,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
-    const { txRequest, prv } = params;
+    const { txRequest, prv, apiVersion } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -495,7 +495,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
-    await offerUserToBitgoRShare(this.bitgo, this.wallet.id(), txRequestId, userSignShare, encryptedSignerShare);
+    await offerUserToBitgoRShare(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      userSignShare,
+      encryptedSignerShare,
+      apiVersion
+    );
 
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
 
@@ -507,7 +514,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload
     );
 
-    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare);
+    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion);
 
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
