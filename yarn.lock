@@ -5444,6 +5444,11 @@ bip174@^2.0.1:
   resolved "https://registry.yarnpkg.com/bip174/-/bip174-2.1.0.tgz#cd3402581feaa5116f0f00a0eaee87a5843a2d30"
   integrity sha512-lkc0XyiX9E9KiVAS1ZiOqK1xfiwvf4FXDDdkDq5crcDzOq+xGytY+14qCsqz7kCiy8rpN1CRNfacRhf9G3JNSA==
 
+"bip174@npm:@bitgo/bip174@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/bip174/-/bip174-3.0.0.tgz#8ce026064bb7d10f807217f5e237f386d6f593a0"
+  integrity sha512-Qv98vy6l1WgZwrxKx7IPYY91/+Z3tpALVSDn+Ic9qCsxygCq9gYw5eL8q3kd7LYTFLy/HgcqhcMOa83Spbp4JA==
+
 bip32@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/bip32/-/bip32-3.0.1.tgz#1d1121469cce6e910e0ec3a5a1990dd62687e2a3"
@@ -5492,13 +5497,13 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.0":
-  version "7.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.0.tgz#e114a4019fec580842c10b7b38ff2de8213fd4cb"
-  integrity sha512-N45xlHkmoEX87G0QZrezxPOrd8ya+s2INCqJpb2pdZeF/HJ3XezEw5Y1ACNiIpcLJFd/5X5waH9PsD5VSf9HYw==
+"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.1":
+  version "7.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.1.tgz#a2ce0b0206dcb20fc0534c346fd14b27e620f782"
+  integrity sha512-MmIdTWKVWvLNm5in1pMiD97du6x0R0ZEb5SMPmRbl+qOI19/xXnRc6UdguTcLhZYPkvACMAlpN5ZtfV4yZJqwg==
   dependencies:
     bech32 "^2.0.0"
-    bip174 "^2.0.1"
+    bip174 "npm:@bitgo/bip174@3.0.0"
     bs58check "^2.1.2"
     create-hash "^1.1.0"
     fastpriorityqueue "^0.7.1"
@@ -7730,6 +7735,14 @@ ecpair@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/ecpair/-/ecpair-2.0.1.tgz#e25ab416f1ecb6b05477ca601313df937b075d2e"
   integrity sha512-iT3wztQMeE/nDTlfnAg8dAFUfBS7Tq2BXzq3ae6L+pWgFU0fQ3l0woTzdTBrJV3OxBjxbzjq8EQhAbEmJNWFSw==
+  dependencies:
+    randombytes "^2.1.0"
+    typeforce "^1.18.0"
+    wif "^2.0.6"
+
+"ecpair@git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38":
+  version "2.0.1"
+  resolved "git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38"
   dependencies:
     randombytes "^2.1.0"
     typeforce "^1.18.0"

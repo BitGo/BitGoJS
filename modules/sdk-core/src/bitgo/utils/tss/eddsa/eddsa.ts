@@ -2,12 +2,11 @@
  * @prettier
  */
 import * as bs58 from 'bs58';
-import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
 import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { encryptText, getBitgoGpgPubKey, createShareProof } from '../../opengpgUtils';
+import { encryptText, getBitgoGpgPubKey, createShareProof, generateGPGKeyPair } from '../../opengpgUtils';
 import {
   createUserSignShare,
   createUserToBitGoGShare,
@@ -223,19 +222,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userKeyShare = MPC.keyShare(1, m, n);
     const backupKeyShare = MPC.keyShare(2, m, n);
 
-    const randomHexString = crypto.randomBytes(12).toString('hex');
-
-    // Allow generating secp256k1 key pairs
-    openpgp.config.rejectCurves = new Set();
-    const userGpgKey = await openpgp.generateKey({
-      userIDs: [
-        {
-          name: randomHexString,
-          email: `user-${randomHexString}@${randomHexString}.com`,
-        },
-      ],
-      curve: 'secp256k1',
-    });
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
 
     const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
     const userKeychainPromise = this.createUserKeychain(
