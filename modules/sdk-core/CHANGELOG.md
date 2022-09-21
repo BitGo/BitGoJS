@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.27...@bitgo/sdk-core@2.0.0-rc.28) (2022-09-21)
+
+
+### Bug Fixes
+
+* **account-lib:** fix EDDSA MPC key validation for small number keys ([f9f7407](https://github.com/BitGo/BitGoJS/commit/f9f740721a91f8351df40b3b4d89f2c393acd7cf))
+* **sdk-core:** default wallet to non tss ([26febd4](https://github.com/BitGo/BitGoJS/commit/26febd42bc12fe417fecb1896e8ff5313be9fc18))
+
+
+
+
+
 # [2.0.0-rc.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.26...@bitgo/sdk-core@2.0.0-rc.27) (2022-09-20)
 
 **Note:** Version bump only for package @bitgo/sdk-core

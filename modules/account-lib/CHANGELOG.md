@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.33...@bitgo/account-lib@2.21.0-rc.34) (2022-09-21)
+
+
+### Bug Fixes
+
+* **account-lib:** fix EDDSA MPC key validation for small number keys ([f9f7407](https://github.com/BitGo/BitGoJS/commit/f9f740721a91f8351df40b3b4d89f2c393acd7cf))
+
+
+
+
+
 # [2.21.0-rc.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.21.0-rc.32...@bitgo/account-lib@2.21.0-rc.33) (2022-09-20)
 
 **Note:** Version bump only for package @bitgo/account-lib

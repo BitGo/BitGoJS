@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.34](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.33...bitgo@14.3.0-rc.34) (2022-09-21)
+
+
+### Bug Fixes
+
+* **sdk-core:** default wallet to non tss ([26febd4](https://github.com/BitGo/BitGoJS/commit/26febd42bc12fe417fecb1896e8ff5313be9fc18))
+
+
+
+
+
 # [14.3.0-rc.33](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.32...bitgo@14.3.0-rc.33) (2022-09-20)
 
 
