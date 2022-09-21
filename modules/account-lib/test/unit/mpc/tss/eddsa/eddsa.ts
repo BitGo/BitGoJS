@@ -32,6 +32,33 @@ describe('TSS EDDSA key generation and signing', function () {
     assert.throws(() => MPC.keyShare(5, 2, 3), /Invalid KeyShare config/);
   });
 
+  it('should sign and verify signature for low number public key', function () {
+    // We use little endian encoding. This means that the following value is a number that is shorter than 32 Bytes when
+    // leading zeroes are cut off. This is exactly what happened when we passed it to the sodium library for verifying
+    // the signature against the public key.
+    const y = '991b12a1b41b966a3382db32fe9b7fa9f80433940d0b17a1759f1e45ada83f00';
+    const R = 'b14386bb518b675357a4c79d2439166a5fc5a3a0e1c579c7b829eff1e7a7d967';
+    const signableHex =
+      '01000307991b12a1b41b966a3382db32fe9b7fa9f80433940d0b17a1759f1e45ada83f0041536a20902b6d253b111fe5abe87757c123c28cc5fe4eb0da11b5857f3f38e65290384154058de76870e94672fc02e5f96f23e99307f08c56073ebea94cbc57d4d6429b650666264cbcdfe6070749d586d32781608958931e9b8d01636c4f320000000000000000000000000000000000000000000000000000000000000000b43af3bab20c3f39ef3c148c85640614a41043eeb306de5996380f10ec105a8e06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a91073eab4660e8e3a957c7820d52df6338a8c7b60103bf903cb5f82118430922b02040200030c020000005819b217000000000604010502000a0cf40100000000000009';
+    const userToBitgoGShare = {
+      i: 1,
+      y,
+      R,
+      gamma: 'fcfd96d4ee4f3399b728b3c820a8eed4a6fa496828e84af2756197993b5df30b',
+    };
+    const bitgoToUserGShare = {
+      i: 3,
+      y,
+      R,
+      gamma: '89d5e45641dc93539a32a6651eaae2448db4d44f6d3040a1390beb14d0225c00',
+    };
+
+    const signature = MPC.signCombine([userToBitgoGShare, bitgoToUserGShare]);
+    const signablePayloadBuffer = Buffer.from(signableHex, 'hex');
+    const verificationResult = MPC.verify(signablePayloadBuffer, signature);
+    verificationResult.should.be.true();
+  });
+
   it('should generate keys and sign message', function () {
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
