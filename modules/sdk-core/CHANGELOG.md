@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.28...@bitgo/sdk-core@2.0.0-rc.29) (2022-09-21)
+
+
+### Features
+
+* the client needs to generate a gpg key for their backup key share and share it with bitgo ([fb10fae](https://github.com/BitGo/BitGoJS/commit/fb10fae409761363fd8a3bb489011c34f041140c))
+
+
+
+
+
 # [2.0.0-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.27...@bitgo/sdk-core@2.0.0-rc.28) (2022-09-21)
 
 

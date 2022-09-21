@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.35](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.34...bitgo@14.3.0-rc.35) (2022-09-21)
+
+
+### Features
+
+* the client needs to generate a gpg key for their backup key share and share it with bitgo ([fb10fae](https://github.com/BitGo/BitGoJS/commit/fb10fae409761363fd8a3bb489011c34f041140c))
+
+
+
+
+
 # [14.3.0-rc.34](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.33...bitgo@14.3.0-rc.34) (2022-09-21)
 
 

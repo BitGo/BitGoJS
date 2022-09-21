@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.5...@bitgo/utxo-lib@3.0.0-rc.6) (2022-09-21)
+
+
+### Bug Fixes
+
+* **utxo-lib:** use published bitcoinjs-lib ([f9a625c](https://github.com/BitGo/BitGoJS/commit/f9a625c8ec6996813356f5edcebe1e78fe4a38f4))
+
+
+### Features
+
+* **utxo-lib:** add UtxoPsbt w/BitGO P2TR signing ([1f35902](https://github.com/BitGo/BitGoJS/commit/1f35902fa6348da6b0d9dc70fc1367f3119181ef))
+
+
+
+
+
 # [3.0.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.4...@bitgo/utxo-lib@3.0.0-rc.5) (2022-09-13)
 
 
