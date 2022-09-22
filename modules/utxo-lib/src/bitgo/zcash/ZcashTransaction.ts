@@ -78,8 +78,8 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   expiryHeight = 0;
   consensusBranchId: number;
 
-  constructor(public network: ZcashNetwork, tx?: ZcashTransaction<TNumber>) {
-    super(network, tx);
+  constructor(public network: ZcashNetwork, tx?: ZcashTransaction<bigint | number>, amountType?: 'bigint' | 'number') {
+    super(network, tx, amountType);
 
     let consensusBranchId;
     if (tx) {
@@ -398,7 +398,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
     return crypto.hash256(this.toBuffer());
   }
 
-  clone(): ZcashTransaction<TNumber> {
-    return new ZcashTransaction(this.network, this);
+  clone<TN2 extends number | bigint = TNumber>(amountType?: 'bigint' | 'number'): ZcashTransaction<TN2> {
+    return new ZcashTransaction<TN2>(this.network, this, amountType);
   }
 }

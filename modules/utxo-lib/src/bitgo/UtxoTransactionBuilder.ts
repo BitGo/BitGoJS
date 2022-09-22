@@ -20,29 +20,20 @@ export class UtxoTransactionBuilder<
   TNumber extends number | bigint = number,
   T extends UtxoTransaction<TNumber> = UtxoTransaction<TNumber>
 > extends TransactionBuilder<TNumber> {
-  constructor(network: Network, txb?: TransactionBuilder<TNumber>, prevOutputs?: TxOutput<TNumber>[]) {
+  constructor(network: Network, tx?: UtxoTransaction<TNumber>) {
     super();
     this.network = network;
-
-    (this as any).__TX = this.createInitialTransaction(network, (txb as any)?.__TX);
-
-    if (txb) {
-      (this as any).__INPUTS = (txb as any).__INPUTS;
-    }
-
-    if (prevOutputs) {
-      const txbInputs = (this as any).__INPUTS;
-      if (prevOutputs.length !== txbInputs.length) {
-        throw new Error(`prevOuts must match txbInput length`);
-      }
-      prevOutputs.forEach((o, i) => {
-        txbInputs[i].value = o.value;
-        txbInputs[i].prevOutScript = o.script;
-      });
-    }
+    (this as any).__TX = this.createInitialTransaction(network, tx);
   }
 
-  createInitialTransaction(network: Network, tx?: Transaction<TNumber>): UtxoTransaction<TNumber> {
+  protected static newTransactionBuilder<TNumber extends number | bigint>(
+    network: Network,
+    tx: UtxoTransaction<TNumber>
+  ): UtxoTransactionBuilder<TNumber> {
+    return new UtxoTransactionBuilder<TNumber>(network, tx);
+  }
+
+  protected createInitialTransaction(network: Network, tx?: Transaction<TNumber>): UtxoTransaction<TNumber> {
     return new UtxoTransaction<TNumber>(network, tx);
   }
 
@@ -51,11 +42,22 @@ export class UtxoTransactionBuilder<
     network?: Network,
     prevOutputs?: TxOutput<TNumber>[]
   ): UtxoTransactionBuilder<TNumber> {
-    return new UtxoTransactionBuilder<TNumber>(
-      tx.network,
-      TransactionBuilder.fromTransaction<TNumber>(tx, network, prevOutputs),
-      prevOutputs
-    );
+    const txb = TransactionBuilder.fromTransaction<TNumber>(tx, network, prevOutputs);
+    const utxb = this.newTransactionBuilder<TNumber>(tx.network, tx);
+
+    (utxb as any).__INPUTS = (txb as any).__INPUTS;
+
+    if (prevOutputs) {
+      const txbInputs = (utxb as any).__INPUTS;
+      if (prevOutputs.length !== txbInputs.length) {
+        throw new Error(`prevOuts must match txbInput length`);
+      }
+      prevOutputs.forEach((o, i) => {
+        txbInputs[i].value = o.value;
+        txbInputs[i].prevOutScript = o.script;
+      });
+    }
+    return utxb;
   }
 
   get tx(): T {

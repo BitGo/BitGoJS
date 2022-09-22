@@ -8,12 +8,23 @@ export class DashTransactionBuilder<TNumber extends number | bigint = number> ex
   TNumber,
   DashTransaction<TNumber>
 > {
-  constructor(network: Network, txb?: UtxoTransactionBuilder<TNumber>) {
-    super(network, txb);
+  constructor(network: Network, tx?: UtxoTransaction<TNumber>) {
+    super(network, tx);
+    if (tx instanceof DashTransaction) {
+      this.setType(tx.type);
+      this.setExtraPayload(tx.extraPayload);
+    }
   }
 
-  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction<TNumber>): DashTransaction<TNumber> {
-    return new DashTransaction<TNumber>(network, tx as UtxoTransaction<TNumber>);
+  protected static newTransactionBuilder<TNumber extends number | bigint>(
+    network: Network,
+    tx: UtxoTransaction<TNumber>
+  ): DashTransactionBuilder<TNumber> {
+    return new DashTransactionBuilder<TNumber>(network, tx);
+  }
+
+  protected createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction<TNumber>): DashTransaction<TNumber> {
+    return new DashTransaction<TNumber>(network, tx);
   }
 
   setType(type: number): void {
@@ -22,19 +33,5 @@ export class DashTransactionBuilder<TNumber extends number | bigint = number> ex
 
   setExtraPayload(extraPayload?: Buffer): void {
     this.tx.extraPayload = extraPayload;
-  }
-
-  static fromTransaction<TNumber extends number | bigint>(
-    tx: DashTransaction<TNumber>,
-    network?: Network,
-    prevOutput?: bitcoinjs.TxOutput<TNumber>[]
-  ): DashTransactionBuilder<TNumber> {
-    const txb = new DashTransactionBuilder<TNumber>(
-      tx.network,
-      UtxoTransactionBuilder.fromTransaction<TNumber>(tx, network, prevOutput)
-    );
-    txb.setType(tx.type);
-    txb.setExtraPayload(tx.extraPayload);
-    return txb;
   }
 }
