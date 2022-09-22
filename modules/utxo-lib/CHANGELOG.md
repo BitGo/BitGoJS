@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.6...@bitgo/utxo-lib@3.0.0-rc.7) (2022-09-22)
+
+
+### Features
+
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 # [3.0.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.5...@bitgo/utxo-lib@3.0.0-rc.6) (2022-09-21)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.33...@bitgo/sdk-coin-near@1.1.2-rc.34) (2022-09-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-near:** remove mocha should for BG-57708 ([b6c7f02](https://github.com/BitGo/BitGoJS/commit/b6c7f02818429674e16061b8331be264abe115f2))
+
+
+
+
+
 ## [1.1.2-rc.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.32...@bitgo/sdk-coin-near@1.1.2-rc.33) (2022-09-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

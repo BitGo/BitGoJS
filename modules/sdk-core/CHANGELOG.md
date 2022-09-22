@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.29...@bitgo/sdk-core@2.0.0-rc.30) (2022-09-22)
+
+
+### Bug Fixes
+
+* add 'preview' as whitelisted param for token enablement ([a998ecc](https://github.com/BitGo/BitGoJS/commit/a998ecc0b018ac3ce21db91df7cc6c5ad29f76a4))
+
+
+### Features
+
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 # [2.0.0-rc.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.28...@bitgo/sdk-core@2.0.0-rc.29) (2022-09-21)
 
 

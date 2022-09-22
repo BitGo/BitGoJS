@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.9.0-rc.3...@bitgo/unspents@0.9.0-rc.4) (2022-09-22)
+
+
+### Features
+
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 # [0.9.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.9.0-rc.2...@bitgo/unspents@0.9.0-rc.3) (2022-09-21)
 
 **Note:** Version bump only for package @bitgo/unspents

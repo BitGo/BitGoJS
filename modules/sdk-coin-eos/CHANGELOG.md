@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.0.3-rc.33...@bitgo/sdk-coin-eos@1.1.0-rc.0) (2022-09-22)
+
+
+### Features
+
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 ## [1.0.3-rc.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.0.3-rc.32...@bitgo/sdk-coin-eos@1.0.3-rc.33) (2022-09-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eos

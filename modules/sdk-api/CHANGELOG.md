@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.2.0-rc.11...@bitgo/sdk-api@1.2.0-rc.12) (2022-09-22)
+
+
+### Features
+
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 # [1.2.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.2.0-rc.10...@bitgo/sdk-api@1.2.0-rc.11) (2022-09-21)
 
 **Note:** Version bump only for package @bitgo/sdk-api
