@@ -50,9 +50,6 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
 
   // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
-    inputs.forEach(({ value }, i) => {
-      (tx.ins[i] as any).value = value;
-    });
     assert.strictEqual(
       createTransactionBuilderFromTransaction<TNumber>(tx, inputs).build().toBuffer().toString('hex'),
       buf.toString('hex')

@@ -94,8 +94,9 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
     return super.hashForSignature(inIndex, prevoutScript, hashType);
   }
 
-  hashForSignature(inIndex: number, prevOutScript: Buffer, hashType: number): Buffer {
-    return this.hashForSignatureByNetwork(inIndex, prevOutScript, (this.ins[inIndex] as any).value, hashType);
+  hashForSignature(inIndex: number, prevOutScript: Buffer, hashType: number, value?: TNumber): Buffer {
+    value = value ?? (this.ins[inIndex] as any).value;
+    return this.hashForSignatureByNetwork(inIndex, prevOutScript, value, hashType);
   }
 
   clone(): UtxoTransaction<TNumber> {

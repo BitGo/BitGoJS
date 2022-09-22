@@ -53,7 +53,7 @@ export class UtxoTransactionBuilder<
   ): UtxoTransactionBuilder<TNumber> {
     return new UtxoTransactionBuilder<TNumber>(
       tx.network,
-      TransactionBuilder.fromTransaction<TNumber>(tx),
+      TransactionBuilder.fromTransaction<TNumber>(tx, network, prevOutputs),
       prevOutputs
     );
   }

@@ -275,7 +275,7 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   hashForSignatureByNetwork(
     inIndex: number | undefined,
     prevOutScript: Buffer,
-    value: TNumber | undefined,
+    value: bigint | number | undefined,
     hashType: number
   ): Buffer {
     if (value === undefined) {
@@ -287,7 +287,9 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
       return getSignatureDigest(this, inIndex, prevOutScript, value, hashType);
     }
 
-    typeforce(types.tuple(types.UInt32, types.Buffer, types.Number), arguments);
+    // ZCash amounts are always within Number.MAX_SAFE_INTEGER
+    value = typeof value === 'bigint' ? Number(value) : value;
+    typeforce(types.tuple(types.UInt32, types.Buffer, types.Number), [inIndex, prevOutScript, value]);
 
     if (inIndex === undefined) {
       throw new Error(`invalid inIndex`);
