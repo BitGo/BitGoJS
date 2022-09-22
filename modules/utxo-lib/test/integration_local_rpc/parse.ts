@@ -119,7 +119,8 @@ function runTestParse<TNumber extends number | bigint>(
         Buffer.from(fixture.transaction.hex, 'hex'),
         protocol.network,
         getPrevOutputs(),
-        amountType
+        amountType,
+        protocol.version
       );
     });
 

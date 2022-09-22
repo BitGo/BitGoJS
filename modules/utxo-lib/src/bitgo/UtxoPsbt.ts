@@ -1,12 +1,18 @@
 import { UtxoTransaction } from './UtxoTransaction';
-import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction } from '../';
-import { TapBip32Derivation, Transaction as ITransaction, TransactionFromBuffer } from 'bip174/src/lib/interfaces';
+import { taproot, HDSigner, Psbt, PsbtTransaction, ScriptSignature, Stack, Transaction, TxOutput } from '../';
+import {
+  PartialSig,
+  PsbtInputUpdate,
+  TapBip32Derivation,
+  Transaction as ITransaction,
+  TransactionFromBuffer,
+} from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { Psbt as PsbtBase } from 'bip174';
 import { Network } from '..';
-import { ecc as eccLib, script as bscript } from '..';
+import { ecc as eccLib, script as bscript, payments } from '..';
 import * as opcodes from 'bitcoin-ops';
-import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
+import { BufferWriter, varuint, reverseBuffer } from 'bitcoinjs-lib/src/bufferutils';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -58,6 +64,53 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const psbtBase = PsbtBase.fromBuffer(buffer, transactionFromBuffer);
     const psbt = this.createPsbt(opts, psbtBase);
     // Upstream checks for duplicate inputs here, but it seems to be of dubious value.
+    return psbt;
+  }
+
+  static async fromTransactionComplete(
+    transaction: UtxoTransaction<bigint>,
+    prevOutputs: TxOutput<bigint>[],
+    fetchTransactions: (txids: string[]) => Promise<Record<string, Buffer>>
+  ): Promise<UtxoPsbt<UtxoTransaction<bigint>>> {
+    const psbt = this.fromTransaction(transaction, prevOutputs);
+
+    const txidToIndex: Record<string, number> = {};
+    psbt.data.inputs.forEach((input, index) => {
+      if (!input.tapLeafScript && !input.witnessScript) {
+        txidToIndex[reverseBuffer(transaction.ins[index].hash).toString('hex')] = index;
+      }
+    });
+
+    const txHexs = await fetchTransactions(Object.keys(txidToIndex));
+    Object.entries(txidToIndex).forEach(([txid, index]) => {
+      psbt.updateInput(index, { nonWitnessUtxo: txHexs[txid] });
+    });
+
+    return psbt;
+  }
+
+  static fromTransaction(
+    transaction: UtxoTransaction<bigint>,
+    prevOutputs: TxOutput<bigint>[]
+  ): UtxoPsbt<UtxoTransaction<bigint>> {
+    if (prevOutputs.length !== transaction.ins.length) {
+      throw new Error(
+        `Transaction has ${transaction.ins.length} inputs, but ${prevOutputs.length} previous outputs provided`
+      );
+    }
+    const clonedTransaction = transaction.clone();
+    const updates = unsign(clonedTransaction, prevOutputs);
+
+    const psbtBase = new PsbtBase(new PsbtTransaction({ tx: clonedTransaction }));
+    clonedTransaction.ins.forEach(() => psbtBase.inputs.push({ unknownKeyVals: [] }));
+    clonedTransaction.outs.forEach(() => psbtBase.outputs.push({ unknownKeyVals: [] }));
+    const psbt = this.createPsbt({ network: transaction.network }, psbtBase);
+
+    updates.forEach((update, index) => {
+      psbt.updateInput(index, update);
+      psbt.updateInput(index, { witnessUtxo: prevOutputs[index] });
+    });
+
     return psbt;
   }
 
@@ -327,4 +380,148 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const hash = unsignedTx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }
+}
+
+/**
+ * Takes a partially signed transaction and removes the scripts and signatures.
+ *
+ * Inputs must be one of:
+ *  * P2PKH
+ *  * P2SH 2-of-3
+ *  * P2WSH 2-of-3
+ *  * P2WPKH
+ *  * P2SH -> P2WSH 2-of-3
+ *  * P2SH -> P2WPKH
+ *  * P2TR script path 2-of-2
+ *
+ * @param tx the partially signed transaction
+ *
+ * @return the removed scripts and signatures, ready to be added to a PSBT
+ */
+function unsign(tx: UtxoTransaction<bigint>, prevOuts: TxOutput<bigint>[]): PsbtInputUpdate[] {
+  const ret = tx.ins.map((input, vin) => {
+    const prevOut = prevOuts[vin];
+    const update: PsbtInputUpdate = {};
+    let redeemScript;
+    if (input.script && input.script.length) {
+      const decompiledScriptSig = bscript.decompile(input.script);
+      if (!decompiledScriptSig) {
+        throw new Error('Invalid scriptSig, failed to decompile');
+      }
+      if ((!input.witness || !input.witness.length) && decompiledScriptSig.length === 2) {
+        // P2PKH
+        const pubkey = decompiledScriptSig.pop();
+        const signature = decompiledScriptSig.pop();
+        if (!Buffer.isBuffer(pubkey) || !Buffer.isBuffer(signature)) {
+          throw new Error('Invalid pubkey or signature');
+        }
+        update.partialSig = [{ pubkey, signature }];
+        return update;
+      }
+      redeemScript = decompiledScriptSig.pop();
+      if (!Buffer.isBuffer(redeemScript)) {
+        throw new Error('Invalid redeem script');
+      }
+      update.redeemScript = redeemScript;
+      if (opcodes.OP_0 !== redeemScript[0] || ![22, 34].includes(redeemScript.length)) {
+        // P2SH -> 2-of-3
+        const hashFn = (hashType) => tx.hashForSignature(vin, redeemScript, hashType, prevOut.value);
+        update.partialSig = matchSignatures(hashFn, redeemScript, decompiledScriptSig);
+        return update;
+      }
+    }
+    if (input.witness && input.witness.length) {
+      const witness = input.witness;
+      if (witness.length > 2 && witness[witness.length - 1][0] === 0x50) {
+        throw new Error('Annex not supported');
+      }
+      if (witness.length === 1) {
+        // Taproot key path
+        update.tapKeySig = witness.pop();
+        return update;
+      }
+      const witnessProgramCandidate = redeemScript ?? prevOut.script;
+      if (witnessProgramCandidate.length === 34 && witnessProgramCandidate[0] === opcodes.OP_1) {
+        // Taproot script path
+        const controlBlock = witness.pop();
+        const script = witness.pop();
+        if (!controlBlock || !script) throw new Error('Unexpected witness structure');
+        const leafVersion = controlBlock[0] & 0xfe;
+        update.tapLeafScript = [{ controlBlock, script, leafVersion }];
+        const publicKeys = payments.p2tr_ns({ output: script }, { eccLib }).pubkeys;
+        if (!publicKeys || publicKeys.length !== 2) {
+          throw new Error('expected 2 pubkeys');
+        }
+        if (witness.length !== 2) {
+          throw new Error(`expected exactly 2 signatures, got ${witness.length}`);
+        }
+        update.tapScriptSig = [];
+        let signature;
+        while ((signature = witness.pop()) !== undefined) {
+          if (signature.length === 0) {
+            publicKeys.shift(); // No signature for this key
+            continue;
+          }
+          const leafHash = taproot.getTapleafHash(eccLib, controlBlock, script);
+          const pubkey = publicKeys.shift();
+          if (!pubkey) throw new Error("Impossible, known 2-length things didn't match");
+          update.tapScriptSig.push({ signature, pubkey, leafHash });
+        }
+      } else if (witnessProgramCandidate.length === 34 && witnessProgramCandidate[0] === opcodes.OP_0) {
+        // P2WSH
+        const witnessScript = witness.pop();
+        if (!witnessScript) throw new Error('Invalid witness structure');
+        update.witnessScript = witnessScript;
+        const decompiledWitnessScript = bscript.decompile(witnessScript);
+        if (!decompiledWitnessScript) {
+          throw new Error('Invalid witnessScript, failed to decompile');
+        }
+        const hashFn = (hashType) => tx.hashForWitnessV0(vin, witnessScript, prevOut.value, hashType);
+        update.partialSig = matchSignatures(hashFn, witnessScript, witness);
+      } else if (witnessProgramCandidate.length === 22 && witnessProgramCandidate[0] === opcodes.OP_0) {
+        // P2WPKH
+        if (witness.length === 2) {
+          const pubkey = witness.pop();
+          const signature = witness.pop();
+          if (!Buffer.isBuffer(pubkey) || !Buffer.isBuffer(signature)) {
+            throw new Error('Invalid pubkey or signature');
+          }
+          update.partialSig = [{ pubkey, signature }];
+        }
+        return update;
+      }
+    }
+    return update;
+  });
+  tx.ins.forEach((input) => {
+    input.witness = [];
+    input.script = Buffer.alloc(0);
+  });
+  return ret;
+}
+
+function matchSignatures(hashFn: (hashType: number) => Buffer, script: Buffer, stack: Stack): PartialSig[] {
+  const partialSig: PartialSig[] = [];
+  const publicKeys = payments.p2ms({ output: script }).pubkeys;
+  if (!publicKeys || publicKeys.length !== 3) {
+    throw new Error('Invalid multisig script');
+  }
+  for (const sig of stack.slice(1)) {
+    // Ignore extra empty element re MULTISIG bug
+    if (!Buffer.isBuffer(sig) || sig.length === 0) continue;
+    const { signature, hashType } = ScriptSignature.decode(sig);
+    const hash = hashFn(hashType);
+    let signatureMatched = false;
+    for (const pubkey of publicKeys) {
+      if (eccLib.verify(hash, pubkey, signature)) {
+        signatureMatched = true;
+        partialSig.push({ pubkey, signature: sig });
+        break;
+      }
+    }
+    if (!signatureMatched) {
+      throw new Error('Invalid signature in partially signed transaction');
+    }
+  }
+  return partialSig;
 }
