@@ -96,8 +96,6 @@ export function setPsbtDefaults(
         throw new Error(`invalid version`);
       }
       break;
-    case networks.zcash:
-      throw new Error('Zcash psbt not implemented');
     default:
       if (version !== 1) {
         throw new Error(`invalid version`);

@@ -66,6 +66,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return (this.data.globalMap.unsignedTx as PsbtTransaction).tx as Tx;
   }
 
+  protected checkForSignatures(propName?: string): void {
+    this.data.inputs.forEach((input) => {
+      if (input.tapScriptSig?.length || input.tapKeySig || input.partialSig?.length) {
+        throw new Error(`Cannot modify ${propName ?? 'transaction'} - signatures exist.`);
+      }
+    });
+  }
+
   /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
