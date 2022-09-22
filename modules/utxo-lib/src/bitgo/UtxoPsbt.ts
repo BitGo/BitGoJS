@@ -35,6 +35,9 @@ export interface PsbtOpts {
   network: Network;
 }
 
+// TODO: upstream does `checkInputsForPartialSigs` before doing things like
+// `setVersion`. Our inputs could have tapscriptsigs (or in future tapkeysigs)
+// and not fail that check. Do we want to do anything about that?
 export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
   protected static transactionFromBuffer(buffer: Buffer, network: Network): UtxoTransaction<bigint> {
     return UtxoTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
