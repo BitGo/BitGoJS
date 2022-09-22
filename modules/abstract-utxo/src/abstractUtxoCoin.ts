@@ -1,9 +1,8 @@
 /**
  * @prettier
  */
-import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, bitgo } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';

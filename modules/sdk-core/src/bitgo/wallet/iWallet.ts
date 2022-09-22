@@ -93,6 +93,7 @@ export interface PrebuildTransactionOptions {
   enableTokens?: TokenEnablement[];
   nonce?: string;
   preview?: boolean;
+  isTss?: boolean;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

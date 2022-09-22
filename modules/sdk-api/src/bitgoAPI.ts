@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import { bip32 } from '@bitgo/utxo-lib';
-import { ECPairInterface } from 'ecpair';
+import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as secp256k1 from 'secp256k1';
 import * as bs58 from 'bs58';
 import * as bitcoinMessage from 'bitcoinjs-message';

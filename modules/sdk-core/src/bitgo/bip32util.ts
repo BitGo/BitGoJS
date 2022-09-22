@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from '@bitgo/utxo-lib';
 /**
  * bip32-aware wrapper around bitcoin-message package
  * @see {bitcoinMessage.sign}

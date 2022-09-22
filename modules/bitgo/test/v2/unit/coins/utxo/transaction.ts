@@ -3,9 +3,8 @@
  */
 import * as _ from 'lodash';
 import * as assert from 'assert';
-import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bitgo } from '@bitgo/utxo-lib';
+import { BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 

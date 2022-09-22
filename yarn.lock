@@ -7731,15 +7731,6 @@ ecdsa-sig-formatter@1.0.11:
   dependencies:
     safe-buffer "^5.0.1"
 
-ecpair@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/ecpair/-/ecpair-2.0.1.tgz#e25ab416f1ecb6b05477ca601313df937b075d2e"
-  integrity sha512-iT3wztQMeE/nDTlfnAg8dAFUfBS7Tq2BXzq3ae6L+pWgFU0fQ3l0woTzdTBrJV3OxBjxbzjq8EQhAbEmJNWFSw==
-  dependencies:
-    randombytes "^2.1.0"
-    typeforce "^1.18.0"
-    wif "^2.0.6"
-
 "ecpair@git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38":
   version "2.0.1"
   resolved "git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38"

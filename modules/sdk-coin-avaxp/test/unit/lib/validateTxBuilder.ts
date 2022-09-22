@@ -129,6 +129,23 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
     });
 
+    it('Should create AddValidator tx when change amount is 0', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp'))
+        .getValidatorBuilder()
+        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
+        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
+        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
+        .stakeAmount('24938830298') // stake amount is total amount in outputs
+        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
+        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
+        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+
+      await txBuilder.build().should.not.throw();
+    });
+
     it('Should recover AddValidator tx from raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.unsignedTxHex

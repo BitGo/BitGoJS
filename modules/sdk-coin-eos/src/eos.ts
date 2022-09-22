@@ -2,8 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import { BIP32Interface } from 'bip32';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';

@@ -5,9 +5,8 @@ import * as _ from 'lodash';
 import * as request from 'superagent';
 import * as Bluebird from 'bluebird';
 
-import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;

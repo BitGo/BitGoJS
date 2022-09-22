@@ -383,7 +383,9 @@ export class Near extends BaseCoin {
     );
     const signature = MPC.signCombine([userSign, backupSign]);
     const result = MPC.verify(messageBuffer, signature);
-    result.should.equal(true);
+    if (!result) {
+      throw new Error('Invalid signature');
+    }
     const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
     return rawSignature;
   }
