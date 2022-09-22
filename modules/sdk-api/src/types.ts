@@ -1,5 +1,5 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
-import { ECPairInterface } from 'ecpair';
+import { ECPairInterface } from '@bitgo/utxo-lib';
 
 export interface BitGoAPIOptions {
   accessToken?: string;

@@ -2,8 +2,7 @@
  * @prettier
  */
 import 'should';
-import { bip32 } from '@bitgo/utxo-lib';
-import { BIP32Interface } from 'bip32';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import { sanitizeLegacyPath, bitcoin } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 const { HDNode, hdPath } = bitcoin;

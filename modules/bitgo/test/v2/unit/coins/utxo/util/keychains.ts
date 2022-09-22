@@ -1,11 +1,10 @@
 /**
  * @prettier
  */
-import { BIP32Interface } from 'bip32';
 import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '@bitgo/sdk-test';
-import { bip32, bitgo } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 
