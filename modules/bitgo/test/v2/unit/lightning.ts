@@ -1,5 +1,5 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { common, Wallet, encodeLnurl } from '@bitgo/sdk-core';
+import { common, Wallet, encodeLnurl, parseLightningInvoice } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src/bitgo';
 import * as nock from 'nock';
 import * as assert from 'assert';
@@ -56,6 +56,11 @@ describe('lightning API requests', function () {
     scope.done();
   });
 
+  it('should parse a zero value lightning invoice', function () {
+    const parsedInvoice = parseLightningInvoice(invoices.zeroValueInvoice);
+    assert.deepStrictEqual(parsedInvoice, fixtures.parsedZeroValueInvoice);
+  });
+
   it('should pay a lightning invoice', async function () {
     const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/payment`).reply(200, fixtures.payment);
     const res = await wallet.lightning().payInvoice({ invoice: 'fake_invoice' });
@@ -110,7 +115,7 @@ describe('lightning API requests', function () {
 
   it('should fetch lnurl-pay invoice', async function () {
     const callback = 'https://service.com/api?q=fake';
-    const { data: invoice } = invoices.lnurlPayInvoice;
+    const invoice = invoices.lnurlPayInvoice;
     const lnurlReqScope = nock(testUrl).get('/api').query({ q: 'fake', amount: 2000000000 }).reply(200, { pr: invoice });
     const res = await wallet.lightning().fetchLnurlPayInvoice({ callback, millisatAmount: '2000000000', metadata: 'One piece of chocolate cake, one icecream cone, one pickle, one slice of swiss cheese, one slice of salami, one lollypop, one piece of cherry pie, one sausage, one cupcake, and one slice of watermelon' });
     

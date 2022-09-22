@@ -6,7 +6,11 @@ import { decodeLnurl } from './lnurlCodec';
 import { decodeOrElse } from '../utils/decode';
 
 export type ParsedLightningInvoice = {
-  milliSatoshis: string;
+  /**
+   * The amount of millisatoshi requested by this invoice. If null then
+   * the invoice does not specify an amount and will accept any payment.
+   */
+  millisatoshis: string | null;
   /** The hex encoded payment hash for the invoice */
   paymentHash: string;
   /** The hex encoded node pub key of the payee that created the invoice */
@@ -117,8 +121,8 @@ export function parseLightningInvoice(invoiceStr: unknown): ParsedLightningInvoi
   if (payeeNodeKey === undefined) {
     throw new Error('invoice payee pub key is invalid');
   }
-  if (millisatoshis === null || millisatoshis === undefined) {
-    throw new Error('invoice does not have an amount');
+  if (millisatoshis === undefined) {
+    throw new Error('invoice millisatoshis amount is invalid');
   }
 
   const descriptionHash = tags.find((tag) => tag.tagName === 'purpose_commit_hash')?.data;
