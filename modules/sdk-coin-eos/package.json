@@ -44,7 +44,6 @@
     "@bitgo/statics": "^7.0.0",
     "@bitgo/utxo-lib": "^2.4.1",
     "bignumber.js": "^9.0.2",
-    "bip32": "^3.0.1",
     "eosjs": "^21.0.2",
     "eosjs-ecc": "^4.0.4",
     "lodash": "^4.17.14",

@@ -1,7 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
-import { BIP32Interface } from 'bip32';
-import { ECPairInterface } from 'ecpair';
+import { bip32, BIP32Interface, ECPairInterface } from '@bitgo/utxo-lib';
 import { sanitizeLegacyPath } from '../api';
 import * as bitcoinUtil from './bitcoin';
 

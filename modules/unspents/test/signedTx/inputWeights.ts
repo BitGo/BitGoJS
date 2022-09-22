@@ -1,7 +1,6 @@
 import * as assert from 'assert';
-import { BIP32Interface } from 'bip32';
 import * as bitcoin from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import {
   getInputWeight,
   getInputComponentsWeight,

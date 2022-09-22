@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import _ from 'lodash';
 import 'lodash.combinations';
 import { Dimensions } from '../../src';

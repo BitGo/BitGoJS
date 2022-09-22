@@ -4,7 +4,7 @@
 import 'should';
 import * as sinon from 'sinon';
 import * as nock from 'nock';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from '@bitgo/utxo-lib';
 
 import * as utxolib from '@bitgo/utxo-lib';
 const { toOutput, outputScripts } = utxolib.bitgo;
