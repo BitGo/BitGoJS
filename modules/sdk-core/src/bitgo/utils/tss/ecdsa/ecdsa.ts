@@ -295,6 +295,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       this.bitgo,
       this.wallet.id(),
       txRequestId,
+      requestType,
       SendShareType.KShare,
       userSignShare.kShare,
       encryptedSignerShare
@@ -311,6 +312,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       this.bitgo,
       this.wallet.id(),
       txRequestId,
+      requestType,
       SendShareType.MUShare,
       { muShare, dShare, i: muShare.i }
     )) as DShare;
@@ -330,7 +332,14 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload
     );
 
-    await ECDSAMethods.sendShareToBitgo(this.bitgo, this.wallet.id(), txRequestId, SendShareType.SShare, userSShare);
+    await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      requestType,
+      SendShareType.SShare,
+      userSShare
+    );
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 

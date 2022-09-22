@@ -9,6 +9,7 @@ import {
   createUserToBitGoGShare,
   sendUserToBitgoGShare,
   readSignedMessage,
+  RequestType,
   SignatureShareRecord,
   Wallet,
   KeyShare,
@@ -382,14 +383,14 @@ describe('test tss helper functions', function () {
       it('should succeed to send Signature Share', async function() {
         const signatureShare = { from: 'user', to: 'bitgo', share: '128bytestring' } as SignatureShareRecord;
         await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
-        const response = await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, signatureShare, 'signerShare' );
+        const response = await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, signatureShare, RequestType.tx, 'signerShare');
         response.should.deepEqual(signatureShare);
       });
 
       it('should fail to send Signature Share', async function() {
         const invalidSignatureShare = { from: 'bitgo', to: 'user', share: '128bytestring' } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: invalidSignatureShare, signerShare: 'signerShare' }, 400);
-        await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, invalidSignatureShare, 'signerShare').should.be.rejectedWith('some error' );
+        await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, invalidSignatureShare, RequestType.tx, 'signerShare').should.be.rejectedWith('some error');
         nock.isDone().should.equal(true);
       });
     });

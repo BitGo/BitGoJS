@@ -2,9 +2,16 @@ import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } fr
 import { BitGoBase } from './../../bitgoBase';
 import { DecryptableYShare, CombinedKey, SigningMaterial, EncryptedYShare } from './types';
 import { ShareKeyPosition } from './../types';
-import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType } from './../../utils';
+import {
+  encryptAndSignText,
+  readSignedMessage,
+  SignatureShareRecord,
+  SignatureShareType,
+  RequestType,
+} from './../../utils';
 import _ = require('lodash');
 import { getTxRequest, sendSignatureShare } from '../common';
+
 export { getTxRequest, sendSignatureShare };
 
 /**
@@ -171,7 +178,18 @@ export async function offerUserToBitgoRShare(
     to: SignatureShareType.BITGO,
     share: rShare.r + rShare.R,
   };
-  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, encryptedSignerShare, 'eddsa', apiMode);
+
+  // TODO (BG-57944): implement message signing for EDDSA
+  await sendSignatureShare(
+    bitgo,
+    walletId,
+    txRequestId,
+    signatureShare,
+    RequestType.tx,
+    encryptedSignerShare,
+    'eddsa',
+    apiMode
+  );
 }
 
 /**
@@ -228,7 +246,8 @@ export async function sendUserToBitgoGShare(
     share: userToBitgoGShare.R + userToBitgoGShare.gamma,
   };
 
-  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, undefined, 'eddsa', apiMode);
+  // TODO (BG-57944): implement message signing for EDDSA
+  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, RequestType.tx, undefined, 'eddsa', apiMode);
 }
 
 /**

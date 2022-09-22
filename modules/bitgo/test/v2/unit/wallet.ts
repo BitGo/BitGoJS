@@ -1441,7 +1441,7 @@ describe('V2 Wallet:', function () {
     };
     const tssWallet = new Wallet(bitgo, tsol, walletData);
 
-    const tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
+    let tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
     const custodialTssWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
 
     const txRequest: TxRequest = {
@@ -1746,6 +1746,7 @@ describe('V2 Wallet:', function () {
         unsignedMessages: [],
       };
       let signTxRequestForMessage;
+      const messageSigningCoins = ['teth', 'tpolygon'];
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
@@ -1762,31 +1763,36 @@ describe('V2 Wallet:', function () {
         }).should.be.rejectedWith('Message signing not supported for Testnet Solana');
       });
 
-      it('should sign message', async function () {
+      messageSigningCoins.map((coinName) => {
+        tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
+        it('should sign message', async function () {
 
-        const signMessage = await tssEthWallet.signMessage({
-          reqId,
-          messagePrebuild: { message: 'test', txRequestId: 'id' },
-          prv: 'secretKey',
+          const signMessage = await tssEthWallet.signMessage({
+            reqId,
+            messagePrebuild: { message: 'test', txRequestId: 'id' },
+            prv: 'secretKey',
+          });
+          signMessage.should.deepEqual({ txRequestId: 'id' } );
         });
-        signMessage.should.deepEqual({ txRequestId: 'id' } );
+
+        it('should fail to sign message without txRequestId', async function() {
+          await tssEthWallet.signMessage({
+            reqId,
+            messagePrebuild: { message: '' },
+            prv: 'secretKey',
+          }).should.be.rejectedWith('txRequestId required to sign message with TSS');
+        });
+
+        it('should fail to sign message with empty prv', async function () {
+          await tssEthWallet.signMessage({
+            reqId,
+            messagePrebuild: { message: 'test', txRequestId: 'id' },
+            prv: '',
+          }).should.be.rejectedWith('prv required to sign message with TSS');
+        });
       });
 
-      it('should fail to sign message without txRequestId', async function() {
-        await tssEthWallet.signMessage({
-          reqId,
-          messagePrebuild: { message: '' },
-          prv: 'secretKey',
-        }).should.be.rejectedWith('txRequestId required to sign message with TSS');
-      });
 
-      it('should fail to sign message with empty prv', async function () {
-        await tssEthWallet.signMessage({
-          reqId,
-          messagePrebuild: { message: 'test', txRequestId: 'id' },
-          prv: '',
-        }).should.be.rejectedWith('prv required to sign message with TSS');
-      });
     });
 
     describe('Send Many', function () {
