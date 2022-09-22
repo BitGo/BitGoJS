@@ -172,6 +172,7 @@ export class Wallet implements IWallet {
       'noSplitChange',
       'numBlocks',
       'nonce',
+      'preview',
       'recipients',
       'reservation',
       'sequenceId',
