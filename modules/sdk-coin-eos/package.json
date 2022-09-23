@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-eos",
-  "version": "1.1.0-rc.0",
+  "version": "1.1.0-rc.1",
   "description": "BitGo SDK coin library for Eos",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^2.0.0-rc.30",
+    "@bitgo/sdk-core": "^2.0.0-rc.31",
     "@bitgo/statics": "^8.0.0-rc.21",
-    "@bitgo/utxo-lib": "^3.0.0-rc.7",
+    "@bitgo/utxo-lib": "^3.0.0-rc.8",
     "bignumber.js": "^9.0.2",
     "eosjs": "^21.0.2",
     "eosjs-ecc": "^4.0.4",
@@ -50,8 +50,8 @@
     "superagent": "^3.8.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.2.0-rc.12",
-    "@bitgo/sdk-test": "^1.0.3-rc.34",
+    "@bitgo/sdk-api": "^1.2.0-rc.13",
+    "@bitgo/sdk-test": "^1.0.3-rc.35",
     "@types/lodash": "^4.14.121"
   }
 }

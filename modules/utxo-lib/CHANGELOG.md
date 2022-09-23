@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.7...@bitgo/utxo-lib@3.0.0-rc.8) (2022-09-23)
+
+
+### Bug Fixes
+
+* **utxo-lib:** move getValueScaled->test + rename ([c605480](https://github.com/BitGo/BitGoJS/commit/c6054802cf44096546f7e44138d7bd540b409d66))
+* **utxo-lib:** use BitGo published ecpair dep ([02b3c31](https://github.com/BitGo/BitGoJS/commit/02b3c31c605986ab915e88984de92630b1cd4ab7))
+
+
+
+
+
 # [3.0.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.6...@bitgo/utxo-lib@3.0.0-rc.7) (2022-09-22)
 
 

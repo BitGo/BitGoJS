@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.30...@bitgo/sdk-core@2.0.0-rc.31) (2022-09-23)
+
+
+### Features
+
+* add message signing support for polygon ([ab2bac1](https://github.com/BitGo/BitGoJS/commit/ab2bac13dad55ce8571d014796298aa52a24a5f2))
+
+
+
+
+
 # [2.0.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.29...@bitgo/sdk-core@2.0.0-rc.30) (2022-09-22)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-dot",
-  "version": "1.1.0-rc.5",
+  "version": "1.1.0-rc.6",
   "description": "BitGo SDK coin library for Polkadot",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,7 +40,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^2.0.0-rc.30",
+    "@bitgo/sdk-core": "^2.0.0-rc.31",
     "@bitgo/statics": "^8.0.0-rc.21",
     "@polkadot/keyring": "^8.7.1",
     "@polkadot/types": "7.15.1",
@@ -56,8 +56,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.2.0-rc.12",
-    "@bitgo/sdk-test": "^1.0.3-rc.34",
+    "@bitgo/sdk-api": "^1.2.0-rc.13",
+    "@bitgo/sdk-test": "^1.0.3-rc.35",
     "@types/lodash": "^4.14.151"
   }
 }

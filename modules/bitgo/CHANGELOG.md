@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.37](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.36...bitgo@14.3.0-rc.37) (2022-09-23)
+
+
+### Features
+
+* add message signing support for polygon ([ab2bac1](https://github.com/BitGo/BitGoJS/commit/ab2bac13dad55ce8571d014796298aa52a24a5f2))
+
+
+
+
+
 # [14.3.0-rc.36](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.35...bitgo@14.3.0-rc.36) (2022-09-22)
 
 

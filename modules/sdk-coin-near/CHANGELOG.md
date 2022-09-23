@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.34...@bitgo/sdk-coin-near@1.1.2-rc.35) (2022-09-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+
+
+
+
 ## [1.1.2-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.33...@bitgo/sdk-coin-near@1.1.2-rc.34) (2022-09-22)
 
 
