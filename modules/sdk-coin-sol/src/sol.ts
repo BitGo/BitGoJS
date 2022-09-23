@@ -11,6 +11,10 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  Ed25519BIP32,
+  Eddsa,
+  EDDSA,
+  Environments,
   KeyPair,
   Memo,
   MethodNotImplementedError,
@@ -18,6 +22,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PresignTransactionOptions,
+  PublicKey,
   SignedTransaction,
   SignTransactionOptions,
   TokenEnablementConfig,
@@ -35,10 +40,12 @@ import {
   isValidPrivateKey,
   isValidPublicKey,
 } from './lib/utils';
+import * as request from 'superagent';
 
 export interface TransactionFee {
   fee: string;
 }
+
 export type SolTransactionExplanation = TransactionExplanation;
 
 export interface ExplainTransactionOptions {
@@ -58,6 +65,7 @@ export interface SolSignTransactionOptions extends SignTransactionOptions {
   prv: string | string[];
   pubKeys?: string[];
 }
+
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txBase64: string;
   txInfo: TxInfo;
@@ -70,11 +78,13 @@ export interface SolVerifyTransactionOptions extends VerifyTransactionOptions {
   blockhash: string;
   durableNonce?: { walletNonceAddress: string; authWalletAddress: number };
 }
+
 interface TransactionOutput {
   address: string;
   amount: number | string;
   tokenName?: string;
 }
+
 type TransactionInput = TransactionOutput;
 
 export interface SolParsedTransaction extends ParsedTransaction {
@@ -89,6 +99,39 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
   txBase64: string;
   feeInfo: TransactionFee;
   tokenAccountRentExemptAmount?: string;
+}
+
+interface UserSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  backupYShare: EDDSA.YShare;
+  userYShare?: EDDSA.YShare;
+}
+
+interface BackupSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  userYShare: EDDSA.YShare;
+  backupYShare?: EDDSA.YShare;
+}
+
+interface SolTx {
+  serializedTx: string;
+}
+
+interface SolDurableNonceFromNode {
+  authority: string;
+  blockhash: string;
+}
+
+interface RecoveryOptions {
+  userKey: string; // Box A
+  backupKey: string; // Box B
+  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
+  recoveryDestination: string; // base58 address
+  walletPassphrase: string;
+  durableNoncePK?: string;
+  durableNonceSK?: string;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -129,12 +172,15 @@ export class Sol extends BaseCoin {
   getChain(): string {
     return this._staticsCoin.name;
   }
+
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
+
   getFullName(): string {
     return this._staticsCoin.fullName;
   }
+
   getBaseFactor(): string | number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
@@ -426,6 +472,279 @@ export class Sol extends BaseCoin {
       txPrebuild: recreated,
       txHex: recreated.unsignedTxs[0].serializedTxHex,
     });
+  }
+
+  protected static initialized = false;
+  protected static MPC: Eddsa;
+
+  static async getInitializedMpcInstance(): Promise<Eddsa> {
+    if (this.initialized) {
+      return this.MPC;
+    }
+    const hdTree = await Ed25519BIP32.initialize();
+    this.MPC = await Eddsa.initialize(hdTree);
+    this.initialized = true;
+    return this.MPC;
+  }
+
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].solNodeUrl;
+  }
+
+  /**
+   * Make a request to one of the public EOS nodes available
+   * @param params.payload
+   */
+  protected async getDataFromNode(params: { payload?: Record<string, unknown> }): Promise<request.Response> {
+    const nodeUrl = this.getPublicNodeUrl();
+    try {
+      return await request.post(nodeUrl).send(params.payload);
+    } catch (e) {
+      console.debug(e);
+    }
+    throw new Error(`Unable to call endpoint: '/' from node: ${nodeUrl}`);
+  }
+
+  protected async getBlockhash(): Promise<string> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getLatestBlockhash',
+        params: [
+          {
+            commitment: 'finalized',
+          },
+        ],
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    return response.body.result.value.blockhash;
+  }
+
+  /** TODO Update to getFeeForMessage and make necssary changes in fee calculation, GetFees is deprecated */
+  protected async getFees(): Promise<number> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getFees',
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    return response.body.result.value.feeCalculator.lamportsPerSignature;
+  }
+
+  protected async getAccountBalance(pubKey: string): Promise<number> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getBalance',
+        params: [pubKey],
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return response.body.result.value;
+  }
+
+  protected async getAccountInfo(pubKey = ''): Promise<SolDurableNonceFromNode> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getAccountInfo',
+        params: [
+          pubKey,
+          {
+            encoding: 'jsonParsed',
+          },
+        ],
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return {
+      authority: response.body.result.value.data.parsed.info.authority,
+      blockhash: response.body.result.value.data.parsed.info.blockhash,
+    };
+  }
+
+  async getTSSSignature(
+    userSigningMaterial: UserSigningMaterial,
+    backupSigningMaterial: BackupSigningMaterial,
+    path = 'm/0',
+    transaction: Transaction
+  ): Promise<Buffer> {
+    const MPC = await Sol.getInitializedMpcInstance();
+
+    const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
+      userSigningMaterial.bitgoYShare,
+      userSigningMaterial.backupYShare,
+    ]);
+    const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
+      backupSigningMaterial.bitgoYShare,
+      backupSigningMaterial.userYShare,
+    ]);
+
+    const userSubkey = MPC.keyDerive(
+      userSigningMaterial.uShare,
+      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
+      path
+    );
+
+    const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
+      userSubkey.yShares[2],
+      backupSigningMaterial.bitgoYShare,
+    ]);
+
+    const messageBuffer = transaction.signablePayload;
+    const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
+    const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
+    const userSign = MPC.sign(
+      messageBuffer,
+      userSignShare.xShare,
+      [backupSignShare.rShares[1]],
+      [userSigningMaterial.bitgoYShare]
+    );
+    const backupSign = MPC.sign(
+      messageBuffer,
+      backupSignShare.xShare,
+      [userSignShare.rShares[2]],
+      [backupSigningMaterial.bitgoYShare]
+    );
+    const signature = MPC.signCombine([userSign, backupSign]);
+    const result = MPC.verify(messageBuffer, signature);
+    result.should.equal(true);
+    const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+    return rawSignature;
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   */
+  async recover(params: RecoveryOptions): Promise<SolTx> {
+    let isDurableNonceRecovery = false;
+
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.bitgoKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase)) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (!_.isUndefined(params.durableNoncePK) && !_.isUndefined(params.durableNonceSK)) {
+      isDurableNonceRecovery = true;
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+    const userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
+
+    let backupPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as BackupSigningMaterial;
+
+    // Build the transaction
+    const MPC = await Sol.getInitializedMpcInstance();
+    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    const factory = this.getBuilder();
+    const balance = await this.getAccountBalance(bs58EncodedPublicKey);
+    const fee = await this.getFees();
+    const netAmount = balance - (isDurableNonceRecovery ? fee * 2 : fee);
+    let blockhash = await this.getBlockhash();
+    let authority = '';
+
+    if (isDurableNonceRecovery) {
+      const durableNonceInfo = await this.getAccountInfo(params.durableNoncePK);
+      blockhash = durableNonceInfo.blockhash;
+      authority = durableNonceInfo.authority;
+    }
+
+    const txBuilder = factory
+      .getTransferBuilder()
+      .nonce(blockhash)
+      .sender(bs58EncodedPublicKey)
+      .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+      .fee({ amount: fee })
+      .feePayer(bs58EncodedPublicKey);
+    if (isDurableNonceRecovery) {
+      txBuilder.nonce(blockhash, {
+        walletNonceAddress: params.durableNoncePK ? params.durableNoncePK : '',
+        authWalletAddress: authority,
+      });
+    }
+
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+    // add signature
+    const signatureHex = await this.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      'm/0',
+      unsignedTransaction
+    );
+
+    const publicKeyObj = { pub: bs58EncodedPublicKey };
+    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+
+    if (isDurableNonceRecovery) {
+      // add durable nonce account signature
+      txBuilder.sign({ key: params.durableNonceSK ? params.durableNonceSK : '' });
+    }
+
+    const signedTransaction = await txBuilder.build();
+
+    const serializedTx = signedTransaction.toBroadcastFormat();
+
+    return { serializedTx: serializedTx };
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {
