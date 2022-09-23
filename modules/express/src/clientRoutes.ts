@@ -10,7 +10,7 @@ import {
   SignShare,
   YShare,
 } from '@bitgo/sdk-core';
-import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction } from 'bitgo';
+import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
 import * as express from 'express';
@@ -667,7 +667,7 @@ async function handleV2AccelerateTransaction(req: express.Request) {
 }
 
 function createSendParams(req: express.Request) {
-  if (req.config.externalSignerUrl !== undefined) {
+  if (req.config?.externalSignerUrl !== undefined) {
     return {
       ...req.body,
       customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
@@ -732,6 +732,32 @@ async function handleV2SendMany(req: express.Request) {
   }
   if (result.status === 'pendingApproval') {
     throw apiResponse(202, result);
+  }
+  return result;
+}
+
+/**
+ * Routes payload meant for prebuildAndSignTransaction() in sdk-core which
+ * validates the payload and makes the appropriate request to WP to
+ * build, sign, and send a tx.
+ * - sends request to Platform to build the transaction
+ * - signs with user key
+ * - request signature from the second key (BitGo HSM)
+ * - send/broadcast transaction
+ * @param req where req.body is {@link PrebuildAndSignTransactionOptions}
+ */
+export async function handleV2PrebuildAndSignTransaction(req: express.Request): Promise<SignedTransactionRequest> {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const reqId = new RequestTracer();
+  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  req.body.reqId = reqId;
+  let result;
+  try {
+    result = await wallet.prebuildAndSignTransaction(createSendParams(req));
+  } catch (err) {
+    err.status = 400;
+    throw err;
   }
   return result;
 }
@@ -1088,6 +1114,12 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));
   app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendMany));
+  app.post(
+    '/api/v2/:coin/wallet/:id/prebuildAndSignTransaction',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2PrebuildAndSignTransaction)
+  );
 
   // unspent changes
   app.post(

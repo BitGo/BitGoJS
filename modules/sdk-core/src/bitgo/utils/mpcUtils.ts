@@ -97,7 +97,8 @@ export abstract class MpcUtils {
    * @param {IBaseCoin} baseCoin
    * @param {PrebuildTransactionWithIntentOptions} params
    * @returns {Record<string, unknown>}
-   */ populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
+   */
+  populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
     const intentRecipients = params.recipients.map((recipient) => {
       const formattedRecipient: IntentRecipient = {
