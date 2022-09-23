@@ -38,6 +38,7 @@ export type EncryptedNShare = {
   publicShare: string;
   // signed and encrypted gpg armor
   encryptedPrivateShare: string;
+  n: string;
 };
 
 // NShare with information needed to decrypt and verify a GPG mesasge
@@ -45,6 +46,7 @@ export type DecryptableNShare = {
   nShare: EncryptedNShare;
   recipientPrivateArmor: string;
   senderPublicArmor: string;
+  isbs58Encoded?: boolean;
 };
 
 // Final TSS "Keypair"

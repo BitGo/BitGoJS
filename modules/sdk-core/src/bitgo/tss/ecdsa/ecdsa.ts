@@ -23,19 +23,17 @@ import {
   BShare,
   Signature,
 } from './types';
-import {
-  encryptAndSignText,
-  readSignedMessage,
-  SignatureShareRecord,
-  SignatureShareType,
-  RequestType,
-} from './../../utils';
+import { SignatureShareRecord, SignatureShareType, RequestType } from './../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
+import { bip32 } from '@bitgo/utxo-lib';
+import * as pgp from 'openpgp';
+import { PrivateKey } from 'openpgp';
+import bs58 from 'bs58';
 
 const MPC = new Ecdsa();
 
@@ -60,7 +58,7 @@ export async function createCombinedKey(
   let backupNShare: NShare | undefined;
 
   for (const encryptedNShare of encryptedNShares) {
-    const nShare = await decryptNShare(encryptedNShare);
+    const nShare = await decryptNShare(encryptedNShare, encryptedNShare.isbs58Encoded);
 
     switch (encryptedNShare.nShare.j) {
       case 1:
@@ -217,7 +215,7 @@ export async function sendShareToBitgo(
       const dShareRecord = convertDShare(shareToSend.dShare);
       signatureShare = {
         to: SignatureShareType.BITGO,
-        from: getParticipantFromIndex(shareToSend.dShare.i),
+        from: getParticipantFromIndex(shareToSend.dShare.j),
         share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
       };
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
@@ -225,7 +223,7 @@ export async function sendShareToBitgo(
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;
-      signatureShare = convertSignatureShare(sShare, share.i);
+      signatureShare = convertSignatureShare(sShare, 3);
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
       responseFromBitgo = sShare;
       break;
@@ -289,23 +287,38 @@ export async function encryptNShare(
   keyShare: KeyShare,
   recipientIndex: number,
   recipientGpgPublicArmor: string,
-  senderGpgPrivateArmor: string
+  isbs58Encoded = true
 ): Promise<EncryptedNShare> {
   const nShare = keyShare.nShares[recipientIndex];
   if (!nShare) {
     throw new Error('Invalid recipient');
   }
 
-  const publicShare = keyShare.pShare.y + nShare.chaincode + nShare.n;
-  const privateShare = nShare.u;
+  const publicShare = Buffer.concat([
+    Buffer.from(keyShare.pShare.y, 'hex'),
+    Buffer.from(keyShare.pShare.chaincode, 'hex'),
+  ]).toString('hex');
+  let privateShare;
+  if (isbs58Encoded) {
+    privateShare = bip32.fromPrivateKey(Buffer.from(nShare.u, 'hex'), Buffer.from(nShare.chaincode, 'hex')).toBase58();
+  } else {
+    privateShare = Buffer.concat([Buffer.from(nShare.u, 'hex'), Buffer.from(nShare.chaincode, 'hex')]).toString('hex');
+  }
+  const bitgoPublicKey = await pgp.readKey({ armoredKey: recipientGpgPublicArmor });
 
-  const encryptedPrivateShare = await encryptAndSignText(privateShare, recipientGpgPublicArmor, senderGpgPrivateArmor);
+  const encryptedPrivateShare = (await pgp.encrypt({
+    message: await pgp.createMessage({
+      text: privateShare,
+    }),
+    encryptionKeys: [bitgoPublicKey],
+  })) as string;
 
   return {
     i: nShare.i,
     j: nShare.j,
     publicShare,
     encryptedPrivateShare,
+    n: nShare.n,
   };
 }
 
@@ -314,19 +327,29 @@ export async function encryptNShare(
  * @param encryptedNShare - decryptable n share with recipient private gpg key armor and sender public gpg key
  * @returns N share
  */
-export async function decryptNShare(encryptedNShare: DecryptableNShare): Promise<NShare> {
-  const privateShare = await readSignedMessage(
-    encryptedNShare.nShare.encryptedPrivateShare,
-    encryptedNShare.senderPublicArmor,
-    encryptedNShare.recipientPrivateArmor
-  );
+export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58Encoded = true): Promise<NShare> {
+  const bitgoPrivateKey = await pgp.readKey({ armoredKey: encryptedNShare.recipientPrivateArmor });
+  const priv = (
+    await pgp.decrypt({
+      message: await pgp.readMessage({ armoredMessage: encryptedNShare.nShare.encryptedPrivateShare }),
+      decryptionKeys: [bitgoPrivateKey as PrivateKey],
+    })
+  ).data as string;
+
+  let u: string;
+  if (isbs58Encoded) {
+    const privateShare = bs58.decode(priv).toString('hex');
+    u = privateShare.slice(92, 156);
+  } else {
+    u = priv.slice(0, 64);
+  }
 
   const nShare: NShare = {
     i: encryptedNShare.nShare.i,
     j: encryptedNShare.nShare.j,
+    n: encryptedNShare.nShare.n,
     y: encryptedNShare.nShare.publicShare.slice(0, 66),
-    u: privateShare,
-    n: encryptedNShare.nShare.publicShare.slice(130),
+    u: u,
     chaincode: encryptedNShare.nShare.publicShare.slice(66, 130),
   };
 

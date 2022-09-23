@@ -74,6 +74,7 @@ interface KeyShare {
   to: string;
   publicShare: string;
   privateShare: string;
+  n?: string;
 }
 
 export interface CreateBackupOptions {
