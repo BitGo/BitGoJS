@@ -2498,6 +2498,20 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'transfertoken':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            isTss: params.isTss,
+            intentType: 'transferToken',
+            recipients: params.recipients || [],
+            nonce: params.nonce,
+            feeOptions: params.feeOptions as EIP1559FeeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       case 'enabletoken':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {

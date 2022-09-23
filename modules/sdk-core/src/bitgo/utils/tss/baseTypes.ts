@@ -43,7 +43,19 @@ export interface CustomGShareGeneratingFunction {
     bitgoToUserRShare: SignatureShareRecord;
   }): Promise<GShare>;
 }
-
+export enum TokenType {
+  ERC721 = 'ERC721',
+  ERC1155 = 'ERC1155',
+  ERC20 = 'ERC20',
+}
+export interface TokenTransferRecipientParams {
+  tokenType: TokenType;
+  tokenQuantity: string;
+  tokenContractAddress?: string;
+  tokenName?: string;
+  tokenId?: string;
+  decimalPlaces?: number;
+}
 export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
   intentType: string;
@@ -52,12 +64,38 @@ export interface PrebuildTransactionWithIntentOptions {
     address: string;
     amount: string | number;
     tokenName?: string;
+    tokenData?: TokenTransferRecipientParams;
   }[];
   comment?: string;
   memo?: Memo;
   tokenName?: string;
   enableTokens?: TokenEnablement[];
   nonce?: string;
+  selfSend?: boolean;
+  feeOptions?: FeeOption | EIP1559FeeOptions;
+  hopParams?: HopParams;
+  isTss?: boolean;
+}
+export interface IntentRecipient {
+  address: {
+    address: string;
+  };
+  amount: {
+    value: string | number;
+    symbol: string;
+  };
+  tokenData?: TokenTransferRecipientParams;
+}
+export interface PopulatedIntent {
+  intentType: string;
+  recipients: IntentRecipient[];
+  sequenceId?: string;
+  comment?: string;
+  nonce?: string;
+  memo?: string;
+  token?: string;
+  enableTokens?: TokenEnablement[];
+  // ETH & ETH-like params
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
