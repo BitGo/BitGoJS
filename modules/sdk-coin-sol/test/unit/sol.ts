@@ -8,6 +8,8 @@ import * as _ from 'lodash';
 import { KeyPair, Sol, Tsol } from '../../src';
 import { TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 import { getBuilderFactory } from './getBuilderFactory';
+import { Transaction } from '../../src/lib';
+import { coins } from '@bitgo/statics';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -140,7 +142,7 @@ describe('SOL:', function () {
     };
   });
 
-  it('should instantiate the coin', function () {
+  it('should instantiate the coin', async function () {
     let localBasecoin = bitgo.coin('tsol');
     localBasecoin.should.be.an.instanceof(Tsol);
 
@@ -1387,6 +1389,98 @@ describe('SOL:', function () {
           txPrebuild: {},
         } as any)
         .should.rejectedWith('Missing txRequestId');
+    });
+  });
+
+  describe('Recover Transactions:', () => {
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const sandBox = sinon.createSandbox();
+      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+      const coin = coins.get('tsol');
+
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getLatestBlockhash',
+            params: [
+              {
+                commitment: 'finalized',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getBlockhashResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getFees',
+          },
+        })
+        .resolves(testData.SolResponses.getFeesResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKey],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [
+              testData.keys.durableNoncePubKey,
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+      const latestBlockHashTxn = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+      });
+      latestBlockHashTxn.should.not.be.empty();
+      latestBlockHashTxn.should.hasOwnProperty('serializedTx');
+
+      const latestBlockhashTxnDeserialize = new Transaction(coin);
+      latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.serializedTx);
+      const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
+
+      should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
+      should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
+
+      const durableNonceTxn = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        durableNoncePK: testData.keys.durableNoncePubKey,
+        durableNonceSK: testData.keys.durableNoncePrivKey,
+      });
+
+      const durableNonceTxnDeserialize = new Transaction(coin);
+      durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
+      const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
+
+      should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
     });
   });
 });
