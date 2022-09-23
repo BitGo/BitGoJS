@@ -35,7 +35,7 @@ export class StakingWallet implements IStakingWallet {
   }
 
   get coin(): string {
-    return this.wallet.coin();
+    return this.wallet.baseCoin.tokenConfig ? this.wallet.baseCoin.tokenConfig.type : this.wallet.coin();
   }
 
   /**

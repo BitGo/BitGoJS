@@ -10,6 +10,7 @@ import EddsaUtils from '../utils/tss/eddsa';
 import { IWallet, IWallets, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
+import { BaseTokenConfig } from '@bitgo/statics';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -343,6 +344,7 @@ export type MPCAlgorithm = 'ecdsa' | 'eddsa';
 
 export interface IBaseCoin {
   type: string;
+  tokenConfig?: BaseTokenConfig;
   url(suffix: string): string;
   wallets(): IWallets;
   enterprises(): IEnterprises;
