@@ -7,6 +7,7 @@ import {
   SignatureShareRecord,
   getTxRequest,
   ECDSAMethods,
+  RequestType,
   SignatureShareType,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
@@ -398,7 +399,7 @@ describe('Ecdsa tss helper functions tests', function () {
             txRequest.signatureShares = [shareRecord];
             const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
-            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].signerShare);
+            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, RequestType.tx, config[index].sendType, config[index].mockShareToSend, config[index].signerShare);
             responseAShare.should.deepEqual(config[index].mockShareAsResponse);
           });
 
@@ -409,7 +410,7 @@ describe('Ecdsa tss helper functions tests', function () {
             txRequest.signatureShares = [invalidSignatureShare];
             const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
-            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, config[index].sendType, config[index].mockShareToSend, config[index].signerShare).should.be.rejectedWith(/Invalid .* share/g); // `Invalid ${shareName} share`
+            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, RequestType.tx, config[index].sendType, config[index].mockShareToSend, config[index].signerShare).should.be.rejectedWith(/Invalid .* share/g); // `Invalid ${shareName} share`
             nock.isDone().should.equal(true);
           });
         });

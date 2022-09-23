@@ -57,7 +57,7 @@
     "cashaddress": "^1.1.0",
     "create-hash": "^1.2.0",
     "create-hmac": "^1.1.7",
-    "ecpair": "git+https://github.com/brandonblack/ecpair#95667235852b2c28565012c292d6c9cb3b2eee38",
+    "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0",
     "elliptic": "^6.5.2",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.1.2"

@@ -495,6 +495,11 @@ export class Polygon extends Eth {
   }
 
   /** @inheritDoc */
+  supportsMessageSigning(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }

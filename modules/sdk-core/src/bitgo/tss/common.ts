@@ -1,5 +1,5 @@
 import { BitGoBase } from '../bitgoBase';
-import { TxRequest } from '../utils';
+import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 
 /**
@@ -30,6 +30,10 @@ export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequest
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param {SignatureShareRecord} signatureShare - a Signature Share
+ * @param requestType - The type of request being submitted (either tx or message for signing)
+ * @param signerShare
+ * @param mpcAlgorithm
+ * @param apiMode
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShare(
@@ -37,17 +41,27 @@ export async function sendSignatureShare(
   walletId: string,
   txRequestId: string,
   signatureShare: SignatureShareRecord,
+  requestType: RequestType,
   signerShare?: string,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
   apiMode: 'full' | 'lite' = 'lite'
 ): Promise<SignatureShareRecord> {
-  let transactions = '';
-  if (mpcAlgorithm === 'ecdsa' || apiMode === 'full') {
-    transactions = '/transactions/0';
+  let addendum = '';
+  switch (requestType) {
+    case RequestType.tx:
+      if (mpcAlgorithm === 'ecdsa' || apiMode === 'full') {
+        addendum = '/transactions/0';
+      }
+      break;
+    case RequestType.message:
+      if (mpcAlgorithm === 'ecdsa' || apiMode === 'full') {
+        addendum = '/messages/0';
+      }
+      break;
   }
-
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
   return bitgo
-    .post(bitgo.url('/wallet/' + walletId + '/txrequests/' + txRequestId + transactions + '/signatureshares', 2))
+    .post(bitgo.url(urlPath, 2))
     .send({
       signatureShare,
       signerShare,
