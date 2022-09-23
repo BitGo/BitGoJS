@@ -1,5 +1,5 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { common, Wallet, encodeLnurl } from '@bitgo/sdk-core';
+import { common, Wallet, encodeLnurl, parseLightningInvoice } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src/bitgo';
 import * as nock from 'nock';
 import * as assert from 'assert';
@@ -22,7 +22,7 @@ describe('lightning API requests', function () {
   const address = 'fake_address';
   const testUrl = 'https://service.com';
 
-  it('should return the balance of lightning wallet', async function () {
+  it('should return the lightning balance of a wallet', async function () {
     const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/balance`).reply(200, {
       balance: 1000,
       availableBalance: 1000,
@@ -37,7 +37,7 @@ describe('lightning API requests', function () {
     scope.done();
   });
 
-  it('should generate a lightning address', async function () {
+  it('should generate a lightning deposit address', async function () {
     const scope = nock(bgUrl).post(`/api/v2/wallet/${wallet.id()}/lightning/address`).reply(200, {
       address,
     });
@@ -54,6 +54,11 @@ describe('lightning API requests', function () {
     const res = await wallet.lightning().createInvoice({ value: 123, memo: 'test payment' });
     assert.deepStrictEqual(res, fixtures.invoice);
     scope.done();
+  });
+
+  it('should parse a zero value lightning invoice', function () {
+    const parsedInvoice = parseLightningInvoice(invoices.zeroValueInvoice);
+    assert.deepStrictEqual(parsedInvoice, fixtures.parsedZeroValueInvoice);
   });
 
   it('should pay a lightning invoice', async function () {
@@ -110,9 +115,9 @@ describe('lightning API requests', function () {
 
   it('should fetch lnurl-pay invoice', async function () {
     const callback = 'https://service.com/api?q=fake';
-    const { data: invoice } = invoices.lnurlPayInvoice;
+    const invoice = invoices.lnurlPayInvoice;
     const lnurlReqScope = nock(testUrl).get('/api').query({ q: 'fake', amount: 2000000000 }).reply(200, { pr: invoice });
-    const res = await wallet.lightning().fetchLnurlPayInvoice({ callback, milliSatAmount: '2000000000', metadata: 'One piece of chocolate cake, one icecream cone, one pickle, one slice of swiss cheese, one slice of salami, one lollypop, one piece of cherry pie, one sausage, one cupcake, and one slice of watermelon' });
+    const res = await wallet.lightning().fetchLnurlPayInvoice({ callback, millisatAmount: '2000000000', metadata: 'One piece of chocolate cake, one icecream cone, one pickle, one slice of swiss cheese, one slice of salami, one lollypop, one piece of cherry pie, one sausage, one cupcake, and one slice of watermelon' });
     
     assert.deepStrictEqual(res, invoice);
     lnurlReqScope.done();

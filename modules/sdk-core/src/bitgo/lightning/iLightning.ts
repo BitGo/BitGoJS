@@ -31,7 +31,7 @@ export interface GetInvoicesQuery {
 
 export interface LnurlPayParams {
   callback: string;
-  milliSatAmount: string;
+  millisatAmount: string;
   metadata: string;
 }
 

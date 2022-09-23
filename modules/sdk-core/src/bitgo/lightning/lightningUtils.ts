@@ -6,12 +6,16 @@ import { decodeLnurl } from './lnurlCodec';
 import { decodeOrElse } from '../utils/decode';
 
 export type ParsedLightningInvoice = {
-  milliSatoshis: string;
-  /** hex-encoded */
+  /**
+   * The amount of millisatoshi requested by this invoice. If null then
+   * the invoice does not specify an amount and will accept any payment.
+   */
+  millisatoshis: string | null;
+  /** The hex encoded payment hash for the invoice */
   paymentHash: string;
-  /** hex-encoded */
-  pubkey: string;
-  /** hex-encoded */
+  /** The hex encoded node pub key of the payee that created the invoice */
+  payeeNodeKey: string;
+  /** The hex encoded SHA256 hash of the description of what the invoice is for */
   descriptionHash?: string;
 };
 
@@ -46,12 +50,12 @@ export async function decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequ
  * @returns {string} A BOLT #11 encoded lightning invoice
  */
 export async function fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string> {
-  const { callback, milliSatAmount, metadata } = params;
+  const { callback, millisatAmount, metadata } = params;
   const { pr: invoice } = callback.includes('?')
-    ? (await request.get(callback + `&amount=${milliSatAmount}`)).body
-    : (await request.get(callback).query({ amount: milliSatAmount })).body;
+    ? (await request.get(callback + `&amount=${millisatAmount}`)).body
+    : (await request.get(callback).query({ amount: millisatAmount })).body;
   const parsedInvoice = parseLightningInvoice(invoice);
-  validateLnurlInvoice(parsedInvoice, milliSatAmount, metadata);
+  validateLnurlInvoice(parsedInvoice, millisatAmount, metadata);
 
   return invoice;
 }
@@ -80,9 +84,9 @@ function getNetworkForInvoice(invoice: string) {
  * @param {string} metadata - metadata that is used to verify the fetched invoice
  * @throws error for invoice that does not match with amount and metadata
  */
-export function validateLnurlInvoice(invoice: ParsedLightningInvoice, milliSatAmount: string, metadata: string): void {
-  const { milliSatoshis, descriptionHash } = invoice;
-  if (milliSatoshis !== milliSatAmount) {
+export function validateLnurlInvoice(invoice: ParsedLightningInvoice, millisatAmount: string, metadata: string): void {
+  const { millisatoshis, descriptionHash } = invoice;
+  if (millisatoshis !== millisatAmount) {
     throw new Error('amount of invoice does not match with given amount');
   }
 
@@ -102,35 +106,29 @@ export function parseLightningInvoice(invoiceStr: unknown): ParsedLightningInvoi
     throw new Error('invoice is malformed');
   }
 
-  let decodedInvoice;
-  try {
-    decodedInvoice = bolt11.decode(invoiceStr, getNetworkForInvoice(invoiceStr));
-  } catch (e) {
-    throw new Error(`invoice is invalid`);
-  }
+  const decodedInvoice = bolt11.decode(invoiceStr, getNetworkForInvoice(invoiceStr));
 
   if (decodedInvoice.network === undefined) {
     throw new Error('invoice network is invalid');
   }
 
-  // The hex encoded payment hash for the invoice we are paying
-  const paymentHash = decodedInvoice.tags.find((tag) => tag.tagName === 'payment_hash')?.data;
+  const { millisatoshis, tags, payeeNodeKey } = decodedInvoice;
+
+  const paymentHash = tags.find((tag) => tag.tagName === 'payment_hash')?.data;
   if (paymentHash === undefined || typeof paymentHash !== 'string') {
     throw new Error('invoice payment hash is invalid');
   }
-
-  // The hex encoded pub key of the lightning node that created the invoice
-  const pubkey = decodedInvoice.payeeNodeKey;
-  if (pubkey === undefined) {
+  if (payeeNodeKey === undefined) {
     throw new Error('invoice payee pub key is invalid');
   }
-
-  const { millisatoshis, tags } = decodedInvoice;
-  if (millisatoshis === null || millisatoshis === undefined) {
-    throw new Error('invoice does not have an amount');
+  if (millisatoshis === undefined) {
+    throw new Error('invoice millisatoshis amount is invalid');
   }
 
-  const descriptionHash = tags.find((tag) => tag.tagName === 'purpose_commit_hash').data;
+  const descriptionHash = tags.find((tag) => tag.tagName === 'purpose_commit_hash')?.data;
+  if (descriptionHash !== undefined && typeof descriptionHash !== 'string') {
+    throw new Error('invoice description hash is invalid');
+  }
 
-  return { milliSatoshis: millisatoshis, paymentHash, pubkey, descriptionHash };
+  return { millisatoshis, paymentHash, payeeNodeKey, descriptionHash };
 }

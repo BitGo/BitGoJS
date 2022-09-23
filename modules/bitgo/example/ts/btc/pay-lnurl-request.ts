@@ -29,11 +29,11 @@ async function payLnurlRequest() {
   const DecodedLnurlPayRequest = await lightning.decodeLnurlPay(LNURL);
   console.log('Decoded LNURL Pay Request:', DecodedLnurlPayRequest);
 
-  // minimum allowed amount is chosen, however milliSatAmount can be any amount in the range between minSendable and maxSendable
-  const milliSatAmount = DecodedLnurlPayRequest.minSendable.toFixed(0);
+  // minimum allowed amount is chosen, however millisatAmount can be any amount in the range between minSendable and maxSendable
+  const millisatAmount = DecodedLnurlPayRequest.minSendable.toFixed(0);
   const { metadata, callback } = DecodedLnurlPayRequest;
 
-  const invoice = await wallet.lightning().fetchLnurlPayInvoice({ milliSatAmount, callback, metadata });
+  const invoice = await wallet.lightning().fetchLnurlPayInvoice({ millisatAmount, callback, metadata });
   console.log('Invoice:', invoice);
 
   await bitgo.unlock({ otp: '000000', duration: 3600 });

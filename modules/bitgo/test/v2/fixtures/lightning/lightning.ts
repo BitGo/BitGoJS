@@ -212,4 +212,11 @@ export default {
     metadata: '[["text/plain", "lorem ipsum blah blah"]]',
     tag: 'payRequest',
   },
+
+  parsedZeroValueInvoice: {
+    descriptionHash: 'a54c5ad9f95232e83d6a199893926d45698511d3624639d51ef772d6571771f1',
+    paymentHash: '806ad07bba84d59d0e27d7c40ebde717b31f4d1b33d94f44cc26d488b6176302',
+    payeeNodeKey: '03511d864ff7ba88b21ab23eb30bbfd18b1188e1539a666951c4acf9c74e3b37fd',
+    millisatoshis: null,
+  },
 };
