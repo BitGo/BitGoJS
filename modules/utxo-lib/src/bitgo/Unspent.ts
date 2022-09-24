@@ -1,11 +1,11 @@
-import { TxOutput } from 'bitcoinjs-lib';
+import { TxOutput, taproot } from 'bitcoinjs-lib';
 import { Network } from '..';
 import { toOutputScript } from '../address';
-import { createOutputScript2of3, createSpendScriptP2tr } from './outputScripts';
+import { createOutputScript2of3, createSpendScriptP2tr, createPaymentP2tr, toXOnlyPublicKey } from './outputScripts';
 import { UtxoPsbt } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
-import { isSegwit, RootWalletKeys, scriptTypeForChain, WalletUnspent, WalletUnspentSigner } from './wallet';
+import { isSegwit, ChainCode, RootWalletKeys, scriptTypeForChain, WalletUnspent, WalletUnspentSigner } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -122,6 +122,73 @@ export function addToTransactionBuilder<TNumber extends number | bigint>(
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, txb.network as Network);
   txb.addInput(txid, vout, sequence, script, value);
+}
+
+/**
+ * Add a verifiable change output to the PSBT. The change output and all data
+ * needed to verify it from public keys only are added to the PSBT.
+ *
+ * @param psbt the PSBT to add change output to
+ * @param rootWalletKeys keys that will be able to spend the output
+ * @param chain chain code to use for deriving scripts (and to determine script
+ *              type) chain is an API parameter in the BitGo API, and may be
+ *              any valid ChainCode
+ * @param index derivation index for the change address
+ * @param value value of the change output
+ */
+export function addChangeOutputToPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  rootWalletKeys: RootWalletKeys,
+  chain: ChainCode,
+  index: number,
+  value: bigint
+): void {
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
+  const scriptType = scriptTypeForChain(chain);
+  if (scriptType === 'p2tr') {
+    const payment = createPaymentP2tr(walletKeys.publicKeys);
+    const allLeafHashes = payment.redeems!.map((r) => taproot.hashTapLeaf(r.output!));
+
+    psbt.addOutput({
+      script: payment.output!,
+      value,
+      tapTree: payment.tapTree,
+      tapInternalKey: payment.internalPubkey,
+      tapBip32Derivation: [0, 1, 2].map((idx) => {
+        const pubkey = toXOnlyPublicKey(walletKeys.triple[idx].publicKey);
+        const leafHashes: Buffer[] = [];
+        payment.redeems!.forEach((r, idx) => {
+          if (r.pubkeys!.find((pk) => pk.equals(pubkey))) {
+            leafHashes.push(allLeafHashes[idx]);
+          }
+        });
+        return {
+          leafHashes,
+          pubkey,
+          path: walletKeys.paths[idx],
+          masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
+        };
+      }),
+    });
+  } else {
+    const { scriptPubKey, witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+    psbt.addOutput({
+      script: scriptPubKey,
+      value,
+      bip32Derivation: [0, 1, 2].map((idx) => ({
+        pubkey: walletKeys.triple[idx].publicKey,
+        path: walletKeys.paths[idx],
+        masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
+      })),
+    });
+    const outputIndex = psbt.txOutputs.length - 1;
+    if (witnessScript) {
+      psbt.updateOutput(outputIndex, { witnessScript });
+    }
+    if (redeemScript) {
+      psbt.updateOutput(outputIndex, { redeemScript });
+    }
+  }
 }
 
 export function addToPsbt(

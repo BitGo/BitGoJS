@@ -23,11 +23,15 @@ import {
   UtxoTransaction,
   createPsbtForNetwork,
   addToPsbt,
+  addChangeOutputToPsbt,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
 import { mockWalletUnspent } from './util';
 import { defaultTestOutputAmount } from '../../transaction_util';
+
+const CHANGE_INDEX = 100;
+const FEE = BigInt(100);
 
 describe('WalletUnspent', function () {
   const network = networks.bitcoin;
@@ -122,17 +126,19 @@ describe('WalletUnspent', function () {
   function constructAndSignTransactionUsingPsbt(
     unspents: WalletUnspent<bigint>[],
     signer: string,
-    cosigner: string
+    cosigner: string,
+    scriptType: outputScripts.ScriptType2Of3
   ): Transaction<bigint> {
     const psbt = createPsbtForNetwork(network);
-    psbt.addOutput({
-      address: getWalletAddress(walletKeys, 0, 100, network),
-      value: BigInt(unspentSum<bigint>(unspents, 'bigint')) - BigInt(100),
-    });
+    const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
+    // Kinda weird, treating entire value as change, but tests the relevant paths
+    addChangeOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
 
     unspents.forEach((u) => {
       addToPsbt(psbt, u, WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]), network);
     });
+
+    // TODO: Test rederiving scripts from PSBT and keys only
     psbt.signAllInputsHD(walletKeys[signer]);
     psbt.signAllInputsHD(walletKeys[cosigner]);
     assert(psbt.validateSignaturesOfAllInputs());
@@ -144,12 +150,15 @@ describe('WalletUnspent', function () {
     unspents: WalletUnspent<TNumber>[],
     signer: string,
     cosigner: string,
-    amountType: 'number' | 'bigint' = 'number'
+    amountType: 'number' | 'bigint' = 'number',
+    scriptType: outputScripts.ScriptType2Of3
   ): UtxoTransaction<TNumber> {
     const txb = createTransactionBuilderForNetwork<TNumber>(network);
+    const total = BigInt(unspentSum<TNumber>(unspents, amountType));
+    // Kinda weird, treating entire value as change, but tests the relevant paths
     txb.addOutput(
-      getWalletAddress(walletKeys, 0, 100, network),
-      toTNumber<TNumber>(BigInt(unspentSum<TNumber>(unspents, amountType)) - BigInt(100), amountType)
+      getWalletAddress(walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, network),
+      toTNumber<TNumber>(total - FEE, amountType)
     );
     unspents.forEach((u) => {
       addToTransactionBuilder(txb, u);
@@ -193,12 +202,19 @@ describe('WalletUnspent', function () {
           vout: 1,
         }),
       ];
-      const txbTransaction = constructAndSignTransactionUsingTransactionBuilder(unspents, signer, cosigner, amountType);
+      const txbTransaction = constructAndSignTransactionUsingTransactionBuilder(
+        unspents,
+        signer,
+        cosigner,
+        amountType,
+        scriptType
+      );
       if (amountType === 'bigint') {
         const psbtTransaction = constructAndSignTransactionUsingPsbt(
           unspents as WalletUnspent<bigint>[],
           signer,
-          cosigner
+          cosigner,
+          scriptType
         );
         assert.deepStrictEqual(txbTransaction.toBuffer(), psbtTransaction.toBuffer());
       }
