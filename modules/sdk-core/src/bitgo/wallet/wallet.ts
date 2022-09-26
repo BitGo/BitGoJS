@@ -2658,6 +2658,12 @@ export class Wallet implements IWallet {
         )
         .send();
     }
+
+    // ECDSA TSS uses TxRequestFull
+    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      return signedTransaction;
+    }
+
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
   }
 }
