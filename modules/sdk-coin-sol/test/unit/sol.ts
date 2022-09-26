@@ -1446,6 +1446,8 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
+
+      // Latest Blockhash Recovery (BitGo-less)
       const latestBlockHashTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
@@ -1464,6 +1466,7 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
 
+      // Durable Nonce Recovery (BitGo-less)
       const durableNonceTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
@@ -1474,6 +1477,9 @@ describe('SOL:', function () {
         durableNonceSK: testData.keys.durableNoncePrivKey,
       });
 
+      durableNonceTxn.should.not.be.empty();
+      durableNonceTxn.should.hasOwnProperty('serializedTx');
+
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
@@ -1481,6 +1487,26 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
       should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+
+      // Unsigned Sweep Recovery
+      const unsignedSweepTxn = await basecoin.recover({
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        durableNoncePK: testData.keys.durableNoncePubKey,
+        durableNonceSK: testData.keys.durableNoncePrivKey,
+      });
+
+      unsignedSweepTxn.should.not.be.empty();
+      unsignedSweepTxn.should.hasOwnProperty('serializedTx');
+
+      const unsignedSweepTxnDeserialize = new Transaction(coin);
+      unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+
+      should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
   });
 });
