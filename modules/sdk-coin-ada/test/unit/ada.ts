@@ -39,24 +39,25 @@ describe('ADA', function () {
 
   const transactionExplanation = {
     displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'],
-    id: '0933ee2669649595c39150cdad64418303744352e1d315aa2f060f291980639a',
-    changeOutputs: [],
-    changeAmount: '0',
-    outputAmount: '253329150',
+    id: '1088141814e014e07d5e6c3ffb6c877a5c6ee2210694570e01bfc9a6ee6eedf5',
     outputs: [
       {
         address:
           'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey',
-        amount: '5000000',
+        amount: '7823121',
       },
       {
         address: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
-        amount: '248329150',
+        amount: '13041641',
       },
     ],
-    fee: {
-      fee: '167173',
-    },
+    outputAmount: '20864762',
+    changeOutputs: [],
+    changeAmount: '0',
+    fee: { fee: '167261' },
+    type: 'Transfer',
+    certificates: [],
+    withdrawals: [],
   };
 
   before(function () {
@@ -235,18 +236,10 @@ describe('ADA', function () {
     it('should explain an unsigned transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
         txPrebuild: {
-          txHex: rawTx.unsignedTx,
+          txHex: rawTx.unsignedTx2,
         },
       });
-      explainedTransaction.should.deepEqual(transactionExplanation);
-    });
-
-    it('should explain a signed transfer transaction', async function () {
-      const explainedTransaction = await basecoin.explainTransaction({
-        txPrebuild: {
-          txHex: rawTx.signedTx,
-        },
-      });
+      console.log(explainedTransaction);
       explainedTransaction.should.deepEqual(transactionExplanation);
     });
 
@@ -277,7 +270,7 @@ describe('ADA', function () {
     it('should parse an unsigned transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txPrebuild: {
-          txHex: rawTx.unsignedTx,
+          txHex: rawTx.unsignedTx2,
         },
       });
 
@@ -287,7 +280,7 @@ describe('ADA', function () {
     it('should parse a signed transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txPrebuild: {
-          txHex: rawTx.signedTx,
+          txHex: rawTx.signedTx2,
         },
       });
 

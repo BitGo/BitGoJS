@@ -1,8 +1,8 @@
 import should from 'should';
-import { Utils } from '../../src';
-import { toHex } from '@bitgo/sdk-core';
+import { KeyPair, Utils } from '../../src';
+import { AddressFormat, toHex } from '@bitgo/sdk-core';
 import { Ed25519Signature } from '@emurgo/cardano-serialization-lib-nodejs';
-import { address, blockHash, signatures, txIds, privateKeys, publicKeys } from '../resources';
+import { address, blockHash, enterpriseAccounts, privateKeys, publicKeys, signatures, txIds } from '../resources';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {
@@ -13,6 +13,33 @@ describe('utils', () => {
     should.equal(Utils.default.isValidAddress('dfjk35y'), false);
     should.equal(Utils.default.isValidAddress(undefined as unknown as string), false);
     should.equal(Utils.default.isValidAddress(''), false);
+  });
+
+  it('should create stake and payment keys correctly', () => {
+    const keyPair1 = new KeyPair({ pub: enterpriseAccounts.account1.publicKey });
+    const keyPair2 = new KeyPair({ pub: enterpriseAccounts.account3.publicKey });
+    should.equal(
+      Utils.default.createBaseAddressWithStakeAndPaymentKey(keyPair1, keyPair2, AddressFormat.testnet),
+      'addr_test1qq9arfq9pugs57apr3535z470ma2tvg8pnjy54q6s60muz5kelhytwhzrw9snh7759n9m8fr2xurpk4zyw8hmvk2avdsf62mmj'
+    );
+  });
+
+  it('should create stake and payment keys correctly from private keys', () => {
+    const keyPair1 = new KeyPair({ prv: privateKeys.prvKey4 });
+    const keyPair2 = new KeyPair({ prv: privateKeys.prvKey2 });
+    should.equal(
+      Utils.default.createBaseAddressWithStakeAndPaymentKey(keyPair1, keyPair2, AddressFormat.testnet),
+      'addr_test1qqvglhn9k8um66dsahxyukn9l2f6zdmnpy8puth00gjulk7g0xp5f99mdzwswz4rmfwu00x724w2jahygheyk2zqg9lsvz2muj'
+    );
+  });
+
+  it('should create stake and payment keys correctly with keypairs initialized from nothing', () => {
+    const keyPair1 = new KeyPair();
+    const keyPair2 = new KeyPair();
+    should.equal(
+      Utils.default.createBaseAddressWithStakeAndPaymentKey(keyPair1, keyPair2, AddressFormat.testnet),
+      Utils.default.createBaseAddressWithStakeAndPaymentKey(keyPair1, keyPair2, AddressFormat.testnet)
+    );
   });
 
   it('should validate block hash correctly', () => {

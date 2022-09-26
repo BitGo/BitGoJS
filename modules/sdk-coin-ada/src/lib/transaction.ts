@@ -1,11 +1,4 @@
-import {
-  BaseKey,
-  BaseTransaction,
-  Entry,
-  InvalidTransactionError,
-  TransactionType,
-  TransactionExplanation,
-} from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, Entry, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -24,6 +17,22 @@ export interface Witness {
   publicKey: string;
   signature: string;
 }
+enum CertType {
+  StakeKeyRegistration,
+  StakeKeyDelegation,
+  StakeKeyDeregistration,
+}
+
+export interface Cert {
+  type: CertType;
+  stakeCredentialHash: string;
+  poolKeyHash?: string;
+}
+
+export interface Withdrawal {
+  stakeAddress: string;
+  value: string;
+}
 /**
  * The transaction data returned from the toJson() function of a transaction
  */
@@ -33,6 +42,8 @@ export interface TxData {
   inputs: TransactionInput[];
   outputs: TransactionOutput[];
   witnesses: Witness[];
+  certs: Cert[];
+  withdrawals: Withdrawal[];
 }
 
 export class Transaction extends BaseTransaction {
@@ -81,6 +92,8 @@ export class Transaction extends BaseTransaction {
       inputs: [],
       outputs: [],
       witnesses: [],
+      certs: [],
+      withdrawals: [],
     };
 
     for (let i = 0; i < this._transaction.body().inputs().len(); i++) {
@@ -99,6 +112,47 @@ export class Transaction extends BaseTransaction {
       });
     }
 
+    if (this._transaction.body().certs()) {
+      for (let i = 0; i < this._transaction.body().certs()!.len(); i++) {
+        const cert = this._transaction.body().certs()!.get(i);
+        if (cert.as_stake_registration() !== undefined) {
+          const stakeRegistration = cert.as_stake_registration() as CardanoWasm.StakeRegistration;
+          result.certs.push({
+            type: CertType.StakeKeyRegistration,
+            stakeCredentialHash: Buffer.from(stakeRegistration.stake_credential().to_bytes()).toString('hex'),
+          });
+        }
+        if (cert.as_stake_deregistration() !== undefined) {
+          const stakeDeregistration = cert.as_stake_deregistration() as CardanoWasm.StakeDeregistration;
+          result.certs.push({
+            type: CertType.StakeKeyDeregistration,
+            stakeCredentialHash: Buffer.from(stakeDeregistration.stake_credential().to_bytes()).toString('hex'),
+          });
+        }
+        if (cert.as_stake_delegation() !== undefined) {
+          const stakeDelegation = cert.as_stake_delegation() as CardanoWasm.StakeDelegation;
+          result.certs.push({
+            type: CertType.StakeKeyDelegation,
+            stakeCredentialHash: Buffer.from(stakeDelegation.stake_credential().to_bytes()).toString('hex'),
+            poolKeyHash: Buffer.from(stakeDelegation.pool_keyhash().to_bytes()).toString('hex'),
+          });
+        }
+      }
+    }
+
+    if (this._transaction.body().withdrawals()) {
+      const withdrawals = this._transaction.body().withdrawals() as CardanoWasm.Withdrawals;
+      const keys = withdrawals.keys();
+      for (let i = 0; i < keys.len(); i++) {
+        const rewardAddress = keys.get(i);
+        const reward = withdrawals.get(rewardAddress) as CardanoWasm.BigNum;
+        result.withdrawals.push({
+          stakeAddress: rewardAddress.to_address().to_bytes().toString(),
+          value: reward.to_str(),
+        });
+      }
+    }
+
     if (this._transaction.witness_set().vkeys() !== undefined) {
       const vkeys = this._transaction.witness_set().vkeys() as CardanoWasm.Vkeywitnesses;
       for (let i = 0; i < vkeys.len(); i++) {
@@ -109,7 +163,6 @@ export class Transaction extends BaseTransaction {
         });
       }
     }
-
     return result;
   }
 
@@ -152,6 +205,21 @@ export class Transaction extends BaseTransaction {
       this._transaction = txn;
       this._id = Buffer.from(CardanoWasm.hash_transaction(txn.body()).to_bytes()).toString('hex');
       this._type = TransactionType.Send;
+      if (this._transaction.body().certs()) {
+        for (let i = 0; i < this._transaction.body().certs()!.len(); i++) {
+          const cert = this._transaction.body().certs()!.get(i);
+          if (cert.as_stake_registration() !== undefined) {
+            this._type = TransactionType.StakingActivate;
+          }
+          if (cert.as_stake_deregistration() !== undefined) {
+            this._type = TransactionType.StakingDeactivate;
+          }
+        }
+      }
+      if (this._transaction.body().withdrawals()) {
+        this._type = TransactionType.StakingWithdraw;
+      }
+
       this._fee = txn.body().fee().to_str();
       this.loadInputsAndOutputs();
     } catch (e) {
@@ -169,11 +237,30 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  explainTransaction(): TransactionExplanation {
+  explainTransaction(): {
+    outputs: { amount: string; address: string }[];
+    certificates: Cert[];
+    changeOutputs: string[];
+    outputAmount: string;
+    fee: { fee: string };
+    displayOrder: string[];
+    id: string;
+    changeAmount: string;
+    type: string;
+    withdrawals: Withdrawal[];
+  } {
     const txJson = this.toJson();
     const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
     const amount = txJson.outputs.map((o) => ({ amount: BigInt(o.amount) }));
     const outputAmount = amount.reduce((p, n) => p + BigInt(n.amount), BigInt('0')).toString();
+    const type =
+      this._type === TransactionType.Send
+        ? 'Transfer'
+        : this._type === TransactionType.StakingActivate
+        ? 'StakingActivate'
+        : this._type === TransactionType.StakingWithdraw
+        ? 'StakingWithdraw'
+        : 'StakingDeactivate';
     return {
       displayOrder,
       id: txJson.id,
@@ -182,6 +269,9 @@ export class Transaction extends BaseTransaction {
       changeOutputs: [],
       changeAmount: '0',
       fee: { fee: this._fee },
+      type,
+      certificates: txJson.certs,
+      withdrawals: txJson.withdrawals,
     };
   }
 

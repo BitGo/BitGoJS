@@ -1,8 +1,52 @@
-import { BaseUtils } from '@bitgo/sdk-core';
-import { Ed25519Signature, Address } from '@emurgo/cardano-serialization-lib-nodejs';
+import { AddressFormat, BaseUtils } from '@bitgo/sdk-core';
+import {
+  Address,
+  BaseAddress,
+  PublicKey,
+  Ed25519Signature,
+  NetworkInfo,
+  StakeCredential,
+} from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
+  createBaseAddressWithStakeAndPaymentKey(
+    stakeKeyPair: KeyPair,
+    paymentKeyPair: KeyPair,
+    network: AddressFormat
+  ): string {
+    let baseAddr;
+    if (network === AddressFormat.mainnet) {
+      // 1. create stake pubKey
+      const key = stakeKeyPair.getKeys().pub;
+
+      const stakePub = PublicKey.from_bytes(Buffer.from(key, 'hex'));
+      // 2. create payment pubKey
+      const paymentPub = PublicKey.from_bytes(Buffer.from(paymentKeyPair.getKeys().pub, 'hex'));
+      // 3. create full base address for staking
+      baseAddr = BaseAddress.new(
+        NetworkInfo.mainnet().network_id(),
+        StakeCredential.from_keyhash(paymentPub.hash()),
+        StakeCredential.from_keyhash(stakePub.hash())
+      );
+      return baseAddr.to_address().to_bech32();
+    } else if (network === AddressFormat.testnet) {
+      // 1. create stake pubKey
+      const stakePub = PublicKey.from_bytes(Buffer.from(stakeKeyPair.getKeys().pub, 'hex'));
+      // 2. create payment pubKey
+      const paymentPub = PublicKey.from_bytes(Buffer.from(paymentKeyPair.getKeys().pub, 'hex'));
+      // 3. create full base address for staking
+      const baseAddr = BaseAddress.new(
+        NetworkInfo.testnet().network_id(),
+        StakeCredential.from_keyhash(paymentPub.hash()),
+        StakeCredential.from_keyhash(stakePub.hash())
+      );
+      return baseAddr.to_address().to_bech32();
+    } else {
+      throw new Error('Improper Network Type!');
+    }
+  }
+
   validateBlake2b(hash: string): boolean {
     if (!hash) {
       return false;
@@ -14,6 +58,7 @@ export class Utils implements BaseUtils {
   }
 
   /** @inheritdoc */
+  // this will validate both stake and payment addresses
   isValidAddress(address: string): boolean {
     try {
       Address.from_bech32(address);
