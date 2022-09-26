@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.1.0-rc.6...@bitgo/sdk-coin-dot@1.1.0-rc.7) (2022-09-26)
+
+
+### Features
+
+* **sdk-coin-dot:** implement recover function for dot ([66f8cba](https://github.com/BitGo/BitGoJS/commit/66f8cba4bd79598ab8197472bb1ad595d0026d60))
+
+
+
+
+
 # [1.1.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.1.0-rc.5...@bitgo/sdk-coin-dot@1.1.0-rc.6) (2022-09-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

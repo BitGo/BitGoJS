@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.38](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.37...bitgo@14.3.0-rc.38) (2022-09-26)
+
+
+### Bug Fixes
+
+* **sdk-core:** ecdsa keychain creation types mach ([1224de3](https://github.com/BitGo/BitGoJS/commit/1224de3f707759f4ef22836a80c3b834ec04b98d))
+
+
+### Features
+
+* **sdk-core:** parse zero value lightning invoices ([78cab72](https://github.com/BitGo/BitGoJS/commit/78cab722387bd6348cb81951c2e611db231484e0))
+
+
+
+
+
 # [14.3.0-rc.37](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.36...bitgo@14.3.0-rc.37) (2022-09-23)
 
 

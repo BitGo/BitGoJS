@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.17...@bitgo/sdk-coin-ada@2.0.0-rc.18) (2022-09-26)
+
+
+### Features
+
+* **sdk-coin-ada:** staking transaction builder ([5f2a5d5](https://github.com/BitGo/BitGoJS/commit/5f2a5d553a970be2ed42a5ece83281f8825f1ade))
+
+
+
+
+
 # [2.0.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.16...@bitgo/sdk-coin-ada@2.0.0-rc.17) (2022-09-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.32](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.31...@bitgo/sdk-core@2.0.0-rc.32) (2022-09-26)
+
+
+### Bug Fixes
+
+* **sdk-core:** ecdsa keychain creation types mach ([1224de3](https://github.com/BitGo/BitGoJS/commit/1224de3f707759f4ef22836a80c3b834ec04b98d))
+
+
+### Features
+
+* **sdk-coin-dot:** implement recover function for dot ([66f8cba](https://github.com/BitGo/BitGoJS/commit/66f8cba4bd79598ab8197472bb1ad595d0026d60))
+* **sdk-core:** parse zero value lightning invoices ([78cab72](https://github.com/BitGo/BitGoJS/commit/78cab722387bd6348cb81951c2e611db231484e0))
+
+
+
+
+
 # [2.0.0-rc.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.30...@bitgo/sdk-core@2.0.0-rc.31) (2022-09-23)
 
 
