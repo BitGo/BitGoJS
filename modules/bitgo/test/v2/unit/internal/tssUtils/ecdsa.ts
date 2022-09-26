@@ -492,13 +492,13 @@ describe('TSS Ecdsa Utils:', async function () {
       bitgoKeyShare,
       1,
       userGpgKey.publicKey,
-      bitGoGPGKey.privateKey,
+      false,
     ),
     encryptNShare(
       bitgoKeyShare,
       2,
       backupGpgKey.publicKey,
-      bitGoGPGKey.privateKey,
+      false,
     )];
 
     const [userToBitgoShare, backupToBitgoShare] = await Promise.all(nSharePromises);
@@ -512,12 +512,14 @@ describe('TSS Ecdsa Utils:', async function () {
           to: 'user',
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
+          n: userToBitgoShare.n,
         },
         {
           from: 'bitgo',
           to: 'backup',
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
+          n: backupToBitgoShare.n,
         },
       ],
     };

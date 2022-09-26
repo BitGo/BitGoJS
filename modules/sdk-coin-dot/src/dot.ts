@@ -3,9 +3,14 @@ import {
   BaseCoin,
   BitGoBase,
   DotAssetTypes,
+  Ed25519BIP32,
+  EDDSA,
+  Eddsa,
+  Environments,
   ExplanationResult,
   KeyPair,
   MethodNotImplementedError,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -13,10 +18,11 @@ import {
   UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  MPCAlgorithm,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { Interface, KeyPair as DotKeyPair, Utils, TransactionBuilderFactory } from './lib';
+import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
+import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { Material } from './lib/iface';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -41,11 +47,39 @@ export interface VerifiedTransactionParameters {
   prv: string;
 }
 
+interface RecoveryOptions {
+  userKey: string; // Box A
+  backupKey: string; // Box B
+  bitgoKey: string; // Box C
+  recoveryDestination: string;
+  krsProvider?: string;
+  walletPassphrase: string;
+}
+
+interface UserSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  backupYShare: EDDSA.YShare;
+  userYShare?: EDDSA.YShare;
+}
+
+interface BackupSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  userYShare: EDDSA.YShare;
+  backupYShare?: EDDSA.YShare;
+}
+
+interface DotTx {
+  serializedTx: string;
+}
+
 const dotUtils = Utils.default;
 
 export class Dot extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   readonly MAX_VALIDITY_DURATION = 2400;
+  readonly SWEEP_TXN_DURATION = 64;
 
   constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
@@ -56,6 +90,11 @@ export class Dot extends BaseCoin {
 
     this._staticsCoin = staticsCoin;
   }
+
+  protected static initialized = false;
+  protected static MPC: Eddsa;
+  protected static nodeApiInitialized = false;
+  protected static API: ApiPromise;
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Dot(bitgo, staticsCoin);
@@ -259,12 +298,210 @@ export class Dot extends BaseCoin {
     return { txHex: signedTxHex };
   }
 
+  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
+  static async getInitializedMpcInstance(): Promise<Eddsa> {
+    if (this.initialized) {
+      return this.MPC;
+    }
+    const hdTree = await Ed25519BIP32.initialize();
+    this.MPC = await Eddsa.initialize(hdTree);
+    this.initialized = true;
+    return this.MPC;
+  }
+
+  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
+  async getTSSSignature(
+    userSigningMaterial: UserSigningMaterial,
+    backupSigningMaterial: BackupSigningMaterial,
+    path = 'm/0',
+    transaction: Transaction
+  ): Promise<Buffer> {
+    const MPC = await Dot.getInitializedMpcInstance();
+
+    const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
+      userSigningMaterial.bitgoYShare,
+      userSigningMaterial.backupYShare,
+    ]);
+    const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
+      backupSigningMaterial.bitgoYShare,
+      backupSigningMaterial.userYShare,
+    ]);
+
+    const userSubkey = MPC.keyDerive(
+      userSigningMaterial.uShare,
+      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
+      path
+    );
+
+    const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
+      userSubkey.yShares[2],
+      backupSigningMaterial.bitgoYShare,
+    ]);
+
+    const messageBuffer = transaction.signablePayload;
+    const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
+    const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
+    const userSign = MPC.sign(
+      messageBuffer,
+      userSignShare.xShare,
+      [backupSignShare.rShares[1]],
+      [userSigningMaterial.bitgoYShare]
+    );
+    const backupSign = MPC.sign(
+      messageBuffer,
+      backupSignShare.xShare,
+      [userSignShare.rShares[2]],
+      [backupSigningMaterial.bitgoYShare]
+    );
+    const signature = MPC.signCombine([userSign, backupSign]);
+    const result = MPC.verify(messageBuffer, signature);
+    result.should.equal(true);
+    const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+    return rawSignature;
+  }
+
+  protected async getInitializedNodeAPI(): Promise<ApiPromise> {
+    if (!Dot.nodeApiInitialized) {
+      const wsProvider = new WsProvider(Environments[this.bitgo.getEnv()].dotNodeUrls);
+      Dot.API = await ApiPromise.create({ provider: wsProvider });
+      Dot.nodeApiInitialized = true;
+    }
+    return Dot.API;
+  }
+
+  protected async getAccountInfo(walletAddr: string): Promise<{ nonce: number; freeBalance: number }> {
+    const api = await this.getInitializedNodeAPI();
+    const { nonce, data: balance } = await api.query.system.account(walletAddr);
+    return { nonce: nonce.toNumber(), freeBalance: balance.free.toNumber() };
+  }
+
+  protected async getHeaderInfo(): Promise<{ headerNumber: number; headerHash: string }> {
+    const api = await this.getInitializedNodeAPI();
+    const { number, hash } = await api.rpc.chain.getHeader();
+    return { headerNumber: number.toNumber(), headerHash: hash.toString() };
+  }
+
+  /**
+   *
+   * Estimate the fee of the transaction
+   *
+   * @param {string} destAddr destination wallet address
+   * @param {string} srcAddr source wallet address
+   * @param {string} amount amount to transfer
+   * @returns {number} the estimated fee the transaction will cost
+   *
+   * @see https://polkadot.js.org/docs/api/cookbook/tx#how-do-i-estimate-the-transaction-fees
+   */
+  protected async getFee(destAddr: string, srcAddr: string, amount: number): Promise<number> {
+    const api = await this.getInitializedNodeAPI();
+    const info = await api.tx.balances.transfer(destAddr, amount).paymentInfo(srcAddr);
+    return info.partialFee.toNumber();
+  }
+
+  protected async getMaterial(): Promise<Material> {
+    const api = await this.getInitializedNodeAPI();
+    return {
+      genesisHash: api.genesisHash.toString(),
+      chainName: api.runtimeChain.toString(),
+      specName: api.runtimeVersion.specName.toString() as PolkadotSpecNameType,
+      specVersion: api.runtimeVersion.specVersion.toNumber(),
+      txVersion: api.runtimeVersion.transactionVersion.toNumber(),
+      metadata: api.runtimeMetadata.toHex(),
+    };
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: never): Promise<never> {
-    throw new MethodNotImplementedError('Dot recovery not implemented');
+  async recover(params: RecoveryOptions): Promise<DotTx> {
+    // TODO(BG-51092): This looks like a common part which can be extracted out too
+    /* ***************** START **************************************/
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.bitgoKey)) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase)) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    // TODO: prob need to fix this
+    let userPrv;
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+    /** TODO BG-52419 Implement Codec for parsing */
+    const userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
+
+    let backupPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as BackupSigningMaterial;
+    /* ***************** END **************************************/
+
+    // build the unsigned txn
+    const MPC = await Dot.getInitializedMpcInstance();
+    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
+    const senderAddr = this.getAddressFromPublicKey(accountId);
+    const { nonce } = await this.getAccountInfo(senderAddr);
+    const { headerNumber, headerHash } = await this.getHeaderInfo();
+    const material = await this.getMaterial();
+
+    const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
+    txnBuilder
+      .sweep()
+      .to({ address: params.recoveryDestination })
+      .sender({ address: senderAddr })
+      .validity({ firstValid: headerNumber, maxDuration: this.SWEEP_TXN_DURATION })
+      .referenceBlock(headerHash)
+      .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
+      .fee({ amount: 0, type: 'tip' });
+    const unsignedTransaction = (await txnBuilder.build()) as Transaction;
+
+    // add signature
+    const signatureHex = await this.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      'm/0',
+      unsignedTransaction
+    );
+
+    const dotKeyPair = new DotKeyPair({ pub: accountId });
+    txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+    const signedTransaction = await txnBuilder.build();
+    const serializedTx = signedTransaction.toBroadcastFormat();
+    return { serializedTx: serializedTx };
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

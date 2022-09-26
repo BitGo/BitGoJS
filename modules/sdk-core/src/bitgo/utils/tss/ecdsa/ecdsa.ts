@@ -122,19 +122,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   ): Promise<Keychain> {
     const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
     const recipientIndex = 3;
-    const userToBitgoShare = await encryptNShare(
-      userKeyShare,
-      recipientIndex,
-      bitgoPublicGpgKey.armor(),
-      userGpgKey.privateKey
-    );
+    const userToBitgoShare = await encryptNShare(userKeyShare, recipientIndex, bitgoPublicGpgKey.armor());
 
-    const backupToBitgoShare = await encryptNShare(
-      backupKeyShare,
-      recipientIndex,
-      bitgoPublicGpgKey.armor(),
-      userGpgKey.privateKey
-    );
+    const backupToBitgoShare = await encryptNShare(backupKeyShare, recipientIndex, bitgoPublicGpgKey.armor());
 
     const createBitGoMPCParams: AddKeychainOptions = {
       keyType: 'tss' as KeyType,
@@ -145,12 +135,14 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           to: 'bitgo',
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
+          n: userToBitgoShare.n,
         },
         {
           from: 'backup',
           to: 'bitgo',
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
+          n: backupToBitgoShare.n,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
@@ -202,12 +194,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
 
-    const backupToUserShare = await encryptNShare(
-      otherShare,
-      recipientIndex,
-      userGpgKey.publicKey,
-      userGpgKey.privateKey
-    );
+    const backupToUserShare = await encryptNShare(otherShare, recipientIndex, userGpgKey.publicKey);
     const encryptedNShares: DecryptableNShare[] = [
       {
         nShare: backupToUserShare,
@@ -220,9 +207,11 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           j: 3,
           publicShare: bitGoToUserShare.publicShare,
           encryptedPrivateShare: bitGoToUserShare.privateShare,
+          n: bitGoToUserShare.n!,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
         senderPublicArmor: bitgoPublicGpgKey.armor(),
+        isbs58Encoded: false,
       },
     ];
 

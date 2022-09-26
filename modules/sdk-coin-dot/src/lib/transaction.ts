@@ -171,6 +171,11 @@ export class Transaction extends BaseTransaction {
         });
         result.to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         result.amount = txMethod.value;
+      } else if (utils.isTransferAll(txMethod)) {
+        const keypairDest = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
+        });
+        result.to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       } else {
         throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
       }
@@ -358,6 +363,13 @@ export class Transaction extends BaseTransaction {
         to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         value = `${decodedCall.value}`;
         from = keypairFrom.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+      } else if (utils.isTransferAll(txMethod)) {
+        const keypairDest = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
+        });
+        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+        value = 'sweep';
+        from = decodedTx.address;
       } else if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
