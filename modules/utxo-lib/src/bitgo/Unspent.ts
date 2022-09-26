@@ -236,7 +236,7 @@ export function addToPsbt(
   } else {
     const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
     psbt.updateInput(inputIndex, {
-      bip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+      bip32Derivation: [0, 1, 2].map((idx) => ({
         pubkey: walletKeys.triple[idx].publicKey,
         path: walletKeys.paths[idx],
         masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
