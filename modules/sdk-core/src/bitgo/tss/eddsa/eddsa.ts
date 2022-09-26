@@ -1,6 +1,13 @@
 import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
 import { BitGoBase } from './../../bitgoBase';
-import { DecryptableYShare, CombinedKey, SigningMaterial, EncryptedYShare } from './types';
+import {
+  DecryptableYShare,
+  CombinedKey,
+  SigningMaterial,
+  EncryptedYShare,
+  UserSigningMaterial,
+  BackupSigningMaterial,
+} from './types';
 import { ShareKeyPosition } from './../types';
 import {
   encryptAndSignText,
@@ -9,6 +16,8 @@ import {
   SignatureShareType,
   RequestType,
 } from './../../utils';
+import { BaseTransaction } from './../../../account-lib/baseCoin/baseTransaction';
+import { Ed25519BIP32 } from './../../../account-lib/mpc/hdTree';
 import _ = require('lodash');
 import { getTxRequest, sendSignatureShare } from '../common';
 
@@ -290,4 +299,77 @@ export async function encryptYShare(params: {
     publicShare,
     encryptedPrivateShare,
   };
+}
+
+/**
+ *
+ * Initializes Eddsa instance
+ *
+ * @returns {Promise<Eddsa>} the Eddsa instance
+ */
+export async function getInitializedMpcInstance() {
+  const hdTree = await Ed25519BIP32.initialize();
+  return await Eddsa.initialize(hdTree);
+}
+
+/**
+ *
+ * Generates a TSS signature using the user and backup key
+ *
+ * @param {UserSigningMaterial} userSigningMaterial decrypted user TSS key
+ * @param {BackupSigningMaterial} backupSigningMaterial decrypted backup TSS key
+ * @param {string} path bip32 derivation path
+ * @param {BaseTransaction} transaction the transaction to sign
+ * @returns {Buffer} the signature
+ */
+export async function getTSSSignature(
+  userSigningMaterial: UserSigningMaterial,
+  backupSigningMaterial: BackupSigningMaterial,
+  path = 'm/0',
+  transaction: BaseTransaction
+): Promise<Buffer> {
+  const MPC = await getInitializedMpcInstance();
+
+  const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
+    userSigningMaterial.bitgoYShare,
+    userSigningMaterial.backupYShare,
+  ]);
+  const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
+    backupSigningMaterial.bitgoYShare,
+    backupSigningMaterial.userYShare,
+  ]);
+
+  const userSubkey = MPC.keyDerive(
+    userSigningMaterial.uShare,
+    [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
+    path
+  );
+
+  const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
+    userSubkey.yShares[2],
+    backupSigningMaterial.bitgoYShare,
+  ]);
+
+  const messageBuffer = transaction.signablePayload;
+  const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
+  const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
+  const userSign = MPC.sign(
+    messageBuffer,
+    userSignShare.xShare,
+    [backupSignShare.rShares[1]],
+    [userSigningMaterial.bitgoYShare]
+  );
+  const backupSign = MPC.sign(
+    messageBuffer,
+    backupSignShare.xShare,
+    [userSignShare.rShares[2]],
+    [backupSigningMaterial.bitgoYShare]
+  );
+  const signature = MPC.signCombine([userSign, backupSign]);
+  const result = MPC.verify(messageBuffer, signature);
+  if (!result) {
+    throw new Error('Invalid signature');
+  }
+  const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+  return rawSignature;
 }
