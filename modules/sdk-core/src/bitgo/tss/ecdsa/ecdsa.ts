@@ -122,9 +122,10 @@ export async function createUserGammaAndMuShare(wShare: WShare, aShare: AShare):
   if (wShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid WShare, doesn't belong to the User`);
   }
-  if (aShare.i !== ShareKeyPosition.USER || aShare.j !== ShareKeyPosition.BITGO) {
-    throw new Error('Invalid AShare, is not from Bitgo to User');
-  }
+
+  // if (aShare.i !== ShareKeyPosition.USER || aShare.j !== ShareKeyPosition.BITGO) {
+  //   throw new Error('Invalid AShare, is not from Bitgo to User');
+  // }
 
   return MPC.signConvert({ wShare, aShare });
 }
@@ -207,7 +208,7 @@ export async function sendShareToBitgo(
       const dShareRecord = convertDShare(shareToSend.dShare);
       signatureShare = {
         to: SignatureShareType.BITGO,
-        from: getParticipantFromIndex(shareToSend.dShare.i),
+        from: getParticipantFromIndex(shareToSend.dShare.j),
         share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
       };
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, signerShare, 'ecdsa');
@@ -215,7 +216,7 @@ export async function sendShareToBitgo(
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;
-      signatureShare = convertSignatureShare(sShare, share.i);
+      signatureShare = convertSignatureShare(sShare, 3);
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, signerShare, 'ecdsa');
       responseFromBitgo = sShare;
       break;
