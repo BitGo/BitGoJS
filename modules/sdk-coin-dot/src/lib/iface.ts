@@ -11,6 +11,7 @@ export enum MethodNames {
   AddProxy = 'addProxy',
   Proxy = 'proxy',
   Bond = 'bond',
+  TransferAll = 'transferAll',
   TransferKeepAlive = 'transferKeepAlive',
   Unbond = 'unbond',
   Anonymous = 'anonymous',
@@ -58,6 +59,14 @@ export interface TxData {
 export interface TransferArgs {
   dest: { id: string };
   value: string;
+}
+
+/**
+ * Transaction method specific args
+ */
+export interface TransferAllArgs {
+  dest: { id: string };
+  keepAlive: boolean;
 }
 
 /**
@@ -161,6 +170,7 @@ export interface ProxyArgs {
 export interface TxMethod {
   args:
     | TransferArgs
+    | TransferAllArgs
     | StakeArgs
     | AddProxyArgs
     | ProxyArgs

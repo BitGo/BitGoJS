@@ -3,14 +3,15 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
-import { MethodNames, ProxyArgs, ProxyType, TransferArgs } from './iface';
+import { MethodNames, ProxyArgs, ProxyType, TransferAllArgs, TransferArgs } from './iface';
 import { SingletonRegistry } from './singletonRegistry';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { ProxyTransactionSchema, TransferTransactionSchema } from './txnSchema';
+import { ProxyTransactionSchema, TransferAllTransactionSchema, TransferTransactionSchema } from './txnSchema';
 import utils from './utils';
 
 export abstract class NativeTransferBuilder extends TransactionBuilder {
+  protected _sweepFreeBalance = false;
   protected _amount: string;
   protected _to: string;
   protected _owner: string;
@@ -30,14 +31,27 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
    */
   protected buildTransaction(): UnsignedTransaction {
     const baseTxInfo = this.createBaseTxInfo();
-    const transferTx = methods.balances.transferKeepAlive(
-      {
-        value: this._amount,
-        dest: this._to,
-      },
-      baseTxInfo.baseTxInfo,
-      baseTxInfo.options
-    );
+    let transferTx;
+    if (this._sweepFreeBalance) {
+      transferTx = methods.balances.transferAll(
+        {
+          dest: this._to,
+          keepAlive: false,
+        },
+        baseTxInfo.baseTxInfo,
+        baseTxInfo.options
+      );
+    } else {
+      transferTx = methods.balances.transferKeepAlive(
+        {
+          value: this._amount,
+          dest: this._to,
+        },
+        baseTxInfo.baseTxInfo,
+        baseTxInfo.options
+      );
+    }
+
     if (!this._owner) {
       return transferTx;
     }
@@ -54,6 +68,19 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
 
   protected get transactionType(): TransactionType {
     return TransactionType.Send;
+  }
+
+  /**
+   *
+   * Set this to be a sweep transaction, using TransferAll with keepAlive set to false
+   *
+   * @returns {TransferBuilder} This transfer builder.
+   *
+   * @see https://github.com/paritytech/txwrapper-core/blob/main/docs/modules/txwrapper_substrate_src.methods.balances.md#transferall
+   */
+  sweep(): this {
+    this._sweepFreeBalance = true;
+    return this;
   }
 
   /**
@@ -154,6 +181,15 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
           utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
         ),
       });
+    } else if (this._method?.name === MethodNames.TransferAll) {
+      this._sweepFreeBalance = true;
+      const txMethod = this._method.args as TransferAllArgs;
+      this.to({
+        address: utils.decodeDotAddress(
+          txMethod.dest.id,
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
+        ),
+      });
     } else if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
       this.owner({
@@ -191,13 +227,18 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
   }
 
   private validateFields(to: string, amount: string, real?: string, forceProxyType?: string): void {
-    const validationResult = forceProxyType
-      ? ProxyTransactionSchema.validate({ to, amount, real, forceProxyType })
-      : TransferTransactionSchema.validate({ amount, to });
+    let validationResult;
+    if (forceProxyType) {
+      validationResult = ProxyTransactionSchema.validate({ to, amount, real, forceProxyType });
+    } else if (this._sweepFreeBalance) {
+      validationResult = TransferAllTransactionSchema.validate({ to });
+    } else {
+      validationResult = TransferTransactionSchema.validate({ amount, to });
+    }
 
     if (validationResult.error) {
       throw new InvalidTransactionError(
-        `Proxy/TransferKeepAlive Transaction validation failed: ${validationResult.error.message}`
+        `Proxy/TransferAll/TransferKeepAlive Transaction validation failed: ${validationResult.error.message}`
       );
     }
   }
