@@ -1,7 +1,7 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../resources';
-import { TransactionBuilderFactory, KeyPair } from '../../src';
+import { KeyPair, TransactionBuilderFactory } from '../../src';
 import { coins } from '@bitgo/statics';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { Transaction } from '../../src/lib/transaction';
@@ -14,19 +14,29 @@ describe('ADA Transaction Builder', async () => {
       transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
       transaction_index: 1,
     });
+    const outputAmount = 7823121;
     txBuilder.output({
-      address:
-        'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
-      amount: '7328383',
+      address: testData.rawTx.outputAddress1.address,
+      amount: outputAmount.toString(),
     });
+    const totalInput = 21032023;
+    txBuilder.changeAddress(testData.rawTx.outputAddress2.address, totalInput.toString());
     txBuilder.ttl(800000000);
-    const tx = await txBuilder.build();
+    const tx = (await txBuilder.build()) as Transaction;
     should.equal(tx.type, TransactionType.Send);
-
-    const txBroadcast = tx.toBroadcastFormat();
-    should.equal(txBroadcast, testData.rawTx.unsignedTx2);
     const txData = tx.toJson();
     txData.witnesses.length.should.equal(0);
+    txData.certs.length.should.equal(0);
+    txData.withdrawals.length.should.equal(0);
+    txData.outputs.length.should.equal(2);
+    txData.outputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    txData.outputs[1].address.should.equal(testData.rawTx.outputAddress2.address);
+    const fee = tx.getFee;
+    txData.outputs[1].amount.should.equal((totalInput - outputAmount - Number(fee)).toString());
+    fee.should.equal('167261');
+    txData.id.should.equal(testData.rawTx.txHash2);
+    const txBroadcast = tx.toBroadcastFormat();
+    should.equal(txBroadcast, testData.rawTx.unsignedTx2);
   });
 
   it('build and sign a transfer tx', async () => {
@@ -35,16 +45,28 @@ describe('ADA Transaction Builder', async () => {
       transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
       transaction_index: 1,
     });
+    const outputAmount = 7823121;
     txBuilder.output({
-      address:
-        'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
-      amount: '7328383',
+      address: testData.rawTx.outputAddress1.address,
+      amount: outputAmount.toString(),
     });
+    const totalInput = 21032023;
+    txBuilder.changeAddress(testData.rawTx.outputAddress2.address, totalInput.toString());
     txBuilder.ttl(800000000);
     txBuilder.sign({ key: testData.privateKeys.prvKey4 });
-    const tx = await txBuilder.build();
+    const tx = (await txBuilder.build()) as Transaction;
     should.equal(tx.type, TransactionType.Send);
-
+    const txData = tx.toJson();
+    txData.witnesses.length.should.equal(1);
+    txData.certs.length.should.equal(0);
+    txData.withdrawals.length.should.equal(0);
+    txData.outputs.length.should.equal(2);
+    txData.outputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    txData.outputs[1].address.should.equal(testData.rawTx.outputAddress2.address);
+    const fee = tx.getFee;
+    txData.outputs[1].amount.should.equal((totalInput - outputAmount - Number(fee)).toString());
+    fee.should.equal('167261');
+    txData.id.should.equal(testData.rawTx.txHash2);
     const txBroadcast = tx.toBroadcastFormat();
     should.equal(txBroadcast, testData.rawTx.signedTx2);
   });
@@ -64,40 +86,17 @@ describe('ADA Transaction Builder', async () => {
     txBuilder.ttl(800000000);
     txBuilder.sign({ key: testData.privateKeys.prvKey4 });
     const builtTx = (await txBuilder.build()) as Transaction;
-    builtTx.getFee.should.equal('168405');
-  });
-
-  it('should add a change address and a change output', async () => {
-    const txBuilder = factory.getTransferBuilder();
-    txBuilder.input({
-      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
-      transaction_index: 1,
-    });
-    txBuilder.output({
-      address:
-        'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
-      amount: '7328383',
-    });
-    txBuilder.changeAddress(testData.address.address2, '1000000000');
-    txBuilder.ttl(800000000);
-    txBuilder.sign({ key: testData.privateKeys.prvKey4 });
-  });
-
-  it('build a send from rawTx', async () => {
-    const txBuilder = factory.from(testData.rawTx.signedTx);
-    const builtTx = await txBuilder.build();
-    should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, testData.rawTx.txHash2);
+    builtTx.getFee.should.equal('168493');
   });
 
   it('build a send from unsigned rawTx', async () => {
-    const txBuilder = factory.from(testData.rawTx.unsignedTx);
+    const txBuilder = factory.from(testData.rawTx.unsignedTx2);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, testData.rawTx.txHash);
+    should.equal(builtTx.id, testData.rawTx.txHash2);
     builtTx.outputs.length.should.equal(2);
-    builtTx.outputs[0].should.deepEqual(testData.rawTx.outputAddress1);
-    builtTx.outputs[1].should.deepEqual(testData.rawTx.outputAddress2);
+    builtTx.outputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    builtTx.outputs[1].address.should.equal(testData.rawTx.outputAddress2.address);
   });
 
   it('match signature', async () => {
@@ -115,11 +114,12 @@ describe('ADA Transaction Builder', async () => {
     should.equal(sig1, sig2);
   });
 
-  // NOTE: The two tests below have been commented out as they are for testing during development changes. We don't
+  // NOTE: The tests below have been commented out as they are for testing during development changes. We don't
   // want full node tests as part of our sdk unit tests. If you are commenting these back in, add axios and
   // AddressFormat imports.
-  // it('should submit a transaction', async () => {
-  //   const keyPair = new KeyPair({prv: testData.privateKeys.prvKey4});
+
+  // xit('should submit a transaction', async () => {
+  //   const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey4 });
   //   const senderAddress = keyPair.getAddress(AddressFormat.testnet);
   //
   //   const axiosConfig = {
@@ -152,15 +152,15 @@ describe('ADA Transaction Builder', async () => {
   //   const bytes = Uint8Array.from(Buffer.from(serializedTx, 'hex'));
   //
   //   try {
-  //     const res = await axios.post("https://testnet.koios.rest/api/v0/submittx", bytes, axiosConfig)
+  //     const res = await axios.post('https://testnet.koios.rest/api/v0/submittx', bytes, axiosConfig);
   //     console.log(res.data);
   //   } catch (err) {
   //     console.log(err);
   //   }
   // });
-
-  // it('should submit a transaction using signature interface', async () => {
-  //   const keyPair = new KeyPair({prv: testData.privateKeys.prvKey4});
+  //
+  // xit('should submit a transaction using signature interface', async () => {
+  //   const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey4 });
   //   const senderAddress = keyPair.getAddress(AddressFormat.testnet);
   //   const axiosConfig = {
   //     headers: {
