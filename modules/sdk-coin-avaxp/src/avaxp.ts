@@ -23,6 +23,7 @@ import {
   AvaxpVerifyTransactionOptions,
 } from './iface';
 import _ from 'lodash';
+import BigNumber from 'bignumber.js';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -76,20 +77,36 @@ export class AvaxP extends BaseCoin {
     if (!type || explainedTx.type !== TransactionType[type]) {
       throw new Error('Tx type does not match with expected txParams type');
     }
-    if (memo && explainedTx.memo !== memo.value) {
+    // Export Tx add recipient address in memo.
+    if (memo && explainedTx.memo.endsWith(memo.value)) {
       throw new Error('Tx memo does not match with expected txParams memo');
     }
     switch (explainedTx.type) {
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
-        if (!params.txParams.recipients || params.txParams.recipients.length === 0) {
-          const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
-          const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+        if (params.txParams.recipients && params.txParams.recipients.length > 0) {
+          throw new Error('Stake Tx does not required recipients');
+        }
+        const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
+        const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
 
-          if (!_.isEqual(filteredOutputs, filteredRecipients)) {
-            throw new Error('Tx outputs does not match with expected txParams');
+        if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+          throw new Error('Tx outputs does not match with expected txParams');
+        }
+        if (stakingOptions.amount !== explainedTx.outputAmount) {
+          throw new Error('Tx total amount does not match with expected total amount field');
+        }
+        break;
+      case TransactionType.Export:
+        if (params.txParams.recipients) {
+          if (params.txParams.recipients.length > 1) {
+            throw new Error('Export Tx suport one recipeint');
           }
-          if (stakingOptions.amount !== explainedTx.outputAmount) {
+          let totalAmount = new BigNumber(0);
+          for (const recipients of params.txParams.recipients) {
+            totalAmount = totalAmount.plus(recipients.amount);
+          }
+          if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
             throw new Error('Tx total amount does not match with expected total amount field');
           }
         }
