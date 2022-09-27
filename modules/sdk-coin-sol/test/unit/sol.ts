@@ -148,19 +148,6 @@ describe('SOL:', function () {
 
     localBasecoin = bitgo.coin('sol');
     localBasecoin.should.be.an.instanceof(Sol);
-
-    console.log(
-      await basecoin.recover({
-        userKey: testData.keys.userKey,
-        backupKey: testData.keys.backupKey,
-        bitgoKey: testData.keys.bitgoKey,
-        recoveryDestination: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
-        walletPassphrase: 't3stSicretly!',
-        durableNoncePK: '6LqY5ncj7s4b1c3YJV1hsn2hVPNhEfvDCNYMaCc1jJhX',
-        durableNonceSK:
-          '447272d65cc8b39f88ea23b5f16859bd84b3ecfd6176ef99535efab37541c83b051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c',
-      })
-    );
   });
 
   it('should retun the right info', function () {
