@@ -49,7 +49,7 @@ modules/sdk-coin-eos/ @BitGo/coins
 modules/sdk-coin-hbar/ @BitGo/coins
 modules/sdk-coin-near/ @BitGo/coins
 modules/sdk-coin-polygon/ @BitGo/coins
-modules/sdk-coin-sol/ @BitGo/coins
+modules/sdk-coin-sol/ @BitGo/blockchain-integration
 modules/sdk-coin-stx/ @BitGo/coins
 modules/sdk-coin-trx/ @BitGo/coins
 modules/sdk-coin-xlm/ @BitGo/coins
