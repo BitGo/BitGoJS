@@ -114,7 +114,7 @@ interface RecoveryOptions {
   backupKey?: string; // Box B
   bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
   recoveryDestination: string; // base58 address
-  walletPassphrase: string;
+  walletPassphrase?: string;
   durableNoncePK?: string;
   durableNonceSK?: string;
 }
