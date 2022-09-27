@@ -22,6 +22,7 @@ import {
 import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { KeyTriple } from './testutil';
+import { UtxoPsbt } from '../src/bitgo/UtxoPsbt';
 
 export function getSignKeyCombinations(length: number): BIP32Interface[][] {
   if (length === 0) {
@@ -39,9 +40,10 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
   buf: Buffer,
   network: Network,
   inputs?: (TxOutPoint & TxOutput<TNumber>)[],
-  amountType: 'number' | 'bigint' = 'number'
+  amountType: 'number' | 'bigint' = 'number',
+  version?: number
 ): T {
-  const tx = createTransactionFromBuffer<TNumber>(buf, network, {}, amountType);
+  const tx = createTransactionFromBuffer<TNumber>(buf, network, { version }, amountType);
   assert.strictEqual(tx.byteLength(), buf.length);
   assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
 
@@ -50,9 +52,16 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
 
   // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
-    inputs.forEach(({ value }, i) => {
-      (tx.ins[i] as any).value = value;
-    });
+    const bigintTx = tx.clone<bigint>('bigint');
+    const bigintInputs = inputs.map((input) => ({ ...input, value: BigInt(input.value) }));
+    assert.strictEqual(
+      UtxoPsbt.fromTransaction(bigintTx, bigintInputs)
+        .finalizeAllInputs()
+        .extractTransaction()
+        .toBuffer()
+        .toString('hex'),
+      buf.toString('hex')
+    );
     assert.strictEqual(
       createTransactionBuilderFromTransaction<TNumber>(tx, inputs).build().toBuffer().toString('hex'),
       buf.toString('hex')
