@@ -464,7 +464,9 @@ export class Near extends BaseCoin {
       .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
     // adding some padding to make sure the gas doesn't go below required gas by network
     const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-    const netAmount = availableBalance.minus(totalGasWithPadding).toFixed();
+    const feeReserve = BigNumber(50000000000000000000000);
+    const storageReserve = BigNumber(2000000000000000000000); // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
+    const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory
       .getTransferBuilder()
