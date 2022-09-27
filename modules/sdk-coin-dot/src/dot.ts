@@ -48,12 +48,12 @@ export interface VerifiedTransactionParameters {
 }
 
 interface RecoveryOptions {
-  userKey: string; // Box A
-  backupKey: string; // Box B
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
   bitgoKey: string; // Box C
   recoveryDestination: string;
   krsProvider?: string;
-  walletPassphrase: string;
+  walletPassphrase?: string;
 }
 
 interface DotTx {
@@ -339,56 +339,16 @@ export class Dot extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<DotTx> {
-    if (!params.userKey) {
-      throw new Error('missing userKey');
-    }
-
-    if (!params.backupKey) {
-      throw new Error('missing backupKey');
-    }
-
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
-
-    if (!params.walletPassphrase) {
-      throw new Error('missing wallet passphrase');
-    }
-
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
-
-    // Clean up whitespace from entered values
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
-    // Decrypt private keys from KeyCard values
-    let userPrv;
-    try {
-      userPrv = this.bitgo.decrypt({
-        input: userKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting user keychain: ${e.message}`);
-    }
-    /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-    let backupPrv;
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
-    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-    // build the unsigned txn
+    // first build the unsigned txn
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
     const senderAddr = this.getAddressFromPublicKey(accountId);
@@ -407,17 +367,58 @@ export class Dot extends BaseCoin {
       .fee({ amount: 0, type: 'tip' });
     const unsignedTransaction = (await txnBuilder.build()) as Transaction;
 
-    // add signature
-    const signatureHex = await EDDSAMethods.getTSSSignature(
-      userSigningMaterial,
-      backupSigningMaterial,
-      'm/0',
-      unsignedTransaction
-    );
-    const dotKeyPair = new DotKeyPair({ pub: accountId });
-    txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
-    const signedTransaction = await txnBuilder.build();
-    const serializedTx = signedTransaction.toBroadcastFormat();
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    if (!isUnsignedSweep) {
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      // Clean up whitespace from entered values
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+      /** TODO BG-52419 Implement Codec for parsing */
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      // add signature
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        'm/0',
+        unsignedTransaction
+      );
+      const dotKeyPair = new DotKeyPair({ pub: accountId });
+      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txnBuilder.build();
+      serializedTx = signedTransaction.toBroadcastFormat();
+    }
     return { serializedTx: serializedTx };
   }
 
