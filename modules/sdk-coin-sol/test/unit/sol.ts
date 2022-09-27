@@ -1519,5 +1519,58 @@ describe('SOL:', function () {
       should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
+
+    it('should handle error in recover if a required field is missing', async function () {
+      // missing userkey
+      await basecoin
+        .recover({
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.rejectedWith('missing userKey');
+
+      // missing backupkey
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.rejectedWith('missing backupKey');
+
+      // missing wallet passphrase
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+
+      // incorrect wallet passphrase, user key, backup key combination
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword + 'incorrect',
+        })
+        .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
+
+      // unsigned sweep txn (no user/backup key) but missing durable nonce info given
+      await basecoin
+        .recover({
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          durableNoncePK: testData.keys.durableNoncePubKey,
+        })
+        .should.rejectedWith('missing nonce account for unsigned sweep');
+    });
   });
 });
