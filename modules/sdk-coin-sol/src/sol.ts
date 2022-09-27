@@ -11,9 +11,6 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
-  Ed25519BIP32,
-  Eddsa,
-  EDDSA,
   Environments,
   KeyPair,
   Memo,
@@ -31,6 +28,8 @@ import {
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  EDDSAMethodTypes,
+  EDDSAMethods,
 } from '@bitgo/sdk-core';
 import { AtaInitializationBuilder, KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import {
@@ -99,20 +98,6 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
   txBase64: string;
   feeInfo: TransactionFee;
   tokenAccountRentExemptAmount?: string;
-}
-
-interface UserSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  backupYShare: EDDSA.YShare;
-  userYShare?: EDDSA.YShare;
-}
-
-interface BackupSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  userYShare: EDDSA.YShare;
-  backupYShare?: EDDSA.YShare;
 }
 
 interface SolTx {
@@ -474,19 +459,6 @@ export class Sol extends BaseCoin {
     });
   }
 
-  protected static initialized = false;
-  protected static MPC: Eddsa;
-
-  static async getInitializedMpcInstance(): Promise<Eddsa> {
-    if (this.initialized) {
-      return this.MPC;
-    }
-    const hdTree = await Ed25519BIP32.initialize();
-    this.MPC = await Eddsa.initialize(hdTree);
-    this.initialized = true;
-    return this.MPC;
-  }
-
   protected getPublicNodeUrl(): string {
     return Environments[this.bitgo.getEnv()].solNodeUrl;
   }
@@ -579,56 +551,6 @@ export class Sol extends BaseCoin {
     };
   }
 
-  async getTSSSignature(
-    userSigningMaterial: UserSigningMaterial,
-    backupSigningMaterial: BackupSigningMaterial,
-    path = 'm/0',
-    transaction: Transaction
-  ): Promise<Buffer> {
-    const MPC = await Sol.getInitializedMpcInstance();
-
-    const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
-      userSigningMaterial.bitgoYShare,
-      userSigningMaterial.backupYShare,
-    ]);
-    const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
-      backupSigningMaterial.bitgoYShare,
-      backupSigningMaterial.userYShare,
-    ]);
-
-    const userSubkey = MPC.keyDerive(
-      userSigningMaterial.uShare,
-      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      path
-    );
-
-    const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
-      userSubkey.yShares[2],
-      backupSigningMaterial.bitgoYShare,
-    ]);
-
-    const messageBuffer = transaction.signablePayload;
-    const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
-    const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
-    const userSign = MPC.sign(
-      messageBuffer,
-      userSignShare.xShare,
-      [backupSignShare.rShares[1]],
-      [userSigningMaterial.bitgoYShare]
-    );
-    const backupSign = MPC.sign(
-      messageBuffer,
-      backupSignShare.xShare,
-      [userSignShare.rShares[2]],
-      [backupSigningMaterial.bitgoYShare]
-    );
-    const signature = MPC.signCombine([userSign, backupSign]);
-    const result = MPC.verify(messageBuffer, signature);
-    result.should.equal(true);
-    const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-    return rawSignature;
-  }
-
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
@@ -675,7 +597,7 @@ export class Sol extends BaseCoin {
     } catch (e) {
       throw new Error(`Error decrypting user keychain: ${e.message}`);
     }
-    const userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
     let backupPrv;
     try {
@@ -686,10 +608,10 @@ export class Sol extends BaseCoin {
     } catch (e) {
       throw new Error(`Error decrypting backup keychain: ${e.message}`);
     }
-    const backupSigningMaterial = JSON.parse(backupPrv) as BackupSigningMaterial;
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
     // Build the transaction
-    const MPC = await Sol.getInitializedMpcInstance();
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
@@ -723,7 +645,7 @@ export class Sol extends BaseCoin {
     const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
     // add signature
-    const signatureHex = await this.getTSSSignature(
+    const signatureHex = await EDDSAMethods.getTSSSignature(
       userSigningMaterial,
       backupSigningMaterial,
       'm/0',
