@@ -1393,59 +1393,61 @@ describe('SOL:', function () {
   });
 
   describe('Recover Transactions:', () => {
-    it('should recover a txn for non-bitgo recoveries', async function () {
-      const sandBox = sinon.createSandbox();
-      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
-      const coin = coins.get('tsol');
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tsol');
+    const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
 
-      callBack
-        .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getLatestBlockhash',
-            params: [
-              {
-                commitment: 'finalized',
-              },
-            ],
-          },
-        })
-        .resolves(testData.SolResponses.getBlockhashResponse);
-      callBack
-        .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getFees',
-          },
-        })
-        .resolves(testData.SolResponses.getFeesResponse);
-      callBack
-        .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getBalance',
-            params: [testData.accountInfo.bs58EncodedPublicKey],
-          },
-        })
-        .resolves(testData.SolResponses.getAccountBalanceResponse);
-      callBack
-        .withArgs({
-          payload: {
-            id: '1',
-            jsonrpc: '2.0',
-            method: 'getAccountInfo',
-            params: [
-              testData.keys.durableNoncePubKey,
-              {
-                encoding: 'jsonParsed',
-              },
-            ],
-          },
-        })
-        .resolves(testData.SolResponses.getAccountInfoResponse);
+    callBack
+      .withArgs({
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getLatestBlockhash',
+          params: [
+            {
+              commitment: 'finalized',
+            },
+          ],
+        },
+      })
+      .resolves(testData.SolResponses.getBlockhashResponse);
+    callBack
+      .withArgs({
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getFees',
+        },
+      })
+      .resolves(testData.SolResponses.getFeesResponse);
+    callBack
+      .withArgs({
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getBalance',
+          params: [testData.accountInfo.bs58EncodedPublicKey],
+        },
+      })
+      .resolves(testData.SolResponses.getAccountBalanceResponse);
+    callBack
+      .withArgs({
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getAccountInfo',
+          params: [
+            testData.keys.durableNoncePubKey,
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
+      })
+      .resolves(testData.SolResponses.getAccountInfoResponse);
+
+    it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
+      // Latest Blockhash Recovery (BitGo-less)
       const latestBlockHashTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
@@ -1463,7 +1465,10 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
       should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
+    });
 
+    it('should recover a txn for non-bitgo recoveries (durable nonce)', async function () {
+      // Durable Nonce Recovery (BitGo-less)
       const durableNonceTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
@@ -1474,6 +1479,9 @@ describe('SOL:', function () {
         durableNonceSK: testData.keys.durableNoncePrivKey,
       });
 
+      durableNonceTxn.should.not.be.empty();
+      durableNonceTxn.should.hasOwnProperty('serializedTx');
+
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
@@ -1481,6 +1489,28 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
       should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      // Unsigned Sweep Recovery
+      const unsignedSweepTxn = await basecoin.recover({
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        durableNoncePK: testData.keys.durableNoncePubKey,
+        durableNonceSK: testData.keys.durableNoncePrivKey,
+      });
+
+      unsignedSweepTxn.should.not.be.empty();
+      unsignedSweepTxn.should.hasOwnProperty('serializedTx');
+
+      const unsignedSweepTxnDeserialize = new Transaction(coin);
+      unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+
+      should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
   });
 });
