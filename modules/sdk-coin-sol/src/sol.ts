@@ -657,7 +657,7 @@ export class Sol extends BaseCoin {
 
     if (isDurableNonceRecovery) {
       // add durable nonce account signature
-      txBuilder.sign({ key: params.durableNonceSK ? params.durableNonceSK : '' });
+      txBuilder.sign({ key: params.durableNonceSK });
     }
 
     const signedTransaction = await txBuilder.build();
