@@ -24,7 +24,7 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
     if (transaction) {
       this.version = transaction.version;
       this.locktime = transaction.locktime;
-      this.ins = transaction.ins.map((v) => ({ ...v }));
+      this.ins = transaction.ins.map((v) => ({ ...v, witness: [...v.witness] }));
       if (transaction.outs.length) {
         // amountType only matters if there are outs
         const inAmountType = typeof transaction.outs[0].value;
