@@ -639,38 +639,38 @@ export class Sol extends BaseCoin {
     let userSigningMaterial;
     let backupSigningMaterial;
 
-    if (_.isUndefined(params.userKey) && _.isUndefined(params.backupKey)) {
+    if (!params.userKey && !params.backupKey) {
       isUnsignedSweep = true;
       isDurableNonceRecovery = true;
 
-      if (_.isUndefined(params.durableNoncePK) || _.isUndefined(params.durableNonceSK)) {
+      if (!params.durableNoncePK || !params.durableNonceSK) {
         throw new Error('missing nonce account for unsigned sweep');
       }
     }
 
     if (!isUnsignedSweep) {
-      if (_.isUndefined(params.userKey)) {
+      if (!params.userKey) {
         throw new Error('missing userKey');
       }
 
-      if (_.isUndefined(params.backupKey)) {
+      if (!params.backupKey) {
         throw new Error('missing backupKey');
       }
 
-      if (_.isUndefined(params.walletPassphrase)) {
+      if (!params.walletPassphrase) {
         throw new Error('missing wallet passphrase');
       }
 
-      if (!_.isUndefined(params.durableNoncePK) && !_.isUndefined(params.durableNonceSK)) {
+      if (params.durableNoncePK && params.durableNonceSK) {
         isDurableNonceRecovery = true;
       }
     }
 
-    if (_.isUndefined(params.bitgoKey)) {
+    if (!params.bitgoKey) {
       throw new Error('missing backupKey');
     }
 
-    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
 
@@ -682,16 +682,16 @@ export class Sol extends BaseCoin {
     if (!isUnsignedSweep) {
       // Decrypt private keys from KeyCard values
       let userPrv;
-      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
-        try {
-          userPrv = this.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
+
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
       }
+
       userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
 
       let backupPrv;
