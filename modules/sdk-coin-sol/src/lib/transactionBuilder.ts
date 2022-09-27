@@ -224,6 +224,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  feePayer(feePayer: string): this {
+    this._feePayer = feePayer;
+    return this;
+  }
+
   // endregion
 
   // region Validators
