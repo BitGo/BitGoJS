@@ -1520,7 +1520,7 @@ describe('SOL:', function () {
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
 
-    it('should handle error in recover if a required field is missing', async function () {
+    it('should handle error in recover function if a required field is missing/incorrect', async function () {
       // missing userkey
       await basecoin
         .recover({
