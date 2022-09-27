@@ -44,6 +44,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   RBTC = 'rbtc',
   SOL = 'sol',
+  SUI = 'sui',
   STX = 'stx',
   SUSD = 'susd',
   TRX = 'trx',
@@ -184,6 +185,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
+  SUI = 'sui',
   STX = 'stx',
   TRX = 'trx',
   USD = 'usd',

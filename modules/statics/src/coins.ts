@@ -57,6 +57,7 @@ const SOL_FEATURES = [
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
 const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -147,6 +148,8 @@ export const coins = CoinMap.fromCoins([
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   account('sol', 'Solana', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account('tsol', 'Testnet Solana', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  account('sui', 'Sui', Networks.main.sui, 9, UnderlyingAsset.SUI, SUI_FEATURES, KeyCurve.Ed25519),
+  account('tsui', 'Testnet Sui', Networks.test.sui, 9, UnderlyingAsset.SUI, SUI_FEATURES, KeyCurve.Ed25519),
   account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, ETH_FEATURES),

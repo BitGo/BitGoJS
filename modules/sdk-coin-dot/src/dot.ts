@@ -3,8 +3,6 @@ import {
   BaseCoin,
   BitGoBase,
   DotAssetTypes,
-  Ed25519BIP32,
-  EDDSA,
   Eddsa,
   Environments,
   ExplanationResult,
@@ -18,6 +16,8 @@ import {
   UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  EDDSAMethods,
+  EDDSAMethodTypes,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -54,20 +54,6 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase: string;
-}
-
-interface UserSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  backupYShare: EDDSA.YShare;
-  userYShare?: EDDSA.YShare;
-}
-
-interface BackupSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  userYShare: EDDSA.YShare;
-  backupYShare?: EDDSA.YShare;
 }
 
 interface DotTx {
@@ -246,7 +232,7 @@ export class Dot extends BaseCoin {
 
     const txHex = params.txPrebuild.txHex;
 
-    if (_.isUndefined(txHex)) {
+    if (!txHex) {
       throw new Error('missing txPrebuild parameter');
     }
 
@@ -254,7 +240,7 @@ export class Dot extends BaseCoin {
       throw new Error(`txPrebuild must be an object, got type ${typeof txHex}`);
     }
 
-    if (_.isUndefined(prv)) {
+    if (!prv) {
       throw new Error('missing prv parameter to sign transaction');
     }
 
@@ -296,68 +282,6 @@ export class Dot extends BaseCoin {
     }
     const signedTxHex = transaction.toBroadcastFormat();
     return { txHex: signedTxHex };
-  }
-
-  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
-  static async getInitializedMpcInstance(): Promise<Eddsa> {
-    if (this.initialized) {
-      return this.MPC;
-    }
-    const hdTree = await Ed25519BIP32.initialize();
-    this.MPC = await Eddsa.initialize(hdTree);
-    this.initialized = true;
-    return this.MPC;
-  }
-
-  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
-  async getTSSSignature(
-    userSigningMaterial: UserSigningMaterial,
-    backupSigningMaterial: BackupSigningMaterial,
-    path = 'm/0',
-    transaction: Transaction
-  ): Promise<Buffer> {
-    const MPC = await Dot.getInitializedMpcInstance();
-
-    const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
-      userSigningMaterial.bitgoYShare,
-      userSigningMaterial.backupYShare,
-    ]);
-    const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
-      backupSigningMaterial.bitgoYShare,
-      backupSigningMaterial.userYShare,
-    ]);
-
-    const userSubkey = MPC.keyDerive(
-      userSigningMaterial.uShare,
-      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      path
-    );
-
-    const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
-      userSubkey.yShares[2],
-      backupSigningMaterial.bitgoYShare,
-    ]);
-
-    const messageBuffer = transaction.signablePayload;
-    const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
-    const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
-    const userSign = MPC.sign(
-      messageBuffer,
-      userSignShare.xShare,
-      [backupSignShare.rShares[1]],
-      [userSigningMaterial.bitgoYShare]
-    );
-    const backupSign = MPC.sign(
-      messageBuffer,
-      backupSignShare.xShare,
-      [userSignShare.rShares[2]],
-      [backupSigningMaterial.bitgoYShare]
-    );
-    const signature = MPC.signCombine([userSign, backupSign]);
-    const result = MPC.verify(messageBuffer, signature);
-    result.should.equal(true);
-    const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-    return rawSignature;
   }
 
   protected async getInitializedNodeAPI(): Promise<ApiPromise> {
@@ -415,25 +339,23 @@ export class Dot extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<DotTx> {
-    // TODO(BG-51092): This looks like a common part which can be extracted out too
-    /* ***************** START **************************************/
-    if (_.isUndefined(params.userKey)) {
+    if (!params.userKey) {
       throw new Error('missing userKey');
     }
 
-    if (_.isUndefined(params.backupKey)) {
+    if (!params.backupKey) {
       throw new Error('missing backupKey');
     }
 
-    if (_.isUndefined(params.bitgoKey)) {
+    if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
 
-    if (_.isUndefined(params.walletPassphrase)) {
+    if (!params.walletPassphrase) {
       throw new Error('missing wallet passphrase');
     }
 
-    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
 
@@ -443,20 +365,17 @@ export class Dot extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
     // Decrypt private keys from KeyCard values
-    // TODO: prob need to fix this
     let userPrv;
-    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
     }
     /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
     let backupPrv;
     try {
@@ -467,11 +386,10 @@ export class Dot extends BaseCoin {
     } catch (e) {
       throw new Error(`Error decrypting backup keychain: ${e.message}`);
     }
-    const backupSigningMaterial = JSON.parse(backupPrv) as BackupSigningMaterial;
-    /* ***************** END **************************************/
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
     // build the unsigned txn
-    const MPC = await Dot.getInitializedMpcInstance();
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
     const senderAddr = this.getAddressFromPublicKey(accountId);
     const { nonce } = await this.getAccountInfo(senderAddr);
@@ -490,13 +408,12 @@ export class Dot extends BaseCoin {
     const unsignedTransaction = (await txnBuilder.build()) as Transaction;
 
     // add signature
-    const signatureHex = await this.getTSSSignature(
+    const signatureHex = await EDDSAMethods.getTSSSignature(
       userSigningMaterial,
       backupSigningMaterial,
       'm/0',
       unsignedTransaction
     );
-
     const dotKeyPair = new DotKeyPair({ pub: accountId });
     txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
     const signedTransaction = await txnBuilder.build();
