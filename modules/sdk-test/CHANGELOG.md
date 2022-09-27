@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3-rc.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.0.3-rc.36...@bitgo/sdk-test@1.0.3-rc.37) (2022-09-27)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
 ## [1.0.3-rc.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.0.3-rc.35...@bitgo/sdk-test@1.0.3-rc.36) (2022-09-26)
 
 **Note:** Version bump only for package @bitgo/sdk-test

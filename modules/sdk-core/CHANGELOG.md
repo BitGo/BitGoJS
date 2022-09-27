@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.32...@bitgo/sdk-core@2.0.0-rc.33) (2022-09-27)
+
+
+### Features
+
+* **sdk-core:** add logic to handle ERC20 tokens for staking ([c77a253](https://github.com/BitGo/BitGoJS/commit/c77a253d18815483a516de2a83e8778f82e6a5ab))
+
+
+
+
+
 # [2.0.0-rc.32](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.31...@bitgo/sdk-core@2.0.0-rc.32) (2022-09-26)
 
 

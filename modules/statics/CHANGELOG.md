@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.21...@bitgo/statics@8.0.0-rc.22) (2022-09-27)
+
+
+### Features
+
+* add sui coin to statics ([fd12785](https://github.com/BitGo/BitGoJS/commit/fd127850d1cb9bad3bc149204aa6a0074a743951))
+
+
+
+
+
 # [8.0.0-rc.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.20...@bitgo/statics@8.0.0-rc.21) (2022-09-20)
 
 
