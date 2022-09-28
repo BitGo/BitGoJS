@@ -1564,16 +1564,6 @@ describe('SOL:', function () {
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
-
-      // // unsigned sweep txn (no user/backup key) but missing durable nonce info given
-      // await basecoin
-      //   .recover({
-      //     bitgoKey: testData.keys.bitgoKey,
-      //     recoveryDestination: testData.keys.destinationPubKey,
-      //     walletPassphrase: testData.keys.walletPassword,
-      //     durableNoncePK: testData.keys.durableNoncePubKey,
-      //   })
-      //   .should.rejectedWith('missing nonce account for unsigned sweep');
     });
   });
 });
