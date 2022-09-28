@@ -1,4 +1,11 @@
-import { BaseKey, BaseTransaction, Entry, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseKey,
+  BaseTransaction,
+  Entry,
+  InvalidTransactionError,
+  NodeEnvironmentError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -201,6 +208,10 @@ export class Transaction extends BaseTransaction {
     const HEX_REGEX = /^[0-9a-fA-F]+$/;
     const bufferRawTransaction = HEX_REGEX.test(rawTx) ? Buffer.from(rawTx, 'hex') : Buffer.from(rawTx, 'base64');
     try {
+      if (CardanoWasm.Transaction === undefined) {
+        // a temp fix until we solve import problem in webpack
+        throw new NodeEnvironmentError('unable to load cardano serialization library');
+      }
       const txn = CardanoWasm.Transaction.from_bytes(bufferRawTransaction);
       this._transaction = txn;
       this._id = Buffer.from(CardanoWasm.hash_transaction(txn.body()).to_bytes()).toString('hex');
