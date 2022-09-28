@@ -150,22 +150,60 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   stakeKeyDeposit = 2000000;
 }
 
-class AvalancheC extends Mainnet implements AccountNetwork {
+class AvalancheC extends Mainnet implements AccountNetwork, AvalancheNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheC';
   family = CoinFamily.AVAXC;
   explorerUrl = 'https://cchain.explorer.avax.network/tx/';
   accountExplorerUrl = 'https://cchain.explorer.avax.network/address/';
   chainId = 43114;
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
+  avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  networkID = 1;
+  hrp = 'avax';
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = '1000000'; // 1 MILLIAVAX
+  createSubnetTx = '1000000000'; // 1 AVAX
+  createChainTx = '1000000000'; // 1 AVAX
+  creationTxFee = '10000000'; // 1 CENTIAVAX
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '720000000000000000'; // 720 mil tokens
+  minStake = '2000000000000'; // 2000 AVAX
+  minStakeDuration = '1209600'; // 2 weeks
+  maxStakeDuration = '31536000'; // 1 year
+  minDelegationStake = '25000000000'; // 25 AVAX
+  minDelegationFee = '2';
 }
 
-class AvalancheCTestnet extends Testnet implements AccountNetwork {
+class AvalancheCTestnet extends Testnet implements AccountNetwork, AvalancheNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheCTestnet';
   family = CoinFamily.AVAXC;
   explorerUrl = 'https://cchain.explorer.avax-test.network/tx/';
   accountExplorerUrl = 'https://cchain.explorer.avax-test.network/address/';
   chainId = 43113;
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = 'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp';
+  avaxAssetID = 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
+  networkID = 5;
+  alias = 'P';
+  hrp = 'fuji';
+  vm = 'platformvm';
+  txFee = '1000000'; // 1 MILLIAVAX
+  createSubnetTx = '1000000000'; // 1 AVAX
+  createChainTx = '1000000000'; // 1 AVAX
+  creationTxFee = '10000000'; // 1 CENTIAVAX
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '720000000000000000'; // 720 mil tokens
+  minStake = '1000000000'; // 1 AVAX
+  minStakeDuration = '86400'; // 1 day
+  maxStakeDuration = '31536000'; // 1 year
+  minDelegationStake = '1000000000'; // 1 AVAX
+  minDelegationFee = '2';
 }
 
 class AvalancheP extends Mainnet implements AvalancheNetwork {

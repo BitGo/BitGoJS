@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-coin-eth": "^1.1.0",
+    "@bitgo/sdk-coin-avaxp": "^2.0.0",
     "@bitgo/sdk-core": "^1.1.0",
     "@bitgo/statics": "^7.0.0",
     "@bitgo/utxo-lib": "^2.4.1",
