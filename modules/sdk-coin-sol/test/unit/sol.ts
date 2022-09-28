@@ -1482,8 +1482,10 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
-        durableNoncePK: testData.keys.durableNoncePubKey,
-        durableNonceSK: testData.keys.durableNoncePrivKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
       });
 
       durableNonceTxn.should.not.be.empty();
@@ -1503,9 +1505,10 @@ describe('SOL:', function () {
       const unsignedSweepTxn = await basecoin.recover({
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
-        walletPassphrase: testData.keys.walletPassword,
-        durableNoncePK: testData.keys.durableNoncePubKey,
-        durableNonceSK: testData.keys.durableNoncePrivKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
       });
 
       unsignedSweepTxn.should.not.be.empty();
@@ -1562,15 +1565,15 @@ describe('SOL:', function () {
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
 
-      // unsigned sweep txn (no user/backup key) but missing durable nonce info given
-      await basecoin
-        .recover({
-          bitgoKey: testData.keys.bitgoKey,
-          recoveryDestination: testData.keys.destinationPubKey,
-          walletPassphrase: testData.keys.walletPassword,
-          durableNoncePK: testData.keys.durableNoncePubKey,
-        })
-        .should.rejectedWith('missing nonce account for unsigned sweep');
+      // // unsigned sweep txn (no user/backup key) but missing durable nonce info given
+      // await basecoin
+      //   .recover({
+      //     bitgoKey: testData.keys.bitgoKey,
+      //     recoveryDestination: testData.keys.destinationPubKey,
+      //     walletPassphrase: testData.keys.walletPassword,
+      //     durableNoncePK: testData.keys.durableNoncePubKey,
+      //   })
+      //   .should.rejectedWith('missing nonce account for unsigned sweep');
     });
   });
 });

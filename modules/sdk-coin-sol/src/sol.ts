@@ -115,8 +115,10 @@ interface RecoveryOptions {
   bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
   recoveryDestination: string; // base58 address
   walletPassphrase?: string;
-  durableNoncePK?: string;
-  durableNonceSK?: string;
+  durableNonce?: {
+    publicKey: string;
+    secretKey: string;
+  };
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -556,20 +558,51 @@ export class Sol extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
-    let isDurableNonceRecovery = false;
-    let isUnsignedSweep = false;
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     let userSigningMaterial;
     let backupSigningMaterial;
-    let userKey;
-    let backupKey;
 
-    if (!params.userKey && !params.backupKey) {
-      isUnsignedSweep = true;
-      isDurableNonceRecovery = true;
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
 
-      if (!params.durableNoncePK || !params.durableNonceSK) {
-        throw new Error('missing nonce account for unsigned sweep');
-      }
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    // Build the transaction
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    const factory = this.getBuilder();
+    const balance = await this.getAccountBalance(bs58EncodedPublicKey);
+    const fee = await this.getFees();
+    const netAmount = balance - (params.durableNonce ? fee * 2 : fee);
+    let blockhash = await this.getBlockhash();
+    let authority = '';
+
+    if (params.durableNonce) {
+      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
+      blockhash = durableNonceInfo.blockhash;
+      authority = durableNonceInfo.authority;
+    }
+
+    const txBuilder = factory
+      .getTransferBuilder()
+      .nonce(blockhash)
+      .sender(bs58EncodedPublicKey)
+      .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+      .fee({ amount: fee })
+      .feePayer(bs58EncodedPublicKey);
+
+    if (params.durableNonce) {
+      txBuilder.nonce(blockhash, {
+        walletNonceAddress: params.durableNonce.publicKey,
+        authWalletAddress: authority,
+      });
     }
 
     if (!isUnsignedSweep) {
@@ -585,27 +618,11 @@ export class Sol extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      if (params.durableNoncePK && params.durableNonceSK) {
-        isDurableNonceRecovery = true;
-      }
-    }
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
-    if (!params.bitgoKey) {
-      throw new Error('missing backupKey');
-    }
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
 
-    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
-      throw new Error('invalid recoveryDestination');
-    }
-
-    // Clean up whitespace from entered values
-    if (params.userKey && params.backupKey) {
-      userKey = params.userKey.replace(/\s/g, '');
-      backupKey = params.backupKey.replace(/\s/g, '');
-    }
-    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-
-    if (!isUnsignedSweep) {
       // Decrypt private keys from KeyCard values
       let userPrv;
 
@@ -630,45 +647,6 @@ export class Sol extends BaseCoin {
         throw new Error(`Error decrypting backup keychain: ${e.message}`);
       }
       backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-    }
-
-    // Build the transaction
-    const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
-    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
-
-    const factory = this.getBuilder();
-    const balance = await this.getAccountBalance(bs58EncodedPublicKey);
-    const fee = await this.getFees();
-    const netAmount = balance - (isDurableNonceRecovery ? fee * 2 : fee);
-    let blockhash = await this.getBlockhash();
-    let authority = '';
-
-    if (isDurableNonceRecovery) {
-      const durableNonceInfo = await this.getAccountInfo(params.durableNoncePK);
-      blockhash = durableNonceInfo.blockhash;
-      authority = durableNonceInfo.authority;
-    }
-
-    const txBuilder = factory
-      .getTransferBuilder()
-      .nonce(blockhash)
-      .sender(bs58EncodedPublicKey)
-      .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-      .fee({ amount: fee })
-      .feePayer(bs58EncodedPublicKey);
-    if (isDurableNonceRecovery) {
-      txBuilder.nonce(blockhash, {
-        walletNonceAddress: params.durableNoncePK ? params.durableNoncePK : '',
-        authWalletAddress: authority,
-      });
-    }
-
-    let unsignedTransaction;
-
-    if (!isUnsignedSweep) {
-      // add signature
-      unsignedTransaction = (await txBuilder.build()) as Transaction;
 
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
@@ -681,9 +659,9 @@ export class Sol extends BaseCoin {
       txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
     }
 
-    if (isDurableNonceRecovery) {
+    if (params.durableNonce) {
       // add durable nonce account signature
-      txBuilder.sign({ key: params.durableNonceSK });
+      txBuilder.sign({ key: params.durableNonce.secretKey });
     }
 
     const signedTransaction = await txBuilder.build();
