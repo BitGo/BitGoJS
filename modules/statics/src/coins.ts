@@ -44,7 +44,6 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const ACA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const HBAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const SOL_FEATURES = [
@@ -98,8 +97,6 @@ export const coins = CoinMap.fromCoins([
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('dot', 'Polkadot', Networks.main.dot, 10, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
   account('tdot', 'Testnet Polkadot', Networks.test.dot, 12, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
-  account('aca', 'Acala', Networks.main.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
-  account('taca', 'Mandala', Networks.test.aca, 12, UnderlyingAsset.ACA, ACA_FEATURES, KeyCurve.Ed25519),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES_WITH_STAKING),
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account(
