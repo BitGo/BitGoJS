@@ -1393,10 +1393,11 @@ describe('SOL:', function () {
   });
 
   describe('Recover Transactions:', () => {
-    it('should recover a txn for non-bitgo recoveries', async function () {
-      const sandBox = sinon.createSandbox();
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tsol');
+
+    beforeEach(() => {
       const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
-      const coin = coins.get('tsol');
 
       callBack
         .withArgs({
@@ -1446,6 +1447,14 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
+      // Latest Blockhash Recovery (BitGo-less)
       const latestBlockHashTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
@@ -1463,16 +1472,24 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
       should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
+    });
 
+    it('should recover a txn for non-bitgo recoveries (durable nonce)', async function () {
+      // Durable Nonce Recovery (BitGo-less)
       const durableNonceTxn = await basecoin.recover({
         userKey: testData.keys.userKey,
         backupKey: testData.keys.backupKey,
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
-        durableNoncePK: testData.keys.durableNoncePubKey,
-        durableNonceSK: testData.keys.durableNoncePrivKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
       });
+
+      durableNonceTxn.should.not.be.empty();
+      durableNonceTxn.should.hasOwnProperty('serializedTx');
 
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
@@ -1481,6 +1498,72 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
       should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      // Unsigned Sweep Recovery
+      const unsignedSweepTxn = await basecoin.recover({
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      unsignedSweepTxn.should.not.be.empty();
+      unsignedSweepTxn.should.hasOwnProperty('serializedTx');
+
+      const unsignedSweepTxnDeserialize = new Transaction(coin);
+      unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+
+      should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+    });
+
+    it('should handle error in recover function if a required field is missing/incorrect', async function () {
+      // missing userkey
+      await basecoin
+        .recover({
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.rejectedWith('missing userKey');
+
+      // missing backupkey
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.rejectedWith('missing backupKey');
+
+      // missing wallet passphrase
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+
+      // incorrect wallet passphrase, user key, backup key combination
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword + 'incorrect',
+        })
+        .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
     });
   });
 });
