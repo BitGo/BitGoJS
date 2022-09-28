@@ -223,7 +223,7 @@ export async function sendShareToBitgo(
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;
-      signatureShare = convertSignatureShare(sShare, 3);
+      signatureShare = convertSignatureShare(sShare, 1, 3);
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
       responseFromBitgo = sShare;
       break;
@@ -573,9 +573,13 @@ export function parseCombinedSignature(share: SignatureShareRecord): Signature {
  * @param share - Signature share
  * @returns signature share record
  */
-export function convertSignatureShare(share: SignatureShare, senderIndex: number): SignatureShareRecord {
+export function convertSignatureShare(
+  share: SignatureShare,
+  senderIndex: number,
+  recipientIndex: number
+): SignatureShareRecord {
   return {
-    to: getParticipantFromIndex(share.i),
+    to: getParticipantFromIndex(recipientIndex),
     from: getParticipantFromIndex(senderIndex),
     share: `${share.R}${delimeter}${share.s}${delimeter}${share.y}`,
   };
