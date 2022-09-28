@@ -6,6 +6,7 @@ import {
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
+  NodeEnvironmentError,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
@@ -85,26 +86,34 @@ export class Ada extends BaseCoin {
    *
    */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const coinConfig = coins.get(this.getChain());
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const transaction = new Transaction(coinConfig);
-    assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
-    const rawTx = txPrebuild.txHex;
+    try {
+      const coinConfig = coins.get(this.getChain());
+      const { txPrebuild: txPrebuild, txParams: txParams } = params;
+      const transaction = new Transaction(coinConfig);
+      assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
+      const rawTx = txPrebuild.txHex;
 
-    transaction.fromRawTransaction(rawTx);
-    const explainedTx = transaction.explainTransaction();
+      transaction.fromRawTransaction(rawTx);
+      const explainedTx = transaction.explainTransaction();
 
-    if (txParams.recipients !== undefined) {
-      for (const recipient of txParams.recipients) {
-        let find = false;
-        for (const output of explainedTx.outputs) {
-          if (recipient.address === output.address && recipient.amount === output.amount) {
-            find = true;
+      if (txParams.recipients !== undefined) {
+        for (const recipient of txParams.recipients) {
+          let find = false;
+          for (const output of explainedTx.outputs) {
+            if (recipient.address === output.address && recipient.amount === output.amount) {
+              find = true;
+            }
+          }
+          if (!find) {
+            throw new Error('cannot find recipient in expected output');
           }
         }
-        if (!find) {
-          throw new Error('cannot find recipient in expected output');
-        }
+      }
+    } catch (e) {
+      if (e instanceof NodeEnvironmentError) {
+        return true;
+      } else {
+        throw e;
       }
     }
     return true;
