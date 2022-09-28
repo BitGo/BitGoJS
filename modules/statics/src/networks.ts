@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { CoinFamily } from './base';
 import { mainnetMetadataRpc, westendMetadataRpc } from '../resources/dot';
 import { acalaMetadataRpc, mandalaMetadataRpc } from '../resources/aca';
@@ -697,16 +696,16 @@ class Near extends Mainnet implements AccountNetwork {
   name = 'Near';
   family = CoinFamily.NEAR;
   explorerUrl = 'https://explorer.near.org/transactions/';
-  feeReserve = BigNumber(50000000000000000000000);
-  storageReserve = BigNumber(2000000000000000000000); // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
+  feeReserve = '50000000000000000000000';
+  storageReserve = '2000000000000000000000'; // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
 }
 
 class NearTestnet extends Testnet implements AccountNetwork {
   name = 'NearTestnet';
   family = CoinFamily.NEAR;
   explorerUrl = 'https://explorer.testnet.near.org/transactions/';
-  feeReserve = BigNumber(50000000000000000000000);
-  storageReserve = BigNumber(2000000000000000000000); // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
+  feeReserve = '50000000000000000000000';
+  storageReserve = '2000000000000000000000'; // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
 }
 
 class Polygon extends Mainnet implements EthereumNetwork {

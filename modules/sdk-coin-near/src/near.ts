@@ -126,6 +126,7 @@ export class Near extends BaseCoin {
 
   protected static initialized = false;
   protected static MPC: Eddsa;
+  protected network = this.bitgo.getEnv() === 'prod' ? 'main' : 'test';
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Near(bitgo, staticsCoin);
@@ -388,9 +389,8 @@ export class Near extends BaseCoin {
       .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
     // adding some padding to make sure the gas doesn't go below required gas by network
     const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-    const network = this.bitgo.getEnv() === 'prod' ? 'main' : 'test';
-    const feeReserve = Networks[network].near.feeReserve;
-    const storageReserve = Networks[network].near.storageReserve;
+    const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
+    const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
     const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory
