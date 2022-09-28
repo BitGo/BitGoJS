@@ -16,8 +16,8 @@ export class DashTransaction<TNumber extends number | bigint = number> extends U
   public type = 0;
   public extraPayload?: Buffer;
 
-  constructor(network: Network, tx?: UtxoTransaction<TNumber> | DashTransaction<TNumber>) {
-    super(network, tx);
+  constructor(network: Network, tx?: Transaction<bigint | number>, amountType?: 'bigint' | 'number') {
+    super(network, tx, amountType);
 
     if (!isDash(network)) {
       throw new Error(`invalid network`);
@@ -36,10 +36,12 @@ export class DashTransaction<TNumber extends number | bigint = number> extends U
     (this as any).__toBuffer = this.toBufferWithExtraPayload;
   }
 
-  static fromTransaction<TNumber extends number | bigint = number>(
-    tx: DashTransaction<TNumber>
+  protected static newTransaction<TNumber extends number | bigint = number>(
+    network: Network,
+    transaction?: DashTransaction<number | bigint>,
+    amountType?: 'number' | 'bigint'
   ): DashTransaction<TNumber> {
-    return new DashTransaction(tx.network, tx);
+    return new DashTransaction<TNumber>(network, transaction, amountType);
   }
 
   static fromBuffer<TNumber extends number | bigint = number>(
@@ -48,19 +50,18 @@ export class DashTransaction<TNumber extends number | bigint = number> extends U
     amountType: 'number' | 'bigint' = 'number',
     network: Network
   ): DashTransaction<TNumber> {
-    const baseTx = UtxoTransaction.fromBuffer<TNumber>(buffer, true, amountType, network);
-    const tx = new DashTransaction(network, baseTx);
-    tx.version = baseTx.version & 0xffff;
-    tx.type = baseTx.version >> 16;
-    if (baseTx.byteLength() !== buffer.length) {
-      const bufferReader = new BufferReader(buffer, baseTx.byteLength());
+    const tx = super.fromBuffer<TNumber>(buffer, true, amountType, network) as DashTransaction<TNumber>;
+    tx.type = tx.version >> 16;
+    tx.version = tx.version & 0xffff;
+    if (tx.byteLength() !== buffer.length) {
+      const bufferReader = new BufferReader(buffer, tx.byteLength());
       tx.extraPayload = bufferReader.readVarSlice();
     }
     return tx;
   }
 
-  clone(): DashTransaction<TNumber> {
-    return new DashTransaction(this.network, this);
+  clone<TN2 extends bigint | number = TNumber>(amountType?: 'number' | 'bigint'): DashTransaction<TN2> {
+    return new DashTransaction<TN2>(this.network, this, amountType);
   }
 
   byteLength(_ALLOW_WITNESS?: boolean): number {

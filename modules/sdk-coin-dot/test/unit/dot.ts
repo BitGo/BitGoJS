@@ -4,6 +4,8 @@ import { randomBytes } from 'crypto';
 import should = require('should');
 import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
+import { chainName, txVersion, genesisHash, specVersion } from '../resources';
+import * as sinon from 'sinon';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -178,6 +180,97 @@ describe('DOT:', function () {
         changeOutputs: [],
         changeAmount: '0',
       });
+    });
+  });
+  describe('Recover Transactions:', () => {
+    const sandBox = sinon.createSandbox();
+    const destAddr = testData.accounts.account1.address;
+    const nonce = 123;
+
+    beforeEach(function () {
+      const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
+      accountInfoCB.withArgs(testData.wrwUser.walletAddress).resolves({ nonce: nonce });
+      const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
+      headerInfoCB.resolves({
+        headerNumber: testData.westendBlock.blockNumber,
+        headerHash: testData.westendBlock.hash,
+      });
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getAccountInfo);
+      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.SWEEP_TXN_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress);
+      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.nonce, nonce);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
+      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+    });
+
+    it('should recover a txn for unsigned-sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getAccountInfo);
+      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.SWEEP_TXN_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash)
+        .sender({ address: testData.wrwUser.walletAddress });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress);
+      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.nonce, nonce);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
+      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
     });
   });
 });

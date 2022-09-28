@@ -19,12 +19,12 @@ import {
   TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  Ed25519BIP32,
   Eddsa,
   PublicKey,
   Environments,
-  EDDSA,
   MPCAlgorithm,
+  EDDSAMethods,
+  EDDSAMethodTypes,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -98,20 +98,6 @@ interface ProtocolConfigOutput {
   storageAmountPerByte: number;
   transferCost: NearFeeConfig;
   receiptConfig: NearFeeConfig;
-}
-
-interface UserSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  backupYShare: EDDSA.YShare;
-  userYShare?: EDDSA.YShare;
-}
-
-interface BackupSigningMaterial {
-  uShare: EDDSA.UShare;
-  bitgoYShare: EDDSA.YShare;
-  userYShare: EDDSA.YShare;
-  backupYShare?: EDDSA.YShare;
 }
 
 type TransactionInput = TransactionOutput;
@@ -326,69 +312,6 @@ export class Near extends BaseCoin {
       txHex: serializedTx,
     } as any;
   }
-  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
-  static async getInitializedMpcInstance(): Promise<Eddsa> {
-    if (this.initialized) {
-      return this.MPC;
-    }
-    const hdTree = await Ed25519BIP32.initialize();
-    this.MPC = await Eddsa.initialize(hdTree);
-    this.initialized = true;
-    return this.MPC;
-  }
-
-  // TODO(BG-51092): Needs to be moved to a common place to re-use it for other coins
-  async getTSSSignature(
-    userSigningMaterial: UserSigningMaterial,
-    backupSigningMaterial: BackupSigningMaterial,
-    path = 'm/0',
-    transaction: Transaction
-  ): Promise<Buffer> {
-    const MPC = await Near.getInitializedMpcInstance();
-
-    const userCombine = MPC.keyCombine(userSigningMaterial.uShare, [
-      userSigningMaterial.bitgoYShare,
-      userSigningMaterial.backupYShare,
-    ]);
-    const backupCombine = MPC.keyCombine(backupSigningMaterial.uShare, [
-      backupSigningMaterial.bitgoYShare,
-      backupSigningMaterial.userYShare,
-    ]);
-
-    const userSubkey = MPC.keyDerive(
-      userSigningMaterial.uShare,
-      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      path
-    );
-
-    const backupSubkey = MPC.keyCombine(backupSigningMaterial.uShare, [
-      userSubkey.yShares[2],
-      backupSigningMaterial.bitgoYShare,
-    ]);
-
-    const messageBuffer = transaction.signablePayload;
-    const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
-    const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
-    const userSign = MPC.sign(
-      messageBuffer,
-      userSignShare.xShare,
-      [backupSignShare.rShares[1]],
-      [userSigningMaterial.bitgoYShare]
-    );
-    const backupSign = MPC.sign(
-      messageBuffer,
-      backupSignShare.xShare,
-      [userSignShare.rShares[2]],
-      [backupSigningMaterial.bitgoYShare]
-    );
-    const signature = MPC.signCombine([userSign, backupSign]);
-    const result = MPC.verify(messageBuffer, signature);
-    if (!result) {
-      throw new Error('Invalid signature');
-    }
-    const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-    return rawSignature;
-  }
 
   /**
    * Builds a funds recovery transaction without BitGo
@@ -435,7 +358,7 @@ export class Near extends BaseCoin {
       }
     }
     /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as UserSigningMaterial;
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
     let backupPrv;
     try {
@@ -446,10 +369,10 @@ export class Near extends BaseCoin {
     } catch (e) {
       throw new Error(`Error decrypting backup keychain: ${e.message}`);
     }
-    const backupSigningMaterial = JSON.parse(backupPrv) as BackupSigningMaterial;
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
     /* ********************** END ***********************************/
 
-    const MPC = await Near.getInitializedMpcInstance();
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
     const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
     const { storageAmountPerByte, transferCost, receiptConfig } = await this.getProtocolConfig();
@@ -478,7 +401,7 @@ export class Near extends BaseCoin {
     const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
     // add signature
-    const signatureHex = await this.getTSSSignature(
+    const signatureHex = await EDDSAMethods.getTSSSignature(
       userSigningMaterial,
       backupSigningMaterial,
       'm/0',

@@ -16,9 +16,6 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
   { version }: { version?: number } = {},
   amountType: 'number' | 'bigint' = 'number'
 ): UtxoTransaction<TNumber> {
-  if (amountType !== 'number' && (getMainnet(network) === networks.dash || getMainnet(network) === networks.zcash)) {
-    throw new Error('dash and zcash must use number amount type; bigint amount type is recommended for doge only');
-  }
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -96,8 +93,6 @@ export function setPsbtDefaults(
         throw new Error(`invalid version`);
       }
       break;
-    case networks.zcash:
-      throw new Error('Zcash psbt not implemented');
     default:
       if (version !== 1) {
         throw new Error(`invalid version`);

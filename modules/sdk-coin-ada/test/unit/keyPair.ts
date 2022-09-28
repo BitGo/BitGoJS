@@ -1,6 +1,6 @@
 import should from 'should';
 import { KeyPair } from '../../src';
-import { enterpriseAccounts, privateKeys } from '../resources/';
+import { enterpriseAccounts } from '../resources/';
 import { PrivateKey, PublicKey } from '@emurgo/cardano-serialization-lib-nodejs';
 import { AddressFormat, toHex } from '@bitgo/sdk-core';
 
@@ -85,10 +85,6 @@ describe('Ada Keypair', () => {
       address.should.equal(enterpriseAccounts.account3.baseAddress);
 
       keyPair = new KeyPair({ pub: enterpriseAccounts.account4.publicKeyHex });
-      address = keyPair.getAddress(AddressFormat.testnet);
-      address.should.equal(enterpriseAccounts.account4.baseAddress);
-
-      keyPair = new KeyPair({ prv: privateKeys.prvKey4 });
       address = keyPair.getAddress(AddressFormat.testnet);
       address.should.equal(enterpriseAccounts.account4.baseAddress);
     });

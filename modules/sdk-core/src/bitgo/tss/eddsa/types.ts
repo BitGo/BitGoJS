@@ -1,4 +1,5 @@
 import { UShare, YShare } from './../../../account-lib/mpc/tss';
+import { EDDSA } from './../../../account-lib/mpc/tss/eddsa';
 
 // YShare that has been encrypted and signed via GPG
 export type EncryptedYShare = {
@@ -29,3 +30,17 @@ export type SigningMaterial = {
   backupYShare?: YShare;
   userYShare?: YShare;
 };
+
+export interface UserSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  backupYShare: EDDSA.YShare;
+  userYShare?: EDDSA.YShare;
+}
+
+export interface BackupSigningMaterial {
+  uShare: EDDSA.UShare;
+  bitgoYShare: EDDSA.YShare;
+  userYShare: EDDSA.YShare;
+  backupYShare?: EDDSA.YShare;
+}

@@ -4,6 +4,9 @@ import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { StakingActivateBuilder } from './stakingActivateBuilder';
+import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
+import { StakingWithdrawRewardsBuilder } from './stakingWithdrawRewardsBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -21,6 +24,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (tx.type) {
         case TransactionType.Send:
           return this.getTransferBuilder(tx);
+        case TransactionType.StakingActivate:
+          return this.getStakingActivateBuilder(tx);
+        case TransactionType.StakingDeactivate:
+          return this.getStakingDeactivateBuilder(tx);
+        case TransactionType.StakingWithdraw:
+          return this.getStakingWithdrawBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
         default:
@@ -39,6 +48,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  getStakingActivateBuilder(tx?: Transaction): StakingActivateBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
+  }
+
+  getStakingDeactivateBuilder(tx?: Transaction) {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  }
+
+  getStakingWithdrawBuilder(tx?: Transaction) {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig));
   }
 
   /**

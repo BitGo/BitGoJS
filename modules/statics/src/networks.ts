@@ -583,6 +583,19 @@ class SolTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.solana.com/tx/?cluster=devnet';
 }
 
+class Sui extends Mainnet implements AccountNetwork {
+  name = 'Sui';
+  family = CoinFamily.SUI;
+  //  TODO(BG-58364): mysten is still only in devnet update to mainnet url when it's live
+  explorerUrl = 'https://explorer.devnet.sui.io/transactions/';
+}
+
+class SuiTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Sui';
+  family = CoinFamily.SUI;
+  explorerUrl = 'https://explorer.devnet.sui.io/transactions';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -742,6 +755,7 @@ export const Networks = {
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
     sol: Object.freeze(new Sol()),
+    sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
@@ -780,6 +794,7 @@ export const Networks = {
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     sol: Object.freeze(new SolTestnet()),
+    sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),

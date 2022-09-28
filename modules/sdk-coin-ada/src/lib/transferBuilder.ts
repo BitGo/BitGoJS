@@ -6,6 +6,7 @@ import { Transaction } from './transaction';
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._type = TransactionType.Send;
   }
 
   /** @inheritdoc */
