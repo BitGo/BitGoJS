@@ -5,7 +5,8 @@
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as base58 from 'bs58';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { Networks, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+
 import {
   BaseCoin,
   BitGoBase,
@@ -387,8 +388,9 @@ export class Near extends BaseCoin {
       .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
     // adding some padding to make sure the gas doesn't go below required gas by network
     const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-    const feeReserve = BigNumber(50000000000000000000000);
-    const storageReserve = BigNumber(2000000000000000000000); // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
+    const network = this.bitgo.getEnv() === 'prod' ? 'main' : 'test';
+    const feeReserve = Networks[network].near.feeReserve;
+    const storageReserve = Networks[network].near.storageReserve;
     const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory
