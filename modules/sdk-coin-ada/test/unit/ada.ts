@@ -7,9 +7,19 @@ import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { rawTx, enterpriseAccounts as accounts, privateKeys, publicKeys } from '../resources';
+import {
+  rawTx,
+  enterpriseAccounts as accounts,
+  privateKeys,
+  publicKeys,
+  wrwUser,
+  address,
+  endpointResponses,
+  testnetUTXO,
+} from '../resources';
 import * as _ from 'lodash';
 import { Ada, KeyPair, Tada } from '../../src';
+import { Transaction } from '../../src/lib';
 
 describe('ADA', function () {
   const coinName = 'ada';
@@ -298,6 +308,235 @@ describe('ADA', function () {
         })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover Transactions:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress0],
+        })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+  });
+
+  describe('Recover Transactions Multiple UTXO:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress0],
+        })
+        .resolves(endpointResponses.addressInfoResponse.TwoUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_2.value);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: wrwUser.bitgoKey,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
+      should.deepEqual(txJson.inputs[1].transaction_index, testnetUTXO.UTXO_2.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_2.value);
+    });
+  });
+
+  describe('Recover Transactions for wallet with multiple addresses:', () => {
+    const destAddr = address.address2;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress0],
+        })
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack
+        .withArgs('address_info', {
+          _addresses: [wrwUser.walletAddress1],
+        })
+        .resolves(endpointResponses.addressInfoResponse.OneUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 0', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.calledThrice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 1', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+        startingScanIndex: 1,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
+
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+      const fee = Number(tx.explainTransaction().fee.fee);
+      should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
+      should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
+      should.deepEqual(txJson.outputs[0].address, destAddr);
+      should.deepEqual(Number(txJson.outputs[0].amount) + fee, testnetUTXO.UTXO_1.value);
+    });
+  });
+
+  describe('Recover Transactions Failure:', () => {
+    const destAddr = address.address2;
+    const numIteration = 10;
+    const sandBox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', sinon.match.has('_addresses'))
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+          scan: numIteration,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover');
+      sandBox.assert.callCount(basecoin.getDataFromNode, numIteration);
     });
   });
 });

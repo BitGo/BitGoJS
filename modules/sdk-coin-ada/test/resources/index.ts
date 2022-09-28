@@ -129,3 +129,105 @@ export const rawTx = {
     '84a600818258203677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba2101018182583901c7b28bcea90d440b5455a6a02a27ca59b8696f067fc1967f47f933e79558e969caa9e57adcfc40b9907eb794363b590faf42fff48c38eb881a004d52e2021a00029ee5031a2faf0800048005a1581de0188fde65b1f9bd69b0edcc4e5a65fa93a13773090e1e2eef7a25cfdb1a0012e8c7a10080f5f6',
   unsignedStakingWithdrawTxHash: 'd4aa6878f9b810bd566aba4447eaf079ca86478175ef6d92f8d0e0fa5701d50e',
 };
+
+export const wrwUser = {
+  userKey:
+    '{"iv":"BU+LhM/iNc6iFofnAggkxA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"RzE46d9m/bo=","ct":"Nn60lDN/nnE2OK\n' +
+    'wN08Mq84e38l44TCkYyUDS9Tnvkalk5abBGtd6o57sXGFrwKFZLslfLZo+96me+AqaS7iEKd5WR\n' +
+    'fZJ4/ztLwTBCXmlNu/Fg74JbLVCyaR9vIz/ah8lJb08fzoIJStQ7+Z8/9cqVJzZv37f6l03fFky\n' +
+    'iCA1j7kIkzfKnvuIC/MA/pUzpyM8emw9FeQou/ggtnhljGpPe8Vgpg1N/2eKcItmoCpuFDiFHCo\n' +
+    'ARA8cDMRQcxeJI0TmncseKE0dPcDMK8/mASzSXVCNzWiIOT5eiBptHtpodHE4P+xz6KOt9IaZB5\n' +
+    't2FHH5Gquknsx7mUlZRAVGCvLdZb7EFmaQfAH/inNGjmzD/g3+UDemv87AjQRPpwVykrr0E46HT\n' +
+    'hzojv/e0mSsQKRtAyfxt+IKux53NK2tDtsxBWV3X5E7/EjqI+2Kj8tpH1BBUto69Dw1WRHfp0bR\n' +
+    'xzU7MooNyeEkwe8vJFZntiM9tVtLJBz5b0uPvaZmdDvaasi1DJf5pbrGUp3gl4ckCTjaydUXV7i\n' +
+    'dFT+R3OBG+EOeFAyCVJz9vxRN/5F1iMC3wyNvZ4j4m1RS5Vxu/gc/AycMD5gQRxNhHPbHKYd9/c\n' +
+    '9ZLgmevS8bfRo4VpzzyFUk1v7ldt81MoFetX+MxWjLObT6q4eZxjoTfJx3FgYVWZQdrLsrK3r8g\n' +
+    'Yc+DCmM4Rj5XCorhyh28L1wvJJsTUBj06k+GxD0aEcAKm4Sr9eZ/Dh6/vjqB7Ugjxk4xKLhNPX6\n' +
+    'hOV4PhMcdtlr1iCOWs/gWfTWQzj1eD55YTYgNNXl3Pa5VHwtd6aI6d6IxVCympOKJFi8swiCmQx\n' +
+    'fqhX/pA8Lt/W+d9gOnWUasxsnB7iR96NTuLWxZRLah0O85K0YtHn1gkUWJH3M5DCk+Wvtz6Zk7x\n' +
+    'I3BPikkzbA19Hi8L8y6fJs9smqo7iks2lGLbq3gsLJR96ZGOvpy2fh9hpW2SGE1Mr62BURkyNtW\n' +
+    '4DkdhpecOSOh9NxcmYIRAOPIg4="}',
+  backupKey:
+    '{"iv":"jcIvT4AvMaJWpyyt43i1tw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"r+W0fTHL42g=","ct":"dlhPHRc1Al4WtP\n' +
+    'uuP7PMPXQNz+ff2oy6RS6FmJqm5eUzyAggyGMZ/qwvhkV6HKLc+NZUXB2POLw6d2PumuT3pXhHZ\n' +
+    'LTQkArB2Q4M/vnlw3MxfUVWXVtuVgi/hAOq+AVN/d1wuB+rF8pJuQDW8dlRY8Qlp7c+xwnaVWhV\n' +
+    'ctfH8kjtGYVAZUqOkGONmApQRRcT1q/UR4mgmy8w3g3+BVDFxj40heiIZxAHVWRo3m1gqFlHO9C\n' +
+    'UYu7AeGpxB8R7ElZUsE3v4ozuwueQcI3dfMMc7WbB5eF4bB/C4SZlmLKbWGQwwA85J0RKbGp+Hq\n' +
+    '0jXMohFrPxI2fdSZayOomymc6Xmb0/XSQHb17zrBn+J3k7O+KWvudYsMQK/D4/R/rmUkHmtkuhQ\n' +
+    'uhYIDw47kwgj/PduNk/+5SV67ub3A4d8Eg9m6kWmr5ShaEX7sO9sn4dvsiotWZvZtrY6PIo/1O1\n' +
+    'NtPcHdAMwW/XEge0w4ge6f33BsKmZEgqp9QOc37foevtDIeCh1NSCCkOLJ/1GtV3KGN0upWLyiq\n' +
+    'dSVYka/95ythB98sxhirWIakI94HblvdS9ChXwj667308JezZ9LwJDB0fnYVBj+jRWkr5TvEdH/\n' +
+    'nadvtVmI5NsVmw9FWDvS8LhCsqQ5cnA8eAx26qwS1NtBNWKXUuyJc9iQEaYAAmexkjiYaMAGgbR\n' +
+    'Iuob/vPsHV1OwT3K3b8SE7jGPpvmyyp1nMS2Ed2f8cqdMc1ellUvoA7glEcNaaeMqtRkkveZ7n6\n' +
+    'DF3HTOjvPlBbDnkAmybvQa22fFBS52jmifz9aYOeF/mmYjlZ4rp0QSH9M3zO5avZ4f0fG0LCpbY\n' +
+    '6nhHyhZ3RgRbvhI0i5/t+OOIJrtu6snCfrF+aPxt++LjCNetJn8cwlPhja2moN+npe7wpJGwA37\n' +
+    '+Pmr5vKdYYuZHLu6CeKTYh8be6Fqy6qNwOIeLH795FigzywsEkoqGHMw4Dlva8Fa46SVuX7B1tj\n' +
+    'YQrhyV9SavkooYJ5oFqD8LR"}',
+  bitgoKey:
+    'ed312d0db4615688219c43231eb4b98d5883c0b44bcfef1956290555995ad68ef7c22917b4a\n' +
+    '8b69183864b83cc7028655cd7a70ef76d6948d809a15050054840',
+  walletPassphrase: 'Ghghjkg!455544llll',
+  walletAddress0: 'addr_test1vzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wqh92pry',
+  walletAddress1: 'addr_test1vq4suqea0cq3urvhnaglcxxkfxvgk8sqy49edvlgfmu49mqhtthuv',
+};
+
+export const testnetUTXO = {
+  UTXO_1: {
+    tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
+    tx_index: 0,
+    value: 10000000,
+  },
+  UTXO_2: {
+    tx_hash: '87f6e905a5796277ffb256265fd18d16f84ddb54ec8a841f7d467360c1c9fc2f',
+    tx_index: 0,
+    value: 5000000,
+  },
+};
+
+const ZeroUTXO = {
+  status: 200,
+  body: [
+    {
+      balance: 0,
+      utxo_set: [],
+    },
+  ],
+};
+
+const OneUTXO = {
+  status: 200,
+  body: [
+    {
+      balance: testnetUTXO.UTXO_1.value,
+      utxo_set: [testnetUTXO.UTXO_1],
+    },
+  ],
+};
+
+const TwoUTXO = {
+  status: 200,
+  body: [
+    {
+      balance: testnetUTXO.UTXO_1.value + testnetUTXO.UTXO_2.value,
+      utxo_set: [testnetUTXO.UTXO_1, testnetUTXO.UTXO_2],
+    },
+  ],
+};
+
+const addressInfoResponse = {
+  ZeroUTXO,
+  OneUTXO,
+  TwoUTXO,
+};
+
+const tipInfoResponse = {
+  status: 200,
+  body: [{ abs_slot: 12345 }],
+};
+
+export const endpointResponses = {
+  addressInfoResponse,
+  tipInfoResponse,
+} as const;
