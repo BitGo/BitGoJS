@@ -161,7 +161,7 @@ export function createOutputScript2of3(
   };
 }
 
-function toXOnlyPublicKey(b: Buffer): Buffer {
+export function toXOnlyPublicKey(b: Buffer): Buffer {
   if (b.length === 33) {
     return b.slice(1);
   }
@@ -186,7 +186,7 @@ export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number)
     bitcoinjs.payments.p2tr_ns(
       {
         pubkeys,
-        weight: index === 0 ? 2 : 1,
+        depth: index === 0 ? 1 : 2,
       },
       { eccLib }
     )
