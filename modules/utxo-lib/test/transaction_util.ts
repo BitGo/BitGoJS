@@ -2,7 +2,7 @@ import { BIP32Interface } from 'bip32';
 import * as assert from 'assert';
 import { TxOutput } from 'bitcoinjs-lib';
 
-import { networks, Network } from '../src';
+import { networks, Network, getMainnet } from '../src';
 
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import {
@@ -23,6 +23,8 @@ import { createScriptPubKey } from './integration_local_rpc/generate/outputScrip
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { KeyTriple } from './testutil';
 import { UtxoPsbt } from '../src/bitgo/UtxoPsbt';
+import { ZcashPsbt } from '../src/bitgo/zcash/ZcashPsbt';
+import { DashPsbt } from '../src/bitgo/dash/DashPsbt';
 
 export function getSignKeyCombinations(length: number): BIP32Interface[][] {
   if (length === 0) {
@@ -50,10 +52,10 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
   // Test `Transaction.clone()` implementation
   assert.strictEqual(tx.clone().toBuffer().toString('hex'), buf.toString('hex'));
 
-  // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
     const bigintTx = tx.clone<bigint>('bigint');
     const bigintInputs = inputs.map((input) => ({ ...input, value: BigInt(input.value) }));
+    // Test UtxoPsbt.fromTransaction() implementation
     assert.strictEqual(
       UtxoPsbt.fromTransaction(bigintTx, bigintInputs)
         .finalizeAllInputs()
@@ -62,6 +64,21 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
         .toString('hex'),
       buf.toString('hex')
     );
+    // Test UtxoPsbt.toBuffer() and UtxoPsbt.fromBuffer() implementation
+    const mainnetNetwork = getMainnet(network);
+    const psbtClass =
+      networks.zcash === mainnetNetwork ? ZcashPsbt : networks.dash === mainnetNetwork ? DashPsbt : UtxoPsbt;
+    const psbt = psbtClass.fromTransaction(bigintTx, bigintInputs);
+    assert.strictEqual(
+      psbtClass
+        .fromBuffer(psbt.toBuffer(), { network })
+        .finalizeAllInputs()
+        .extractTransaction()
+        .toBuffer()
+        .toString('hex'),
+      buf.toString('hex')
+    );
+    // Test `TransactionBuilder.fromTransaction()` implementation
     assert.strictEqual(
       createTransactionBuilderFromTransaction<TNumber>(tx, inputs).build().toBuffer().toString('hex'),
       buf.toString('hex')
