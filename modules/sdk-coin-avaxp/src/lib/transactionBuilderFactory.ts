@@ -20,6 +20,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
     utils.validateRawTransaction(raw);
+    raw = utils.removeHexPrefix(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
     let tx: Tx | EVMTx;
     let transactionBuilder: TransactionBuilder | undefined = undefined;
