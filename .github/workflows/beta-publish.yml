@@ -1,0 +1,38 @@
+name: Publish @bitgo-beta
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish Beta Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install BitGoJS
+        run: yarn install --with-frozen-lockfile
+
+      - name: Configure NPM
+        run: |
+          echo "email=${{ secrets.BETA_EMAIL }}" > .npmrc
+          echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.BETA_TOKEN }}" >> .npmrc
+          echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
+          
+      - name: Prepare Beta
+        run: |
+          rm -rfd ./modules/web-demo
+          rm -rfd ./modules/express
+          npx ts-node ./scripts/prepare-beta.ts
+      
+      - name: Rebuild Beta
+        run: yarn
+
+      - name: Publish Canary
+        run: yarn lerna publish from-package --preid beta --dist-tag beta --force-publish --no-git-reset
