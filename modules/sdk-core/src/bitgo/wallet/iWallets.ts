@@ -17,7 +17,7 @@ export interface GetWalletOptions {
 export interface GenerateMpcWalletOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
   label: string;
-  passphrase: string;
+  passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   walletVersion?: number;
