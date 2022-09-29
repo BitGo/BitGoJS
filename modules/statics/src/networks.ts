@@ -662,12 +662,16 @@ class Near extends Mainnet implements AccountNetwork {
   name = 'Near';
   family = CoinFamily.NEAR;
   explorerUrl = 'https://explorer.near.org/transactions/';
+  feeReserve = '50000000000000000000000';
+  storageReserve = '2000000000000000000000'; // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
 }
 
 class NearTestnet extends Testnet implements AccountNetwork {
   name = 'NearTestnet';
   family = CoinFamily.NEAR;
   explorerUrl = 'https://explorer.testnet.near.org/transactions/';
+  feeReserve = '50000000000000000000000';
+  storageReserve = '2000000000000000000000'; // feeReserve + storageReserve is minimum account balance for a NEAR wallet https://docs.near.org/integrator/faq#is-there-a-minimum-account-balance
 }
 
 class Polygon extends Mainnet implements EthereumNetwork {
