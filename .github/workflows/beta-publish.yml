@@ -1,7 +1,9 @@
 name: Publish @bitgo-beta
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - master
 jobs:
   publish:
     name: Publish Beta Release
@@ -18,8 +20,12 @@ jobs:
       - name: Install BitGoJS
         run: yarn install --with-frozen-lockfile
 
-      - name: Configure NPM
+      - name: Configure Git & NPM
         run: |
+          git config --global user.name 'Git bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git checkout -b beta-$(git rev-parse --short HEAD)
           echo "email=${{ secrets.BETA_EMAIL }}" > .npmrc
           echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
           echo "//registry.npmjs.org/:_authToken=${{ secrets.BETA_TOKEN }}" >> .npmrc
@@ -34,5 +40,8 @@ jobs:
       - name: Rebuild Beta
         run: yarn
 
-      - name: Publish Canary
-        run: yarn lerna publish from-package --preid beta --dist-tag beta --force-publish --no-git-reset
+      - name: Commit Local Changes
+        run: git commit -am "Auto updated beta branch" --no-verify || echo "No changes to commit"
+
+      - name: Lerna Publish 
+        run: yarn lerna publish from-package --preid beta --dist-tag beta --force-publish
