@@ -102,6 +102,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
 
 interface SolTx {
   serializedTx: string;
+  addressIndex: number;
 }
 
 interface SolDurableNonceFromNode {
@@ -119,6 +120,8 @@ interface RecoveryOptions {
     publicKey: string;
     secretKey: string;
   };
+  startingScanningIndex?: number;
+  addressScanningLimit?: number;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -558,6 +561,13 @@ export class Sol extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const startingDerivationIndex = params.startingScanningIndex ? params.startingScanningIndex : 0;
+    const endingDerivationIndex = params.addressScanningLimit ? params.addressScanningLimit : 4294967295; // largest positive 32 bit int
+
+    let userSigningMaterial;
+    let backupSigningMaterial;
+
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -571,16 +581,35 @@ export class Sol extends BaseCoin {
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
-    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+    let bs58EncodedPublicKey;
+    let balance;
+    let addressIndex;
+    const feePerSignature = await this.getFees();
+    const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+
+    // Check for first derived wallet with funds
+    for (let i = startingDerivationIndex; i < endingDerivationIndex; i++) {
+      const derivationPath = `m/${i}`;
+      const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+      bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+      balance = await this.getAccountBalance(bs58EncodedPublicKey);
+
+      if (balance > totalFee) {
+        addressIndex = i;
+        break;
+      }
+    }
+
+    if (balance < totalFee) {
+      throw Error('no wallets found with sufficient funds');
+    }
 
     const factory = this.getBuilder();
-    const balance = await this.getAccountBalance(bs58EncodedPublicKey);
-    const fee = await this.getFees();
-    const netAmount = balance - (params.durableNonce ? fee * 2 : fee);
+
     let blockhash = await this.getBlockhash();
     let authority = '';
-
+    const netAmount = balance - totalFee;
     if (params.durableNonce) {
       const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
       blockhash = durableNonceInfo.blockhash;
@@ -592,7 +621,7 @@ export class Sol extends BaseCoin {
       .nonce(blockhash)
       .sender(bs58EncodedPublicKey)
       .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-      .fee({ amount: fee })
+      .fee({ amount: feePerSignature })
       .feePayer(bs58EncodedPublicKey);
 
     if (params.durableNonce) {
@@ -663,8 +692,13 @@ export class Sol extends BaseCoin {
     }
 
     const completedTransaction = await txBuilder.build();
+
     const serializedTx = completedTransaction.toBroadcastFormat();
-    return { serializedTx: serializedTx };
+
+    return {
+      serializedTx: serializedTx,
+      addressIndex: addressIndex,
+    };
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {

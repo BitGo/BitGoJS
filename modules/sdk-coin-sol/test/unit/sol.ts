@@ -1437,6 +1437,36 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyNoFunds],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyM1Derivation],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM1Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyM2Derivation],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
             method: 'getAccountInfo',
             params: [
               testData.keys.durableNoncePubKey,
@@ -1461,9 +1491,13 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
+        startingScanningIndex: 0,
+        addressScanningLimit: 1,
       });
       latestBlockHashTxn.should.not.be.empty();
       latestBlockHashTxn.should.hasOwnProperty('serializedTx');
+      latestBlockHashTxn.should.hasOwnProperty('addressIndex');
+      should.equal(latestBlockHashTxn.addressIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
       latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.serializedTx);
@@ -1488,10 +1522,14 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
+        startingScanningIndex: 0,
+        addressScanningLimit: 1,
       });
 
       durableNonceTxn.should.not.be.empty();
       durableNonceTxn.should.hasOwnProperty('serializedTx');
+      durableNonceTxn.should.hasOwnProperty('addressIndex');
+      should.equal(durableNonceTxn.addressIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
@@ -1513,10 +1551,14 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
+        startingScanningIndex: 0,
+        addressScanningLimit: 1,
       });
 
       unsignedSweepTxn.should.not.be.empty();
       unsignedSweepTxn.should.hasOwnProperty('serializedTx');
+      unsignedSweepTxn.should.hasOwnProperty('addressIndex');
+      should.equal(unsignedSweepTxn.addressIndex, 0);
 
       const unsignedSweepTxnDeserialize = new Transaction(coin);
       unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
@@ -1537,6 +1579,8 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
+          startingScanningIndex: 0,
+          addressScanningLimit: 1,
         })
         .should.rejectedWith('missing userKey');
 
@@ -1547,6 +1591,8 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
+          startingScanningIndex: 0,
+          addressScanningLimit: 1,
         })
         .should.rejectedWith('missing backupKey');
 
@@ -1557,6 +1603,8 @@ describe('SOL:', function () {
           backupKey: testData.keys.backupKey,
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
+          startingScanningIndex: 0,
+          addressScanningLimit: 1,
         })
         .should.rejectedWith('missing wallet passphrase');
 
@@ -1568,8 +1616,49 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
+          startingScanningIndex: 0,
+          addressScanningLimit: 1,
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
+
+      // no wallet with sufficient funds
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanningIndex: 0,
+          addressScanningLimit: 1,
+        })
+        .should.rejectedWith('no wallets found with sufficient funds');
+    });
+
+    it('should recover a txn for a derived wallet address', async function () {
+      // Funds located at m2 derived wallet address
+      const derivedWalletTxn = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        startingScanningIndex: 1,
+        addressScanningLimit: 3, // 2nd derivation of this wallet address is mocked to have funds
+      });
+
+      derivedWalletTxn.should.not.be.empty();
+      derivedWalletTxn.should.hasOwnProperty('serializedTx');
+      derivedWalletTxn.should.hasOwnProperty('addressIndex');
+      should.equal(derivedWalletTxn.addressIndex, 2);
+
+      const derivedWalletTxnDeserialize = new Transaction(coin);
+      derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.serializedTx);
+      const derivedWalletTxnJson = derivedWalletTxnDeserialize.toJson();
+
+      should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(derivedWalletTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(derivedWalletTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
   });
 });
