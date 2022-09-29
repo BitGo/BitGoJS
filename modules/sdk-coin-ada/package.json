@@ -44,6 +44,7 @@
     "@bitgo/statics": "^7.0.0",
     "@emurgo/cardano-serialization-lib-browser": "^10.2.0",
     "@emurgo/cardano-serialization-lib-nodejs": "^10.2.0",
+    "bech32": "^2.0.0",
     "bignumber.js": "^9.0.2",
     "lodash": "^4.17.21",
     "tweetnacl": "^1.0.3"
