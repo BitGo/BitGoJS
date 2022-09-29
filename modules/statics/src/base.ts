@@ -862,6 +862,23 @@ export enum UnderlyingAsset {
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
 
+  // polygon Token ERC-20
+  'polygon:usdc' = 'polygon:usdc',
+  'polygon:usdt' = 'polygon:usdt',
+  'polygon:weth' = 'polygon:weth',
+  'polygon:wbtc' = 'polygon:wbtc',
+  'polygon:sand' = 'polygon:sand',
+  'polygon:dai' = 'polygon:dai',
+  'polygon:woo' = 'polygon:woo',
+  'polygon:aave' = 'polygon:aave',
+  'polygon:link' = 'polygon:link',
+  'polygon:tusd' = 'polygon:tusd',
+  'polygon:cel' = 'polygon:cel',
+  'polygon:busd' = 'polygon:busd',
+  'polygon:frax' = 'polygon:frax',
+  'polygon:crv' = 'polygon:crv',
+  'polygon:uni' = 'polygon:uni',
+
   // BSC Token BEP-20
   'bsc:busd' = 'bsc:busd',
   'tbsc:busd' = 'tbsc:busd',
