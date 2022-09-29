@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.1.0-rc.8...@bitgo/sdk-coin-dot@1.1.0-rc.9) (2022-09-29)
+
+
+### Features
+
+* **sdk-coin-dot:** update recover function to support unsigned sweep ([ed7206b](https://github.com/BitGo/BitGoJS/commit/ed7206b12dadcf0abbafb8ca1531e64d54417997))
+
+
+
+
+
 # [1.1.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.1.0-rc.7...@bitgo/sdk-coin-dot@1.1.0-rc.8) (2022-09-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

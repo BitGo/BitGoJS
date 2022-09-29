@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2-rc.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.37...@bitgo/sdk-coin-near@1.1.2-rc.38) (2022-09-29)
+
+
+### Bug Fixes
+
+* fix test issues for BG-57708 ([65f672d](https://github.com/BitGo/BitGoJS/commit/65f672d6647dc2de94bb893d6b548deaf22af70c))
+* move constants to statics for BG-57708 ([73f986a](https://github.com/BitGo/BitGoJS/commit/73f986aaca53a41b056739d5933b6b3259d2493c))
+* **sdk-coin-near:** amount calculation for near recovery for BG-57708 ([70ea77f](https://github.com/BitGo/BitGoJS/commit/70ea77f91fc1e4d6b8e8cde6cf8818219704e43f))
+
+
+
+
+
 ## [1.1.2-rc.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.1.2-rc.36...@bitgo/sdk-coin-near@1.1.2-rc.37) (2022-09-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

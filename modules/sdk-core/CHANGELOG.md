@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.33...@bitgo/sdk-core@2.0.0-rc.34) (2022-09-29)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow for optional passphrase on tss wallets ([f334232](https://github.com/BitGo/BitGoJS/commit/f3342328a85c78ab9d886478bfd027239f2251d8))
+
+
+### Features
+
+* **sdk-coin-sol:** implemented recover function for solana ([f043033](https://github.com/BitGo/BitGoJS/commit/f0430338371c58bebb53dbc8a7cf45ce51599fc7))
+
+
+
+
+
 # [2.0.0-rc.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.0.0-rc.32...@bitgo/sdk-core@2.0.0-rc.33) (2022-09-27)
 
 

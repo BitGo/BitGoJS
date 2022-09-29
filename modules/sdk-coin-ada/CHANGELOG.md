@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.19...@bitgo/sdk-coin-ada@2.0.0-rc.20) (2022-09-29)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** reformatting address validation to not use cardano wasm ([3c7aaf1](https://github.com/BitGo/BitGoJS/commit/3c7aaf1ec5706b06c73a8d10cbfd591ce84ff958))
+* **sdk-coin-ada:** temp fix for webpack import ([36a68ee](https://github.com/BitGo/BitGoJS/commit/36a68eeccdcc7a7ba4155c06860a666755d1b06b))
+
+
+
+
+
 # [2.0.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.0.0-rc.18...@bitgo/sdk-coin-ada@2.0.0-rc.19) (2022-09-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

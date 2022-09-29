@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0-rc.40](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.39...bitgo@14.3.0-rc.40) (2022-09-29)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow for optional passphrase on tss wallets ([f334232](https://github.com/BitGo/BitGoJS/commit/f3342328a85c78ab9d886478bfd027239f2251d8))
+
+
+### Reverts
+
+* Revert "feat(sdk-coin-aca): add sdk-coin-aca module BG-52862" ([e97716e](https://github.com/BitGo/BitGoJS/commit/e97716e487977617c205ec96fea68467857ab8de))
+
+
+
+
+
 # [14.3.0-rc.39](https://github.com/BitGo/BitGoJS/compare/bitgo@14.3.0-rc.38...bitgo@14.3.0-rc.39) (2022-09-27)
 
 **Note:** Version bump only for package bitgo

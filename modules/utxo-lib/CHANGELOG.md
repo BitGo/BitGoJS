@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.8...@bitgo/utxo-lib@3.0.0-rc.9) (2022-09-29)
+
+
+### Bug Fixes
+
+* **utxo-lib:** add TODO ([805074c](https://github.com/BitGo/BitGoJS/commit/805074c21b034d542ec952890b0136db536995a1))
+* **utxo-lib:** clone witness array when cloning tx ([eecfbd7](https://github.com/BitGo/BitGoJS/commit/eecfbd7b4a4a084a75ca6f5ce7db9e1e2b38263e))
+* **utxo-lib:** include all bip32 derivations for non-taproot ([ef76bf3](https://github.com/BitGo/BitGoJS/commit/ef76bf3fac1f65adfe4f7c75893d8576203371db))
+* **utxo-lib:** tx/tx builder improvements ([0a4545a](https://github.com/BitGo/BitGoJS/commit/0a4545a0889cda154bc0ee017f479278da32cb72))
+
+
+### Features
+
+* **utxo-lib:** Add Dash/Zcash PSBT ([990de06](https://github.com/BitGo/BitGoJS/commit/990de06a7b1f666d2cb00e2d9205c3dc8e6bced8))
+* **utxo-lib:** add PSBT from transaction ([65cc050](https://github.com/BitGo/BitGoJS/commit/65cc050adbd0507c6214baa2fd2b5076b2889007))
+* **utxo-lib:** addChangeOutputToPsbt ([88e37c9](https://github.com/BitGo/BitGoJS/commit/88e37c90cc1327b70a007a20db79ac2de7c9f6c8))
+
+
+
+
+
 # [3.0.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.0.0-rc.7...@bitgo/utxo-lib@3.0.0-rc.8) (2022-09-23)
 
 

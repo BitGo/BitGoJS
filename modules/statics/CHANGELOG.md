@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0-rc.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.22...@bitgo/statics@8.0.0-rc.23) (2022-09-29)
+
+
+### Bug Fixes
+
+* fix test issues for BG-57708 ([65f672d](https://github.com/BitGo/BitGoJS/commit/65f672d6647dc2de94bb893d6b548deaf22af70c))
+* move constants to statics for BG-57708 ([73f986a](https://github.com/BitGo/BitGoJS/commit/73f986aaca53a41b056739d5933b6b3259d2493c))
+
+
+### Features
+
+* **statics:** add polygon tokens to statics ([82cf43f](https://github.com/BitGo/BitGoJS/commit/82cf43fbe65008a9eb53824c5102399fc46f781b))
+
+
+### Reverts
+
+* Revert "feat(statics): add acala to statics" ([5f54097](https://github.com/BitGo/BitGoJS/commit/5f54097ffab8dd614b5ffb76c2287f2d41681e8a))
+
+
+
+
+
 # [8.0.0-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.0.0-rc.21...@bitgo/statics@8.0.0-rc.22) (2022-09-27)
 
 

@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.38...@bitgo/sdk-coin-sol@2.0.0-rc.39) (2022-09-29)
+
+
+### Features
+
+* **sdk-coin-sol:** implemented recover function for solana ([f043033](https://github.com/BitGo/BitGoJS/commit/f0430338371c58bebb53dbc8a7cf45ce51599fc7))
+* **sdk-coin-sol:** make walletpassphrase optional ([6dc65a7](https://github.com/BitGo/BitGoJS/commit/6dc65a78077430b75cd91d9dc2838fe4279f484c))
+* **sdk-coin-sol:** refactored recover params, flow for unsigned sweep into easier format ([eb9915d](https://github.com/BitGo/BitGoJS/commit/eb9915db0b29cedeb7929a543dbb8790e1825370))
+* **sdk-coin-sol:** remove unecessary ternary ([b13281b](https://github.com/BitGo/BitGoJS/commit/b13281b7a073ce6c45e2602d5edd9e384c43b899))
+* **sdk-coin-sol:** removed unused unit test ([7575304](https://github.com/BitGo/BitGoJS/commit/7575304e9dad7f8fcb08940cee91a96941a8835a))
+* **sdk-coin-sol:** revert unit test change to remove temp send txn ([8959312](https://github.com/BitGo/BitGoJS/commit/89593124d66c571b5178f4e413720b8d872ea61e))
+* **sdk-coin-sol:** unsigned sweep recovery flow, unit tests ([dcfcebe](https://github.com/BitGo/BitGoJS/commit/dcfcebeca2ea24c66841206eac78d44412259918))
+* **sdk-coin-sol:** update checks for undefined, removed redundant check ([135eb5c](https://github.com/BitGo/BitGoJS/commit/135eb5cdf20289c46afba0ea9044301ad663f614))
+* **sdk-coin-sol:** update package.json ([7394cce](https://github.com/BitGo/BitGoJS/commit/7394cceb2c0e96e557b311f9c6d8455628c21a69))
+* **sdk-coin-sol:** updated test documentation ([0b1749a](https://github.com/BitGo/BitGoJS/commit/0b1749abf5d8f267a8768d182fd950581cf9d258))
+* **sdk-coin-sol:** updated unit test to do set-up and teardown ([a7a3659](https://github.com/BitGo/BitGoJS/commit/a7a36594c507c9a200def1b16a6986aaf2fc876e))
+* **sdk-coin-sol:** updated unit tests to include error/edge cases ([9aca29d](https://github.com/BitGo/BitGoJS/commit/9aca29d1e8af16e8b044eb07561636562e77c907))
+* **sdk-coin-sol:** using refactored tss signature functions ([91c5cf3](https://github.com/BitGo/BitGoJS/commit/91c5cf397820fdf3a297811cb8c3800811a4a2fd))
+
+
+
+
+
 # [2.0.0-rc.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.0.0-rc.37...@bitgo/sdk-coin-sol@2.0.0-rc.38) (2022-09-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
