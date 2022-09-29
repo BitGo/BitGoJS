@@ -24,7 +24,6 @@ export const rawTransactions = {
 
 const blockhash = 'EkSnNWid2cvwEVnVx9aBqawnmiCNiDgp3gUdkDPTKN1N';
 const durableNonceBlockhash = 'MeM29wJ8Kai1SyV5Xz8fHQhTygPs4Eka7UTgZH3LsEm';
-const pubKey = 'BL352P8HKNq9BgkQjWjCq1RipHZb1iM6JwGpZYFK1JuB';
 const durableNonceSignatures = 2;
 const latestBlockhashSignatures = 1;
 const unsignedSweepSignatures = 1;
@@ -32,7 +31,6 @@ const unsignedSweepSignatures = 1;
 export const SolInputData = {
   blockhash,
   durableNonceBlockhash,
-  pubKey,
   durableNonceSignatures,
   latestBlockhashSignatures,
   unsignedSweepSignatures,

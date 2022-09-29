@@ -1504,7 +1504,7 @@ describe('SOL:', function () {
       const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
 
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
-      should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(latestBlockhashTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 3);
@@ -1536,7 +1536,7 @@ describe('SOL:', function () {
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
 
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(durableNonceTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
@@ -1565,7 +1565,7 @@ describe('SOL:', function () {
       const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
 
       should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
@@ -1656,8 +1656,8 @@ describe('SOL:', function () {
       derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.serializedTx);
       const derivedWalletTxnJson = derivedWalletTxnDeserialize.toJson();
 
-      should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(derivedWalletTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.blockhash);
+      should.equal(derivedWalletTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKeyM2Derivation);
       should.equal(derivedWalletTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
   });

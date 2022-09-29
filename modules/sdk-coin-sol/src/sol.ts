@@ -678,7 +678,7 @@ export class Sol extends BaseCoin {
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
         backupSigningMaterial,
-        'm/0',
+        `m/${addressIndex}`,
         unsignedTransaction
       );
 
