@@ -50,6 +50,9 @@ describe('Sol Transfer Builder V2', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.NATIVE_TRANSFERV2_UNSIGNED_WITH_MEMO);
+      const reserialized = await factory.from(rawTx).build();
+      reserialized.should.be.deepEqual(tx);
+      reserialized.toBroadcastFormat().should.equal(rawTx);
     });
     it('build a transfer tx unsigned with durable nonce', async () => {
       const txBuilder = factory.getTransferBuilderV2();
