@@ -5525,10 +5525,10 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.1":
-  version "7.0.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.1.tgz#a2ce0b0206dcb20fc0534c346fd14b27e620f782"
-  integrity sha512-MmIdTWKVWvLNm5in1pMiD97du6x0R0ZEb5SMPmRbl+qOI19/xXnRc6UdguTcLhZYPkvACMAlpN5ZtfV4yZJqwg==
+"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.2":
+  version "7.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.2.tgz#b11b2252ef3ba01b895fd0943f991404093f110e"
+  integrity sha512-xpsTIfPNSbbCCrax5XNBHlpEjoFyS/r89n/rn3JQSBO/P5FVa6gpmlACFLR0EUFgUSIZYesDIeTgqRZEtHWjqA==
   dependencies:
     bech32 "^2.0.0"
     bip174 "npm:@bitgo/bip174@3.0.0"
@@ -16914,10 +16914,10 @@ vm-browserify@~0.0.1:
   dependencies:
     indexof "0.0.1"
 
-vm2@^3.9.8:
-  version "3.9.10"
-  resolved "https://registry.yarnpkg.com/vm2/-/vm2-3.9.10.tgz#c66543096b5c44c8861a6465805c23c7cc996a44"
-  integrity sha512-AuECTSvwu2OHLAZYhG716YzwodKCIJxB6u1zG7PgSQwIgAlEaoXH52bxdcvT8GkGjnYK7r7yWDW0m0sOsPuBjQ==
+vm2@^3.9.11, vm2@^3.9.8:
+  version "3.9.11"
+  resolved "https://registry.yarnpkg.com/vm2/-/vm2-3.9.11.tgz#a880f510a606481719ec3f9803b940c5805a06fe"
+  integrity sha512-PFG8iJRSjvvBdisowQ7iVF580DXb1uCIiGaXgm7tynMR1uTBlv7UJlB1zdv5KJ+Tmq1f0Upnj3fayoEOPpCBKg==
   dependencies:
     acorn "^8.7.0"
     acorn-walk "^8.2.0"

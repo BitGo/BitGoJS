@@ -9,6 +9,9 @@ export function toTNumber<TNumber extends number | bigint>(
   value: number | bigint | string,
   amountType: 'number' | 'bigint'
 ): TNumber {
+  if (typeof value === amountType) {
+    return value as TNumber;
+  }
   if (value === undefined) {
     throw new Error('input value cannot be undefined');
   }

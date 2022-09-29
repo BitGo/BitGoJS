@@ -403,10 +403,6 @@ describe('V2 Wallets:', function () {
       await wallets.generateWallet({ ...params, multisigType: 'tss' });
 
       const tsolWallets = new Wallets(bitgo, tsol);
-      await tsolWallets.generateWallet({
-        multisigType: 'tss',
-        label: 'tss wallet',
-      }).should.be.rejectedWith('cannot generate TSS keys without passphrase');
 
       await tsolWallets.generateWallet({
         label: 'tss cold wallet',

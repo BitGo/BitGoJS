@@ -125,7 +125,8 @@ function txIsTransaction<TNumber extends number | bigint = number>(
 export class TransactionBuilder<TNumber extends number | bigint = number> {
   static fromTransaction<TNumber extends number | bigint = number>(
     transaction: Transaction<TNumber>,
-    network?: Network
+    network?: Network,
+    prevOutputs?: TxOutput<TNumber>[]
   ): TransactionBuilder<TNumber> {
     const txb = new TransactionBuilder<TNumber>(network);
 
@@ -149,7 +150,7 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
 
     // fix some things not possible through the public API
     txb.__INPUTS.forEach((input, i) => {
-      fixMultisigOrder<TNumber>(input, transaction, i);
+      fixMultisigOrder<TNumber>(input, transaction, i, prevOutputs);
     });
 
     return txb;
@@ -640,10 +641,12 @@ function expandInput<TNumber extends number | bigint = number>(
 function fixMultisigOrder<TNumber extends number | bigint = number>(
   input: TxbInput<TNumber>,
   transaction: Transaction<TNumber>,
-  vin: number
+  vin: number,
+  prevOutputs?: TxOutput<TNumber>[]
 ): void {
   if (input.redeemScriptType !== SCRIPT_TYPES.P2MS || !input.redeemScript) return;
   if (input.pubkeys!.length === input.signatures!.length) return;
+  const prevOutput = prevOutputs && prevOutputs[vin];
 
   const unmatched = input.signatures!.concat();
 
@@ -658,7 +661,7 @@ function fixMultisigOrder<TNumber extends number | bigint = number>(
 
       // TODO: avoid O(n) hashForSignature
       const parsed = bscript.signature.decode(signature);
-      const hash = transaction.hashForSignature(vin, input.redeemScript!, parsed.hashType);
+      const hash = transaction.hashForSignature(vin, input.redeemScript!, parsed.hashType, prevOutput?.value);
 
       // skip if signature does not match pubKey
       if (!keyPair.verify(hash, parsed.signature)) return false;
@@ -1355,7 +1358,7 @@ function getSigningData<TNumber extends number | bigint = number>(
   let signatureHash: Buffer;
   switch (input.witnessVersion) {
     case undefined:
-      signatureHash = tx.hashForSignature(vin, input.signScript as Buffer, hashType);
+      signatureHash = tx.hashForSignature(vin, input.signScript as Buffer, hashType, input.value);
       break;
     case 0:
       signatureHash = tx.hashForWitnessV0(vin, input.signScript as Buffer, input.value as TNumber, hashType);

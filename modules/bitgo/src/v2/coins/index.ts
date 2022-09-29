@@ -1,7 +1,5 @@
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 export { AbstractUtxoCoin };
-import { Aca, Taca } from '@bitgo/sdk-coin-aca';
-export { Aca, Taca };
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 export { Algo, AlgoToken, Talgo };
 import { Ada, Tada } from '@bitgo/sdk-coin-ada';

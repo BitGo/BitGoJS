@@ -21,6 +21,7 @@ interface EnvironmentTemplate {
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   nearNodeUrls: string[];
+  solNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -91,6 +92,7 @@ const mainnetBase: EnvironmentTemplate = {
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
+  solNodeUrl: 'https://api.mainnet-beta.solana.com',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -118,6 +120,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://rpc.testnet.near.org'],
+  solNodeUrl: 'https://api.devnet.solana.com',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',

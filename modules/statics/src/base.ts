@@ -15,7 +15,6 @@ export enum CoinKind {
  * For example, the coins `btc` and `tbtc` both belong to the same family, `btc`.
  */
 export enum CoinFamily {
-  ACA = 'aca',
   ADA = 'ada',
   ALGO = 'algo',
   AVAXC = 'avaxc',
@@ -150,7 +149,6 @@ export enum CoinFeature {
  * asset for which the coin is a unit of account.
  */
 export enum UnderlyingAsset {
-  ACA = 'aca',
   ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',
@@ -863,6 +861,23 @@ export enum UnderlyingAsset {
   'avaxc:usdt' = 'avaxc:usdt',
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
+
+  // polygon Token ERC-20
+  'polygon:usdc' = 'polygon:usdc',
+  'polygon:usdt' = 'polygon:usdt',
+  'polygon:weth' = 'polygon:weth',
+  'polygon:wbtc' = 'polygon:wbtc',
+  'polygon:sand' = 'polygon:sand',
+  'polygon:dai' = 'polygon:dai',
+  'polygon:woo' = 'polygon:woo',
+  'polygon:aave' = 'polygon:aave',
+  'polygon:link' = 'polygon:link',
+  'polygon:tusd' = 'polygon:tusd',
+  'polygon:cel' = 'polygon:cel',
+  'polygon:busd' = 'polygon:busd',
+  'polygon:frax' = 'polygon:frax',
+  'polygon:crv' = 'polygon:crv',
+  'polygon:uni' = 'polygon:uni',
 
   // BSC Token BEP-20
   'bsc:busd' = 'bsc:busd',

@@ -1,5 +1,7 @@
+import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 import * as varuint from 'varuint-bitcoin';
+import { toTNumber } from './tnumber';
 
 import { networks, Network, getMainnet, isBitcoinGold } from '../networks';
 
@@ -15,13 +17,30 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
 
   constructor(
     public network: Network,
-    transaction: bitcoinjs.Transaction<TNumber> = new bitcoinjs.Transaction<TNumber>()
+    transaction?: bitcoinjs.Transaction<bigint | number>,
+    amountType?: 'bigint' | 'number'
   ) {
     super();
-    this.version = transaction.version;
-    this.locktime = transaction.locktime;
-    this.ins = transaction.ins.map((v) => ({ ...v }));
-    this.outs = transaction.outs.map((v) => ({ ...v }));
+    if (transaction) {
+      this.version = transaction.version;
+      this.locktime = transaction.locktime;
+      this.ins = transaction.ins.map((v) => ({ ...v, witness: [...v.witness] }));
+      if (transaction.outs.length) {
+        // amountType only matters if there are outs
+        const inAmountType = typeof transaction.outs[0].value;
+        assert(inAmountType === 'number' || inAmountType === 'bigint');
+        const outAmountType: 'number' | 'bigint' = amountType || inAmountType;
+        this.outs = transaction.outs.map((v) => ({ ...v, value: toTNumber(v.value, outAmountType) }));
+      }
+    }
+  }
+
+  protected static newTransaction<TNumber extends number | bigint = number>(
+    network: Network,
+    transaction?: bitcoinjs.Transaction<bigint | number>,
+    amountType?: 'number' | 'bigint'
+  ): UtxoTransaction<TNumber> {
+    return new UtxoTransaction<TNumber>(network, transaction, amountType);
   }
 
   static fromBuffer<TNumber extends number | bigint = number>(
@@ -34,10 +53,11 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
     if (!network) {
       throw new Error(`must provide network`);
     }
-    if (amountType !== 'number' && (getMainnet(network) === networks.dash || getMainnet(network) === networks.zcash)) {
-      throw new Error('dash and zcash must use number amount type; bigint amount type is recommended for doge only');
-    }
-    return new UtxoTransaction<TNumber>(network, bitcoinjs.Transaction.fromBuffer<TNumber>(buf, noStrict, amountType));
+    return this.newTransaction<TNumber>(
+      network,
+      bitcoinjs.Transaction.fromBuffer<TNumber>(buf, noStrict, amountType),
+      amountType
+    );
   }
 
   addForkId(hashType: number): number {
@@ -94,11 +114,13 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
     return super.hashForSignature(inIndex, prevoutScript, hashType);
   }
 
-  hashForSignature(inIndex: number, prevOutScript: Buffer, hashType: number): Buffer {
-    return this.hashForSignatureByNetwork(inIndex, prevOutScript, (this.ins[inIndex] as any).value, hashType);
+  hashForSignature(inIndex: number, prevOutScript: Buffer, hashType: number, value?: TNumber): Buffer {
+    value = value ?? (this.ins[inIndex] as any).value;
+    return this.hashForSignatureByNetwork(inIndex, prevOutScript, value, hashType);
   }
 
-  clone(): UtxoTransaction<TNumber> {
-    return new UtxoTransaction<TNumber>(this.network, super.clone());
+  clone<TN2 extends bigint | number = TNumber>(amountType?: 'number' | 'bigint'): UtxoTransaction<TN2> {
+    // No need to clone. Everything is copied in the constructor.
+    return new UtxoTransaction<TN2>(this.network, this, amountType);
   }
 }

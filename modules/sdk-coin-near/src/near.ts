@@ -5,7 +5,8 @@
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as base58 from 'bs58';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { Networks, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+
 import {
   BaseCoin,
   BitGoBase,
@@ -125,6 +126,7 @@ export class Near extends BaseCoin {
 
   protected static initialized = false;
   protected static MPC: Eddsa;
+  protected network = this.bitgo.getEnv() === 'prod' ? 'main' : 'test';
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Near(bitgo, staticsCoin);
@@ -387,7 +389,9 @@ export class Near extends BaseCoin {
       .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
     // adding some padding to make sure the gas doesn't go below required gas by network
     const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-    const netAmount = availableBalance.minus(totalGasWithPadding).toFixed();
+    const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
+    const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
+    const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory
       .getTransferBuilder()

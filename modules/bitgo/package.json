@@ -48,7 +48,6 @@
     "@bitgo/account-lib": "^2.21.0-rc.39",
     "@bitgo/blockapis": "^1.1.0-rc.6",
     "@bitgo/sdk-api": "^1.2.0-rc.15",
-    "@bitgo/sdk-coin-aca": "^1.1.0-rc.35",
     "@bitgo/sdk-coin-ada": "^2.0.0-rc.19",
     "@bitgo/sdk-coin-algo": "^1.1.2-rc.37",
     "@bitgo/sdk-coin-avaxc": "^2.0.0-rc.21",

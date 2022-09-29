@@ -20,8 +20,8 @@ export class ZcashTransactionBuilder<TNumber extends number | bigint = number> e
     super(network);
   }
 
-  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction<TNumber>): ZcashTransaction<TNumber> {
-    return new ZcashTransaction<TNumber>(network as ZcashNetwork, tx as ZcashTransaction<TNumber>);
+  protected createInitialTransaction(network: Network): ZcashTransaction<TNumber> {
+    return new ZcashTransaction<TNumber>(network as ZcashNetwork);
   }
 
   static fromTransaction<TNumber extends number | bigint = number>(

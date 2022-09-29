@@ -1,6 +1,5 @@
 import { AddressFormat, BaseUtils } from '@bitgo/sdk-core';
 import {
-  Address,
   BaseAddress,
   PublicKey,
   Ed25519Signature,
@@ -8,6 +7,7 @@ import {
   StakeCredential,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
+import { bech32 } from 'bech32';
 
 export class Utils implements BaseUtils {
   createBaseAddressWithStakeAndPaymentKey(
@@ -60,8 +60,24 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   // this will validate both stake and payment addresses
   isValidAddress(address: string): boolean {
+    const bech32PrefixList = ['addr', 'addr_test', 'stake', 'stake_test'];
+    const BASE_ADDR_LEN = 92;
+    const REWARD_AND_ENTERPRISE_ADDR_LEN = 47;
+    const POINTER_ADDR_LEN = 52;
+
     try {
-      Address.from_bech32(address);
+      const decodedBech = bech32.decode(address, 108);
+      const wordLength = decodedBech.words.length;
+      if (!bech32PrefixList.includes(decodedBech.prefix)) {
+        return false;
+      }
+      if (
+        wordLength !== BASE_ADDR_LEN &&
+        wordLength !== REWARD_AND_ENTERPRISE_ADDR_LEN &&
+        wordLength !== POINTER_ADDR_LEN
+      ) {
+        return false;
+      }
       return true;
     } catch (err) {
       return false;

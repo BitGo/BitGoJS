@@ -47,7 +47,8 @@
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
     "lodash": "^4.17.14",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "superagent": "^3.8.3"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.2.0-rc.15",

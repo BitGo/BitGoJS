@@ -244,7 +244,7 @@ export class Keychains implements IKeychains {
   async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
     params.source = 'backup';
 
-    const isTssBackupKey = params.prv && params.encryptedPrv && (params.commonKeychain || params.commonPub);
+    const isTssBackupKey = params.prv && (params.commonKeychain || params.commonPub);
 
     if (_.isUndefined(params.provider) && !isTssBackupKey) {
       // if the provider is undefined, we generate a local key and add the source details
@@ -278,16 +278,15 @@ export class Keychains implements IKeychains {
    * @return {Promise<KeychainsTriplet>} newly created User, Backup, and BitGo keys
    */
   async createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet> {
-    if (_.isUndefined(params.passphrase)) {
-      throw new Error('missing required param passphrase');
-    }
-
     let MpcUtils;
     switch (params.multisigType) {
       case 'tss':
         MpcUtils = this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? ECDSAUtils.EcdsaUtils : EDDSAUtils.default;
         break;
       case 'blsdkg':
+        if (_.isUndefined(params.passphrase)) {
+          throw new Error('missing required param passphrase');
+        }
         MpcUtils = BlsUtils;
         break;
       default:
