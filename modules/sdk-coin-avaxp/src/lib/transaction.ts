@@ -9,7 +9,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { BaseTx, DecodedUtxoObj, TransactionExplanation, Tx, TxData } from './iface';
+import { BaseTx, DecodedUtxoObj, TransactionExplanation, Tx, TxData, INPUT_SEPARATOR } from './iface';
 import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
 import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
@@ -282,7 +282,7 @@ export class Transaction extends BaseTransaction {
     return inputs.map((input) => {
       const amountInput = input.getInput() as any as AmountInput;
       return {
-        address: utils.cb58Encode(input.getTxID()) + '~' + new BN(input.getOutputIdx()).toString(),
+        address: utils.cb58Encode(input.getTxID()) + INPUT_SEPARATOR + new BN(input.getOutputIdx()).toString(),
         value: amountInput.getAmount().toString(),
       };
     });

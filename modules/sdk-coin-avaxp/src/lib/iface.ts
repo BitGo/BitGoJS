@@ -58,6 +58,8 @@ export type DecodedUtxoObj = {
  */
 export const SECP256K1_Transfer_Output = 7;
 
+export const ADDRESS_SEPARATOR = '~';
+export const INPUT_SEPARATOR = ':';
 export type Tx = PMVTx | EMVTx;
 export type BaseTx = PMVBaseTx | EVMBaseTx;
 export type Output = TransferableOutput | EVMOutput;
