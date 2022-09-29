@@ -12,6 +12,7 @@ import {
   fiat,
   hederaCoin,
   hederaToken,
+  polygonErc20,
   solToken,
   stellarToken,
   talgoToken,
@@ -1874,6 +1875,105 @@ export const coins = CoinMap.fromCoins([
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
+  ),
+  polygonErc20(
+    'polygon:usdc',
+    'USD Coin',
+    6,
+    '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    UnderlyingAsset['polygon:usdc']
+  ),
+  polygonErc20(
+    'polygon:usdt',
+    'Tether USD',
+    6,
+    '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
+    UnderlyingAsset['polygon:usdt']
+  ),
+  polygonErc20(
+    'polygon:weth',
+    'Wrapped Ether',
+    18,
+    '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+    UnderlyingAsset['polygon:weth']
+  ),
+  polygonErc20(
+    'polygon:wbtc',
+    'Wrapped BTC',
+    8,
+    '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6',
+    UnderlyingAsset['polygon:wbtc']
+  ),
+  polygonErc20(
+    'polygon:sand',
+    'SAND',
+    18,
+    '0xbbba073c31bf03b8acf7c28ef0738decf3695683',
+    UnderlyingAsset['polygon:sand']
+  ),
+  polygonErc20(
+    'polygon:dai',
+    'Dai Stablecoin',
+    18,
+    '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',
+    UnderlyingAsset['polygon:dai']
+  ),
+  polygonErc20(
+    'polygon:woo',
+    'Wootrade Network',
+    18,
+    '0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603',
+    UnderlyingAsset['polygon:woo']
+  ),
+  polygonErc20(
+    'polygon:aave',
+    'Aave',
+    18,
+    '0xd6df932a45c0f255f85145f286ea0b292b21c90b',
+    UnderlyingAsset['polygon:aave']
+  ),
+  polygonErc20(
+    'polygon:link',
+    'ChainLink Token',
+    18,
+    '0xb0897686c545045afc77cf20ec7a532e3120e0f1',
+    UnderlyingAsset['polygon:link']
+  ),
+  polygonErc20(
+    'polygon:tusd',
+    'TrueUSD',
+    18,
+    '0x2e1ad108ff1d8c782fcbbb89aad783ac49586756',
+    UnderlyingAsset['polygon:tusd']
+  ),
+  polygonErc20(
+    'polygon:cel',
+    'Celsius',
+    4,
+    '0xd85d1e945766fea5eda9103f918bd915fbca63e6',
+    UnderlyingAsset['polygon:cel']
+  ),
+  polygonErc20(
+    'polygon:busd',
+    'BUSD Token',
+    18,
+    '0x9c9e5fd8bbc25984b178fdce6117defa39d2db39',
+    UnderlyingAsset['polygon:busd']
+  ),
+  polygonErc20(
+    'polygon:frax',
+    'Frax',
+    18,
+    '0x45c32fa6df82ead1e2ef74d17b76547eddfaff89',
+    UnderlyingAsset['polygon:frax']
+  ),
+  polygonErc20('polygon:crv', 'CRV', 18, '0x172370d5cd63279efa6d502dab29171933a610af', UnderlyingAsset['polygon:crv']),
+  polygonErc20(
+    'polygon:uni',
+    'Uniswap',
+    18,
+    '0xb33eaad8d922b1083446dc23f610c2567fb5180f',
+    UnderlyingAsset['polygon:uni']
   ),
   // testnet polygon tokens
   tpolygonErc20(
