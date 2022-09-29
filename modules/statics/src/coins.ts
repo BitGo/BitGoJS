@@ -1836,6 +1836,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'sol:gari',
+    'GARI',
+    9,
+    'CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks', // https://explorer.solana.com/address/CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks
+    UnderlyingAsset.GARI,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:orca',
+    'ORCA',
+    6,
+    'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
+    UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'tsol:srm',
     'Serum',
@@ -1874,6 +1890,22 @@ export const coins = CoinMap.fromCoins([
     9,
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset.USDT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:gari',
+    'GARI',
+    9,
+    'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
+    UnderlyingAsset.GARI,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:orca',
+    'ORCA',
+    9,
+    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+    UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
   polygonErc20(

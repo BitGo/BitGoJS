@@ -396,6 +396,7 @@ export enum UnderlyingAsset {
   GAL = 'gal',
   GALA = 'gala',
   GAMMA = 'gamma',
+  GARI = 'gari',
   GBPX = 'gbpx',
   GDT = 'gdt',
   GEC = 'gec',
