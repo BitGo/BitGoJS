@@ -1633,6 +1633,19 @@ describe('SOL:', function () {
           scan: 1,
         })
         .should.rejectedWith('no wallets found with sufficient funds');
+
+      // edge case of never entering into process of finding wallets
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanningIndex: 0,
+          scan: 0,
+        })
+        .should.rejectedWith('no wallets found with sufficient funds');
     });
 
     it('should recover a txn for a derived wallet address', async function () {

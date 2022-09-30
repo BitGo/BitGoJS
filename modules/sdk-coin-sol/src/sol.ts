@@ -562,8 +562,8 @@ export class Sol extends BaseCoin {
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-    const startingDerivationIndex = params.startingScanningIndex ? params.startingScanningIndex : 0;
-    const endingDerivationIndex = params.scan ? params.scan : 4294967295; // largest positive 32 bit int
+    const startingDerivationIndex = !_.isUndefined(params.startingScanningIndex) ? params.startingScanningIndex : 0;
+    const endingDerivationIndex = !_.isUndefined(params.scan) ? params.scan : 4294967295; // largest positive 32 bit int
 
     let userSigningMaterial;
     let backupSigningMaterial;
@@ -600,7 +600,6 @@ export class Sol extends BaseCoin {
         break;
       }
     }
-
     if (balance < totalFee) {
       throw Error('no wallets found with sufficient funds');
     }
