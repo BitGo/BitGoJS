@@ -4,6 +4,7 @@
   "description": "BitGo SDK coin library for Binance Smart Chain",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "private": true,
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",

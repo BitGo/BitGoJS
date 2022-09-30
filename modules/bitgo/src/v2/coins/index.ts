@@ -8,8 +8,6 @@ import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP, TavaxP };
 import { Bch, Tbch } from '@bitgo/sdk-coin-bch';
 export { Bch, Tbch };
-import { Bsc, Tbsc, BscToken } from '@bitgo/sdk-coin-bsc';
-export { Bsc, Tbsc, BscToken };
 import { Bsv, Tbsv } from '@bitgo/sdk-coin-bsv';
 export { Bsv, Tbsv };
 import { Btc, Tbtc } from '@bitgo/sdk-coin-btc';

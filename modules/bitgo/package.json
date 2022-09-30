@@ -53,7 +53,6 @@
     "@bitgo/sdk-coin-avaxp": "^2.0.0",
     "@bitgo/sdk-coin-bch": "^1.1.0",
     "@bitgo/sdk-coin-bcha": "^1.1.0",
-    "@bitgo/sdk-coin-bsc": "^1.0.0",
     "@bitgo/sdk-coin-bsv": "^1.1.0",
     "@bitgo/sdk-coin-btc": "^1.0.1",
     "@bitgo/sdk-coin-btg": "^1.1.0",
