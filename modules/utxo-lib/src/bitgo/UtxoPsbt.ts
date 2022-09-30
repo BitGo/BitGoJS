@@ -39,6 +39,7 @@ export interface TaprootSigner {
 
 export interface PsbtOpts {
   network: Network;
+  maximumFeeRate?: number; // [sat/byte]
 }
 
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
