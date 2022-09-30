@@ -582,7 +582,7 @@ export class Sol extends BaseCoin {
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     let bs58EncodedPublicKey;
-    let balance;
+    let balance = 0;
     let addressIndex;
     const feePerSignature = await this.getFees();
     const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
