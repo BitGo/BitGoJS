@@ -2,7 +2,7 @@
 # An elaborated scheme to build all the dependencies of all packages first in a cached layer
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
-FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS filter-packages-json
+FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446 AS filter-packages-json
 MAINTAINER Tyler Levine <tyler@bitgo.com>
 
 COPY package.json yarn.lock lerna.json ./
@@ -12,7 +12,7 @@ COPY modules ./modules
 # delete all the non package.json files under `./modules/`
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
-FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS builder
+FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446 AS builder
 RUN apk add --no-cache git python3 make g++ libtool autoconf automake
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
@@ -31,7 +31,7 @@ RUN \
     rm -r modules/*/src
 
 
-FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93
+FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446
 RUN apk add --no-cache tini
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
