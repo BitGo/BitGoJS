@@ -757,6 +757,7 @@ export const coins = CoinMap.fromCoins([
   erc20('tel', 'Telcoin', 2, '0x467bccd9d29f223bce8043b84e8c8b282827790f', UnderlyingAsset.TEL),
   erc20('ten', 'Tokenomy', 18, '0xdd16ec0f66e54d453e6756713e533355989040e4', UnderlyingAsset.TEN),
   erc20('tenx', 'TenX Token', 18, '0x515ba0a2e286af10115284f151cf398688a69170', UnderlyingAsset.TENX),
+  erc20('teur', 'TrueEUR', 18, '???????????????????????????', UnderlyingAsset.TEUR),  
   erc20('tgbp', 'TrueGBP', 18, '0x00000000441378008ea67f4284a57932b1c000a5', UnderlyingAsset.TGBP),
   erc20('thkd', 'TrueHKD', 18, '0x0000852600ceb001e08e00bc008be620d60031f2', UnderlyingAsset.THKD),
   erc20('tiox', 'Trade Token X', 18, '0xd947b0ceab2a8885866b9a04a06ae99de852a3d4', UnderlyingAsset.TIOX),
