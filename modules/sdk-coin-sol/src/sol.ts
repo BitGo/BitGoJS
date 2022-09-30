@@ -121,7 +121,7 @@ interface RecoveryOptions {
     secretKey: string;
   };
   startingScanningIndex?: number;
-  addressScanningLimit?: number;
+  scan?: number;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -563,7 +563,7 @@ export class Sol extends BaseCoin {
   async recover(params: RecoveryOptions): Promise<SolTx> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startingDerivationIndex = params.startingScanningIndex ? params.startingScanningIndex : 0;
-    const endingDerivationIndex = params.addressScanningLimit ? params.addressScanningLimit : 4294967295; // largest positive 32 bit int
+    const endingDerivationIndex = params.scan ? params.scan : 4294967295; // largest positive 32 bit int
 
     let userSigningMaterial;
     let backupSigningMaterial;
