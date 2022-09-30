@@ -1472,6 +1472,8 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
       should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 3);
     });
 
     it('should recover a txn for non-bitgo recoveries (durable nonce)', async function () {
@@ -1498,6 +1500,8 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
       should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 4);
     });
 
     it('should recover a txn for unsigned sweep recoveries', async function () {
@@ -1521,6 +1525,8 @@ describe('SOL:', function () {
       should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
       should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 4);
     });
 
     it('should handle error in recover function if a required field is missing/incorrect', async function () {

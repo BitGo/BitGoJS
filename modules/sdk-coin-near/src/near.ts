@@ -352,7 +352,6 @@ export class Near extends BaseCoin {
     const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
     const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-    console.log(nonce);
     const txBuilder = factory
       .getTransferBuilder()
       .sender(accountId, accountId)
@@ -463,8 +462,7 @@ export class Near extends BaseCoin {
       throw new Error('Account not found');
     }
     const accessKey = response.body.result;
-    console.log(accessKey.nonce);
-    return { nonce: ++accessKey.nonce, blockHash: accessKey.block_hash };
+    return { nonce: accessKey.nonce + 1, blockHash: accessKey.block_hash };
   }
 
   protected async getAccountBalance(accountId: string, storageAmountPerByte: number): Promise<string> {

@@ -713,9 +713,7 @@ describe('NEAR:', function () {
     });
 
     afterEach(() => {
-      sinon.reset();
       sandBox.restore();
-      sandBox.reset();
     });
 
     it('should recover a txn for non-bitgo recoveries', async function () {
@@ -736,6 +734,7 @@ describe('NEAR:', function () {
       should.equal(NonBitGoTxnJson.nonce, nonce);
       should.equal(NonBitGoTxnJson.signerId, accountInfo.accountId);
       should.equal(NonBitGoTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
+      sandBox.assert.callCount(basecoin.getDataFromNode, 4);
     });
 
     it('should recover a txn for unsigned sweep recoveries', async function () {
@@ -753,6 +752,7 @@ describe('NEAR:', function () {
       should.equal(UnsignedSweepTxnJson.nonce, nonce);
       should.equal(UnsignedSweepTxnJson.signerId, accountInfo.accountId);
       should.equal(UnsignedSweepTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
+      sandBox.assert.callCount(basecoin.getDataFromNode, 4);
     });
   });
 });
