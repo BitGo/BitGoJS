@@ -365,9 +365,7 @@ export class Dot extends BaseCoin {
       .referenceBlock(headerHash)
       .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
       .fee({ amount: 0, type: 'tip' });
-    const unsignedTransaction = (await txnBuilder.build()) as Transaction;
 
-    let serializedTx = unsignedTransaction.toBroadcastFormat();
     if (!isUnsignedSweep) {
       if (!params.userKey) {
         throw new Error('missing userKey');
@@ -378,6 +376,8 @@ export class Dot extends BaseCoin {
       if (!params.walletPassphrase) {
         throw new Error('missing wallet passphrase');
       }
+
+      const unsignedTransaction = (await txnBuilder.build()) as Transaction;
 
       // Clean up whitespace from entered values
       const userKey = params.userKey.replace(/\s/g, '');
@@ -416,9 +416,10 @@ export class Dot extends BaseCoin {
       );
       const dotKeyPair = new DotKeyPair({ pub: accountId });
       txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
-      const signedTransaction = await txnBuilder.build();
-      serializedTx = signedTransaction.toBroadcastFormat();
     }
+
+    const completedTransaction = await txnBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
     return { serializedTx: serializedTx };
   }
 

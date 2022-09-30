@@ -32,6 +32,7 @@ import * as request from 'superagent';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import nearUtils from './lib/utils';
+
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -115,6 +116,7 @@ export type NearTransactionExplanation = TransactionExplanation;
 
 export class Near extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+
   constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
     if (!staticsCoin) {
@@ -320,60 +322,17 @@ export class Near extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<NearTx> {
-    // TODO(BG-51092): This looks like a common part which can be extracted out too
-    /* ***************** START **************************************/
-    if (_.isUndefined(params.userKey)) {
-      throw new Error('missing userKey');
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
     }
-
-    if (_.isUndefined(params.backupKey)) {
-      throw new Error('missing backupKey');
-    }
-
-    if (_.isUndefined(params.bitgoKey)) {
-      throw new Error('missing backupKey');
-    }
-
-    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
-      throw new Error('missing wallet passphrase');
-    }
-
-    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
 
-    // Clean up whitespace from entered values
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
-    // Decrypt private keys from KeyCard values
-    let userPrv;
-    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-    }
-    /** TODO BG-52419 Implement Codec for parsing */
-    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-    let backupPrv;
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
-    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-    /* ********************** END ***********************************/
-
+    // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
     const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
@@ -393,6 +352,7 @@ export class Near extends BaseCoin {
     const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
     const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+    console.log(nonce);
     const txBuilder = factory
       .getTransferBuilder()
       .sender(accountId, accountId)
@@ -400,19 +360,66 @@ export class Near extends BaseCoin {
       .receiverId(params.recoveryDestination)
       .recentBlockHash(blockHash)
       .amount(netAmount);
-    const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
-    // add signature
-    const signatureHex = await EDDSAMethods.getTSSSignature(
-      userSigningMaterial,
-      backupSigningMaterial,
-      'm/0',
-      unsignedTransaction
-    );
-    const publicKeyObj = { pub: accountId };
-    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
-    const signedTransaction = await txBuilder.build();
-    const serializedTx = signedTransaction.toBroadcastFormat();
+    if (!isUnsignedSweep) {
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
+      // Sign the txn
+      /* ***************** START **************************************/
+      // TODO(BG-51092): This looks like a common part which can be extracted out too
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      // Clean up whitespace from entered values
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+      /** TODO BG-52419 Implement Codec for parsing */
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+      /* ********************** END ***********************************/
+
+      // add signature
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        'm/0',
+        unsignedTransaction
+      );
+      const publicKeyObj = { pub: accountId };
+      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+    }
+
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
     return { serializedTx: serializedTx };
   }
 
@@ -456,6 +463,7 @@ export class Near extends BaseCoin {
       throw new Error('Account not found');
     }
     const accessKey = response.body.result;
+    console.log(accessKey.nonce);
     return { nonce: ++accessKey.nonce, blockHash: accessKey.block_hash };
   }
 

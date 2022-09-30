@@ -10,11 +10,13 @@ import {
   NearResponses,
   keys,
   accountInfo,
+  nonce,
 } from '../fixtures/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
 import { KeyPair, Near, TNear, Transaction } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
+import { coins } from '@bitgo/statics';
 
 describe('NEAR:', function () {
   let bitgo: TestBitGoAPI;
@@ -664,8 +666,9 @@ describe('NEAR:', function () {
   });
 
   describe('Recover Transactions:', () => {
-    it('should recover a txn for non-bitgo recoveries', async function () {
-      const sandBox = sinon.createSandbox();
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tnear');
+    beforeEach(() => {
       const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
       callBack
         .withArgs({
@@ -707,6 +710,15 @@ describe('NEAR:', function () {
           },
         })
         .resolves(NearResponses.getGasPriceResponse);
+    });
+
+    afterEach(() => {
+      sinon.reset();
+      sandBox.restore();
+      sandBox.reset();
+    });
+
+    it('should recover a txn for non-bitgo recoveries', async function () {
       const res = await basecoin.recover({
         userKey: keys.userKey,
         backupKey: keys.backupKey,
@@ -716,6 +728,31 @@ describe('NEAR:', function () {
       });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
+
+      const NonBitGoTxnDeserialize = new Transaction(coin);
+      NonBitGoTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const NonBitGoTxnJson = NonBitGoTxnDeserialize.toJson();
+
+      should.equal(NonBitGoTxnJson.nonce, nonce);
+      should.equal(NonBitGoTxnJson.signerId, accountInfo.accountId);
+      should.equal(NonBitGoTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
+    });
+
+    it('should recover a txn for unsigned sweep recoveries', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: 'abhay-near.testnet',
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+
+      const UnsignedSweepTxnDeserialize = new Transaction(coin);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+
+      should.equal(UnsignedSweepTxnJson.nonce, nonce);
+      should.equal(UnsignedSweepTxnJson.signerId, accountInfo.accountId);
+      should.equal(UnsignedSweepTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
     });
   });
 });
