@@ -1,8 +1,11 @@
 import * as execa from 'execa';
 import { readFileSync, readdirSync, writeFileSync, statSync } from 'fs';
 import * as path from 'path';
+import { get as httpGet } from 'https';
+import { inc } from 'semver';
 
 let lernaModules: string[] = [];
+let lernaModuleLocations: string[] = [];
 let TARGET_SCOPE = '@bitgo-beta';
 let filesChanged = 0;
 
@@ -26,8 +29,9 @@ const getLernaModules = async (): Promise<void> => {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
 
   const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{name: string}> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
+  const modules: Array<{name: string, location: string}> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
   lernaModules = modules.map(({ name }) => name);
+  lernaModuleLocations = modules.map(({ location }) => location );
 };
 
 const walk = (dir: string): string[] => {
@@ -74,6 +78,24 @@ const replacePackageScopes = () => {
   filePaths.forEach((file) => changeScopeInFile(file));
 };
 
+/**
+ * Makes an HTTP request to fetch all the dist tags for a given package. 
+ */
+ const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
+  return new Promise((resolve) => {
+    httpGet(`https://registry.npmjs.org/-/package/${packageName}/dist-tags`, (res) => {
+      let data = '';
+      res.on('data', (d) => {
+        data += d;
+      });
+      res.on('end', () => {
+        const tags: Record<string, string> = JSON.parse(data);
+        resolve(tags);
+      });
+    });
+  });
+};
+
 // modules/bitgo is the only package we publish without an `@bitgo` prefix, so
 // we must manually set one
 const replaceBitGoPackageScope = () => {
@@ -84,6 +106,28 @@ const replaceBitGoPackageScope = () => {
     path.join(cwd, 'package.json'),
     JSON.stringify(json, null, 2) + '\n'
   );
+};
+
+const incrementVersions = async () => {
+  for (let i = 0; i < lernaModuleLocations.length; i++) {
+    try {
+      const modulePath = lernaModuleLocations[i];
+      const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
+      const tags = await getDistTags(json.name);
+      if (tags.beta) {
+        const next = inc(tags.beta, 'prerelease');
+        console.log(`Setting next version for ${json.name} to ${next}`);
+        json.version = next;
+        writeFileSync(
+          path.join(modulePath, 'package.json'),
+          JSON.stringify(json, null, 2) + '\n'
+        );
+      }
+    } catch (e) {
+      // it's not necessarily a blocking error. Let lerna try and publish anyways
+      console.warn(`Couldn't set next version for ${lernaModuleLocations[i]}`, e);
+    }
+  }
 };
 
 const getArgs = () => {
@@ -101,6 +145,7 @@ const main = async () => {
   await getLernaModules();
   replacePackageScopes();
   replaceBitGoPackageScope();
+  await incrementVersions();
   if (filesChanged) {
     console.log(`Successfully re-targeted ${filesChanged} files.`);
     process.exit(0);
