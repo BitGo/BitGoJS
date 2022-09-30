@@ -100,8 +100,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
 RUN cd /var/modules/sdk-coin-trx && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
 RUN cd /var/modules/sdk-coin-xtz && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
-RUN cd /var/modules/sdk-coin-ada && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bch /var/modules/sdk-coin-bch/
 RUN cd /var/modules/sdk-coin-bch && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bcha /var/modules/sdk-coin-bcha/
@@ -165,7 +163,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-xtz && \
-    yarn link @bitgo/sdk-coin-ada && \
     yarn link @bitgo/sdk-coin-bch && \
     yarn link @bitgo/sdk-coin-bcha && \
     yarn link @bitgo/sdk-coin-bsc && \

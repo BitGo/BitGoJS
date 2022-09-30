@@ -28,9 +28,6 @@
       "path": "../sdk-api"
     },
     {
-      "path": "../sdk-coin-ada"
-    },
-    {
       "path": "../sdk-coin-algo"
     },
     {
