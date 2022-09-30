@@ -115,13 +115,34 @@ const incrementVersions = async () => {
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
       const tags = await getDistTags(json.name);
       if (tags.beta) {
-        const next = inc(tags.beta, 'prerelease');
+        const next = inc(tags.beta, 'prerelease', undefined, 'beta');
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(
           path.join(modulePath, 'package.json'),
           JSON.stringify(json, null, 2) + '\n'
         );
+        // since we're manually setting new versions, we must also reconcile all other lerna packages to now use the 'next' version for this module
+        lernaModuleLocations.forEach((otherModulePath) => {
+          // skip it for the current version
+          if (otherModulePath === modulePath) {
+            return;
+          }
+          const otherJsonContent = readFileSync(path.join(otherModulePath, 'package.json'), { encoding: 'utf-8' });
+          if (otherJsonContent.includes(json.name)) {
+            const otherJson = JSON.parse(otherJsonContent);
+            if (otherJson.dependencies && otherJson.dependencies[json.name]) {
+              otherJson.dependencies[json.name] = next;
+            }
+            if (otherJson.devDependencies && otherJson.devDependencies[json.name]) {
+              otherJson.devDependencies[json.name] = next;
+            }
+            writeFileSync(
+              path.join(otherModulePath, 'package.json'),
+              JSON.stringify(otherJson, null, 2) + '\n'
+            );
+          }
+        });
       }
     } catch (e) {
       // it's not necessarily a blocking error. Let lerna try and publish anyways
