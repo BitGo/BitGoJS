@@ -52,30 +52,30 @@ COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 RUN cd /var/modules/blake2b-wasm && yarn link
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 RUN cd /var/modules/bitgo && yarn link
-COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
-RUN cd /var/modules/abstract-eth && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
-RUN cd /var/modules/sdk-coin-eth && yarn link
+COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
+RUN cd /var/modules/abstract-utxo && yarn link
+COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
+RUN cd /var/modules/blockapis && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
 RUN cd /var/modules/sdk-api && yarn link
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 RUN cd /var/modules/sjcl && yarn link
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 RUN cd /var/modules/unspents && yarn link
-COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
-RUN cd /var/modules/abstract-utxo && yarn link
-COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
-RUN cd /var/modules/blockapis && yarn link
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 RUN cd /var/modules/account-lib && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 RUN cd /var/modules/sdk-coin-algo && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 RUN cd /var/modules/sdk-coin-avaxc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
+RUN cd /var/modules/sdk-coin-eth && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 RUN cd /var/modules/sdk-coin-avaxp && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
 RUN cd /var/modules/sdk-coin-celo && yarn link
+COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
+RUN cd /var/modules/abstract-eth && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 RUN cd /var/modules/sdk-coin-cspr && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
@@ -141,18 +141,18 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
     yarn link bitgo && \
-    yarn link @bitgo/abstract-eth && \
-    yarn link @bitgo/sdk-coin-eth && \
+    yarn link @bitgo/abstract-utxo && \
+    yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
     yarn link @bitgo/sjcl && \
     yarn link @bitgo/unspents && \
-    yarn link @bitgo/abstract-utxo && \
-    yarn link @bitgo/blockapis && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
     yarn link @bitgo/sdk-coin-avaxc && \
+    yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-celo && \
+    yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
@@ -183,9 +183,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Thu, 18 Aug 2022 14:16:35 GMT"
-LABEL version=9.12.4
-LABEL git_hash=5bca14b1f7a7c691393db3c4981ad05d731b3c00
+LABEL created="Fri, 30 Sep 2022 23:57:41 GMT"
+LABEL version=9.13.0
+LABEL git_hash=973b70186d9ad51404b2852a83fac25a28ac692e
 #LABEL_END
 
 USER node
