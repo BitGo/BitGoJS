@@ -40,6 +40,7 @@ import {
   isValidPublicKey,
 } from './lib/utils';
 import * as request from 'superagent';
+import { isInteger } from 'lodash';
 
 export interface TransactionFee {
   fee: string;
@@ -120,7 +121,7 @@ interface RecoveryOptions {
     publicKey: string;
     secretKey: string;
   };
-  startingScanningIndex?: number;
+  startingScanIndex?: number;
   scan?: number;
 }
 
@@ -562,8 +563,11 @@ export class Sol extends BaseCoin {
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-    const startingDerivationIndex = !_.isUndefined(params.startingScanningIndex) ? params.startingScanningIndex : 0;
-    const endingDerivationIndex = !_.isUndefined(params.scan) ? params.scan : 4294967295; // largest positive 32 bit int
+    const startingDerivationIndex =
+      !_.isUndefined(params.startingScanIndex) && isInteger(params.startingScanIndex) && params.startingScanIndex >= 0
+        ? params.startingScanIndex
+        : 0;
+    const scanLimit = !_.isUndefined(params.scan) && isInteger(params.scan) && params.scan >= 0 ? params.scan : 20;
 
     let userSigningMaterial;
     let backupSigningMaterial;
@@ -588,7 +592,7 @@ export class Sol extends BaseCoin {
     const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
 
     // Check for first derived wallet with funds
-    for (let i = startingDerivationIndex; i < endingDerivationIndex; i++) {
+    for (let i = startingDerivationIndex; i < scanLimit + startingDerivationIndex; i++) {
       const derivationPath = `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
       bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();

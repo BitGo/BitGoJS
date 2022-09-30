@@ -1491,7 +1491,7 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
-        startingScanningIndex: 0,
+        startingScanIndex: 0,
         scan: 1,
       });
       latestBlockHashTxn.should.not.be.empty();
@@ -1522,7 +1522,7 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
-        startingScanningIndex: 0,
+        startingScanIndex: 0,
         scan: 1,
       });
 
@@ -1551,7 +1551,7 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
-        startingScanningIndex: 0,
+        startingScanIndex: 0,
         scan: 1,
       });
 
@@ -1579,7 +1579,7 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 1,
         })
         .should.rejectedWith('missing userKey');
@@ -1591,7 +1591,7 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 1,
         })
         .should.rejectedWith('missing backupKey');
@@ -1603,7 +1603,7 @@ describe('SOL:', function () {
           backupKey: testData.keys.backupKey,
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 1,
         })
         .should.rejectedWith('missing wallet passphrase');
@@ -1616,7 +1616,7 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 1,
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
@@ -1629,7 +1629,7 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKeyNoFunds,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 1,
         })
         .should.rejectedWith('no wallets found with sufficient funds');
@@ -1642,7 +1642,7 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKeyNoFunds,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanningIndex: 0,
+          startingScanIndex: 0,
           scan: 0,
         })
         .should.rejectedWith('no wallets found with sufficient funds');
@@ -1656,7 +1656,7 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
-        startingScanningIndex: 1,
+        startingScanIndex: 1,
         scan: 3, // 2nd derivation of this wallet address is mocked to have funds
       });
 
