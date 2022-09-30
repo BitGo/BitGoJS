@@ -18,7 +18,7 @@ import { KeyPair } from '.';
 import { InstructionBuilderTypes } from './constants';
 import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
-import { DurableNonceParams, InstructionParams, Memo, Nonce } from './iface';
+import { DurableNonceParams, InstructionParams, Memo, Nonce, Transfer } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -52,7 +52,20 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
     const txData = tx.toJson();
+
+    const filteredTransferInstructionsData = txData.instructionsData.filter(
+      (data) => data.type === InstructionBuilderTypes.Transfer
+    );
+    let sender;
+    if (filteredTransferInstructionsData.length > 0) {
+      const transferInstructionsData = filteredTransferInstructionsData[0] as Transfer;
+      sender = transferInstructionsData.params.fromAddress;
+    } else {
+      sender = txData.feePayer;
+    }
+    this.sender(sender);
     this.sender(txData.feePayer as string);
+    this.feePayer(txData.feePayer as string);
     this.nonce(txData.nonce, txData.durableNonce);
     this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions);
 
