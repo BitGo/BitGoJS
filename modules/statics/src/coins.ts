@@ -1904,7 +1904,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:orca',
     'ORCA',
     9,
-    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+    '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
     UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
