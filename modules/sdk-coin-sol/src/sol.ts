@@ -558,10 +558,6 @@ export class Sol extends BaseCoin {
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-    let userSigningMaterial;
-    let backupSigningMaterial;
-
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -571,6 +567,7 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -606,6 +603,7 @@ export class Sol extends BaseCoin {
     }
 
     if (!isUnsignedSweep) {
+      // Sign the txn
       if (!params.userKey) {
         throw new Error('missing userKey');
       }
@@ -635,7 +633,7 @@ export class Sol extends BaseCoin {
         throw new Error(`Error decrypting user keychain: ${e.message}`);
       }
 
-      userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
 
       let backupPrv;
       try {
@@ -646,7 +644,7 @@ export class Sol extends BaseCoin {
       } catch (e) {
         throw new Error(`Error decrypting backup keychain: ${e.message}`);
       }
-      backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
@@ -664,10 +662,8 @@ export class Sol extends BaseCoin {
       txBuilder.sign({ key: params.durableNonce.secretKey });
     }
 
-    const signedTransaction = await txBuilder.build();
-
-    const serializedTx = signedTransaction.toBroadcastFormat();
-
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
     return { serializedTx: serializedTx };
   }
 
