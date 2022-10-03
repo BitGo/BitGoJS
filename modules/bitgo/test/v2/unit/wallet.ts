@@ -9,7 +9,16 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet, ECDSAUtils } from '@bitgo/sdk-core';
+import {
+  common,
+  CustomSigningFunction,
+  RequestTracer,
+  TssUtils,
+  TxRequest,
+  Wallet,
+  ECDSAUtils,
+  TokenType,
+} from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
@@ -1439,9 +1448,22 @@ describe('V2 Wallet:', function () {
       ],
       multisigType: 'tss',
     };
+
+    const polygonWalletData = {
+      id: '632826520ee1e5000729017354acaeab',
+      coin: 'tpolygon',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      multisigType: 'tss',
+    };
+
     const tssWallet = new Wallet(bitgo, tsol, walletData);
 
     let tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
+    const tssPolygonWallet = new Wallet(bitgo, bitgo.coin('tpolygon'), polygonWalletData);
     const custodialTssWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
 
     const txRequest: TxRequest = {
@@ -1894,6 +1916,114 @@ describe('V2 Wallet:', function () {
             txHex: 'beef',
           },
         }).should.be.rejectedWith('must supply either txHex or halfSigned, but not both');
+      });
+    });
+
+    describe('Transfer tokens', function () {
+      const recipients = [
+        {
+          address: '0x101c3928946b2e1d99759e8e5d34b5e94c1a8e2f',
+          amount: '0',
+          tokenData: {
+            tokenName: 'erc721:bitgoerc721',
+            tokenContractAddress: '0x8397b091514c1f7bebb9dea6ac267ea23b570605',
+            tokenId: '38',
+            tokenQuantity: '1',
+            decimalPlaces: 0,
+            tokenType: TokenType.ERC721,
+          },
+        },
+      ];
+
+      const feeOptions = {
+        maxFeePerGas: 2000000000,
+        maxPriorityFeePerGas: 1000000000,
+      };
+
+      it('calling prebuildxTransaction should execute prebuildTxWithIntent with proper params', async function () {
+        const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'tokenTransfer' };
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFullTokenTransfer);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'transferToken',
+          feeOptions,
+        }, 'full');
+
+        const txPrebuild = await tssPolygonWallet.prebuildTransaction({
+          isTss: true,
+          recipients,
+          type: 'transfertoken',
+          walletPassphrase: 'passphrase12345',
+          feeOptions,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssPolygonWallet.id(),
+          wallet: tssPolygonWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfertoken',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should populate intent with EVM-like params', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
+        // @ts-expect-error only pass in params being tested
+        const intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
+          intentType: 'tokenTransfer',
+          recipients,
+          feeOptions,
+        });
+        intent.should.have.property('feeOptions');
+        intent.feeOptions!.should.have.property('maxFeePerGas', 2000000000);
+        intent.feeOptions!.should.have.property('maxPriorityFeePerGas', 1000000000);
+        intent.should.have.property('recipients');
+        intent.recipients.should.have.property('length', 1);
+        intent.recipients[0].should.have.property('tokenData');
+        intent.recipients[0].tokenData!.should.have.property('tokenQuantity', recipients[0].tokenData.tokenQuantity);
+        intent.recipients[0].tokenData!.should.have.property('tokenType', recipients[0].tokenData.tokenType);
+        intent.recipients[0].tokenData!.should.have.property('tokenName', recipients[0].tokenData.tokenName);
+        intent.recipients[0].tokenData!.should.have.property('tokenContractAddress', recipients[0].tokenData.tokenContractAddress);
+        intent.recipients[0].tokenData!.should.have.property('tokenId', recipients[0].tokenData.tokenId);
+        intent.recipients[0].tokenData!.should.have.property('decimalPlaces', recipients[0].tokenData.decimalPlaces);
+      });
+
+      it('should not populate intent with tokenData if certain params are undefined', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
+        const recipients = [
+          {
+            address: '0x101c3928946b2e1d99759e8e5d34b5e94c1a8e2f',
+            amount: '0',
+            tokenData: {
+              tokenName: 'erc721:bitgoerc721',
+              tokenContractAddress: '0x8397b091514c1f7bebb9dea6ac267ea23b570605',
+              tokenId: '38',
+              tokenQuantity: '1',
+              decimalPlaces: 0,
+            },
+          },
+        ];
+        let intent;
+        try {
+          intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
+            intentType: 'tokenTransfer',
+            // @ts-expect-error only pass in params be tested for
+            recipients,
+            feeOptions,
+          });
+          intent.should.equal(undefined);
+        } catch (e: any) {
+          e.message.should.equal('token type and quantity is required to request a transaction with intent to transfer a token');
+        }
       });
     });
 

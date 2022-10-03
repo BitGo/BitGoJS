@@ -6,7 +6,7 @@ import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeyType } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
-import { PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
+import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
 
 export interface MpcKeyShare {
   publicShare: string;
@@ -97,13 +97,25 @@ export abstract class MpcUtils {
    * @param {IBaseCoin} baseCoin
    * @param {PrebuildTransactionWithIntentOptions} params
    * @returns {Record<string, unknown>}
-   */
-  populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): Record<string, unknown> {
+   */ populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
-    const intentRecipients = params.recipients.map((recipient) => ({
-      address: { address: recipient.address },
-      amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
-    }));
+    const intentRecipients = params.recipients.map((recipient) => {
+      const formattedRecipient: IntentRecipient = {
+        address: { address: recipient.address },
+        amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
+      };
+      const { tokenData } = recipient;
+      if (tokenData && (tokenData.tokenContractAddress || tokenData.tokenName)) {
+        // token related recipient data gets validated in WP
+        if (!(tokenData.tokenType && tokenData.tokenQuantity)) {
+          throw new Error(
+            'token type and quantity is required to request a transaction with intent to transfer a token'
+          );
+        }
+        formattedRecipient.tokenData = tokenData;
+      }
+      return formattedRecipient;
+    });
 
     const baseIntent = {
       intentType: params.intentType,
@@ -112,7 +124,7 @@ export abstract class MpcUtils {
       nonce: params.nonce,
       recipients: intentRecipients,
     };
-    if (baseCoin.getFamily() === 'eth') {
+    if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon') {
       return {
         ...baseIntent,
         selfSend: params.selfSend,

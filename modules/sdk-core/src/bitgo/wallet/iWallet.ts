@@ -12,7 +12,12 @@ import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
-import { CustomGShareGeneratingFunction, CustomRShareGeneratingFunction, TokenEnablement } from '../utils';
+import {
+  CustomGShareGeneratingFunction,
+  CustomRShareGeneratingFunction,
+  TokenEnablement,
+  TokenTransferRecipientParams,
+} from '../utils';
 import { ILightning } from '../lightning';
 
 export interface MaximumSpendableOptions {
@@ -53,6 +58,7 @@ export interface PrebuildTransactionOptions {
     address: string;
     amount: string | number;
     tokenName?: string;
+    tokenData?: TokenTransferRecipientParams;
   }[];
   numBlocks?: number;
   maxFeeRate?: number;
