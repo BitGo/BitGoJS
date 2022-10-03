@@ -57,7 +57,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
    * Build the import transaction
    * @protected
    */
-  protected buildAvaxpTransaction(): void {
+  protected buildAvaxTransaction(): void {
     // if tx has credentials, tx shouldn't change
     if (this.transaction.hasCredentials) return;
     const { inputs, outputs, credentials } = this.createInputOutput(new BN(this.transaction.fee.fee));

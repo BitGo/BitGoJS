@@ -162,7 +162,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
       txBuilder.sign({ key: data.privKey.prv2 });
       txBuilder
         .build()
-        .then((ok) => assert.fail('it can sign'))
+        .then(() => assert.fail('it can sign'))
         .catch((err) => {
           err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
         });
@@ -173,7 +173,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
       txBuilder.sign({ key: data.privKey.prv1 });
       txBuilder
         .build()
-        .then((ok) => assert.fail('it can sign'))
+        .then(() => assert.fail('it can sign'))
         .catch((err) => {
           err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
         });
