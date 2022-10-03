@@ -20,6 +20,7 @@ import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
+  private tokenParentWallet?: IWallet;
 
   public wallet: IWallet;
   public tssUtil: ITssUtils;
@@ -121,7 +122,7 @@ export class StakingWallet implements IStakingWallet {
       }
       return {
         transaction: transaction,
-        result: await this.wallet.prebuildTransaction(transaction.buildParams),
+        result: await (await this.getWalletForBuildingAndSigning()).prebuildTransaction(transaction.buildParams),
       };
     }
   }
@@ -142,7 +143,9 @@ export class StakingWallet implements IStakingWallet {
     });
     return {
       transaction: stakingPrebuildTransaction.transaction,
-      signed: await this.wallet.signTransaction({
+      signed: await (
+        await this.getWalletForBuildingAndSigning()
+      ).signTransaction({
         txPrebuild: stakingPrebuildTransaction.result,
         walletPassphrase: signOptions.walletPassphrase,
         keychain: keychain[0],
@@ -217,5 +220,19 @@ export class StakingWallet implements IStakingWallet {
 
   private stakingTransactionURL(stakingTransaction: StakingTransaction): string {
     return `${this.stakingRequestUrl(stakingTransaction.stakingRequestId)}/transactions/${stakingTransaction.id}`;
+  }
+
+  private async getWalletForBuildingAndSigning(): Promise<IWallet> {
+    if (this.wallet.baseCoin.tokenConfig) {
+      if (!this.tokenParentWallet) {
+        this.tokenParentWallet = await this.bitgo
+          .coin(this.wallet.baseCoin.tokenConfig.coin)
+          .wallets()
+          .get({ id: this.wallet.id() });
+      }
+      return this.tokenParentWallet;
+    } else {
+      return Promise.resolve(this.wallet);
+    }
   }
 }
