@@ -889,6 +889,7 @@ export enum UnderlyingAsset {
   // Polygon testnet tokens
   'tpolygon:derc20' = 'tpolygon:derc20',
   'tpolygon:link' = 'tpolygon:link',
+  'tpolygon:name' = 'tpolygon:name',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
