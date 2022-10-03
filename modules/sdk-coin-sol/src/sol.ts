@@ -569,9 +569,6 @@ export class Sol extends BaseCoin {
         : 0;
     const scanLimit = !_.isUndefined(params.scan) && isInteger(params.scan) && params.scan >= 0 ? params.scan : 20;
 
-    let userSigningMaterial;
-    let backupSigningMaterial;
-
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -581,7 +578,6 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -695,9 +691,7 @@ export class Sol extends BaseCoin {
     }
 
     const completedTransaction = await txBuilder.build();
-
     const serializedTx = completedTransaction.toBroadcastFormat();
-
     return {
       serializedTx: serializedTx,
       addressIndex: addressIndex,
