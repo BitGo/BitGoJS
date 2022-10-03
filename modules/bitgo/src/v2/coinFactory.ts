@@ -43,6 +43,7 @@ import {
   Sol,
   StellarToken,
   Stx,
+  Sui,
   Susd,
   Talgo,
   TavaxC,
@@ -71,6 +72,7 @@ import {
   Trx,
   Tsol,
   Tstx,
+  Tsui,
   Tsusd,
   Ttrx,
   Txlm,
@@ -120,6 +122,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
+  globalCoinFactory.register('sui', Sui.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
   globalCoinFactory.register('tada', Tada.createInstance);
@@ -150,6 +153,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('trx', Trx.createInstance);
   globalCoinFactory.register('tsol', Tsol.createInstance);
   globalCoinFactory.register('tstx', Tstx.createInstance);
+  globalCoinFactory.register('tsui', Tsui.createInstance);
   globalCoinFactory.register('tsusd', Tsusd.createInstance);
   globalCoinFactory.register('ttrx', Ttrx.createInstance);
   globalCoinFactory.register('txlm', Txlm.createInstance);
