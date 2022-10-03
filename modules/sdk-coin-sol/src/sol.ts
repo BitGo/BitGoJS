@@ -103,7 +103,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
 
 interface SolTx {
   serializedTx: string;
-  addressIndex: number;
+  scanIndex: number;
 }
 
 interface SolDurableNonceFromNode {
@@ -559,16 +559,13 @@ export class Sol extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
-   * @param params
+   * @param {RecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {SolTx} the serialized transaction hex string and index
+   * of the address being swept
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-    const startingDerivationIndex =
-      !_.isUndefined(params.startingScanIndex) && isInteger(params.startingScanIndex) && params.startingScanIndex >= 0
-        ? params.startingScanIndex
-        : 0;
-    const scanLimit = !_.isUndefined(params.scan) && isInteger(params.scan) && params.scan >= 0 ? params.scan : 20;
-
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -577,18 +574,32 @@ export class Sol extends BaseCoin {
       throw new Error('invalid recoveryDestination');
     }
 
+    let startIdx = params.startingScanIndex;
+    if (_.isUndefined(startIdx)) {
+      startIdx = 0;
+    } else if (!isInteger(startIdx) || startIdx < 0) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    let numIteration = params.scan;
+    if (_.isUndefined(numIteration)) {
+      numIteration = 20;
+    } else if (!isInteger(numIteration) || numIteration <= 0) {
+      throw new Error('Invalid scanning factor');
+    }
+
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     let bs58EncodedPublicKey;
     let balance = 0;
-    let addressIndex;
+    let scanIndex;
     const feePerSignature = await this.getFees();
     const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
 
     // Check for first derived wallet with funds
-    for (let i = startingDerivationIndex; i < scanLimit + startingDerivationIndex; i++) {
+    for (let i = startIdx; i < numIteration + startIdx; i++) {
       const derivationPath = `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
       bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
@@ -596,7 +607,7 @@ export class Sol extends BaseCoin {
       balance = await this.getAccountBalance(bs58EncodedPublicKey);
 
       if (balance > totalFee) {
-        addressIndex = i;
+        scanIndex = i;
         break;
       }
     }
@@ -677,7 +688,7 @@ export class Sol extends BaseCoin {
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
         backupSigningMaterial,
-        `m/${addressIndex}`,
+        `m/${scanIndex}`,
         unsignedTransaction
       );
 
@@ -694,7 +705,7 @@ export class Sol extends BaseCoin {
     const serializedTx = completedTransaction.toBroadcastFormat();
     return {
       serializedTx: serializedTx,
-      addressIndex: addressIndex,
+      scanIndex: scanIndex,
     };
   }
 

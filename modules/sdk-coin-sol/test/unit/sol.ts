@@ -1496,8 +1496,8 @@ describe('SOL:', function () {
       });
       latestBlockHashTxn.should.not.be.empty();
       latestBlockHashTxn.should.hasOwnProperty('serializedTx');
-      latestBlockHashTxn.should.hasOwnProperty('addressIndex');
-      should.equal(latestBlockHashTxn.addressIndex, 0);
+      latestBlockHashTxn.should.hasOwnProperty('scanIndex');
+      should.equal(latestBlockHashTxn.scanIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
       latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.serializedTx);
@@ -1528,8 +1528,8 @@ describe('SOL:', function () {
 
       durableNonceTxn.should.not.be.empty();
       durableNonceTxn.should.hasOwnProperty('serializedTx');
-      durableNonceTxn.should.hasOwnProperty('addressIndex');
-      should.equal(durableNonceTxn.addressIndex, 0);
+      durableNonceTxn.should.hasOwnProperty('scanIndex');
+      should.equal(durableNonceTxn.scanIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
@@ -1557,8 +1557,8 @@ describe('SOL:', function () {
 
       unsignedSweepTxn.should.not.be.empty();
       unsignedSweepTxn.should.hasOwnProperty('serializedTx');
-      unsignedSweepTxn.should.hasOwnProperty('addressIndex');
-      should.equal(unsignedSweepTxn.addressIndex, 0);
+      unsignedSweepTxn.should.hasOwnProperty('scanIndex');
+      should.equal(unsignedSweepTxn.scanIndex, 0);
 
       const unsignedSweepTxnDeserialize = new Transaction(coin);
       unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
@@ -1634,7 +1634,7 @@ describe('SOL:', function () {
         })
         .should.rejectedWith('no wallets found with sufficient funds');
 
-      // edge case of never entering into process of finding wallets
+      // edge case of invalid wallet address index (scan limit)
       await basecoin
         .recover({
           userKey: testData.keys.userKey,
@@ -1645,7 +1645,20 @@ describe('SOL:', function () {
           startingScanIndex: 0,
           scan: 0,
         })
-        .should.rejectedWith('no wallets found with sufficient funds');
+        .should.rejectedWith('Invalid scanning factor');
+
+      // edge case of invalid wallet address index (starting index)
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: -2.5,
+          scan: 1,
+        })
+        .should.rejectedWith('Invalid starting index to scan for addresses');
     });
 
     it('should recover a txn for a derived wallet address', async function () {
@@ -1662,8 +1675,8 @@ describe('SOL:', function () {
 
       derivedWalletTxn.should.not.be.empty();
       derivedWalletTxn.should.hasOwnProperty('serializedTx');
-      derivedWalletTxn.should.hasOwnProperty('addressIndex');
-      should.equal(derivedWalletTxn.addressIndex, 2);
+      derivedWalletTxn.should.hasOwnProperty('scanIndex');
+      should.equal(derivedWalletTxn.scanIndex, 2);
 
       const derivedWalletTxnDeserialize = new Transaction(coin);
       derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.serializedTx);
