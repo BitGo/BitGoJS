@@ -313,10 +313,11 @@ export default class Ecdsa {
    * @param {OShare} oShare private omicron share of current participant
    * @param {DShare} dShare delta share received from the other participant
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
+   * @param {boolean} shouldHash if true, we hash the provided buffer before signing
    * @returns {SShare}
    */
-  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash): SShare {
-    const m = (hash || createHash('sha256')).update(M).digest();
+  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash, shouldHash = true): SShare {
+    const m = shouldHash ? (hash || createHash('sha256')).update(M).digest() : M;
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
 
@@ -370,11 +371,13 @@ export default class Ecdsa {
    * @param {Buffer} message
    * @param {Signature } signature
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
+   * @param {boolean} shouldHash if true, we hash the provided buffer before verifying
    * @returns {boolean} True if signature is valid; False otherwise
    */
-  verify(message: Buffer, signature: Signature, hash?: Hash): boolean {
+  verify(message: Buffer, signature: Signature, hash?: Hash, shouldHash = true): boolean {
+    const messageToVerify = shouldHash ? (hash || createHash('sha256')).update(message).digest() : message;
     return Ecdsa.curve.verify(
-      (hash || createHash('sha256')).update(message).digest(),
+      messageToVerify,
       Buffer.concat([
         Buffer.from([signature['recid']]),
         bigIntToBufferBE(hexToBigInt(signature['r']), 32),
