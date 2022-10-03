@@ -139,7 +139,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - the validation result
    */
   allHexChars(maybe: string): boolean {
-    return /^([0-9a-f])+$/i.test(maybe);
+    return /^(0x){0,1}([0-9a-f])+$/i.test(maybe);
   }
 
   /** @inheritdoc */
@@ -313,6 +313,18 @@ export class Utils implements BaseUtils {
         };
       }
     };
+  }
+
+  /**
+   * remove hex prefix (0x)
+   * @param hex string
+   * @returns hex without 0x
+   */
+  removeHexPrefix(hex: string): string {
+    if (hex.startsWith('0x')) {
+      return hex.substring(2);
+    }
+    return hex;
   }
 }
 
