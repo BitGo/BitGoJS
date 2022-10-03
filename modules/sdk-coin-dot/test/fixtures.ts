@@ -159,5 +159,6 @@ export const wrwUser = {
     '2f209ca7f5c749d36813468dced481af1bc843fc45d990241bd57eee7991f9ea109f534e543\n' +
     '6a45cbe94bb61ba64e103389f18333004efd4cd15457957b5ff67',
   walletPassphrase: 'Ghghjkg!455544llll',
-  walletAddress: '5DT27GZcKRumteFW6PDpLaA64TbnKGoHpYbSYrCrFfTLhsq2',
+  walletAddress0: '5DT27GZcKRumteFW6PDpLaA64TbnKGoHpYbSYrCrFfTLhsq2',
+  walletAddress1: '5CTtvzgJGjV3HJdv7uKgpd7N4McYhivkMf1r2ZBhtzPatMCF',
 };

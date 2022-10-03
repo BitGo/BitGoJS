@@ -23,6 +23,7 @@ import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
+import { isInteger } from 'lodash';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -54,10 +55,13 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 interface DotTx {
   serializedTx: string;
+  scanIndex: number;
 }
 
 const dotUtils = Utils.default;
@@ -336,7 +340,11 @@ export class Dot extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
-   * @param params
+   * @param {RecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {DotTx} the serialized transaction hex string and index
+   * of the address being swept
    */
   async recover(params: RecoveryOptions): Promise<DotTx> {
     if (!params.bitgoKey) {
@@ -345,82 +353,102 @@ export class Dot extends BaseCoin {
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
+    let startIdx = params.startingScanIndex;
+    if (_.isUndefined(startIdx)) {
+      startIdx = 0;
+    } else if (!isInteger(startIdx) || startIdx < 0) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    let numIteration = params.scan;
+    if (_.isUndefined(numIteration)) {
+      numIteration = 20;
+    } else if (!isInteger(numIteration) || numIteration <= 0) {
+      throw new Error('Invalid scanning factor');
+    }
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
-    // first build the unsigned txn
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
-    const senderAddr = this.getAddressFromPublicKey(accountId);
-    const { nonce } = await this.getAccountInfo(senderAddr);
-    const { headerNumber, headerHash } = await this.getHeaderInfo();
-    const material = await this.getMaterial();
 
-    const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
-    txnBuilder
-      .sweep()
-      .to({ address: params.recoveryDestination })
-      .sender({ address: senderAddr })
-      .validity({ firstValid: headerNumber, maxDuration: this.SWEEP_TXN_DURATION })
-      .referenceBlock(headerHash)
-      .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
-      .fee({ amount: 0, type: 'tip' });
-
-    if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
+    for (let i = startIdx; i < numIteration + startIdx; i++) {
+      const currPath = `m/${i}`;
+      const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+      const senderAddr = this.getAddressFromPublicKey(accountId);
+      const { nonce, freeBalance } = await this.getAccountInfo(senderAddr);
+      if (freeBalance <= 0) {
+        continue;
       }
 
+      // first build the unsigned txn
+      const { headerNumber, headerHash } = await this.getHeaderInfo();
+      const material = await this.getMaterial();
+
+      const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
+      txnBuilder
+        .sweep()
+        .to({ address: params.recoveryDestination })
+        .sender({ address: senderAddr })
+        .validity({ firstValid: headerNumber, maxDuration: this.SWEEP_TXN_DURATION })
+        .referenceBlock(headerHash)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
+        .fee({ amount: 0, type: 'tip' });
       const unsignedTransaction = (await txnBuilder.build()) as Transaction;
 
-      // Clean up whitespace from entered values
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
+      let serializedTx = unsignedTransaction.toBroadcastFormat();
+      if (!isUnsignedSweep) {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
 
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
+        // Clean up whitespace from entered values
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        // Decrypt private keys from KeyCard values
+        let userPrv;
+        try {
+          userPrv = this.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
+        /** TODO BG-52419 Implement Codec for parsing */
+        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+        let backupPrv;
+        try {
+          backupPrv = this.bitgo.decrypt({
+            input: backupKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting backup keychain: ${e.message}`);
+        }
+        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+        // add signature
+        const signatureHex = await EDDSAMethods.getTSSSignature(
+          userSigningMaterial,
+          backupSigningMaterial,
+          currPath,
+          unsignedTransaction
+        );
+        const dotKeyPair = new DotKeyPair({ pub: accountId });
+        txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+        const signedTransaction = await txnBuilder.build();
+        serializedTx = signedTransaction.toBroadcastFormat();
       }
-      /** TODO BG-52419 Implement Codec for parsing */
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-      // add signature
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
-        'm/0',
-        unsignedTransaction
-      );
-      const dotKeyPair = new DotKeyPair({ pub: accountId });
-      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+      return { serializedTx: serializedTx, scanIndex: i };
     }
-
-    const completedTransaction = await txnBuilder.build();
-    const serializedTx = completedTransaction.toBroadcastFormat();
-    return { serializedTx: serializedTx };
+    throw new Error('Did not find an address with funds to recover');
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

@@ -182,6 +182,7 @@ describe('DOT:', function () {
       });
     });
   });
+
   describe('Recover Transactions:', () => {
     const sandBox = sinon.createSandbox();
     const destAddr = testData.accounts.account1.address;
@@ -189,7 +190,10 @@ describe('DOT:', function () {
 
     beforeEach(function () {
       const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
-      accountInfoCB.withArgs(testData.wrwUser.walletAddress).resolves({ nonce: nonce });
+      accountInfoCB.withArgs(testData.wrwUser.walletAddress0).resolves({
+        nonce: nonce,
+        freeBalance: 8888,
+      });
       const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
       headerInfoCB.resolves({
         headerNumber: testData.westendBlock.blockNumber,
@@ -211,6 +215,7 @@ describe('DOT:', function () {
       });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
@@ -226,7 +231,7 @@ describe('DOT:', function () {
         .referenceBlock(testData.westendBlock.hash);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress);
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress0);
       should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
       should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
       should.deepEqual(txJson.genesisHash, genesisHash);
@@ -245,6 +250,7 @@ describe('DOT:', function () {
       });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
@@ -258,10 +264,10 @@ describe('DOT:', function () {
           maxDuration: basecoin.SWEEP_TXN_DURATION,
         })
         .referenceBlock(testData.westendBlock.hash)
-        .sender({ address: testData.wrwUser.walletAddress });
+        .sender({ address: testData.wrwUser.walletAddress0 });
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress);
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress0);
       should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
       should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
       should.deepEqual(txJson.genesisHash, genesisHash);
@@ -271,6 +277,145 @@ describe('DOT:', function () {
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+    });
+  });
+
+  describe('Recover Transactions for wallet with multiple addresses:', () => {
+    const sandBox = sinon.createSandbox();
+    const destAddr = testData.accounts.account1.address;
+    const nonce = 123;
+
+    beforeEach(function () {
+      const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
+      accountInfoCB.withArgs(testData.wrwUser.walletAddress0).resolves({
+        nonce: nonce,
+        freeBalance: 0,
+      });
+      accountInfoCB.withArgs(testData.wrwUser.walletAddress1).resolves({
+        nonce: nonce,
+        freeBalance: 8888,
+      });
+      const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
+      headerInfoCB.resolves({
+        headerNumber: testData.westendBlock.blockNumber,
+        headerHash: testData.westendBlock.hash,
+      });
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 0', async function () {
+      const res = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.calledTwice(basecoin.getAccountInfo);
+      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.SWEEP_TXN_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress1);
+      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.nonce, nonce);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
+      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 1', async function () {
+      const res = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        recoveryDestination: destAddr,
+        startingScanIndex: 1,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.calledOnce(basecoin.getAccountInfo);
+      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.SWEEP_TXN_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress1);
+      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.nonce, nonce);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
+      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+    });
+  });
+
+  describe('Recover Transaction Failures:', () => {
+    const sandBox = sinon.createSandbox();
+    const destAddr = testData.accounts.account1.address;
+    const nonce = 123;
+    const numIteration = 10;
+
+    beforeEach(function () {
+      const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
+      accountInfoCB.resolves({
+        nonce: nonce,
+        freeBalance: 0,
+      });
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      await basecoin
+        .recover({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          walletPassphrase: testData.wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+          scan: numIteration,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover');
+      sandBox.assert.callCount(basecoin.getAccountInfo, numIteration);
     });
   });
 });
