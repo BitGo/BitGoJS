@@ -121,7 +121,7 @@ describe('TSS ECDSA TESTS', function () {
   });
 
   describe('ECDSA Signing', async function () {
-    let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: Hash }[];
+    let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: string; shouldHash?: boolean }[];
 
     before(async () => {
       const [A, B, C, D, E, F] = keyShares;
@@ -137,11 +137,14 @@ describe('TSS ECDSA TESTS', function () {
         { signerOne: F, signerTwo: D },
 
         // Checks with specific hashing algorithm
-        { signerOne: A, signerTwo: B, hash: createKeccakHash('keccak256') },
+        { signerOne: A, signerTwo: B, hash: 'keccak256' },
+
+        // checks with no hashing
+        { signerOne: A, signerTwo: B, shouldHash: false },
       ];
     });
 
-    for (let index = 0; index < 3; index++) {
+    for (let index = 0; index < 8; index++) {
       it(`should properly sign the message case ${index}`, async function () {
         // Step One
         // signerOne, signerTwo have decided to sign the message
@@ -213,9 +216,24 @@ describe('TSS ECDSA TESTS', function () {
         // and finally signs the message using their private OShare
         // and delta share received from the other signer
 
+        const hashGenerator = (hashType?: string): Hash | undefined => {
+          return hashType === 'keccak256' ? createKeccakHash('keccak256') : undefined;
+        };
         const [signA, signB] = [
-          MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, config[index].hash),
-          MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, config[index].hash),
+          MPC.sign(
+            MESSAGE,
+            signCombineOne.oShare,
+            signCombineTwo.dShare,
+            hashGenerator(config[index].hash),
+            config[index].shouldHash,
+          ),
+          MPC.sign(
+            MESSAGE,
+            signCombineTwo.oShare,
+            signCombineOne.dShare,
+            hashGenerator(config[index].hash),
+            config[index].shouldHash,
+          ),
         ];
 
         // Step Eight
@@ -226,7 +244,7 @@ describe('TSS ECDSA TESTS', function () {
         // Step Nine
         // Verify signature
 
-        const isValid = MPC.verify(MESSAGE, signature, config[index].hash);
+        const isValid = MPC.verify(MESSAGE, signature, hashGenerator(config[index].hash), config[index].shouldHash);
         isValid.should.equal(true);
       });
     }

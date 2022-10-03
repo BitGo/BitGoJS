@@ -604,11 +604,11 @@ describe('Ecdsa tss helper functions tests', function () {
 
       it('should successfully convert signature share to signature share record', function () {
         const share = {
-          to: SignatureShareType.USER,
-          from: SignatureShareType.BITGO,
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
           share: `${mockSShareFromUser.R}${ECDSAMethods.delimeter}${mockSShareFromUser.s}${ECDSAMethods.delimeter}${mockSShareFromUser.y}`,
         } as SignatureShareRecord;
-        const signatureShare = ECDSAMethods.convertSignatureShare(mockSShareFromUser, ECDSAMethods.getParticipantIndex('bitgo'));
+        const signatureShare = ECDSAMethods.convertSignatureShare(mockSShareFromUser, ECDSAMethods.getParticipantIndex('user'), ECDSAMethods.getParticipantIndex('bitgo'));
         signatureShare.from.should.equal(share.from);
         signatureShare.to.should.equal(share.to);
         signatureShare.share.should.equal(share.share);
