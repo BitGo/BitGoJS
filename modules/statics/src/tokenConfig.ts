@@ -10,6 +10,7 @@ import {
   PolygonERC20Token,
   BscCoin,
   AdaCoin,
+  Erc721Coin,
 } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
@@ -262,7 +263,7 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
 }, []);
 
 const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof PolygonERC20Token) {
+  if (coin instanceof PolygonERC20Token || coin instanceof Erc721Coin) {
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',

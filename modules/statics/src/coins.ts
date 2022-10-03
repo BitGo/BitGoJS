@@ -2024,6 +2024,16 @@ export const coins = CoinMap.fromCoins([
     '0x326c977e6efc84e512bb9c30f76e30c160ed06fb',
     UnderlyingAsset['tpolygon:link']
   ),
+  terc721(
+    'tpolygon:name',
+    'Polygon Test NAME',
+    '0x53225dcd075677f7d9a40baa8f65a8f0043b6af5',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    '',
+    Networks.test.polygon,
+    KeyCurve.Secp256k1
+  ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
   fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),
