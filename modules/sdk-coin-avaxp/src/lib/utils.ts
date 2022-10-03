@@ -17,7 +17,7 @@ import { AvalancheNetwork } from '@bitgo/statics';
 import { Signature } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { Output, Tx } from './iface';
+import { ADDRESS_SEPARATOR, Output, Tx } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -298,7 +298,7 @@ export class Utils implements BaseUtils {
           .getAddresses()
           .map((a) => this.addressToString(network.hrp, network.alias, a))
           .sort()
-          .join('~');
+          .join(ADDRESS_SEPARATOR);
         return {
           value: amountOutput.getAmount().toString(),
           address,
