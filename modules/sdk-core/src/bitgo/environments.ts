@@ -22,6 +22,7 @@ interface EnvironmentTemplate {
   eosNodeUrls: string[];
   nearNodeUrls: string[];
   solNodeUrl: string;
+  adaNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -93,6 +94,7 @@ const mainnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
+  adaNodeUrl: 'https://api.koios.rest/api/v0',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -121,6 +123,7 @@ const testnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://rpc.testnet.near.org'],
   solNodeUrl: 'https://api.devnet.solana.com',
+  adaNodeUrl: 'https://testnet.koios.rest/api/v0',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
