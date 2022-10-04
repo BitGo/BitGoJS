@@ -50,6 +50,7 @@ modules/sdk-coin-near/ @BitGo/blockchain-integration
 modules/sdk-coin-polygon/ @BitGo/eth-team
 modules/sdk-coin-sol/ @BitGo/blockchain-integration
 modules/sdk-coin-stx/ @BitGo/blockchain-integration
+modules/sdk-coin-sui/ @BitGo/blockchain-integration
 modules/sdk-coin-trx/ @BitGo/blockchain-integration
 modules/sdk-coin-xlm/ @BitGo/blockchain-integration
 modules/sdk-coin-xrp/ @BitGo/blockchain-integration

@@ -50,6 +50,8 @@ import { Sol, Tsol } from '@bitgo/sdk-coin-sol';
 export { Sol, Tsol };
 import { Stx, Tstx } from '@bitgo/sdk-coin-stx';
 export { Stx, Tstx };
+import { Sui, Tsui } from '@bitgo/sdk-coin-sui';
+export { Sui, Tsui };
 import { Trx, Ttrx } from '@bitgo/sdk-coin-trx';
 export { Trx, Ttrx };
 import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';
