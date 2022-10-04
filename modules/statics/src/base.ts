@@ -485,6 +485,7 @@ export enum UnderlyingAsset {
   KZE = 'kze',
   LAYER = 'layer',
   LBA = 'lba',
+  LDO = 'ldo',
   LEND = 'lend',
   LEO = 'leo',
   LGO = 'lgo',
