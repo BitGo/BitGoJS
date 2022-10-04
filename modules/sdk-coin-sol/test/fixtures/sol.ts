@@ -24,7 +24,6 @@ export const rawTransactions = {
 
 const blockhash = 'EkSnNWid2cvwEVnVx9aBqawnmiCNiDgp3gUdkDPTKN1N';
 const durableNonceBlockhash = 'MeM29wJ8Kai1SyV5Xz8fHQhTygPs4Eka7UTgZH3LsEm';
-const pubKey = 'BL352P8HKNq9BgkQjWjCq1RipHZb1iM6JwGpZYFK1JuB';
 const durableNonceSignatures = 2;
 const latestBlockhashSignatures = 1;
 const unsignedSweepSignatures = 1;
@@ -32,7 +31,6 @@ const unsignedSweepSignatures = 1;
 export const SolInputData = {
   blockhash,
   durableNonceBlockhash,
-  pubKey,
   durableNonceSignatures,
   latestBlockhashSignatures,
   unsignedSweepSignatures,
@@ -114,15 +112,48 @@ const getAccountBalanceResponse = {
   },
 };
 
+const getAccountBalanceResponseNoFunds = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: { context: { slot: 1 }, value: 0 },
+    id: 1,
+  },
+};
+
+const getAccountBalanceResponseM1Derivation = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: { context: { slot: 1 }, value: 0 },
+    id: 1,
+  },
+};
+
+const getAccountBalanceResponseM2Derivation = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: { context: { slot: 1 }, value: 5000000000 },
+    id: 1,
+  },
+};
+
 export const SolResponses = {
   getBlockhashResponse,
   getFeesResponse,
   getAccountBalanceResponse,
   getAccountInfoResponse,
+  getAccountBalanceResponseNoFunds,
+  getAccountBalanceResponseM2Derivation,
+  getAccountBalanceResponseM1Derivation,
 } as const;
 
 export const accountInfo = {
   bs58EncodedPublicKey: 'BL352P8HKNq9BgkQjWjCq1RipHZb1iM6JwGpZYFK1JuB',
+  bs58EncodedPublicKeyNoFunds: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
+  bs58EncodedPublicKeyM1Derivation: 'EoBmy4FQfhKEqiAysNXbCmhr682dkV92Yk4Y6cpUfopf',
+  bs58EncodedPublicKeyM2Derivation: '89QdCRKLvajFUY3f2gZFykUZGgM5dsx3XS5VL4axrHA4',
 };
 
 export const keys = {
@@ -163,6 +194,9 @@ export const keys = {
   bitgoKey:
     'd3530bb015dadd34c8083d544794ac6e4e0fa4ad21c1167ad590baf9b0482b9bcd6c3b9e55c\n' +
     '5cd9bf18bf96e27edd8b7f58f9f51ce0a256c5a793aeaff8db811',
+  bitgoKeyNoFunds:
+    '4368cecc6b8290fdab5e449c70673c5cb8d7f76481db807d41d16629143a2e1d6d97c5672a0\n' +
+    '3060a1777530681a784cb15165f41e49f072d5eb8026d7a287b35',
   destinationPubKey: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
   walletPassword: 't3stSicretly!',
   durableNoncePubKey: '6LqY5ncj7s4b1c3YJV1hsn2hVPNhEfvDCNYMaCc1jJhX',

@@ -40,6 +40,7 @@ import {
   isValidPublicKey,
 } from './lib/utils';
 import * as request from 'superagent';
+import { isInteger } from 'lodash';
 
 export interface TransactionFee {
   fee: string;
@@ -102,6 +103,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
 
 interface SolTx {
   serializedTx: string;
+  scanIndex: number;
 }
 
 interface SolDurableNonceFromNode {
@@ -119,6 +121,8 @@ interface RecoveryOptions {
     publicKey: string;
     secretKey: string;
   };
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -555,7 +559,11 @@ export class Sol extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
-   * @param params
+   * @param {RecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {SolTx} the serialized transaction hex string and index
+   * of the address being swept
    */
   async recover(params: RecoveryOptions): Promise<SolTx> {
     if (!params.bitgoKey) {
@@ -566,21 +574,52 @@ export class Sol extends BaseCoin {
       throw new Error('invalid recoveryDestination');
     }
 
+    let startIdx = params.startingScanIndex;
+    if (_.isUndefined(startIdx)) {
+      startIdx = 0;
+    } else if (!isInteger(startIdx) || startIdx < 0) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    let numIteration = params.scan;
+    if (_.isUndefined(numIteration)) {
+      numIteration = 20;
+    } else if (!isInteger(numIteration) || numIteration <= 0) {
+      throw new Error('Invalid scanning factor');
+    }
+
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
-    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+    let bs58EncodedPublicKey;
+    let balance = 0;
+    let scanIndex;
+    const feePerSignature = await this.getFees();
+    const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+
+    // Check for first derived wallet with funds
+    for (let i = startIdx; i < numIteration + startIdx; i++) {
+      const derivationPath = `m/${i}`;
+      const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+      bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+      balance = await this.getAccountBalance(bs58EncodedPublicKey);
+
+      if (balance > totalFee) {
+        scanIndex = i;
+        break;
+      }
+    }
+    if (balance < totalFee) {
+      throw Error('no wallets found with sufficient funds');
+    }
 
     const factory = this.getBuilder();
-    const balance = await this.getAccountBalance(bs58EncodedPublicKey);
-    const fee = await this.getFees();
-    const netAmount = balance - (params.durableNonce ? fee * 2 : fee);
+
     let blockhash = await this.getBlockhash();
     let authority = '';
-
+    const netAmount = balance - totalFee;
     if (params.durableNonce) {
       const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
       blockhash = durableNonceInfo.blockhash;
@@ -592,7 +631,7 @@ export class Sol extends BaseCoin {
       .nonce(blockhash)
       .sender(bs58EncodedPublicKey)
       .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-      .fee({ amount: fee })
+      .fee({ amount: feePerSignature })
       .feePayer(bs58EncodedPublicKey);
 
     if (params.durableNonce) {
@@ -649,7 +688,7 @@ export class Sol extends BaseCoin {
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
         backupSigningMaterial,
-        'm/0',
+        `m/${scanIndex}`,
         unsignedTransaction
       );
 
@@ -664,7 +703,10 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
-    return { serializedTx: serializedTx };
+    return {
+      serializedTx: serializedTx,
+      scanIndex: scanIndex,
+    };
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {

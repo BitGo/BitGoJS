@@ -1437,6 +1437,36 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyNoFunds],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyM1Derivation],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM1Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyM2Derivation],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
             method: 'getAccountInfo',
             params: [
               testData.keys.durableNoncePubKey,
@@ -1461,16 +1491,20 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
+        startingScanIndex: 0,
+        scan: 1,
       });
       latestBlockHashTxn.should.not.be.empty();
       latestBlockHashTxn.should.hasOwnProperty('serializedTx');
+      latestBlockHashTxn.should.hasOwnProperty('scanIndex');
+      should.equal(latestBlockHashTxn.scanIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
       latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.serializedTx);
       const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
 
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
-      should.equal(latestBlockhashTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(latestBlockhashTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 3);
@@ -1488,17 +1522,21 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
+        startingScanIndex: 0,
+        scan: 1,
       });
 
       durableNonceTxn.should.not.be.empty();
       durableNonceTxn.should.hasOwnProperty('serializedTx');
+      durableNonceTxn.should.hasOwnProperty('scanIndex');
+      should.equal(durableNonceTxn.scanIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
       durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
 
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(durableNonceTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(durableNonceTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
@@ -1513,17 +1551,21 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
+        startingScanIndex: 0,
+        scan: 1,
       });
 
       unsignedSweepTxn.should.not.be.empty();
       unsignedSweepTxn.should.hasOwnProperty('serializedTx');
+      unsignedSweepTxn.should.hasOwnProperty('scanIndex');
+      should.equal(unsignedSweepTxn.scanIndex, 0);
 
       const unsignedSweepTxnDeserialize = new Transaction(coin);
       unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
       const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
 
       should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(unsignedSweepTxnJson.feePayer, testData.SolInputData.pubKey);
+      should.equal(unsignedSweepTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 4);
@@ -1537,6 +1579,8 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: 0,
+          scan: 1,
         })
         .should.rejectedWith('missing userKey');
 
@@ -1547,6 +1591,8 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: 0,
+          scan: 1,
         })
         .should.rejectedWith('missing backupKey');
 
@@ -1557,6 +1603,8 @@ describe('SOL:', function () {
           backupKey: testData.keys.backupKey,
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
+          startingScanIndex: 0,
+          scan: 1,
         })
         .should.rejectedWith('missing wallet passphrase');
 
@@ -1568,8 +1616,75 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
+          startingScanIndex: 0,
+          scan: 1,
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
+
+      // no wallet with sufficient funds
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: 0,
+          scan: 1,
+        })
+        .should.rejectedWith('no wallets found with sufficient funds');
+
+      // edge case of invalid wallet address index (scan limit)
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: 0,
+          scan: 0,
+        })
+        .should.rejectedWith('Invalid scanning factor');
+
+      // edge case of invalid wallet address index (starting index)
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+          startingScanIndex: -2.5,
+          scan: 1,
+        })
+        .should.rejectedWith('Invalid starting index to scan for addresses');
+    });
+
+    it('should recover a txn for a derived wallet address', async function () {
+      // Funds located at m2 derived wallet address
+      const derivedWalletTxn = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        bitgoKey: testData.keys.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.keys.walletPassword,
+        startingScanIndex: 1,
+        scan: 3, // 2nd derivation of this wallet address is mocked to have funds
+      });
+
+      derivedWalletTxn.should.not.be.empty();
+      derivedWalletTxn.should.hasOwnProperty('serializedTx');
+      derivedWalletTxn.should.hasOwnProperty('scanIndex');
+      should.equal(derivedWalletTxn.scanIndex, 2);
+
+      const derivedWalletTxnDeserialize = new Transaction(coin);
+      derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.serializedTx);
+      const derivedWalletTxnJson = derivedWalletTxnDeserialize.toJson();
+
+      should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.blockhash);
+      should.equal(derivedWalletTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKeyM2Derivation);
+      should.equal(derivedWalletTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
   });
 });
