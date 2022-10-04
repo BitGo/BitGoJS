@@ -548,6 +548,7 @@ export const coins = CoinMap.fromCoins([
   erc20('layer', 'Unilayer', 18, '0x0ff6ffcfda92c53f615a4a75d982f399c989366b', UnderlyingAsset.LAYER),
   erc20('lba', 'Cred', 18, '0xfe5f141bf94fe84bc28ded0ab966c16b17490657', UnderlyingAsset.LBA),
   erc20('lend', 'EthLend', 18, '0x80fb784b7ed66730e8b1dbd9820afd29931aab03', UnderlyingAsset.LEND),
+  erc20('ldo', 'Lido DAO Token', 18, '0x5a98fcbea516cf06857215779fd812ca3bef1b32', UnderlyingAsset.LDO),
   erc20('leo', 'Bitfinex LEO', 18, '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3', UnderlyingAsset.LEO),
   erc20('lgo', 'LGO Exchange', 8, '0x0a50c93c762fdd6e56d86215c24aaad43ab629aa', UnderlyingAsset.LGO),
   erc20('link', 'ChainLink', 18, '0x514910771af9ca656af840dff83e8264ecf986ca', UnderlyingAsset.LINK),
