@@ -2,13 +2,15 @@ import { TxOutput } from 'bitcoinjs-lib';
 
 import { networks, Network, getMainnet } from '../networks';
 
+import { UtxoPsbt } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { DashPsbt } from './dash/DashPsbt';
 import { DashTransaction } from './dash/DashTransaction';
 import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
+import { ZcashPsbt } from './zcash/ZcashPsbt';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
-import { UtxoPsbt } from './UtxoPsbt';
 
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
@@ -28,6 +30,47 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
       return DashTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.zcash:
       return ZcashTransaction.fromBufferWithVersion<TNumber>(buf, network as ZcashNetwork, version, amountType);
+  }
+
+  /* istanbul ignore next */
+  throw new Error(`invalid network`);
+}
+
+export function createPsbtFromBuffer(buf: Buffer, network: Network): UtxoPsbt<UtxoTransaction<bigint>> {
+  switch (getMainnet(network)) {
+    case networks.bitcoin:
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+    case networks.dogecoin:
+    case networks.litecoin:
+      return UtxoPsbt.fromBuffer(buf, { network });
+    case networks.dash:
+      return DashPsbt.fromBuffer(buf, { network });
+    case networks.zcash:
+      return ZcashPsbt.fromBuffer(buf, { network });
+  }
+
+  /* istanbul ignore next */
+  throw new Error(`invalid network`);
+}
+
+export function createPsbtFromTransaction(
+  tx: UtxoTransaction<bigint>,
+  prevOuts: TxOutput<bigint>[]
+): UtxoPsbt<UtxoTransaction<bigint>> {
+  switch (getMainnet(tx.network)) {
+    case networks.bitcoin:
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+    case networks.dogecoin:
+    case networks.litecoin:
+      return UtxoPsbt.fromTransaction(tx, prevOuts);
+    case networks.dash:
+      return DashPsbt.fromTransaction(tx, prevOuts);
+    case networks.zcash:
+      return ZcashPsbt.fromTransaction(tx, prevOuts);
   }
 
   /* istanbul ignore next */
