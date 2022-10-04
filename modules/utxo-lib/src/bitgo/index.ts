@@ -7,6 +7,7 @@ export * from './signature';
 export * from './transaction';
 export * from './types';
 export * from './Unspent';
+export * from './UtxoPsbt';
 export * from './UtxoTransaction';
 export * from './UtxoTransactionBuilder';
 export * from './wallet';
