@@ -170,15 +170,15 @@ export function createPsbtForNetwork(
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.litecoin: {
-      psbt = new UtxoPsbt(psbtOpts);
+      psbt = UtxoPsbt.createPsbt(psbtOpts);
       break;
     }
     case networks.dash: {
-      psbt = new DashPsbt(psbtOpts);
+      psbt = DashPsbt.createPsbt(psbtOpts);
       break;
     }
     case networks.zcash: {
-      psbt = new ZcashPsbt(psbtOpts);
+      psbt = ZcashPsbt.createPsbt(psbtOpts);
       break;
     }
     default:

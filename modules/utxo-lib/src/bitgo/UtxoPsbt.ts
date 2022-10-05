@@ -50,7 +50,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return UtxoTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
   }
 
-  static createPsbt(opts: PsbtOpts, data: PsbtBase): UtxoPsbt<UtxoTransaction<bigint>> {
+  static createPsbt(opts: PsbtOpts, data?: PsbtBase): UtxoPsbt<UtxoTransaction<bigint>> {
     return new UtxoPsbt<UtxoTransaction<bigint>>(
       opts,
       data || new PsbtBase(new PsbtTransaction({ tx: new UtxoTransaction<bigint>(opts.network) }))

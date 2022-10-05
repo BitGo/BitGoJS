@@ -9,7 +9,7 @@ export class DashPsbt extends UtxoPsbt<DashTransaction<bigint>> {
     return DashTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
   }
 
-  static createPsbt(opts: PsbtOpts, data: PsbtBase): DashPsbt {
+  static createPsbt(opts: PsbtOpts, data?: PsbtBase): DashPsbt {
     return new DashPsbt(
       opts,
       data || new PsbtBase(new PsbtTransaction({ tx: new DashTransaction<bigint>(opts.network) }))
