@@ -9,10 +9,11 @@ import { DecryptableNShare, KeyShare } from './types';
 import { RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
-import { encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
+import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 import assert from 'assert';
+import { bip32 } from '@bitgo/utxo-lib';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -276,9 +277,26 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     ]);
 
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
-    const signerShare = userSigningMaterial.bitgoNShare.u + userSigningMaterial.bitgoNShare.chaincode;
+    let u = userSigningMaterial.bitgoNShare.u;
+    while (u.length < 64) {
+      u = '0' + u;
+    }
+
+    let chaincode = userSigningMaterial.bitgoNShare.chaincode;
+    while (chaincode.length < 64) {
+      chaincode = '0' + chaincode;
+    }
+    const signerShare = bip32.fromPrivateKey(Buffer.from(u, 'hex'), Buffer.from(chaincode, 'hex')).toBase58();
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
-    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+    const encryptedSignerShare = (await openpgp.encrypt({
+      message: await openpgp.createMessage({
+        text: signerShare,
+      }),
+      config: {
+        rejectCurves: new Set(),
+      },
+      encryptionKeys: [bitgoGpgKey],
+    })) as string;
 
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
