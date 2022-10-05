@@ -102,6 +102,23 @@ const getAccountResponse = {
   },
 };
 
+const getZeroBalanceAccountResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      amount: '0',
+      block_hash: '3wdCKZM5FUDXbNMGH91s3Qz6PgBrBk2ewRfvY2CkP2mv',
+      block_height: 93510153,
+      code_hash: '11111111111111111111111111111111',
+      locked: '0',
+      storage_paid_at: 0,
+      storage_usage: 0,
+    },
+    id: 'dontcare',
+  },
+};
+
 const getProtocolConfigResp = {
   status: 200,
   body: {
@@ -333,6 +350,7 @@ const getGasPriceResponse = {
 export const NearResponses = {
   getAccessKeyResponse,
   getAccountResponse,
+  getZeroBalanceAccountResponse,
   getGasPriceResponse,
   getProtocolConfigResp,
 } as const;

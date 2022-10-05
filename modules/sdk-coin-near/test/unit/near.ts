@@ -755,4 +755,158 @@ describe('NEAR:', function () {
       sandBox.assert.callCount(basecoin.getDataFromNode, 4);
     });
   });
+
+  describe('Recover Transactions for wallet with multiple addresses:', () => {
+    const destAddr = 'abhay-near.testnet';
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tnear');
+    const address1Info = {
+      accountId: 'f6842bf4a8e980704fbd9fb799bfbe0a116fd5d8d06f6774e792c68c907d9b20',
+      bs58EncodedPublicKey: 'HbJBqyagBqtSNUR74fLMQSjQ8HyQVs66fyMySPhZLXz7',
+      blockHash: '844N9aWefd4TvJwdiBgXDVPz4W9z436kohTiXnp5y4fq',
+    };
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: address1Info.accountId,
+              public_key: address1Info.bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getZeroBalanceAccountResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: address1Info.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [address1Info.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 0', async function () {
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: destAddr,
+        walletPassphrase: 'Ghghjkg!455544llll',
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.callCount(basecoin.getDataFromNode, 5);
+
+      const tx = new Transaction(coin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+
+      should.equal(txJson.nonce, nonce);
+      should.equal(txJson.signerId, address1Info.accountId);
+      should.equal(txJson.publicKey, 'ed25519:' + address1Info.bs58EncodedPublicKey);
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 1', async function () {
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: destAddr,
+        walletPassphrase: 'Ghghjkg!455544llll',
+        startingScanIndex: 1,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.scanIndex.should.equal(1);
+      sandBox.assert.callCount(basecoin.getDataFromNode, 4);
+
+      const tx = new Transaction(coin);
+      tx.fromRawTransaction(res.serializedTx);
+      const txJson = tx.toJson();
+
+      should.equal(txJson.nonce, nonce);
+      should.equal(txJson.signerId, address1Info.accountId);
+      should.equal(txJson.publicKey, 'ed25519:' + address1Info.bs58EncodedPublicKey);
+    });
+  });
+
+  describe('Recover Transaction Failures:', () => {
+    const sandBox = sinon.createSandbox();
+    const destAddr = 'abhay-near.testnet';
+    const numIteration = 10;
+
+    beforeEach(function () {
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack
+        .withArgs(sinon.match.hasNested('payload.method', 'EXPERIMENTAL_protocol_config'))
+        .resolves(NearResponses.getProtocolConfigResp);
+      callBack.resolves(NearResponses.getZeroBalanceAccountResponse);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          walletPassphrase: 'Ghghjkg!455544llll',
+          recoveryDestination: destAddr,
+          scan: numIteration,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover');
+      // getDataFromNode should be called numIteration + 1 times since we initially
+      // call getProtocolConfig
+      sandBox.assert.callCount(basecoin.getDataFromNode, numIteration + 1);
+    });
+  });
 });

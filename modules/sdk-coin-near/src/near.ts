@@ -79,10 +79,13 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase: string;
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 interface NearTx {
   serializedTx: string;
+  scanIndex: number;
 }
 
 interface NearTxBuilderParamsFromNode {
@@ -328,98 +331,115 @@ export class Near extends BaseCoin {
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
-
+    let startIdx = params.startingScanIndex;
+    if (startIdx === undefined) {
+      startIdx = 0;
+    } else if (!Number.isInteger(startIdx) || startIdx < 0) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    let numIteration = params.scan;
+    if (numIteration === undefined) {
+      numIteration = 20;
+    } else if (!Number.isInteger(numIteration) || numIteration <= 0) {
+      throw new Error('Invalid scanning factor');
+    }
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-
-    // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const accountId = MPC.deriveUnhardened(bitgoKey, `m/0`).slice(0, 64);
-    const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
     const { storageAmountPerByte, transferCost, receiptConfig } = await this.getProtocolConfig();
-    const availableBalance = new BigNumber(await this.getAccountBalance(accountId, storageAmountPerByte));
-    const { nonce, blockHash } = await this.getAccessKey({ accountId, bs58EncodedPublicKey });
-    const gasPrice = await this.getGasPrice(blockHash);
-    const gasPriceFirstBlock = new BigNumber(gasPrice);
-    const gasPriceSecondBlock = gasPriceFirstBlock.multipliedBy(1.05);
-    const totalGasRequired = new BigNumber(transferCost.sendSir)
-      .plus(receiptConfig.sendSir)
-      .multipliedBy(gasPriceFirstBlock)
-      .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
-    // adding some padding to make sure the gas doesn't go below required gas by network
-    const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-    const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
-    const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
-    const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
-    const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
-    const txBuilder = factory
-      .getTransferBuilder()
-      .sender(accountId, accountId)
-      .nonce(nonce)
-      .receiverId(params.recoveryDestination)
-      .recentBlockHash(blockHash)
-      .amount(netAmount);
 
-    if (!isUnsignedSweep) {
-      const unsignedTransaction = (await txBuilder.build()) as Transaction;
-      // Sign the txn
-      /* ***************** START **************************************/
-      // TODO(BG-51092): This looks like a common part which can be extracted out too
-      if (!params.userKey) {
-        throw new Error('missing userKey');
+    for (let i = startIdx; i < numIteration + startIdx; i++) {
+      const currPath = `m/${i}`;
+      const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+      const availableBalance = new BigNumber(await this.getAccountBalance(accountId, storageAmountPerByte));
+      if (availableBalance.toNumber() <= 0) {
+        continue;
       }
 
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
+      // first build the unsigned txn
+      const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
+      const { nonce, blockHash } = await this.getAccessKey({ accountId, bs58EncodedPublicKey });
+      const gasPrice = await this.getGasPrice(blockHash);
+      const gasPriceFirstBlock = new BigNumber(gasPrice);
+      const gasPriceSecondBlock = gasPriceFirstBlock.multipliedBy(1.05);
+      const totalGasRequired = new BigNumber(transferCost.sendSir)
+        .plus(receiptConfig.sendSir)
+        .multipliedBy(gasPriceFirstBlock)
+        .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
+      // adding some padding to make sure the gas doesn't go below required gas by network
+      const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
+      const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
+      const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
+      const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
+      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .sender(accountId, accountId)
+        .nonce(nonce)
+        .receiverId(params.recoveryDestination)
+        .recentBlockHash(blockHash)
+        .amount(netAmount);
+
+      if (!isUnsignedSweep) {
+        const unsignedTransaction = (await txBuilder.build()) as Transaction;
+        // Sign the txn
+        /* ***************** START **************************************/
+        // TODO(BG-51092): This looks like a common part which can be extracted out too
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
+
+        // Clean up whitespace from entered values
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        // Decrypt private keys from KeyCard values
+        let userPrv;
+        try {
+          userPrv = this.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
+        /** TODO BG-52419 Implement Codec for parsing */
+        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+        let backupPrv;
+        try {
+          backupPrv = this.bitgo.decrypt({
+            input: backupKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting backup keychain: ${e.message}`);
+        }
+        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+        /* ********************** END ***********************************/
+
+        // add signature
+        const signatureHex = await EDDSAMethods.getTSSSignature(
+          userSigningMaterial,
+          backupSigningMaterial,
+          currPath,
+          unsignedTransaction
+        );
+        const publicKeyObj = { pub: accountId };
+        txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
       }
 
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
-
-      // Clean up whitespace from entered values
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-      /** TODO BG-52419 Implement Codec for parsing */
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-      /* ********************** END ***********************************/
-
-      // add signature
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
-        'm/0',
-        unsignedTransaction
-      );
-      const publicKeyObj = { pub: accountId };
-      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+      const completedTransaction = await txBuilder.build();
+      const serializedTx = completedTransaction.toBroadcastFormat();
+      return { serializedTx: serializedTx, scanIndex: i };
     }
-
-    const completedTransaction = await txBuilder.build();
-    const serializedTx = completedTransaction.toBroadcastFormat();
-    return { serializedTx: serializedTx };
+    throw new Error('Did not find an address with funds to recover');
   }
 
   /**
