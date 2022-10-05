@@ -1,11 +1,14 @@
 import {
   BaseCoin,
   BitGoBase,
+  ExplanationResult,
   KeyPair,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
+  UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -46,6 +49,15 @@ export class Sui extends BaseCoin {
     return 'Sui';
   }
 
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
+  }
+
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
@@ -66,11 +78,19 @@ export class Sui extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
+  isValidPrv(prv: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
   isValidAddress(address: string): boolean {
     throw new Error('Method not implemented.');
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+
+  explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
     throw new Error('Method not implemented.');
   }
 }
