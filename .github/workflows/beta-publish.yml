@@ -1,9 +1,9 @@
 name: Publish @bitgo-beta
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
 jobs:
   publish:
     name: Publish Beta Release
@@ -44,4 +44,7 @@ jobs:
         run: git commit -am "Auto updated beta branch" --no-verify || echo "No changes to commit"
 
       - name: Lerna Publish 
-        run: yarn lerna publish from-package --preid beta --dist-tag beta --force-publish --yes
+        run: yarn lerna publish from-package --preid beta --dist-tag beta --force-publish --yes --loglevel silly
+
+      - name: Verify Publish
+        run: npx ts-node ./scripts/verify-beta.ts
