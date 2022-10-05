@@ -2,6 +2,7 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { taproot, HDSigner, Psbt, PsbtTransaction, ScriptSignature, Stack, Transaction, TxOutput } from '../';
 import {
   PartialSig,
+  PsbtInput,
   PsbtInputUpdate,
   TapBip32Derivation,
   Transaction as ITransaction,
@@ -12,7 +13,8 @@ import { Psbt as PsbtBase } from 'bip174';
 import { Network } from '..';
 import { ecc as eccLib, script as bscript, payments } from '..';
 import * as opcodes from 'bitcoin-ops';
-import { BufferWriter, varuint, reverseBuffer } from 'bitcoinjs-lib/src/bufferutils';
+import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
+import { getOutputIdForInput } from './Unspent';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -68,6 +70,17 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  /**
+   * Create UtxoPsbt containing transaction data required for validating non-segwit, non-taproot
+   * (legacy) inputs.
+   *
+   * While segwit/taproot inputs require the input value for the signature, legacy inputs do not
+   * which precludes the signer to determine the full input amount and therefor the transaction fee.
+   *
+   * @param transaction
+   * @param prevOutputs
+   * @param fetchTransactions
+   */
   static async fromTransactionComplete(
     transaction: UtxoTransaction<bigint>,
     prevOutputs: TxOutput<bigint>[],
@@ -75,16 +88,27 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
   ): Promise<UtxoPsbt<UtxoTransaction<bigint>>> {
     const psbt = this.fromTransaction(transaction, prevOutputs);
 
-    const txidToIndex: Record<string, number> = {};
-    psbt.data.inputs.forEach((input, index) => {
-      if (!input.tapLeafScript && !input.witnessScript) {
-        txidToIndex[reverseBuffer(transaction.ins[index].hash).toString('hex')] = index;
-      }
-    });
+    const requiresFullTransaction = (i: PsbtInput) => !i.tapLeafScript && i.witnessScript;
 
-    const txHexs = await fetchTransactions(Object.keys(txidToIndex));
-    Object.entries(txidToIndex).forEach(([txid, index]) => {
-      psbt.updateInput(index, { nonWitnessUtxo: txHexs[txid] });
+    const txids: string[] = [
+      ...new Set(
+        psbt.data.inputs.flatMap((psbtInput, index) =>
+          requiresFullTransaction(psbtInput) ? [getOutputIdForInput(transaction.ins[index]).txid] : []
+        )
+      ),
+    ];
+
+    const txHexs = await fetchTransactions(txids);
+
+    psbt.data.inputs.forEach((input: PsbtInput, index: number) => {
+      if (requiresFullTransaction(input)) {
+        const txid = getOutputIdForInput(transaction.ins[index]).txid;
+        const nonWitnessUtxo = txHexs[txid];
+        if (!nonWitnessUtxo) {
+          throw new Error(`no txHex for ${txid} at input ${index}`);
+        }
+        psbt.updateInput(index, { nonWitnessUtxo });
+      }
     });
 
     return psbt;
