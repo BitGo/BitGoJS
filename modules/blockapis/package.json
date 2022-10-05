@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@bitgo/utxo-lib": "^3.0.0",
+    "@types/superagent": "4.1.15",
     "bluebird": "^3.7.2",
     "superagent": "^7.1.1"
   },
