@@ -136,6 +136,17 @@ export function setPsbtDefaults(
         throw new Error(`invalid version`);
       }
       break;
+    case networks.zcash:
+      if (
+        ![
+          ZcashTransaction.VERSION4_BRANCH_CANOPY,
+          ZcashTransaction.VERSION4_BRANCH_NU5,
+          ZcashTransaction.VERSION5_BRANCH_NU5,
+        ].includes(version)
+      ) {
+        throw new Error(`invalid version`);
+      }
+      break;
     default:
       if (version !== 1) {
         throw new Error(`invalid version`);
@@ -162,10 +173,13 @@ export function createPsbtForNetwork(
       psbt = new UtxoPsbt({ network });
       break;
     }
-    case networks.dash:
-      throw new Error('Dash psbt not implemented');
+    case networks.dash: {
+      psbt = new DashPsbt({ network });
+      break;
+    }
     case networks.zcash: {
-      throw new Error('Zcash psbt not implemented');
+      psbt = new ZcashPsbt({ network });
+      break;
     }
     default:
       throw new Error(`unsupported network`);
