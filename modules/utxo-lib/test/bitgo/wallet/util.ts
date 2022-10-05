@@ -25,29 +25,34 @@ export function mockOutputId(vout: number): string {
 
 export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, network: Network): Transaction<bigint> {
   const psbtFromNetwork = createPsbtForNetwork({ network });
-  const prevTx = psbtFromNetwork.tx;
 
   const privKey = noble.utils.randomPrivateKey();
   const pubkey = Buffer.from(noble.getPublicKey(privKey, true));
-  const payment = utxolib.payments.p2pkh({ pubkey });
+  const payment = utxolib.payments.p2wpkh({ pubkey });
   const destOutput = payment.output;
   if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
 
   for (let index = 0; index <= vout; index++) {
     if (index === vout) {
-      prevTx.addOutput(outputScript, value);
+      psbtFromNetwork.addOutput({ script: outputScript, value });
     } else {
-      prevTx.addOutput(destOutput, value);
+      psbtFromNetwork.addOutput({ script: destOutput, value });
     }
   }
-  prevTx.addInput(Buffer.alloc(32, 0x01), 0);
-  // es-lint-ignore-next-line no-sync
-  const sig = noble.signSync(prevTx.hashForSignature(0, destOutput, utxolib.Transaction.SIGHASH_ALL), privKey);
-  prevTx.ins[0].script = utxolib.script.compile([
-    Buffer.concat([sig, Buffer.from([utxolib.Transaction.SIGHASH_ALL])]),
-    pubkey,
-  ]);
-  return prevTx;
+  psbtFromNetwork.addInput({
+    hash: Buffer.alloc(32, 0x01),
+    index: 0,
+    witnessUtxo: { script: destOutput, value: value * (BigInt(vout) + BigInt(1)) + BigInt(1000) },
+  });
+  psbtFromNetwork.signInput(0, {
+    publicKey: pubkey,
+    sign: (hash: Buffer, lowR?: boolean) =>
+      Buffer.from(noble.signSync(hash, privKey, { canonical: !lowR, der: false })),
+  });
+  psbtFromNetwork.validateSignaturesOfAllInputs();
+  psbtFromNetwork.finalizeAllInputs();
+  const tx = psbtFromNetwork.extractTransaction();
+  return tx;
 }
 
 export function mockWalletUnspent<TNumber extends number | bigint>(

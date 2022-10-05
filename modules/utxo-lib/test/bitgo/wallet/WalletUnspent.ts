@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import { Transaction, networks } from '../../../src';
 import {
   isWalletUnspent,
+  isNonWitnessUnspent,
   formatOutputId,
   getOutputIdForInput,
   parseOutputId,
@@ -19,10 +20,13 @@ import {
   getWalletAddress,
   verifySignatureWithUnspent,
   toTNumber,
+  NonWitnessUnspent,
   WalletUnspent,
   UtxoTransaction,
   createPsbtForNetwork,
+  createPsbtFromTransaction,
   addToPsbt,
+  toPrevOutput,
   addChangeOutputToPsbt,
 } from '../../../src/bitgo';
 
@@ -123,12 +127,12 @@ describe('WalletUnspent', function () {
     });
   });
 
-  function constructAndSignTransactionUsingPsbt(
+  async function constructAndSignTransactionUsingPsbt(
     unspents: WalletUnspent<bigint>[],
     signer: string,
     cosigner: string,
     scriptType: outputScripts.ScriptType2Of3
-  ): Transaction<bigint> {
+  ): Promise<Transaction<bigint>> {
     const psbt = createPsbtForNetwork({ network });
     const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
     // Kinda weird, treating entire value as change, but tests the relevant paths
@@ -143,7 +147,24 @@ describe('WalletUnspent', function () {
     psbt.signAllInputsHD(walletKeys[cosigner]);
     assert(psbt.validateSignaturesOfAllInputs());
     psbt.finalizeAllInputs();
-    return psbt.extractTransaction(); // extract transaction has a return type of Transaction instead of UtxoTransaction
+    // extract transaction has a return type of Transaction instead of UtxoTransaction
+    const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
+    const psbt2 = createPsbtFromTransaction(
+      tx,
+      unspents.map((u) => toPrevOutput<bigint>(u, network))
+    );
+    const nonWitnessUnspents = unspents.filter((u) => isNonWitnessUnspent(u)) as unknown as NonWitnessUnspent<bigint>[];
+    const txBufs = Object.fromEntries(
+      psbt2.getNonWitnessPreviousTxids().map((txid) => {
+        const u = nonWitnessUnspents.find((u) => parseOutputId(u.id).txid === txid);
+        if (u === undefined) throw new Error('No prevtx found');
+        return [txid, u.prevTx];
+      })
+    );
+    psbt2.addNonWitnessUtxos(txBufs);
+    assert(psbt2.validateSignaturesOfAllInputs());
+    return tx;
   }
 
   function constructAndSignTransactionUsingTransactionBuilder<TNumber extends number | bigint>(
@@ -189,7 +210,7 @@ describe('WalletUnspent', function () {
     amountType: 'number' | 'bigint' = 'number',
     testOutputAmount = toTNumber<TNumber>(defaultTestOutputAmount, amountType)
   ) {
-    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
+    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, async function () {
       const unspents = [
         mockWalletUnspent(network, testOutputAmount, {
           keys: walletKeys,
@@ -210,7 +231,7 @@ describe('WalletUnspent', function () {
         scriptType
       );
       if (amountType === 'bigint') {
-        const psbtTransaction = constructAndSignTransactionUsingPsbt(
+        const psbtTransaction = await constructAndSignTransactionUsingPsbt(
           unspents as WalletUnspent<bigint>[],
           signer,
           cosigner,

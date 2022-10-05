@@ -7,12 +7,13 @@ import {
   Transaction as ITransaction,
   TransactionFromBuffer,
 } from 'bip174/src/lib/interfaces';
+import { getOutputIdForInput } from './Unspent';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { Psbt as PsbtBase } from 'bip174';
 import { Network } from '..';
 import { ecc as eccLib, script as bscript, payments } from '..';
 import * as opcodes from 'bitcoin-ops';
-import { BufferWriter, varuint, reverseBuffer } from 'bitcoinjs-lib/src/bufferutils';
+import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -42,6 +43,24 @@ export interface PsbtOpts {
   maximumFeeRate?: number; // [sat/byte]
 }
 
+function isP2wsh(scriptPubkey: Buffer, redeemScript?: Buffer): boolean {
+  const witnessProgramCandidate = redeemScript ?? scriptPubkey;
+  return witnessProgramCandidate[0] === opcodes.OP_0 && witnessProgramCandidate.length === 34;
+}
+
+function isP2wpkh(scriptPubkey: Buffer, redeemScript?: Buffer): boolean {
+  const witnessProgramCandidate = redeemScript ?? scriptPubkey;
+  return witnessProgramCandidate[0] === opcodes.OP_0 && witnessProgramCandidate.length === 22;
+}
+
+function isTaproot(scriptPubkey: Buffer): boolean {
+  return scriptPubkey[0] === opcodes.OP_1 && scriptPubkey.length === 34;
+}
+
+function isSegwit(scriptPubkey: Buffer, redeemScript?: Buffer): boolean {
+  return isTaproot(scriptPubkey) || isP2wsh(scriptPubkey, redeemScript) || isP2wpkh(scriptPubkey, redeemScript);
+}
+
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
 // `setVersion`. Our inputs could have tapscriptsigs (or in future tapkeysigs)
 // and not fail that check. Do we want to do anything about that?
@@ -68,26 +87,35 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
-  static async fromTransactionComplete(
-    transaction: UtxoTransaction<bigint>,
-    prevOutputs: TxOutput<bigint>[],
-    fetchTransactions: (txids: string[]) => Promise<Record<string, Buffer>>
-  ): Promise<UtxoPsbt<UtxoTransaction<bigint>>> {
-    const psbt = this.fromTransaction(transaction, prevOutputs);
-
-    const txidToIndex: Record<string, number> = {};
-    psbt.data.inputs.forEach((input, index) => {
-      if (!input.tapLeafScript && !input.witnessScript) {
-        txidToIndex[reverseBuffer(transaction.ins[index].hash).toString('hex')] = index;
+  getNonWitnessPreviousTxids(): string[] {
+    const txInputs = this.txInputs; // These are somewhat costly to extract
+    const txidSet = new Set<string>();
+    this.data.inputs.forEach((input, index) => {
+      if (!input.witnessUtxo) {
+        throw new Error('Must have witness UTXO for all inputs');
+      }
+      if (!isSegwit(input.witnessUtxo.script, input.redeemScript)) {
+        txidSet.add(getOutputIdForInput(txInputs[index]).txid);
       }
     });
+    return [...txidSet];
+  }
 
-    const txHexs = await fetchTransactions(Object.keys(txidToIndex));
-    Object.entries(txidToIndex).forEach(([txid, index]) => {
-      psbt.updateInput(index, { nonWitnessUtxo: txHexs[txid] });
+  addNonWitnessUtxos(txBufs: Record<string, Buffer>): this {
+    const txInputs = this.txInputs; // These are somewhat costly to extract
+    this.data.inputs.forEach((input, index) => {
+      if (!input.witnessUtxo) {
+        throw new Error('Must have witness UTXO for all inputs');
+      }
+      if (!isSegwit(input.witnessUtxo.script, input.redeemScript)) {
+        const { txid } = getOutputIdForInput(txInputs[index]);
+        if (txBufs[txid] === undefined) {
+          throw new Error('Not all required previous transactions provided');
+        }
+        this.updateInput(index, { nonWitnessUtxo: txBufs[txid] });
+      }
     });
-
-    return psbt;
+    return this;
   }
 
   static fromTransaction(
@@ -441,8 +469,7 @@ function unsign(tx: UtxoTransaction<bigint>, prevOuts: TxOutput<bigint>[]): Psbt
         update.tapKeySig = witness.pop();
         return update;
       }
-      const witnessProgramCandidate = redeemScript ?? prevOut.script;
-      if (witnessProgramCandidate.length === 34 && witnessProgramCandidate[0] === opcodes.OP_1) {
+      if (isTaproot(prevOut.script)) {
         // Taproot script path
         const controlBlock = witness.pop();
         const script = witness.pop();
@@ -468,8 +495,7 @@ function unsign(tx: UtxoTransaction<bigint>, prevOuts: TxOutput<bigint>[]): Psbt
           if (!pubkey) throw new Error("Impossible, known 2-length things didn't match");
           update.tapScriptSig.push({ signature, pubkey, leafHash });
         }
-      } else if (witnessProgramCandidate.length === 34 && witnessProgramCandidate[0] === opcodes.OP_0) {
-        // P2WSH
+      } else if (isP2wsh(prevOut.script, redeemScript)) {
         const witnessScript = witness.pop();
         if (!witnessScript) throw new Error('Invalid witness structure');
         update.witnessScript = witnessScript;
@@ -479,8 +505,7 @@ function unsign(tx: UtxoTransaction<bigint>, prevOuts: TxOutput<bigint>[]): Psbt
         }
         const hashFn = (hashType) => tx.hashForWitnessV0(vin, witnessScript, prevOut.value, hashType);
         update.partialSig = matchSignatures(hashFn, witnessScript, witness);
-      } else if (witnessProgramCandidate.length === 22 && witnessProgramCandidate[0] === opcodes.OP_0) {
-        // P2WPKH
+      } else if (isP2wpkh(prevOut.script, redeemScript)) {
         if (witness.length === 2) {
           const pubkey = witness.pop();
           const signature = witness.pop();
