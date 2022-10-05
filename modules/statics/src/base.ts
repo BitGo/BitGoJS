@@ -895,6 +895,8 @@ export enum UnderlyingAsset {
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
 
+  'terc721:bitgoerc721' = 'terc721:bitgoerc721',
+
   // Cardano Token
   adaTestnetToken = 'temporary-placeholder',
 }

@@ -1,18 +1,18 @@
 import {
-  Erc20Coin,
-  StellarCoin,
+  AdaCoin,
+  AlgoCoin,
+  AvaxERC20Token,
+  BscCoin,
   CeloCoin,
   EosCoin,
-  AvaxERC20Token,
-  AlgoCoin,
-  SolCoin,
+  Erc20Coin,
+  Erc721Coin,
   HederaToken,
   PolygonERC20Token,
-  BscCoin,
-  AdaCoin,
-  Erc721Coin,
+  SolCoin,
+  StellarCoin,
 } from './account';
-import { CoinKind } from './base';
+import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
@@ -140,7 +140,7 @@ export interface Tokens {
 
 // Get the list of ERC-20 tokens from statics and format it properly
 const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
-  if (coin instanceof Erc20Coin) {
+  if (coin instanceof Erc20Coin || (coin instanceof Erc721Coin && coin.family === CoinFamily.ETH)) {
     let baseCoin: string;
     switch (coin.network) {
       case Networks.main.ethereum:
@@ -263,7 +263,7 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
 }, []);
 
 const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof PolygonERC20Token || coin instanceof Erc721Coin) {
+  if (coin instanceof PolygonERC20Token || (coin instanceof Erc721Coin && coin.family === CoinFamily.POLYGON)) {
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
