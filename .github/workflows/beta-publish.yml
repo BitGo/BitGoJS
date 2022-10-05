@@ -1,9 +1,9 @@
 name: Publish @bitgo-beta
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
 jobs:
   publish:
     name: Publish Beta Release
