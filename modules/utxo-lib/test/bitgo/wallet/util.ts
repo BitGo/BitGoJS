@@ -24,7 +24,7 @@ export function mockOutputId(vout: number): string {
 }
 
 export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, network: Network): Transaction<bigint> {
-  const psbtFromNetwork = createPsbtForNetwork(network);
+  const psbtFromNetwork = createPsbtForNetwork({ network });
   const prevTx = psbtFromNetwork.tx;
 
   const privKey = noble.utils.randomPrivateKey();

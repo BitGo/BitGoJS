@@ -129,7 +129,7 @@ describe('WalletUnspent', function () {
     cosigner: string,
     scriptType: outputScripts.ScriptType2Of3
   ): Transaction<bigint> {
-    const psbt = createPsbtForNetwork(network);
+    const psbt = createPsbtForNetwork({ network });
     const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
     // Kinda weird, treating entire value as change, but tests the relevant paths
     addChangeOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
