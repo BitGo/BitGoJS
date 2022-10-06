@@ -54,8 +54,8 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @param {number | string} nonce - number that can be only used once
    */
   nonce(nonce: number | string): this {
-    const nonceBN = BN.isBN(nonce) ? nonce : new BN(nonce);
-    this.validateAmount(nonceBN);
+    const nonceBN = new BN(nonce);
+    this.validateNonce(nonceBN);
     this._nonce = nonceBN;
     return this;
   }
@@ -104,7 +104,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     // It's expected to have only one input form C-Chain address.
     const inputs = baseTx.getInputs();
     if (inputs.length !== 1) {
-      throw new BuildTransactionError('Transaction can have one output');
+      throw new BuildTransactionError('Transaction can have one inputs');
     }
     const input = inputs[0];
 
@@ -202,5 +202,15 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
     return this.transaction;
+  }
+
+  /**
+   * Check the amount is positive.
+   * @param amount
+   */
+  validateNonce(nonce: BN): void {
+    if (nonce.ltn(0)) {
+      throw new BuildTransactionError('Nonce must be greater or equal than 0');
+    }
   }
 }

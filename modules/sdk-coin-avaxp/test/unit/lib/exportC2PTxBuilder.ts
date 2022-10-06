@@ -4,12 +4,34 @@ import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { EXPORT_C } from '../../resources/tx/exportC';
+import { BN } from 'avalanche';
 
 describe('AvaxP Export C2P Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tavaxp'));
   const data = EXPORT_C;
   describe('validate txBuilder fields', () => {
-    // const txBuilder = factory.getExportInCBuilder();
+    const txBuilder = factory.getExportInCBuilder();
+    it('should fail amount low or equal than zero', () => {
+      for (const amount of [new BN(0), new BN(-1), '0', '-1']) {
+        assert.throws(
+          () => {
+            txBuilder.amount(amount);
+          },
+          (e) => e.message === errorMessage.ERROR_AMOUNT
+        );
+      }
+    });
+
+    it('should fail nonce low than zero', () => {
+      for (const nonce of [-1, '-1']) {
+        assert.throws(
+          () => {
+            txBuilder.nonce(nonce);
+          },
+          (e) => e.message === errorMessage.ERROR_NONCE
+        );
+      }
+    });
   });
 
   describe('should build ', () => {
