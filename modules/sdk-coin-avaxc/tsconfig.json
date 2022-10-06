@@ -24,6 +24,9 @@
     },
     {
       "path": "../sdk-test"
+    },
+    {
+      "path": "../sdk-coin-avaxp"
     }
   ]
 }

@@ -58,7 +58,7 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
-  protected _avaxpTransaction: Tx;
+  protected _avaxTransaction: Tx;
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
@@ -82,7 +82,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get avaxPTransaction(): BaseTx {
-    return this._avaxpTransaction.getUnsignedTx().getTransaction();
+    return this._avaxTransaction.getUnsignedTx().getTransaction();
   }
 
   get signature(): string[] {
@@ -95,7 +95,7 @@ export class Transaction extends BaseTransaction {
 
   get credentials(): Credential[] {
     // it should be this._avaxpTransaction?.getCredentials(), but EVMTx doesn't have it
-    return (this._avaxpTransaction as any)?.credentials;
+    return (this._avaxTransaction as any)?.credentials;
   }
 
   get hasCredentials(): boolean {
@@ -156,7 +156,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this._avaxpTransaction.toStringHex();
+    return this._avaxTransaction.toStringHex();
   }
 
   // types - stakingTransaction, import, export
@@ -181,7 +181,7 @@ export class Transaction extends BaseTransaction {
   }
 
   setTransaction(tx: Tx): void {
-    this._avaxpTransaction = tx;
+    this._avaxTransaction = tx;
   }
 
   /**
@@ -198,11 +198,11 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    return utils.sha256(this._avaxpTransaction.getUnsignedTx().toBuffer());
+    return utils.sha256(this._avaxTransaction.getUnsignedTx().toBuffer());
   }
 
   get id(): string {
-    return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxpTransaction.toBuffer())));
+    return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxTransaction.toBuffer())));
   }
 
   get fromAddresses(): string[] {
@@ -221,7 +221,7 @@ export class Transaction extends BaseTransaction {
       case TransactionType.Import:
         return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
       case TransactionType.Export:
-        if (utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)) {
+        if (utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)) {
           return (this.avaxPTransaction as EVMExportTx).getExportedOutputs().map(utils.mapOutputToEntry(this._network));
         } else {
           return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
@@ -252,7 +252,7 @@ export class Transaction extends BaseTransaction {
     // C-chain tx adn Import Txs don't have change outputs
     if (
       this.type === TransactionType.Import ||
-      utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)
+      utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)
     ) {
       return [];
     }
@@ -267,7 +267,7 @@ export class Transaction extends BaseTransaction {
         inputs = (this.avaxPTransaction as ImportTx | EVMImportTx).getImportInputs();
         break;
       case TransactionType.Export:
-        if (utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)) {
+        if (utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)) {
           return (this.avaxPTransaction as EVMExportTx).getInputs().map((evmInput) => ({
             address: '0x' + evmInput.getAddressString(),
             value: evmInput.getAmount().toString(),

@@ -24,6 +24,7 @@ export interface ExplainTransactionOptions {
     txHex: string;
   };
   feeInfo: TransactionFee;
+  crossChainType?: string;
 }
 
 export interface AvaxcTransactionParams extends TransactionParams {
