@@ -147,7 +147,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return new UtxoTransaction<bigint>(network);
   }
 
-  get tx(): Tx {
+  protected get tx(): Tx {
     return (this.data.globalMap.unsignedTx as PsbtTransaction).tx as Tx;
   }
 
@@ -366,7 +366,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     hash: Buffer;
     sighashType: number;
   } {
-    const unsignedTx = this.tx;
     const sighashType = this.data.inputs[inputIndex].sighashType || Transaction.SIGHASH_DEFAULT;
     if (sighashTypes && sighashTypes.indexOf(sighashType) < 0) {
       throw new Error(
@@ -374,6 +373,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
           `sighashTypes array of whitelisted types. Sighash type: ${sighashType}`
       );
     }
+    const txInputs = this.txInputs; // These are somewhat costly to extract
     const prevoutScripts: Buffer[] = [];
     const prevoutValues: bigint[] = [];
 
@@ -383,10 +383,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
         // TODO: This could be costly, either cache it here, or find a way to share with super
         const nonWitnessUtxoTx = (this.constructor as typeof UtxoPsbt).transactionFromBuffer(
           input.nonWitnessUtxo,
-          unsignedTx.network
+          this.tx.network
         );
 
-        const prevoutHash = unsignedTx.ins[inputIndex].hash;
+        const prevoutHash = txInputs[inputIndex].hash;
         const utxoHash = nonWitnessUtxoTx.getHash();
 
         // If a non-witness UTXO is provided, its hash must match the hash specified in the prevout
@@ -396,7 +396,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
           );
         }
 
-        const prevoutIndex = unsignedTx.ins[inputIndex].index;
+        const prevoutIndex = txInputs[inputIndex].index;
         prevout = nonWitnessUtxoTx.outs[prevoutIndex];
       } else if (input.witnessUtxo) {
         prevout = input.witnessUtxo;
@@ -406,7 +406,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
     }
-    const hash = unsignedTx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
+    const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }
 }
