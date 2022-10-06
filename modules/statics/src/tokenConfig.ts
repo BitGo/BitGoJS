@@ -11,8 +11,9 @@ import {
   BscCoin,
   AdaCoin,
   Erc721Coin,
+  Erc1155Coin,
 } from './account';
-import { CoinKind } from './base';
+import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
@@ -263,7 +264,10 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
 }, []);
 
 const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof PolygonERC20Token || coin instanceof Erc721Coin) {
+  if (
+    coin instanceof PolygonERC20Token ||
+    ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
+  ) {
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
