@@ -28,6 +28,8 @@ export const ERROR_KEY_CANNOT_SIGN = 'Private key cannot sign the transaction';
 
 export const ERROR_AMOUNT = 'Amount must be greater than 0';
 
+export const ERROR_NONCE = 'Nonce must be greater or equal than 0';
+
 export const ERROR_CHAIN_ID_NOT_BASE58 = 'Error - Base58.decode: not a valid base58 string';
 
 export const ERROR_CHAIN_ID_INVALID_CHECKSUM = 'Error - BinTools.cb58Decode: invalid checksum';
