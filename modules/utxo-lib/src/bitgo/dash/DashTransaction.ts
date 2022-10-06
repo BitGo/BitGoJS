@@ -50,7 +50,7 @@ export class DashTransaction<TNumber extends number | bigint = number> extends U
     amountType: 'number' | 'bigint' = 'number',
     network: Network
   ): DashTransaction<TNumber> {
-    const tx = super.fromBuffer<TNumber>(buffer, true, amountType, network) as DashTransaction<TNumber>;
+    const tx = new DashTransaction<TNumber>(network, super.fromBuffer<TNumber>(buffer, true, amountType, network));
     tx.type = tx.version >> 16;
     tx.version = tx.version & 0xffff;
     if (tx.byteLength() !== buffer.length) {

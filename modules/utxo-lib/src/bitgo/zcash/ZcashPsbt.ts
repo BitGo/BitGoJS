@@ -25,7 +25,7 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     return ZcashTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
   }
 
-  static createPsbt(opts: PsbtOpts, data: PsbtBase): ZcashPsbt {
+  static createPsbt(opts: PsbtOpts, data?: PsbtBase): ZcashPsbt {
     return new ZcashPsbt(
       opts,
       data || new PsbtBase(new PsbtTransaction({ tx: new ZcashTransaction<bigint>(opts.network) }))

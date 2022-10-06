@@ -2,7 +2,7 @@ import { TxOutput } from 'bitcoinjs-lib';
 
 import { networks, Network, getMainnet } from '../networks';
 
-import { UtxoPsbt } from './UtxoPsbt';
+import { UtxoPsbt, PsbtOpts } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 import { DashPsbt } from './dash/DashPsbt';
@@ -158,34 +158,34 @@ export function setPsbtDefaults(
 }
 
 export function createPsbtForNetwork(
-  network: Network,
+  psbtOpts: PsbtOpts,
   { version }: { version?: number } = {}
 ): UtxoPsbt<UtxoTransaction<bigint>> {
   let psbt;
 
-  switch (getMainnet(network)) {
+  switch (getMainnet(psbtOpts.network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.litecoin: {
-      psbt = new UtxoPsbt({ network });
+      psbt = UtxoPsbt.createPsbt(psbtOpts);
       break;
     }
     case networks.dash: {
-      psbt = new DashPsbt({ network });
+      psbt = DashPsbt.createPsbt(psbtOpts);
       break;
     }
     case networks.zcash: {
-      psbt = new ZcashPsbt({ network });
+      psbt = ZcashPsbt.createPsbt(psbtOpts);
       break;
     }
     default:
       throw new Error(`unsupported network`);
   }
 
-  setPsbtDefaults(psbt, network, { version });
+  setPsbtDefaults(psbt, psbtOpts.network, { version });
 
   return psbt;
 }
