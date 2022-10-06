@@ -203,16 +203,13 @@ export function addToPsbt(
   psbt.addInput({
     hash: txid,
     index: vout,
+    witnessUtxo: {
+      script,
+      value,
+    },
   });
   const inputIndex = psbt.inputCount - 1;
-  if (isSegwit(u.chain)) {
-    psbt.updateInput(inputIndex, {
-      witnessUtxo: {
-        script,
-        value,
-      },
-    });
-  } else {
+  if (!isSegwit(u.chain)) {
     if (!isNonWitnessUnspent(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }
