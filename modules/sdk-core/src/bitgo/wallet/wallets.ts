@@ -205,6 +205,11 @@ export class Wallets implements IWallets {
       walletParams.enterprise = params.enterprise;
     }
 
+    // EVM TSS wallets must use wallet version 3
+    if ((isTss && this.baseCoin.isEVM()) !== (params.walletVersion === 3)) {
+      throw new Error('EVM TSS wallets are only supported for wallet version 3');
+    }
+
     if (isTss) {
       if (isCold) {
         throw new Error('TSS cold wallets are not supported at this time');
