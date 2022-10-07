@@ -680,6 +680,10 @@ class Polygon extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://polygonscan.com/tx/';
   accountExplorerUrl = 'https://polygonscan.com/address/';
   chainId = 137;
+  forwarderFactoryAddress = '0x29ef46035e9fa3d570c598d3266424ca11413b0c';
+  forwarderImplementationAddress = '0x5397d0869aba0d55e96d5716d383f6e1d8695ed7';
+  walletFactoryAddress = '0xa7198f48c58e91f01317e70cd24c5cce475c1555';
+  walletImplementationAddress = '0xe5dcdc13b628c2df813db1080367e929c1507ca0';
 }
 
 class PolygonTestnet extends Testnet implements EthereumNetwork {
