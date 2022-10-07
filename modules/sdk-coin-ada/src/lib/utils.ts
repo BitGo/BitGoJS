@@ -5,6 +5,7 @@ import {
   Ed25519Signature,
   NetworkInfo,
   StakeCredential,
+  RewardAddress,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
@@ -55,6 +56,23 @@ export class Utils implements BaseUtils {
       return false;
     }
     return hash.match(/^[a-zA-Z0-9]+$/) !== null;
+  }
+
+  getRewardAddress(stakingPubKey: string, coinName: string): string {
+    const stakePub = PublicKey.from_bytes(Buffer.from(stakingPubKey, 'hex'));
+    let rewardAddress;
+    if (coinName === 'ada') {
+      rewardAddress = RewardAddress.new(
+        NetworkInfo.mainnet().network_id(),
+        StakeCredential.from_keyhash(stakePub.hash())
+      );
+    } else {
+      rewardAddress = RewardAddress.new(
+        NetworkInfo.testnet().network_id(),
+        StakeCredential.from_keyhash(stakePub.hash())
+      );
+    }
+    return rewardAddress.to_address().to_bech32();
   }
 
   /** @inheritdoc */

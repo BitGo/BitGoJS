@@ -2,7 +2,7 @@ import { BaseKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import { Utils } from '../';
 
 export class StakingWithdrawRewardsBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -35,21 +35,9 @@ export class StakingWithdrawRewardsBuilder extends TransactionBuilder {
    */
   addWithdrawal(stakingPubKey: string, value: string) {
     const coinName = this._coinConfig.name;
-    const stakePub = CardanoWasm.PublicKey.from_bytes(Buffer.from(stakingPubKey, 'hex'));
-    let rewardAddress;
-    if (coinName === 'ada') {
-      rewardAddress = CardanoWasm.RewardAddress.new(
-        CardanoWasm.NetworkInfo.mainnet().network_id(),
-        CardanoWasm.StakeCredential.from_keyhash(stakePub.hash())
-      );
-    } else {
-      rewardAddress = CardanoWasm.RewardAddress.new(
-        CardanoWasm.NetworkInfo.testnet().network_id(),
-        CardanoWasm.StakeCredential.from_keyhash(stakePub.hash())
-      );
-    }
+    const rewardAddress = Utils.default.getRewardAddress(stakingPubKey, coinName);
     this._withdrawals.push({
-      stakeAddress: rewardAddress.to_address().to_bech32(),
+      stakeAddress: rewardAddress,
       value,
     });
     return this;
