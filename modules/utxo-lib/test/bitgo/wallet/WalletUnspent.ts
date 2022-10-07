@@ -127,12 +127,12 @@ describe('WalletUnspent', function () {
     });
   });
 
-  async function constructAndSignTransactionUsingPsbt(
+  function constructAndSignTransactionUsingPsbt(
     unspents: WalletUnspent<bigint>[],
     signer: string,
     cosigner: string,
     scriptType: outputScripts.ScriptType2Of3
-  ): Promise<Transaction<bigint>> {
+  ): Transaction<bigint> {
     const psbt = createPsbtForNetwork({ network });
     const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
     // Kinda weird, treating entire value as change, but tests the relevant paths
@@ -210,7 +210,7 @@ describe('WalletUnspent', function () {
     amountType: 'number' | 'bigint' = 'number',
     testOutputAmount = toTNumber<TNumber>(defaultTestOutputAmount, amountType)
   ) {
-    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, async function () {
+    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
       const unspents = [
         mockWalletUnspent(network, testOutputAmount, {
           keys: walletKeys,
@@ -231,7 +231,7 @@ describe('WalletUnspent', function () {
         scriptType
       );
       if (amountType === 'bigint') {
-        const psbtTransaction = await constructAndSignTransactionUsingPsbt(
+        const psbtTransaction = constructAndSignTransactionUsingPsbt(
           unspents as WalletUnspent<bigint>[],
           signer,
           cosigner,
