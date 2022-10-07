@@ -2028,7 +2028,7 @@ export const coins = CoinMap.fromCoins([
   terc721(
     'tpolygon:name',
     'Polygon Test NAME',
-    '0x53225dcd075677f7d9a40baa8f65a8f0043b6af5',
+    '0x261c65f862a5f4238448eccd3b91511c71be661e',
     AccountCoin.DEFAULT_FEATURES,
     '',
     '',
