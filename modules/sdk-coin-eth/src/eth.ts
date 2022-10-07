@@ -1727,10 +1727,6 @@ export class Eth extends BaseCoin {
     return true;
   }
 
-  supportsStaking(): boolean {
-    return true;
-  }
-
   supportsMessageSigning(): boolean {
     return true;
   }

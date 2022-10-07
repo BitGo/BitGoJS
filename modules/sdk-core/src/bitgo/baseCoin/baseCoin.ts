@@ -168,14 +168,6 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
-   * Flag indicating if this coin supports staking.
-   * @returns {boolean} True if staking is supported for this coin, False otherwise
-   */
-  supportsStaking(): boolean {
-    return false;
-  }
-
-  /**
    * Flag indicating if this coin supports BLS-DKG wallets.
    * @returns {boolean} True if BLS-DKG Wallets can be created for this coin
    */

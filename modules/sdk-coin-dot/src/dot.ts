@@ -106,10 +106,6 @@ export class Dot extends BaseCoin {
     return 'Polkadot';
   }
 
-  supportsStaking(): boolean {
-    return true;
-  }
-
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }

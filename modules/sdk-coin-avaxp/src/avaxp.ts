@@ -54,10 +54,6 @@ export class AvaxP extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  supportsStaking(): boolean {
-    return true;
-  }
-
   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
     const txHex = params.txPrebuild && params.txPrebuild.txHex;
     if (!txHex) {

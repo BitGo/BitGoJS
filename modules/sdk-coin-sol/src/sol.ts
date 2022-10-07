@@ -156,10 +156,6 @@ export class Sol extends BaseCoin {
     return 'eddsa';
   }
 
-  supportsStaking(): boolean {
-    return true;
-  }
-
   getChain(): string {
     return this._staticsCoin.name;
   }

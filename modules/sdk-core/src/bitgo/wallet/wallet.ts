@@ -2104,9 +2104,6 @@ export class Wallet implements IWallet {
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
-    if (!this.baseCoin.supportsStaking()) {
-      throw new Error(`Staking not supported for ${this.coin()}`);
-    }
     return new StakingWallet(this);
   }
 
