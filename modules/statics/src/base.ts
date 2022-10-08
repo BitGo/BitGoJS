@@ -139,6 +139,10 @@ export enum CoinFeature {
    * This coin supports staking
    */
   STAKING = 'staking',
+  /**
+   * This coin is deprecated
+   */
+  DEPRECATED = 'deprecated',
 }
 
 /**
