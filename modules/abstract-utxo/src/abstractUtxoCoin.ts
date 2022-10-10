@@ -1108,7 +1108,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
-      txPrebuild.txInfo.unspents,
+      this.parseUnspents(txPrebuild.txInfo.unspents),
       new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
@@ -1374,5 +1374,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   valuelessTransferAllowed(): boolean {
     return false;
+  }
+
+  parseUnspents<TNumber extends number | bigint>(unspents: any): Unspent<TNumber>[] {
+    return unspents;
   }
 }

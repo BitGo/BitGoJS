@@ -611,11 +611,6 @@ export class Wallet implements IWallet {
       .send(filteredParams)
       .result();
 
-    response.txInfo?.unspents?.map((u) => {
-      u.value = BigInt(u.valueString);
-      return u;
-    });
-
     const keychains = (await this.baseCoin
       .keychains()
       .getKeysForSigning({ wallet: this, reqId })) as unknown as Keychain[];
@@ -819,10 +814,6 @@ export class Wallet implements IWallet {
     ]);
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
-    response.txInfo?.unspents?.map((u) => {
-      u.value = BigInt(u.valueString);
-      return u;
-    });
 
     // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 

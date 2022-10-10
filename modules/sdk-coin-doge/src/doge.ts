@@ -14,6 +14,8 @@ import {
 import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+
 export class Doge extends AbstractUtxoCoin {
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.dogecoin, 'bigint');
@@ -77,5 +79,13 @@ export class Doge extends AbstractUtxoCoin {
     params: RecoverFromWrongChainOptions
   ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
     return super.recoverFromWrongChain(params);
+  }
+
+  parseUnspents<TNumber extends number | bigint>(unspents: any): Unspent<TNumber>[] {
+    return unspents?.map((unspent) => {
+      const newUnspent = Object.assign({}, unspent);
+      newUnspent.value = utxolib.bitgo.toTNumber(unspent?.valueString, 'bigint');
+      return newUnspent;
+    });
   }
 }
