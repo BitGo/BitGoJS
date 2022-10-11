@@ -5,7 +5,7 @@ import { createOutputScript2of3, createSpendScriptP2tr, createPaymentP2tr, toXOn
 import { UtxoPsbt } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
-import { isSegwit, ChainCode, RootWalletKeys, scriptTypeForChain, WalletUnspent, WalletUnspentSigner } from './wallet';
+import { isSegwit, ChainCode, RootWalletKeys, scriptTypeForChain, WalletUnspent } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -194,11 +194,13 @@ export function addChangeOutputToPsbt(
 export function addToPsbt(
   psbt: UtxoPsbt<UtxoTransaction<bigint>>,
   u: WalletUnspent<bigint>,
-  rootSigner: WalletUnspentSigner<RootWalletKeys>,
+  rootWalletKeys: RootWalletKeys,
+  signer: string,
+  cosigner: string,
   network: Network
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, network);
-  const { walletKeys, signerIndex, cosignerIndex } = rootSigner.deriveForChainAndIndex(u.chain, u.index);
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
   const scriptType = scriptTypeForChain(u.chain);
   psbt.addInput({
     hash: txid,
@@ -218,16 +220,16 @@ export function addToPsbt(
 
   if (scriptType === 'p2tr') {
     const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2tr(walletKeys.publicKeys, [
-      walletKeys.triple[signerIndex].publicKey,
-      walletKeys.triple[cosignerIndex].publicKey,
+      walletKeys[signer].publicKey,
+      walletKeys[cosigner].publicKey,
     ]);
     psbt.updateInput(inputIndex, {
       tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
-      tapBip32Derivation: [signerIndex, cosignerIndex].map((idx) => ({
+      tapBip32Derivation: [signer, cosigner].map((key) => ({
         leafHashes: [leafHash],
-        pubkey: walletKeys.triple[idx].publicKey.slice(1), // 32-byte x-only
-        path: walletKeys.paths[idx],
-        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+        pubkey: walletKeys[key].publicKey.slice(1), // 32-byte x-only
+        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
+        masterFingerprint: rootWalletKeys[key].fingerprint,
       })),
     });
   } else {
@@ -236,7 +238,7 @@ export function addToPsbt(
       bip32Derivation: [0, 1, 2].map((idx) => ({
         pubkey: walletKeys.triple[idx].publicKey,
         path: walletKeys.paths[idx],
-        masterFingerprint: rootSigner.walletKeys.triple[idx].fingerprint,
+        masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
       })),
     });
     if (witnessScript) {
