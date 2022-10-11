@@ -38,6 +38,7 @@ import {
 import * as sjcl from '@bitgo/sjcl';
 import {
   AccessTokenOptions,
+  AddAccessTokenResponse,
   AddAccessTokenOptions,
   AuthenticateOptions,
   AuthenticateWithAuthCodeOptions,
@@ -956,7 +957,7 @@ export class BitGoAPI implements BitGoBase {
    *    unlock: <info for actions that require an unlock before firing>
    * }
    */
-  async addAccessToken(params: AddAccessTokenOptions): Promise<any> {
+  async addAccessToken(params: AddAccessTokenOptions): Promise<AddAccessTokenResponse> {
     try {
       if (!_.isString(params.label)) {
         throw new Error('required string label');
@@ -1006,7 +1007,7 @@ export class BitGoAPI implements BitGoBase {
       const response = await request.send(params);
       if (request.forceV1Auth) {
         (response as any).body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
-        return handleResponseResult()(response);
+        return handleResponseResult<AddAccessTokenResponse>()(response);
       }
 
       // verify the authenticity of the server's response before proceeding any further
@@ -1015,7 +1016,7 @@ export class BitGoAPI implements BitGoBase {
       const responseDetails = this.handleTokenIssuance(response.body);
       response.body.token = responseDetails.token;
 
-      return handleResponseResult()(response);
+      return handleResponseResult<AddAccessTokenResponse>()(response);
     } catch (e) {
       handleResponseError(e);
     }
