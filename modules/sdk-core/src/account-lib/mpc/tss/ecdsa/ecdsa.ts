@@ -147,8 +147,12 @@ export default class Ecdsa {
   signShare(xShare: XShare, yShare: YShare): SignShareRT {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
-    const k = Ecdsa.curve.scalarRandom();
-    const gamma = Ecdsa.curve.scalarRandom();
+    // const k = Ecdsa.curve.scalarRandom();
+    const k = BigInt(68133693183235017653349578475867102676198812831968870414657306396048704405504);
+    console.log(`using deterministic k value: ${k}`);
+    // const gamma = Ecdsa.curve.scalarRandom();
+    const gamma = BigInt(100687851374959543069477755034237332526335930901781562339224674173892186603520);
+    console.log(`using deterministic gamma value: ${gamma}`);
 
     const d = Ecdsa.curve.scalarMult(Ecdsa.curve.scalarSub(BigInt(yShare.j), BigInt(xShare.i)), BigInt(xShare.i));
 
@@ -228,18 +232,20 @@ export default class Ecdsa {
       let pk = getPaillierPublicKey(n);
       const k = hexToBigInt(shareToBeSend['k']);
 
-      const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      // const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      const beta0 = BigInt(1);
       shareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(beta0)), 32).toString(
         'hex'
       );
-      const alpha = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.gamma)), pk.encrypt(beta0));
+      const alpha = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.gamma)), pk.encrypt(beta0, BigInt(2)));
       shareToBeSend.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
 
-      const nu0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      // const nu0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      const nu0 = BigInt(1);
       shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(nu0)), 32).toString(
         'hex'
       );
-      const mu = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.w)), pk.encrypt(nu0));
+      const mu = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.w)), pk.encrypt(nu0, BigInt(2)));
       shareToBeSend.mu = bigIntToBufferBE(mu, 32).toString('hex');
       if (shareParticipant['alpha']) {
         delete shareToBeSend['n'];
@@ -247,7 +253,9 @@ export default class Ecdsa {
       } else {
         pk = getPaillierPublicKey(hexToBigInt(shareParticipant.n));
         shareToBeSend['n'] = pk.n.toString(16);
-        shareToBeSend['k'] = bigIntToBufferBE(pk.encrypt(hexToBigInt(shareParticipant.k)), 32).toString('hex');
+        shareToBeSend['k'] = bigIntToBufferBE(pk.encrypt(hexToBigInt(shareParticipant.k), BigInt(2)), 32).toString(
+          'hex'
+        );
       }
     }
     if (!('alpha' in shareToBeSend) && !('k' in shareToBeSend)) {
