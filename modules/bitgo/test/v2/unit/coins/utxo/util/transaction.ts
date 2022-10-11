@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
+import { UnspentJSON } from '@bitgo/abstract-utxo';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
@@ -65,7 +66,7 @@ export function transactionHexToObj(
 
 export function createPrebuildTransaction<TNumber extends number | bigint = number>(
   network: utxolib.Network,
-  unspents: Unspent<TNumber>[],
+  unspents: UnspentJSON[],
   outputAddress: string
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   const txb = utxolib.bitgo.createTransactionBuilderForNetwork<TNumber>(network);

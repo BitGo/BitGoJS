@@ -65,6 +65,10 @@ const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, to
   bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
+// should live in abstractUtxoCoin.ts
+/** Unspent data as returned by Wallet Platform */
+export type UnspentJSON = Unspent & { value: number; valueString: string };
+
 type RootWalletKeys = bitgo.RootWalletKeys;
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -1108,7 +1112,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
-      this.parseUnspents(txPrebuild.txInfo.unspents),
+      /* TODO change type of txPrebuild.txInfo.unspents to UnspentJSON
+         and create new TransactionInfoJSON type if TransactionInfo is created within bitgojs */
+      this.parseUnspents(txPrebuild.txInfo.unspents as any as UnspentJSON[]),
       new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
@@ -1376,7 +1382,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return false;
   }
 
-  parseUnspents<TNumber extends number | bigint>(unspents: any): Unspent<TNumber>[] {
+  parseUnspents(unspents: UnspentJSON[]): Unspent<number | bigint>[] {
     return unspents;
   }
 }

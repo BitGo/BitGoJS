@@ -10,6 +10,7 @@ import {
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   RecoverFromWrongChainOptions,
+  UnspentJSON,
 } from '@bitgo/abstract-utxo';
 import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -81,11 +82,9 @@ export class Doge extends AbstractUtxoCoin {
     return super.recoverFromWrongChain(params);
   }
 
-  parseUnspents<TNumber extends number | bigint>(unspents: any): Unspent<TNumber>[] {
+  parseUnspents(unspents: UnspentJSON[]): Unspent<number | bigint>[] {
     return unspents?.map((unspent) => {
-      const newUnspent = Object.assign({}, unspent);
-      newUnspent.value = utxolib.bitgo.toTNumber(unspent?.valueString, 'bigint');
-      return newUnspent;
+      return { ...unspent, value: utxolib.bitgo.toTNumber(unspent.valueString, 'bigint') };
     });
   }
 }

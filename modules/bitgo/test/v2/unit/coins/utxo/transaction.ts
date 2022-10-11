@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getReplayProtectionAddresses, UnspentJSON } from '@bitgo/abstract-utxo';
 
 import {
   utxoCoins,
@@ -45,6 +45,13 @@ function run<TNumber extends number | bigint = number>(
 
     function getUnspents(): Unspent<TNumber>[] {
       return inputScripts.map((type, i) => mockUnspent<TNumber>(coin.network, walletKeys, type, i, value));
+    }
+
+    function getUnspentJSONs(): UnspentJSON[] {
+      const unspents = getUnspents();
+      return unspents.map((unspent) => {
+        return { ...unspent, valueString: unspent.value.toString() };
+      });
     }
 
     function getOutputAddress(): string {
@@ -105,7 +112,7 @@ function run<TNumber extends number | bigint = number>(
     type TransactionObjStages = Record<keyof TransactionStages, TransactionObj>;
 
     async function getTransactionStages(): Promise<TransactionStages> {
-      const prebuild = createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress());
+      const prebuild = createPrebuildTransaction<TNumber>(coin.network, getUnspentJSONs(), getOutputAddress());
       const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.backup);
       const fullSignedUserBackup = fullSign
         ? await createFullSignedTransaction(halfSignedUserBackup, walletKeys.backup, walletKeys.user)
