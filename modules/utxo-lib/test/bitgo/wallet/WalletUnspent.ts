@@ -139,7 +139,7 @@ describe('WalletUnspent', function () {
     addChangeOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
 
     unspents.forEach((u) => {
-      addToPsbt(psbt, u, WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]), network);
+      addToPsbt(psbt, u, walletKeys, signer, cosigner, network);
     });
 
     // TODO: Test rederiving scripts from PSBT and keys only
