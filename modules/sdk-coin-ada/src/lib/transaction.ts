@@ -205,13 +205,13 @@ export class Transaction extends BaseTransaction {
    * @param rawTx
    */
   fromRawTransaction(rawTx: string): void {
+    if (CardanoWasm.Transaction === undefined) {
+      // a temp fix until we solve import problem in webpack
+      throw new NodeEnvironmentError('unable to load cardano serialization library');
+    }
     const HEX_REGEX = /^[0-9a-fA-F]+$/;
     const bufferRawTransaction = HEX_REGEX.test(rawTx) ? Buffer.from(rawTx, 'hex') : Buffer.from(rawTx, 'base64');
     try {
-      if (CardanoWasm.Transaction === undefined) {
-        // a temp fix until we solve import problem in webpack
-        throw new NodeEnvironmentError('unable to load cardano serialization library');
-      }
       const txn = CardanoWasm.Transaction.from_bytes(bufferRawTransaction);
       this._transaction = txn;
       this._id = Buffer.from(CardanoWasm.hash_transaction(txn.body()).to_bytes()).toString('hex');
