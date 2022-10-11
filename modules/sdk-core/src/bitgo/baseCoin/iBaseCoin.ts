@@ -346,6 +346,10 @@ export interface TokenEnablementConfig {
   supportsMultipleTokenEnablements: boolean;
 }
 
+export interface MessagePrep {
+  prepareMessage(message: string): string;
+}
+
 export type MPCAlgorithm = 'ecdsa' | 'eddsa';
 
 export interface IBaseCoin {
