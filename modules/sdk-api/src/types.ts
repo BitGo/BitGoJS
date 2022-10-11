@@ -125,6 +125,13 @@ export interface TokenIssuance {
   ecdhXprv?: string;
 }
 
+export interface AccessTokenSpendingLimit {
+  coin: string;
+  txCount?: number;
+  txValue?: number;
+  txValueLimit?: number;
+}
+
 export interface AddAccessTokenOptions {
   label: string;
   otp?: string;
@@ -132,6 +139,26 @@ export interface AddAccessTokenOptions {
   ipRestrict?: string[];
   txValueLimit?: number;
   scope: string[];
+  spendingLimits?: AccessTokenSpendingLimit[];
+}
+
+export interface AddAccessTokenResponse {
+  id: string;
+  client: string;
+  user: string;
+  scope: string[];
+  created: string;
+  expires: string;
+  ip: string;
+  ipRestrict: string[];
+  origin: string;
+  label: string;
+  isExtensible: boolean;
+  encryptedToken: string;
+  derivationPath: string;
+  token: string;
+  enterprise?: string;
+  extensionAddress?: string;
 }
 
 export interface RemoveAccessTokenOptions {
