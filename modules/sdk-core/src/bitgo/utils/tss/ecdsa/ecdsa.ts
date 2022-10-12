@@ -1,3 +1,4 @@
+import * as bs58 from 'bs58';
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
 import * as openpgp from 'openpgp';
 import { SerializedKeyPair } from 'openpgp';
@@ -40,6 +41,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     return this.bitgoPublicGpgKey;
+  }
+
+  /**
+   * Gets the common public key from commonKeychain.
+   *
+   * @param {String} commonKeychain common key chain between n parties
+   * @returns {string} encoded public key
+   */
+  static getPublicKeyFromCommonKeychain(commonKeychain: string): string {
+    if (commonKeychain.length !== 130) {
+      throw new Error(`Invalid commonKeychain length, expected 130, got ${commonKeychain.length}`);
+    }
+    const commonPubHexStr = commonKeychain.slice(0, 66);
+    return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
   }
 
   /** @inheritdoc */
