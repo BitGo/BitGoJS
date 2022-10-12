@@ -12,7 +12,10 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import { Transaction } from './lib';
+import * as _ from 'lodash';
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -58,8 +61,34 @@ export class Sui extends BaseCoin {
     return 'eddsa';
   }
 
-  verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    let totalAmount = new BigNumber(0);
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const transaction = new Transaction(coinConfig);
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    transaction.fromRawTransaction(rawTx);
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+    return true;
   }
 
   isWalletAddress(params: VerifyAddressOptions): boolean {
