@@ -9,7 +9,15 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { BaseTx, DecodedUtxoObj, TransactionExplanation, Tx, TxData, INPUT_SEPARATOR } from './iface';
+import {
+  BaseTx,
+  DecodedUtxoObj,
+  TransactionExplanation,
+  Tx,
+  TxData,
+  INPUT_SEPARATOR,
+  ADDRESS_SEPARATOR,
+} from './iface';
 import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
 import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
 import { BN, Buffer as BufferAvax } from 'avalanche';
@@ -270,7 +278,8 @@ export class Transaction extends BaseTransaction {
         if (utils.isTransactionOf(this._avaxpTransaction, this._network.cChainBlockchainID)) {
           return (this.avaxPTransaction as EVMExportTx).getInputs().map((evmInput) => ({
             address: '0x' + evmInput.getAddressString(),
-            value: evmInput.getAmount().toString(),
+            value: new BN((evmInput as any).amount).toString(),
+            nonce: evmInput.getNonce().toNumber(),
           }));
         }
         inputs = (this.avaxPTransaction as PVMBaseTx).getIns();
@@ -281,7 +290,8 @@ export class Transaction extends BaseTransaction {
     return inputs.map((input) => {
       const amountInput = input.getInput() as any as AmountInput;
       return {
-        address: utils.cb58Encode(input.getTxID()) + INPUT_SEPARATOR + new BN(input.getOutputIdx()).toString(),
+        id: utils.cb58Encode(input.getTxID()) + INPUT_SEPARATOR + utils.outputidxBufferToNumber(input.getOutputIdx()),
+        address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
         value: amountInput.getAmount().toString(),
       };
     });

@@ -326,6 +326,24 @@ export class Utils implements BaseUtils {
     }
     return hex;
   }
+
+  /**
+   * Outputidx convert from number (as string) to buffer.
+   * @param {string} outputidx number
+   * @return {BufferAvax} buffer of size 4 with that number value
+   */
+  outputidxNumberToBuffer(outputidx: string): BufferAvax {
+    return BufferAvax.from(Number(outputidx).toString(16).padStart(8, '0'), 'hex');
+  }
+
+  /**
+   * Outputidx buffer to number (as string)
+   * @param {BufferAvax} outputidx
+   * @return {string} outputidx number
+   */
+  outputidxBufferToNumber(outputidx: BufferAvax): string {
+    return parseInt(outputidx.toString('hex'), 16).toString();
+  }
 }
 
 const utils = new Utils();

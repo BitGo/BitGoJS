@@ -22,7 +22,7 @@ export const IMPORT_C = {
       outputID: 7,
       amount: '24999925',
       txid: '2BJ4egAds21ZZb7J6cTSHLCFnVbnTdtjj74dmyv8aR6YyEKoUD',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'C-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'C-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',

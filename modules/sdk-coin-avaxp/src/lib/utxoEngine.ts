@@ -29,7 +29,7 @@ export function recoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj
 
     return {
       outputID: SECP256K1_Transfer_Output,
-      outputidx: utils.cb58Encode(utxo.getOutputIdx()),
+      outputidx: utils.outputidxBufferToNumber(utxo.getOutputIdx()),
       txid: utils.cb58Encode(utxo.getTxID()),
       amount: secpInput.getAmount().toString(),
       threshold: addressesIndex.length,
@@ -86,7 +86,7 @@ export function utxoToInput(
 
       const txidBuf: BufferAvax = utils.cb58Decode(utxo.txid);
       const amount: BN = new BN(utxo.amount);
-      const outputIdx: BufferAvax = utils.cb58Decode(utxo.outputidx);
+      const outputIdx: BufferAvax = utils.outputidxNumberToBuffer(utxo.outputidx);
 
       currentTotal = currentTotal.add(amount);
 

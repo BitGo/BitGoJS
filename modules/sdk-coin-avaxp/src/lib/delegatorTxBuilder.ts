@@ -312,7 +312,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
       if (utxo.outputID === SECP256K1_Transfer_Output) {
         const txidBuf = utils.cb58Decode(utxo.txid);
         const amt: BN = new BN(utxo.amount);
-        const outputidx = utils.cb58Decode(utxo.outputidx);
+        const outputidx = utils.outputidxNumberToBuffer(utxo.outputidx);
         const addressesIndex = utxo.addressesIndex ?? [];
 
         // either user (0) or recovery (2)
