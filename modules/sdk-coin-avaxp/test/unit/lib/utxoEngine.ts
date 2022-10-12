@@ -18,7 +18,7 @@ describe('AvaxP UTXO engine', () => {
         outputID: n,
         amount: '509999975',
         txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-        outputidx: '1111XiaYg',
+        outputidx: '0',
         addresses: [
           'P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4',
           'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
@@ -36,7 +36,7 @@ describe('AvaxP UTXO engine', () => {
           outputID: 7,
           amount: '509999975',
           txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-          outputidx: '1111XiaYg',
+          outputidx: '0',
           addresses: [
             'P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4',
             'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
@@ -57,7 +57,7 @@ describe('AvaxP UTXO engine', () => {
           outputID: 7,
           amount: '509999975',
           txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-          outputidx: '1111XiaYg',
+          outputidx: '0',
           addresses: [
             'P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4',
             'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
@@ -79,7 +79,7 @@ describe('AvaxP UTXO engine', () => {
         outputID: 7,
         amount: '509999975',
         txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-        outputidx: '1111XiaYg',
+        outputidx: '0',
         addresses: [
           'P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4',
           'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
@@ -91,7 +91,7 @@ describe('AvaxP UTXO engine', () => {
         outputID: 7,
         amount: '26932830273',
         txid: '2VyWNR4q8p7ZnKfaot37SbMBCWHbEbqEca7Af1tiRTArkJMdXt',
-        outputidx: '1111XiaYg',
+        outputidx: '0',
         addresses: [
           'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
           'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -127,7 +127,7 @@ describe('AvaxP UTXO engine', () => {
         outputID: 7,
         amount: '509999975',
         txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-        outputidx: '1111XiaYg',
+        outputidx: '0',
         addresses: [
           'P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4',
           'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
@@ -140,7 +140,7 @@ describe('AvaxP UTXO engine', () => {
         outputID: 7,
         amount: '26932830273',
         txid: '2VyWNR4q8p7ZnKfaot37SbMBCWHbEbqEca7Af1tiRTArkJMdXt',
-        outputidx: '1111XiaYg',
+        outputidx: '0',
         addresses: [
           'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
           'P-fuji13pyc89t4x5483fgdfgg9lcnpxz7ggr09vn6m6c',

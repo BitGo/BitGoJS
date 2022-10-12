@@ -22,7 +22,7 @@ export const IMPORT_P = {
       outputID: 7,
       amount: '8999975',
       txid: 'e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',

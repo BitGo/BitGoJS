@@ -109,7 +109,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: '2reRs3xLpo6jhy6d5F9uiHQ1uHyZQmh5G7phSdwCPD5LBNoHdU',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -121,7 +121,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: 'YXx3w1o5JvijNCiodjsjExrc9cvbMCd2mw79kbe1bFnBGMaXY',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -133,7 +133,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '8070510',
       txid: 'YXx3w1o5JvijNCiodjsjExrc9cvbMCd2mw79kbe1bFnBGMaXY',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -145,7 +145,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '6456408',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -157,7 +157,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -169,7 +169,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: 'E476SzGZt46QaSRfygWhNnK6Td3ggEr5GxTbC3buZpaPXs7j5',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -181,7 +181,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '2943146',
       txid: 'E476SzGZt46QaSRfygWhNnK6Td3ggEr5GxTbC3buZpaPXs7j5',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -193,7 +193,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: 'bqUUWvo1X26pBx6wHTcmEAYivCM593RK5zgFT125XzrqZVb33',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -205,7 +205,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '592941553',
       txid: '2reRs3xLpo6jhy6d5F9uiHQ1uHyZQmh5G7phSdwCPD5LBNoHdU',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -217,7 +217,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '696969420',
       txid: '2V6WvL9qkdTK1HQfYWjkFUoe3jmsJxFoAxYjmXYMH4Dzwh9zqj',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -229,7 +229,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '8879679705',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -241,7 +241,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '881030580',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111WrgF9g',
+      outputidx: '4',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -253,7 +253,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '696969420',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111M2YGnW',
+      outputidx: '3',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -265,7 +265,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '696969420',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -277,7 +277,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '420000000',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -289,7 +289,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '420000000',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -301,7 +301,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: 'WEyBXMUH1vk9XvjnSo64WV6rWn39Q9BtDixF9ASn3fLu2KHJE',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -313,7 +313,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000000',
       txid: 'WZPN4NBv85sZA1aMUTQcaBhuoKp9nN8pbpthuzYtmCWgeWMde',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -325,7 +325,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '994000000',
       txid: 'WEyBXMUH1vk9XvjnSo64WV6rWn39Q9BtDixF9ASn3fLu2KHJE',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -337,7 +337,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '420000000',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -349,7 +349,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -361,7 +361,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '695969420',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -373,7 +373,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -385,7 +385,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '420000000',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -397,7 +397,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '695969420',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -409,7 +409,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '1000000',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -421,7 +421,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '420000000',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -433,7 +433,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '695969420',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -445,7 +445,7 @@ export const ADDVALIDATOR_SAMPLES = {
       outputID: 7,
       amount: '291891876',
       txid: '2dhgHu5if98zhtUHUH8stETvT7ronoJ8vDcufKwQKHCDttwT4a',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -487,7 +487,7 @@ export const BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE = {
       outputID: 7,
       amount: '598000000',
       txid: 'bqUUWvo1X26pBx6wHTcmEAYivCM593RK5zgFT125XzrqZVb33',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1gtse4kdxzlaeth8cssaduehqdetc74y6pdrkk5',
         'P-fuji130j57qt2kaypy7435xzxym96gnr53g0wqkxv92',
@@ -499,7 +499,7 @@ export const BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE = {
       outputID: 7,
       amount: '598000000',
       txid: 'bqUUWvo1X26pBx6wHTcmEAYivCM593RK5zgFT125XzrqZVb33',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1gtse4kdxzlaeth8cssaduehqdetc74y6pdrkk5',
         'P-fuji130j57qt2kaypy7435xzxym96gnr53g0wqkxv92',
@@ -552,7 +552,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '7999975',
       txid: 'WzntY1KtKL4RorEV6GkfmsDKc94TB2sCot1BYdGFKP3YYKMiA',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -564,7 +564,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '2019000000',
       txid: '27FLkyrRqeGU1mRrZD1asbooaKGDg3Fp6wATtSCcX8UGfcJGTr',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -576,7 +576,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: '2reRs3xLpo6jhy6d5F9uiHQ1uHyZQmh5G7phSdwCPD5LBNoHdU',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -588,7 +588,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: 'YXx3w1o5JvijNCiodjsjExrc9cvbMCd2mw79kbe1bFnBGMaXY',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -600,7 +600,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '8070510',
       txid: 'YXx3w1o5JvijNCiodjsjExrc9cvbMCd2mw79kbe1bFnBGMaXY',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -612,7 +612,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '6456408',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -624,7 +624,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -636,7 +636,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: 'E476SzGZt46QaSRfygWhNnK6Td3ggEr5GxTbC3buZpaPXs7j5',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -648,7 +648,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '2943146',
       txid: 'E476SzGZt46QaSRfygWhNnK6Td3ggEr5GxTbC3buZpaPXs7j5',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -660,7 +660,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: 'bqUUWvo1X26pBx6wHTcmEAYivCM593RK5zgFT125XzrqZVb33',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -672,7 +672,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '592941553',
       txid: '2reRs3xLpo6jhy6d5F9uiHQ1uHyZQmh5G7phSdwCPD5LBNoHdU',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -684,7 +684,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '696969420',
       txid: '2V6WvL9qkdTK1HQfYWjkFUoe3jmsJxFoAxYjmXYMH4Dzwh9zqj',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -696,7 +696,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '8879679705',
       txid: '28GmFCp3w9GhySTB29LMHqXksoJmyLnM46A31Qct9bvW2kGP5W',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -708,7 +708,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '881030580',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111WrgF9g',
+      outputidx: '4',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -720,7 +720,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '696969420',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111M2YGnW',
+      outputidx: '3',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -732,7 +732,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '696969420',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -744,7 +744,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '420000000',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -756,7 +756,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '420000000',
       txid: 'xpVMRi3cex8B6Y9V9A4KUtDFdEwq6gwmqi5u9nE5cPM7MBEnS',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -768,7 +768,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: 'WEyBXMUH1vk9XvjnSo64WV6rWn39Q9BtDixF9ASn3fLu2KHJE',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -780,7 +780,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000000',
       txid: 'WZPN4NBv85sZA1aMUTQcaBhuoKp9nN8pbpthuzYtmCWgeWMde',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -792,7 +792,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '994000000',
       txid: 'WEyBXMUH1vk9XvjnSo64WV6rWn39Q9BtDixF9ASn3fLu2KHJE',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -804,7 +804,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '420000000',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -816,7 +816,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -828,7 +828,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '695969420',
       txid: '2Yz9QFGrcUcuPSz72TrLZqUwd2HjUw5eovZn2QdctEd8MVbkw3',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -840,7 +840,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -852,7 +852,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '420000000',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -864,7 +864,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '695969420',
       txid: 'mi8xMNrv8899JfHM2NwJRUSzZEHBtVtV27LdGYDkpwPdG6P5o',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -876,7 +876,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '1000000',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -888,7 +888,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '420000000',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '111AZw1it',
+      outputidx: '1',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -900,7 +900,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '695969420',
       txid: 'UkP29BLXSNKasRxHotxrPdVcRRPtEhvJZNcB8qFi9zZvQ35vc',
-      outputidx: '111KgrGRw',
+      outputidx: '2',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -912,7 +912,7 @@ export const EXPORT_P_2_C = {
       outputID: 7,
       amount: '291891876',
       txid: '2dhgHu5if98zhtUHUH8stETvT7ronoJ8vDcufKwQKHCDttwT4a',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -957,7 +957,7 @@ export const EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT = {
       outputID: 7,
       amount: '501000000',
       txid: '265iF46gXyyibDsSWjhUrNoBUNpvw5hCditj7XzzRFRPHEntjD',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -969,7 +969,7 @@ export const EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT = {
       outputID: 7,
       amount: '509999975',
       txid: 'CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -981,7 +981,7 @@ export const EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT = {
       outputID: 7,
       amount: '26932830273',
       txid: '2VyWNR4q8p7ZnKfaot37SbMBCWHbEbqEca7Af1tiRTArkJMdXt',
-      outputidx: '1111XiaYg',
+      outputidx: '0',
       addresses: [
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
         'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
