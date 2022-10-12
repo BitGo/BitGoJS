@@ -45,7 +45,7 @@ export class StakingWallet implements IStakingWallet {
    * @return StakingRequest
    */
   async stake(options: StakeOptions): Promise<StakingRequest> {
-    return await this.createStakingRequest(options.amount, 'STAKE', options.clientId);
+    return await this.createStakingRequest(options, 'STAKE');
   }
 
   /**
@@ -54,7 +54,7 @@ export class StakingWallet implements IStakingWallet {
    * @return StakingRequest
    */
   async unstake(options: UnstakeOptions): Promise<StakingRequest> {
-    return await this.createStakingRequest(options.amount, 'UNSTAKE', options.clientId, options.delegationId);
+    return await this.createStakingRequest(options, 'UNSTAKE');
   }
 
   /**
@@ -185,19 +185,12 @@ export class StakingWallet implements IStakingWallet {
       .result();
   }
 
-  private async createStakingRequest(
-    amount: string,
-    type: string,
-    clientId?: string,
-    delegationId?: string
-  ): Promise<StakingRequest> {
+  private async createStakingRequest(options: StakeOptions | UnstakeOptions, type: string): Promise<StakingRequest> {
     return await this.bitgo
       .post(this.bitgo.microservicesUrl(this.stakingRequestsURL()))
       .send({
-        amount: amount,
-        clientId: clientId,
+        ...options,
         type: type,
-        delegationId: delegationId,
       })
       .result();
   }

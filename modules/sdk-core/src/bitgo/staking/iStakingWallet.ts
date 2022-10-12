@@ -21,6 +21,8 @@ export interface StakingRequest {
 export interface StakeOptions {
   amount: string;
   clientId?: string;
+  validator?: string;
+  durationSeconds?: string;
 }
 
 export interface UnstakeOptions {
