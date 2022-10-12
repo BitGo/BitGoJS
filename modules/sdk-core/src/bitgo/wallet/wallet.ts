@@ -22,14 +22,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import {
-  inferAddressType,
-  RequestTracer,
-  TssUtils,
-  TxRequest,
-  EddsaUnsignedTransaction,
-  EIP1559FeeOptions,
-} from '../utils';
+import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction, EIP1559FeeOptions } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -1388,7 +1381,10 @@ export class Wallet implements IWallet {
           // Only one of pub/commonPub/commonKeychain should be present in the keychain
           let pub = keychain.pub ?? keychain.commonPub;
           if (keychain.commonKeychain) {
-            pub = TssUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
+            pub =
+              this.baseCoin.getMPCAlgorithm() === 'eddsa'
+                ? EddsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain)
+                : EcdsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
           }
           sharedKeychain = {
             pub,
