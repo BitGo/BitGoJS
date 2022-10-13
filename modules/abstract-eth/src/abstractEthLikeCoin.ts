@@ -105,6 +105,11 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** @inheritDoc */
+  isEVM(): boolean {
+    return true;
+  }
+
   valuelessTransferAllowed(): boolean {
     return true;
   }

@@ -400,6 +400,11 @@ export class Eth extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc */
+  isEVM(): boolean {
+    return true;
+  }
+
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }
