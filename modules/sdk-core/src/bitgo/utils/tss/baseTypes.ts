@@ -1,10 +1,9 @@
 import { SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet } from '../../baseCoin';
-import { Keychain } from '../../keychain';
-import { Memo, WalletType } from '../../wallet/iWallet';
-import { EDDSA, GShare, SignShare } from '../../../account-lib/mpc/tss';
-import { YShare } from '../../../account-lib/mpc/tss/eddsa/types';
+import { ApiKeyShare, Keychain } from '../../keychain';
+import { Memo, WalletType } from '../../wallet';
+import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -197,11 +196,17 @@ export type TSSParams = {
   reqId: IRequestTracer;
 };
 
+export interface BitgoHeldBackupKeyShare {
+  id: string;
+  keyShares: ApiKeyShare[];
+}
+
 /**
  * Common Interface for implementing signature scheme specific
  * util functions
  */
 export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
+  createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare>;
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
