@@ -64,7 +64,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       sender = txData.feePayer;
     }
     this.sender(sender);
-    this.sender(txData.feePayer as string);
     this.feePayer(txData.feePayer as string);
     this.nonce(txData.nonce, txData.durableNonce);
     this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions);
