@@ -503,8 +503,8 @@ export class Wallet implements IWallet {
    *
    * @param {Object} params - parameters object
    * @param {Number} params.limit - maximum number of selectable unspents
-   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
-   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+   * @param {Number | String} params.minValue - the minimum value of unspents to use in satoshis
+   * @param {Number | String} params.maxValue - the maximum value of unspents to use in satoshis
    * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - Enforces minConfirms on change inputs
@@ -571,8 +571,8 @@ export class Wallet implements IWallet {
    * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
    *
    * Input parameters:
-   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
-   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+   * @param {Number | String} params.minValue - the minimum value of unspents to use in satoshis
+   * @param {Number | String} params.maxValue - the maximum value of unspents to use in satoshis
    * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
@@ -642,8 +642,8 @@ export class Wallet implements IWallet {
    * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
    * @param {Number} params.maxFeePercentage - the maximum relative portion that you're willing to spend towards fees
    * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
-   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
-   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+   * @param {Number | String} params.minValue - the minimum value of unspents to use in satoshis
+   * @param {Number | String} params.maxValue - the maximum value of unspents to use in satoshis
    * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
@@ -662,8 +662,8 @@ export class Wallet implements IWallet {
    * @param {Object} params - parameters object
    * @param {String} params.walletPassphrase - the users wallet passphrase
    * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
-   * @param {Number} params.minValue - the minimum value of unspents to use
-   * @param {Number} params.maxValue - the maximum value of unspents to use
+   * @param {Number | String} params.minValue - the minimum value of unspents to use
+   * @param {Number | String} params.maxValue - the maximum value of unspents to use
    * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Number} params.maxFeePercentage - the maximum proportion of an unspent you are willing to lose to fees
@@ -1445,8 +1445,8 @@ export class Wallet implements IWallet {
    * @param {Number} params.minConfirms - Minimum number of confirmations unspents going into this transaction should have
    * @param {Boolean} params.enforceMinConfirmsForChange - Enforce minimum number of confirmations on change (internal) inputs.
    * @param {Number} params.targetWalletUnspents - The desired count of unspents in the wallet. If the wallet’s current unspent count is lower than the target, up to four additional change outputs will be added to the transaction.
-   * @param {Number} params.minValue - Ignore unspents smaller than this amount of base units
-   * @param {Number} params.maxValue - Ignore unspents larger than this amount of base units
+   * @param {Number | String} params.minValue - Ignore unspents smaller than this amount of base units
+   * @param {Number | String} params.maxValue - Ignore unspents larger than this amount of base units
    * @param {Number} params.sequenceId - The sequence ID of the transaction
    * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
    * @param {Number} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
@@ -1862,8 +1862,8 @@ export class Wallet implements IWallet {
    * @param {Boolean} params.enforceMinConfirmsForChange - Enforces minConfirms on change inputs
    * @param {Number} params.targetWalletUnspents - The desired count of unspents in the wallet
    * @param {String} params.message - optional message to attach to transaction
-   * @param {Number} params.minValue - Ignore unspents smaller than this amount of satoshis
-   * @param {Number} params.maxValue - Ignore unspents larger than this amount of satoshis
+   * @param {Number | String} params.minValue - Ignore unspents smaller than this amount of satoshis
+   * @param {Number | String} params.maxValue - Ignore unspents larger than this amount of satoshis
    * @param {Number} params.sequenceId - The sequence ID of the transaction
    * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
    * @param {Number} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.

@@ -4,7 +4,6 @@
 
 import * as should from 'should';
 import * as sinon from 'sinon';
-require('should-sinon');
 import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
@@ -12,18 +11,20 @@ import * as _ from 'lodash';
 import {
   common,
   CustomSigningFunction,
+  ECDSAUtils,
   RequestTracer,
+  TokenType,
   TssUtils,
   TxRequest,
   Wallet,
-  ECDSAUtils,
-  TokenType,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
+
+require('should-sinon');
 
 nock.disableNetConnect();
 
