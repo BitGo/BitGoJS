@@ -143,6 +143,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  getUnsignedTx(): UtxoTransaction<bigint> {
+    return this.tx.clone();
+  }
+
   protected static newTransaction(network: Network): UtxoTransaction<bigint> {
     return new UtxoTransaction<bigint>(network);
   }
