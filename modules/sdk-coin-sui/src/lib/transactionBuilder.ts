@@ -3,18 +3,36 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  FeeOptions,
+  ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
+import { SuiObjectRef, SuiTransaction, Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { PayTx } from './iface';
+import assert from 'assert';
+
+// Need to keep in sync with
+// https://github.com/MystenLabs/sui/blob/f32877f2e40d35a008710c232e49b57aab886462/crates/sui-types/src/messages.rs#L338
+export const SUI_GAS_PRICE = 1;
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
+
+  protected _sender: string;
+  protected _gasBudget: number;
+  protected _gasPrice = SUI_GAS_PRICE;
+  protected _payTx: PayTx;
+  protected _gasPayment: SuiObjectRef;
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig);
+  }
 
   // get and set region
   /**
@@ -50,21 +68,81 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   sender(senderAddress: string): this {
-    throw new Error('Method not implemented.');
+    utils.validateAddress(senderAddress, 'sender');
+    this._sender = senderAddress;
+    return this;
   }
 
-  fee(feeOptions: FeeOptions): this {
-    throw new Error('Method not implemented.');
+  gasBudget(gasBudget: number): this {
+    this.validateGasBudget(gasBudget);
+    this._gasBudget = gasBudget;
+    return this;
+  }
+
+  gasPrice(gasPrice: number): this {
+    this.validateGasPrice(gasPrice);
+    this._gasPrice = gasPrice;
+    return this;
+  }
+
+  payTx(payTx: PayTx): this {
+    this.validateTxPay(payTx);
+    this._payTx = payTx;
+    return this;
+  }
+
+  gasPayment(gasPayment: SuiObjectRef): this {
+    this.validateGasPayment(gasPayment);
+    this._gasPayment = gasPayment;
+    return this;
+  }
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   */
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
+    const txData = tx.toJson();
+    this.gasBudget(txData.gasBudget);
+    this.gasPrice(txData.gasPrice);
+    this.payTx(txData.payTx);
+    this.sender(txData.sender);
+    this.gasPayment(txData.gasPayment);
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    throw new Error('Method not implemented.');
+    const tx = new Transaction(this._coinConfig);
+    this.validateRawTransaction(rawTransaction);
+    tx.fromRawTransaction(rawTransaction);
+    this.initBuilder(tx);
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new Error('Method not implemented.');
+    this.transaction.setSuiTransaction(this.buildSuiTransaction());
+    this.transaction.transactionType(this.transactionType);
+    this.transaction.loadInputsAndOutputs();
+    return this.transaction;
+  }
+
+  protected buildSuiTransaction(): SuiTransaction {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._payTx, new BuildTransactionError('payTx is required before building'));
+    assert(this._gasBudget, new BuildTransactionError('gasBudget is required before building'));
+    assert(this._gasPrice, new BuildTransactionError('gasPrice is required before building'));
+    assert(this._gasPayment, new BuildTransactionError('gasPayment is required before building'));
+
+    return {
+      sender: this._sender,
+      payTx: this._payTx,
+      gasBudget: this._gasBudget,
+      gasPrice: this._gasPrice,
+      gasPayment: this._gasPayment,
+    };
   }
 
   // region Validators
@@ -75,6 +153,45 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  validateGasBudget(gasBudget: number): void {
+    if (gasBudget <= 0) {
+      throw new BuildTransactionError('Invalid gas budget ' + gasBudget);
+    }
+  }
+
+  validateGasPrice(gasPrice: number): void {
+    if (gasPrice !== SUI_GAS_PRICE) {
+      throw new BuildTransactionError('Invalid gas Price ' + gasPrice);
+    }
+  }
+
+  validateTxPay(payTx: PayTx): void {
+    if (!payTx.hasOwnProperty('coins')) {
+      throw new BuildTransactionError(`Invalid payTx, missing coins`);
+    }
+    if (!payTx.hasOwnProperty('recipients')) {
+      throw new BuildTransactionError(`Invalid payTx, missing recipients`);
+    }
+    if (!payTx.hasOwnProperty('amounts')) {
+      throw new BuildTransactionError(`Invalid payTx, missing amounts`);
+    }
+
+    if (payTx.recipients.length !== payTx.amounts.length) {
+      throw new BuildTransactionError(
+        `recipients length ${payTx.recipients.length} must equal to amounts length ${payTx.amounts.length}`
+      );
+    }
+    if (!utils.isValidAmounts(payTx.amounts)) {
+      throw new BuildTransactionError('Invalid or missing amounts, got: ' + payTx.amounts);
+    }
+  }
+
+  validateGasPayment(gasPayment: SuiObjectRef): void {
+    if (!gasPayment) {
+      throw new BuildTransactionError(`Invalid gas Payment: undefined`);
+    }
+  }
+
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
     throw new Error('Method not implemented.');
@@ -82,12 +199,48 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    throw new Error('Method not implemented.');
+    if (!rawTransaction) {
+      throw new ParseTransactionError('Invalid raw transaction: Undefined');
+    }
+    if (!utils.isValidRawTransaction(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new Error('Method not implemented.');
+  validateTransaction(transaction: Transaction): void {
+    if (!transaction.suiTransaction) {
+      return;
+    }
+    this.validateTransactionFields();
+  }
+
+  /**
+   * Validates all fields are defined
+   */
+  private validateTransactionFields(): void {
+    if (this._sender === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing sender');
+    }
+    if (this._gasBudget === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing gas budget');
+    }
+    if (this._gasPrice === undefined || this._gasPrice !== SUI_GAS_PRICE) {
+      throw new BuildTransactionError('Invalid transaction: missing/incorrect gas price');
+    }
+    if (this._payTx === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing payTx');
+    }
+    if (this._gasPayment === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing gas payment');
+    }
+
+    const inputCoinIds = this.transaction.getInputCoins().map((inputCoin) => inputCoin.objectId);
+    if (inputCoinIds.includes(this._gasPayment.objectId)) {
+      throw new BuildTransactionError(
+        `Invalid gas Payment ${this._gasPayment.objectId}, cannot be one of the inputCoins`
+      );
+    }
   }
 
   /** @inheritdoc */
@@ -96,4 +249,5 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
   }
+  // endregion
 }
