@@ -14,7 +14,7 @@ export interface Keychain {
   derivedFromParentWithSeed?: string;
   commonPub?: string;
   commonKeychain?: string;
-  keyShares?: KeyShare[];
+  keyShares?: ApiKeyShare[];
 }
 
 export interface ChangedKeychains {
@@ -64,12 +64,12 @@ export interface AddKeychainOptions {
   provider?: string;
   reqId?: IRequestTracer;
   krsSpecific?: any;
-  keyShares?: KeyShare[];
+  keyShares?: ApiKeyShare[];
   userGPGPublicKey?: string;
   backupGPGPublicKey?: string;
 }
 
-interface KeyShare {
+export interface ApiKeyShare {
   from: string;
   to: string;
   publicShare: string;

@@ -5,7 +5,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src/bitgo';
+import { BitGo } from '../../../../../src';
 import {
   common,
   Keychain,
@@ -18,6 +18,7 @@ import {
   SignatureShareType,
   SignatureShareRecord,
   RequestTracer,
+  BitgoHeldBackupKeyShare,
 } from '@bitgo/sdk-core';
 import { keyShares, mockAShare, mockDShare, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
@@ -135,6 +136,12 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   describe('TSS key chains', async function() {
+    it('should create backup key share held by BitGo', async function () {
+      const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKey);
+      const result = await tssUtils.createBitgoHeldBackupKeyShare(userGpgKey);
+      result.should.eql(expectedKeyShare);
+    });
+
     it('should generate TSS key chains', async function () {
       const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
@@ -480,6 +487,42 @@ describe('TSS Ecdsa Utils:', async function () {
 
 
   // #region Nock helpers
+  async function nockCreateBitgoHeldBackupKeyShare(coin: string, userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>,): Promise<BitgoHeldBackupKeyShare> {
+    const nSharePromises = [encryptNShare(
+      backupKeyShare,
+      1,
+      userGpgKey.publicKey,
+      false,
+    ), encryptNShare(
+      backupKeyShare,
+      3,
+      bitgoGpgKey.publicKey,
+      false,
+    )];
+
+    const keyShare = {
+      id: '4711',
+      keyShares: [{
+        from: 'backup',
+        to: 'user',
+        publicShare: backupKeyShare.nShares[1].y,
+        privateShare: (await nSharePromises[0]).encryptedPrivateShare,
+      }, {
+        from: 'backup',
+        to: 'bitgo',
+        publicShare: backupKeyShare.nShares[3].y,
+        privateShare: (await nSharePromises[1]).encryptedPrivateShare,
+      }],
+    };
+
+    nock(bgUrl)
+      .persist()
+      .post(`/api/v2/${coin}/krs/backupkeys`, _.matches({ userPub: userGpgKey.publicKey }))
+      .reply(201, keyShare);
+
+    return keyShare;
+  }
+
   async function nockBitgoKeychain(params: {
     coin: string,
     userKeyShare: KeyShare,

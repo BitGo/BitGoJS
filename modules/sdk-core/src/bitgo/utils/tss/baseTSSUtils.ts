@@ -13,6 +13,7 @@ import {
   ITssUtils,
   PrebuildTransactionWithIntentOptions,
   SignatureShareRecord,
+  BitgoHeldBackupKeyShare,
   TSSParams,
   TxRequest,
   TxRequestVersion,
@@ -35,6 +36,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       throw new Error('Wallet not defined');
     }
     return this._wallet;
+  }
+
+  async createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
+    return await this.bitgo
+      .post(this.baseCoin.url('/krs/backupkeys'))
+      .send({
+        userPub: userGpgKey.publicKey,
+      })
+      .result();
   }
 
   createUserKeychain(
