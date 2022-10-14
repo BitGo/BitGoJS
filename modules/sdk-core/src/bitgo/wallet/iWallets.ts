@@ -21,6 +21,7 @@ export interface GenerateMpcWalletOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   walletVersion?: number;
+  backupXPubProvider?: string;
 }
 
 export interface GenerateWalletOptions {

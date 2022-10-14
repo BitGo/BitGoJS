@@ -226,6 +226,7 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise: params.enterprise,
         walletVersion: params.walletVersion,
+        backupXPubProvider: params.backupXpubProvider,
       });
     }
 
@@ -640,6 +641,7 @@ export class Wallets implements IWallets {
       passphrase: params.passphrase,
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+      backupProvider: params.backupXPubProvider,
     });
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as common from '../../common';
-import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
+import { IBaseCoin, KeychainsTriplet, KeyPair, MPCAlgorithm } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils } from '../utils';
 import {
@@ -281,7 +281,7 @@ export class Keychains implements IKeychains {
     let MpcUtils;
     switch (params.multisigType) {
       case 'tss':
-        MpcUtils = this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? ECDSAUtils.EcdsaUtils : EDDSAUtils.default;
+        MpcUtils = this.selectTSSUtil(this.baseCoin.getMPCAlgorithm(), params.backupProvider);
         break;
       case 'blsdkg':
         if (_.isUndefined(params.passphrase)) {
@@ -299,5 +299,15 @@ export class Keychains implements IKeychains {
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
     });
+  }
+
+  selectTSSUtil(mpcAlgorithm: MPCAlgorithm, backupProvider?: string) {
+    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      return ECDSAUtils.EcdsaUtils;
+    }
+    if (this.baseCoin.getMPCAlgorithm() === 'eddsa' && backupProvider && backupProvider === 'BitGoKRS') {
+      return EDDSAUtils.EddsaThirdPartyBackupUtils;
+    }
+    return EDDSAUtils.default;
   }
 }

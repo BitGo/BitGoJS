@@ -4,6 +4,7 @@ export * as TssUtilsTypes from './types';
 export * as EddsaUtilsTypes from './types';
 
 export default EddsaUtils;
+export * from './eddsaThirdPartyBackup';
 
 // exporting this types for backward compatibility.
 export { ITssUtils, IEddsaUtils, EddsaUnsignedTransaction } from './types';

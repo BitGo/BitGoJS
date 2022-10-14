@@ -103,6 +103,7 @@ export interface CreateMpcOptions {
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
+  backupProvider?: string;
 }
 
 export interface GetKeysForSigningOptions {
