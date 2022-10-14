@@ -206,7 +206,6 @@ export interface BitgoHeldBackupKeyShare {
  * util functions
  */
 export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
-  createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare>;
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
@@ -261,4 +260,23 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
+}
+
+export interface IThirdPartyBackupTssUtils<KeyShare = EDDSA.KeyShare> {
+  createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare>;
+  createBitgoKeychain(
+    userGpgKey: SerializedKeyPair<string>,
+    userKeyShare: KeyShare,
+    backupKeyShares: ApiKeyShare[],
+    enterprise: string
+  ): Promise<Keychain>;
+  createUserKeychain(
+    userGpgKey: SerializedKeyPair<string>,
+    userKeyShare: KeyShare,
+    backupKeyShares: ApiKeyShare[],
+    bitgoKeychain: Keychain,
+    passphrase: string,
+    originalPasscodeEncryptionCode: string,
+    recipientIndex?: number | undefined
+  ): Promise<Keychain>;
 }
