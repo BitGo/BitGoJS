@@ -15,6 +15,7 @@ import {
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Transaction } from './lib';
+import utils from './lib/utils';
 import * as _ from 'lodash';
 
 export class Sui extends BaseCoin {
@@ -112,7 +113,7 @@ export class Sui extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidAddress(address);
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
