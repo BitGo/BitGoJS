@@ -28,10 +28,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _certs: CardanoWasm.Certificate[] = [];
   protected _withdrawals: Withdrawal[] = [];
   protected _type: TransactionType;
+  private _fee: BigNum;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.transaction = new Transaction(_coinConfig);
+    this._fee = BigNum.zero();
   }
 
   input(i: TransactionInput): this {
@@ -96,6 +98,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     this._ttl = tx.transaction.body().ttl() as number;
+    this._fee = tx.transaction.body().fee();
   }
 
   /** @inheritdoc */
@@ -129,76 +132,81 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       totalAmountToSend = totalAmountToSend.checked_add(amount);
     });
 
-    // add extra output for the change
-    if (this._changeAddress && this._senderBalance) {
-      const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
-      const mockChange = CardanoWasm.TransactionOutput.new(
-        changeAddress,
-        CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(this._senderBalance))
-      );
-      outputs.add(mockChange);
-    }
-
-    const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, CardanoWasm.BigNum.zero());
-    txBody.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
-    const txHash = CardanoWasm.hash_transaction(txBody);
-
-    // we add witnesses once so that we can get the appropriate amount of signers for calculating the fee
-    let witnessSet = CardanoWasm.TransactionWitnessSet.new();
-    let vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
-    this._signers.forEach((keyPair) => {
-      const prv = keyPair.getKeys().prv as string;
-      const vkeyWitness = CardanoWasm.make_vkey_witness(
-        txHash,
-        CardanoWasm.PrivateKey.from_normal_bytes(Buffer.from(prv, 'hex'))
-      );
-      vkeyWitnesses.add(vkeyWitness);
-    });
-    this._signatures.forEach((signature) => {
-      const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
-      const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
-      vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
-    });
-    if (vkeyWitnesses.len() === 0) {
-      const prv = CardanoWasm.PrivateKey.generate_ed25519();
-      const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
-      vkeyWitnesses.add(vkeyWitness);
-      if (this._type !== TransactionType.Send) {
-        vkeyWitnesses.add(vkeyWitness);
-      }
-    }
-    witnessSet.set_vkeys(vkeyWitnesses);
-
-    // add in withdrawal if this is a withdrawal tx
-    if (this._withdrawals.length > 0) {
-      const withdrawals = CardanoWasm.Withdrawals.new();
-      this._withdrawals.forEach((withdrawal: Withdrawal) => {
-        const rewardAddress = CardanoWasm.RewardAddress.from_address(
-          CardanoWasm.Address.from_bech32(withdrawal.stakeAddress)
+    if (this._fee.is_zero()) {
+      // estimate fee
+      // add extra output for the change
+      if (this._changeAddress && this._senderBalance) {
+        const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+        const mockChange = CardanoWasm.TransactionOutput.new(
+          changeAddress,
+          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(this._senderBalance))
         );
-        withdrawals.insert(rewardAddress!, CardanoWasm.BigNum.from_str(withdrawal.value));
+        outputs.add(mockChange);
+      }
+
+      const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+      txBody.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
+      const txHash = CardanoWasm.hash_transaction(txBody);
+
+      // we add witnesses once so that we can get the appropriate amount of signers for calculating the fee
+      const witnessSet = CardanoWasm.TransactionWitnessSet.new();
+      const vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+      this._signers.forEach((keyPair) => {
+        const prv = keyPair.getKeys().prv as string;
+        const vkeyWitness = CardanoWasm.make_vkey_witness(
+          txHash,
+          CardanoWasm.PrivateKey.from_normal_bytes(Buffer.from(prv, 'hex'))
+        );
+        vkeyWitnesses.add(vkeyWitness);
       });
+      this._signatures.forEach((signature) => {
+        const vkey = CardanoWasm.Vkey.new(
+          CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex'))
+        );
+        const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
+        vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+      });
+      if (vkeyWitnesses.len() === 0) {
+        const prv = CardanoWasm.PrivateKey.generate_ed25519();
+        const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
+        vkeyWitnesses.add(vkeyWitness);
+        if (this._type !== TransactionType.Send) {
+          vkeyWitnesses.add(vkeyWitness);
+        }
+      }
+      witnessSet.set_vkeys(vkeyWitnesses);
 
-      txBody.set_withdrawals(withdrawals);
+      // add in withdrawal if this is a withdrawal tx
+      if (this._withdrawals.length > 0) {
+        const withdrawals = CardanoWasm.Withdrawals.new();
+        this._withdrawals.forEach((withdrawal: Withdrawal) => {
+          const rewardAddress = CardanoWasm.RewardAddress.from_address(
+            CardanoWasm.Address.from_bech32(withdrawal.stakeAddress)
+          );
+          withdrawals.insert(rewardAddress!, CardanoWasm.BigNum.from_str(withdrawal.value));
+        });
+
+        txBody.set_withdrawals(withdrawals);
+      }
+
+      // add in certificates to get mock size
+      const draftCerts = CardanoWasm.Certificates.new();
+      for (const cert of this._certs) {
+        draftCerts.add(cert);
+      }
+      txBody.set_certs(draftCerts);
+
+      const txDraft = CardanoWasm.Transaction.new(txBody, witnessSet);
+      const linearFee = CardanoWasm.LinearFee.new(
+        CardanoWasm.BigNum.from_str('44'),
+        CardanoWasm.BigNum.from_str('155381')
+      );
+
+      // calculate the fee based off our dummy transaction
+      const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
+      this._transaction.fee(fee.to_str());
+      this._fee = fee;
     }
-
-    // add in certificates to get mock size
-    const draftCerts = CardanoWasm.Certificates.new();
-    for (const cert of this._certs) {
-      draftCerts.add(cert);
-    }
-    txBody.set_certs(draftCerts);
-
-    const txDraft = CardanoWasm.Transaction.new(txBody, witnessSet);
-    const linearFee = CardanoWasm.LinearFee.new(
-      CardanoWasm.BigNum.from_str('44'),
-      CardanoWasm.BigNum.from_str('155381')
-    );
-
-    // calculate the fee based off our dummy transaction
-    const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
-    this._transaction.fee(fee.to_str());
-
     // now calculate the change based off of <utxoBalance> - <fee> - <amountToSend>
     // reset the outputs collection because now our last output has changed
     outputs = CardanoWasm.TransactionOutputs.new();
@@ -215,7 +223,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
 
       const adjustment = BigNum.from_str('2000000');
-      let change = utxoBalance.checked_sub(fee).checked_sub(totalAmountToSend);
+      let change = utxoBalance.checked_sub(this._fee).checked_sub(totalAmountToSend);
       if (this._type === TransactionType.StakingActivate) {
         change = change.checked_sub(adjustment);
       } else if (this._type === TransactionType.StakingDeactivate) {
@@ -230,7 +238,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       outputs.add(changeOutput);
     }
 
-    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, fee);
+    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
 
     const certs = CardanoWasm.Certificates.new();
     for (const cert of this._certs) {
@@ -256,8 +264,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     // now add the witnesses again this time for real. We need to do this again
     // because now that we've added our real fee and change output, we have a difference transaction hash
-    witnessSet = CardanoWasm.TransactionWitnessSet.new();
-    vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+    const witnessSet = CardanoWasm.TransactionWitnessSet.new();
+    const vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
     this._signers.forEach((keyPair) => {
       const prv = keyPair.getKeys().prv as string;
       const vkeyWitness = CardanoWasm.make_vkey_witness(
