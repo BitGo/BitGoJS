@@ -1,9 +1,10 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType, AddressFormat } from '@bitgo/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../src/lib/transaction';
+import * as Utils from '../../src/lib/utils';
 
 describe('ADA Staking Activate Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
@@ -117,46 +118,86 @@ describe('ADA Staking Activate Transaction Builder', async () => {
   //   }
   // });
 
-  // it('should submit a staking transaction using signature interface', async () => {
-  //   const keyPairPayment = new KeyPair({ prv: testData.privateKeys.prvKey9 });
-  //   const keyPairStake = new KeyPair({ prv: testData.privateKeys.prvKey10 });
-  //   const senderAddress = Utils.default.createBaseAddressWithStakeAndPaymentKey(
-  //     keyPairStake,
-  //     keyPairPayment,
-  //     AddressFormat.testnet
-  //   );
-  //   const txBuilder = factory.getStakingActivateBuilder();
-  //   const senderBalance = '22122071';
-  //   txBuilder.changeAddress(senderAddress, senderBalance);
-  //   txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
-  //
-  //   txBuilder.input({
-  //     transaction_id: '0a4f80d83ba9ce1f83306a79252909241308d7eff317d04c9ea018966d687fe3',
-  //     transaction_index: 0,
-  //   });
-  //
-  //   txBuilder.ttl(900000000);
-  //
-  //   const unsignedTx = await txBuilder.build();
-  //   const signableHex = unsignedTx.signablePayload.toString('hex');
-  //   const serializedTx = unsignedTx.toBroadcastFormat();
-  //   txBuilder.sign({ key: keyPairPayment.getKeys().prv });
-  //   txBuilder.sign({ key: keyPairStake.getKeys().prv });
-  //   const signedTransaction = await txBuilder.build();
-  //   const serializedTransaction = signedTransaction.toBroadcastFormat();
-  //
-  //   const txBuilder2 = factory.from(serializedTx);
-  //   const tx = await txBuilder2.build();
-  //   tx.type.should.equal(TransactionType.StakingActivate);
-  //   const signableHex2 = tx.signablePayload.toString('hex');
-  //   signableHex.should.equal(signableHex2);
-  //   const signaturePayment = keyPairPayment.signMessage(signableHex2);
-  //   const signatureStake = keyPairStake.signMessage(signableHex2);
-  //   txBuilder2.addSignature({ pub: keyPairPayment.getKeys().pub }, Buffer.from(signaturePayment));
-  //   txBuilder2.addSignature({ pub: keyPairStake.getKeys().pub }, Buffer.from(signatureStake));
-  //   const signedTransaction2 = await txBuilder2.build();
-  //   signedTransaction.id.should.equal(tx.id);
-  //   const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
-  //   serializedTransaction2.should.equal(serializedTransaction);
-  // });
+  it('should submit a staking transaction using signature interface', async () => {
+    const keyPairPayment = new KeyPair({ prv: testData.privateKeys.prvKey9 });
+    const keyPairStake = new KeyPair({ prv: testData.privateKeys.prvKey10 });
+    const senderAddress = Utils.default.createBaseAddressWithStakeAndPaymentKey(
+      keyPairStake,
+      keyPairPayment,
+      AddressFormat.testnet
+    );
+    const txBuilder = factory.getStakingActivateBuilder();
+    const senderBalance = '22122071';
+    txBuilder.changeAddress(senderAddress, senderBalance);
+    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+
+    txBuilder.input({
+      transaction_id: '0a4f80d83ba9ce1f83306a79252909241308d7eff317d04c9ea018966d687fe3',
+      transaction_index: 0,
+    });
+
+    txBuilder.ttl(900000000);
+
+    const unsignedTx = await txBuilder.build();
+    const signableHex = unsignedTx.signablePayload.toString('hex');
+    const serializedTx = unsignedTx.toBroadcastFormat();
+    txBuilder.sign({ key: keyPairPayment.getKeys().prv });
+    txBuilder.sign({ key: keyPairStake.getKeys().prv });
+    const signedTransaction = await txBuilder.build();
+    const serializedTransaction = signedTransaction.toBroadcastFormat();
+
+    const txBuilder2 = factory.from(serializedTx);
+    const tx = await txBuilder2.build();
+    tx.type.should.equal(TransactionType.StakingActivate);
+    const signableHex2 = tx.signablePayload.toString('hex');
+    signableHex.should.equal(signableHex2);
+    const signaturePayment = keyPairPayment.signMessage(signableHex2);
+    const signatureStake = keyPairStake.signMessage(signableHex2);
+    txBuilder2.addSignature({ pub: keyPairPayment.getKeys().pub }, Buffer.from(signaturePayment));
+    txBuilder2.addSignature({ pub: keyPairStake.getKeys().pub }, Buffer.from(signatureStake));
+    const signedTransaction2 = await txBuilder2.build();
+    signedTransaction.id.should.equal(tx.id);
+    const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
+    serializedTransaction2.should.equal(serializedTransaction);
+  });
+
+  it('should submit a staking transaction using one signature', async () => {
+    const keyPairPayment = new KeyPair({ prv: testData.privateKeys.prvKey9 });
+    const keyPairStake = keyPairPayment;
+    const senderAddress = Utils.default.createBaseAddressWithStakeAndPaymentKey(
+      keyPairStake,
+      keyPairPayment,
+      AddressFormat.testnet
+    );
+    const txBuilder = factory.getStakingActivateBuilder();
+    const senderBalance = '22122071';
+    txBuilder.changeAddress(senderAddress, senderBalance);
+    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+
+    txBuilder.input({
+      transaction_id: '0a4f80d83ba9ce1f83306a79252909241308d7eff317d04c9ea018966d687fe3',
+      transaction_index: 0,
+    });
+
+    txBuilder.ttl(900000000);
+
+    const unsignedTx = await txBuilder.build();
+    const signableHex = unsignedTx.signablePayload.toString('hex');
+    const serializedTx = unsignedTx.toBroadcastFormat();
+    txBuilder.sign({ key: keyPairPayment.getKeys().prv });
+    const signedTransaction = await txBuilder.build();
+    const serializedTransaction = signedTransaction.toBroadcastFormat();
+
+    const txBuilder2 = factory.from(serializedTx);
+    const tx = await txBuilder2.build();
+    tx.type.should.equal(TransactionType.StakingActivate);
+    const signableHex2 = tx.signablePayload.toString('hex');
+    signableHex.should.equal(signableHex2);
+    const signaturePayment = keyPairPayment.signMessage(signableHex2);
+    txBuilder2.addSignature({ pub: keyPairPayment.getKeys().pub }, Buffer.from(signaturePayment));
+    const signedTransaction2 = await txBuilder2.build();
+    signedTransaction.id.should.equal(tx.id);
+    const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
+    serializedTransaction2.should.equal(serializedTransaction);
+  });
 });
