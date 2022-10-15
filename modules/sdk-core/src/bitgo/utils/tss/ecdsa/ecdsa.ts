@@ -1,5 +1,6 @@
 import * as bs58 from 'bs58';
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
+import { bigIntToBufferBE } from '../../../../account-lib/mpc/util';
 import * as openpgp from 'openpgp';
 import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
@@ -291,8 +292,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userSigningMaterial.backupNShare,
     ]);
 
+    const threshold = 2;
+    const numShares = 3;
+    const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
-    let u = userSigningMaterial.bitgoNShare.u;
+
+    let u = bigIntToBufferBE(uShares[3], 32).toString('hex');
     while (u.length < 64) {
       u = '0' + u;
     }

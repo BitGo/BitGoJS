@@ -69,6 +69,7 @@ export default class Ecdsa {
       n: publicKey.n.toString(16),
       y: bigIntToBufferBE(y, 33).toString('hex'),
       u: bigIntToBufferBE(uShares[index], 32).toString('hex'),
+      uu: u.toString(),
       chaincode: chaincode.toString('hex'),
     };
     const keyShare: KeyShare = {

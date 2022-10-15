@@ -4,6 +4,7 @@ export interface PShare {
   l: string; // lambda value for paillier secret key
   m: string; // mu value for paillier secret key
   u: string; // shamir share of secret
+  uu: string; // unsplit shamir share of secret
   n: string; // n => (p . q) where p and q are the two random prime numbers chosen for paillier encryption
   y: string;
   chaincode: string;
