@@ -64,4 +64,21 @@ describe('SUI:', function () {
       isTransactionVerified.should.equal(true);
     });
   });
+
+  describe('Address Validation', () => {
+    it('should return true when validating a well formatted address', async function () {
+      const address = 'd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
+      basecoin.isValidAddress(address).should.equal(true);
+    });
+
+    it('should return true when validating a well formatted address prefixed with 0x', async function () {
+      const address = '0xd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
+      basecoin.isValidAddress(address).should.equal(true);
+    });
+
+    it('should return false when validating an incorrectly formatted', async function () {
+      const address = 'wrongaddress';
+      basecoin.isValidAddress(address).should.equal(false);
+    });
+  });
 });
