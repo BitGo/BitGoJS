@@ -9,6 +9,7 @@ import * as _ from 'lodash';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   BaseCoin,
+  BaseTransaction,
   BitGoBase,
   common,
   FeeEstimateOptions,
@@ -53,6 +54,7 @@ import {
   SignFinalOptions,
   VerifyAvaxcTransactionOptions,
 } from './iface';
+import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
 
 export class AvaxC extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
@@ -692,27 +694,56 @@ export class AvaxC extends BaseCoin {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
+  protected getAtomicBuilder(): AvaxpLib.TransactionBuilderFactory {
+    return new AvaxpLib.TransactionBuilderFactory(coins.get(this.getAvaxP()));
+  }
+
   /**
    * Explain a transaction from txHex, overriding BaseCoins
+   * transaction can be either atomic or eth txn.
    * @param params The options with which to explain the transaction
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-    if (!txHex || !params.feeInfo) {
-      throw new Error('missing explain tx parameters');
+    if (!txHex) {
+      throw new Error('missing txHex in explain tx parameters');
+    }
+    if (params.crossChainType) {
+      return this.explainAtomicTransaction(txHex);
+    }
+    if (!params.feeInfo) {
+      throw new Error('missing feeInfo in explain tx parameters');
     }
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(txHex);
     const tx = await txBuilder.build();
+    return Object.assign(this.explainEVMTransaction(tx), { fee: params.feeInfo });
+  }
+
+  /**
+   * Explains an atomic transaction using atomic builder.
+   * @param txHex
+   * @private
+   */
+  private async explainAtomicTransaction(txHex: string) {
+    const txBuilder = this.getAtomicBuilder().from(txHex);
+    const tx = await txBuilder.build();
+    return tx.explainTransaction();
+  }
+
+  /**
+   * Explains an EVM transaction using regular eth txn builder
+   * @param tx
+   * @private
+   */
+  private explainEVMTransaction(tx: BaseTransaction) {
     const outputs = tx.outputs.map((output) => {
       return {
         address: output.address,
         amount: output.value,
       };
     });
-
     const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
-
     return {
       displayOrder,
       id: tx.id,
@@ -722,7 +753,6 @@ export class AvaxC extends BaseCoin {
         .toFixed(0),
       changeOutputs: [], // account based does not use change outputs
       changeAmount: '0', // account base does not make change
-      fee: params.feeInfo,
     };
   }
 
@@ -1034,5 +1064,9 @@ export class AvaxC extends BaseCoin {
         `newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`
       );
     }
+  }
+
+  getAvaxP(): string {
+    return this.getChain().toString() === 'avaxc' ? 'avaxp' : 'tavaxp';
   }
 }

@@ -8,6 +8,8 @@ import * as nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Eth } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
+import * as should from 'should';
+import { EXPORT_C, IMPORT_C } from '../resources/avaxc';
 
 nock.enableNetConnect();
 
@@ -618,6 +620,54 @@ describe('Avalanche C-Chain', function () {
       await tavaxCoin
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
+    });
+  });
+
+  describe('Explain Transaction', () => {
+    it('should explain a half signed import in C transaction', async () => {
+      const testData = IMPORT_C;
+      const txExplain = await tavaxCoin.explainTransaction({ txHex: testData.halfsigntxHex, crossChainType: 'import' });
+      txExplain.outputAmount.should.equal((Number(testData.amount) - txExplain.fee?.fee).toString());
+      txExplain.type.should.equal(TransactionType.Import);
+      txExplain.outputs[0].address.should.equal(testData.to);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a signed import in C transaction', async () => {
+      const testData = IMPORT_C;
+      const txExplain = await tavaxCoin.explainTransaction({ txHex: testData.fullsigntxHex, crossChainType: 'import' });
+      txExplain.outputAmount.should.equal((Number(testData.amount) - txExplain.fee?.fee).toString());
+      txExplain.type.should.equal(TransactionType.Import);
+      txExplain.outputs[0].address.should.equal(testData.to);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a unsigned export in C transaction', async () => {
+      const importInPFee = 1000000;
+      const testData = EXPORT_C;
+      const txExplain = await tavaxCoin.explainTransaction({ txHex: testData.unsignedTxHex, crossChainType: 'export' });
+      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.inputs[0].address.should.equal(testData.cHexAddress);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
+      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a signed export in C transaction', async () => {
+      const importInPFee = 1000000;
+      const testData = EXPORT_C;
+      const txExplain = await tavaxCoin.explainTransaction({ txHex: testData.fullsigntxHex, crossChainType: 'export' });
+      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.type.should.equal(TransactionType.Export);
+      txExplain.inputs[0].address.should.equal(testData.cHexAddress);
+      txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
+      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.changeOutputs.should.be.empty();
+      should.not.exist(txExplain.memo);
     });
   });
 

@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/sdk-coin-avaxp": "^3.0.0",
     "@bitgo/sdk-coin-eth": "^2.0.0",
     "@bitgo/sdk-core": "^2.0.0",
     "@bitgo/statics": "^8.0.0",
