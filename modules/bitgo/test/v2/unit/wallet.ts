@@ -1814,6 +1814,38 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for eth fillNonce', async function () {
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        const nonce = '1';
+        const comment = 'fillNonce comment';
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'fillNonce',
+          feeOptions,
+          nonce,
+          isTss: true,
+          comment,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.nonce!.should.equal(nonce);
+        args[0]!.intentType.should.equal('fillNonce');
+        args[0]!.comment!.should.equal(comment);
+        args[0]!.isTss!.should.equal(true);
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
         const recipients = [{
           address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
@@ -1865,6 +1897,29 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.txid!.should.equal(lowFeeTxid);
         intent.intentType.should.equal('acceleration');
+      });
+
+      it('populate intent should return valid eth fillNonce intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const nonce = '1';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          reqId,
+          intentType: 'fillNonce',
+          nonce,
+          feeOptions,
+          isTss: true,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.nonce!.should.equal(nonce);
+        intent.isTss!.should.equal(true);
+        intent.intentType.should.equal('fillNonce');
       });
     });
 

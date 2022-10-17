@@ -102,7 +102,7 @@ export abstract class MpcUtils {
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
 
-    if (params.intentType !== 'acceleration') {
+    if (!['acceleration', 'fillNonce'].includes(params.intentType)) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {
@@ -135,6 +135,7 @@ export abstract class MpcUtils {
       switch (params.intentType) {
         case 'payment':
         case 'tokenTransfer':
+        case 'fillNonce':
           return {
             ...baseIntent,
             selfSend: params.selfSend,
