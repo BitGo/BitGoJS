@@ -397,7 +397,7 @@ export const coins = CoinMap.fromCoins([
   erc20('dgd', 'Digix DAO', 9, '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a', UnderlyingAsset.DGD),
   erc20('dgx', 'Digix', 9, '0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf', UnderlyingAsset.DGX),
   erc20('digg', 'Digg', 9, '0x798d1be841a82a273720ce31c822c61a67a601c3', UnderlyingAsset.DIGG),
-  erc20('dia', 'DIAToken', 9, '0x84ca8bc7997272c7cfb4d0cd3d55cd942b3c9419', UnderlyingAsset.DIA),
+  erc20('dia', 'DIAToken', 18, '0x84ca8bc7997272c7cfb4d0cd3d55cd942b3c9419', UnderlyingAsset.DIA),
   erc20('dmt', 'DMarket', 8, '0x2ccbff3a042c68716ed2a2cb0c544a9f1d1935e1', UnderlyingAsset.DMT),
   erc20('dodo', 'DODO', 18, '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd', UnderlyingAsset.DODO),
   erc20('dpi', 'DeFi Pulse Index', 18, '0x1494ca1f11d487c2bbe4543e90080aeba4ba3c2b', UnderlyingAsset.DPI),
