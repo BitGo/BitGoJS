@@ -17,6 +17,7 @@ import {
   TSSParams,
   TxRequest,
   TxRequestVersion,
+  BackupKeyShare,
 } from './baseTypes';
 import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
@@ -59,11 +60,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: KeyShare | BackupKeyShare,
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode: string,
-    recipientIndex?: number | undefined
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -71,9 +72,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createBackupKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: KeyShare | BackupKeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase?: string,
+    backupXpubProvider?: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -81,8 +84,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    enterprise: string
+    backupKeyShare: KeyShare | BackupKeyShare,
+    enterprise: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -91,6 +95,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
+    isThirdPartyBackup?: boolean;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }
@@ -234,5 +239,14 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   async getTxRequest(txRequestId: string): Promise<TxRequest> {
     return getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+  }
+
+  /**
+   * Checks whether the third party backup provider is valid/supported
+   * @param backupProvider - the backup provider client selected
+   */
+  isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
+    // As of now, BitGo is the only supported KRS provider for TSS
+    return !!(backupProvider && backupProvider === 'BitGoKRS');
   }
 }

@@ -5,7 +5,7 @@ import assert from 'assert';
 import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { Keychain, KeyType } from '../keychain';
+import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
 
@@ -52,7 +52,7 @@ export abstract class MpcUtils {
     const encUserToBitGoMessage = await encryptText(userKeyShare.privateShare, bitgoKey);
     const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 
-    const createBitGoMPCParams = {
+    const createBitGoMPCParams: AddKeychainOptions = {
       keyType,
       source: 'bitgo',
       keyShares: [

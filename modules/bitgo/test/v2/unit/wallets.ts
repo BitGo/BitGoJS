@@ -380,6 +380,43 @@ describe('V2 Wallets:', function () {
       sandbox.verifyAndRestore();
     });
 
+    it('should create a new TSS wallet with BitGoKRS as backup provider', async function () {
+      const sandbox = sinon.createSandbox();
+      const stubbedKeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+        },
+      };
+      sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet')
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        backupProvider: 'BitGoKRS',
+      });
+
+      walletNock.isDone().should.be.true();
+      sandbox.verifyAndRestore();
+    });
+
     it('should fail to create TSS wallet with invalid inputs', async function () {
       const tbtc = bitgo.coin('tbtc');
       const params = {
