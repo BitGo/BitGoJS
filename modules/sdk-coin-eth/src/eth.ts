@@ -1626,10 +1626,13 @@ export class Eth extends BaseCoin {
 
   verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
     const { txParams, txPrebuild, wallet } = params;
-    if (!txParams?.recipients || !wallet || !txPrebuild) {
+    if (!txParams?.recipients && txParams.type !== 'acceleration') {
+      throw new Error(`missing txParams`);
+    }
+    if (!wallet || !txPrebuild) {
       throw new Error(`missing params`);
     }
-    if (txParams.hop && txParams.recipients.length > 1) {
+    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
     return true;

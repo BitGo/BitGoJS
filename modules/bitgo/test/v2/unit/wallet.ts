@@ -1538,6 +1538,7 @@ describe('V2 Wallet:', function () {
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
         prebuildTxWithIntent.calledOnceWithExactly({
           reqId,
           recipients,
@@ -1577,6 +1578,7 @@ describe('V2 Wallet:', function () {
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
         prebuildTxWithIntent.calledOnceWithExactly({
           reqId,
           recipients,
@@ -1622,6 +1624,7 @@ describe('V2 Wallet:', function () {
         const tokenName = 'tcoin:tokenName';
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
         prebuildTxWithIntent.calledOnceWithExactly({
           reqId,
           recipients,
@@ -1684,6 +1687,7 @@ describe('V2 Wallet:', function () {
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFull);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
         prebuildTxWithIntent.calledOnceWithExactly({
           reqId,
           recipients,
@@ -1712,12 +1716,163 @@ describe('V2 Wallet:', function () {
           },
         });
       });
+
+      it('should call prebuildTxWithIntent with the correct params for eth transfers', async function () {
+        const recipients = [{
+          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+          amount: '1000',
+        }];
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          isTss: true,
+          feeOptions,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.recipients!.should.deepEqual(recipients);
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.isTss!.should.equal(true);
+        args[0]!.intentType.should.equal('payment');
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for eth transfertokens', async function () {
+        const recipients = [{
+          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+          amount: '1000',
+          tokenName: 'gterc18dp',
+        }];
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfertoken',
+          isTss: true,
+          feeOptions,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.recipients!.should.deepEqual(recipients);
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.isTss!.should.equal(true);
+        args[0]!.intentType.should.equal('transferToken');
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for eth accelerations', async function () {
+        const recipients = [{
+          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+          amount: '1000',
+          tokenName: 'gterc18dp',
+        }];
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'acceleration',
+          feeOptions,
+          lowFeeTxid,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.lowFeeTxid!.should.equal(lowFeeTxid);
+        args[0]!.intentType.should.equal('acceleration');
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
+        const recipients = [{
+          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+          amount: '1000',
+        }];
+
+        const expectedFeeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+          gasLimit: undefined,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          isTss: true,
+          eip1559: {
+            maxFeePerGas: expectedFeeOptions.maxFeePerGas.toString(),
+            maxPriorityFeePerGas: expectedFeeOptions.maxPriorityFeePerGas.toString(),
+          },
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.feeOptions!.should.deepEqual(expectedFeeOptions);
+      });
+
+      it('populate intent should return valid eth acceleration intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          reqId,
+          intentType: 'acceleration',
+          lowFeeTxid,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.txid!.should.equal(lowFeeTxid);
+        intent.intentType.should.equal('acceleration');
+      });
     });
 
     describe('Transaction signing', function () {
       it('should sign transaction', async function () {
         const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
         signTxRequest.resolves(txRequest);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke signTransaction
         signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
 
         const txPrebuild = {
@@ -1774,6 +1929,7 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value
         signTxRequestForMessage.calledOnceWithExactly({ txRequest: txRequestForMessageSigning, prv: 'secretKey', reqId });
       });
 
@@ -1834,10 +1990,12 @@ describe('V2 Wallet:', function () {
 
         const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
         sendTxRequest.resolves('sendTxResponse');
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
 
         const sendMany = await tssWallet.sendMany(sendManyInput);
@@ -1851,10 +2009,12 @@ describe('V2 Wallet:', function () {
 
         const prebuildAndSignTransaction = sandbox.stub(custodialTssWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
         sendTxRequest.resolves('sendTxResponse');
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
 
         const createTransferNock = nock(bgUrl)
@@ -1874,6 +2034,7 @@ describe('V2 Wallet:', function () {
 
         const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         await tssWallet.sendMany(sendManyInput).should.be.rejectedWith('txRequestId missing from signed transaction');
@@ -1945,6 +2106,7 @@ describe('V2 Wallet:', function () {
         const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'tokenTransfer' };
         const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFullTokenTransfer);
+        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
         prebuildTxWithIntent.calledOnceWithExactly({
           reqId,
           recipients,
@@ -1988,14 +2150,14 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.have.property('maxFeePerGas', 2000000000);
         intent.feeOptions!.should.have.property('maxPriorityFeePerGas', 1000000000);
         intent.should.have.property('recipients');
-        intent.recipients.should.have.property('length', 1);
-        intent.recipients[0].should.have.property('tokenData');
-        intent.recipients[0].tokenData!.should.have.property('tokenQuantity', recipients[0].tokenData.tokenQuantity);
-        intent.recipients[0].tokenData!.should.have.property('tokenType', recipients[0].tokenData.tokenType);
-        intent.recipients[0].tokenData!.should.have.property('tokenName', recipients[0].tokenData.tokenName);
-        intent.recipients[0].tokenData!.should.have.property('tokenContractAddress', recipients[0].tokenData.tokenContractAddress);
-        intent.recipients[0].tokenData!.should.have.property('tokenId', recipients[0].tokenData.tokenId);
-        intent.recipients[0].tokenData!.should.have.property('decimalPlaces', recipients[0].tokenData.decimalPlaces);
+        intent.recipients!.should.have.property('length', 1);
+        intent.recipients![0].should.have.property('tokenData');
+        intent.recipients![0].tokenData!.should.have.property('tokenQuantity', recipients[0].tokenData.tokenQuantity);
+        intent.recipients![0].tokenData!.should.have.property('tokenType', recipients[0].tokenData.tokenType);
+        intent.recipients![0].tokenData!.should.have.property('tokenName', recipients[0].tokenData.tokenName);
+        intent.recipients![0].tokenData!.should.have.property('tokenContractAddress', recipients[0].tokenData.tokenContractAddress);
+        intent.recipients![0].tokenData!.should.have.property('tokenId', recipients[0].tokenData.tokenId);
+        intent.recipients![0].tokenData!.should.have.property('decimalPlaces', recipients[0].tokenData.decimalPlaces);
       });
 
       it('should not populate intent with tokenData if certain params are undefined', async function () {
