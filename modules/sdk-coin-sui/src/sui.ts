@@ -1,15 +1,17 @@
 import {
   BaseCoin,
   BitGoBase,
+  EDDSAMethods,
   ExplanationResult,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
+  TssVerifyAddressOptions,
   UnsignedTransaction,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -17,6 +19,7 @@ import BigNumber from 'bignumber.js';
 import { Transaction } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
+import * as sha3 from 'js-sha3';
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -92,8 +95,31 @@ export class Sui extends BaseCoin {
     return true;
   }
 
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const { keychains, address: newAddress, index } = params;
+
+    if (!this.isValidAddress(newAddress)) {
+      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    }
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    for (const keychain of keychains) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const commonKeychain = keychain.commonKeychain as string;
+
+      const derivationPath = 'm/' + index;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const expectedAddress = this.getAddressFromPublicKey(derivedPublicKey);
+
+      if (newAddress !== expectedAddress) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
@@ -122,5 +148,15 @@ export class Sui extends BaseCoin {
 
   explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
     throw new Error('Method not implemented.');
+  }
+
+  private getAddressFromPublicKey(derivedPublicKey: string) {
+    // TODO(BG-59016) replace with account lib implementation
+    const PUBLIC_KEY_SIZE = 32;
+    const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
+    const pubBuf = Buffer.from(derivedPublicKey, 'hex');
+    tmp.set([0x00]);
+    tmp.set(pubBuf, 1);
+    return sha3.sha3_256(tmp).slice(0, 40);
   }
 }
