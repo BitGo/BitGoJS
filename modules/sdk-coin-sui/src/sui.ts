@@ -3,6 +3,7 @@ import {
   BitGoBase,
   ExplanationResult,
   KeyPair,
+  MethodNotImplementedError,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -93,7 +94,7 @@ export class Sui extends BaseCoin {
   }
 
   isWalletAddress(params: VerifyAddressOptions): boolean {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
