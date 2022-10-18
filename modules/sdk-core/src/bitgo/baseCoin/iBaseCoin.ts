@@ -105,10 +105,16 @@ export interface VerifyAddressOptions {
   addressType?: string;
   keychains?: {
     pub: string;
+    commonKeychain?: string;
   }[];
   error?: string;
   coinSpecific?: AddressCoinSpecific;
   impliedForwarderVersion?: number;
+}
+
+export interface TssVerifyAddressOptions extends VerifyAddressOptions {
+  chain: string;
+  index: string;
 }
 
 export interface TransactionParams {

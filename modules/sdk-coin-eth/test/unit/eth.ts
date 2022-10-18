@@ -701,9 +701,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
 
     it('should reject address verification if base address is undefined', async function () {
@@ -729,9 +727,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
 
     it('should reject address verification if base address is in invalid format', async function () {
@@ -758,9 +754,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
   });
 });
