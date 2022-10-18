@@ -382,7 +382,7 @@ export class Xrp extends BaseCoin {
    * @param rootAddress {String} the wallet's root address
    * @return true iff address is a wallet address (based on rootAddress)
    */
-  public isWalletAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+  public async isWalletAddress({ address, rootAddress }: VerifyAddressOptions): Promise<boolean> {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
     }

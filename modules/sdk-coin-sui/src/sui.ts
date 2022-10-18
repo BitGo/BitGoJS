@@ -99,7 +99,7 @@ export class Sui extends BaseCoin {
     return true;
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

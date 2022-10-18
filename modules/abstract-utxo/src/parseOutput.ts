@@ -18,6 +18,11 @@ import { AbstractUtxoCoin, Output, TransactionParams } from './abstractUtxoCoin'
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
+interface HandleVerifyAddressErrorResponse {
+  external: boolean;
+  needsCustomChangeKeySignatureVerification?: boolean;
+}
+
 /**
  * Check an address which failed initial validation to see if it's the base address of a migrated v1 bch wallet.
  *
@@ -70,10 +75,10 @@ interface VerifyCustomChangeAddressOptions {
  * @param {VerifyCustomChangeAddressOptions} params
  * @return {boolean}
  */
-function verifyCustomChangeAddress(params: VerifyCustomChangeAddressOptions): boolean {
+async function verifyCustomChangeAddress(params: VerifyCustomChangeAddressOptions): Promise<boolean> {
   const { coin, customChangeKeys, addressType, addressDetails, currentAddress } = params;
   try {
-    return coin.verifyAddress(
+    return await coin.verifyAddress(
       _.extend({ addressType }, addressDetails, {
         keychains: customChangeKeys,
         address: currentAddress,
@@ -97,7 +102,7 @@ interface HandleVerifyAddressErrorOptions {
   considerMigratedFromAddressInternal?: boolean;
 }
 
-function handleVerifyAddressError({
+async function handleVerifyAddressError({
   e,
   currentAddress,
   wallet,
@@ -107,7 +112,7 @@ function handleVerifyAddressError({
   addressDetails,
   addressType,
   considerMigratedFromAddressInternal,
-}: HandleVerifyAddressErrorOptions): { external: boolean; needsCustomChangeKeySignatureVerification?: boolean } {
+}: HandleVerifyAddressErrorOptions): Promise<HandleVerifyAddressErrorResponse> {
   // Todo: name server-side errors to avoid message-based checking [BG-5124]
   const walletAddressNotFound = e.message.includes('wallet address not found');
   const unexpectedAddress = e instanceof UnexpectedAddressError;
@@ -124,7 +129,7 @@ function handleVerifyAddressError({
       // attempt to verify address using custom change address keys if the wallet has that feature enabled
       if (
         customChangeKeys &&
-        verifyCustomChangeAddress({ coin, addressDetails, addressType, currentAddress, customChangeKeys })
+        (await verifyCustomChangeAddress({ coin, addressDetails, addressType, currentAddress, customChangeKeys }))
       ) {
         // address is valid against the custom change keys. Mark address as not external
         // and request signature verification for the custom change keys
@@ -235,7 +240,7 @@ export async function parseOutput({
     // it fails to correctly rederive the address, meaning it's external
     currentAddressType = AbstractUtxoCoin.inferAddressType(addressDetails) || undefined;
     currentAddressDetails = addressDetails;
-    coin.verifyAddress(
+    await coin.verifyAddress(
       _.extend({ addressType: currentAddressType }, addressDetails, {
         keychains: keychainArray,
         address: currentAddress,
@@ -251,7 +256,7 @@ export async function parseOutput({
     return _.extend(
       {},
       currentOutput,
-      handleVerifyAddressError({
+      await handleVerifyAddressError({
         e,
         coin,
         currentAddress,

@@ -1125,7 +1125,7 @@ export class Wallet implements IWallet {
         // can't verify addresses which are pending chain initialization, as the address is hidden
         let isWalletAddress = false;
         try {
-          isWalletAddress = this.baseCoin.isWalletAddress(verificationData);
+          isWalletAddress = await this.baseCoin.isWalletAddress(verificationData);
         } catch (e) {
           if (!(e instanceof MethodNotImplementedError)) {
             throw e;

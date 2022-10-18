@@ -140,7 +140,7 @@ export class Ada extends BaseCoin {
     return true;
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address } = params;
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`Invalid Cardano Address: ${address}`);
