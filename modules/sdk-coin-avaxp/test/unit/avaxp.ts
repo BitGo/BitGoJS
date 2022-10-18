@@ -407,7 +407,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.inputs[0].address.should.equal(testData.cHexAddress);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
-      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.fee.feeRate.should.equal(Number(testData.fee));
       txExplain.changeOutputs.should.be.empty();
       should.not.exist(txExplain.memo);
     });
