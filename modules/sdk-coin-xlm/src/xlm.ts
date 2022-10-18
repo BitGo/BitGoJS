@@ -572,7 +572,7 @@ export class Xlm extends BaseCoin {
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
    */
-  isWalletAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+  async isWalletAddress({ address, rootAddress }: VerifyAddressOptions): Promise<boolean> {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }

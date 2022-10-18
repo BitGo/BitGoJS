@@ -62,7 +62,7 @@ export class FiatGBP extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

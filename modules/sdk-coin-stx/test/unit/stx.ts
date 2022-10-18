@@ -1,9 +1,9 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
-import * as should from 'should';
 import * as testData from '../fixtures';
 import { Stx, Tstx, StxLib } from '../../src';
+import assert from 'assert';
 
 const { KeyPair } = StxLib;
 
@@ -97,7 +97,7 @@ describe('STX:', function () {
     });
   });
 
-  it('should verify isWalletAddress', function () {
+  it('should verify isWalletAddress', async function () {
     const userKey = {
       pub: 'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS',
     };
@@ -112,12 +112,13 @@ describe('STX:', function () {
     const validAddress2 = 'SNAYQFZ6EF54D5XWJP3GAE1Y8DPYXKFC7TTMYXFV?memoId=2';
     const unrelatedValidAddress = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y?memoId=1';
     const invalidAddress = 'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY';
-    basecoin.isWalletAddress({ address: validAddress1, keychains }).should.true();
-    basecoin.isWalletAddress({ address: validAddress2, keychains }).should.true();
-    basecoin.isWalletAddress({ address: unrelatedValidAddress, keychains }).should.false();
-    should.throws(
-      () => basecoin.isWalletAddress({ address: invalidAddress, keychains }),
-      `invalid address: ${invalidAddress}`
+    (await basecoin.isWalletAddress({ address: validAddress1, keychains })).should.true();
+    (await basecoin.isWalletAddress({ address: validAddress2, keychains })).should.true();
+    (await basecoin.isWalletAddress({ address: unrelatedValidAddress, keychains })).should.false();
+
+    assert.rejects(
+      async () => basecoin.isWalletAddress({ address: invalidAddress, keychains }),
+      `invalid address ${invalidAddress}`
     );
   });
 

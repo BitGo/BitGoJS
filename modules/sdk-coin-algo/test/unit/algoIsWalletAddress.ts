@@ -100,13 +100,13 @@ describe('Algo class', function () {
         throws: /invalid public key/,
       },
     ].forEach(({ title, address, expected, bitgoPubKey, throws, keychains }) => {
-      it(title, () => {
+      it(title, async () => {
         // GIVEN parameter options for created address
         const params = makeVerifyAddressOptions(address, ROOT_ADDRESS, bitgoPubKey, keychains);
 
         try {
           // WHEN checking address
-          const result = basecoin.isWalletAddress(params);
+          const result = await basecoin.isWalletAddress(params);
 
           // THEN no error was expected
           should(throws).be.undefined();

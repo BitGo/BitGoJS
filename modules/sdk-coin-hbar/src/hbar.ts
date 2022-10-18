@@ -151,7 +151,7 @@ export class Hbar extends BaseCoin {
    * @param {String} params.address - the address to verify
    * @param {String} params.baseAddress - the base address from the wallet
    */
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, baseAddress } = params;
     return Utils.isSameBaseAddress(address, baseAddress);
   }

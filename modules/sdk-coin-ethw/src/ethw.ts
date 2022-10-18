@@ -48,7 +48,7 @@ export class Ethw extends Eth {
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

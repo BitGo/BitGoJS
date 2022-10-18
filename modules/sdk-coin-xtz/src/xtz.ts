@@ -99,7 +99,7 @@ export class Xtz extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

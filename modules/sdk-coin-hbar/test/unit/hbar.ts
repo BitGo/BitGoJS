@@ -3,11 +3,11 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import * as TestData from '../fixtures/hbar';
 import { randomBytes } from 'crypto';
-import * as should from 'should';
 import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
 import { Wallet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
+import assert from 'assert';
 
 describe('Hedera Hashgraph:', function () {
   let bitgo: TestBitGoAPI;
@@ -173,19 +173,20 @@ describe('Hedera Hashgraph:', function () {
     explain.changeAmount.should.equal('0');
   });
 
-  it('should verify isWalletAddress', function () {
+  it('should verify isWalletAddress', async function () {
     const baseAddress = '0.0.41098';
     const validAddress1 = '0.0.41098?memoId=1';
     const validAddress2 = '0.0.41098?memoId=2';
     const unrelatedValidAddress = '0.1.41098?memoId=1';
     const invalidAddress = '0.0.0.a';
-    basecoin.isWalletAddress({ address: validAddress1, baseAddress }).should.true();
-    basecoin.isWalletAddress({ address: validAddress2, baseAddress }).should.true();
-    basecoin.isWalletAddress({ address: validAddress2, baseAddress: validAddress1 }).should.true();
-    basecoin.isWalletAddress({ address: unrelatedValidAddress, baseAddress }).should.false();
-    should.throws(
-      () => basecoin.isWalletAddress({ address: invalidAddress, baseAddress }),
-      `invalid address: ${invalidAddress}`
+    (await basecoin.isWalletAddress({ address: validAddress1, baseAddress })).should.true();
+    (await basecoin.isWalletAddress({ address: validAddress2, baseAddress })).should.true();
+    (await basecoin.isWalletAddress({ address: validAddress2, baseAddress: validAddress1 })).should.true();
+    (await basecoin.isWalletAddress({ address: unrelatedValidAddress, baseAddress })).should.false();
+
+    assert.rejects(
+      async () => basecoin.isWalletAddress({ address: invalidAddress, baseAddress }),
+      `invalid address ${invalidAddress}`
     );
   });
 

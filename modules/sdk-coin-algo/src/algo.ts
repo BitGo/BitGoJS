@@ -473,7 +473,7 @@ export class Algo extends BaseCoin {
    * @param params.address address to validate
    * @param params.keychains public keys to generate the wallet
    */
-  isWalletAddress(params: VerifyAlgoAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAlgoAddressOptions): Promise<boolean> {
     const {
       address,
       keychains,

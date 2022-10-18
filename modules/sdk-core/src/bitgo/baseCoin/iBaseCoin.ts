@@ -369,8 +369,8 @@ export interface IBaseCoin {
   signMessage(key: { prv: string }, message: string): Promise<Buffer>;
   explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined>;
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
-  verifyAddress(params: VerifyAddressOptions): boolean;
-  isWalletAddress(params: VerifyAddressOptions): boolean;
+  verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
+  isWalletAddress(params: VerifyAddressOptions): Promise<boolean>;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;

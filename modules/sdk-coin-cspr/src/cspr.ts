@@ -104,7 +104,7 @@ export class Cspr extends BaseCoin {
    *
    * @param {VerifyAddressOptions} params address and rootAddress to verify
    */
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, keychains } = params;
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);

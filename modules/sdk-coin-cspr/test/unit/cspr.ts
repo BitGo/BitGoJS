@@ -648,7 +648,7 @@ describe('Casper', function () {
       }
     });
 
-    it('should verify address with payment id', function () {
+    it('should verify address with payment id', async function () {
       const keychains = [
         {
           id: '624f0dcc93cbcc0008d88df2369a565e',
@@ -694,7 +694,7 @@ describe('Casper', function () {
       ];
 
       for (const addressParams of validAddresses) {
-        basecoin.verifyAddress(addressParams).should.be.true();
+        (await basecoin.verifyAddress(addressParams)).should.be.true();
       }
     });
   });
