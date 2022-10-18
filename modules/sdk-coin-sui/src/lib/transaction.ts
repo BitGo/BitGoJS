@@ -281,16 +281,19 @@ export class Transaction extends BaseTransaction {
   }
 
   static updateProperTransactionData(k: any): void {
-    // bcs deserializes number into Big Number, needs to convert them back to number
+    // bcs deserializes number into Big Number and removed '0x' prefix from addresses, needs to convert them back
     k.payTx.amounts = k.payTx.amounts.map((amount) => amount.toNumber());
     k.payTx.coins = k.payTx.coins.map((coin): SuiObjectRef => {
       return {
-        objectId: coin.objectId,
+        objectId: utils.normalizeHexId(coin.objectId),
         version: coin.version.toNumber(),
         digest: coin.digest,
       };
     });
+    k.payTx.recipients = k.payTx.recipients.map((recipient) => utils.normalizeHexId(recipient));
+    k.gasPayment.objectId = utils.normalizeHexId(k.gasPayment.objectId);
     k.gasPayment.version = k.gasPayment.version.toNumber();
+    k.sender = utils.normalizeHexId(k.sender);
   }
 
   /**

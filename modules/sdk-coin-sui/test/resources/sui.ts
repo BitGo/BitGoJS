@@ -1,12 +1,12 @@
 export const addresses = {
   validAddresses: [
-    'cba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08',
-    'c4173a804406a365e69dfb297d4eaaf002546ebd',
-    '111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
+    '0xcba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08',
+    '0xc4173a804406a365e69dfb297d4eaaf002546ebd',
+    '0x111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
   ],
   invalidAddresses: [
     'randomString',
-    'c4173a804406a365e69dfb297ddfgsdcvf',
+    '0xc4173a804406a365e69dfb297ddfgsdcvf',
     '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
   ],
 };
@@ -19,19 +19,19 @@ export const sender = {
 export const recipients = [addresses.validAddresses[1]];
 
 export const gasPayment = {
-  objectId: '36d6ca08f2081732944d1e5b6b406a4a462e39b8',
+  objectId: '0x36d6ca08f2081732944d1e5b6b406a4a462e39b8',
   version: 3,
   digest: 'uUkO3mMhUmLENOA/YG2XmfO6cEUjztoYSzhtR6of+B8=',
 };
 
 export const coins = [
   {
-    objectId: '111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
+    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
     version: 3,
     digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsT2NcFYE=',
   },
   {
-    objectId: '111b8a49f67370bc4a58e500b9e64cb6462e39b8',
+    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6462e39b8',
     version: 2,
     digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsR6of+B8=',
   },
