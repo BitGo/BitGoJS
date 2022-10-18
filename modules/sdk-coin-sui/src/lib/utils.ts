@@ -101,17 +101,24 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Returns whether or not the string is a valid amount of lamports number
+   * Returns whether or not the string is a valid amount
    *
    * @param {number[]} amounts - the amounts to validate
    * @returns {boolean} - the validation result
    */
   isValidAmounts(amounts: number[]): boolean {
     for (const amount of amounts) {
-      const bigNumberAmount = new BigNumber(amount);
-      if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
+      if (!this.isValidAmount(amount)) {
         return false;
       }
+    }
+    return true;
+  }
+
+  isValidAmount(amount: number): boolean {
+    const bigNumberAmount = new BigNumber(amount);
+    if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
+      return false;
     }
     return true;
   }
