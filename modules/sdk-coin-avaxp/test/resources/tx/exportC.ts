@@ -15,5 +15,5 @@ export const EXPORT_C = {
   targetChainId: '11111111111111111111111111111111LpoYY',
   nonce: 9,
   threshold: 2,
-  fee: '1000025',
+  fee: '25',
 };
