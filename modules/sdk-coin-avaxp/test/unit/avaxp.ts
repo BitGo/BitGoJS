@@ -388,27 +388,25 @@ describe('Avaxp', function () {
     });
 
     it('should explain a unsigned export in C transaction', async () => {
-      const importInPFee = 1000000;
       const testData = EXPORT_C;
       const txExplain = await basecoin.explainTransaction({ txHex: testData.unsignedTxHex });
-      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.outputAmount.should.equal(Number(testData.amount).toString());
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.inputs[0].address.should.equal(testData.cHexAddress);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
-      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.fee.feeRate.should.equal(Number(testData.fee));
       txExplain.changeOutputs.should.be.empty();
       should.not.exist(txExplain.memo);
     });
 
     it('should explain a signed export in C transaction', async () => {
-      const importInPFee = 1000000;
       const testData = EXPORT_C;
       const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
-      txExplain.outputAmount.should.equal((Number(testData.amount) + importInPFee).toString());
+      txExplain.outputAmount.should.equal(Number(testData.amount).toString());
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.inputs[0].address.should.equal(testData.cHexAddress);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.slice().sort().join('~'));
-      txExplain.fee.fee.should.equal(testData.fee);
+      txExplain.fee.feeRate.should.equal(Number(testData.fee));
       txExplain.changeOutputs.should.be.empty();
       should.not.exist(txExplain.memo);
     });

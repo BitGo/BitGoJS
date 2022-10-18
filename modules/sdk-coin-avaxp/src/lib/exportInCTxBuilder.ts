@@ -112,9 +112,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     const inputAmount = new BN((input as any).amount);
     const outputAmount = (output.getOutput() as AmountOutput).getAmount();
     const fee = inputAmount.sub(outputAmount);
-    this._amount = outputAmount.subn(Number(this.fixedFee));
-    this.transaction._fee.feeRate = fee.toNumber();
-    this.transaction._fee.fee = this.transaction._fee.feeRate.toString();
+    this._amount = outputAmount;
+    this.transaction._fee.feeRate = fee.toNumber() - Number(this.fixedFee);
+    this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
     this.transaction._fromAddresses = [input.getAddress()];
 
@@ -153,17 +153,15 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     if (!this._nonce === undefined) {
       throw new Error('nonce is required');
     }
+    const txFee = Number(this.fixedFee);
 
-    const fee: number = this.transaction._fee.feeRate;
+    const fee: number = this.transaction._fee.feeRate + txFee;
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
 
-    // The amount arrives after import tx. Then a fixed fee will be paid upon import.
-    const importTxFee = Number(this.fixedFee);
-
     const input = new EVMInput(
       this.transaction._fromAddresses[0],
-      this._amount.addn(fee).addn(importTxFee),
+      this._amount.addn(fee),
       this.transaction._assetId,
       this._nonce
     );
@@ -181,7 +179,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
               new TransferableOutput(
                 this.transaction._assetId,
                 new SECPTransferOutput(
-                  this._amount.addn(importTxFee),
+                  this._amount,
                   this.transaction._to,
                   this.transaction._locktime,
                   this.transaction._threshold
