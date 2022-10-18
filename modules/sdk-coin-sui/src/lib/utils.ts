@@ -122,6 +122,13 @@ export class Utils implements BaseUtils {
     }
     return true;
   }
+
+  /**
+   Normalizes hex ids (addresses, object ids) to always contain the '0x' prefix.
+   **/
+  normalizeHexId(id: string): string {
+    return id.startsWith('0x') ? id : '0x'.concat(id);
+  }
 }
 
 const utils = new Utils();

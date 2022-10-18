@@ -30,4 +30,16 @@ describe('Sui util library', function () {
       should.equal(utils.isValidRawTransaction(testData.INVALID_RAW_TX), false);
     });
   });
+
+  describe('normalizeHexId', function () {
+    it('should succeed to normalize hexId with no prefix', function () {
+      const hexId = 'cba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08';
+      const expectedNormalized = '0xcba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08';
+      should.equal(utils.normalizeHexId(hexId), expectedNormalized);
+    });
+    it('should return the hexId with prefix already', function () {
+      const hexId = '0xcba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08';
+      should.equal(utils.normalizeHexId(hexId), hexId);
+    });
+  });
 });
