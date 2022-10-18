@@ -63,7 +63,7 @@ import { supportedCrossChainRecoveries } from './config';
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
   bitgo;
-type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+export type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
