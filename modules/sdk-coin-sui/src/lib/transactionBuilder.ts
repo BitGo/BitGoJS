@@ -161,7 +161,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   validateGasPrice(gasPrice: number): void {
     if (gasPrice !== SUI_GAS_PRICE) {
-      throw new BuildTransactionError('Invalid gas Price ' + gasPrice);
+      throw new BuildTransactionError('Invalid gas price ' + gasPrice);
     }
   }
 
@@ -184,11 +184,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!utils.isValidAmounts(payTx.amounts)) {
       throw new BuildTransactionError('Invalid or missing amounts, got: ' + payTx.amounts);
     }
+
+    for (const coin of payTx.coins) {
+      this.validateSuiObjectRef(coin, 'payTx.coin');
+    }
+
+    for (const recipient of payTx.recipients) {
+      utils.validateAddress(recipient, 'payTx.recipient');
+    }
   }
 
   validateGasPayment(gasPayment: SuiObjectRef): void {
     if (!gasPayment) {
       throw new BuildTransactionError(`Invalid gas Payment: undefined`);
+    }
+    this.validateSuiObjectRef(gasPayment, 'gasPayment');
+  }
+
+  validateSuiObjectRef(suiObjectRef: SuiObjectRef, field: string): void {
+    if (!suiObjectRef.hasOwnProperty('objectId')) {
+      throw new BuildTransactionError(`Invalid ${field}, missing objectId`);
+    }
+    if (!suiObjectRef.hasOwnProperty('version') || !utils.isValidAmount(suiObjectRef.version)) {
+      throw new BuildTransactionError(`Invalid ${field}, invalid or missing version`);
+    }
+    if (!suiObjectRef.hasOwnProperty('digest')) {
+      throw new BuildTransactionError(`Invalid ${field}, missing digest`);
     }
   }
 
@@ -235,8 +256,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Invalid transaction: missing gas payment');
     }
 
-    const inputCoinIds = this.transaction.getInputCoins().map((inputCoin) => inputCoin.objectId);
-    if (inputCoinIds.includes(this._gasPayment.objectId)) {
+    const coinIds = this._payTx.coins.map((coin) => coin.objectId);
+    if (coinIds.includes(this._gasPayment.objectId)) {
       throw new BuildTransactionError(
         `Invalid gas Payment ${this._gasPayment.objectId}, cannot be one of the inputCoins`
       );

@@ -20,7 +20,7 @@ describe('SUI:', function () {
   const txParams = {
     recipients: [
       {
-        address: testData.recipients.recipient1,
+        address: testData.recipients[0],
         amount: testData.AMOUNT.toString(),
       },
     ],
