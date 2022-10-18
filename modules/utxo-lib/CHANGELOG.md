@@ -3,6 +3,64 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.11...@bitgo/utxo-lib@3.2.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* format imported files ([2ba3302](https://github.com/BitGo/BitGoJS/commit/2ba330275e2149fce0e01f5fbc61592bca7453e3))
+* remove references to bitcoinjs.Network ([84c7fd9](https://github.com/BitGo/BitGoJS/commit/84c7fd9bccd71b2f7429690481dc3104d2ae0928))
+* **utxo-lib:** [dash] fix fromBuffer tx type ([7469ad0](https://github.com/BitGo/BitGoJS/commit/7469ad04fdacd4064262139757974970ee9fc614))
+* **utxo-lib:** [psbt] always set witness utxo ([0104b02](https://github.com/BitGo/BitGoJS/commit/0104b0286b3f74ee3adbd802b22a1b416789343e))
+* **utxo-lib:** [psbt] reduce use of hackish `this.tx` ([60e2289](https://github.com/BitGo/BitGoJS/commit/60e2289b2fe91065caf9ee80604053759231c380))
+* **utxo-lib:** accept psbtopts when creating a PSBT ([bb6774a](https://github.com/BitGo/BitGoJS/commit/bb6774afbcba28374136020d041f6275fe49c4f7))
+* **utxo-lib:** add TODO ([805074c](https://github.com/BitGo/BitGoJS/commit/805074c21b034d542ec952890b0136db536995a1))
+* **utxo-lib:** clone witness array when cloning tx ([eecfbd7](https://github.com/BitGo/BitGoJS/commit/eecfbd7b4a4a084a75ca6f5ce7db9e1e2b38263e))
+* **utxo-lib:** create PSBTs with proper inner TX class ([0c537e1](https://github.com/BitGo/BitGoJS/commit/0c537e1825642feeee09b28f6929400721fa4229))
+* **utxo-lib:** export {Dash,Zcash}Psbt ([c47046e](https://github.com/BitGo/BitGoJS/commit/c47046efdfa82d319b29e4fa20e5a92737268739))
+* **utxo-lib:** export UtxoPsbt ([b943679](https://github.com/BitGo/BitGoJS/commit/b94367942b1ded663dffd4f4b85a159c4db54469))
+* **utxo-lib:** fix lint ([24bcf05](https://github.com/BitGo/BitGoJS/commit/24bcf05b1c6502c4788f6c95b6f63c096df09898))
+* **utxo-lib:** import describe/it from `parse.ts` ([5aba693](https://github.com/BitGo/BitGoJS/commit/5aba693b078faa33cd2b525fbd0c44701e771df8))
+* **utxo-lib:** include all bip32 derivations for non-taproot ([ef76bf3](https://github.com/BitGo/BitGoJS/commit/ef76bf3fac1f65adfe4f7c75893d8576203371db))
+* **utxo-lib:** move getValueScaled->test + rename ([c605480](https://github.com/BitGo/BitGoJS/commit/c6054802cf44096546f7e44138d7bd540b409d66))
+* **utxo-lib:** pin noble-secp256k1 ([92727bf](https://github.com/BitGo/BitGoJS/commit/92727bf173aee1437f03af542ecd4e8a153a8841))
+* **utxo-lib:** remove unnecessary asyncs ([a4306ed](https://github.com/BitGo/BitGoJS/commit/a4306eddcee80ff33c735b5f259506252df8bd41))
+* **utxo-lib:** tx/tx builder improvements ([0a4545a](https://github.com/BitGo/BitGoJS/commit/0a4545a0889cda154bc0ee017f479278da32cb72))
+* **utxo-lib:** use BitGo published ecpair dep ([02b3c31](https://github.com/BitGo/BitGoJS/commit/02b3c31c605986ab915e88984de92630b1cd4ab7))
+* **utxo-lib:** use published bitcoinjs-lib ([f9a625c](https://github.com/BitGo/BitGoJS/commit/f9a625c8ec6996813356f5edcebe1e78fe4a38f4))
+* **utxo-lib:** use safe version of bitcoinjs-lib ([8f2226b](https://github.com/BitGo/BitGoJS/commit/8f2226b6276fe47413759bf7462b8429d9e69f90))
+
+
+### Features
+
+* import transaction_builder, classify, etc. ([e08776e](https://github.com/BitGo/BitGoJS/commit/e08776ea8e20b50d879bf25909db31b0451bb029))
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+* **utxo-lib:** [psbt] separate adding input and nonWitnessUtxo ([b16855c](https://github.com/BitGo/BitGoJS/commit/b16855ce76576cdbd973083dfc817926b41ad64e))
+* **utxo-lib:** Add Dash/Zcash PSBT ([990de06](https://github.com/BitGo/BitGoJS/commit/990de06a7b1f666d2cb00e2d9205c3dc8e6bced8))
+* **utxo-lib:** add maximumFeeRate for PsbtOpts ([367f72c](https://github.com/BitGo/BitGoJS/commit/367f72cb6017861fdd1a141062fb973d1e7528bb))
+* **utxo-lib:** add PSBT creation funcs like txbuilder ([80880a0](https://github.com/BitGo/BitGoJS/commit/80880a0469e013586e2e35b1836670c848ca8734))
+* **utxo-lib:** add PSBT from transaction ([65cc050](https://github.com/BitGo/BitGoJS/commit/65cc050adbd0507c6214baa2fd2b5076b2889007))
+* **utxo-lib:** add round-trip test with high-precision values ([9c2bb77](https://github.com/BitGo/BitGoJS/commit/9c2bb7785656c2c22fb23e6c3516b9b351145744))
+* **utxo-lib:** add UtxoPsbt w/BitGO P2TR signing ([1f35902](https://github.com/BitGo/BitGoJS/commit/1f35902fa6348da6b0d9dc70fc1367f3119181ef))
+* **utxo-lib:** addChangeOutputToPsbt ([88e37c9](https://github.com/BitGo/BitGoJS/commit/88e37c90cc1327b70a007a20db79ac2de7c9f6c8))
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+* **utxo-lib:** export ECPairAPI, BIP32API ([8f960fd](https://github.com/BitGo/BitGoJS/commit/8f960fd0adc61392ad7f40e4970e069267cd6f98))
+* **utxo-lib:** full 64 bit support w/ bigints ([3186934](https://github.com/BitGo/BitGoJS/commit/3186934f8af3a3d50d3b8890446008e7bee06d90))
+* **utxo-lib:** return unsigned tx ([6174bd3](https://github.com/BitGo/BitGoJS/commit/6174bd33cdda0f4b9fb84ec6c961f3deb6b51f63))
+* **utxo-lib:** set default version for zcash and dash ([dc5015a](https://github.com/BitGo/BitGoJS/commit/dc5015aa0dc3b283e9afef68a113fd26036d96db))
+* **utxo-lib:** store consensus branch id on psbt for zcash ([e078cf3](https://github.com/BitGo/BitGoJS/commit/e078cf3227abaa1919c677474debd46fea782fa2))
+
+
+### BREAKING CHANGES
+
+* **utxo-lib:** UtxoTransaction.fromBuffer interface - new optional param `amountType` inserted
+BG-54862
+
+
+
+
+
 ## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.11...@bitgo/utxo-lib@2.4.1) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

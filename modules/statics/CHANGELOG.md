@@ -3,6 +3,112 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.4...@bitgo/statics@8.2.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* fix test issues for BG-57708 ([65f672d](https://github.com/BitGo/BitGoJS/commit/65f672d6647dc2de94bb893d6b548deaf22af70c))
+* move constants to statics for BG-57708 ([73f986a](https://github.com/BitGo/BitGoJS/commit/73f986aaca53a41b056739d5933b6b3259d2493c))
+* **sdk-coin-ethw:** update chainid for EthW ([4b5339c](https://github.com/BitGo/BitGoJS/commit/4b5339c19bb17f11b9453b188e5afd35f619e749))
+* **sdk-coin-polygon:** staking features ([41a3959](https://github.com/BitGo/BitGoJS/commit/41a3959ab737155a7c06a499fd19e9182e06863e))
+* **sdk-coin-polygon:** update polygon token names ([8bb61cf](https://github.com/BitGo/BitGoJS/commit/8bb61cf2112a668255746366a32f8e5c8105a481))
+* **statics:** contract address of tpolygon name NFT BG-58416 ([f8ca06c](https://github.com/BitGo/BitGoJS/commit/f8ca06caeb1b893c4082a73959a9be62c8d99664))
+* **statics:** fix terc tokens to use goerli network ([024483d](https://github.com/BitGo/BitGoJS/commit/024483d3892d6ea05b11e63bb86dfdd0a1fe715a))
+* **statics:** format polygon token if its an NFT BG-59021 ([275f743](https://github.com/BitGo/BitGoJS/commit/275f7435c9cc3f8d708b6416ad2aa2287f411ac0))
+* **statics:** update contract address of name NFT BG-58416 ([0e66440](https://github.com/BitGo/BitGoJS/commit/0e66440cda0ba2a6b265e8e80da9505bbb536717))
+* **statics:** update tokenAddress for tsol:orca ([3d1da19](https://github.com/BitGo/BitGoJS/commit/3d1da197036ad3d5f9daf3ed7d282b9d6ce35206))
+* **statics:** update underlying asset of GTETH to ETH ([6bf3a5b](https://github.com/BitGo/BitGoJS/commit/6bf3a5bdae3db085ab57e65dd872c5626d293cc1))
+
+
+### chore
+
+* **statics:** update fullname for ada coin ([39ec376](https://github.com/BitGo/BitGoJS/commit/39ec3761d013bcfec718535a6f86039a42651205))
+* **statics:** update Sol coin name to Solana BG-52979 ([f7c36bf](https://github.com/BitGo/BitGoJS/commit/f7c36bf206330d317d39c11fa22fbdf638870d60))
+
+
+### Code Refactoring
+
+* **statics:** update sol token asset ([47260f9](https://github.com/BitGo/BitGoJS/commit/47260f9dd768ee29ce96df3abce58c3abbdb0e1b))
+
+
+### Features
+
+* add new tokens ([971251a](https://github.com/BitGo/BitGoJS/commit/971251a1a2aa693a761820fdbc821972a96f90a2))
+* add new tokens ([3427c53](https://github.com/BitGo/BitGoJS/commit/3427c5380ffaf2b1bfd906898eee029825ed9387))
+* add new tokens ([78a8b15](https://github.com/BitGo/BitGoJS/commit/78a8b154f4ad6c1c3b11a1e4a9c6ec9917aedcd7))
+* add sui coin to statics ([fd12785](https://github.com/BitGo/BitGoJS/commit/fd127850d1cb9bad3bc149204aa6a0074a743951))
+* add tokens to trading ([33887f7](https://github.com/BitGo/BitGoJS/commit/33887f73ca40136edaa02a2cf8bf346be63339a8))
+* adds new tokens ([078851d](https://github.com/BitGo/BitGoJS/commit/078851dadacf9d0e18539e7757ce189ba090969d))
+* **bitgo:** expose Ethw in core bitgo module ([183cda4](https://github.com/BitGo/BitGoJS/commit/183cda433f8c683722843e2c30bf46101a1cd677))
+* **sdk-coin-ada:** add cardano token config ([00fcd72](https://github.com/BitGo/BitGoJS/commit/00fcd72d5feed500d69f208254c6b61815f51a16))
+* **sdk-coin-avaxp:** implement export tx builder ([483d9ce](https://github.com/BitGo/BitGoJS/commit/483d9ce67b75ca5eb4c1330f59820b18043cdb6c))
+* **sdk-coin-bsc:** create bsc module ([b55ca71](https://github.com/BitGo/BitGoJS/commit/b55ca7173e27ee2d75d342b6706698769f11734f))
+* **sdk-coin-bsc:** support tokens for bsc ([44d2af8](https://github.com/BitGo/BitGoJS/commit/44d2af8f3f14bc61d31e6a0b8482a68db2a7d23e))
+* **sdk-coin-dot:** enable DOT staking ([0e9209b](https://github.com/BitGo/BitGoJS/commit/0e9209bd9c6f855cbc11e5d602253509fd0099c3))
+* **sdk-coin-eth:** add v1 wallet init code ([b1c983d](https://github.com/BitGo/BitGoJS/commit/b1c983d2f0723aa6647fca3d01a4c814639624b4))
+* **sdk-coin-polygon:** support tokens ([8870307](https://github.com/BitGo/BitGoJS/commit/8870307b63f460031019aecf30c60df4f2c0a112))
+* **statics:** add coin feature for NEAR ([cf1a2f2](https://github.com/BitGo/BitGoJS/commit/cf1a2f278124813bcae33c6e141ceba6920e823e))
+* **statics:** add ERC20 tokens ([7d800f0](https://github.com/BitGo/BitGoJS/commit/7d800f0fe6e7a5da6e8e71030f5584e7df2965d5))
+* **statics:** add ETHw statics ([f49ef42](https://github.com/BitGo/BitGoJS/commit/f49ef4233ffb788765eac5b5d20232334fbd6203))
+* **statics:** add mainnet polygon contracts ([912d5d9](https://github.com/BitGo/BitGoJS/commit/912d5d9b49a58cd47c92fcf251406e9a661c1d5b))
+* **statics:** add new prime tokens ([2963e96](https://github.com/BitGo/BitGoJS/commit/2963e96dbf0973863f8c7423fe168f5c181ee101))
+* **statics:** add new tokens ([db11934](https://github.com/BitGo/BitGoJS/commit/db119349da8385784074b6cbf56879c0899e2471))
+* **statics:** add ofc for near ([4ecde82](https://github.com/BitGo/BitGoJS/commit/4ecde82919019aa8bdacbe7958acb8ec6a5bf50f))
+* **statics:** add ORCA and GARI to SOL token list ([0781281](https://github.com/BitGo/BitGoJS/commit/07812816da2221a7ae00241980b2dba539f3042d))
+* **statics:** add polygon tokens to statics ([82cf43f](https://github.com/BitGo/BitGoJS/commit/82cf43fbe65008a9eb53824c5102399fc46f781b))
+* **statics:** add prime tokens ofc ([308bdab](https://github.com/BitGo/BitGoJS/commit/308bdab2cd9ad0738b3dac173dabaa1cd9b3b74c))
+* **statics:** add solana ([b46780e](https://github.com/BitGo/BitGoJS/commit/b46780ef7188b0f4451632c2fe2c3be86cdef9a7))
+* **statics:** add testnet Polygon as ERC20 ([b0b4160](https://github.com/BitGo/BitGoJS/commit/b0b4160e2669171d65c7f589ce09f920d16e1442))
+* **statics:** add trading tokens ([4ca3558](https://github.com/BitGo/BitGoJS/commit/4ca35584ee1429d510a5bd708e3985ec5e23bda1))
+* **statics:** added offchain tokens DAO, DENT, DEP, DFI ([c0257cf](https://github.com/BitGo/BitGoJS/commit/c0257cf86c5369f0db936acb990b3235b69dafcf))
+* **statics:** adding tokens for trading ([1241a66](https://github.com/BitGo/BitGoJS/commit/1241a66a9cc280399ac8f28a5bb840c52bb0009f))
+* **statics:** adds new tokens ([83ebf4a](https://github.com/BitGo/BitGoJS/commit/83ebf4a65962afed6c071300d80610645f3f0be8))
+* **statics:** adds test polygon as erc20 token for goerli ([ec5ea83](https://github.com/BitGo/BitGoJS/commit/ec5ea83bb1cef8bbf045dd5c2d42bb8e17c90ff8))
+* **statics:** adds test polygon as erc20 token for goerli and staking feature ([629cd1b](https://github.com/BitGo/BitGoJS/commit/629cd1b7d6889f2cda0112f6a7d7e317941ca5a9))
+* **statics:** bg-55026 enable sol staking flag ([f8b21a3](https://github.com/BitGo/BitGoJS/commit/f8b21a36a476750fc11205ffb9913bcb819e3452))
+* **statics:** fix bpt, seth-h and reth-h tokens ([d864033](https://github.com/BitGo/BitGoJS/commit/d864033d745ba81e33efcc64b80520ab13954ca4))
+* **statics:** fix decimals token CHO ([e7bb6fb](https://github.com/BitGo/BitGoJS/commit/e7bb6fba337dfe58354c535c2dc65964248d8cd7))
+* **statics:** fix erc20 token ([27edf13](https://github.com/BitGo/BitGoJS/commit/27edf13dfe66962f61014821a74ed52d0922c3d3))
+* **statics:** fix name husd for trading ([517c70a](https://github.com/BitGo/BitGoJS/commit/517c70a95df437cf81f382eb128f6c98da108725))
+* **statics:** introduce deprecation coin feature ([918b47e](https://github.com/BitGo/BitGoJS/commit/918b47edd351be4f7720fbfeeb2340ffd5f934b4))
+* **statics:** support NAME NFT on tpolygon BG-58416 ([dba1b90](https://github.com/BitGo/BitGoJS/commit/dba1b9087b59336292c51215785ff366bbd262be))
+
+
+### Reverts
+
+* Revert "feat(statics): add acala to statics" ([5f54097](https://github.com/BitGo/BitGoJS/commit/5f54097ffab8dd614b5ffb76c2287f2d41681e8a))
+* Revert "chore: export AcaCoin in statics" ([a4d573e](https://github.com/BitGo/BitGoJS/commit/a4d573e816813280cf37b6b984bd2dd782c2e84d))
+
+
+### BREAKING CHANGES
+
+* **statics:** Changing underlying asset for GTETH.
+the underlying asset for GTETH should
+be ETH similar to that of 'TETH'.
+TICKET: BG-59194
+* **statics:** adds test polygon as erc20 token for goerli because we are deprecating kovan
+BOS-556
+
+staking feature for matic
+* **statics:** updates coin names from `ADA`to `Cardano ADA`
+Ticket: BG-56343
+.
+* **statics:** modfiy symbol 'seth-h' to 'Staked ETH Harbour' and ofcholo to ocfhot
+BG-53319
+* **sdk-coin-eth:** Changes the return for exported method
+decodeWalletCreationData() in sdk-coin-eth
+BG-53733
+* **statics:** This breaks the provided token asset used for wp in bitgo-ms,
+will require to change available solana token asset in wp once this merged.
+BG-52918
+* **statics:** updates coin names from `Sol` and `Testnet Sol` to `Solana` and `Testnet Solana`.
+TICKET: BG-52979
+
+
+
+
+
 # [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@7.0.0-rc.4...@bitgo/statics@7.0.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/statics

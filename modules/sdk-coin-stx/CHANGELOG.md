@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.1.0-rc.6...@bitgo/sdk-coin-stx@1.4.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* **root:** align versions of bitcoinjs-lib ([b7eb929](https://github.com/BitGo/BitGoJS/commit/b7eb92998836a5945627ef1c80d74414b11f4867))
+
+
+### Features
+
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+
+
+
+
+
 # [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.1.0-rc.6...@bitgo/sdk-coin-stx@1.1.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

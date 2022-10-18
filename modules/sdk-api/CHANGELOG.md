@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.0-rc.33...@bitgo/sdk-api@1.4.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* **sdk-api:** fix txValueLimit type ([029abab](https://github.com/BitGo/BitGoJS/commit/029ababf75eb04a51211782b8b99a476346bf3ff))
+
+
+### Features
+
+* **sdk-coin-polygon:** support recovery ([15d6021](https://github.com/BitGo/BitGoJS/commit/15d602164d3a2b504d7995e65aa0fbcb38f98e89))
+* **utxo-lib:** export BIP32/ECPair interfaces ([8628507](https://github.com/BitGo/BitGoJS/commit/862850781b2e8b36c71608c5ae71424b9ebe9dee))
+
+
+
+
+
 # [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.0-rc.33...@bitgo/sdk-api@1.1.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/sdk-api
