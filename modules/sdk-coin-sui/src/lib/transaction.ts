@@ -59,8 +59,21 @@ bcs
     amounts: 'vector<u64>',
   });
 
+bcs.registerEnumType('Transaction', {
+  TransferObject: 'TransferObjectTx',
+  Publish: 'PublishTx',
+  Call: 'MoveCallTx',
+  TransferSui: 'TransferSuiTx',
+  Pay: 'PayTx',
+});
+
+bcs.registerVectorType('vector<Transaction>', 'Transaction').registerEnumType('TransactionKind', {
+  Single: 'Transaction',
+  Batch: 'vector<Transaction>',
+});
+
 bcs.registerStructType('TransactionData', {
-  payTx: 'PayTx',
+  kind: 'TransactionKind',
   sender: 'SuiAddress',
   gasPayment: 'SuiObjectRef',
   gasPrice: 'u64',
@@ -233,7 +246,7 @@ export class Transaction extends BaseTransaction {
   serialize(): string {
     const suiTx = this._suiTransaction;
     const txData = {
-      payTx: suiTx.payTx,
+      kind: { Single: { Pay: suiTx.payTx } },
       gasPayment: suiTx.gasPayment,
       gasPrice: suiTx.gasPrice,
       gasBudget: suiTx.gasBudget,
@@ -273,7 +286,7 @@ export class Transaction extends BaseTransaction {
 
     return {
       sender: k.sender,
-      payTx: k.payTx,
+      payTx: k.kind.Single.Pay,
       gasBudget: k.gasBudget.toNumber(),
       gasPrice: k.gasPrice.toNumber(),
       gasPayment: k.gasPayment,
@@ -281,16 +294,16 @@ export class Transaction extends BaseTransaction {
   }
 
   static updateProperTransactionData(k: any): void {
-    // bcs deserializes number into Big Number and removed '0x' prefix from addresses, needs to convert them back
-    k.payTx.amounts = k.payTx.amounts.map((amount) => amount.toNumber());
-    k.payTx.coins = k.payTx.coins.map((coin): SuiObjectRef => {
+    // bcs deserialized number into Big Number and removed '0x' prefix from addresses, needs to convert them back
+    k.kind.Single.Pay.amounts = k.kind.Single.Pay.amounts.map((amount) => amount.toNumber());
+    k.kind.Single.Pay.coins = k.kind.Single.Pay.coins.map((coin): SuiObjectRef => {
       return {
         objectId: utils.normalizeHexId(coin.objectId),
         version: coin.version.toNumber(),
         digest: coin.digest,
       };
     });
-    k.payTx.recipients = k.payTx.recipients.map((recipient) => utils.normalizeHexId(recipient));
+    k.kind.Single.Pay.recipients = k.kind.Single.Pay.recipients.map((recipient) => utils.normalizeHexId(recipient));
     k.gasPayment.objectId = utils.normalizeHexId(k.gasPayment.objectId);
     k.gasPayment.version = k.gasPayment.version.toNumber();
     k.sender = utils.normalizeHexId(k.sender);
