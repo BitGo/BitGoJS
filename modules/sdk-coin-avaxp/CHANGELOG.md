@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0-rc.4...@bitgo/sdk-coin-avaxp@4.0.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* **avaxp:** use "P-" prefix in avaxp addresses ([55ea71d](https://github.com/BitGo/BitGoJS/commit/55ea71d40e09689a3b2500c89dbef0a1e65bea39))
+* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
+* fix case where there is no change to be sent back to wallet ([74e4a98](https://github.com/BitGo/BitGoJS/commit/74e4a98203c833d0a27aba8e52b729bca556d6ee))
+* **root:** align versions of bitcoinjs-lib ([b7eb929](https://github.com/BitGo/BitGoJS/commit/b7eb92998836a5945627ef1c80d74414b11f4867))
+* **sdk-coin-avaxp:** fix avaxp validation issue ([8b586d6](https://github.com/BitGo/BitGoJS/commit/8b586d693fbaf6cbc06de63a732cbdc0db9a4881))
+* **sdk-coin-avaxp:** fix block id validation ([a6d94d3](https://github.com/BitGo/BitGoJS/commit/a6d94d3e1aa684c9aec5398502695a393af194f1))
+* **sdk-coin-avaxp:** nonce validation is not allow 0 ([4f8f074](https://github.com/BitGo/BitGoJS/commit/4f8f0747e1c64951b3b332bcac24666d424feb4a))
+* **sdk-coin-avaxp:** run unit test with account lib ([7b392ab](https://github.com/BitGo/BitGoJS/commit/7b392ab55faba52251586ad0bcb5f80ca05c45ef))
+
+
+### Features
+
+* add address validation for address array and multisig address ([6db2ebf](https://github.com/BitGo/BitGoJS/commit/6db2ebf9768d43a369826813999e9e53ec9d4629))
+* **sdk-coin-avaxc:** update explain transaction for avaxc ([94d502e](https://github.com/BitGo/BitGoJS/commit/94d502ee406a4817f6c97b53f954cc630baa6b98))
+* **sdk-coin-avaxp:** add hex prefix to broadcast tx ([cd29a66](https://github.com/BitGo/BitGoJS/commit/cd29a663e53124f7b738d9e97631ee252dbeb6a6))
+* **sdk-coin-avaxp:** add recoverySignature method ([f2fab69](https://github.com/BitGo/BitGoJS/commit/f2fab690a8775c55eb4afd4ec1b52c0455ea02e6))
+* **sdk-coin-avaxp:** correct select signer logic ([b5777c9](https://github.com/BitGo/BitGoJS/commit/b5777c9fa59b76a97e76d1367ef472525a7ce7c8))
+* **sdk-coin-avaxp:** create change only and allow custom reward owners ([b0abe92](https://github.com/BitGo/BitGoJS/commit/b0abe92ce88c4cac6cf70955fb2fc58e3add0678))
+* **sdk-coin-avaxp:** fix inputs fields and changes encoding of outputidx ([0deb9eb](https://github.com/BitGo/BitGoJS/commit/0deb9eb25f73bb1d8ec9d969439a87987656f7fd))
+* **sdk-coin-avaxp:** fix verify transaction method ([5e616f0](https://github.com/BitGo/BitGoJS/commit/5e616f0ba89c9b9346e0416955a17de8a2912c6d))
+* **sdk-coin-avaxp:** implement export tx builder ([483d9ce](https://github.com/BitGo/BitGoJS/commit/483d9ce67b75ca5eb4c1330f59820b18043cdb6c))
+* **sdk-coin-avaxp:** implement is wallet address method ([5e0cdba](https://github.com/BitGo/BitGoJS/commit/5e0cdba58547dac8acfcba9cd04253496b102a57))
+* **sdk-coin-avaxp:** implement tx builder for export on c chain ([af12b7a](https://github.com/BitGo/BitGoJS/commit/af12b7a7877f3429b5b42643182619e6d9b73384))
+* **sdk-coin-avaxp:** implement tx builder for import in c chain ([4d7856b](https://github.com/BitGo/BitGoJS/commit/4d7856b5417220ff8fccafefe05551b9b93246c1))
+* **sdk-coin-avaxp:** implement tx builder for import on p ([f52d124](https://github.com/BitGo/BitGoJS/commit/f52d124a1dbf4be9fe7010eaa2460aa6a60a56ea))
+* **sdk-coin-avaxp:** implement verifyTransaction ([5805c40](https://github.com/BitGo/BitGoJS/commit/5805c40dbbe0db06ea1c6a1db91e013bec39499d))
+* **sdk-coin-avaxp:** inputs normalized to be uses in unique duble spend prevetion ids ([938bcfe](https://github.com/BitGo/BitGoJS/commit/938bcfe456edcbc9485e4c482d6f8ee661077fa5))
+* **sdk-coin-avaxp:** update explain transaction method for export and import transaction ([121f164](https://github.com/BitGo/BitGoJS/commit/121f1648f344b606616dfc007da4cf75eafa9c26))
+* **sdk-core:** allow getting a staking wallet for any coin ([cfae0fe](https://github.com/BitGo/BitGoJS/commit/cfae0feeb14c1bcb30dad2840abd8489372bfbc8))
+* **sdk-core:** capitalize transaction type enum ([bce263e](https://github.com/BitGo/BitGoJS/commit/bce263e01ebf70119ddefd572f55c3a69f15751c))
+* update to work with bitcoinjs-lib@6 ([1950934](https://github.com/BitGo/BitGoJS/commit/1950934d9426385ee12b204cc7456327e4480618))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** change to upper case first char of addDelegator and addValidator
+BG-56847
+* **sdk-coin-avaxp:** updates one field name in the toJson result from stakedOutputs to outputs.
+TICKET: BG-55046
+
+
+
+
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@2.0.0-rc.4...@bitgo/sdk-coin-avaxp@2.0.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

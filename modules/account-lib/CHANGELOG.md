@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.38...@bitgo/account-lib@3.0.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* **account-lib:** fix EDDSA MPC key validation for small number keys ([f9f7407](https://github.com/BitGo/BitGoJS/commit/f9f740721a91f8351df40b3b4d89f2c393acd7cf))
+* **account-lib:** shamir secret indices validity ([4e22783](https://github.com/BitGo/BitGoJS/commit/4e227839d5c1fb84a583f17d8754b46324f4eef9))
+* **sdk-coin-eth:** fixes to the sign and verify functions for eth tss ([ce79269](https://github.com/BitGo/BitGoJS/commit/ce7926985886cfd48a174df4ea1341e1ec388f8b))
+* **sdk-core:** ecdsa send signing bitgo's n share u ([1cb1e93](https://github.com/BitGo/BitGoJS/commit/1cb1e933c692f454de538b3b189ef2feb1b39475))
+
+
+### Features
+
+* **account-lib:** add option to pass in custom seed ecdsa ([86b205e](https://github.com/BitGo/BitGoJS/commit/86b205e342ca5610ce460877a64f4733f944bf6e))
+* **account-lib:** add support for additional hash algorithms ([4e2aefe](https://github.com/BitGo/BitGoJS/commit/4e2aefe8bb7754f891e5f9919f591ad1cc04b34d))
+* **account-lib:** custom salt shamir share ([fa34652](https://github.com/BitGo/BitGoJS/commit/fa346529b5dc9897b6bbf6fb4a05ac77f2f05b2d))
+* **sdk-coin-bsc:** create bsc module ([b55ca71](https://github.com/BitGo/BitGoJS/commit/b55ca7173e27ee2d75d342b6706698769f11734f))
+* **sdk-core:** add recid to fully constructed signature ([a8adcd9](https://github.com/BitGo/BitGoJS/commit/a8adcd9c3f452f1dfc85454668c19103cec7160d))
+* **sdk-core:** implement signing flow ecdsa ([68aa561](https://github.com/BitGo/BitGoJS/commit/68aa561193fe0574bd7b7080bb51d1d795cf31f9))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** The SShare type's `r` field is now `R` (33 bytes encoded as 66 hex characters).
+ISSUE: BG-56664
+
+
+
+
+
 # [2.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.38...@bitgo/account-lib@2.20.0) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/account-lib
