@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as nock from 'nock';
 import * as openpgp from 'openpgp';
@@ -140,6 +141,15 @@ describe('TSS Ecdsa Utils:', async function () {
       const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKey);
       const result = await tssUtils.createBitgoHeldBackupKeyShare(userGpgKey);
       result.should.eql(expectedKeyShare);
+    });
+
+    it('should finalize backup key share held by BitGo', async function () {
+      const commonKeychain = '4428';
+      const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKey);
+      const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(coinName, originalKeyShare, commonKeychain, userKeyShare, bitGoGPGKey, nockedBitGoKeychain);
+
+      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain);
+      result.should.eql(expectedFinalKeyShare);
     });
 
     it('should generate TSS key chains', async function () {
@@ -487,7 +497,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
 
   // #region Nock helpers
-  async function nockCreateBitgoHeldBackupKeyShare(coin: string, userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>,): Promise<BitgoHeldBackupKeyShare> {
+  async function createIncompleteBitgoHeldBackupKeyShare(userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
     const nSharePromises = [encryptNShare(
       backupKeyShare,
       1,
@@ -500,7 +510,7 @@ describe('TSS Ecdsa Utils:', async function () {
       false,
     )];
 
-    const keyShare = {
+    return {
       id: '4711',
       keyShares: [{
         from: 'backup',
@@ -514,13 +524,57 @@ describe('TSS Ecdsa Utils:', async function () {
         privateShare: (await nSharePromises[1]).encryptedPrivateShare,
       }],
     };
+  }
+
+  async function nockCreateBitgoHeldBackupKeyShare(coin: string, userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
+    const keyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitgoGpgKey);
 
     nock(bgUrl)
-      .persist()
       .post(`/api/v2/${coin}/krs/backupkeys`, _.matches({ userPub: userGpgKey.publicKey }))
       .reply(201, keyShare);
 
     return keyShare;
+  }
+
+  async function nockFinalizeBitgoHeldBackupKeyShare(coin: string, originalKeyShare: BitgoHeldBackupKeyShare, commonKeychain: string, userKeyShare: KeyShare, backupGpgKey: openpgp.SerializedKeyPair<string>, bitgoKeychain: Keychain): Promise<BitgoHeldBackupKeyShare> {
+    const encryptedUserToBackupKeyShare = await encryptNShare(
+      userKeyShare,
+      2,
+      backupGpgKey.publicKey,
+      false,
+    );
+
+    const bitgoToBackupKeyShare = bitgoKeychain.keyShares?.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+    assert(bitgoToBackupKeyShare);
+
+    const expectedKeyShares = [{
+      from: 'user',
+      to: 'backup',
+      publicShare: userKeyShare.nShares[2].y,
+      // Omitting the private share, the actual encryption happens inside the function where we make the matching call
+      // to this nock. We cannot recreate the same encrypted value here because gpg encryption is not deterministic
+    }, bitgoToBackupKeyShare];
+
+    const updatedKeyShare = {
+      id: originalKeyShare.id,
+      commonKeychain,
+      keyShares: [
+        ...originalKeyShare.keyShares,
+        {
+          from: 'user',
+          to: 'backup',
+          publicShare: userKeyShare.nShares[2].y,
+          privateShare: encryptedUserToBackupKeyShare.encryptedPrivateShare,
+        },
+        bitgoToBackupKeyShare,
+      ],
+    };
+
+    nock(bgUrl)
+      .put(`/api/v2/${coin}/krs/backupkeys/${originalKeyShare.id}`, _.matches({ commonKeychain, keyShares: expectedKeyShares }))
+      .reply(200, updatedKeyShare);
+
+    return updatedKeyShare;
   }
 
   async function nockBitgoKeychain(params: {

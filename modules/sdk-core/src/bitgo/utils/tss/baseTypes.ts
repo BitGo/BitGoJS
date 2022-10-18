@@ -199,6 +199,7 @@ export type TSSParams = {
 };
 
 export interface BitgoHeldBackupKeyShare {
+  commonKeychain?: string;
   id: string;
   keyShares: ApiKeyShare[];
 }
@@ -209,6 +210,12 @@ export interface BitgoHeldBackupKeyShare {
  */
 export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare>;
+  finalizeBitgoHeldBackupKeyShare(
+    keyId: string,
+    commonKeychain: string,
+    userKeyShare: KeyShare,
+    bitgoKeychain: Keychain
+  ): Promise<BitgoHeldBackupKeyShare>;
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,

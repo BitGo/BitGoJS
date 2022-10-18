@@ -47,6 +47,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       .result();
   }
 
+  public finalizeBitgoHeldBackupKeyShare(
+    keyId: string,
+    commonKeychain: string,
+    userKeyShare: KeyShare,
+    bitgoKeychain: Keychain
+  ): Promise<BitgoHeldBackupKeyShare> {
+    throw new Error('Method not implemented.');
+  }
+
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,

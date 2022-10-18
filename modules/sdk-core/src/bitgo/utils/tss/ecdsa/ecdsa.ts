@@ -8,7 +8,7 @@ import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
-import { RequestType, TSSParams, TxRequest } from '../baseTypes';
+import { BitgoHeldBackupKeyShare, RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
@@ -56,6 +56,35 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
     const commonPubHexStr = commonKeychain.slice(0, 66);
     return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
+  }
+
+  async finalizeBitgoHeldBackupKeyShare(
+    keyId: string,
+    commonKeychain: string,
+    userKeyShare: KeyShare,
+    bitgoKeychain: Keychain
+  ): Promise<BitgoHeldBackupKeyShare> {
+    const bitgoGpgKey = await this.getBitgoPublicGpgKey();
+    const encryptedUserToBackupShare = await encryptNShare(userKeyShare, 2, bitgoGpgKey.armor());
+    const bitgoToBackupKeyShare = bitgoKeychain.keyShares?.find(
+      (keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup'
+    );
+    assert(bitgoToBackupKeyShare);
+    return await this.bitgo
+      .put(this.baseCoin.url(`/krs/backupkeys/${keyId}`))
+      .send({
+        commonKeychain,
+        keyShares: [
+          {
+            from: 'user',
+            to: 'backup',
+            publicShare: userKeyShare.nShares[2].y,
+            privateShare: encryptedUserToBackupShare.encryptedPrivateShare,
+          },
+          bitgoToBackupKeyShare,
+        ],
+      })
+      .result();
   }
 
   /** @inheritdoc */
