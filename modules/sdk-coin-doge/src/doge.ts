@@ -10,23 +10,22 @@ import {
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   RecoverFromWrongChainOptions,
-  Unspent,
   TransactionInfo,
   TransactionPrebuild,
 } from '@bitgo/abstract-utxo';
 import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { bitgo, networks } from '@bitgo/utxo-lib';
 
-type UnspentJSON = Unspent<bigint> & { value: number; valueString: string };
-type TransactionInfoJSON = TransactionInfo<bigint> & { unspents: UnspentJSON[] };
-type TransactionPrebuildJSON = TransactionPrebuild<bigint> & { txInfo: TransactionInfoJSON };
+type UnspentJSON = bitgo.Unspent<number> & { valueString: string };
+type TransactionInfoJSON = TransactionInfo<number> & { unspents: UnspentJSON[] };
+type TransactionPrebuildJSON = TransactionPrebuild<number> & { txInfo: TransactionInfoJSON };
 
 function parseUnspents<TNumber extends number | bigint>(
-  unspents: UnspentJSON[] | Unspent<TNumber>[]
-): Unspent<bigint>[] {
-  return unspents.map((unspent: Unspent<TNumber> | UnspentJSON): Unspent<bigint> => {
+  unspents: UnspentJSON[] | bitgo.Unspent<TNumber>[]
+): bitgo.Unspent<bigint>[] {
+  return unspents.map((unspent: bitgo.Unspent<TNumber> | UnspentJSON): bitgo.Unspent<bigint> => {
     if (typeof unspent.value === 'bigint') {
-      return unspent as Unspent<bigint>;
+      return unspent as bitgo.Unspent<bigint>;
     }
     if ('valueString' in unspent) {
       return { ...unspent, value: BigInt(unspent.valueString) };
@@ -55,7 +54,7 @@ function parseTransactionPrebuild<TNumber extends number | bigint>(
 
 export class Doge extends AbstractUtxoCoin {
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.dogecoin, 'bigint');
+    super(bitgo, network || networks.dogecoin, 'bigint');
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {
@@ -82,9 +81,7 @@ export class Doge extends AbstractUtxoCoin {
 
   /* postProcessPrebuild, isBitGoTaintedUnspent, verifyCustomChangeKeySignatures do not care whether they receive number or bigint */
 
-  createTransactionFromHex<TNumber extends number | bigint = bigint>(
-    hex: string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> {
+  createTransactionFromHex<TNumber extends number | bigint = bigint>(hex: string): bitgo.UtxoTransaction<TNumber> {
     return super.createTransactionFromHex<TNumber>(hex);
   }
 
