@@ -8,6 +8,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Txlm } from '../../src';
 
 import nock from 'nock';
+import * as assert from 'assert';
 nock.enableNetConnect();
 
 describe('XLM:', function () {
@@ -80,46 +81,46 @@ describe('XLM:', function () {
       });
     });
 
-    it('verifyAddress should work', function () {
-      basecoin.verifyAddress({
+    it('verifyAddress should work', async function () {
+      await basecoin.verifyAddress({
         address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
         rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
       });
-      basecoin.verifyAddress({
+      await basecoin.verifyAddress({
         address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1',
         rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2',
       });
 
-      basecoin.verifyAddress({
+      await basecoin.verifyAddress({
         address: validMuxedAddress,
         rootAddress: validMuxedBaseAddress,
       });
 
-      (() => {
+      assert.rejects(
         basecoin.verifyAddress({
           address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=243432',
           rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
-        });
-      }).should.throw();
+        })
+      );
 
-      (() => {
+      assert.rejects(
         basecoin.verifyAddress({
           address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2=x',
           rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2',
-        });
-      }).should.throw();
+        })
+      );
 
-      (() => {
+      assert.rejects(
         basecoin.verifyAddress({
           address: 'SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ',
-        });
-      }).should.throw();
+        })
+      );
 
-      (() => {
+      assert.rejects(
         basecoin.verifyAddress({
           address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8',
-        });
-      }).should.throw();
+        })
+      );
     });
   });
 

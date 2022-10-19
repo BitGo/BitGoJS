@@ -403,7 +403,7 @@ export class Eos extends BaseCoin {
    * @param rootAddress - the wallet's root address
    * @return true iff address is a wallet address (based on rootAddress)
    */
-  isWalletAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+  async isWalletAddress({ address, rootAddress }: VerifyAddressOptions): Promise<boolean> {
     if (!rootAddress || !_.isString(rootAddress)) {
       throw new Error('missing required string rootAddress');
     }

@@ -135,7 +135,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(): boolean {
+  async isWalletAddress(): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

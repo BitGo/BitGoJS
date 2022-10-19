@@ -17,6 +17,7 @@ import { IMPORT_P } from '../resources/tx/importP';
 import { ADDVALIDATOR_SAMPLES, EXPORT_P_2_C, EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT } from '../resources/avaxp';
 import { IMPORT_C } from '../resources/tx/importC';
 import { EXPORT_C } from '../resources/tx/exportC';
+import assert from 'assert';
 
 describe('Avaxp', function () {
   const coinName = 'avaxp';
@@ -570,7 +571,7 @@ describe('Avaxp', function () {
       basecoin.isValidAddress(multiSigValidAddress).should.be.false();
     });
 
-    it('should throw when verifying address if address length doesnt match keychain length', function () {
+    it('should throw when verifying address if address length doesnt match keychain length', async function () {
       const validAddresses = [
         {
           address: 'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
@@ -583,11 +584,11 @@ describe('Avaxp', function () {
       ];
 
       for (const addressParams of validAddresses) {
-        should.throws(() => basecoin.verifyAddress(addressParams));
+        await assert.rejects(async () => basecoin.verifyAddress(addressParams));
       }
     });
 
-    it('should fail to verify invalid address', function () {
+    it('should fail to verify invalid address', async function () {
       const invalidAddresses = [
         {
           address: 'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
@@ -600,22 +601,22 @@ describe('Avaxp', function () {
       ];
 
       for (const address of invalidAddresses) {
-        should.throws(() => basecoin.verifyAddress(address));
+        await assert.rejects(async () => basecoin.verifyAddress(address));
       }
     });
 
-    it('should successfully verify is wallet address', function () {
-      basecoin
-        .isWalletAddress({
+    it('should successfully verify is wallet address', async function () {
+      (
+        await basecoin.isWalletAddress({
           address:
             'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex~P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4~P-fuji1cjk4cvdfy6ffd4fh8umpnnrmjt0xdap02tcep6',
           keychains,
         })
-        .should.be.true();
+      ).should.be.true();
     });
 
-    it('should throw when address length and keychain length dont match', function () {
-      should.throws(() =>
+    it('should throw when address length and keychain length dont match', async function () {
+      await assert.rejects(async () =>
         basecoin.isWalletAddress({
           address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4~P-fuji1cjk4cvdfy6ffd4fh8umpnnrmjt0xdap02tcep6',
           keychains,
@@ -623,8 +624,8 @@ describe('Avaxp', function () {
       );
     });
 
-    it('should throw when keychain is not of length 3', function () {
-      should.throws(() =>
+    it('should throw when keychain is not of length 3', async function () {
+      await assert.rejects(async () =>
         basecoin.isWalletAddress({
           address: 'P-fuji1wq0d56pu54sgc5xpevm3ur6sf3l6kke70dz0l4',
           keychains: keychains[0],

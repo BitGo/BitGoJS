@@ -1568,7 +1568,7 @@ export class Eth extends BaseCoin {
    * @throws {UnexpectedAddressError}
    * @returns {Boolean} True iff address is a wallet address
    */
-  isWalletAddress(params: VerifyEthAddressOptions): boolean {
+  async isWalletAddress(params: VerifyEthAddressOptions): Promise<boolean> {
     const ethUtil = optionalDeps.ethUtil;
 
     let expectedAddress;

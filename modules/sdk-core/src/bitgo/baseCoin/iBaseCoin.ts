@@ -105,10 +105,16 @@ export interface VerifyAddressOptions {
   addressType?: string;
   keychains?: {
     pub: string;
+    commonKeychain?: string;
   }[];
   error?: string;
   coinSpecific?: AddressCoinSpecific;
   impliedForwarderVersion?: number;
+}
+
+export interface TssVerifyAddressOptions extends VerifyAddressOptions {
+  chain: string;
+  index: string;
 }
 
 export interface TransactionParams {
@@ -369,8 +375,8 @@ export interface IBaseCoin {
   signMessage(key: { prv: string }, message: string): Promise<Buffer>;
   explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined>;
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
-  verifyAddress(params: VerifyAddressOptions): boolean;
-  isWalletAddress(params: VerifyAddressOptions): boolean;
+  verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
+  isWalletAddress(params: VerifyAddressOptions): Promise<boolean>;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;

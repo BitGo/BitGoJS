@@ -57,7 +57,7 @@ export class Stx extends BaseCoin {
    * @param {String} params.address - the address to verify
    * @param {String} params.baseAddress - the base address from the wallet
    */
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, keychains } = params;
     if (!keychains || keychains.length !== 3) {
       throw new Error('Invalid keychains');

@@ -123,7 +123,7 @@ export class AvaxC extends BaseCoin {
     return {};
   }
 
-  verifyAddress({ address }: VerifyAddressOptions): boolean {
+  async verifyAddress({ address }: VerifyAddressOptions): Promise<boolean> {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
@@ -1027,7 +1027,7 @@ export class AvaxC extends BaseCoin {
     return hash.digest();
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     // TODO: Fix this later
     return true;
   }

@@ -322,7 +322,7 @@ export class Eth2 extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

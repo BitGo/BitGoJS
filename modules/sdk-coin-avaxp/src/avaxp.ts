@@ -102,7 +102,7 @@ export class AvaxP extends BaseCoin {
    * @param params.address address to validate
    * @param params.keychains public keys to generate the wallet
    */
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, keychains } = params;
 
     if (!this.isValidAddress(address)) {
