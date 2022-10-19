@@ -38,14 +38,14 @@ describe('Sui Transaction', () => {
         id: 'UNAVAILABLE',
         outputs: [
           {
-            address: '0xc4173a804406a365e69dfb297d4eaaf002546ebd',
-            amount: '100',
+            address: testData.recipients[0],
+            amount: testData.AMOUNT.toString(),
           },
         ],
-        outputAmount: 100,
+        outputAmount: testData.AMOUNT,
         changeOutputs: [],
         changeAmount: '0',
-        fee: { fee: '100' },
+        fee: { fee: testData.GAS_BUDGET.toString() },
         type: 0,
       });
     });

@@ -5,6 +5,8 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Sui, Tsui } from '../../src';
 import * as testData from '../resources/sui';
 import * as _ from 'lodash';
+import * as sinon from 'sinon';
+import BigNumber from 'bignumber.js';
 import assert from 'assert';
 
 describe('SUI:', function () {
@@ -88,14 +90,14 @@ describe('SUI:', function () {
         id: 'UNAVAILABLE',
         outputs: [
           {
-            address: '0xc4173a804406a365e69dfb297d4eaaf002546ebd',
-            amount: '100',
+            address: testData.recipients[0],
+            amount: testData.AMOUNT.toString(),
           },
         ],
-        outputAmount: 100,
+        outputAmount: testData.AMOUNT,
         changeOutputs: [],
         changeAmount: '0',
-        fee: { fee: '100' },
+        fee: { fee: testData.GAS_BUDGET.toString() },
         type: 0,
       });
     });
@@ -114,6 +116,34 @@ describe('SUI:', function () {
       } catch (error) {
         should.equal(error.message, 'Invalid transaction');
       }
+    });
+  });
+
+  describe('Parse Transactions: ', () => {
+    const transferInputsResponse = {
+      address: testData.recipients[0],
+      amount: new BigNumber(testData.AMOUNT).plus(testData.GAS_BUDGET).toFixed(),
+    };
+
+    const transferOutputsResponse = {
+      address: testData.recipients[0],
+      amount: testData.AMOUNT.toString(),
+    };
+
+    it('should parse a transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER_TX });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [transferInputsResponse],
+        outputs: [transferOutputsResponse],
+      });
+    });
+
+    it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
+      const stub = sinon.stub(Sui.prototype, 'explainTransaction');
+      stub.resolves(undefined);
+      await basecoin.parseTransaction({ txHex: testData.TRANSFER_TX }).should.be.rejectedWith('Invalid transaction');
+      stub.restore();
     });
   });
 

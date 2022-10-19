@@ -7,7 +7,7 @@ import {
   KeyPair,
   MPCAlgorithm,
   ParsedTransaction,
-  ParseTransactionOptions,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   TransactionExplanation,
@@ -23,6 +23,25 @@ import * as sha3 from 'js-sha3';
 
 export interface ExplainTransactionOptions {
   txHex: string;
+}
+
+export interface SuiParseTransactionOptions extends BaseParseTransactionOptions {
+  txHex: string;
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: string;
+}
+
+type TransactionInput = TransactionOutput;
+
+export interface SuiParsedTransaction extends ParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
 }
 
 export type SuiTransactionExplanation = TransactionExplanation;
@@ -128,8 +147,43 @@ export class Sui extends BaseCoin {
     return true;
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
+  async parseTransaction(params: SuiParseTransactionOptions): Promise<SuiParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    const suiTransaction = transactionExplanation as SuiTransactionExplanation;
+    if (suiTransaction.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+      };
+    }
+
+    const senderAddress = suiTransaction.outputs[0].address;
+    const feeAmount = new BigNumber(suiTransaction.fee.fee === '' ? '0' : suiTransaction.fee.fee);
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(suiTransaction.outputAmount).plus(feeAmount).toFixed(),
+      },
+    ];
+
+    const outputs: TransactionOutput[] = suiTransaction.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+
+    return {
+      inputs,
+      outputs,
+    };
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
