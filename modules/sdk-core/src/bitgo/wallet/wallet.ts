@@ -2550,6 +2550,20 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'fillNonce':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'fillNonce',
+            comment: params.comment,
+            nonce: params.nonce,
+            isTss: params.isTss,
+            feeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
