@@ -1854,6 +1854,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'sol:slnd',
+    'SOLEND',
+    6,
+    'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
+    UnderlyingAsset.SLND,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'tsol:srm',
     'Serum',
@@ -1908,6 +1916,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
     UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:slnd',
+    'SOLEND',
+    9,
+    'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
+    UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
   polygonErc20(
