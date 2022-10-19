@@ -1,5 +1,5 @@
 //
-// Tests for Wallets
+// Tests for Wallet
 //
 
 import * as should from 'should';
@@ -20,7 +20,7 @@ import {
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../src/bitgo';
+import { BitGo } from '../../../src';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
@@ -2305,5 +2305,63 @@ describe('V2 Wallet:', function () {
         getKeyNock.isDone().should.be.True();
       });
     });
+  });
+
+  describe('Fetch crossChain UTXOs (AVAX)', function () {
+
+    let bgUrl;
+    let basecoin;
+    let walletData;
+    let wallet;
+    before(async function () {
+      nock.pendingMocks().should.be.empty();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+      basecoin = bitgo.coin('tavaxp');
+      walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tavaxp',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {},
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should fetch cross chain utxos', async function () {
+      const params = { sourceChain: 'C' };
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/crossChainUnspents`;
+      const scope =
+        nock(bgUrl)
+          .get(path)
+          .query(params)
+          .reply(200, {
+            unspent: {
+              outputID: 7,
+              amount: '10000000',
+              txid: 'V3UBZTQj364zNWqt8uMHD5NjxxX8T8qkbeZXURmjnVmLEqzab',
+              threshold: 2,
+              addresses: ['C-fuji199fluegrthqs4tvz40zajfrsx5m7dvy75ajfm6', 'C-fuji1gk3m444893ynl0gfvxahjgw3vftnn8sptyd9g5', 'C-fuji1ujfzjgwzfygl60qp2l8rmglg3lnm7w4059nca5'],
+              outputidx: '1111XiaYg',
+              locktime: '0',
+            },
+            fromWallet: '635092fd4ff3316142df6e6b7a078b92',
+            toWallet: '635092fd4ff3316142df6e891f6a7ee6',
+            toAddress: '0x125c4451c870f753265b0b1af3cf6ab88ffe4657',
+          });
+
+      try {
+        await wallet.fetchCrossChainUTXOs(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    });
+
+
   });
 });

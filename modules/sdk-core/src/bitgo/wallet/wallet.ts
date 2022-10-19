@@ -33,9 +33,11 @@ import {
   CreateAddressOptions,
   CreatePolicyRuleOptions,
   CreateShareOptions,
+  CrossChainUTXO,
   DeployForwardersOptions,
   DownloadKeycardOptions,
   FanoutUnspentsOptions,
+  FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
   FreezeOptions,
   GetAddressOptions,
@@ -2085,6 +2087,16 @@ export class Wallet implements IWallet {
    */
   async remove(params: Record<string, never> = {}): Promise<any> {
     return this.bitgo.del(this.url()).result();
+  }
+
+  /**
+   * Fetches crossChain UTXOs
+   * Currently only for AVAX
+   * @param {string} params.sourceChain the sourcechain to pick UTXOs, if not given, then pick from all available chains [P, C]
+   */
+  fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]> {
+    const query = _.pick(params, ['sourceChain']);
+    return this.bitgo.get(this.url('/crossChainUnspents')).query(query).result();
   }
 
   /**
