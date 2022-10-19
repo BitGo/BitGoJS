@@ -1,4 +1,4 @@
-import 'should';
+import should = require('should');
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -56,12 +56,63 @@ describe('SUI:', function () {
   });
 
   describe('Verify transaction: ', () => {
-    it('should succeed to verify transaction in base64 encoding', async function () {
+    it('should succeed to verify transaction', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction with invalid param', async function () {
+      const txPrebuild = {};
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.rejectedWith('missing required tx prebuild property txHex');
+    });
+  });
+
+  describe('Explain Transaction: ', () => {
+    it('should explain a transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: testData.TRANSFER_TX,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: 'UNAVAILABLE',
+        outputs: [
+          {
+            address: '0xc4173a804406a365e69dfb297d4eaaf002546ebd',
+            amount: '100',
+          },
+        ],
+        outputAmount: 100,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: '100' },
+        type: 0,
+      });
+    });
+
+    it('should fail to explain transaction with missing params', async function () {
+      try {
+        await basecoin.explainTransaction({});
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
+    });
+
+    it('should fail to explain transaction with invalid params', async function () {
+      try {
+        await basecoin.explainTransaction({ txHex: 'randomString' });
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
     });
   });
 

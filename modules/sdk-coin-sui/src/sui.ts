@@ -1,7 +1,7 @@
 import {
   BaseCoin,
+  BaseTransaction,
   BitGoBase,
-  ExplanationResult,
   KeyPair,
   MethodNotImplementedError,
   MPCAlgorithm,
@@ -9,15 +9,21 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
-  UnsignedTransaction,
+  TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { Transaction } from './lib';
+import { Transaction, TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
+
+export interface ExplainTransactionOptions {
+  txHex: string;
+}
+
+export type SuiTransactionExplanation = TransactionExplanation;
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -121,7 +127,25 @@ export class Sui extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
-    throw new Error('Method not implemented.');
+  /**
+   * Explain a Sui transaction
+   * @param params
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<SuiTransactionExplanation> {
+    const factory = this.getBuilder();
+    let rebuiltTransaction: BaseTransaction;
+
+    try {
+      const transactionBuilder = factory.from(params.txHex);
+      rebuiltTransaction = await transactionBuilder.build();
+    } catch {
+      throw new Error('Invalid transaction');
+    }
+
+    return rebuiltTransaction.explainTransaction();
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 }
