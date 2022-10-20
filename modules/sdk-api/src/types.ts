@@ -20,6 +20,7 @@ export interface BitGoAPIOptions {
   useProduction?: boolean;
   userAgent?: string;
   validate?: boolean;
+  cookiesPropagationEnabled?: boolean;
 }
 
 export interface AccessTokenOptions {
