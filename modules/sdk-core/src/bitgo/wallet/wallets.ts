@@ -163,6 +163,7 @@ export class Wallets implements IWallets {
    * @param params.userKey User xpub
    * @param params.backupXpub Backup xpub
    * @param params.backupXpubProvider
+   * @param params.backupProvider Third party backup provider for TSS
    * @param params.enterprise
    * @param params.disableTransactionNotifications
    * @param params.passcodeEncryptionCode
@@ -226,6 +227,7 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise: params.enterprise,
         walletVersion: params.walletVersion,
+        backupProvider: params.backupProvider,
       });
     }
 
@@ -640,6 +642,7 @@ export class Wallets implements IWallets {
       passphrase: params.passphrase,
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+      backupProvider: params.backupProvider,
     });
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
@@ -655,7 +658,7 @@ export class Wallets implements IWallets {
       bitgoKeychain,
     };
 
-    if (!_.isUndefined(backupKeychain.prv)) {
+    if (!_.isUndefined(backupKeychain.prv) && !_.isUndefined(params.backupProvider)) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
 

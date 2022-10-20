@@ -4,6 +4,7 @@ import { KeychainsTriplet } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
+import { KeyShare } from './ecdsa';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -204,6 +205,11 @@ export interface BitgoHeldBackupKeyShare {
   keyShares: ApiKeyShare[];
 }
 
+export interface BackupKeyShare {
+  bitGoHeldKeyShares?: BitgoHeldBackupKeyShare;
+  userHeldKeyShare?: KeyShare;
+}
+
 /**
  * Common Interface for implementing signature scheme specific
  * util functions
@@ -223,25 +229,29 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode: string,
-    recipientIndex?: number
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain>;
   createBackupKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase: string,
+    backupXpubProvider?: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain>;
   createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
-    enterprise: string
+    enterprise: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain>;
   createKeychains(params: {
     passphrase: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
+    isThirdPartyBackup?: boolean;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;

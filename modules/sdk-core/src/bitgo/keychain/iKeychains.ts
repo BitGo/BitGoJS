@@ -70,10 +70,11 @@ export interface AddKeychainOptions {
 }
 
 export interface ApiKeyShare {
-  from: string;
-  to: string;
+  from: 'user' | 'backup' | 'bitgo';
+  to: 'user' | 'backup' | 'bitgo';
   publicShare: string;
   privateShare: string;
+  privateShareProof?: string;
   n?: string;
 }
 
@@ -103,6 +104,7 @@ export interface CreateMpcOptions {
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
+  backupProvider?: string;
 }
 
 export interface GetKeysForSigningOptions {

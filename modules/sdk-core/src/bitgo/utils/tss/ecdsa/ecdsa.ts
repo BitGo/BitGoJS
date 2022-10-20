@@ -3,19 +3,20 @@ import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
 import { bigIntToBufferBE } from '../../../../account-lib/mpc/util';
 import * as openpgp from 'openpgp';
 import { SerializedKeyPair } from 'openpgp';
-import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { AddKeychainOptions, ApiKeyShare, CreateBackupOptions, Keychain, KeyType } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
-import { BitgoHeldBackupKeyShare, RequestType, TSSParams, TxRequest } from '../baseTypes';
+import { BackupKeyShare, BitgoHeldBackupKeyShare, RequestType, TSSParams, TxRequest } from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
-import { AShare, DShare, SendShareType } from '../../../tss/ecdsa/types';
+import { AShare, DShare, EncryptedNShare, SendShareType } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
+import { buildNShareFromAPIKeyShare, getParticipantFromIndex } from '../../../tss/ecdsa/ecdsa';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -92,33 +93,41 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
+    backupProvider?: string;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;
     const n = 3;
 
     const userKeyShare = await MPC.keyShare(1, m, n);
-    const backupKeyShare = await MPC.keyShare(2, m, n);
-
     const userGpgKey = await generateGPGKeyPair('secp256k1');
 
-    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
-    const userKeychainPromise = this.createParticipantKeychain(
+    const isThirdPartyBackup = this.isValidThirdPartyBackupProvider(params.backupProvider);
+    const backupKeyShare = await this.createBackupKeyShares(isThirdPartyBackup, userGpgKey);
+
+    const bitgoKeychain = await this.createBitgoKeychain(
       userGpgKey,
-      1,
+      userKeyShare,
+      backupKeyShare,
+      params.enterprise,
+      isThirdPartyBackup
+    );
+    const userKeychainPromise = this.createUserKeychain(
+      userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
       params.passphrase,
-      params.originalPasscodeEncryptionCode
+      params.originalPasscodeEncryptionCode,
+      isThirdPartyBackup
     );
-    const backupKeychainPromise = this.createParticipantKeychain(
+    const backupKeychainPromise = this.createBackupKeychain(
       userGpgKey,
-      2,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      params.passphrase
+      params.passphrase,
+      params.backupProvider
     );
 
     const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
@@ -130,47 +139,119 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     };
   }
 
+  /**
+   * If a third party backup is requested, it will create backup shares from
+   * a third party (BitGo as of now), otherwise the key shares will be client generated
+   */
+  async createBackupKeyShares(
+    isThirdPartyBackup = false,
+    userGpgPubKey: SerializedKeyPair<string>
+  ): Promise<BackupKeyShare> {
+    let backupKeyShare: BackupKeyShare;
+    if (isThirdPartyBackup) {
+      const bitgoHeldBackupKeyShares = await this.createBitgoHeldBackupKeyShare(userGpgPubKey);
+      backupKeyShare = {
+        bitGoHeldKeyShares: bitgoHeldBackupKeyShares,
+      };
+    } else {
+      const MPC = new Ecdsa();
+      const m = 2;
+      const n = 3;
+      backupKeyShare = {
+        userHeldKeyShare: await MPC.keyShare(2, m, n),
+      };
+    }
+    return backupKeyShare;
+  }
+
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: BackupKeyShare,
     bitgoKeychain: Keychain,
     passphrase: string,
-    originalPasscodeEncryptionCode: string
+    originalPasscodeEncryptionCode?: string,
+    isThirdPartyBackup = false
   ): Promise<Keychain> {
+    if (isThirdPartyBackup && backupKeyShare.bitGoHeldKeyShares?.keyShares) {
+      return this.createUserKeychainFromThirdPartyBackup(
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare.bitGoHeldKeyShares.keyShares,
+        bitgoKeychain,
+        passphrase,
+        originalPasscodeEncryptionCode
+      );
+    }
+    assert(backupKeyShare.userHeldKeyShare);
     return this.createParticipantKeychain(
       userGpgKey,
       1,
       userKeyShare,
-      backupKeyShare,
+      backupKeyShare.userHeldKeyShare,
       bitgoKeychain,
       passphrase,
       originalPasscodeEncryptionCode
     );
   }
 
-  createBackupKeychain(
+  async createBackupKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: BackupKeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase?: string,
+    backupProvider?: string
   ): Promise<Keychain> {
-    return this.createParticipantKeychain(userGpgKey, 2, userKeyShare, backupKeyShare, bitgoKeychain, passphrase);
+    if (this.isValidThirdPartyBackupProvider(backupProvider) && backupKeyShare.bitGoHeldKeyShares?.keyShares) {
+      assert(bitgoKeychain.commonKeychain);
+      const finalizedBackupKeyShare = await this.finalizeBitgoHeldBackupKeyShare(
+        backupKeyShare.bitGoHeldKeyShares.id,
+        bitgoKeychain.commonKeychain,
+        userKeyShare,
+        bitgoKeychain
+      );
+      if (finalizedBackupKeyShare.commonKeychain !== bitgoKeychain.commonKeychain) {
+        throw new Error('Failed to create backup keychain - commonKeychains do not match.');
+      }
+      const backupKeyParams: CreateBackupOptions = {
+        source: 'backup',
+        keyType: 'tss',
+        commonKeychain: finalizedBackupKeyShare.commonKeychain,
+        provider: backupProvider ?? 'BitGoKRS',
+      };
+      return await this.baseCoin.keychains().createBackup(backupKeyParams);
+    }
+    assert(backupKeyShare.userHeldKeyShare);
+    assert(passphrase);
+    return this.createParticipantKeychain(
+      userGpgKey,
+      2,
+      userKeyShare,
+      backupKeyShare.userHeldKeyShare,
+      bitgoKeychain,
+      passphrase
+    );
   }
 
   /** @inheritdoc */
   async createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    enterprise?: string
+    backupKeyShare: BackupKeyShare,
+    enterprise?: string,
+    isThirdPartyBackup = false
   ): Promise<Keychain> {
     const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
     const recipientIndex = 3;
     const userToBitgoShare = await encryptNShare(userKeyShare, recipientIndex, bitgoPublicGpgKey.armor());
 
-    const backupToBitgoShare = await encryptNShare(backupKeyShare, recipientIndex, bitgoPublicGpgKey.armor());
+    const backupToBitgoShare = await this.getBackupEncryptedNShare(
+      backupKeyShare,
+      recipientIndex,
+      bitgoPublicGpgKey.armor(),
+      isThirdPartyBackup
+    );
 
     const createBitGoMPCParams: AddKeychainOptions = {
       keyType: 'tss' as KeyType,
@@ -196,8 +277,113 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       enterprise: enterprise,
     };
 
-    const keychains = await this.baseCoin.keychains().add(createBitGoMPCParams);
-    return keychains;
+    return await this.baseCoin.keychains().add(createBitGoMPCParams);
+  }
+
+  /**
+   * This builds the relevant backup encryptedNShare based on whether the
+   * backup key is user or third party generated
+   * @param backupShare can either have key shares from the user or third party
+   * @param recipientIndex index of the party receiving the backup shares
+   * @param recipientGpgPublicArmor gpg armor of the party receiving the backup shares
+   * @param isThirdPartyBackup whether the backup is generated by third party
+   */
+  async getBackupEncryptedNShare(
+    backupShare: BackupKeyShare,
+    recipientIndex: number,
+    recipientGpgPublicArmor: string,
+    isThirdPartyBackup = false
+  ): Promise<EncryptedNShare> {
+    let backupToBitgoShare: EncryptedNShare;
+    if (isThirdPartyBackup && backupShare.bitGoHeldKeyShares?.keyShares) {
+      const backupToOtherApiShare = backupShare.bitGoHeldKeyShares.keyShares.find(
+        (keyShare) => keyShare.from === 'backup' && keyShare.to === getParticipantFromIndex(recipientIndex)
+      );
+      if (!backupToOtherApiShare) {
+        throw new Error('Missing Backup to Bitgo key share');
+      }
+      // Since backup is from a third party, it is already encrypted
+      backupToBitgoShare = await buildNShareFromAPIKeyShare(backupToOtherApiShare);
+    } else {
+      assert(backupShare.userHeldKeyShare);
+      backupToBitgoShare = await encryptNShare(backupShare.userHeldKeyShare, recipientIndex, recipientGpgPublicArmor);
+    }
+    return backupToBitgoShare;
+  }
+
+  /**
+   * This uses the backup key from a third party (bitgo in this case)
+   * to create the user keychain via WP.
+   */
+  async createUserKeychainFromThirdPartyBackup(
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    userKeyShare: KeyShare,
+    backupKeyShares: ApiKeyShare[],
+    bitgoKeychain: Keychain,
+    passphrase: string,
+    originalPasscodeEncryptionCode?: string
+  ): Promise<Keychain> {
+    const bitgoKeyShares = bitgoKeychain.keyShares;
+    if (!bitgoKeyShares) {
+      throw new Error('Missing BitGo key shares');
+    }
+    if (!bitgoKeychain.commonKeychain) {
+      throw new Error(`Missing common key chain: ${bitgoKeychain.commonKeychain}`);
+    }
+
+    const bitGoToUserShare = bitgoKeyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'user');
+    if (!bitGoToUserShare) {
+      throw new Error('Missing BitGo to User key share');
+    }
+
+    const backupToUserShare = backupKeyShares.find((keyShare) => keyShare.from === 'backup' && keyShare.to === 'user');
+    if (!backupToUserShare) {
+      throw new Error('Missing Backup to User key share');
+    }
+
+    const bitgoPublicGpgKey = await this.getBitgoPublicGpgKey();
+
+    const backupToUserNShare = await buildNShareFromAPIKeyShare(backupToUserShare);
+    const bitGoToUserNShare = await buildNShareFromAPIKeyShare(bitGoToUserShare);
+    const encryptedNShares: DecryptableNShare[] = [
+      {
+        nShare: backupToUserNShare,
+        recipientPrivateArmor: userGpgKey.privateKey,
+        senderPublicArmor: bitgoPublicGpgKey.armor(), // since bitgo is acting as Backup KRS for now
+        isbs58Encoded: false,
+      },
+      {
+        nShare: bitGoToUserNShare,
+        recipientPrivateArmor: userGpgKey.privateKey,
+        senderPublicArmor: bitgoPublicGpgKey.armor(),
+        isbs58Encoded: false,
+      },
+    ];
+
+    const userCombinedKey = await ECDSAMethods.createCombinedKey(
+      userKeyShare,
+      encryptedNShares,
+      bitgoKeychain.commonKeychain
+    );
+    if (userCombinedKey.commonKeychain !== bitgoKeychain.commonKeychain) {
+      throw new Error('Failed to create user keychain - commonKeychains do not match.');
+    }
+
+    const prv = JSON.stringify(userCombinedKey.signingMaterial);
+    const userKeychainParams = {
+      source: 'user',
+      keyType: 'tss' as KeyType,
+      commonKeychain: userCombinedKey.commonKeychain,
+      prv: prv,
+      encryptedPrv: this.bitgo.encrypt({
+        input: prv,
+        password: passphrase,
+      }),
+      originalPasscodeEncryptionCode,
+    };
+
+    const keychains = this.baseCoin.keychains();
+    return await keychains.add(userKeychainParams);
   }
 
   /** @inheritdoc */
@@ -218,23 +404,25 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error(`Missing common key chain: ${bitgoKeychain.commonKeychain}`);
     }
 
-    let user: string;
+    let recipient: string;
     let keyShare: KeyShare;
     let otherShare: KeyShare;
     if (recipientIndex === 1) {
       keyShare = userKeyShare;
       otherShare = backupKeyShare;
-      user = 'user';
+      recipient = 'user';
     } else if (recipientIndex === 2) {
       keyShare = backupKeyShare;
       otherShare = userKeyShare;
-      user = 'backup';
+      recipient = 'backup';
     } else {
       throw new Error('Invalid user index');
     }
 
-    const bitGoToUserShare = bitgoKeyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === user);
-    if (!bitGoToUserShare) {
+    const bitGoToRecipientShare = bitgoKeyShares.find(
+      (keyShare) => keyShare.from === 'bitgo' && keyShare.to === recipient
+    );
+    if (!bitGoToRecipientShare) {
       throw new Error('Missing BitGo to User key share');
     }
 
@@ -251,9 +439,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         nShare: {
           i: recipientIndex,
           j: 3,
-          publicShare: bitGoToUserShare.publicShare,
-          encryptedPrivateShare: bitGoToUserShare.privateShare,
-          n: bitGoToUserShare.n!,
+          publicShare: bitGoToRecipientShare.publicShare,
+          encryptedPrivateShare: bitGoToRecipientShare.privateShare,
+          n: bitGoToRecipientShare.n!,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
         senderPublicArmor: bitgoPublicGpgKey.armor(),
@@ -269,7 +457,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     const prv = JSON.stringify(userCombinedKey.signingMaterial);
     const userKeychainParams = {
-      source: user,
+      source: recipient,
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,

@@ -292,12 +292,12 @@ export class Keychains implements IKeychains {
       default:
         throw new Error('Unsupported multi-sig type');
     }
-
     const mpcUtils = new MpcUtils(this.bitgo, this.baseCoin);
     return await mpcUtils.createKeychains({
       passphrase: params.passphrase,
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+      backupProvider: params.backupProvider,
     });
   }
 }
