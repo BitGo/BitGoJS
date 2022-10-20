@@ -1,4 +1,4 @@
-import { BaseUtils, BuildTransactionError, ParseTransactionError } from '@bitgo/sdk-core';
+import { BaseUtils, BuildTransactionError, ParseTransactionError, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 import { bcs } from '@mysten/bcs';
 import BigNumber from 'bignumber.js';
 import { TYPE_TAG } from './transaction';
@@ -18,7 +18,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    throw new Error('Method not implemented.');
+    return isValidEd25519PublicKey(key);
   }
 
   /** @inheritdoc */
