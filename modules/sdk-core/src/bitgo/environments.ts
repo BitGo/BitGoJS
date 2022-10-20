@@ -155,9 +155,9 @@ export const Environments: Environments = {
     uri: 'https://app.bitgo-latest.com',
     stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
-  staging: Object.assign({}, mainnetBase, {
-    uri: 'https://staging.bitgo.com',
-    stellarFederationServerUrl: 'https://staging.bitgo.com/api/v2/xlm/federation',
+  staging: Object.assign({}, testnetBase, {
+    uri: 'https://app.bitgo-staging.com',
+    stellarFederationServerUrl: 'https://app.bitgo-staging.com/api/v2/txlm/federation',
   }),
   local: Object.assign({}, devBase, {
     uri: 'https://localhost:3000',
