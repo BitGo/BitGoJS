@@ -11,18 +11,18 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+const bitgo = new BitGo({ env: 'custom', customRootURI: 'https://testnet-03-app.bitgo-dev.com' });
 
 // TODO: set your access token here
-const accessToken = '';
+const accessToken = 'v2x767398174e675ed05a243696942e467b5b3385ecbf0d2324fc23eef61fdc5958';
 
 // TODO: set a label for your new wallet here
 const label = 'Example Test Wallet';
 
 // TODO: set your passphrase for your new wallet here
-const passphrase = 'test_wallet_passphrase';
+const passphrase = 'Ghghjkg!455544llll';
 
-const coin = 'tltc';
+const coin = 'tavaxp';
 
 // Create the wallet
 async function main() {

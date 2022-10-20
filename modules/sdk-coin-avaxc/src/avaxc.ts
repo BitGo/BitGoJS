@@ -156,26 +156,30 @@ export class AvaxC extends BaseCoin {
         throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
       }
 
-      // Check tx sends to hop address
-      const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
-        optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
-      );
-      const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
-      const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
-      if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
-        throw new Error('recipient address of txPrebuild does not match hop address');
+      if (txPrebuild.hopTransaction.id.startsWith('0x')) {
+        // TODO: verify hop export tx.
+
+        // Check tx sends to hop address
+        const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+          optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+        );
+        const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+        const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
+        if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
+          throw new Error('recipient address of txPrebuild does not match hop address');
+        }
+
+        // Convert TransactionRecipient array to Recipient array
+        const recipients: Recipient[] = txParams.recipients.map((r) => {
+          return {
+            address: r.address,
+            amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
+          };
+        });
+
+        // Check destination address and amount
+        await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
       }
-
-      // Convert TransactionRecipient array to Recipient array
-      const recipients: Recipient[] = txParams.recipients.map((r) => {
-        return {
-          address: r.address,
-          amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
-        };
-      });
-
-      // Check destination address and amount
-      await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
     } else if (txParams.recipients.length > 1) {
       // Check total amount for batch transaction
       let expectedTotalAmount = new BigNumber(0);
@@ -779,7 +783,9 @@ export class AvaxC extends BaseCoin {
    */
   async postProcessPrebuild(params: TransactionPrebuild): Promise<TransactionPrebuild> {
     if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
-      await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+      if (params.hopTransaction.id.startsWith('0x')) {
+        await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+      } // TODO: verifiy Export tx
     }
     return params;
   }
@@ -926,6 +932,7 @@ export class AvaxC extends BaseCoin {
         wallet: buildParams.wallet,
         recipients: buildParams.recipients,
         walletPassphrase: buildParams.walletPassphrase,
+        type: buildParams.type,
       })) as any;
     }
     return {};
@@ -936,11 +943,12 @@ export class AvaxC extends BaseCoin {
    * @param buildParams The original build parameters
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  async createHopTransactionParams(buildParams: HopTransactionBuildOptions): Promise<HopParams> {
-    const wallet = buildParams.wallet;
-    const recipients = buildParams.recipients;
-    const walletPassphrase = buildParams.walletPassphrase;
-
+  async createHopTransactionParams({
+    wallet,
+    recipients,
+    walletPassphrase,
+    type,
+  }: HopTransactionBuildOptions): Promise<HopParams> {
     const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
     const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
     const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
@@ -961,6 +969,7 @@ export class AvaxC extends BaseCoin {
       recipient: recipientAddress,
       amount: recipientAmount,
       hop: true,
+      type,
     };
     const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
 

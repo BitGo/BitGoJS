@@ -8,6 +8,7 @@ import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils from '../utils/tss/eddsa';
 import { IWallet, IWallets, WalletData } from '../wallet';
+import { TransactionType } from '../../account-lib';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
@@ -173,6 +174,7 @@ export interface FeeEstimateOptions {
   recipient?: string;
   data?: string;
   amount?: string;
+  type?: keyof typeof TransactionType;
 }
 
 // TODO (SDKT-9): reverse engineer and add options

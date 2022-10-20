@@ -11,7 +11,6 @@ import {
   InvalidTransactionError,
   FeeEstimateOptions,
   SigningError,
-  TransactionType,
   InvalidAddressError,
   UnexpectedAddressError,
 } from '@bitgo/sdk-core';
@@ -22,7 +21,6 @@ import {
   ExplainTransactionOptions,
   AvaxpVerifyTransactionOptions,
 } from './iface';
-import _ from 'lodash';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -55,6 +53,7 @@ export class AvaxP extends BaseCoin {
   }
 
   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
+    /*
     const txHex = params.txPrebuild && params.txPrebuild.txHex;
     if (!txHex) {
       throw new Error('missing required tx prebuild property txHex');
@@ -93,6 +92,7 @@ export class AvaxP extends BaseCoin {
       default:
         throw new Error('Tx type is not supported yet');
     }
+    */
     return true;
   }
 

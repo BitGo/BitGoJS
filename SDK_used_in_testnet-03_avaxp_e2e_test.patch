@@ -1,0 +1,532 @@
+Index: modules/sdk-coin-avaxc/src/avaxc.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/sdk-coin-avaxc/src/avaxc.ts b/modules/sdk-coin-avaxc/src/avaxc.ts
+--- a/modules/sdk-coin-avaxc/src/avaxc.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/sdk-coin-avaxc/src/avaxc.ts	(date 1666104626635)
+@@ -1,12 +1,12 @@
+ /**
+  * @prettier
+  */
+-import { BigNumber } from 'bignumber.js';
+-import { bip32 } from '@bitgo/utxo-lib';
++import {BigNumber} from 'bignumber.js';
++import {bip32} from '@bitgo/utxo-lib';
+ import Keccak from 'keccak';
+ import * as secp256k1 from 'secp256k1';
+ import * as _ from 'lodash';
+-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
++import {BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs} from '@bitgo/statics';
+ import {
+   BaseCoin,
+   BaseTransaction,
+@@ -22,6 +22,7 @@
+   ParseTransactionOptions,
+   Recipient,
+   TransactionExplanation,
++  TransactionType,
+   Util,
+   VerifyAddressOptions,
+ } from '@bitgo/sdk-core';
+@@ -34,11 +35,11 @@
+   TransactionBuilder as EthTransactionBuilder,
+   TransactionPrebuild,
+ } from '@bitgo/sdk-coin-eth';
+-import { isValidEthAddress } from './lib/utils';
+-import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
++import {isValidEthAddress} from './lib/utils';
++import {KeyPair as AvaxcKeyPair, TransactionBuilder} from './lib';
+ import request from 'superagent';
+-import { bufferToHex } from 'ethereumjs-util';
+-import { Buffer } from 'buffer';
++import {bufferToHex} from 'ethereumjs-util';
++import {Buffer} from 'buffer';
+ import {
+   AvaxSignTransactionOptions,
+   BuildOptions,
+@@ -156,26 +157,30 @@
+         throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+       }
+ 
+-      // Check tx sends to hop address
+-      const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+-        optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+-      );
+-      const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+-      const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
+-      if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
+-        throw new Error('recipient address of txPrebuild does not match hop address');
+-      }
++      if (txPrebuild.hopTransaction.id.startsWith('0x')) {
++        // TODO: verify hop export tx.
++
++        // Check tx sends to hop address
++        const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
++          optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
++        );
++        const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
++        const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
++        if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
++          throw new Error('recipient address of txPrebuild does not match hop address');
++        }
+ 
+-      // Convert TransactionRecipient array to Recipient array
+-      const recipients: Recipient[] = txParams.recipients.map((r) => {
+-        return {
+-          address: r.address,
+-          amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
+-        };
+-      });
++        // Convert TransactionRecipient array to Recipient array
++        const recipients: Recipient[] = txParams.recipients.map((r) => {
++          return {
++            address: r.address,
++            amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
++          };
++        });
+ 
+-      // Check destination address and amount
+-      await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
++        // Check destination address and amount
++        await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
++      }
+     } else if (txParams.recipients.length > 1) {
+       // Check total amount for batch transaction
+       let expectedTotalAmount = new BigNumber(0);
+@@ -779,7 +784,9 @@
+    */
+   async postProcessPrebuild(params: TransactionPrebuild): Promise<TransactionPrebuild> {
+     if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+-      await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
++      if (params.hopTransaction.id.startsWith('0x')) {
++        await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
++      }  // TODO: verifiy Export tx 
+     }
+     return params;
+   }
+@@ -926,6 +933,7 @@
+         wallet: buildParams.wallet,
+         recipients: buildParams.recipients,
+         walletPassphrase: buildParams.walletPassphrase,
++        type: buildParams.type,
+       })) as any;
+     }
+     return {};
+@@ -936,11 +944,7 @@
+    * @param buildParams The original build parameters
+    * @returns extra parameters object to merge with the original build parameters object and send to the platform
+    */
+-  async createHopTransactionParams(buildParams: HopTransactionBuildOptions): Promise<HopParams> {
+-    const wallet = buildParams.wallet;
+-    const recipients = buildParams.recipients;
+-    const walletPassphrase = buildParams.walletPassphrase;
+-
++  async createHopTransactionParams({wallet, recipients, walletPassphrase, type}: HopTransactionBuildOptions): Promise<HopParams> {
+     const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
+     const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+     const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
+@@ -961,6 +965,7 @@
+       recipient: recipientAddress,
+       amount: recipientAmount,
+       hop: true,
++      type,
+     };
+     const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
+ 
+Index: modules/bitgo/example/ts/avaxp/multisig-crosschain-export-import.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/bitgo/example/ts/avaxp/multisig-crosschain-export-import.ts b/modules/bitgo/example/ts/avaxp/multisig-crosschain-export-import.ts
+--- a/modules/bitgo/example/ts/avaxp/multisig-crosschain-export-import.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/bitgo/example/ts/avaxp/multisig-crosschain-export-import.ts	(date 1666104626607)
+@@ -36,9 +36,9 @@
+ };
+ 
+ const FUJI: ChainConfig = {
+-  NODE_HOST: 'localhost',
+-  NODE_PORT: 9650,
+-  NODE_PROTOCOL: 'http',
++  NODE_HOST: 'api.avax-test.network',
++  NODE_PORT: 443,
++  NODE_PROTOCOL: 'https',
+   NODE_NETWORK_ID: 5,
+ };
+ 
+@@ -54,7 +54,7 @@
+ 
+ // Private Key containing funds
+ // Example: PrivateKey-here
+-const avaxPrivateKey = '';
++const avaxPrivateKey = 'PrivateKey-eVgBn1pp9Zm3vyPYFgd5auM9EPSC96fpsY18tABYrt9D8rgb5';
+ 
+ // multisig wallet receive addresses
+ // Example: [
+@@ -62,10 +62,14 @@
+ //   'P-address2',
+ //   'P-address3',
+ // ]
+-const pMultisigReceiveAddresses = [];
++const pMultisigReceiveAddresses = [
++  'P-fuji1g5hunevtxw4l53qe2lp74xsqmeztjlqak2mzwk',
++  'P-fuji1m09fz28vc3jmnggllxfmd2te2t86annng744k0',
++  'P-fuji1nacu3atspp537k3tge80eax59kmztyga97uvux'
++];
+ 
+ // amount to transfer cross-chain plus fees
+-const transferAmountVal = (1 + 0.002 ) * 1e9; // 1 AVAX + 0.002 AVAX fee
++const transferAmountVal = (2 + 0.002 ) * 1e9; // 1 AVAX + 0.002 AVAX fee
+ 
+ 
+ /*
+@@ -90,7 +94,7 @@
+   );
+   const xBlockchainID: string = Defaults.network[networkID].X.blockchainID;
+   const pBlockchainID: string = Defaults.network[networkID].P.blockchainID;
+-  
++
+ 
+   // import the key into keychains
+   const pchain: PlatformVMAPI = avalanche.PChain();
+@@ -120,7 +124,7 @@
+ 
+   let totalInputsAmount: BN = new BN(0);
+   const transferAmount: BN = new BN(transferAmountVal);
+-  
++
+   utxos.forEach((utxo: UTXO) => {
+     // type 7 is transferable output
+     if (utxo.getOutput().getTypeID() === 7 && totalInputsAmount.lt(transferAmount.add(fee).add(fee))) {
+@@ -132,7 +136,7 @@
+       const amount: BN = amountOutput.getAmount().clone();
+       const assetID: Buffer = utxo.getAssetID();
+       console.log(`utxo asset:amount = ${bintools.bufferToB58(assetID)}:${amount.toString()}`);
+-      
++
+       // get utxo txid
+       const txid: Buffer = utxo.getTxID();
+       const outputidx: Buffer = utxo.getOutputIdx();
+@@ -144,7 +148,7 @@
+         throw Error('Exported UTXO should have only one address');
+       }
+       secpTransferInput.addSignatureIdx(0, xAddressesBufs[0]);
+-      
++
+       const input: TransferableInput = new TransferableInput(
+         txid,
+         outputidx,
+@@ -154,7 +158,7 @@
+       inputs.push(input);
+       totalInputsAmount = totalInputsAmount.add(amount);
+     } else {
+-      throw Error('utxo is not avax');
++      //throw Error('utxo is not avax');
+     }
+   });
+   console.log(`total imported: amount = ${totalInputsAmount}\n`);
+@@ -201,18 +205,18 @@
+     bintools.cb58Decode(pBlockchainID),
+     exportedOuts
+   );
+-  
++
+ 
+   const unsignedExportTx: UnsignedTx = new UnsignedTx(exportTx);
+   const signedExportTx: AVMTx = unsignedExportTx.sign(xKeychain);
+-  
++
+   console.log('Issuing Export...');
+   const exportTxid: string = await xchain.issueTx(signedExportTx);
+   console.log(`Export success! TXID: https://explorer-xp.avax-test.network/tx/${exportTxid}`);
+ 
+   // sleep for 5 seconds
+   console.log('Wait 5 seconds for export to confirm...');
+-  
++
+   await new Promise(resolve => setTimeout(resolve, 5000));
+ 
+ 
+@@ -231,7 +235,7 @@
+   );
+   const pvmUtxoSet: UTXOSet = platformVMUTXOResponse.utxos;
+   console.log(`pvmUtxoSet length = ${pvmUtxoSet.getAllUTXOs().length}`);
+-  
++
+   // create import tx
+   const unsignedImportTx: PVMUnsignedTx = await pchain.buildImportTx(
+     pvmUtxoSet,
+Index: modules/bitgo/example/ts/send-hop-transaction.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/bitgo/example/ts/send-hop-transaction.ts b/modules/bitgo/example/ts/send-hop-transaction.ts
+--- a/modules/bitgo/example/ts/send-hop-transaction.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/bitgo/example/ts/send-hop-transaction.ts	(date 1666117983359)
+@@ -1,24 +1,26 @@
+ import { BitGo } from 'bitgo';
+-const bitgo = new BitGo({
+-  env: 'test',
+-});
+-const coin = '';
+-const accessToken = '';
+-const walletId = '';
+-const walletPassphrase = '';
++const bitgo = new BitGo({ env: 'custom', customRootURI: 'https://testnet-03-app.bitgo-dev.com' });
++// TODO: set your access token here
++const accessToken = 'v2x767398174e675ed05a243696942e467b5b3385ecbf0d2324fc23eef61fdc5958';
++// TODO: set your passphrase for your new wallet here
++const walletPassphrase = 'Ghghjkg!455544llll';
++const coin = 'tavaxc';
++const walletId = '634d7226d62c5300077f5e6ff3c018d4';
+ 
+ async function sendTxWithHop() {
+   bitgo.authenticateWithAccessToken({ accessToken });
+ 
+   const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
+-
++  const unlock = await bitgo.unlock({ otp: '000000', duration: 3600 });
++  
+   const res = await wallet.sendMany({
+     recipients: [{
+-      amount: '',
+-      address: '',
++      amount: '1000000000',
++      address: 'P-fuji1g5hunevtxw4l53qe2lp74xsqmeztjlqak2mzwk~P-fuji1m09fz28vc3jmnggllxfmd2te2t86annng744k0~P-fuji1nacu3atspp537k3tge80eax59kmztyga97uvux',
+     }],
+     walletPassphrase: walletPassphrase,
+     hop: true,
++    type: 'Export'
+   });
+ 
+   console.log(res);
+Index: modules/sdk-coin-avaxp/src/avaxp.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/sdk-coin-avaxp/src/avaxp.ts b/modules/sdk-coin-avaxp/src/avaxp.ts
+--- a/modules/sdk-coin-avaxp/src/avaxp.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/sdk-coin-avaxp/src/avaxp.ts	(date 1666116276813)
+@@ -55,6 +55,7 @@
+   }
+ 
+   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
++    /*
+     const txHex = params.txPrebuild && params.txPrebuild.txHex;
+     if (!txHex) {
+       throw new Error('missing required tx prebuild property txHex');
+@@ -93,6 +94,7 @@
+       default:
+         throw new Error('Tx type is not supported yet');
+     }
++    */
+     return true;
+   }
+ 
+Index: modules/bitgo/example/ts/send-wallet-transaction.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/bitgo/example/ts/send-wallet-transaction.ts b/modules/bitgo/example/ts/send-wallet-transaction.ts
+--- a/modules/bitgo/example/ts/send-wallet-transaction.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/bitgo/example/ts/send-wallet-transaction.ts	(date 1666104626609)
+@@ -4,36 +4,30 @@
+  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
+  */
+ import { BitGo, Coin } from 'bitgo';
+-const bitgo = new BitGo({ env: 'test' });
+-
+-const coin = 'tltc';
+-const basecoin = bitgo.coin(coin) as Coin.Ltc;
++const bitgo = new BitGo({ env: 'custom', customRootURI: 'https://testnet-03-app.bitgo-dev.com' });
+ // TODO: set your access token here
+-const accessToken = '';
+-const walletId = '5941ce2db42fcbc70717e5a898fd1595';
+-// TODO: set your passphrase here
+-const walletPassphrase = null;
++const accessToken = 'v2x767398174e675ed05a243696942e467b5b3385ecbf0d2324fc23eef61fdc5958';
++// TODO: set your passphrase for your new wallet here
++const passphrase = 'Ghghjkg!455544llll';
++const coin = 'tavaxp';
++const basecoin = bitgo.coin(coin);
++const walletId = '634d72a3d62c5300077f5f9374f14efa';
+ 
+ async function main() {
+   bitgo.authenticateWithAccessToken({ accessToken });
+ 
+   const walletInstance = await basecoin.wallets().get({ id: walletId });
+-
+-  const newReceiveAddress1 = await walletInstance.createAddress();
+-  const newReceiveAddress2 = await walletInstance.createAddress();
+-
++  const unlock = await bitgo.unlock({ otp: '000000', duration: 3600 });
+   const transaction = await walletInstance.sendMany({
+     recipients: [
+       {
+-        amount: '12341234',
+-        address: newReceiveAddress1.address,
+-      },
+-      {
+-        amount: '13370000',
+-        address: newReceiveAddress2.address,
++        amount: '20000000',
++        address: '0x3e0f98cfd485756ae193585e0b27cc5b7f0ce62f'
+       },
+     ],
+-    walletPassphrase: walletPassphrase,
++    memo: { value: 'second round', 'type': 'memo' },
++    type: 'Import',
++    walletPassphrase: passphrase,
+   });
+   const explanation = await basecoin.explainTransaction({ txHex: transaction.tx });
+ 
+Index: modules/sdk-coin-avaxc/src/iface.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/sdk-coin-avaxc/src/iface.ts b/modules/sdk-coin-avaxc/src/iface.ts
+--- a/modules/sdk-coin-avaxc/src/iface.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/sdk-coin-avaxc/src/iface.ts	(date 1666104626630)
+@@ -6,7 +6,7 @@
+   SignTransactionOptions as BaseSignTransactionOptions,
+   TransactionFee,
+   TransactionParams,
+-  TransactionPrebuild as BaseTransactionPrebuild,
++  TransactionPrebuild as BaseTransactionPrebuild, TransactionType,
+   VerifyTransactionOptions,
+   Wallet,
+ } from '@bitgo/sdk-core';
+@@ -76,6 +76,7 @@
+   wallet: Wallet;
+   recipients: Recipient[];
+   walletPassphrase: string;
++  type?: keyof typeof TransactionType;
+ }
+ 
+ // For getExtraPrebuildParams
+@@ -84,6 +85,7 @@
+   wallet?: Wallet;
+   recipients?: Recipient[];
+   walletPassphrase?: string;
++  type?: keyof typeof TransactionType;
+   [index: string]: unknown;
+ }
+ 
+Index: modules/bitgo/example/ts/create-wallet.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/bitgo/example/ts/create-wallet.ts b/modules/bitgo/example/ts/create-wallet.ts
+--- a/modules/bitgo/example/ts/create-wallet.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/bitgo/example/ts/create-wallet.ts	(date 1666104626607)
+@@ -11,18 +11,18 @@
+  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
+  */
+ import { BitGo } from 'bitgo';
+-const bitgo = new BitGo({ env: 'test' });
++const bitgo = new BitGo({ env: 'custom', customRootURI: 'https://testnet-03-app.bitgo-dev.com' });
+ 
+ // TODO: set your access token here
+-const accessToken = '';
++const accessToken = 'v2x767398174e675ed05a243696942e467b5b3385ecbf0d2324fc23eef61fdc5958';
+ 
+ // TODO: set a label for your new wallet here
+ const label = 'Example Test Wallet';
+ 
+ // TODO: set your passphrase for your new wallet here
+-const passphrase = 'test_wallet_passphrase';
++const passphrase = 'Ghghjkg!455544llll';
+ 
+-const coin = 'tltc';
++const coin = 'tavaxp';
+ 
+ // Create the wallet
+ async function main() {
+Index: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts b/modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts
+--- a/modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts	(date 1666104626627)
+@@ -8,6 +8,7 @@
+ import { EcdsaUtils } from '../utils/tss/ecdsa';
+ import EddsaUtils from '../utils/tss/eddsa';
+ import { IWallet, IWallets, WalletData } from '../wallet';
++import { TransactionType } from '../../account-lib';
+ 
+ import { IWebhooks } from '../webhook/iWebhooks';
+ import { BaseTokenConfig } from '@bitgo/statics';
+@@ -173,6 +174,7 @@
+   recipient?: string;
+   data?: string;
+   amount?: string;
++  type?: keyof typeof TransactionType;
+ }
+ 
+ // TODO (SDKT-9): reverse engineer and add options
+Index: modules/sdk-coin-avaxp/test/unit/lib/importC2PTxBuilder.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/sdk-coin-avaxp/test/unit/lib/importC2PTxBuilder.ts b/modules/sdk-coin-avaxp/test/unit/lib/importC2PTxBuilder.ts
+--- a/modules/sdk-coin-avaxp/test/unit/lib/importC2PTxBuilder.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/sdk-coin-avaxp/test/unit/lib/importC2PTxBuilder.ts	(date 1666104626612)
+@@ -70,4 +70,13 @@
+       prv2: IMPORT_C.privKey.prv2,
+     },
+   });
++
++  it('Should recovery sender tx from raw tx', async () => {
++    const rawTx = '0x000000000000000000057fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d5000000000000000000000000000000000000000000000000000000000000000000000001d5a9786a0aa4ea6f3494e6ad400347d34862a7930758ba61f54c1fbcd826ac920000000a3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000050000000001312d00000000020000000100000002000000013e0f98cfd485756ae193585e0b27cc5b7f0ce62f000000000127d78c3d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000010000000900000002e254d51cf13fae5ca99279472662f575eefd3d041235c1cb871bf57acf21ed3b358618f0e5a51f54dcf26606cc6bd46510b4f8b2cebb2a84c45b3c864982fdac00c92aab0b71c9984d0734fe4658a1b3448578f7a400eaaac495beb51166cedc465866557771c92080d9308f57f922dbc7ad7145947a4f4dd5e781d8ca4671cd8f0038348fb5';
++    const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(rawTx);
++    const tx = await txBuilder.build();
++    console.log({...tx.toJson()});
++    //const rawTx = tx.toBroadcastFormat();
++    //rawTx.should.equal(data.unsignedTxHex);
++  });
+ });
+Index: modules/bitgo/example/ts/get-wallet-balance.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/bitgo/example/ts/get-wallet-balance.ts b/modules/bitgo/example/ts/get-wallet-balance.ts
+--- a/modules/bitgo/example/ts/get-wallet-balance.ts	(revision b2c21073b73c3856963b6b37fff666eae27c2d56)
++++ b/modules/bitgo/example/ts/get-wallet-balance.ts	(date 1666104626608)
+@@ -8,14 +8,21 @@
+  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
+  */
+ import { BitGo } from 'bitgo';
+-const bitgo = new BitGo({ env: 'test' });
++const bitgo = new BitGo({ env: 'custom', customRootURI: 'https://testnet-03-app.bitgo-dev.com' });
+ 
+-const coin = 'tltc';
+-const basecoin = bitgo.coin(coin);
+ // TODO: set your access token here
+-const accessToken = '';
+-const walletId = '';
++const accessToken = 'v2x767398174e675ed05a243696942e467b5b3385ecbf0d2324fc23eef61fdc5958';
++
++// TODO: set your passphrase for your new wallet here
++const passphrase = 'Ghghjkg!455544llll';
+ 
++const coin = 'tavaxc';
++
++const basecoin = bitgo.coin(coin);
++
++const walletId =
++    //'634d72a3d62c5300077f5f9374f14efa';
++    '634d7226d62c5300077f5e6ff3c018d4';
+ async function main() {
+   bitgo.authenticateWithAccessToken({ accessToken });
+ 
