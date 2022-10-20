@@ -18,6 +18,8 @@ import {
   TxRequest,
   TxRequestVersion,
   BackupKeyShare,
+  IntentOptionsBase,
+  PopulatedIntentBase,
 } from './baseTypes';
 import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
@@ -185,6 +187,40 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       .result()) as TxRequest;
 
     return unsignedTx;
+  }
+
+  /**
+   * Create a tx request from params for message signing
+   *
+   * @param params
+   * @param apiVersion
+   * @param preview
+   */
+  async createTxRequestWithIntentForMessageSigning(
+    params: IntentOptionsBase,
+    apiVersion: TxRequestVersion = 'full',
+    preview?: boolean
+  ): Promise<TxRequest> {
+    const intentOptions: PopulatedIntentBase = {
+      intentType: params.intentType,
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      memo: params.memo?.value,
+      isTss: params.isTss,
+    };
+    const whitelistedParams = {
+      intent: {
+        ...intentOptions,
+      },
+      apiVersion,
+      preview,
+    };
+    const txRequest = (await this.bitgo
+      .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
+      .send(whitelistedParams)
+      .result()) as TxRequest;
+
+    return txRequest;
   }
 
   /**

@@ -56,25 +56,27 @@ export interface TokenTransferRecipientParams {
   tokenId?: string;
   decimalPlaces?: number;
 }
-export interface PrebuildTransactionWithIntentOptions {
+export interface IntentOptionsBase {
   reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
+  isTss?: boolean;
+  comment?: string;
+  memo?: Memo;
+}
+export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
   recipients?: {
     address: string;
     amount: string | number;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];
-  comment?: string;
-  memo?: Memo;
   tokenName?: string;
   enableTokens?: TokenEnablement[];
   nonce?: string;
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
-  isTss?: boolean;
   lowFeeTxid?: string;
 }
 export interface IntentRecipient {
@@ -87,20 +89,23 @@ export interface IntentRecipient {
   };
   tokenData?: TokenTransferRecipientParams;
 }
-export interface PopulatedIntent {
+export interface PopulatedIntentBase {
   intentType: string;
-  recipients?: IntentRecipient[];
   sequenceId?: string;
   comment?: string;
-  nonce?: string;
   memo?: string;
+  isTss?: boolean;
+}
+
+export interface PopulatedIntent extends PopulatedIntentBase {
+  recipients?: IntentRecipient[];
+  nonce?: string;
   token?: string;
   enableTokens?: TokenEnablement[];
   // ETH & ETH-like params
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
-  isTss?: boolean;
   txid?: string;
 }
 
