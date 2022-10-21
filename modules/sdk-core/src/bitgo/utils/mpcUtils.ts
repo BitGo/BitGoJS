@@ -102,7 +102,7 @@ export abstract class MpcUtils {
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
 
-    if (!['acceleration', 'fillNonce'].includes(params.intentType)) {
+    if (!['acceleration', 'fillNonce', 'transferToken'].includes(params.intentType)) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {
@@ -134,7 +134,7 @@ export abstract class MpcUtils {
     if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon') {
       switch (params.intentType) {
         case 'payment':
-        case 'tokenTransfer':
+        case 'transferToken':
         case 'fillNonce':
           return {
             ...baseIntent,

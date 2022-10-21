@@ -2176,7 +2176,7 @@ describe('V2 Wallet:', function () {
       };
 
       it('calling prebuildxTransaction should execute prebuildTxWithIntent with proper params', async function () {
-        const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'tokenTransfer' };
+        const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'transferToken' };
         const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFullTokenTransfer);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
@@ -2215,7 +2215,7 @@ describe('V2 Wallet:', function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
         // @ts-expect-error only pass in params being tested
         const intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
-          intentType: 'tokenTransfer',
+          intentType: 'transferToken',
           recipients,
           feeOptions,
         });
@@ -2251,7 +2251,7 @@ describe('V2 Wallet:', function () {
         let intent;
         try {
           intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
-            intentType: 'tokenTransfer',
+            intentType: 'transferToken',
             // @ts-expect-error only pass in params be tested for
             recipients,
             feeOptions,

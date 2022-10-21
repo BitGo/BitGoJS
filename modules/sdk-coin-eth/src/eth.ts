@@ -1626,7 +1626,10 @@ export class Eth extends BaseCoin {
 
   verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
     const { txParams, txPrebuild, wallet } = params;
-    if (!txParams?.recipients && !(txParams.type && ['acceleration', 'fillNonce'].includes(txParams.type))) {
+    if (
+      !txParams?.recipients &&
+      !(txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+    ) {
       throw new Error(`missing txParams`);
     }
     if (!wallet || !txPrebuild) {
