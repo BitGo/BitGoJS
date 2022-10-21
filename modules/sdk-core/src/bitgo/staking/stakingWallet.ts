@@ -2,17 +2,17 @@
  * @prettier
  */
 import {
+  DelegationOptions,
+  DelegationResults,
   IStakingWallet,
-  StakingRequest,
-  TransactionsReadyToSign,
-  StakingTransaction,
+  StakeOptions,
   StakingPrebuildTransactionResult,
+  StakingRequest,
   StakingSignedTransaction,
   StakingSignOptions,
-  StakeOptions,
+  StakingTransaction,
+  TransactionsReadyToSign,
   UnstakeOptions,
-  DelegationResults,
-  DelegationOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
@@ -21,14 +21,16 @@ import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
   private tokenParentWallet?: IWallet;
+  private readonly isEthTss: boolean;
 
   public wallet: IWallet;
   public tssUtil: ITssUtils;
 
-  constructor(wallet: IWallet) {
+  constructor(wallet: IWallet, isEthTss: boolean) {
     this.wallet = wallet;
     this.bitgo = wallet.bitgo;
     this.tssUtil = new TssUtils(this.bitgo, this.wallet.baseCoin, this.wallet);
+    this.isEthTss = isEthTss;
   }
 
   get walletId(): string {
@@ -102,7 +104,7 @@ export class StakingWallet implements IStakingWallet {
    * @param transaction - staking transaction to build
    */
   async build(transaction: StakingTransaction): Promise<StakingPrebuildTransactionResult> {
-    if (this.wallet.baseCoin.supportsTss() && this.wallet.baseCoin.getFamily() !== 'eth') {
+    if ((this.wallet.baseCoin.supportsTss() && this.wallet.baseCoin.getFamily() !== 'eth') || this.isEthTss) {
       if (!transaction.txRequestId) {
         throw new Error('txRequestId is required to sign and send');
       }
@@ -173,9 +175,25 @@ export class StakingWallet implements IStakingWallet {
     signOptions: StakingSignOptions,
     transaction: StakingTransaction
   ): Promise<StakingTransaction> {
-    return await this.build(transaction)
-      .then((result: StakingPrebuildTransactionResult) => this.sign(signOptions, result))
-      .then((result: StakingSignedTransaction) => this.send(result));
+    return await this.buildAndSign(signOptions, transaction).then((result: StakingSignedTransaction) => {
+      if (this.isEthTss) {
+        return result.transaction;
+      }
+      return this.send(result);
+    });
+  }
+
+  /**
+   * Build and sign the transaction.
+   * @param signOptions
+   * @param transaction
+   */
+  private async buildAndSign(
+    signOptions: StakingSignOptions,
+    transaction: StakingTransaction
+  ): Promise<StakingSignedTransaction> {
+    const builtTx = await this.build(transaction);
+    return await this.sign(signOptions, builtTx);
   }
 
   private async expandBuildParams(stakingTransaction: StakingTransaction): Promise<StakingTransaction> {

@@ -163,6 +163,7 @@ export interface WalletCoinSpecific {
   baseAddress?: string;
   rootAddress?: string;
   customChangeWalletId: string;
+  walletVersion?: number;
 }
 
 export interface PaginationOptions {

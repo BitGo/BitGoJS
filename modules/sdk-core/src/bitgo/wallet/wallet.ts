@@ -2108,7 +2108,11 @@ export class Wallet implements IWallet {
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
-    return new StakingWallet(this);
+    const isEthTss =
+      this.baseCoin.getFamily() == 'eth' && this._wallet.coinSpecific?.walletVersion
+        ? this._wallet.coinSpecific.walletVersion >= 3
+        : false;
+    return new StakingWallet(this, isEthTss);
   }
 
   /**
