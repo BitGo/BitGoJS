@@ -44,6 +44,7 @@
     "@bitgo/sdk-core": "^2.0.0",
     "@bitgo/statics": "^8.0.0",
     "bignumber.js": "^9.0.0",
+    "bs58": "^4.0.1",
     "js-sha3": "^0.8.0",
     "lodash": "^4.17.21"
   },
