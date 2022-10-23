@@ -129,8 +129,8 @@ export interface TokenIssuance {
 export interface AccessTokenSpendingLimit {
   coin: string;
   txCount?: number;
-  txValue?: string;
-  txValueLimit?: string;
+  txValue?: number;
+  txValueLimit?: number;
 }
 
 export interface AddAccessTokenOptions {
