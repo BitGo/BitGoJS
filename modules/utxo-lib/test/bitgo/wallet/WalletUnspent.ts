@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { Transaction, networks } from '../../../src';
 import {
   isWalletUnspent,
-  isNonWitnessUnspent,
+  isUnspentWithPrevTx,
   formatOutputId,
   getOutputIdForInput,
   parseOutputId,
@@ -20,7 +20,7 @@ import {
   getWalletAddress,
   verifySignatureWithUnspent,
   toTNumber,
-  NonWitnessUnspent,
+  UnspentWithPrevTx,
   WalletUnspent,
   UtxoTransaction,
   createPsbtForNetwork,
@@ -155,7 +155,9 @@ describe('WalletUnspent', function () {
       tx,
       unspents.map((u) => toPrevOutput<bigint>(u, network))
     );
-    const nonWitnessUnspents = unspents.filter((u) => isNonWitnessUnspent(u)) as unknown as NonWitnessUnspent<bigint>[];
+    const nonWitnessUnspents = unspents.filter((u): u is WalletUnspent<bigint> & UnspentWithPrevTx =>
+      isUnspentWithPrevTx(u)
+    );
     const txBufs = Object.fromEntries(
       psbt2.getNonWitnessPreviousTxids().map((txid) => {
         const u = nonWitnessUnspents.find((u) => parseOutputId(u.id).txid === txid);

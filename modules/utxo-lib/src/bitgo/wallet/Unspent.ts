@@ -7,7 +7,7 @@ import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { Triple } from '../types';
-import { toOutput, NonWitnessUnspent, Unspent } from '../Unspent';
+import { toOutput, UnspentWithPrevTx, Unspent } from '../Unspent';
 import { ChainCode } from './chains';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
@@ -16,7 +16,7 @@ export interface WalletUnspent<TNumber extends number | bigint = number> extends
 }
 
 export interface NonWitnessWalletUnspent<TNumber extends number | bigint = number>
-  extends NonWitnessUnspent<TNumber>,
+  extends UnspentWithPrevTx<TNumber>,
     WalletUnspent<TNumber> {}
 
 export function isWalletUnspent<TNumber extends number | bigint>(u: Unspent<TNumber>): u is WalletUnspent<TNumber> {

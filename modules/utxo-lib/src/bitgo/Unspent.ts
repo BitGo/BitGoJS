@@ -27,14 +27,14 @@ export interface Unspent<TNumber extends number | bigint = number> {
   value: TNumber;
 }
 
-export interface NonWitnessUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
+export interface UnspentWithPrevTx<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   prevTx: Buffer;
 }
 
-export function isNonWitnessUnspent<TNumber extends number | bigint = number>(
+export function isUnspentWithPrevTx<TNumber extends number | bigint, TUnspent extends Unspent<TNumber>>(
   u: Unspent<TNumber>
-): u is NonWitnessUnspent<TNumber> {
-  return Buffer.isBuffer((u as NonWitnessUnspent<TNumber>).prevTx);
+): u is TUnspent & { prevTx: Buffer } {
+  return Buffer.isBuffer((u as UnspentWithPrevTx<TNumber>).prevTx);
 }
 
 /**
@@ -212,7 +212,7 @@ export function addToPsbt(
   });
   const inputIndex = psbt.inputCount - 1;
   if (!isSegwit(u.chain)) {
-    if (!isNonWitnessUnspent(u)) {
+    if (!isUnspentWithPrevTx(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }
     psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
