@@ -45,7 +45,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     return await this.bitgo
       .post(this.baseCoin.url('/krs/backupkeys'))
       .send({
-        userPub: userGpgKey.publicKey,
+        userGPGPublicKey: userGpgKey.publicKey,
       })
       .result();
   }

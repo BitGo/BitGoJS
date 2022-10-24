@@ -630,7 +630,7 @@ describe('TSS Ecdsa Utils:', async function () {
     const keyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitgoGpgKey);
 
     nock(bgUrl)
-      .post(`/api/v2/${coin}/krs/backupkeys`, _.matches({ userPub: userGpgKey.publicKey }))
+      .post(`/api/v2/${coin}/krs/backupkeys`, _.matches({ userGPGPublicKey: userGpgKey.publicKey }))
       .reply(201, keyShare);
 
     return keyShare;
