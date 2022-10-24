@@ -1735,7 +1735,6 @@ describe('V2 Wallet:', function () {
           reqId,
           recipients,
           type: 'transfer',
-          isTss: true,
           feeOptions,
         });
 
@@ -1743,7 +1742,6 @@ describe('V2 Wallet:', function () {
         const args = prebuildTxWithIntent.args[0];
         args[0]!.recipients!.should.deepEqual(recipients);
         args[0]!.feeOptions!.should.deepEqual(feeOptions);
-        args[0]!.isTss!.should.equal(true);
         args[0]!.intentType.should.equal('payment');
         args[1]!.should.equal('full');
       });
@@ -1831,7 +1829,6 @@ describe('V2 Wallet:', function () {
           type: 'fillNonce',
           feeOptions,
           nonce,
-          isTss: true,
           comment,
         });
 
@@ -1842,7 +1839,6 @@ describe('V2 Wallet:', function () {
         args[0]!.nonce!.should.equal(nonce);
         args[0]!.intentType.should.equal('fillNonce');
         args[0]!.comment!.should.equal(comment);
-        args[0]!.isTss!.should.equal(true);
         args[1]!.should.equal('full');
       });
 
@@ -1865,7 +1861,6 @@ describe('V2 Wallet:', function () {
           reqId,
           recipients,
           type: 'transfer',
-          isTss: true,
           eip1559: {
             maxFeePerGas: expectedFeeOptions.maxFeePerGas.toString(),
             maxPriorityFeePerGas: expectedFeeOptions.maxPriorityFeePerGas.toString(),
@@ -1912,13 +1907,11 @@ describe('V2 Wallet:', function () {
           intentType: 'fillNonce',
           nonce,
           feeOptions,
-          isTss: true,
         });
 
         intent.should.have.property('recipients', undefined);
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.nonce!.should.equal(nonce);
-        intent.isTss!.should.equal(true);
         intent.intentType.should.equal('fillNonce');
       });
     });
