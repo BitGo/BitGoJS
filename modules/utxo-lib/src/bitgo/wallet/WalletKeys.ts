@@ -13,6 +13,8 @@ import { BIP32Interface } from 'bip32';
 
 import { Triple } from '../types';
 
+export type KeyName = 'user' | 'backup' | 'bitgo';
+
 export function eqPublicKey(a: BIP32Interface, b: BIP32Interface): boolean {
   return a.publicKey.equals(b.publicKey);
 }
