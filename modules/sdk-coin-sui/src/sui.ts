@@ -1,23 +1,50 @@
 import {
   BaseCoin,
+  BaseTransaction,
   BitGoBase,
-  ExplanationResult,
+  EDDSAMethods,
+  InvalidAddressError,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   ParsedTransaction,
-  ParseTransactionOptions,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
-  UnsignedTransaction,
-  VerifyAddressOptions,
+  TransactionExplanation,
+  TssVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { Transaction } from './lib';
+import { Transaction, TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
+import * as sha3 from 'js-sha3';
+
+export interface ExplainTransactionOptions {
+  txHex: string;
+}
+
+export interface SuiParseTransactionOptions extends BaseParseTransactionOptions {
+  txHex: string;
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: string;
+}
+
+type TransactionInput = TransactionOutput;
+
+export interface SuiParsedTransaction extends ParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
+}
+
+export type SuiTransactionExplanation = TransactionExplanation;
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -93,12 +120,70 @@ export class Sui extends BaseCoin {
     return true;
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError();
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const { keychains, address: newAddress, index } = params;
+
+    if (!this.isValidAddress(newAddress)) {
+      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    }
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    for (const keychain of keychains) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const commonKeychain = keychain.commonKeychain as string;
+
+      const derivationPath = 'm/' + index;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const expectedAddress = this.getAddressFromPublicKey(derivedPublicKey);
+
+      if (newAddress !== expectedAddress) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
+  async parseTransaction(params: SuiParseTransactionOptions): Promise<SuiParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    const suiTransaction = transactionExplanation as SuiTransactionExplanation;
+    if (suiTransaction.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+      };
+    }
+
+    const senderAddress = suiTransaction.outputs[0].address;
+    const feeAmount = new BigNumber(suiTransaction.fee.fee === '' ? '0' : suiTransaction.fee.fee);
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(suiTransaction.outputAmount).plus(feeAmount).toFixed(),
+      },
+    ];
+
+    const outputs: TransactionOutput[] = suiTransaction.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+
+    return {
+      inputs,
+      outputs,
+    };
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
@@ -121,7 +206,35 @@ export class Sui extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
-    throw new Error('Method not implemented.');
+  /**
+   * Explain a Sui transaction
+   * @param params
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<SuiTransactionExplanation> {
+    const factory = this.getBuilder();
+    let rebuiltTransaction: BaseTransaction;
+
+    try {
+      const transactionBuilder = factory.from(params.txHex);
+      rebuiltTransaction = await transactionBuilder.build();
+    } catch {
+      throw new Error('Invalid transaction');
+    }
+
+    return rebuiltTransaction.explainTransaction();
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private getAddressFromPublicKey(derivedPublicKey: string) {
+    // TODO(BG-59016) replace with account lib implementation
+    const PUBLIC_KEY_SIZE = 32;
+    const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
+    const pubBuf = Buffer.from(derivedPublicKey, 'hex');
+    tmp.set([0x00]);
+    tmp.set(pubBuf, 1);
+    return '0x' + sha3.sha3_256(tmp).slice(0, 40);
   }
 }

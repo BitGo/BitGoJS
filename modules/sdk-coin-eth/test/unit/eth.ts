@@ -647,9 +647,7 @@ describe('ETH:', function () {
         baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressVerificationObjectPropertyError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressVerificationObjectPropertyError);
     });
 
     it('should reject address verification when an actual address is different from expected address', async function () {
@@ -676,9 +674,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, UnexpectedAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), UnexpectedAddressError);
     });
 
     it('should reject address verification if the derived address is in invalid format', async function () {
@@ -705,9 +701,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
 
     it('should reject address verification if base address is undefined', async function () {
@@ -733,9 +727,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
 
     it('should reject address verification if base address is in invalid format', async function () {
@@ -762,9 +754,7 @@ describe('ETH:', function () {
         },
       };
 
-      assert.throws(function () {
-        coin.verifyAddress(params);
-      }, InvalidAddressError);
+      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
   });
 });

@@ -5,7 +5,7 @@ import { createOutputScript2of3, createSpendScriptP2tr, createPaymentP2tr, toXOn
 import { UtxoPsbt } from './UtxoPsbt';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
-import { isSegwit, ChainCode, RootWalletKeys, scriptTypeForChain, WalletUnspent } from './wallet';
+import { isSegwit, ChainCode, RootWalletKeys, scriptTypeForChain, WalletUnspent, KeyName } from './wallet';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -195,8 +195,8 @@ export function addToPsbt(
   psbt: UtxoPsbt<UtxoTransaction<bigint>>,
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,
-  signer: string,
-  cosigner: string,
+  signer: KeyName,
+  cosigner: KeyName,
   network: Network
 ): void {
   const { txid, vout, script, value } = toPrevOutput(u, network);

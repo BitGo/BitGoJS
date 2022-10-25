@@ -1568,7 +1568,7 @@ export class Eth extends BaseCoin {
    * @throws {UnexpectedAddressError}
    * @returns {Boolean} True iff address is a wallet address
    */
-  isWalletAddress(params: VerifyEthAddressOptions): boolean {
+  async isWalletAddress(params: VerifyEthAddressOptions): Promise<boolean> {
     const ethUtil = optionalDeps.ethUtil;
 
     let expectedAddress;
@@ -1626,7 +1626,10 @@ export class Eth extends BaseCoin {
 
   verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
     const { txParams, txPrebuild, wallet } = params;
-    if (!txParams?.recipients && txParams.type !== 'acceleration') {
+    if (
+      !txParams?.recipients &&
+      !(txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+    ) {
       throw new Error(`missing txParams`);
     }
     if (!wallet || !txPrebuild) {
@@ -1737,6 +1740,16 @@ export class Eth extends BaseCoin {
 
   supportsMessageSigning(): boolean {
     return true;
+  }
+
+  /**
+   * Transform message to accommodate specific blockchain requirements.
+   * @param message the message to prepare
+   * @return string the prepared message.
+   */
+  prepareMessage(message: string): string {
+    const prefix = `\u0019Ethereum Signed Message:\\n${message.length}`;
+    return prefix.concat(message);
   }
 
   private isETHAddress(address: string): boolean {

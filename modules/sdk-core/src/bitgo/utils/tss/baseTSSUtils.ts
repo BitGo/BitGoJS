@@ -17,6 +17,9 @@ import {
   TSSParams,
   TxRequest,
   TxRequestVersion,
+  BackupKeyShare,
+  IntentOptionsBase,
+  PopulatedIntentBase,
 } from './baseTypes';
 import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
@@ -42,7 +45,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     return await this.bitgo
       .post(this.baseCoin.url('/krs/backupkeys'))
       .send({
-        userPub: userGpgKey.publicKey,
+        userGPGPublicKey: userGpgKey.publicKey,
       })
       .result();
   }
@@ -59,11 +62,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: KeyShare | BackupKeyShare,
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode: string,
-    recipientIndex?: number | undefined
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -71,9 +74,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createBackupKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
+    backupKeyShare: KeyShare | BackupKeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase?: string,
+    backupXpubProvider?: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -81,8 +86,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    enterprise: string
+    backupKeyShare: KeyShare | BackupKeyShare,
+    enterprise: string,
+    isThirdPartyBackup?: boolean
   ): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
@@ -91,6 +97,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
+    isThirdPartyBackup?: boolean;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }
@@ -183,6 +190,40 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   /**
+   * Create a tx request from params for message signing
+   *
+   * @param params
+   * @param apiVersion
+   * @param preview
+   */
+  async createTxRequestWithIntentForMessageSigning(
+    params: IntentOptionsBase,
+    apiVersion: TxRequestVersion = 'full',
+    preview?: boolean
+  ): Promise<TxRequest> {
+    const intentOptions: PopulatedIntentBase = {
+      intentType: params.intentType,
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      memo: params.memo?.value,
+      isTss: params.isTss,
+    };
+    const whitelistedParams = {
+      intent: {
+        ...intentOptions,
+      },
+      apiVersion,
+      preview,
+    };
+    const txRequest = (await this.bitgo
+      .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
+      .send(whitelistedParams)
+      .result()) as TxRequest;
+
+    return txRequest;
+  }
+
+  /**
    * Call delete signature shares for a txRequest, the endpoint delete the signatures and return them
    *
    * @param {string} txRequestId tx id reference to delete signature shares
@@ -234,5 +275,14 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   async getTxRequest(txRequestId: string): Promise<TxRequest> {
     return getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+  }
+
+  /**
+   * Checks whether the third party backup provider is valid/supported
+   * @param backupProvider - the backup provider client selected
+   */
+  isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
+    // As of now, BitGo is the only supported KRS provider for TSS
+    return !!(backupProvider && backupProvider === 'BitGoKRS');
   }
 }

@@ -241,7 +241,7 @@ export abstract class BaseCoin implements IBaseCoin {
   /**
    * @deprecated use {@see isWalletAddress} instead
    */
-  verifyAddress(params: VerifyAddressOptions): boolean {
+  verifyAddress(params: VerifyAddressOptions): Promise<boolean> {
     return this.isWalletAddress(params);
   }
 
@@ -249,7 +249,7 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param params
    * @return true iff address is a wallet address. Must return false if address is outside wallet.
    */
-  abstract isWalletAddress(params: VerifyAddressOptions): boolean;
+  abstract isWalletAddress(params: VerifyAddressOptions): Promise<boolean>;
 
   /**
    * convert address into desired address format.

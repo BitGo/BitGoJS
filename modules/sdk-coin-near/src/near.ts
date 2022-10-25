@@ -602,7 +602,7 @@ export class Near extends BaseCoin {
     };
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

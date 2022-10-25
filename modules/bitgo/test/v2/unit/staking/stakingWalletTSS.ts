@@ -19,24 +19,39 @@ import * as sinon from 'sinon';
 describe('TSS Staking Wallet', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
-  let baseCoin;
+  let nearBaseCoin;
+  let ethBaseCoin;
   let enterprise;
-  let stakingWallet: StakingWallet;
+  let ethWalletData: any;
+  let nearStakingWallet: StakingWallet;
+  let ethStakingWallet: StakingWallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
-    baseCoin = bitgo.coin('near');
-    baseCoin.keychains();
-    enterprise = new Enterprise(bitgo, baseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'TSS Test Enterprise' });
+    nearBaseCoin = bitgo.coin('near');
+    nearBaseCoin.keychains();
+    ethBaseCoin = bitgo.coin('eth');
+    ethBaseCoin.keychains();
+    enterprise = new Enterprise(bitgo, nearBaseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'TSS Test Enterprise' });
     const tssWalletData = {
       id: 'walletIdTss',
       coin: 'near',
       enterprise: enterprise.id,
       keys: ['5b3424f91bf349930e340175'],
     };
-    const wallet = new Wallet(bitgo, baseCoin, tssWalletData);
-    stakingWallet = wallet.toStakingWallet();
+    const nearWallet = new Wallet(bitgo, nearBaseCoin, tssWalletData);
+    nearStakingWallet = nearWallet.toStakingWallet();
+
+    ethWalletData = {
+      id: 'walletId',
+      coin: 'eth',
+      enterprise: enterprise.id,
+      keys: ['5b3424f91bf349930e340175'],
+      coinSpecific: { walletVersion: 3 },
+    };
+    const ethWallet = new Wallet(bitgo, ethBaseCoin, ethWalletData);
+    ethStakingWallet = ethWallet.toStakingWallet();
   });
 
   describe('buildSignAndSend', function () {
@@ -49,7 +64,7 @@ describe('TSS Staking Wallet', function () {
     it('should throw error when txRequestId is not defined', async function () {
       const transaction = fixtures.transaction('READY');
       transaction.txRequestId = undefined;
-      await stakingWallet.buildSignAndSend(
+      await nearStakingWallet.buildSignAndSend(
         { walletPassphrase: 'passphrase' },
         transaction,
       ).should.rejectedWith('txRequestId is required to sign and send');
@@ -81,11 +96,44 @@ describe('TSS Staking Wallet', function () {
       });
 
       nock(microservicesUri)
-        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
+        .post(`/api/staking/v1/${nearStakingWallet.coin}/wallets/${nearStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
           _.matches({ txRequestId: fixtures.txRequestId }))
         .reply(200, transaction);
 
-      const stakingTransaction = await stakingWallet.buildSignAndSend(
+      const stakingTransaction = await nearStakingWallet.buildSignAndSend(
+        { walletPassphrase: walletPassphrase },
+        transaction,
+      );
+
+      stakingTransaction.should.deepEqual(transaction);
+    });
+
+    it('should build and sign but not send transaction ETH TSS', async function () {
+      const walletPassphrase = 'passphrase';
+      const transaction = fixtures.transaction('READY');
+      const deleteSignatureShares = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+      deleteSignatureShares.resolves([]);
+      deleteSignatureShares.calledOnceWithExactly(transaction.id);
+
+      const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
+      const keyChain = {
+        id: 'id',
+        pub: 'pub',
+      };
+      getKeysForSigning.resolves([keyChain]);
+      getKeysForSigning.calledOnce;
+
+      const signTransaction = sandbox.stub(Wallet.prototype, 'signTransaction');
+      signTransaction.resolves({ txRequestId: fixtures.txRequestId });
+      signTransaction.calledOnceWithExactly({
+        txPrebuild: {
+          txRequestId: fixtures.txRequestId,
+        },
+        walletPassphrase: walletPassphrase,
+        keychain: keyChain,
+      });
+
+      const stakingTransaction = await ethStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
         transaction,
       );

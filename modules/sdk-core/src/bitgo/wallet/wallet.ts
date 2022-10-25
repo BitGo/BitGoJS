@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-
+import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
 import * as common from '../../common';
@@ -22,7 +22,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction } from '../utils';
+import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction, IntentOptionsBase } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -33,9 +33,11 @@ import {
   CreateAddressOptions,
   CreatePolicyRuleOptions,
   CreateShareOptions,
+  CrossChainUTXO,
   DeployForwardersOptions,
   DownloadKeycardOptions,
   FanoutUnspentsOptions,
+  FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
   FreezeOptions,
   GetAddressOptions,
@@ -74,6 +76,7 @@ import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { getTxRequest } from '../tss';
 const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
@@ -1125,7 +1128,7 @@ export class Wallet implements IWallet {
         // can't verify addresses which are pending chain initialization, as the address is hidden
         let isWalletAddress = false;
         try {
-          isWalletAddress = this.baseCoin.isWalletAddress(verificationData);
+          isWalletAddress = await this.baseCoin.isWalletAddress(verificationData);
         } catch (e) {
           if (!(e instanceof MethodNotImplementedError)) {
             throw e;
@@ -1576,6 +1579,13 @@ export class Wallet implements IWallet {
   async signMessage(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
     if (!this.baseCoin.supportsMessageSigning()) {
       throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
+    }
+    if (!params.messagePrebuild) {
+      throw new Error('messagePrebuild required to sign message');
+    }
+    if (_.isFunction((this.baseCoin as any).prepareMessage)) {
+      assert(params.messagePrebuild);
+      params.messagePrebuild.message = (this.baseCoin as any).prepareMessage(params.messagePrebuild.message);
     }
     const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
     if (this._wallet.multisigType !== 'tss') {
@@ -2080,6 +2090,16 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Fetches crossChain UTXOs
+   * Currently only for AVAX
+   * @param {string} params.sourceChain the sourcechain to pick UTXOs, if not given, then pick from all available chains [P, C]
+   */
+  fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]> {
+    const query = _.pick(params, ['sourceChain']);
+    return this.bitgo.get(this.url('/crossChainUnspents')).query(query).result();
+  }
+
+  /**
    * Extract a JSON representable version of this wallet
    */
   toJSON(): WalletData {
@@ -2100,7 +2120,11 @@ export class Wallet implements IWallet {
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
-    return new StakingWallet(this);
+    const isEthTss =
+      this.baseCoin.getFamily() == 'eth' && this._wallet.coinSpecific?.walletVersion
+        ? this._wallet.coinSpecific.walletVersion >= 3
+        : false;
+    return new StakingWallet(this, isEthTss);
   }
 
   /**
@@ -2550,6 +2574,20 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'fillNonce':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'fillNonce',
+            comment: params.comment,
+            nonce: params.nonce,
+            isTss: params.isTss,
+            feeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
@@ -2651,21 +2689,29 @@ export class Wallet implements IWallet {
    * @param params signing options
    */
   private async signMessageTss(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
-    if (!params.messagePrebuild) {
-      throw new Error('messagePrebuild required to sign message with TSS');
-    }
-
-    if (!params.messagePrebuild.txRequestId) {
-      throw new Error('txRequestId required to sign message with TSS');
-    }
+    assert(params.reqId);
 
     if (!params.prv) {
       throw new Error('prv required to sign message with TSS');
     }
 
     try {
+      let txRequest;
+      assert(params.messagePrebuild);
+      if (!params.messagePrebuild.txRequestId) {
+        const intentOption: IntentOptionsBase = {
+          reqId: params.reqId,
+          intentType: 'signmessage',
+          isTss: true,
+        };
+        txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
+        params.messagePrebuild.txRequestId = txRequest.txRequestId;
+      } else {
+        assert(params.messagePrebuild.txRequestId);
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.messagePrebuild.txRequestId);
+      }
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
-        txRequest: params.messagePrebuild.txRequestId,
+        txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
       });

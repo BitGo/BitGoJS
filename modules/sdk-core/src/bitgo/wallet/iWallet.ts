@@ -163,6 +163,7 @@ export interface WalletCoinSpecific {
   baseAddress?: string;
   rootAddress?: string;
   customChangeWalletId: string;
+  walletVersion?: number;
 }
 
 export interface PaginationOptions {
@@ -443,6 +444,27 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   gasLimit?: number;
 }
 
+export interface FetchCrossChainUTXOsOptions {
+  sourceChain?: 'P' | 'C';
+}
+
+export type Unspent = {
+  outputID: number;
+  amount: string; // BigNumber encoded in cb58
+  txid: string; // Transaction ID encoded in cb58
+  threshold: number; // Threshold for number of addresses
+  addresses: string[]; // Addresses used for unlocking utxo
+  outputidx: string; // Output index encoded in cb58
+  locktime: string; // Time when unlocked. BigNumber encoded in cb58
+};
+
+export interface CrossChainUTXO {
+  unspent: Unspent;
+  fromWallet: string;
+  toWallet: string;
+  toAddress: string;
+}
+
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
 
 export interface WalletData {
@@ -599,4 +621,5 @@ export interface IWallet {
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
   lightning(): ILightning;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
+  fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
 }

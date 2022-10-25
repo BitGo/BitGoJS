@@ -38,6 +38,7 @@ describe('non-TSS Staking Wallet', function () {
       coin: 'eth',
       enterprise: enterprise.id,
       keys: ['5b3424f91bf349930e340175'],
+      coinSpecific: { walletVersion: 2 },
     };
     const maticWalletData = {
       id: 'maticWalletId',

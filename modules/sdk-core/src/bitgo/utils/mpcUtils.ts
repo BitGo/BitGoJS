@@ -5,7 +5,7 @@ import assert from 'assert';
 import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { Keychain, KeyType } from '../keychain';
+import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
 
@@ -52,7 +52,7 @@ export abstract class MpcUtils {
     const encUserToBitGoMessage = await encryptText(userKeyShare.privateShare, bitgoKey);
     const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 
-    const createBitGoMPCParams = {
+    const createBitGoMPCParams: AddKeychainOptions = {
       keyType,
       source: 'bitgo',
       keyShares: [
@@ -102,7 +102,7 @@ export abstract class MpcUtils {
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
 
-    if (params.intentType !== 'acceleration') {
+    if (!['acceleration', 'fillNonce', 'transferToken'].includes(params.intentType)) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {
@@ -134,7 +134,8 @@ export abstract class MpcUtils {
     if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon') {
       switch (params.intentType) {
         case 'payment':
-        case 'tokenTransfer':
+        case 'transferToken':
+        case 'fillNonce':
           return {
             ...baseIntent,
             selfSend: params.selfSend,

@@ -34,6 +34,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
 import { PrivateKey } from 'openpgp';
 import bs58 from 'bs58';
+import { ApiKeyShare } from '../../keychain';
 
 const MPC = new Ecdsa();
 
@@ -319,6 +320,23 @@ export async function encryptNShare(
     publicShare,
     encryptedPrivateShare,
     n: nShare.n,
+  };
+}
+
+/**
+ * Prepares a NShare to be exchanged with other key holders.
+ * An API key share received from a third party should already be encrypted
+ *
+ * @param keyShare - TSS key share of the party preparing exchange materials
+ * @returns encrypted N Share
+ */
+export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise<EncryptedNShare> {
+  return {
+    i: getParticipantIndex(keyShare.to),
+    j: getParticipantIndex(keyShare.from),
+    publicShare: keyShare.publicShare,
+    encryptedPrivateShare: keyShare.privateShare,
+    n: keyShare.n ?? '', // this is not currently needed for key creation
   };
 }
 

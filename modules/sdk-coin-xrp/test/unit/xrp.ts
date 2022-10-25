@@ -6,6 +6,7 @@ import { Txrp } from '../../src/txrp';
 const ripple = require('../../src/ripple');
 
 import * as nock from 'nock';
+import assert from 'assert';
 
 nock.disableNetConnect();
 
@@ -44,7 +45,7 @@ describe('XRP:', function () {
     basecoin.isValidAddress('http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295').should.be.False();
   });
 
-  it('verifyAddress should work', function () {
+  it('verifyAddress should work', async function () {
     const makeArgs = (address, rootAddress) => ({ address, rootAddress });
 
     const nonThrowingArgs = [
@@ -72,11 +73,11 @@ describe('XRP:', function () {
     ];
 
     for (const nonThrowingArg of nonThrowingArgs) {
-      basecoin.verifyAddress(nonThrowingArg);
+      await basecoin.verifyAddress(nonThrowingArg);
     }
 
     for (const throwingArg of throwingArgs) {
-      (() => basecoin.verifyAddress(throwingArg)).should.throw();
+      assert.rejects(async () => basecoin.verifyAddress(throwingArg));
     }
   });
 

@@ -4,7 +4,7 @@
 
 import 'should';
 import * as nock from 'nock';
-import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
+import { BlsUtils, common, TssUtils, Wallets, ECDSAUtils } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
@@ -374,6 +374,45 @@ describe('V2 Wallets:', function () {
         multisigType: 'tss',
         enterprise: 'enterprise',
         passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      });
+
+      walletNock.isDone().should.be.true();
+      sandbox.verifyAndRestore();
+    });
+
+    it('should create a new ECDSA TSS wallet with BitGoKRS as backup provider', async function () {
+      const tpolygon = bitgo.coin('tpolygon');
+      const sandbox = sinon.createSandbox();
+      const stubbedKeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+        },
+      };
+      sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tpolygon/wallet')
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, tpolygon);
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        backupProvider: 'BitGoKRS',
+        walletVersion: 3,
       });
 
       walletNock.isDone().should.be.true();

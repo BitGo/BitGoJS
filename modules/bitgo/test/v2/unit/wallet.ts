@@ -1,5 +1,5 @@
 //
-// Tests for Wallets
+// Tests for Wallet
 //
 
 import * as should from 'should';
@@ -20,7 +20,7 @@ import {
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../src/bitgo';
+import { BitGo } from '../../../src';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
@@ -1814,6 +1814,38 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for eth fillNonce', async function () {
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        const nonce = '1';
+        const comment = 'fillNonce comment';
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'fillNonce',
+          feeOptions,
+          nonce,
+          isTss: true,
+          comment,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.nonce!.should.equal(nonce);
+        args[0]!.intentType.should.equal('fillNonce');
+        args[0]!.comment!.should.equal(comment);
+        args[0]!.isTss!.should.equal(true);
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
         const recipients = [{
           address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
@@ -1865,6 +1897,29 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.txid!.should.equal(lowFeeTxid);
         intent.intentType.should.equal('acceleration');
+      });
+
+      it('populate intent should return valid eth fillNonce intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const nonce = '1';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          reqId,
+          intentType: 'fillNonce',
+          nonce,
+          feeOptions,
+          isTss: true,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.nonce!.should.equal(nonce);
+        intent.isTss!.should.equal(true);
+        intent.intentType.should.equal('fillNonce');
       });
     });
 
@@ -1925,52 +1980,70 @@ describe('V2 Wallet:', function () {
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
+      const message = 'test';
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
-        // TODO(BG-59686): this is not doing anything if we don't check the return value
-        signTxRequestForMessage.calledOnceWithExactly({ txRequest: txRequestForMessageSigning, prv: 'secretKey', reqId });
+      });
+
+      afterEach(async function () {
+        sinon.restore();
       });
 
       it('should throw error for unsupported coins', async function () {
 
         await tssWallet.signMessage({
           reqId,
-          messagePrebuild: { message: 'test' },
+          messagePrebuild: { message },
           prv: 'secretKey',
         }).should.be.rejectedWith('Message signing not supported for Testnet Solana');
       });
 
       messageSigningCoins.map((coinName) => {
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
+        const txRequestId = txRequestForMessageSigning.txRequestId;
+
         it('should sign message', async function () {
+          const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
+          nock(bgUrl)
+            .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForMessageSigning.txRequestId}&latest=true`)
+            .reply(200, { txRequests: [txRequestForMessageSigning] });
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message: 'test', txRequestId: 'id' },
+            messagePrebuild: { message, txRequestId },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId: 'id' } );
+          signMessage.should.deepEqual({ txRequestId } );
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
+          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
         });
 
-        it('should fail to sign message without txRequestId', async function() {
-          await tssEthWallet.signMessage({
+        it('should sign message when txRequestId not provided', async function () {
+          const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
+            .reply(200, txRequestForMessageSigning);
+
+          const signMessage = await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message: '' },
+            messagePrebuild: { message },
             prv: 'secretKey',
-          }).should.be.rejectedWith('txRequestId required to sign message with TSS');
+          });
+          signMessage.should.deepEqual({ txRequestId } );
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
+          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
         });
 
         it('should fail to sign message with empty prv', async function () {
           await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message: 'test', txRequestId: 'id' },
+            messagePrebuild: { message, txRequestId },
             prv: '',
           }).should.be.rejectedWith('prv required to sign message with TSS');
         });
       });
-
 
     });
 
@@ -2103,7 +2176,7 @@ describe('V2 Wallet:', function () {
       };
 
       it('calling prebuildxTransaction should execute prebuildTxWithIntent with proper params', async function () {
-        const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'tokenTransfer' };
+        const txRequestFullTokenTransfer = { ...txRequestFull, intent: 'transferToken' };
         const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFullTokenTransfer);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
@@ -2142,7 +2215,7 @@ describe('V2 Wallet:', function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
         // @ts-expect-error only pass in params being tested
         const intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
-          intentType: 'tokenTransfer',
+          intentType: 'transferToken',
           recipients,
           feeOptions,
         });
@@ -2178,7 +2251,7 @@ describe('V2 Wallet:', function () {
         let intent;
         try {
           intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
-            intentType: 'tokenTransfer',
+            intentType: 'transferToken',
             // @ts-expect-error only pass in params be tested for
             recipients,
             feeOptions,
@@ -2232,5 +2305,63 @@ describe('V2 Wallet:', function () {
         getKeyNock.isDone().should.be.True();
       });
     });
+  });
+
+  describe('Fetch crossChain UTXOs (AVAX)', function () {
+
+    let bgUrl;
+    let basecoin;
+    let walletData;
+    let wallet;
+    before(async function () {
+      nock.pendingMocks().should.be.empty();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+      basecoin = bitgo.coin('tavaxp');
+      walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tavaxp',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {},
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should fetch cross chain utxos', async function () {
+      const params = { sourceChain: 'C' };
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/crossChainUnspents`;
+      const scope =
+        nock(bgUrl)
+          .get(path)
+          .query(params)
+          .reply(200, {
+            unspent: {
+              outputID: 7,
+              amount: '10000000',
+              txid: 'V3UBZTQj364zNWqt8uMHD5NjxxX8T8qkbeZXURmjnVmLEqzab',
+              threshold: 2,
+              addresses: ['C-fuji199fluegrthqs4tvz40zajfrsx5m7dvy75ajfm6', 'C-fuji1gk3m444893ynl0gfvxahjgw3vftnn8sptyd9g5', 'C-fuji1ujfzjgwzfygl60qp2l8rmglg3lnm7w4059nca5'],
+              outputidx: '1111XiaYg',
+              locktime: '0',
+            },
+            fromWallet: '635092fd4ff3316142df6e6b7a078b92',
+            toWallet: '635092fd4ff3316142df6e891f6a7ee6',
+            toAddress: '0x125c4451c870f753265b0b1af3cf6ab88ffe4657',
+          });
+
+      try {
+        await wallet.fetchCrossChainUTXOs(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    });
+
+
   });
 });

@@ -26,6 +26,7 @@ import {
   defaultConstants,
   EncryptOptions,
   EnvironmentName,
+  Environments,
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
@@ -128,8 +129,10 @@ export class BitGoAPI implements BitGoBase {
   protected readonly _clientId?: string;
   protected readonly _clientSecret?: string;
   protected _validate: boolean;
+  public readonly cookiesPropagationEnabled: boolean;
 
   constructor(params: BitGoAPIOptions = {}) {
+    this.cookiesPropagationEnabled = false;
     if (
       !common.validateParams(
         params,
@@ -183,8 +186,21 @@ export class BitGoAPI implements BitGoBase {
       if (params.stellarFederationServerUrl) {
         common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
       }
+      if (
+        params.customRootURI &&
+        params.customRootURI !== Environments.prod.uri &&
+        params.customRootURI !== Environments.test.uri &&
+        params.cookiesPropagationEnabled
+      ) {
+        this.cookiesPropagationEnabled = true;
+      }
     } else {
       env = params.env || (process.env.BITGO_ENV as EnvironmentName);
+    }
+
+    // if this hasn't been set to true already some conditions are not met
+    if (params.cookiesPropagationEnabled && !this.cookiesPropagationEnabled) {
+      throw new Error('Cookies are only allowed when custom URIs are in use');
     }
 
     if (params.authVersion !== undefined) {
@@ -276,6 +292,18 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Get a superagent request for specified http method and URL configured to the SDK configuration
+   * @param method - http method for the new request
+   * @param url - URL for the new request
+   */
+  protected getAgentRequest(method: typeof patchedRequestMethods[number], url: string): superagent.SuperAgentRequest {
+    let req: superagent.SuperAgentRequest = superagent[method](url);
+    if (this.cookiesPropagationEnabled) {
+      req = req.withCredentials();
+    }
+    return req;
+  }
+  /**
    * Create a basecoin object
    * @param name
    */
@@ -303,7 +331,7 @@ export class BitGoAPI implements BitGoBase {
    * @param method
    */
   private requestPatch(method: typeof patchedRequestMethods[number], url: string) {
-    let req: superagent.SuperAgentRequest = superagent[method](url);
+    let req = this.getAgentRequest(method, url);
     if (this._proxy) {
       debug('proxying request through %s', this._proxy);
       req = req.proxy(this._proxy);
@@ -536,7 +564,7 @@ export class BitGoAPI implements BitGoBase {
     // client constants call cannot be authenticated using the normal HMAC validation
     // scheme, so we need to use a raw superagent instance to do this request.
     // Proxy settings must still be respected however
-    const resultPromise = superagent.get(this.url('/client/constants'));
+    const resultPromise = this.getAgentRequest('get', this.url('/client/constants'));
     resultPromise.set('BitGo-SDK-Version', this._version);
     const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
     BitGoAPI._constants[env] = result.body.constants;

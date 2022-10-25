@@ -436,7 +436,7 @@ export const coins = CoinMap.fromCoins([
   erc20('eurx', 'eToro Euro', 18, '0x05ac103f68e05da35e78f6165b9082432fe64b58', UnderlyingAsset.EURX),
   erc20('euroc', 'Euro Coin', 6, '0x1abaea1f7c830bd89acc67ec4af516284b1bc33c', UnderlyingAsset.EUROC),
   erc20('eux', 'EUR Stable Token', 18, '0x1b9064207e8046ec1d8e83de79380ed31283914f', UnderlyingAsset.EUX),
-  erc20('ever', 'Evescale', 9, '0x29d578cec46b50fa5c88a99c6a4b70184c062953', UnderlyingAsset.EVER),
+  erc20('ever', 'Everscale', 9, '0x29d578cec46b50fa5c88a99c6a4b70184c062953', UnderlyingAsset.EVER),
   erc20('evx', 'Everex', 4, '0xf3db5fa2c66b7af3eb0c0b782510816cbe4813b8', UnderlyingAsset.EVX),
   erc20('exe', 'EXE Token', 8, '0x0d9a653f681168f410d14d19b7743c041eafc58a', UnderlyingAsset.EXE),
   erc20('fei', 'Fei Protocol', 18, '0x956f47f50a910163d8bf957cf5846d573e7f87ca', UnderlyingAsset.FEI),
@@ -912,6 +912,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofclooks', 'LooksRare', 18, UnderlyingAsset.LOOKS),
   ofcerc20('ofclrc', 'loopring', 18, UnderlyingAsset.LRC),
   ofcerc20('ofclrcv2', 'loopring V2', 18, UnderlyingAsset.LRCV2),
+  ofcerc20('ofcmana', 'Decentraland', 18, UnderlyingAsset.MANA),
   ofcerc20('ofcmatic', 'Matic Token', 18, UnderlyingAsset.MATIC),
   ofcerc20('ofcmcdai', 'Dai', 18, UnderlyingAsset.MCDAI),
   ofcerc20('ofcmkr', 'Maker', 18, UnderlyingAsset.MKR),
@@ -931,6 +932,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcchz', 'ChiliZ Token', 18, UnderlyingAsset.CHZ),
   ofcerc20('ofcegld', 'Elrond Gold', 18, UnderlyingAsset.EGLD),
   ofcerc20('ofcenj', 'EnjinCoin', 18, UnderlyingAsset.ENJ),
+  ofcerc20('ofcever', 'Everscale', 9, UnderlyingAsset.EVER),
   ofcerc20('ofcfei', 'Fei USD', 18, UnderlyingAsset.FEI),
   ofcerc20('ofcftm', 'Fantom Token', 18, UnderlyingAsset.FTM),
   ofcerc20('ofcgala', 'Gala', 8, UnderlyingAsset.GALA),
@@ -1854,6 +1856,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'sol:slnd',
+    'SOLEND',
+    6,
+    'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
+    UnderlyingAsset.SLND,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'tsol:srm',
     'Serum',
@@ -1908,6 +1918,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
     UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:slnd',
+    'SOLEND',
+    9,
+    'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
+    UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
   polygonErc20(

@@ -11,6 +11,7 @@ import should from 'should';
 import * as sinon from 'sinon';
 import { Eos, Teos } from '../../src';
 import { EosInputs, EosResponses } from '../fixtures';
+import assert from 'assert';
 
 describe('EOS:', function () {
   let bitgo: TestBitGoAPI;
@@ -53,35 +54,19 @@ describe('EOS:', function () {
     basecoin.isValidAddress('ks13k3hdui24?memoId=x').should.equal(true);
   });
 
-  it('verifyAddress should work', function () {
-    basecoin.verifyAddress({
+  it('verifyAddress should work', async function () {
+    await basecoin.verifyAddress({
       address: 'i1skda3kso43',
       rootAddress: 'i1skda3kso43',
     });
-    basecoin.verifyAddress({
+    await basecoin.verifyAddress({
       address: 'ks13kdh245ls?memoId=1',
       rootAddress: 'ks13kdh245ls',
     });
 
-    (() => {
-      basecoin.verifyAddress({
-        address: 'i1skda3kso43?memoId=243432',
-        rootAddress: 'ks13kdh245ls',
-      });
-    }).should.throw();
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'i1skda3kso43=x',
-        rootAddress: 'i1skda3kso43',
-      });
-    }).should.throw();
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'i1skda3kso43',
-      });
-    }).should.throw();
+    assert.rejects(basecoin.verifyAddress({ address: 'i1skda3kso43=x', rootAddress: 'i1skda3kso43' }));
+    assert.rejects(basecoin.verifyAddress({ address: 'i1skda3kso43?memoId=243432', rootAddress: 'ks13kdh245ls' }));
+    assert.rejects(basecoin.verifyAddress({ address: 'i1skda3kso43' }));
   });
 
   it('should generate valid random addresses', () => {

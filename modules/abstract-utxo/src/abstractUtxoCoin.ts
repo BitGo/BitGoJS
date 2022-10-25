@@ -393,7 +393,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @returns {Array}
    */
   protected static findMissingOutputs(expectedOutputs: Output[], actualOutputs: Output[]): Output[] {
-    const keyFunc = ({ address, amount }: Output): string => `${address}:${Number(amount)}`;
+    const keyFunc = ({ address, amount }: Output): string => `${address}:${amount}`;
     const groupedOutputs = _.groupBy(expectedOutputs, keyFunc);
 
     actualOutputs.forEach((output) => {
@@ -894,7 +894,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {InvalidAddressDerivationPropertyError}
    * @throws {UnexpectedAddressError}
    */
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     const { address, addressType, keychains, coinSpecific, chain, index } = params;
 
     if (!this.isValidAddress(address)) {

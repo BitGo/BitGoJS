@@ -8,6 +8,7 @@ import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from 
 import { TransactionType } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
+import assert from 'assert';
 
 type Transaction = CsprAccountLib.Transaction;
 
@@ -636,7 +637,7 @@ describe('Casper', function () {
       }
     });
 
-    it('should fail to verify invalid address with payment id', function () {
+    it('should fail to verify invalid address with payment id', async function () {
       const invalidAddresses = [
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=x',
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?memoId=1',
@@ -644,11 +645,11 @@ describe('Casper', function () {
       ];
 
       for (const address of invalidAddresses) {
-        should.throws(() => basecoin.verifyAddress(address));
+        await assert.rejects(async () => basecoin.verifyAddress(address));
       }
     });
 
-    it('should verify address with payment id', function () {
+    it('should verify address with payment id', async function () {
       const keychains = [
         {
           id: '624f0dcc93cbcc0008d88df2369a565e',
@@ -694,7 +695,7 @@ describe('Casper', function () {
       ];
 
       for (const addressParams of validAddresses) {
-        basecoin.verifyAddress(addressParams).should.be.true();
+        (await basecoin.verifyAddress(addressParams)).should.be.true();
       }
     });
   });

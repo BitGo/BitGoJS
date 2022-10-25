@@ -197,7 +197,7 @@ export class Trx extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(params: VerifyAddressOptions): boolean {
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 

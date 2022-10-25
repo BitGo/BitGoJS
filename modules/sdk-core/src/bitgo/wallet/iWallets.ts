@@ -21,6 +21,7 @@ export interface GenerateMpcWalletOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   walletVersion?: number;
+  backupProvider?: string;
 }
 
 export interface GenerateWalletOptions {
@@ -29,6 +30,7 @@ export interface GenerateWalletOptions {
   userKey?: string;
   backupXpub?: string;
   backupXpubProvider?: string;
+  backupProvider?: string;
   passcodeEncryptionCode?: string;
   enterprise?: string;
   disableTransactionNotifications?: string;

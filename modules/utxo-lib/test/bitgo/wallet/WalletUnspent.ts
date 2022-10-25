@@ -28,6 +28,7 @@ import {
   addToPsbt,
   toPrevOutput,
   addChangeOutputToPsbt,
+  KeyName,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
@@ -129,8 +130,8 @@ describe('WalletUnspent', function () {
 
   function constructAndSignTransactionUsingPsbt(
     unspents: WalletUnspent<bigint>[],
-    signer: string,
-    cosigner: string,
+    signer: KeyName,
+    cosigner: KeyName,
     scriptType: outputScripts.ScriptType2Of3
   ): Transaction<bigint> {
     const psbt = createPsbtForNetwork({ network });
@@ -205,8 +206,8 @@ describe('WalletUnspent', function () {
 
   function runTestSignUnspent<TNumber extends number | bigint>(
     scriptType: outputScripts.ScriptType2Of3,
-    signer: string,
-    cosigner: string,
+    signer: KeyName,
+    cosigner: KeyName,
     amountType: 'number' | 'bigint' = 'number',
     testOutputAmount = toTNumber<TNumber>(defaultTestOutputAmount, amountType)
   ) {
@@ -243,7 +244,7 @@ describe('WalletUnspent', function () {
   }
 
   outputScripts.scriptTypes2Of3.forEach((t) => {
-    const keyNames = ['user', 'backup', 'bitgo'];
+    const keyNames: KeyName[] = ['user', 'backup', 'bitgo'];
     keyNames.forEach((signer) => {
       keyNames.forEach((cosigner) => {
         if (signer !== cosigner) {

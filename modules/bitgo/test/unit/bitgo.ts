@@ -52,7 +52,7 @@ describe('BitGo Prototype Methods', function () {
     it('staging', () => {
       BitGoJS.setNetwork('testnet');
       TestBitGo.decorate(BitGo, { env: 'staging' });
-      BitGoJS.getNetwork().should.equal('bitcoin');
+      BitGoJS.getNetwork().should.equal('testnet');
     });
 
     it('test', () => {
