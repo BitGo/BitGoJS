@@ -3,16 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.1.0-rc.23...@bitgo/sdk-coin-xrp@1.3.0) (2022-10-18)
+## [1.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.3.0...@bitgo/sdk-coin-xrp@1.3.1) (2022-10-25)
 
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.1.0-rc.23...@bitgo/sdk-coin-xrp@1.3.0) (2022-10-18)
 
 ### Bug Fixes
 
-* **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
-
-
-
-
+- **core:** fix bip32/ecpair, API vs Interface ([bec9c1e](https://github.com/BitGo/BitGoJS/commit/bec9c1e6ff0c23108dc27e171abdd3e4d2cfdfb1))
 
 # [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.1.0-rc.23...@bitgo/sdk-coin-xrp@1.1.0) (2022-07-19)
 
