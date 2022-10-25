@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.15.0...@bitgo/express@9.16.0) (2022-10-25)
+
+
+### Features
+
+* add token enablement support in express ([4bd5f9e](https://github.com/BitGo/BitGoJS/commit/4bd5f9ef2388d0e615c1bfbe523f6d75ff223b7a))
+
+
+
+
+
+# [9.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.26...@bitgo/express@9.15.0) (2022-10-18)
+
+
+### Bug Fixes
+
+* add ability to use unencrypted private key ([803e14e](https://github.com/BitGo/BitGoJS/commit/803e14ef5e6a2c50fbb0b7408a31561850c4961e))
+* specify exact platform for express docker ([e845f8f](https://github.com/BitGo/BitGoJS/commit/e845f8f3a855ead10e20195925ce1935edfa1c48))
+
+
+### Features
+
+* **express:** adding EdDSA TSS support to external signer ([dbccabc](https://github.com/BitGo/BitGoJS/commit/dbccabc7b1b2c1258108e6b38f853c676f8a6562))
+* **express:** support routes to prebuildAndSignTransaction ([b7f0ec3](https://github.com/BitGo/BitGoJS/commit/b7f0ec37f6ea9a948c229003bdee023066d62b68))
+
+
+
+
+
 ## [9.12.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.4-rc.26...@bitgo/express@9.12.4) (2022-07-19)
 
 **Note:** Version bump only for package @bitgo/express
