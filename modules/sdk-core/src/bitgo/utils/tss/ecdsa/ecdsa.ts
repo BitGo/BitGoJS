@@ -295,12 +295,16 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     isThirdPartyBackup = false
   ): Promise<EncryptedNShare> {
     let backupToBitgoShare: EncryptedNShare;
-    if (isThirdPartyBackup && backupShare.bitGoHeldKeyShares?.keyShares) {
+    if (isThirdPartyBackup) {
+      if (!backupShare.bitGoHeldKeyShares?.keyShares) {
+        // Throwing the bitGoHeldKeyShares temporarily for Nike debugging
+        throw new Error(`Missing backup key shares: ${JSON.stringify(backupShare.bitGoHeldKeyShares)}`);
+      }
       const backupToOtherApiShare = backupShare.bitGoHeldKeyShares.keyShares.find(
         (keyShare) => keyShare.from === 'backup' && keyShare.to === getParticipantFromIndex(recipientIndex)
       );
       if (!backupToOtherApiShare) {
-        throw new Error('Missing Backup to Bitgo key share');
+        throw new Error(`Missing backup to ${getParticipantFromIndex(recipientIndex)} key share`);
       }
       // Since backup is from a third party, it is already encrypted
       backupToBitgoShare = await buildNShareFromAPIKeyShare(backupToOtherApiShare);
