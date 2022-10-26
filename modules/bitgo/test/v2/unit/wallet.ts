@@ -1921,6 +1921,31 @@ describe('V2 Wallet:', function () {
         intent.isTss!.should.equal(true);
         intent.intentType.should.equal('fillNonce');
       });
+
+      it('should populate intent with custodianTransactionId', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const nonce = '1';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          custodianTransactionId: 'unittest',
+          reqId,
+          intentType: 'fillNonce',
+          nonce,
+          feeOptions,
+          isTss: true,
+        });
+
+        intent.custodianTransactionId!.should.equal('unittest');
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.nonce!.should.equal(nonce);
+        intent.isTss!.should.equal(true);
+        intent.intentType.should.equal('fillNonce');
+      });
     });
 
     describe('Transaction signing', function () {
@@ -1946,6 +1971,7 @@ describe('V2 Wallet:', function () {
         });
       });
 
+
       it('should fail to sign transaction without txRequestId', async function () {
         const txPrebuild = {
           walletId: tssWallet.id(),
@@ -1965,7 +1991,7 @@ describe('V2 Wallet:', function () {
         txRequestId: 'id',
         transactions: [],
         intent: {
-          intentType: 'payment',
+          intentType: 'signMessage',
         },
         date: new Date().toISOString(),
         latest: true,
@@ -2013,6 +2039,23 @@ describe('V2 Wallet:', function () {
           const signMessage = await tssEthWallet.signMessage({
             reqId,
             messagePrebuild: { message, txRequestId },
+            prv: 'secretKey',
+          });
+          signMessage.should.deepEqual({ txRequestId } );
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
+          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
+        });
+
+        it('should sign message when custodianMessageId is provided', async function () {
+          const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
+            .reply(200, txRequestForMessageSigning);
+
+          const signMessage = await tssEthWallet.signMessage({
+            custodianMessageId: 'unittest',
+            reqId,
+            messagePrebuild: { message },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual({ txRequestId } );

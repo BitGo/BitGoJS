@@ -143,6 +143,7 @@ export abstract class MpcUtils {
             hopParams: params.hopParams,
             isTss: params.isTss,
             nonce: params.nonce,
+            custodianTransactionId: params.custodianTransactionId,
           };
         case 'acceleration':
           return {

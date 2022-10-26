@@ -103,6 +103,7 @@ export interface PrebuildTransactionOptions {
   gasLimit?: number;
   lowFeeTxid?: string;
   isTss?: boolean;
+  custodianTransactionId?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -147,6 +148,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
 
 export interface WalletSignMessageOptions extends WalletSignBaseOptions {
   messagePrebuild?: MessagePrebuild;
+  custodianMessageId?: string;
 }
 
 export interface GetUserPrvOptions {
@@ -442,6 +444,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   [index: string]: unknown;
   eip1559?: EIP1559;
   gasLimit?: number;
+  custodianTransactionId?: string;
 }
 
 export interface FetchCrossChainUTXOsOptions {

@@ -63,7 +63,10 @@ export interface IntentOptionsBase {
   isTss?: boolean;
   comment?: string;
   memo?: Memo;
+  custodianTransactionId?: string;
+  custodianMessageId?: string;
 }
+
 export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
   recipients?: {
     address: string;
@@ -107,6 +110,8 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
   txid?: string;
+  custodianTransactionId?: string;
+  custodianMessageId?: string;
 }
 
 export type TxRequestState =
