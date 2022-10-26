@@ -131,7 +131,7 @@ export abstract class MpcUtils {
       recipients: intentRecipients,
     };
 
-    if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon') {
+    if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon' || baseCoin.getFamily() === 'bsc') {
       switch (params.intentType) {
         case 'payment':
         case 'tokenTransfer':
