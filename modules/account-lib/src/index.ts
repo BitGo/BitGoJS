@@ -80,6 +80,9 @@ export { Bsc };
 import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
+import * as Sui from '@bitgo/sdk-coin-sui';
+export { Sui };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -115,6 +118,8 @@ const coinBuilderMap = {
   near: Near.TransactionBuilderFactory,
   polygon: Polygon.TransactionBuilder,
   tpolygon: Polygon.TransactionBuilder,
+  sui: Sui.TransactionBuilderFactory,
+  tsui: Sui.TransactionBuilderFactory,
 };
 
 /**
