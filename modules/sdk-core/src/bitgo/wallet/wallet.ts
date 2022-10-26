@@ -1568,7 +1568,7 @@ export class Wallet implements IWallet {
   }
 
   /**
-   *  Sign a message using TSS (not implemented for hot wallets)
+   *  Sign a message using TSS
    * @param params
    * - messagePrebuild
    * - [keychain / key] (object) or prv (string)
@@ -2684,6 +2684,7 @@ export class Wallet implements IWallet {
       assert(params.messagePrebuild);
       if (!params.messagePrebuild.txRequestId) {
         const intentOption: IntentOptionsBase = {
+          custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
           intentType: 'signmessage',
           isTss: true,
