@@ -89,7 +89,7 @@ export interface WalletUnspentLegacy<TNumber extends number | bigint = number> e
   witnessScript?: string;
 }
 
-export function addToPsbt(
+export function addWalletUnspentToPsbt(
   psbt: UtxoPsbt<UtxoTransaction<bigint>>,
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,

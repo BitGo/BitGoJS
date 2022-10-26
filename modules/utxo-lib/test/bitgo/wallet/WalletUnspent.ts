@@ -25,7 +25,7 @@ import {
   UtxoTransaction,
   createPsbtForNetwork,
   createPsbtFromTransaction,
-  addToPsbt,
+  addWalletUnspentToPsbt,
   addWalletOutputToPsbt,
   toPrevOutput,
   KeyName,
@@ -139,7 +139,7 @@ describe('WalletUnspent', function () {
     addWalletOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
 
     unspents.forEach((u) => {
-      addToPsbt(psbt, u, walletKeys, signer, cosigner, network);
+      addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner, network);
     });
 
     // TODO: Test rederiving scripts from PSBT and keys only
