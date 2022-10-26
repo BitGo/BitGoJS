@@ -347,7 +347,16 @@ export class Near extends BaseCoin {
     for (let i = startIdx; i < numIteration + startIdx; i++) {
       const currPath = `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-      const availableBalance = new BigNumber(await this.getAccountBalance(accountId, storageAmountPerByte));
+      let availableBalance = new BigNumber(0);
+      try {
+        availableBalance = new BigNumber(await this.getAccountBalance(accountId, storageAmountPerByte));
+      } catch (e) {
+        // UNKNOWN_ACCOUNT error indicates that the address has not partake in any transaction so far, so we will
+        // treat it as a zero balance address
+        if (e.message !== 'UNKNOWN_ACCOUNT') {
+          throw e;
+        }
+      }
       if (availableBalance.toNumber() <= 0) {
         continue;
       }
@@ -366,7 +375,13 @@ export class Near extends BaseCoin {
       const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
       const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
       const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
-      const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve).toFixed();
+      const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve);
+      if (netAmount.toNumber() <= 0) {
+        throw new Error(
+          `Found address ${i} with non-zero fund but fund is insufficient to support a recover ` +
+            `transaction. Please start the next scan at address index ${i + 1}.`
+        );
+      }
       const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
       const txBuilder = factory
         .getTransferBuilder()
@@ -374,7 +389,7 @@ export class Near extends BaseCoin {
         .nonce(nonce)
         .receiverId(params.recoveryDestination)
         .recentBlockHash(blockHash)
-        .amount(netAmount);
+        .amount(netAmount.toFixed());
 
       if (!isUnsignedSweep) {
         const unsignedTransaction = (await txBuilder.build()) as Transaction;
@@ -495,7 +510,11 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new Error('Failed to query account information');
+    }
+    const errorCause = response.body.error?.cause.name;
+    if (errorCause !== undefined) {
+      throw new Error(errorCause);
     }
 
     const account = response.body.result;
