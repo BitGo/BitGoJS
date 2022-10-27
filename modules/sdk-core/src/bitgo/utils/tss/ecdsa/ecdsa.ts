@@ -70,8 +70,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoToBackupKeyShare = bitgoKeychain.keyShares?.find(
       (keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup'
     );
+    const userPublicShare = Buffer.concat([
+      Buffer.from(userKeyShare.nShares[2].y, 'hex'),
+      Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
+    ]).toString('hex');
     assert(bitgoToBackupKeyShare);
-    return await this.bitgo
+    const keyResponse = await this.bitgo
       .put(this.baseCoin.url(`/krs/backupkeys/${keyId}`))
       .send({
         commonKeychain,
@@ -79,13 +83,21 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           {
             from: 'user',
             to: 'backup',
-            publicShare: userKeyShare.nShares[2].y,
+            publicShare: userPublicShare,
             privateShare: encryptedUserToBackupShare.encryptedPrivateShare,
           },
           bitgoToBackupKeyShare,
         ],
       })
       .result();
+    if (!keyResponse) {
+      throw new Error('Failed to update backup key.');
+    }
+    return {
+      id: keyResponse.id,
+      keyShares: keyResponse.keyShares,
+      commonKeychain: keyResponse.commonKeychain,
+    };
   }
 
   /** @inheritdoc */
@@ -212,7 +224,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         bitgoKeychain
       );
       if (finalizedBackupKeyShare.commonKeychain !== bitgoKeychain.commonKeychain) {
-        throw new Error('Failed to create backup keychain - commonKeychains do not match.');
+        throw new Error('Failed to create backup keychain - commonKeychains do not match');
       }
       const backupKeyParams: CreateBackupOptions = {
         source: 'backup',
@@ -273,7 +285,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
-      backupGPGPublicKey: userGpgKey.publicKey,
+      // BitGo is the only supported third party backup as of now, so the
+      // backup GPG key is the same as bitgo GPG key. Else user holds backup.
+      backupGPGPublicKey: isThirdPartyBackup ? bitgoPublicGpgKey.armor() : userGpgKey.publicKey,
       enterprise: enterprise,
     };
 
@@ -295,12 +309,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     isThirdPartyBackup = false
   ): Promise<EncryptedNShare> {
     let backupToBitgoShare: EncryptedNShare;
-    if (isThirdPartyBackup && backupShare.bitGoHeldKeyShares?.keyShares) {
+    if (isThirdPartyBackup) {
+      if (!backupShare.bitGoHeldKeyShares) {
+        throw new Error(`Missing third party backup key shares`);
+      }
       const backupToOtherApiShare = backupShare.bitGoHeldKeyShares.keyShares.find(
         (keyShare) => keyShare.from === 'backup' && keyShare.to === getParticipantFromIndex(recipientIndex)
       );
       if (!backupToOtherApiShare) {
-        throw new Error('Missing Backup to Bitgo key share');
+        throw new Error(`Missing backup to ${getParticipantFromIndex(recipientIndex)} key share`);
       }
       // Since backup is from a third party, it is already encrypted
       backupToBitgoShare = await buildNShareFromAPIKeyShare(backupToOtherApiShare);
