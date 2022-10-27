@@ -28,6 +28,7 @@ import {
   UnixNow,
 } from 'avalanche/dist/utils';
 
+
 type ChainConfig = {
   NODE_HOST: string;
   NODE_PORT: number;
@@ -36,14 +37,14 @@ type ChainConfig = {
 };
 
 const FUJI: ChainConfig = {
-  NODE_HOST: 'localhost',
-  NODE_PORT: 9650,
-  NODE_PROTOCOL: 'http',
+  NODE_HOST: 'api.avax-test.network',
+  NODE_PORT: 443,
+  NODE_PROTOCOL: 'https',
   NODE_NETWORK_ID: 5,
 };
 
 // const MAINNET: ChainConfig = {
-//   NODE_HOST: 'api.avax.network',
+//   NODE_HOST: 'https://api.avax-test.network',
 //   NODE_PORT: 9650,
 //   NODE_PROTOCOL: 'http',
 //   NODE_NETWORK_ID: 1,
@@ -54,7 +55,7 @@ const conf = FUJI;
 
 // Private Key containing funds
 // Example: PrivateKey-here
-const avaxPrivateKey = '';
+const avaxPrivateKey = 'PrivateKey-fbfa142dee6fc5ddc7a725acc6c42c4797e2850133bfc809dfb12c4ce51e3771';
 
 // multisig wallet receive addresses
 // Example: [
@@ -62,10 +63,15 @@ const avaxPrivateKey = '';
 //   'P-address2',
 //   'P-address3',
 // ]
-const pMultisigReceiveAddresses = [];
+const pMultisigReceiveAddresses = [
+  'P-fuji12m4hvh6aa22ydj4zh2yyg4d0zjjslcssq35npd',
+  'P-fuji1lfm7e6n8d0n64zqq0xm8sq9uurdeg09u4dx83z',
+  'P-fuji1xqvkw6mk9c0q4l6w43hqz6kmz9qrag9kaerj9e',
+];
 
 // amount to transfer cross-chain plus fees
-const transferAmountVal = (1 + 0.002 ) * 1e9; // 1 AVAX + 0.002 AVAX fee
+// const transferAmountVal = (1 + 0.002 ) * 1e9; // 1 AVAX + 0.002 AVAX fee
+const transferAmountVal = (2 + 0.002 ) * 1e9; // 1 AVAX + 0.002 AVAX fee
 
 
 /*
@@ -90,7 +96,7 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
   );
   const xBlockchainID: string = Defaults.network[networkID].X.blockchainID;
   const pBlockchainID: string = Defaults.network[networkID].P.blockchainID;
-  
+
 
   // import the key into keychains
   const pchain: PlatformVMAPI = avalanche.PChain();
@@ -120,7 +126,7 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
 
   let totalInputsAmount: BN = new BN(0);
   const transferAmount: BN = new BN(transferAmountVal);
-  
+
   utxos.forEach((utxo: UTXO) => {
     // type 7 is transferable output
     if (utxo.getOutput().getTypeID() === 7 && totalInputsAmount.lt(transferAmount.add(fee).add(fee))) {
@@ -132,7 +138,7 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
       const amount: BN = amountOutput.getAmount().clone();
       const assetID: Buffer = utxo.getAssetID();
       console.log(`utxo asset:amount = ${bintools.bufferToB58(assetID)}:${amount.toString()}`);
-      
+
       // get utxo txid
       const txid: Buffer = utxo.getTxID();
       const outputidx: Buffer = utxo.getOutputIdx();
@@ -144,7 +150,7 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
         throw Error('Exported UTXO should have only one address');
       }
       secpTransferInput.addSignatureIdx(0, xAddressesBufs[0]);
-      
+
       const input: TransferableInput = new TransferableInput(
         txid,
         outputidx,
@@ -153,9 +159,10 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
       );
       inputs.push(input);
       totalInputsAmount = totalInputsAmount.add(amount);
-    } else {
-      throw Error('utxo is not avax');
     }
+    // } else {
+    //   throw Error('utxo is not avax');
+    // }
   });
   console.log(`total imported: amount = ${totalInputsAmount}\n`);
 
@@ -201,18 +208,18 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
     bintools.cb58Decode(pBlockchainID),
     exportedOuts
   );
-  
+
 
   const unsignedExportTx: UnsignedTx = new UnsignedTx(exportTx);
   const signedExportTx: AVMTx = unsignedExportTx.sign(xKeychain);
-  
+
   console.log('Issuing Export...');
   const exportTxid: string = await xchain.issueTx(signedExportTx);
   console.log(`Export success! TXID: https://explorer-xp.avax-test.network/tx/${exportTxid}`);
 
   // sleep for 5 seconds
   console.log('Wait 5 seconds for export to confirm...');
-  
+
   await new Promise(resolve => setTimeout(resolve, 5000));
 
 
@@ -231,7 +238,7 @@ export async function crossChainTransfer(conf: ChainConfig, avaxPrivateKey: stri
   );
   const pvmUtxoSet: UTXOSet = platformVMUTXOResponse.utxos;
   console.log(`pvmUtxoSet length = ${pvmUtxoSet.getAllUTXOs().length}`);
-  
+
   // create import tx
   const unsignedImportTx: PVMUnsignedTx = await pchain.buildImportTx(
     pvmUtxoSet,
