@@ -75,7 +75,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
     ]).toString('hex');
     assert(bitgoToBackupKeyShare);
-    return await this.bitgo
+    const keyResponse = await this.bitgo
       .put(this.baseCoin.url(`/krs/backupkeys/${keyId}`))
       .send({
         commonKeychain,
@@ -90,6 +90,14 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         ],
       })
       .result();
+    if (!keyResponse) {
+      throw new Error('Failed to update backup key.');
+    }
+    return {
+      id: keyResponse.id,
+      keyShares: keyResponse.keyShares,
+      commonKeychain: keyResponse.commonKeychain,
+    };
   }
 
   /** @inheritdoc */
