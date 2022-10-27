@@ -90,8 +90,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         ],
       })
       .result();
-    if (!keyResponse) {
-      throw new Error('Failed to update backup key.');
+    if (!keyResponse || !keyResponse.commonKeychain) {
+      throw new Error('Failed backup key verification.');
     }
     return {
       id: keyResponse.id,
