@@ -648,10 +648,15 @@ describe('TSS Ecdsa Utils:', async function () {
     const bitgoToBackupKeyShare = bitgoKeychain.keyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
     assert(bitgoToBackupKeyShare);
 
+    const userPublicShare = Buffer.concat([
+      Buffer.from(userKeyShare.nShares[2].y, 'hex'),
+      Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
+    ]).toString('hex');
+
     const expectedKeyShares = [{
       from: 'user',
       to: 'backup',
-      publicShare: userKeyShare.nShares[2].y,
+      publicShare: userPublicShare,
       // Omitting the private share, the actual encryption happens inside the function where we make the matching call
       // to this nock. We cannot recreate the same encrypted value here because gpg encryption is not deterministic
     }, bitgoToBackupKeyShare];
@@ -664,7 +669,7 @@ describe('TSS Ecdsa Utils:', async function () {
         {
           from: 'user',
           to: 'backup',
-          publicShare: userKeyShare.nShares[2].y,
+          publicShare: userPublicShare,
           privateShare: encryptedUserToBackupKeyShare.encryptedPrivateShare,
         },
         bitgoToBackupKeyShare,
