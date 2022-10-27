@@ -559,7 +559,7 @@ class Sui extends Mainnet implements AccountNetwork {
 class SuiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sui';
   family = CoinFamily.SUI;
-  explorerUrl = 'https://explorer.devnet.sui.io/transactions';
+  explorerUrl = 'https://explorer.devnet.sui.io/transactions/';
 }
 
 class Stx extends Mainnet implements StacksNetwork {
