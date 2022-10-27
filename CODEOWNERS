@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/sdk-team
+*   @BitGo/developer-relations-team
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -59,28 +59,28 @@ modules/sdk-coin-xtz/ @BitGo/altcoins
 
 
 # Core Modules
-modules/bitgo/ @BitGo/sdk-team
-modules/blake2b-wasm/ @BitGo/sdk-team
-modules/blake2b/ @BitGo/sdk-team
-modules/express/ @BitGo/sdk-team
-modules/sdk-api/ @BitGo/sdk-team
-modules/sdk-core/ @BitGo/sdk-team
-modules/sdk-test/ @BitGo/sdk-team
-modules/sjcl/ @BitGo/sdk-team
-modules/statics/ @BitGo/sdk-team
-modules/web-demo/ @BitGo/sdk-team
-scripts/ @BitGo/sdk-team
-types/ @BitGo/sdk-team
-webpack/ @BitGo/sdk-team
+modules/bitgo/ @BitGo/developer-relations-team
+modules/blake2b-wasm/ @BitGo/developer-relations-team
+modules/blake2b/ @BitGo/developer-relations-team
+modules/express/ @BitGo/developer-relations-team
+modules/sdk-api/ @BitGo/developer-relations-team
+modules/sdk-core/ @BitGo/developer-relations-team
+modules/sdk-test/ @BitGo/developer-relations-team
+modules/sjcl/ @BitGo/developer-relations-team
+modules/statics/ @BitGo/developer-relations-team
+modules/web-demo/ @BitGo/developer-relations-team
+scripts/ @BitGo/developer-relations-team
+types/ @BitGo/developer-relations-team
+webpack/ @BitGo/developer-relations-team
 
-.eslintrc.json @BitGo/sdk-team
-.prettierrc.yml @BitGo/sdk-team
-check-package-versions.js @BitGo/sdk-team
-CODEOWNERS @BitGo/sdk-team
-DEVELOPERS.md @BitGo/sdk-team
-commitlint.config.js @BitGo/sdk-team
-Dockerfile @BitGo/sdk-team
-lerna.json @BitGo/sdk-team
-package.json @BitGo/sdk-team
-tsconfig.json @BitGo/sdk-team
-tsconfig.packages.json @BitGo/sdk-team
+.eslintrc.json @BitGo/developer-relations-team
+.prettierrc.yml @BitGo/developer-relations-team
+check-package-versions.js @BitGo/developer-relations-team
+CODEOWNERS @BitGo/developer-relations-team
+DEVELOPERS.md @BitGo/developer-relations-team
+commitlint.config.js @BitGo/developer-relations-team
+Dockerfile @BitGo/developer-relations-team
+lerna.json @BitGo/developer-relations-team
+package.json @BitGo/developer-relations-team
+tsconfig.json @BitGo/developer-relations-team
+tsconfig.packages.json @BitGo/developer-relations-team
