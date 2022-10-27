@@ -48,7 +48,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
         userGPGPublicKey: userGpgKey.publicKey,
       })
       .result();
-    if (!keyResponse) {
+    if (!keyResponse || !keyResponse.keyShares) {
       throw new Error('Failed to get backup shares from BitGo.');
     }
     return {
