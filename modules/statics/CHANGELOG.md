@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@10.0.0) (2022-10-27)
+
+### Bug Fixes
+
+- fix typo in Everscale, add Everscale as Offchain / Prime token ([21bf769](https://github.com/BitGo/BitGoJS/commit/21bf769fa6e2165797d3d9562955b7bd371ad0e6))
+
+### Features
+
+- add tokens to trading ([8105e05](https://github.com/BitGo/BitGoJS/commit/8105e052bbdf914bcd749c87bd78e5db4e1bf4ce))
+- **statics:** add SOLEND (SLND) Solana token to statics ([e39edb4](https://github.com/BitGo/BitGoJS/commit/e39edb4fcb6694bf9b75710d4434e7a0d35f0d62))
+
+### BREAKING CHANGES
+
+- Adds Everscale as Offchain / Prime token
+  BG-59397
+
 # [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@9.0.0) (2022-10-25)
 
 ### Bug Fixes
