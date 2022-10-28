@@ -209,6 +209,10 @@ export type TSSParams = {
   reqId: IRequestTracer;
 };
 
+export type TSSParamsForMessage = TSSParams & {
+  finalMessage: string;
+};
+
 export interface BitgoHeldBackupKeyShare {
   commonKeychain?: string;
   id: string;

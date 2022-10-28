@@ -1,7 +1,7 @@
 import { IRequestTracer } from '../../api';
 import {
   IBaseCoin,
-  MessagePrebuild,
+  Message,
   SignedMessage,
   SignedTransaction,
   TransactionPrebuild,
@@ -147,7 +147,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
 }
 
 export interface WalletSignMessageOptions extends WalletSignBaseOptions {
-  messagePrebuild?: MessagePrebuild;
+  message?: Message;
   custodianMessageId?: string;
 }
 

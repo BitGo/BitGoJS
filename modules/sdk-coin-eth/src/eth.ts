@@ -1747,8 +1747,8 @@ export class Eth extends BaseCoin {
    * @param message the message to prepare
    * @return string the prepared message.
    */
-  prepareMessage(message: string): string {
-    const prefix = `\u0019Ethereum Signed Message:\\n${message.length}`;
+  encodeMessage(message: string): string {
+    const prefix = `\u0019Ethereum Signed Message:\n${message.length}`;
     return prefix.concat(message);
   }
 

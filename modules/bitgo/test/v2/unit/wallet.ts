@@ -2006,7 +2006,7 @@ describe('V2 Wallet:', function () {
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
-      const message = 'test';
+      const messageRaw = 'test';
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
@@ -2021,7 +2021,7 @@ describe('V2 Wallet:', function () {
 
         await tssWallet.signMessage({
           reqId,
-          messagePrebuild: { message },
+          message: { messageRaw },
           prv: 'secretKey',
         }).should.be.rejectedWith('Message signing not supported for Testnet Solana');
       });
@@ -2038,12 +2038,12 @@ describe('V2 Wallet:', function () {
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message, txRequestId },
+            message: { messageRaw, txRequestId },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual({ txRequestId } );
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
+          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
 
         it('should sign message when custodianMessageId is provided', async function () {
@@ -2055,12 +2055,12 @@ describe('V2 Wallet:', function () {
           const signMessage = await tssEthWallet.signMessage({
             custodianMessageId: 'unittest',
             reqId,
-            messagePrebuild: { message },
+            message: { messageRaw },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual({ txRequestId } );
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
+          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
 
         it('should sign message when txRequestId not provided', async function () {
@@ -2071,18 +2071,18 @@ describe('V2 Wallet:', function () {
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message },
+            message: { messageRaw },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual({ txRequestId } );
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.messagePrebuild.message.should.equal(`\u0019Ethereum Signed Message:\\n${message.length}${message}`);
+          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
 
         it('should fail to sign message with empty prv', async function () {
           await tssEthWallet.signMessage({
             reqId,
-            messagePrebuild: { message, txRequestId },
+            message: { messageRaw, txRequestId },
             prv: '',
           }).should.be.rejectedWith('prv required to sign message with TSS');
         });
