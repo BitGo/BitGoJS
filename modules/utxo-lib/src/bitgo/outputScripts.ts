@@ -64,9 +64,7 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
 
 export type SpendableScript = {
   scriptPubKey: Buffer;
-  /** @deprecated - use createSpendScripts2of3 */
   redeemScript?: Buffer;
-  /** @deprecated - use createSpendScript2of3 */
   witnessScript?: Buffer;
 };
 

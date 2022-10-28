@@ -25,9 +25,9 @@ import {
   UtxoTransaction,
   createPsbtForNetwork,
   createPsbtFromTransaction,
-  addToPsbt,
+  addWalletUnspentToPsbt,
+  addWalletOutputToPsbt,
   toPrevOutput,
-  addChangeOutputToPsbt,
   KeyName,
 } from '../../../src/bitgo';
 
@@ -136,11 +136,10 @@ describe('WalletUnspent', function () {
   ): Transaction<bigint> {
     const psbt = createPsbtForNetwork({ network });
     const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
-    // Kinda weird, treating entire value as change, but tests the relevant paths
-    addChangeOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
+    addWalletOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
 
     unspents.forEach((u) => {
-      addToPsbt(psbt, u, walletKeys, signer, cosigner, network);
+      addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner, network);
     });
 
     // TODO: Test rederiving scripts from PSBT and keys only
