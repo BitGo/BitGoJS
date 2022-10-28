@@ -1022,6 +1022,9 @@ export class AvaxC extends BaseCoin {
     if (params && params.amount) {
       query.amount = params.amount;
     }
+    if (params && params.type) {
+      query.type = params.type;
+    }
 
     return await this.bitgo.get(this.url('/tx/fee')).query(query).result();
   }
