@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@2.24.0) (2022-10-27)
+
+### Features
+
+- **sdk-coin-sui:** added sui to account-lib ([e4a21fc](https://github.com/BitGo/BitGoJS/commit/e4a21fc2895ef66508fbc231dc11baf24ae4cf5a))
+
 ## [2.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@2.23.1) (2022-10-25)
 
 **Note:** Version bump only for package @bitgo/account-lib

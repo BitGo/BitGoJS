@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.2.0...@bitgo/sdk-coin-sui@1.4.0) (2022-10-27)
+
+### Features
+
+- implement isWalletAddress for SUI ([a3696ab](https://github.com/BitGo/BitGoJS/commit/a3696ab00f693da2db4ef32034a85504dc5aa4c5))
+- implement sui keypair ([1ae6096](https://github.com/BitGo/BitGoJS/commit/1ae6096bbf48de1db0ccc8a3122b114f0e1489ce))
+- **sdk-coin-sui:** add sui parse transaction ([c1b7b4f](https://github.com/BitGo/BitGoJS/commit/c1b7b4f21bd866e22192111dff304bb87f3460e5))
+- **sdk-coin-sui:** added sui explain transaction ([0e681da](https://github.com/BitGo/BitGoJS/commit/0e681da2f5572e66dffe0be992c13acdcafc549d))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.2.0...@bitgo/sdk-coin-sui@1.3.0) (2022-10-25)
 
 ### Features

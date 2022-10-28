@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@4.0.0) (2022-10-27)
+
+### Code Refactoring
+
+- tweak names of some Unspent types ([8a43518](https://github.com/BitGo/BitGoJS/commit/8a4351897089c74caab440aa3633ab933a28a245))
+
+### BREAKING CHANGES
+
+- function and type rename
+
 ## [3.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@3.2.1) (2022-10-25)
 
 **Note:** Version bump only for package @bitgo/utxo-lib
