@@ -132,7 +132,7 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   name = 'AdaCardanoTestnet';
   family = CoinFamily.ADA;
   utxolibName = 'cardanoTestnet';
-  explorerUrl = 'https://explorer.cardano-testnet.iohkdev.io/en';
+  explorerUrl = 'https://preprod.cexplorer.io/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
