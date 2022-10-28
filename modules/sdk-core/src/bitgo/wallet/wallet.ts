@@ -190,6 +190,7 @@ export class Wallet implements IWallet {
       // param to set emergency flag on a custodial transaction.
       // This transaction should be performed in less than 1 hour or it will fail.
       'emergency',
+      'sourceChain',
     ];
   }
 
@@ -1488,7 +1489,6 @@ export class Wallet implements IWallet {
     const queryParams = {
       offlineVerification: params.offlineVerification ? true : undefined,
     };
-
     const buildQuery = this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/build'))
       .query(queryParams)

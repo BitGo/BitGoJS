@@ -179,6 +179,7 @@ export interface FeeEstimateOptions {
   recipient?: string;
   data?: string;
   amount?: string;
+  type?: string;
 }
 
 // TODO (SDKT-9): reverse engineer and add options
