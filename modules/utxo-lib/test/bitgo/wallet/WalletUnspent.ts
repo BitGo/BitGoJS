@@ -147,10 +147,17 @@ describe('WalletUnspent', function () {
 
   function runTestSignUnspent<TNumber extends number | bigint>(
     scriptType: outputScripts.ScriptType2Of3,
-    signer: KeyName,
-    cosigner: KeyName,
-    amountType: 'number' | 'bigint' = 'number',
-    testOutputAmount = toTNumber<TNumber>(defaultTestOutputAmount, amountType)
+    {
+      signer,
+      cosigner,
+      amountType,
+      testOutputAmount,
+    }: {
+      signer: KeyName;
+      cosigner: KeyName;
+      amountType: 'number' | 'bigint';
+      testOutputAmount: TNumber;
+    }
   ) {
     it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
       const unspents = [
@@ -189,8 +196,13 @@ describe('WalletUnspent', function () {
     keyNames.forEach((signer) => {
       keyNames.forEach((cosigner) => {
         if (signer !== cosigner) {
-          runTestSignUnspent(t, signer, cosigner);
-          runTestSignUnspent<bigint>(t, signer, cosigner, 'bigint', BigInt('10000000000000000'));
+          runTestSignUnspent(t, { signer, cosigner, amountType: 'number', testOutputAmount: defaultTestOutputAmount });
+          runTestSignUnspent<bigint>(t, {
+            signer,
+            cosigner,
+            amountType: 'bigint',
+            testOutputAmount: BigInt('10000000000000000'),
+          });
         }
       });
     });
