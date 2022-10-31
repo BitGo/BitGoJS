@@ -817,6 +817,7 @@ export const coins = CoinMap.fromCoins([
   erc20('wabi', 'Tael Token', 18, '0x286bda1413a2df81731d4930ce2f862a35a609fe', UnderlyingAsset.WABI),
   erc20('wtk', 'WadzPay Token', 18, '0x4cff49d0a19ed6ff845a9122fa912abcfb1f68a6', UnderlyingAsset.WTK),
   erc20('wbtc', 'Wrapped Bitcoin', 8, '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', UnderlyingAsset.WBTC),
+  erc20('wdoge', 'Wrapped DOGE', 8, '0x8aa9381b2544b48c26f3b850f6e07e2c5161eb3e', UnderlyingAsset.WDOGE),
   erc20('wcfg', 'Wrapped Centrifuge', 18, '0xc221b7e65ffc80de234bbb6667abdd46593d34f0', UnderlyingAsset.WCFG),
   erc20('wec', 'Whole Earth Coin ', 18, '0xcc1a8bd438bebc4b2a885a34475bb974f2124317', UnderlyingAsset.WEC),
   erc20('wet', 'We Show Token', 18, '0x36d10c6800d569bb8c4fe284a05ffe3b752f972c', UnderlyingAsset.WET),

@@ -782,6 +782,7 @@ export enum UnderlyingAsset {
   WOO = 'woo',
   WTK = 'wtk',
   WBTC = 'wbtc',
+  WDOGE = 'wdoge',
   WCFG = 'wcfg',
   WEC = 'wec',
   WET = 'wet',
