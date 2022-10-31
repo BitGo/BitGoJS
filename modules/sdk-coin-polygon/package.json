@@ -49,7 +49,6 @@
     "@ethereumjs/tx": "^3.3.0",
     "bignumber.js": "^9.0.0",
     "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.14",
     "superagent": "^3.8.3"
   },

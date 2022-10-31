@@ -33,7 +33,6 @@ import BigNumber from 'bignumber.js';
 import { KeyPair, TransactionBuilder } from './lib';
 import _ from 'lodash';
 import type * as EthTxLib from '@ethereumjs/tx';
-import { bufferToHex } from 'ethereumjs-util';
 
 export class Polygon extends Eth {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -426,12 +425,6 @@ export class Polygon extends Eth {
       gasLimit: gasLimit.toString(10),
     };
 
-    // calculate send data
-    const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
-    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
-    const sendData = Buffer.concat([methodSignature, encodedArgs]);
-
     const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.counter(backupKeyNonce);
     txBuilder.contract(params.walletContractAddress);
@@ -455,8 +448,7 @@ export class Polygon extends Eth {
       .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
-      .to(params.recoveryDestination)
-      .data(bufferToHex(sendData as Buffer));
+      .to(params.recoveryDestination);
 
     const tx = await txBuilder.build();
     if (isUnsignedSweep) {
