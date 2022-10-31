@@ -102,7 +102,7 @@ describe('test tss helper functions', function () {
 
         encryptedYShare.i.should.equal(i);
         encryptedYShare.j.should.equal(1);
-        encryptedYShare.publicShare.should.equal(userKeyShare.uShare.y + userKeyShare.uShare.chaincode);
+        encryptedYShare.publicShare.should.equal(userKeyShare.uShare.y + userKeyShare.yShares[3].v + userKeyShare.uShare.chaincode);
       }
     });
 
@@ -303,26 +303,27 @@ describe('test tss helper functions', function () {
     const validUserSignShare = {
       xShare: {
         i: 1,
-        y: 'c4f36234dbcb78ba7efee44771692a71f1d366c70b99656922168590a63c96c2',
-        u: '5d462225ce32327c1ad0c9b1c2263bdbdb154236fb4b3445f199f05b135d010b',
-        r: '7b8dfc6dea126b4ba41125725952dfd598d4341ade0a1e9ad5aa576689503b0d',
-        R: 'faad6f00bb10713aa62ad39c548d28a8641f12beb7ead7e445d4944aa66d0b06',
+        y: 'bb055c0cf5230140a97d229bee0a1edbbfde6806cfbda743230d11398b443bbf',
+        u: 'aef915654c84753e51c06960c0b7f6bd0c449880d964606c0182b1d42e347003',
+        r: 'aa5ec75127d9fa7bdedbb3c6801b61dda1dba912fda0bbc0f7c42e93d39e280a',
+        R: '87c111ea06d9654b2b2f2937cbe845424753329899e2bdab3623219534459dca',
       },
       rShares: {
         3: {
           i: 3,
           j: 1,
-          u: '5d462225ce32327c1ad0c9b1c2263bdbdb154236fb4b3445f199f05b135d010b',
-          r: '5f59dbbcf2a5a0acc52453938f5551719a566ffacac619d8d14816c00405140c',
-          R: 'faad6f00bb10713aa62ad39c548d28a8641f12beb7ead7e445d4944aa66d0b06',
+          u: '097d672cd5010aaec3c4b2b9e35418c4966bfe77a1cb680a629acc22a8f31b07',
+          v: 'c6a34e7a11bf1eeb8441d037cdd3e163ab4c60580102cc2fe8472ff435e5d7a9',
+          r: '859148eabb36952dfbc6adbff64021e1f96ad5c090f66db6a2d2983fbc643403',
+          R: '87c111ea06d9654b2b2f2937cbe845424753329899e2bdab3623219534459dca',
         },
       },
     };
     const validUserToBitgoGShare = {
       i: 1,
-      y: 'c4f36234dbcb78ba7efee44771692a71f1d366c70b99656922168590a63c96c2',
-      gamma: 'a1fb6fa4206d47202f215ab15c23597f4fa663e42ae74e01e38232f05d97ce0d',
-      R: 'f6546d5a44f9dd5b594f0de0c1bf80db45f15f432ccf498e651e6160a7710a83',
+      y: 'bb055c0cf5230140a97d229bee0a1edbbfde6806cfbda743230d11398b443bbf',
+      gamma: '1f77841296a362214dd0890e14de9c035e1ce3eced733cf742f7726e5384520d',
+      R: 'c339f3ff342bac6b95b7b3a93a5ddb93343aff6145cf496950e85fcc4de45496',
     };
 
 
@@ -397,7 +398,7 @@ describe('test tss helper functions', function () {
 
     describe('offerUserToBitgoRShare:', async function() {
       it('should succeed to send Signature Share', async function() {
-        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
+        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShares[3].v + validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, validUserSignShare, 'signerShare').should.be.fulfilled();
         nock.isDone().should.equal(true);

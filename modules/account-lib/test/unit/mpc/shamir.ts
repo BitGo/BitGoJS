@@ -14,7 +14,11 @@ let curves: tssCurves;
 async function shamirKeyshareTests(curves: tssCurves, salt?: bigint) {
   for (let index = 0; index < curves.length; index++) {
     const shamir = new ShamirSecret(curves[index]);
-    const shares = shamir.split(secret, 2, 3, undefined, salt);
+    const { shares, v } = shamir.split(secret, 2, 3, undefined, salt);
+
+    shamir.verify(shares[1], v, 1).should.equal(true);
+    shamir.verify(shares[2], v, 2).should.equal(true);
+    shamir.verify(shares[3], v, 3).should.equal(true);
 
     const combineSecret12 = shamir.combine({
       1: shares[1],

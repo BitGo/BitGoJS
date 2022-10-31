@@ -17,6 +17,7 @@ export interface NShare {
   n: string;
   u: string; // shamir share of secret at j'th index
   y: string;
+  v?: string;
   chaincode: string;
 }
 

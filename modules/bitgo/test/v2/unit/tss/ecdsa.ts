@@ -90,7 +90,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey);
         const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, senderPublicArmor: userGpgKeypair.publicKey, recipientPrivateArmor: bitgoGpgKeypair.privateKey });
         decryptedNShare.u.should.equal(userKeyShare.nShares[i].u);
-        const publicKey = userKeyShare.pShare.y + userKeyShare.pShare.chaincode;
+        const publicKey = userKeyShare.pShare.y + userKeyShare.nShares[3].v + userKeyShare.pShare.chaincode;
         encryptedNShare.i.should.equal(i);
         encryptedNShare.j.should.equal(1);
         encryptedNShare.publicShare.should.equal(publicKey);
