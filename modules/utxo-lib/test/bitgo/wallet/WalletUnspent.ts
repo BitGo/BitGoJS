@@ -68,66 +68,6 @@ describe('WalletUnspent', function () {
     assert.strictEqual(isWalletUnspent({ ...unspent, chain: 0, index: 0 } as Unspent), true);
   });
 
-  describe('unspentSum', function () {
-    const unspents = [
-      mockWalletUnspent(network, 123, {
-        keys: walletKeys,
-        vout: 0,
-      }),
-      mockWalletUnspent(network, 98765, {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    const bigUnspents = [
-      mockWalletUnspent(network, Number.MAX_SAFE_INTEGER, {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    const unspentsBig = [
-      mockWalletUnspent(network, BigInt(123), {
-        keys: walletKeys,
-        vout: 0,
-      }),
-      mockWalletUnspent(network, BigInt(98765), {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    it('sums number', function () {
-      assert.strictEqual(unspentSum(unspents, 'number'), 123 + 98765);
-    });
-    it('sums bigint', function () {
-      assert.strictEqual(unspentSum(unspentsBig, 'bigint'), BigInt(123 + 98765));
-    });
-    it('sums zero', function () {
-      assert.strictEqual(unspentSum([], 'number'), 0);
-      assert.strictEqual(unspentSum([], 'number'), 0);
-    });
-    it('throws on mixing number and bigint', function () {
-      assert.throws(() => {
-        unspentSum((unspentsBig as unknown as Unspent<number>[]).concat(unspents), 'number');
-      });
-      assert.throws(() => {
-        unspentSum((unspents as unknown as Unspent<bigint>[]).concat(unspentsBig), 'bigint');
-      });
-    });
-    it('throws on unsafe integer number', function () {
-      assert.throws(() => {
-        unspentSum(bigUnspents.concat(unspents), 'number');
-      });
-    });
-    it('throws on mismatch between unspent and amountType', function () {
-      assert.throws(() => {
-        unspentSum(unspents, 'bigint');
-      });
-      assert.throws(() => {
-        unspentSum(unspentsBig, 'number');
-      });
-    });
-  });
-
   function constructAndSignTransactionUsingPsbt(
     unspents: WalletUnspent<bigint>[],
     signer: KeyName,
