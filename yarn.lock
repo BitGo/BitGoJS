@@ -5974,10 +5974,10 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.2":
-  version "7.0.0-rc.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.2.tgz#b11b2252ef3ba01b895fd0943f991404093f110e"
-  integrity sha512-xpsTIfPNSbbCCrax5XNBHlpEjoFyS/r89n/rn3JQSBO/P5FVa6gpmlACFLR0EUFgUSIZYesDIeTgqRZEtHWjqA==
+"bitcoinjs-lib@npm:@bitgo/bitcoinjs-lib@7.0.0-rc.3":
+  version "7.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/@bitgo/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0-rc.3.tgz#4cd02f770df7f92693a6d259b8aed661572d41ae"
+  integrity sha512-IjlaIAuVehVF8azp28n2Gk+xKZ/MdH4t8qOvH2flTSDuYDLcZNHGHXmwyHbOfZwfP5R1MKVrGd+dscm1jqhTkQ==
   dependencies:
     bech32 "^2.0.0"
     bip174 "npm:@bitgo/bip174@3.0.0"
