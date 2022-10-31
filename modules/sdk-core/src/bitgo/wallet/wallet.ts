@@ -2527,7 +2527,6 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
             feeOptions,
-            isTss: params.isTss,
           },
           apiVersion,
           params.preview
@@ -2568,7 +2567,6 @@ export class Wallet implements IWallet {
             comment: params.comment,
             lowFeeTxid: params.lowFeeTxid,
             feeOptions,
-            isTss: params.isTss,
           },
           apiVersion,
           params.preview
@@ -2581,7 +2579,6 @@ export class Wallet implements IWallet {
             intentType: 'fillNonce',
             comment: params.comment,
             nonce: params.nonce,
-            isTss: params.isTss,
             feeOptions,
           },
           apiVersion,
