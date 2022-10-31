@@ -8,7 +8,7 @@ import * as should from 'should';
 import { Polygon, Tpolygon, TransactionBuilder, TransferBuilder } from '../../src';
 import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
-import { OfflineVaultTxInfo } from '@bitgo/sdk-coin-eth';
+import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/sdk-coin-eth';
 nock.enableNetConnect();
 
 describe('Polygon', function () {
@@ -605,6 +605,10 @@ describe('Polygon', function () {
       should.exist(transaction);
       transaction.should.have.property('tx');
       transaction.should.have.property('id');
+      const decodedTx = optionalDeps.EthTx.Transaction.fromSerializedTx(optionalDeps.ethUtil.toBuffer(transaction.tx));
+      decodedTx.should.have.property('gasPrice');
+      decodedTx.should.have.property('nonce');
+      decodedTx.should.have.property('to');
     });
 
     it('should be able to second sign', async function () {
