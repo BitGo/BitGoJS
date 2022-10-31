@@ -34,6 +34,10 @@ coins.forEach((coin, coinName) => {
       });
     }
 
+    it('expect base unit', function () {
+      coin.baseUnit.should.be.not.empty();
+    });
+
     if (coin.family === CoinFamily.XTZ) {
       it('does not support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);

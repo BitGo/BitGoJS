@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { UtxoNetwork } from './networks';
 
 export interface UtxoConstructorOptions {
@@ -7,6 +7,7 @@ export interface UtxoConstructorOptions {
   network: UtxoNetwork;
   features: CoinFeature[];
   asset: UnderlyingAsset;
+  baseUnit: BaseUnit;
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
@@ -61,8 +62,9 @@ export function utxo(
   fullName: string,
   network: UtxoNetwork,
   asset: UnderlyingAsset,
+  baseUnit: BaseUnit,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   /** All UTXOs BitGo supports are SECP256K1 **/
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -77,6 +79,7 @@ export function utxo(
       features,
       asset,
       primaryKeyCurve,
+      baseUnit,
     })
   );
 }

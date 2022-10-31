@@ -917,12 +917,42 @@ export enum KeyCurve {
   BLS = 'bls',
 }
 
+/**
+ * This enum contains the base units for the coins that BitGo supports
+ */
+export enum BaseUnit {
+  ETH = 'wei',
+  BTC = 'satoshi',
+  BSC = 'jager',
+  XLM = 'stroop',
+  TRX = 'sun',
+  HBAR = 'tinybar',
+  ALGO = 'microAlgo',
+  EOS = 'eos', // eos has no base unit. smallest amount in eos is 4 decimals
+  SOL = 'lamport',
+  ADA = 'lovelace',
+  USD = 'USD',
+  LTC = 'microlitecoins',
+  DASH = 'duff',
+  ZEC = 'zatoshi',
+  CSPR = 'mote',
+  DOT = 'planck',
+  XRP = 'drop',
+  XTZ = 'micro xtz',
+  STX = 'micro-STX',
+  SUI = 'MIST',
+  NEAR = 'yocto',
+  OFC = 'ofcCoin',
+  FIAT = 'fiatCoin',
+}
+
 export interface BaseCoinConstructorOptions {
   fullName: string; // full, human readable name of this coin. Eg, "Bitcoin Cash" for bch
   name: string; // unique identifier for this coin, usually the lowercase ticker or symbol. Eg, "btc" for bitcoin
   alias?: string; // alternative name usually used during name migrations
   prefix?: string;
   suffix?: string;
+  baseUnit: string; // the base unit for each coin. e.g. satoshi for BTC
   kind: CoinKind;
   isToken: boolean;
   features: CoinFeature[];
@@ -940,6 +970,7 @@ export abstract class BaseCoin {
   public readonly name: string;
   public readonly prefix?: string;
   public readonly suffix?: string;
+  public readonly baseUnit: string;
   /*
     Property to help during migration of token names.
     Helps to find a coin/token with a different name than the current one
@@ -1026,6 +1057,7 @@ export abstract class BaseCoin {
     this.alias = options.alias;
     this.prefix = options.prefix;
     this.suffix = options.suffix;
+    this.baseUnit = options.baseUnit;
     this.kind = options.kind;
     this.family = options.network.family;
     this.isToken = options.isToken;
