@@ -18,7 +18,7 @@ For most users, we recommend running BitGo Express as a docker container, since 
 
 To try it out, run this command:
 ```bash
-$ docker run -it -p 3080:3080 bitgosdk/express:latest
+$ docker run -it -p 3080:3080 bitgo/express:latest
 ```
 
 You should see this output from the container:
@@ -36,7 +36,7 @@ $ curl localhost:3080/api/v2/ping
 
 You can also give command line arguments to BitGo Express at the end of the docker run command:
 ```bash
-$ docker run -it -p 4000:4000 bitgosdk/express:latest --port 4000 
+$ docker run -it -p 4000:4000 bitgo/express:latest --port 4000 
 ```
 
 BitGo Express will start up on the specified port, 4000:
@@ -65,7 +65,7 @@ This will output a key file ```cert.key``` and certificate file ```cert.crt```
 
 Finally you can run your docker container like this (note, replace ```/path/to``` with the full path to your ```certs``` folder):
 ```bash
-$ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgosdk/express:latest -p 4000 -k /private/cert.key -c /private/cert.crt -e prod
+$ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgo/express:latest -p 4000 -k /private/cert.key -c /private/cert.crt -e prod
 ```
 
 BitGo Express should start on the specified port, 4000:
@@ -160,7 +160,7 @@ BitGo Express can also make requests to BitGo via a proxy. This can be done by s
 For example, to instruct BitGo Express to use a SOCKS proxy which is listening at 192.0.2.1 on port 12000, you should start BitGo Express with the following command:
 
 ```shell
-docker run -e BITGO_USE_PROXY="socks://192.0.2.1:12000" -p 3080:3080 bitgosdk/express:latest
+docker run -e BITGO_USE_PROXY="socks://192.0.2.1:12000" -p 3080:3080 bitgo/express:latest
 ```
 
 BitGo Express currently supports the following proxy protocols:

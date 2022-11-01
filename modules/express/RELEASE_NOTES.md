@@ -250,12 +250,12 @@ There are no breaking changes in this version, and the major version is being bu
 
 As an example, we'll set the `--debug` command line option. Before version 7 you would need to start it like this:
 ```bash
-$ docker run -it bitgosdk/express:6.0.0 /var/bitgo-express/bin/bitgo-express --debug
+$ docker run -it bitgo/express:6.0.0 /var/bitgo-express/bin/bitgo-express --debug
 ```
 
 In version 7 and later, that should be changed to
 ```
-$ docker run -it bitgosdk/express:7.0.0 --debug
+$ docker run -it bitgo/express:7.0.0 --debug
 ```
 
 ### New Features
@@ -287,6 +287,6 @@ $ docker run -it bitgosdk/express:7.0.0 --debug
 
 BitGo Express has been separated from the core `bitgo` Javascript library, and is now its own module in the BitGoJS monorepo. It's been split from the core Javascript library because it's an application which should be distributed differently than a library. By packaging and distributing separately, we have much better control over the tree of dependencies which BitGo Express needs to operate.
 
-The recommended install instructions are now to install via the official bitgo-express Docker image `bitgosdk/express:latest`. If you aren't able to run bitgo-express via Docker, you can also install and run `bitgo-express` from the source code.
+The recommended install instructions are now to install via the official bitgo-express Docker image `bitgo/express:latest`. If you aren't able to run bitgo-express via Docker, you can also install and run `bitgo-express` from the source code.
 
 See the [`bitgo-express` README](https://github.com/BitGo/BitGoJS/tree/master/modules/express#running-bitgo-express) for more information on how to install and run BitGo Express.
