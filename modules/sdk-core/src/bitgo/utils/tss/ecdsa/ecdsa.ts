@@ -8,7 +8,14 @@ import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { DecryptableNShare, KeyShare } from './types';
-import { BackupKeyShare, BitgoHeldBackupKeyShare, RequestType, TSSParams, TxRequest } from '../baseTypes';
+import {
+  BackupKeyShare,
+  BitgoHeldBackupKeyShare,
+  RequestType,
+  TSSParams,
+  TxRequest,
+  TSSParamsForMessage,
+} from '../baseTypes';
 import { getTxRequest } from '../../../tss/common';
 import { AShare, DShare, EncryptedNShare, SendShareType } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
@@ -498,7 +505,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param { string} params.reqId - request id
    * @returns {Promise<ECDSASigningRequestBaseResult>}
    */
-  private async signRequestBase(params: TSSParams, requestType: RequestType): Promise<TxRequest> {
+  private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
@@ -583,8 +590,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     if (requestType === RequestType.tx) {
       signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
-      assert(txRequestResolved.unsignedMessages?.[0]);
-      signablePayload = Buffer.from(txRequestResolved.unsignedMessages[0].message, 'hex');
+      const finalMessage = (params as TSSParamsForMessage).finalMessage;
+      assert(finalMessage);
+      signablePayload = Buffer.from(finalMessage, 'hex');
     }
 
     const userSShare = await ECDSAMethods.createUserSignatureShare(
@@ -622,7 +630,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param {string} params.reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequestForMessage(params: TSSParams): Promise<TxRequest> {
+  async signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
+    if (!params.finalMessage) {
+      throw new Error('finalMessage required to sign message');
+    }
     return this.signRequestBase(params, RequestType.message);
   }
 }

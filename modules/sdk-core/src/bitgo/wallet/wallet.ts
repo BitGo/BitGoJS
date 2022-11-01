@@ -1590,17 +1590,17 @@ export class Wallet implements IWallet {
     if (!this.baseCoin.supportsMessageSigning()) {
       throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
     }
-    if (!params.messagePrebuild) {
-      throw new Error('messagePrebuild required to sign message');
+    if (!params.message) {
+      throw new Error('message required to sign message');
     }
-    if (_.isFunction((this.baseCoin as any).prepareMessage)) {
-      assert(params.messagePrebuild);
-      params.messagePrebuild.message = (this.baseCoin as any).prepareMessage(params.messagePrebuild.message);
-    }
-    const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
     if (this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
     }
+    if (_.isFunction((this.baseCoin as any).encodeMessage)) {
+      assert(params.message);
+      params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
+    }
+    const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
     return this.signMessageTss(presign);
   }
 
@@ -2704,8 +2704,8 @@ export class Wallet implements IWallet {
 
     try {
       let txRequest;
-      assert(params.messagePrebuild);
-      if (!params.messagePrebuild.txRequestId) {
+      assert(params.message);
+      if (!params.message.txRequestId) {
         const intentOption: IntentOptionsBase = {
           custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
@@ -2713,15 +2713,24 @@ export class Wallet implements IWallet {
           isTss: true,
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
-        params.messagePrebuild.txRequestId = txRequest.txRequestId;
+        params.message.txRequestId = txRequest.txRequestId;
       } else {
-        assert(params.messagePrebuild.txRequestId);
-        txRequest = await getTxRequest(this.bitgo, this.id(), params.messagePrebuild.txRequestId);
+        assert(params.message.txRequestId);
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId);
       }
+      let finalMessage;
+      if (params.message.messageEncoded) {
+        finalMessage = params.message.messageEncoded;
+      } else {
+        // For the case that a TSS coin/token does not have any message encoding needed.
+        finalMessage = params.message.messageRaw;
+      }
+
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
         txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
+        finalMessage,
       });
       return {
         txRequestId: signedMessageRequest.txRequestId,

@@ -251,8 +251,9 @@ export interface TransactionPrebuild extends BaseSignable {
   txInfo?: unknown;
 }
 
-export interface MessagePrebuild extends BaseSignable {
-  message: string;
+export interface Message extends BaseSignable {
+  messageRaw: string;
+  messageEncoded?: string;
 }
 
 export interface AddressCoinSpecific {
@@ -347,7 +348,7 @@ export interface TokenEnablementConfig {
 }
 
 export interface MessagePrep {
-  prepareMessage(message: string): string;
+  encodeMessage(message: string): string;
 }
 
 export type MPCAlgorithm = 'ecdsa' | 'eddsa';
