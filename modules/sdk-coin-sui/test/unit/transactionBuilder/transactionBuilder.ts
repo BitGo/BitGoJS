@@ -29,6 +29,29 @@ describe('Sui Transaction Builder', async () => {
     reserialized.toBroadcastFormat().should.equal(rawTx);
   });
 
+  it('should build and sign a transfer tx', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.sender.address);
+    txBuilder.payTx(testData.payTx);
+    txBuilder.gasBudget(testData.GAS_BUDGET);
+    txBuilder.gasPayment(testData.gasPayment);
+    const tx = await txBuilder.build();
+    const rawTx = tx.toBroadcastFormat();
+
+    const txBuilder2 = await factory.from(rawTx);
+    await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+    const signedTx = await txBuilder2.build();
+    should.equal(signedTx.type, TransactionType.Send);
+
+    const rawSignedTx = signedTx.toBroadcastFormat();
+    should.equal(rawSignedTx, testData.TRANSFER_TX);
+    const reserializedTxBuilder = factory.from(rawSignedTx);
+    reserializedTxBuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+    const reserialized = await reserializedTxBuilder.build();
+    reserialized.should.be.deepEqual(signedTx);
+    reserialized.toBroadcastFormat().should.equal(rawSignedTx);
+  });
+
   it('should fail to build if missing sender', async function () {
     for (const txBuilder of builders) {
       txBuilder.payTx({
