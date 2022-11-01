@@ -1,4 +1,3 @@
-import * as bs58 from 'bs58';
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
 import { bigIntToBufferBE } from '../../../../account-lib/mpc/util';
 import * as openpgp from 'openpgp';
@@ -63,7 +62,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error(`Invalid commonKeychain length, expected 130, got ${commonKeychain.length}`);
     }
     const commonPubHexStr = commonKeychain.slice(0, 66);
-    return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
+    return commonPubHexStr;
   }
 
   async finalizeBitgoHeldBackupKeyShare(
