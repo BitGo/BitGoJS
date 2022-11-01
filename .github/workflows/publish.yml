@@ -1,6 +1,4 @@
-# @see beta-publish.yml 
-# The same workflow as the above except some input args. Replicated for separation of concerns
-name: Alpha Release for Development
+name: Publish @bitgo-beta
 on:
   workflow_dispatch:
   # push:
@@ -12,9 +10,9 @@ concurrency:
 
 jobs:
   publish:
-    name: Publish Alpha Release
+    name: Publish Release
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -27,31 +25,41 @@ jobs:
       - name: Install BitGoJS
         run: yarn install --with-frozen-lockfile
 
+      - name: Set Environment Variable for Alpha
+        if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
+        run: |
+          echo "preid=alpha" >> $GITHUB_ENV
+      
+      - name: Set Environment Variable for Beta
+        if: github.ref == 'refs/heads/master' # only publish changes if on master branches
+        run: |
+          echo "preid=beta" >> $GITHUB_ENV
+
       - name: Configure Git & NPM
         run: |
           git config --global user.name 'Git bot'
           git config --global user.email 'bot@noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git checkout -b alpha-$(git rev-parse --short HEAD)
+          git checkout -b ${{ env.preid }}-$(git rev-parse --short HEAD)
           echo "email=${{ secrets.BETA_EMAIL }}" > .npmrc
           echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
           echo "//registry.npmjs.org/:_authToken=${{ secrets.BETA_TOKEN }}" >> .npmrc
           echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
           
-      - name: Prepare Alpha
+      - name: Prepare Release
         run: |
           rm -rfd ./modules/web-demo
           rm -rfd ./modules/express
-          npx ts-node ./scripts/prepare-release.ts alpha
+          npx ts-node ./scripts/prepare-release.ts ${{ env.preid }}
       
-      - name: Rebuild Alpha
+      - name: Rebuild packages
         run: yarn
 
       - name: Commit Local Changes
-        run: git commit -am "Auto updated alpha branch" --no-verify || echo "No changes to commit"
+        run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
 
       - name: Lerna Publish 
-        run: yarn lerna publish from-package --preid alpha --dist-tag alpha --force-publish --yes --loglevel silly
+        run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
 
       - name: Verify Publish
-        run: npx ts-node ./scripts/verify-release.ts alpha
+        run: npx ts-node ./scripts/verify-release.ts ${{ env.preid }}
