@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 import Curve from './curves';
 import { bigIntFromBufferLE, bigIntToBufferLE, clamp } from './util';
+import { SplitSecret } from './types';
 
 export default class Shamir {
   curve: Curve;
@@ -18,16 +19,11 @@ export default class Shamir {
    * @param numShares total number of shares to split to split secret into
    * @param indices optional indices which can be used while generating the shares
    * @param salt optional salt which could be used while generating the shares
-   * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares
-   * representing that share's free term.
+   * @returns Dictionary containing `shares`, a dictionary where each key is an int
+   * in the range 1<=x<=numShares representing that share's free term, and `v`, an
+   * array of proofs to be shared with all participants.
    */
-  split(
-    secret: bigint,
-    threshold: number,
-    numShares: number,
-    indices?: Array<number>,
-    salt = BigInt(0)
-  ): Record<number, bigint> {
+  split(secret: bigint, threshold: number, numShares: number, indices?: Array<number>, salt = BigInt(0)): SplitSecret {
     let bigIndices: Array<bigint>;
     if (indices) {
       bigIndices = indices.map((i) => {
@@ -51,11 +47,13 @@ export default class Shamir {
     }
 
     const coefs: bigint[] = [];
+    const v: Array<bigint> = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
       const coeff = clamp(
         bigIntFromBufferLE(crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest())
       );
       coefs.push(coeff);
+      v.unshift(this.curve.basePointMult(coeff));
     }
     coefs.push(secret);
 
@@ -68,7 +66,37 @@ export default class Shamir {
       }
       shares[parseInt(x.toString(), 10)] = partial;
     }
-    return shares;
+    return { shares, v };
+  }
+
+  /**
+   * Verify a VSS share.
+   *
+   * @param u Secret share received from other party.
+   * @param v Verification values received from other party.
+   * @param index Verifier's index.
+   * @returns True on success; otherwise throws Error.
+   */
+  verify(u: bigint, v: Array<bigint>, index: number): boolean {
+    if (v.length < 2) {
+      throw new Error('Threshold cannot be less than two');
+    }
+    if (index < 1) {
+      throw new Error('Invalid value supplied for index');
+    }
+    const i = BigInt(index);
+    let x = v[0];
+    let t = BigInt(1);
+    for (const vsj of v.slice(1)) {
+      t = this.curve.scalarMult(t, i);
+      const vjt = this.curve.pointMultiply(vsj, t);
+      x = this.curve.pointAdd(x, vjt);
+    }
+    const sigmaG = this.curve.basePointMult(u);
+    if (x !== sigmaG) {
+      throw new Error('Could not verify share');
+    }
+    return true;
   }
 
   /**

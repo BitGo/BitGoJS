@@ -58,6 +58,7 @@ export async function createCombinedKey(params: {
       i: encryptedYShare.yShare.i,
       j: encryptedYShare.yShare.j,
       y: encryptedYShare.yShare.publicShare.slice(0, 64),
+      v: encryptedYShare.yShare.publicShare.slice(64, 128),
       u: privateShare.slice(0, 64),
       chaincode: privateShare.slice(64),
     };
@@ -146,12 +147,23 @@ export async function createUserToBitGoGShare(
     throw new Error('Invalid YShare, is not backup key');
   }
 
+  let v, r, R;
+  if (bitgoToUserRShare.share.length > 128) {
+    v = bitgoToUserRShare.share.substring(0, 64);
+    r = bitgoToUserRShare.share.substring(64, 128);
+    R = bitgoToUserRShare.share.substring(128, 192);
+  } else {
+    r = bitgoToUserRShare.share.substring(0, 64);
+    R = bitgoToUserRShare.share.substring(64, 128);
+  }
+
   const RShare: RShare = {
     i: ShareKeyPosition.USER,
     j: ShareKeyPosition.BITGO,
     u: bitgoToUserYShare.u,
-    r: bitgoToUserRShare.share.substring(0, 64),
-    R: bitgoToUserRShare.share.substring(64, 128),
+    v,
+    r,
+    R,
   };
 
   const MPC = await Eddsa.initialize();
@@ -185,7 +197,7 @@ export async function offerUserToBitgoRShare(
   const signatureShare: SignatureShareRecord = {
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,
-    share: rShare.r + rShare.R,
+    share: rShare.v + rShare.r + rShare.R,
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
@@ -284,6 +296,7 @@ export async function encryptYShare(params: {
 
   const publicShare = Buffer.concat([
     Buffer.from(keyShare.uShare.y, 'hex'),
+    Buffer.from(yShare.v!, 'hex'),
     Buffer.from(keyShare.uShare.chaincode, 'hex'),
   ]).toString('hex');
 

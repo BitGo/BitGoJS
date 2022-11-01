@@ -85,7 +85,7 @@ export default class Eddsa {
     const h = createHash('sha512').update(actualSeed).digest();
     const u = clamp(bigIntFromBufferLE(h.slice(0, 32)));
     const y = Eddsa.curve.basePointMult(u);
-    const split_u = Eddsa.shamir.split(u, threshold, numShares);
+    const { shares: split_u, v } = Eddsa.shamir.split(u, threshold, numShares);
 
     const P_i: UShare = {
       i: index,
@@ -109,6 +109,7 @@ export default class Eddsa {
         i,
         j: P_i.i,
         y: bigIntToBufferLE(y, 32).toString('hex'),
+        v: bigIntToBufferLE(v[0], 32).toString('hex'),
         u: bigIntToBufferLE(split_u[ind], 32).toString('hex'),
         chaincode: chaincode.toString('hex'),
       };
@@ -123,6 +124,21 @@ export default class Eddsa {
     const y = yValues.reduce((partial, share) => Eddsa.curve.pointAdd(partial, share));
     const chaincodes = [uShare, ...yShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
     const chaincode = chaincodes.reduce((acc, chaincode) => (acc + chaincode) % base);
+
+    // Verify shares.
+    for (const share of yShares) {
+      if ('v' in share) {
+        try {
+          Eddsa.shamir.verify(
+            bigIntFromBufferLE(Buffer.from(share.u, 'hex')),
+            [bigIntFromBufferLE(Buffer.from(share.y, 'hex')), bigIntFromBufferLE(Buffer.from(share.v!, 'hex'))],
+            uShare.i
+          );
+        } catch (err) {
+          throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
+        }
+      }
+    }
 
     const P_i: PShare = {
       i: uShare.i,
@@ -203,7 +219,7 @@ export default class Eddsa {
     contribChaincode = (contribChaincode + chaincodeDelta) % base;
 
     // Calculate new u values.
-    const split_u = Eddsa.shamir.split(subkey.sk, uShare.t, uShare.n);
+    const { shares: split_u, v } = Eddsa.shamir.split(subkey.sk, uShare.t, uShare.n);
 
     const P_i: PShare = {
       i: uShare.i,
@@ -226,6 +242,7 @@ export default class Eddsa {
         i: P_j.j,
         j: P_i.i,
         y: bigIntToBufferLE(contribY, 32).toString('hex'),
+        v: bigIntToBufferLE(v[0], 32).toString('hex'),
         u: bigIntToBufferLE(split_u[P_j.j], 32).toString('hex'),
         chaincode: bigIntToBufferBE(contribChaincode, 32).toString('hex'),
       };
@@ -239,7 +256,11 @@ export default class Eddsa {
       throw new Error('Seed must have length 64');
     }
     const indices = [pShare, ...jShares].map(({ i }) => i);
-    const split_u = Eddsa.shamir.split(bigIntFromBufferLE(Buffer.from(pShare.u, 'hex')), pShare.t, pShare.n);
+    const { shares: split_u, v } = Eddsa.shamir.split(
+      bigIntFromBufferLE(Buffer.from(pShare.u, 'hex')),
+      pShare.t,
+      pShare.n
+    );
 
     // Generate nonce contribution.
     const prefix = Buffer.from(pShare.prefix, 'hex');
@@ -251,7 +272,7 @@ export default class Eddsa {
 
     const r = Eddsa.curve.scalarReduce(bigIntFromBufferLE(digest));
     const R = Eddsa.curve.basePointMult(r);
-    const split_r = Eddsa.shamir.split(r, indices.length, indices.length, indices);
+    const { shares: split_r } = Eddsa.shamir.split(r, indices.length, indices.length, indices);
 
     const P_i: XShare = {
       i: pShare.i,
@@ -272,6 +293,7 @@ export default class Eddsa {
         i: S_j.i,
         j: pShare.i,
         u: bigIntToBufferLE(split_u[S_j.i], 32).toString('hex'),
+        v: bigIntToBufferLE(v[0], 32).toString('hex'),
         r: bigIntToBufferLE(split_r[S_j.i], 32).toString('hex'),
         R: bigIntToBufferLE(R, 32).toString('hex'),
       };

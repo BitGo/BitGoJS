@@ -68,6 +68,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       i: 1,
       j: 3,
       y: bitGoToUserShare.publicShare.slice(0, 64),
+      v: bitGoToUserShare.publicShare.slice(64, 128),
       u: bitGoToUserPrivateShare.slice(0, 64),
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
@@ -135,6 +136,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       i: 2,
       j: 3,
       y: bitGoToBackupShare.publicShare.slice(0, 64),
+      v: bitGoToBackupShare.publicShare.slice(64, 128),
       u: bitGoToBackupPrivateShare.slice(0, 64),
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
@@ -183,6 +185,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),
+      Buffer.from(userKeyShare.yShares[3].v!, 'hex'),
       Buffer.from(userKeyShare.uShare.chaincode, 'hex'),
     ]).toString('hex');
     const userToBitgoPrivateShare = Buffer.concat([
@@ -197,6 +200,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const backupToBitgoPublicShare = Buffer.concat([
       Buffer.from(backupKeyShare.uShare.y, 'hex'),
+      Buffer.from(backupKeyShare.yShares[3].v!, 'hex'),
       Buffer.from(backupKeyShare.uShare.chaincode, 'hex'),
     ]).toString('hex');
     const backupToBitgoPrivateShare = Buffer.concat([

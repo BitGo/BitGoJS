@@ -537,10 +537,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
 
-    let u = bigIntToBufferBE(uShares[3], 32).toString('hex');
-    while (u.length < 64) {
-      u = '0' + u;
-    }
+    const u = bigIntToBufferBE(uShares.shares[3], 32).toString('hex');
 
     let chaincode = userSigningMaterial.bitgoNShare.chaincode;
     while (chaincode.length < 64) {
