@@ -2323,6 +2323,31 @@ describe('V2 Wallet:', function () {
         intent.recipients![0].tokenData!.should.have.property('decimalPlaces', recipients[0].tokenData.decimalPlaces);
       });
 
+      it('should populate intent with calldata', async function () {
+        const recipients = [
+          {
+            address: '0x101c3928946b2e1d99759e8e5d34b5e94c1a8e2f',
+            amount: '0',
+            data: '0x000011112222',
+          },
+        ];
+
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        // @ts-expect-error only pass in params being tested
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          intentType: 'payment',
+          recipients,
+          feeOptions,
+        });
+
+        intent.should.have.property('feeOptions');
+        intent.feeOptions!.should.have.property('maxFeePerGas', 2000000000);
+        intent.feeOptions!.should.have.property('maxPriorityFeePerGas', 1000000000);
+        intent.should.have.property('recipients');
+        intent.recipients!.should.have.property('length', 1);
+        intent.recipients![0].data!.should.equal('0x000011112222');
+      });
+
       it('should not populate intent with tokenData if certain params are undefined', async function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
         const recipients = [

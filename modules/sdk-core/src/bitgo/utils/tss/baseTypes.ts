@@ -71,6 +71,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   recipients?: {
     address?: string;
     amount: string | number;
+    data?: string;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];
@@ -90,6 +91,7 @@ export interface IntentRecipient {
     value: string | number;
     symbol: string;
   };
+  data?: string;
   tokenData?: TokenTransferRecipientParams;
 }
 export interface PopulatedIntentBase {
