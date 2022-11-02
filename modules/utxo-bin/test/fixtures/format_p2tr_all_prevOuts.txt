@@ -24,7 +24,7 @@ transaction: d2e10356d9400fbb23fe662e43e8b10cd8381da609c4f3d96d53f92bb6735e57
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
     ├── value: 1.99999000
-    ├── type: taproot
-    └─┬ scriptPubKey: 34 bytes
+    └─┬ scriptPubKey: [34byte]
+      ├── type: taproot
       ├── hex: 5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8
       └── asm: OP_1 c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8

@@ -7,7 +7,7 @@ const stdin: any = process.stdin;
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { Parser, ParserArgs } from './parse';
+import { ParserNode } from './Parser';
 import { formatTree } from './format';
 import {
   fetchOutputSpends,
@@ -16,29 +16,75 @@ import {
   fetchTransactionHex,
   fetchTransactionStatus,
 } from './fetch';
+import { TxParser, TxParserArgs } from './TxParser';
+import { AddressParser } from './AddressParser';
 
-type Args = {
+type OutputFormat = 'tree' | 'json';
+
+type ArgsParseTransaction = {
   network: string;
   stdin: boolean;
   path?: string;
   txid?: string;
   all: boolean;
-  format: 'tree' | 'json';
+  format: OutputFormat;
   fetchAll: boolean;
   fetchStatus: boolean;
   fetchInputs: boolean;
   fetchSpends: boolean;
-} & ParserArgs;
+} & TxParserArgs;
 
-export function getParser(argv: yargs.Arguments<Args>): Parser {
-  return new Parser(argv.all ? Parser.PARSE_ALL : argv);
+type ArgsParseAddress = {
+  network?: string;
+  all: boolean;
+  format: OutputFormat;
+  convert: boolean;
+  address: string;
+};
+
+function getNetworkForName(name: string) {
+  const network = utxolib.networks[name as utxolib.NetworkName];
+  if (!network) {
+    throw new Error(`invalid network ${network}`);
+  }
+  return network;
 }
 
-export const cmdParse = {
-  command: 'parse [path]',
+function getNetwork(argv: yargs.Arguments<{ network: string }>): utxolib.Network {
+  return getNetworkForName(argv.network);
+}
+
+function formatString(parsed: ParserNode, argv: yargs.Arguments<{ format: OutputFormat; all: boolean }>): string {
+  switch (argv.format) {
+    case 'json':
+      return JSON.stringify(parsed, null, 2);
+    case 'tree':
+      return formatTree(parsed, { hide: argv.all ? [] : undefined });
+  }
+  throw new Error(`invalid format ${argv.format}`);
+}
+
+function resolveNetwork<T extends { network?: string }>(args: T): T & { network?: utxolib.Network } {
+  if (args.network) {
+    return { ...args, network: getNetworkForName(args.network) };
+  }
+  return { ...args, network: undefined };
+}
+
+export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxParser {
+  return new TxParser(argv.all ? TxParser.PARSE_ALL : argv);
+}
+
+export function getAddressParser(argv: ArgsParseAddress): AddressParser {
+  return new AddressParser(resolveNetwork(argv));
+}
+
+export const cmdParseTx = {
+  command: 'parseTx [path]',
+  aliases: ['parse', 'tx'],
   describe: 'display transaction components in human-readable form',
 
-  builder(b: yargs.Argv<unknown>): yargs.Argv<Args> {
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
@@ -57,12 +103,8 @@ export const cmdParse = {
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
   },
 
-  async handler(argv: yargs.Arguments<Args>): Promise<void> {
-    const network = utxolib.networks[argv.network as utxolib.NetworkName];
-    if (!network) {
-      throw new Error(`invalid network ${network}`);
-    }
-
+  async handler(argv: yargs.Arguments<ArgsParseTransaction>): Promise<void> {
+    const network = getNetwork(argv);
     let data;
 
     if (argv.txid) {
@@ -100,19 +142,32 @@ export const cmdParse = {
       argv.fetchSpends = true;
     }
 
-    const parsed = getParser(argv).parse(tx, {
+    const parsed = getTxParser(argv).parse(tx, {
       status: argv.fetchStatus ? await fetchTransactionStatus(txid, network) : undefined,
       prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(tx) : undefined,
       prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(tx) : undefined,
       outputSpends: argv.fetchSpends ? await fetchOutputSpends(tx) : undefined,
     });
-    switch (argv.format) {
-      case 'json':
-        console.log(JSON.stringify(parsed, null, 2));
-        break;
-      case 'tree':
-        console.log(formatTree(parsed, { hide: argv.all ? [] : undefined }));
-        break;
-    }
+
+    console.log(formatString(parsed, argv));
   },
-};
+} as const;
+
+export const cmdParseAddress = {
+  command: 'parseAddress [address]',
+  aliases: ['address'],
+  describe: 'parse address',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseAddress> {
+    return b
+      .option('network', { alias: 'n', type: 'string' })
+      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('convert', { type: 'boolean', default: false })
+      .option('all', { type: 'boolean', default: false })
+      .positional('address', { type: 'string', demandOption: true });
+  },
+
+  handler(argv: yargs.Arguments<ArgsParseAddress>): void {
+    const parsed = getAddressParser(argv).parse(argv.address);
+    console.log(formatString(parsed, argv));
+  },
+} as const;

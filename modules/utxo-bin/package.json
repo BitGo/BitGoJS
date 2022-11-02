@@ -30,12 +30,14 @@
     "@bitgo/statics": "^10.0.0",
     "@bitgo/utxo-lib": "^4.0.0",
     "archy": "^1.0.0",
+    "bs58check": "^2.1.2",
     "chalk": "4",
     "yargs": "^17.3.1"
   },
   "devDependencies": {
     "@types/archy": "^0.0.32",
-    "@types/yargs": "^17.0.8"
+    "@types/yargs": "^17.0.8",
+    "bip32": "^3.1.0"
   },
   "lint-staged": {
     "*.{js,ts}": [

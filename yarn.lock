@@ -5926,7 +5926,7 @@ bip174@^2.0.1:
   resolved "https://registry.yarnpkg.com/@bitgo/bip174/-/bip174-3.0.0.tgz#8ce026064bb7d10f807217f5e237f386d6f593a0"
   integrity sha512-Qv98vy6l1WgZwrxKx7IPYY91/+Z3tpALVSDn+Ic9qCsxygCq9gYw5eL8q3kd7LYTFLy/HgcqhcMOa83Spbp4JA==
 
-bip32@^3.0.1:
+bip32@^3.0.1, bip32@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/bip32/-/bip32-3.1.0.tgz#ce90e020d0e6b41e891a0122ff053efabcce1ccc"
   integrity sha512-eoeajYEzJ4d6yyVtby8C+XkCeKItiC4Mx56a0M9VaqTMC73SWOm4xVZG7SaR8e/yp4eSyky2XcBpH3DApPdu7Q==
