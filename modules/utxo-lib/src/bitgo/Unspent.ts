@@ -1,7 +1,8 @@
 import { TxOutput } from 'bitcoinjs-lib';
 import { Network } from '..';
-import { toOutputScript } from '../address';
+import { fromOutputScript, toOutputScript } from '../address';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { UtxoTransaction } from './UtxoTransaction';
 
 /**
  * Public unspent data in BitGo-specific representation.
@@ -40,6 +41,34 @@ export function toOutput<TNumber extends number | bigint>(u: Unspent<TNumber>, n
   return {
     script: toOutputScript(u.address, network),
     value: u.value,
+  };
+}
+
+/**
+ * @return Unspent from TxOutput
+ */
+export function fromOutput<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
+  vout: number
+): Unspent<TNumber> {
+  const o = tx.outs[vout];
+  if (!o) {
+    throw new Error(`invalid vout`);
+  }
+  return {
+    id: formatOutputId({ txid: tx.getId(), vout }),
+    address: fromOutputScript(o.script, tx.network),
+    value: o.value,
+  };
+}
+
+export function fromOutputWithPrevTx<TNumber extends number | bigint>(
+  tx: UtxoTransaction<TNumber>,
+  vout: number
+): UnspentWithPrevTx<TNumber> {
+  return {
+    ...fromOutput(tx, vout),
+    prevTx: tx.toBuffer(),
   };
 }
 
