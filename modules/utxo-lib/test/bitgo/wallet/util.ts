@@ -1,20 +1,29 @@
-import { Network, Transaction } from '../../../src';
+import { Network } from '../../../src';
 import {
   formatOutputId,
   WalletUnspent,
   NonWitnessWalletUnspent,
   ChainCode,
   createPsbtForNetwork,
+  Unspent,
+  UnspentWithPrevTx,
+  UtxoTransaction,
+  fromOutputWithPrevTx,
 } from '../../../src/bitgo';
 
-import { createOutputScript2of3, scriptTypeForChain } from '../../../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  createOutputScriptP2shP2pk,
+  scriptTypeForChain,
+} from '../../../src/bitgo/outputScripts';
 import { RootWalletKeys } from '../../../src/bitgo/wallet/WalletKeys';
 import { fromOutputScript } from '../../../src/address';
 
-import { getDefaultWalletKeys } from '../../testutil';
+import { getDefaultWalletKeys, getKey } from '../../testutil';
 import { mockTransactionId } from '../../transaction_util';
 import * as utxolib from '../../../src';
 import * as noble from '@noble/secp256k1';
+import { BIP32Interface } from 'bip32';
 
 export function mockOutputId(vout: number): string {
   return formatOutputId({
@@ -23,7 +32,12 @@ export function mockOutputId(vout: number): string {
   });
 }
 
-export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, network: Network): Transaction<bigint> {
+export function mockPrevTx(
+  vout: number,
+  outputScript: Buffer,
+  value: bigint,
+  network: Network
+): UtxoTransaction<bigint> {
   const psbtFromNetwork = createPsbtForNetwork({ network });
 
   const privKey = noble.utils.randomPrivateKey();
@@ -51,8 +65,27 @@ export function mockPrevTx(vout: number, outputScript: Buffer, value: bigint, ne
   });
   psbtFromNetwork.validateSignaturesOfAllInputs();
   psbtFromNetwork.finalizeAllInputs();
-  const tx = psbtFromNetwork.extractTransaction();
-  return tx;
+  return psbtFromNetwork.extractTransaction() as UtxoTransaction<bigint>;
+}
+
+export const replayProtectionKeyPair = getKey('replay-protection');
+const replayProtectionScriptPubKey = createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey).scriptPubKey;
+
+export function isReplayProtectionUnspent<TNumber extends bigint | number>(
+  u: Unspent<TNumber>,
+  network: Network
+): boolean {
+  return u.address === fromOutputScript(replayProtectionScriptPubKey, network);
+}
+
+export function mockReplayProtectionUnspent<TNumber extends number | bigint>(
+  network: Network,
+  value: TNumber,
+  { key = replayProtectionKeyPair, vout = 0 }: { key?: BIP32Interface; vout?: number } = {}
+): UnspentWithPrevTx<TNumber> {
+  const outputScript = createOutputScriptP2shP2pk(key.publicKey).scriptPubKey;
+  const prevTransaction = mockPrevTx(vout, outputScript, BigInt(value), network);
+  return { ...fromOutputWithPrevTx(prevTransaction, vout), value };
 }
 
 export function mockWalletUnspent<TNumber extends number | bigint>(
@@ -80,8 +113,11 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
       BigInt(value),
       network
     );
-    id = formatOutputId({ txid: prevTransaction.getId(), vout });
-    const prevTx = prevTransaction.toBuffer();
-    return { id, address, chain, index, value, prevTx };
+    return {
+      ...fromOutputWithPrevTx(prevTransaction, vout),
+      chain,
+      index,
+      value,
+    };
   }
 }
