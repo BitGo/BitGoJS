@@ -108,14 +108,19 @@ const replaceBitGoPackageScope = () => {
   );
 };
 
-const incrementVersions = async () => {
+/**
+ * increment the version based on the preid. default to `beta`
+ * 
+ * @param {String | undefined} preid
+ */
+const incrementVersions = async (preid: string = 'beta') => {
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     try {
       const modulePath = lernaModuleLocations[i];
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
       const tags = await getDistTags(json.name);
-      if (tags.beta) {
-        const next = inc(tags.beta, 'prerelease', undefined, 'beta');
+      if (tags[preid]) {
+        const next = inc(tags[preid], 'prerelease', undefined, preid);
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(
@@ -161,12 +166,12 @@ const getArgs = () => {
   console.log(`Preparing to re-target to ${TARGET_SCOPE}`);
 };
 
-const main = async () => {
+const main = async (preid?: string) => {
   getArgs();
   await getLernaModules();
   replacePackageScopes();
   replaceBitGoPackageScope();
-  await incrementVersions();
+  await incrementVersions(preid);
   if (filesChanged) {
     console.log(`Successfully re-targeted ${filesChanged} files.`);
     process.exit(0);
@@ -176,4 +181,4 @@ const main = async () => {
   }
 };
 
-main();
+main(process.argv.slice(2)[0]);
