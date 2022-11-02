@@ -128,7 +128,7 @@ export function addToTransactionBuilder<TNumber extends number | bigint>(
  * @return unspentSum - type matches amountType
  */
 export function unspentSum<TNumber extends number | bigint>(
-  unspents: Unspent<TNumber>[],
+  unspents: { value: TNumber }[],
   amountType: 'number' | 'bigint' = 'number'
 ): TNumber {
   if (amountType === 'bigint') {
