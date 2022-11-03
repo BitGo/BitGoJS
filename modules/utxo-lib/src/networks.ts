@@ -274,11 +274,13 @@ export function getNetworkList(): Network[] {
 
 /**
  * @param {Network} network
- * @returns {string} the name of the network. Returns undefined if network is not a value
- *                   of `networks`
+ * @returns {NetworkName} the name of the network. Returns undefined if network is not a value
+ *                        of `networks`
  */
-export function getNetworkName(network: Network): string | undefined {
-  return Object.keys(networks).find((n) => (networks as Record<string, Network>)[n] === network);
+export function getNetworkName(network: Network): NetworkName | undefined {
+  return Object.keys(networks).find((n) => (networks as Record<string, Network>)[n] === network) as
+    | NetworkName
+    | undefined;
 }
 
 /**
