@@ -88,6 +88,7 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
       case networks.bitcoincash:
       case networks.bitcoinsv:
       case networks.bitcoingold:
+      case networks.ecash:
         /*
           Bitcoin Cash supports a FORKID flag. When set, we hash using hashing algorithm
            that is used for segregated witness transactions (defined in BIP143).

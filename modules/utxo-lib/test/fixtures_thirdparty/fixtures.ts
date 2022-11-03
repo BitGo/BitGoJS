@@ -42,6 +42,11 @@ export function getFixtureInfo(network: Network): FixtureInfo {
         projectPath: 'dashpay/dash',
         tag: 'v0.17.0.3',
       };
+    case networks.ecash:
+      return {
+        projectPath: 'Bitcoin-ABC/bitcoin-abc',
+        tag: 'v0.26.4',
+      };
     case networks.dogecoin:
       return {
         projectPath: 'dogecoin/dogecoin',

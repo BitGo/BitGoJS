@@ -28,6 +28,8 @@ import { Doge, Tdoge } from '@bitgo/sdk-coin-doge';
 export { Doge, Tdoge };
 import { Dot, Tdot } from '@bitgo/sdk-coin-dot';
 export { Dot, Tdot };
+import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+export { Bcha, Tbcha };
 import { EosToken, Eos, Teos } from '@bitgo/sdk-coin-eos';
 export { EosToken, Eos, Teos };
 import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';

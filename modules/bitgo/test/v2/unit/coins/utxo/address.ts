@@ -10,6 +10,7 @@ import { AbstractUtxoCoin, GenerateAddressOptions } from '@bitgo/abstract-utxo';
 
 import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 
+// TODO (@rushilbg): Delete these tests because they are redundant (similar tests are in utxo-lib)
 function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean {
   if (a === b) {
     return true;
@@ -18,12 +19,14 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
     case 'btc':
     case 'bsv':
     case 'bch':
-      return ['btc', 'bsv', 'bch'].includes(b.getChain());
+    case 'bcha':
+      return ['btc', 'bsv', 'bch', 'bcha'].includes(b.getChain());
     case 'tbtc':
     case 'tbsv':
     case 'tbch':
     case 'tdoge':
-      return ['tbtc', 'tbsv', 'tbch', 'tdoge'].includes(b.getChain());
+    case 'tbcha':
+      return ['tbtc', 'tbsv', 'tbch', 'tbcha', 'tdoge'].includes(b.getChain());
     default:
       return false;
   }
@@ -54,6 +57,8 @@ function run(coin: AbstractUtxoCoin) {
           break;
         case 'bch':
         case 'tbch':
+        case 'bcha':
+        case 'tbcha':
         case 'bsv':
         case 'tbsv':
         case 'dash':

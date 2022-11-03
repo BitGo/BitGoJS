@@ -13,7 +13,7 @@
  */
 import * as cashaddress from 'cashaddress';
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { getNetworkName, isBitcoinCash, Network, networks } from '../../networks';
+import { getNetworkName, isBitcoinCash, isECash, Network, networks } from '../../networks';
 import { AddressFormat } from '../../addressFormat';
 
 /**
@@ -44,6 +44,10 @@ export function getPrefix(network: Network): string {
       return 'bitcoincash';
     case networks.bitcoincashTestnet:
       return 'bchtest';
+    case networks.ecash:
+      return 'ecash';
+    case networks.ecashTest:
+      return 'ecashtest';
     default:
       throw new Error(`unsupported prefix for ${getNetworkName(network)}`);
   }
@@ -55,7 +59,7 @@ export function getPrefix(network: Network): string {
  * @return outputScript encoded as cashaddr (prefixed, lowercase)
  */
 export function fromOutputScriptToCashAddress(outputScript: Buffer, network: Network): string {
-  if (!isBitcoinCash(network)) {
+  if (!isBitcoinCash(network) && !isECash(network)) {
     throw new Error(`invalid network`);
   }
   for (const [paymentName, scriptType] of [
@@ -76,7 +80,7 @@ export function fromOutputScriptToCashAddress(outputScript: Buffer, network: Net
  * @return decoded output script
  */
 export function toOutputScriptFromCashAddress(address: string, network: Network): Buffer {
-  if (!isBitcoinCash(network)) {
+  if (!isBitcoinCash(network) && !isECash(network)) {
     throw new Error(`invalid network`);
   }
   if (address === address.toUpperCase()) {
@@ -113,7 +117,7 @@ export function toOutputScriptFromCashAddress(address: string, network: Network)
  * @return address in specified format
  */
 export function fromOutputScriptWithFormat(outputScript: Buffer, format: AddressFormat, network: Network): string {
-  if (!isBitcoinCash(network)) {
+  if (!isBitcoinCash(network) && !isECash(network)) {
     throw new Error(`invalid network`);
   }
 
@@ -135,7 +139,7 @@ export function fromOutputScriptWithFormat(outputScript: Buffer, format: Address
  * @return output script from address in specified format
  */
 export function toOutputScriptWithFormat(address: string, format: AddressFormat, network: Network): Buffer {
-  if (!isBitcoinCash(network)) {
+  if (!isBitcoinCash(network) && !isECash(network)) {
     throw new Error(`invalid network`);
   }
 
