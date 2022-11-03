@@ -100,6 +100,7 @@ export type TxValidVector = [
 ];
 
 export function testFixture<T>(
+  ctx: Mocha.Suite,
   network: Network,
   filename: string,
   callback: (this: Mocha.Context, data: T) => void
@@ -110,11 +111,12 @@ export function testFixture<T>(
 }
 
 export function testFixtureArray<T>(
+  ctx: Mocha.Suite,
   network: Network,
   filename: string,
   callback: (this: Mocha.Context, data: T[]) => void
 ): void {
-  testFixture<T[]>(network, filename, function (arr: T[]) {
+  testFixture<T[]>(ctx, network, filename, function (arr: T[]) {
     callback.call(
       this,
       arr.filter((v: unknown) => (v as string[]).length !== 1)
