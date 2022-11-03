@@ -1,15 +1,23 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { OutputSpend } from '@bitgo/blockapis';
 
 import { Parser, ParserNode } from './Parser';
 import { AddressParser } from './AddressParser';
 import { formatSat } from './format';
 import { ChainInfo } from './TxParser';
-import { OutputSpend } from '@bitgo/blockapis';
+import { parseSignatureScriptNoWitnessSpend, ScriptNoWitnessSpend } from './noWitnessSpend';
 
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
   buf.writeUInt32LE(n, 0);
   return buf;
+}
+
+function parseSignatureScript(
+  input: utxolib.TxInput,
+  network: utxolib.Network
+): utxolib.bitgo.ParsedSignatureScript | ScriptNoWitnessSpend {
+  return parseSignatureScriptNoWitnessSpend(input, network) || utxolib.bitgo.parseSignatureScript(input);
 }
 
 export class InputOutputParser extends Parser {
@@ -112,7 +120,7 @@ export class InputOutputParser extends Parser {
 
   parseSigScript(tx: utxolib.bitgo.UtxoTransaction, inputIndex: number, prevOutputs?: utxolib.TxOutput[]): ParserNode {
     try {
-      const parsed = utxolib.bitgo.parseSignatureScript(tx.ins[inputIndex]);
+      const parsed = parseSignatureScript(tx.ins[inputIndex], tx.network);
       return this.node(
         'sigScript',
         parsed.scriptType ?? 'unknown',
