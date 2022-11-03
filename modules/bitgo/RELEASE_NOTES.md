@@ -520,7 +520,7 @@ This breaking change was required since some of the coins we are considering add
 
 ### New Features
 * Add support for deriving ed25519 hardened child public keys, used by XLM and other ed25519-based coins.
-* Update documentation to point to new docker image for BitGo Express (`bitgosdk/express`). The `bitgo/express` image is now deprecated.
+* Update documentation to point to new docker image for BitGo Express (`bitgo/express`). The `bitgo/express` image is now deprecated.
 * Add support for new ERC20 tokens (DRPU, PRDX, TENX, ROOBEE, ORBS, VDX, SHR)
 
 ### Other Changes
@@ -540,7 +540,7 @@ The long term plan is to modularize based on each underlying coin library, so us
 
 ### Breaking Changes
 * Users who pin a git hash of BitGoJS in their package.json will need to update their build steps, since the structure of the git repository has changed. If the desire is to simply use bitgo as a Javascript library outside a browser context, we recommend using a semantic version string instead of a git hash to specify which version should be installed. For development in a browser setting, a browser compatible bundle is now distrubuted in the package at `node_modules/bitgo/dist/browser/BitGoJS.min.js`. As an alternative to downloading the package from npm, a tarball of BitGoJS could also bundled in your application and used during install.
-* `bitgo-express` is no longer bundled with the `bitgo` npm package. The recommended install instructions are now to install via the official Docker image `bitgosdk/express:latest`. If you aren't able to run bitgo-express via Docker, you can also install and run `bitgo-express` from the source code. See the [`bitgo-express` README](https://github.com/BitGo/BitGoJS/tree/master/modules/express#running-bitgo-express) for more information on how to install and run BitGo Express.
+* `bitgo-express` is no longer bundled with the `bitgo` npm package. The recommended install instructions are now to install via the official Docker image `bitgo/express:latest`. If you aren't able to run bitgo-express via Docker, you can also install and run `bitgo-express` from the source code. See the [`bitgo-express` README](https://github.com/BitGo/BitGoJS/tree/master/modules/express#running-bitgo-express) for more information on how to install and run BitGo Express.
 * For version 1 wallets, the bitcoin network by the BitGo object is no longer global, and is now determined by the bitgo object's environment when it was initialized.
 
 As an example, before the behavior was as follows:
