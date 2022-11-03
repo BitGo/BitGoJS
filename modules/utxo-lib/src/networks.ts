@@ -109,8 +109,8 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.BTC,
   },
 
-  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
-  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
+  // https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/src/validation.cpp
+  // https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/src/chainparams.cpp
   // https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
