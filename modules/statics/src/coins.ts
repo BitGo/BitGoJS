@@ -2032,6 +2032,21 @@ export const coins = CoinMap.fromCoins([
     '0xb33eaad8d922b1083446dc23f610c2567fb5180f',
     UnderlyingAsset['polygon:uni']
   ),
+  polygonErc20(
+    'polygon:fcd',
+    'FreshCut Diamond',
+    18,
+    '0xf78610d0a197842bf98ca45254897edd13c5d182',
+    UnderlyingAsset['polygon:fcd']
+  ),
+  polygonErc20(
+    'polygon:ape',
+    'ApeCoin',
+    18,
+    '0xb7b31a6bc18e48888545ce79e83e06003be70930',
+    UnderlyingAsset['polygon:ape']
+  ),
+  polygonErc20('polygon:srm', 'Serum', 6, '0x6bf2eb299e51fc5df30dec81d9445dde70e3f185', UnderlyingAsset['polygon:srm']),
   // testnet polygon tokens
   tpolygonErc20(
     'tpolygon:derc20',
