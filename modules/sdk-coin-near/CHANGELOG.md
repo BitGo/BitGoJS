@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.0...@bitgo/sdk-coin-near@1.3.4) (2022-11-04)
+
+### Bug Fixes
+
+- **sdk-coin-near:** fix near recover function ([101f313](https://github.com/BitGo/BitGoJS/commit/101f313858f32d7c6697415a63762eced0b11a07))
+
 ## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.0...@bitgo/sdk-coin-near@1.3.2) (2022-10-27)
 
 ### Bug Fixes

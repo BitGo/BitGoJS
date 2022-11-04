@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.3.0...@bitgo/utxo-bin@2.4.0) (2022-11-04)
+
+### Bug Fixes
+
+- **utxo-bin:** fix getCoinName for bitcoincash ([8c52bb2](https://github.com/BitGo/BitGoJS/commit/8c52bb28de5325bc8733d69c44f0adf5536eccca))
+
+### Features
+
+- **root:** add ecash network configuration & use in tests ([55c6963](https://github.com/BitGo/BitGoJS/commit/55c69632de8823473880a9fc216de9191bcdfd3e))
+- **utxo-bin:** add command `parseAddress` ([f357df9](https://github.com/BitGo/BitGoJS/commit/f357df9770af64311dd95475f100fc9df1d39967))
+- **utxo-bin:** add parameter `--cache` ([4f96602](https://github.com/BitGo/BitGoJS/commit/4f9660278aaa5c26aba69877faa853a047819b7d))
+- **utxo-bin:** show spends of type HollowSegwitSpend ([2da2cdf](https://github.com/BitGo/BitGoJS/commit/2da2cdf5930c7ba486903e18923ad2522a70f43b))
+
 ## [2.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.3.0...@bitgo/utxo-bin@2.3.2) (2022-10-27)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

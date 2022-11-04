@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@6.0.0) (2022-11-04)
+
+### Bug Fixes
+
+- add test paths to tsconfig.json ([68cd7e8](https://github.com/BitGo/BitGoJS/commit/68cd7e8119914fe4a78ab1f5def5490f7a493118))
+- **utxo-bin:** change signature of `getNetworkName()` ([6e673c6](https://github.com/BitGo/BitGoJS/commit/6e673c60548a784cc71bdecf487249b441c1d5ea))
+- **utxo-lib:** fix testFixtureArray ([83109e4](https://github.com/BitGo/BitGoJS/commit/83109e406320ffe771c4ba662f010422f7df8387))
+- **utxo-lib:** update links in network docs ([ea47851](https://github.com/BitGo/BitGoJS/commit/ea47851142b1a511aeded55943db59090b34ea8d))
+
+### Code Refactoring
+
+- rename addChangeOutputToPsbt to addWalletOutputToPsbt, move ([189a129](https://github.com/BitGo/BitGoJS/commit/189a1294a947964336b7694832bd0bb5edd1752a))
+- tweak names of some Unspent types ([8a43518](https://github.com/BitGo/BitGoJS/commit/8a4351897089c74caab440aa3633ab933a28a245))
+- **utxo-lib:** rename addToPsbt to addWalletUnspentToPsbt ([c271386](https://github.com/BitGo/BitGoJS/commit/c27138602636b563b5fa2f2d4dc710a09a597288))
+
+### Features
+
+- **root:** add ecash network configuration & use in tests ([55c6963](https://github.com/BitGo/BitGoJS/commit/55c69632de8823473880a9fc216de9191bcdfd3e))
+- **utxo-lib:** add methods fromOutput, fromOutputWithPrevTx ([77d90e2](https://github.com/BitGo/BitGoJS/commit/77d90e2ea8991a0216c52467d387fb1e4e6b642e))
+- **utxo-lib:** add replay protection unspent tests to WalletUnspent ([cbcaf76](https://github.com/BitGo/BitGoJS/commit/cbcaf7605d3f505906d604dd00acbaa61f8563cc))
+- **utxo-lib:** add replay protection unspent utils to wallet/util.ts ([b1188c3](https://github.com/BitGo/BitGoJS/commit/b1188c3247fe72ee679398ec0dd593793c4f7185))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** rename addToPsbt to addWalletUnspentToPsbt
+- addChangeOutputToPsbt renamed to addWalletOutputToPsbt
+- function and type rename
+
 # [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@4.0.0) (2022-10-27)
 
 ### Code Refactoring

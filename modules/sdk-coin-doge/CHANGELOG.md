@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.3.0...@bitgo/sdk-coin-doge@1.7.0) (2022-11-04)
+
+### Bug Fixes
+
+- **sdk-coin-doge:** minor change in types ([db18dd9](https://github.com/BitGo/BitGoJS/commit/db18dd9f8a62432c89db76a9dbd81c7b3c586fc2))
+
+### Features
+
+- **utxo-lib:** bigintify dogecoin specific functions ([d5830a6](https://github.com/BitGo/BitGoJS/commit/d5830a6d6c17de5cefb138a639b94c0cbb37f5f0))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.3.0...@bitgo/sdk-coin-doge@1.5.0) (2022-10-27)
 
 ### Bug Fixes

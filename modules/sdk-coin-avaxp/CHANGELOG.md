@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.2.0...@bitgo/sdk-coin-avaxp@3.2.4) (2022-11-04)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** fix fee management for export in c tx builder ([598de65](https://github.com/BitGo/BitGoJS/commit/598de65b972991dcb59f09ebf6f0d12b3658adbb))
+
 ## [3.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.2.0...@bitgo/sdk-coin-avaxp@3.2.2) (2022-10-27)
 
 ### Bug Fixes

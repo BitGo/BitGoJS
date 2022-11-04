@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@3.0.0) (2022-11-04)
+
+### Features
+
+- **sdk-coin-sui:** added sui to account-lib ([e4a21fc](https://github.com/BitGo/BitGoJS/commit/e4a21fc2895ef66508fbc231dc11baf24ae4cf5a))
+- **sdk-core:** add VSS share generation and verification ([619f254](https://github.com/BitGo/BitGoJS/commit/619f2542f9c44f8468460864f78b975a2ccb7b7f))
+
+### BREAKING CHANGES
+
+- **sdk-core:** Key shares require a `v` value for combination.
+  ISSUE: BG-57633
+
 # [2.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@2.24.0) (2022-10-27)
 
 ### Features

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@11.0.0) (2022-11-04)
+
+### Bug Fixes
+
+- fix typo in Everscale, add Everscale as Offchain / Prime token ([21bf769](https://github.com/BitGo/BitGoJS/commit/21bf769fa6e2165797d3d9562955b7bd371ad0e6))
+- **statics:** change cardano testnet url to preprod testnet ([6bc09c4](https://github.com/BitGo/BitGoJS/commit/6bc09c4c2306d792e1ed522c3e828a34597c842d))
+- update explorer url for test mysten ([3d21e88](https://github.com/BitGo/BitGoJS/commit/3d21e885e5883e3cf8259a1142ef4a31de1408a9))
+
+### Features
+
+- add tokens to trading ([8105e05](https://github.com/BitGo/BitGoJS/commit/8105e052bbdf914bcd749c87bd78e5db4e1bf4ce))
+- **statics:** add ofc coins for dogecoin ([8052caf](https://github.com/BitGo/BitGoJS/commit/8052caf2ab7aeff9610d59473efe1859678870ca))
+- **statics:** add polygon tokens ([ea32562](https://github.com/BitGo/BitGoJS/commit/ea32562ed4ae553418a8e75eb2e63a47415e047e))
+- **statics:** add SOLEND (SLND) Solana token to statics ([e39edb4](https://github.com/BitGo/BitGoJS/commit/e39edb4fcb6694bf9b75710d4434e7a0d35f0d62))
+- **statics:** add wdoge ([842a8da](https://github.com/BitGo/BitGoJS/commit/842a8da1bac398606a3b4ee00861885e3a8748d3))
+
+### BREAKING CHANGES
+
+- Adds Everscale as Offchain / Prime token
+  BG-59397
+
 # [10.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@10.0.0) (2022-10-27)
 
 ### Bug Fixes
