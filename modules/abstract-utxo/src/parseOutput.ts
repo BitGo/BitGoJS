@@ -216,7 +216,7 @@ export async function parseOutput({
   // attempt to grab the address details from either the prebuilt tx, or the verification params.
   // If both of these are empty, then we will try to get the address details from bitgo instead
   const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
-  const addressDetailsVerification: AddressVerificationData = _.get(verification, `addresses.${currentAddress}`, {});
+  const addressDetailsVerification: AddressVerificationData = verification?.addresses?.[currentAddress] ?? {};
   debug('Parsing address details for %s', currentAddress);
   let currentAddressDetails = undefined;
   let currentAddressType: string | undefined = undefined;
