@@ -84,7 +84,8 @@ describe('Ecdsa tss helper functions tests', function () {
       nock.cleanAll();
     });
 
-    it('should encrypt n shares foreach user', async function () {
+    // TODO BG-61214 renable VSS
+    xit('should encrypt n shares foreach user', async function () {
 
       for (let i = 2; i <= 3; i++) {
         const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey);
@@ -147,7 +148,8 @@ describe('Ecdsa tss helper functions tests', function () {
       should.not.exist(combinedUserKey.signingMaterial.userNShare);
     });
 
-    it('should create combined backup key', async function () {
+    // TODO BG-61214 renable VSS
+    xit('should create combined backup key', async function () {
       const bitgoToBackupShare = await encryptNShare(
         bitgoKeyShare,
         2,
