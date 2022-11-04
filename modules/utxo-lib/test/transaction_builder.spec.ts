@@ -8,8 +8,8 @@ import {
   script as bscript,
   Transaction,
   TransactionBuilder,
-} from '..';
-import { ECPair } from '../src/noble_ecc';
+  ECPair,
+} from '../src';
 
 console.warn = (): void => {
   return;

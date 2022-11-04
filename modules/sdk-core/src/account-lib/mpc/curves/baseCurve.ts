@@ -27,6 +27,8 @@ interface BaseCurve {
   basePointMult(n: bigint): bigint;
   // Function that adds two group elements.
   pointAdd(p: bigint, q: bigint): bigint;
+  // Multiply a point by a scalar.
+  pointMultiply(p: bigint, s: bigint): bigint;
   // Function that verifies a signature.
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean;
   // order of the curve

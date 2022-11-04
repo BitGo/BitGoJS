@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { describe } from 'mocha';
 import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash, isDogecoin } from '../../src/networks';
 import {
   sigHashTestFile,
@@ -57,7 +58,7 @@ describe('Third-Party Fixtures', function () {
           assert.strict(refSignatureHash.equals(hash));
         }
 
-        testFixtureArray(network, sigHashTestFile, function (vectors: SigHashTestVector[]) {
+        testFixtureArray(this, network, sigHashTestFile, function (vectors: SigHashTestVector[]) {
           const zcashSubset = [48, 111, 114, 152, 157, 237, 241, 250, 280, 392, 461];
           vectors.forEach((v, i) => {
             if (isZcash(network) && !zcashSubset.includes(i)) {
@@ -67,7 +68,7 @@ describe('Third-Party Fixtures', function () {
           });
         });
 
-        testFixtureArray(network, txValidTestFile, function (vectors: TxValidVector[]) {
+        testFixtureArray(this, network, txValidTestFile, function (vectors: TxValidVector[]) {
           vectors.forEach((v: TxValidVector, i) => {
             const [, /* inputs , */ txHex] = v;
             if (isDogecoin(network)) {

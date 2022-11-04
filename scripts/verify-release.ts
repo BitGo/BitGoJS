@@ -49,16 +49,16 @@ const getDistTags = async (packageName: string): Promise<Record<string, string>>
 };
 
 
-const verifyPackage = async (dir: string): Promise<boolean> => {
+const verifyPackage = async (dir: string, preid: string = 'beta'): Promise<boolean> => {
   const cwd = dir;
   const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
   if (json.private) {
     return true;
   }
   const distTags = await getDistTags(json.name);
-  if (json.version !== distTags['beta']) {
-    console.log(`${json.name} missing. Expected ${json.version}, latest is ${distTags['beta']}`);
-    const { stdout, exitCode } = await execa('npm', ['publish', '--tag', 'beta'], { cwd });
+  if (json.version !== distTags[preid]) {
+    console.log(`${json.name} missing. Expected ${json.version}, latest is ${distTags[preid]}`);
+    const { stdout, exitCode } = await execa('npm', ['publish', '--tag', preid], { cwd });
     console.log(stdout);
     return exitCode === 0;
   } else {
@@ -67,15 +67,16 @@ const verifyPackage = async (dir: string): Promise<boolean> => {
   return true;
 };
 
-const verify = async () => {
+const verify = async (preid?: string) => {
   await getLernaModules();
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     const dir = lernaModuleLocations[i];
-    if (!await verifyPackage(dir)) {
+    if (!await verifyPackage(dir, preid)) {
       console.error('Failed to verify outstanding packages.');
       return;
     }
   }
 };
 
-verify();
+// e.g. for alpha releases: `npx ts-node ./scripts/verify-beta.ts alpha`
+verify(process.argv.slice(2)[0]);

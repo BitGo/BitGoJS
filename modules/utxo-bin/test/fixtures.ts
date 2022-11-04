@@ -1,10 +1,19 @@
-import * as utxolib from '@bitgo/utxo-lib';
 import { promises as fs } from 'fs';
+
+import { Instance } from 'chalk';
+import * as utxolib from '@bitgo/utxo-lib';
+
+import { formatTree } from '../src/format';
+import { ParserNode } from '../src/Parser';
 
 export type Fixture = {
   transaction: { hex: string };
   inputs: { hex: string }[];
 };
+
+export function formatTreeNoColor(n: ParserNode): string {
+  return formatTree(n, { chalk: new Instance({ level: 0 }) });
+}
 
 export async function getTransactionWithSpendType(
   network: utxolib.Network,

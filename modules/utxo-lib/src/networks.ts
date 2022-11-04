@@ -19,7 +19,13 @@ forkId         src/script/interpreter.h  FORKID_*
  * @deprecated
  */
 const coins = {
+  /*
+   * The original Bitcoin Cash was renamed to bitcoin-abc, and bitcoin-cash-node forked from it.
+   * Later, bitcoin-abc is rebranded to ecash. Here, 'bch' corresponds to bitcoin-cash-node, and
+   * 'bcha' corresponds to ecash. Ref: https://github.com/bitcoin-cash-node/bitcoin-cash-node
+   * */
   BCH: 'bch',
+  BCHA: 'bcha',
   BSV: 'bsv',
   BTC: 'btc',
   BTG: 'btg',
@@ -34,6 +40,8 @@ export type NetworkName =
   | 'testnet'
   | 'bitcoincash'
   | 'bitcoincashTestnet'
+  | 'ecash'
+  | 'ecashTest'
   | 'bitcoingold'
   | 'bitcoingoldTestnet'
   | 'bitcoinsv'
@@ -109,8 +117,8 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.BTC,
   },
 
-  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
-  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
+  // https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/src/validation.cpp
+  // https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/src/chainparams.cpp
   // https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -224,6 +232,37 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.DOGE,
   },
 
+  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
+  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
+  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/util/message.cpp
+  ecash: {
+    messagePrefix: '\x16eCash Signed Message:\n',
+    bip32: getDefaultBip32Mainnet(),
+    pubKeyHash: 0x00,
+    scriptHash: 0x05,
+    wif: 0x80,
+    coin: coins.BCHA,
+    forkId: 0x00,
+    cashAddr: {
+      prefix: 'ecash',
+      pubKeyHash: 0x00,
+      scriptHash: 0x08,
+    },
+  },
+  ecashTest: {
+    messagePrefix: '\x16eCash Signed Message:\n',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BCHA,
+    cashAddr: {
+      prefix: 'ecashtest',
+      pubKeyHash: 0x00,
+      scriptHash: 0x08,
+    },
+  },
+
   // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
   // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
   litecoin: {
@@ -274,11 +313,13 @@ export function getNetworkList(): Network[] {
 
 /**
  * @param {Network} network
- * @returns {string} the name of the network. Returns undefined if network is not a value
- *                   of `networks`
+ * @returns {NetworkName} the name of the network. Returns undefined if network is not a value
+ *                        of `networks`
  */
-export function getNetworkName(network: Network): string | undefined {
-  return Object.keys(networks).find((n) => (networks as Record<string, Network>)[n] === network);
+export function getNetworkName(network: Network): NetworkName | undefined {
+  return Object.keys(networks).find((n) => (networks as Record<string, Network>)[n] === network) as
+    | NetworkName
+    | undefined;
 }
 
 /**
@@ -306,6 +347,10 @@ export function getMainnet(network: Network): Network {
     case networks.dash:
     case networks.dashTest:
       return networks.dash;
+
+    case networks.ecash:
+    case networks.ecashTest:
+      return networks.ecash;
 
     case networks.litecoin:
     case networks.litecoinTest:
@@ -393,6 +438,14 @@ export function isBitcoin(network: Network): boolean {
  */
 export function isBitcoinCash(network: Network): boolean {
   return getMainnet(network) === networks.bitcoincash;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is ecash or ecashTest
+ */
+export function isECash(network: Network): boolean {
+  return getMainnet(network) === networks.ecash;
 }
 
 /**

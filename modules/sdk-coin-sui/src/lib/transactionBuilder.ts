@@ -58,6 +58,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push({ publicKey, signature });
+    this.transaction.addSignature(publicKey, signature);
   }
 
   /**
@@ -104,6 +105,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
+    this._signatures = [tx.suiSignature];
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
     this.gasPrice(txData.gasPrice);

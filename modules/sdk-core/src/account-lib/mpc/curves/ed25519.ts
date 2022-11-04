@@ -61,6 +61,12 @@ export class Ed25519Curve implements BaseCurve {
     );
   }
 
+  pointMultiply(p: bigint, s: bigint): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_scalarmult_ed25519_noclamp(bigIntToBufferLE(s, 32), bigIntToBufferLE(p, 32)))
+    );
+  }
+
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean {
     const signedMessage = Buffer.concat([signature, message]);
     try {

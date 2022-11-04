@@ -191,7 +191,7 @@ export async function createShareProof(privateArmor: string, uValue: string): Pr
   // Sub-key signature packet.
   const subKeydataToSign = {
     key: privateKey.keyPacket,
-    bind: privateKey.keyPacket,
+    bind: secretSubkeyPacket,
   };
   const subkeySignaturePacket = new pgp.SignaturePacket();
   subkeySignaturePacket.signatureType = pgp.enums.signature.subkeyBinding;

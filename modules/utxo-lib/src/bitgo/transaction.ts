@@ -24,6 +24,7 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin:
       return UtxoTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.dash:
@@ -201,6 +202,7 @@ export function createTransactionBuilderForNetwork<TNumber extends number | bigi
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin: {
       txb = new UtxoTransactionBuilder<TNumber>(network);
       break;
@@ -231,6 +233,7 @@ export function createTransactionBuilderFromTransaction<TNumber extends number |
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin:
       return UtxoTransactionBuilder.fromTransaction<TNumber>(tx, undefined, prevOutputs);
     case networks.dash:

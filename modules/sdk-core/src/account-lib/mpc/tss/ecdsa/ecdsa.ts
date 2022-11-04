@@ -61,7 +61,7 @@ export default class Ecdsa {
     const y = Ecdsa.curve.basePointMult(u);
     const chaincode = seed?.slice(40) ?? randomBytes(32);
     // Compute secret shares of the private key
-    const uShares = Ecdsa.shamir.split(u, threshold, numShares);
+    const { shares: uShares, v } = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
       i: index,
       l: privateKey.lambda.toString(16),
@@ -85,6 +85,7 @@ export default class Ecdsa {
           j: currentParticipant['i'],
           n: publicKey.n.toString(16),
           y: bigIntToBufferBE(y, 33).toString('hex'),
+          v: bigIntToBufferBE(v[0], 33).toString('hex'),
           u: bigIntToBufferBE(uShares[participantIndex], 32).toString('hex'),
           chaincode: chaincode.toString('hex'),
         } as NShare;
@@ -106,6 +107,17 @@ export default class Ecdsa {
     const y = allShares.map((participant) => hexToBigInt(participant['y'])).reduce(Ecdsa.curve.pointAdd);
     // Add secret shares
     const x = allShares.map((participant) => hexToBigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
+
+    // Verify shares.
+    for (const share of nShares) {
+      if ('v' in share) {
+        try {
+          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
+        } catch (err) {
+          throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
+        }
+      }
+    }
 
     // Chaincode will be used in future when we add support for key derivation for ecdsa
     const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));

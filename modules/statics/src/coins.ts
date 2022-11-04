@@ -214,6 +214,7 @@ export const coins = CoinMap.fromCoins([
   ofc('ofchbar', 'Mainnet Hedera HBAR', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   ofc('ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   ofc('ofcsol', 'Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
+  ofc('ofcdoge', 'Dogecoin', 8, UnderlyingAsset.DOGE, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc('ofctgbp', 'Test British Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
@@ -239,6 +240,7 @@ export const coins = CoinMap.fromCoins([
   tofc('ofctstx', 'Test Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
   tofc('ofcttrx', 'Testnet Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   tofc('ofctsol', 'Test Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
+  tofc('ofctdoge', 'Test Dogecoin', 8, UnderlyingAsset.DOGE, CoinKind.CRYPTO),
   erc20('1inch', '1inch Token', 18, '0x111111111117dc0aa78b770fa6a738034120c302', UnderlyingAsset['1INCH']),
   erc20('1up', 'Uptrennd Token', 18, '0x07597255910a51509ca469568b048f2597e72504', UnderlyingAsset['1UP']),
   erc20('aave', 'Aave', 18, '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', UnderlyingAsset.AAVE),
@@ -817,6 +819,7 @@ export const coins = CoinMap.fromCoins([
   erc20('wabi', 'Tael Token', 18, '0x286bda1413a2df81731d4930ce2f862a35a609fe', UnderlyingAsset.WABI),
   erc20('wtk', 'WadzPay Token', 18, '0x4cff49d0a19ed6ff845a9122fa912abcfb1f68a6', UnderlyingAsset.WTK),
   erc20('wbtc', 'Wrapped Bitcoin', 8, '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', UnderlyingAsset.WBTC),
+  erc20('wdoge', 'Wrapped DOGE', 8, '0x8aa9381b2544b48c26f3b850f6e07e2c5161eb3e', UnderlyingAsset.WDOGE),
   erc20('wcfg', 'Wrapped Centrifuge', 18, '0xc221b7e65ffc80de234bbb6667abdd46593d34f0', UnderlyingAsset.WCFG),
   erc20('wec', 'Whole Earth Coin ', 18, '0xcc1a8bd438bebc4b2a885a34475bb974f2124317', UnderlyingAsset.WEC),
   erc20('wet', 'We Show Token', 18, '0x36d10c6800d569bb8c4fe284a05ffe3b752f972c', UnderlyingAsset.WET),
@@ -2029,6 +2032,21 @@ export const coins = CoinMap.fromCoins([
     '0xb33eaad8d922b1083446dc23f610c2567fb5180f',
     UnderlyingAsset['polygon:uni']
   ),
+  polygonErc20(
+    'polygon:fcd',
+    'FreshCut Diamond',
+    18,
+    '0xf78610d0a197842bf98ca45254897edd13c5d182',
+    UnderlyingAsset['polygon:fcd']
+  ),
+  polygonErc20(
+    'polygon:ape',
+    'ApeCoin',
+    18,
+    '0xb7b31a6bc18e48888545ce79e83e06003be70930',
+    UnderlyingAsset['polygon:ape']
+  ),
+  polygonErc20('polygon:srm', 'Serum', 6, '0x6bf2eb299e51fc5df30dec81d9445dde70e3f185', UnderlyingAsset['polygon:srm']),
   // testnet polygon tokens
   tpolygonErc20(
     'tpolygon:derc20',

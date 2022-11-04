@@ -7,7 +7,7 @@ import { Bcha } from './bcha';
 
 export class Tbcha extends Bcha {
   constructor(bitgo: BitGoBase) {
-    super(bitgo, utxolib.networks.bitcoincashTestnet);
+    super(bitgo, utxolib.networks.ecashTest);
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {

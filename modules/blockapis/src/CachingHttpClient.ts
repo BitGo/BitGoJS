@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 
-import { BaseHttpClient, HttpClient, Response } from '../src';
+import { BaseHttpClient, HttpClient, Response } from './BaseHttpClient';
 
 function stripApiTokens(uri: string): string {
   const url = new URL(uri, 'http://localhost');
@@ -12,13 +12,13 @@ function stripApiTokens(uri: string): string {
 }
 
 export class CachingHttpClient implements HttpClient {
-  static envvarEnableHttp = 'BITGO_BLOCKAPIS_TEST_ENABLE_HTTP';
+  client: BaseHttpClient;
+  isHttpEnabled: boolean;
 
-  static isHttpEnabled(): boolean {
-    return process.env[this.envvarEnableHttp] === '1';
+  constructor(private cacheDir: string, { client = new BaseHttpClient(), isHttpEnabled = true } = {}) {
+    this.client = client;
+    this.isHttpEnabled = isHttpEnabled;
   }
-
-  constructor(private cacheDir: string, private client: HttpClient = new BaseHttpClient()) {}
 
   cachePath(p: string): string {
     p = stripApiTokens(p).replace(/[^a-z0-9]/gi, '_');
@@ -53,8 +53,8 @@ export class CachingHttpClient implements HttpClient {
     if (cached) {
       return cached;
     }
-    if (!CachingHttpClient.isHttpEnabled()) {
-      throw new Error(`networking disabled (${CachingHttpClient.envvarEnableHttp}=1 to enable)`);
+    if (!this.isHttpEnabled) {
+      throw new Error(`networking disabled`);
     }
     const resp = await this.client.get<T>(path);
     await this.writeCache(
@@ -65,6 +65,9 @@ export class CachingHttpClient implements HttpClient {
   }
 
   withBaseUrl(baseUrl: string): HttpClient {
-    return new CachingHttpClient(this.cacheDir, this.client.withBaseUrl(baseUrl));
+    return new CachingHttpClient(this.cacheDir, {
+      client: this.client.withBaseUrl(baseUrl),
+      isHttpEnabled: this.isHttpEnabled,
+    });
   }
 }

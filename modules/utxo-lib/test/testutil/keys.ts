@@ -9,7 +9,7 @@ const bip32: BIP32API = BIP32Factory(ecc);
 
 export type KeyTriple = Triple<BIP32Interface>;
 
-function getKey(seed: string): BIP32Interface {
+export function getKey(seed: string): BIP32Interface {
   return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
 }
 

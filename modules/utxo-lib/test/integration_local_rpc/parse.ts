@@ -38,6 +38,7 @@ import {
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { getDefaultCosigner, decimalCoinsToSats } from '../testutil';
+import { isECash } from '../../src/networks';
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
@@ -305,7 +306,8 @@ function runTestParse<TNumber extends number | bigint>(
 
 describe(`regtest fixtures`, function () {
   getNetworkList().forEach((network) => {
-    if (!isTestnet(network)) {
+    // We don't support transaction building for Ecash
+    if (!isTestnet(network) || isECash(network)) {
       return;
     }
 

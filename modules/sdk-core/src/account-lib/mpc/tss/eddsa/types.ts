@@ -11,6 +11,7 @@ export interface YShare {
   i: number;
   j: number;
   y: string;
+  v?: string;
   u: string;
   chaincode: string;
 }
@@ -57,6 +58,7 @@ export interface RShare {
   i: number;
   j: number;
   u: string;
+  v?: string;
   r: string;
   R: string;
 }

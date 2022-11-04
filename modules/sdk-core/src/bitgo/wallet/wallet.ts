@@ -84,7 +84,7 @@ type ManageUnspents = 'consolidate' | 'fanout';
 export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
-  private _wallet: WalletData;
+  public _wallet: WalletData;
   private readonly tssUtils: EcdsaUtils | EddsaUtils | undefined;
   private readonly _permissions?: string[];
 

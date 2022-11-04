@@ -3,7 +3,7 @@
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
 FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446 AS filter-packages-json
-MAINTAINER Tyler Levine <tyler@bitgo.com>
+MAINTAINER Developer Relations <developer-relations-team@bitgo.com>
 
 COPY package.json yarn.lock lerna.json ./
 WORKDIR /tmp/bitgo
@@ -186,9 +186,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 02 Nov 2022 16:49:14 GMT"
-LABEL version=9.18.0
-LABEL git_hash=06fdcb06519568681837fc6d9ecf56c32a3a0861
+LABEL created="Thu, 03 Nov 2022 20:16:00 GMT"
+LABEL version=9.17.0
+LABEL git_hash=ade017e9a750032ebe84526dc227366c024cb954
 #LABEL_END
 
 USER node

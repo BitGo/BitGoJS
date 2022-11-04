@@ -782,6 +782,7 @@ export enum UnderlyingAsset {
   WOO = 'woo',
   WTK = 'wtk',
   WBTC = 'wbtc',
+  WDOGE = 'wdoge',
   WCFG = 'wcfg',
   WEC = 'wec',
   WET = 'wet',
@@ -887,6 +888,9 @@ export enum UnderlyingAsset {
   'polygon:frax' = 'polygon:frax',
   'polygon:crv' = 'polygon:crv',
   'polygon:uni' = 'polygon:uni',
+  'polygon:fcd' = 'polygon:fcd',
+  'polygon:ape' = 'polygon:ape',
+  'polygon:srm' = 'polygon:srm',
 
   // BSC Token BEP-20
   'bsc:busd' = 'bsc:busd',

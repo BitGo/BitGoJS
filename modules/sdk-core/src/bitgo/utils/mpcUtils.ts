@@ -110,6 +110,11 @@ export abstract class MpcUtils {
         address: { address: recipient.address },
         amount: { value: `${recipient.amount}`, symbol: recipient.tokenName ? recipient.tokenName : chain },
       };
+
+      if (recipient.data) {
+        formattedRecipient.data = recipient.data;
+      }
+
       const { tokenData } = recipient;
       if (tokenData && (tokenData.tokenContractAddress || tokenData.tokenName)) {
         // token related recipient data gets validated in WP

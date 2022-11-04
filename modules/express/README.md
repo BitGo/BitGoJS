@@ -1,6 +1,5 @@
 # BitGo Express Local Signing Server (REST API)
 
-
 Suitable for developers working in a language without an official BitGo SDK.
 
 BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo.
@@ -15,6 +14,8 @@ Comprehensive documentation on the APIs provided by BitGo Express can be found a
 ## Docker
 
 For most users, we recommend running BitGo Express as a docker container, since this is the most secure way to run BitGo Express.
+
+> Deprecation Warning: bitgosdk/express will no longer receive updates. Please use the official bitgo/express images.
 
 To try it out, run this command:
 ```bash

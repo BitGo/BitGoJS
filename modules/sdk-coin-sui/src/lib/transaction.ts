@@ -4,6 +4,8 @@ import {
   Entry,
   InvalidTransactionError,
   ParseTransactionError,
+  PublicKey as BasePublicKey,
+  Signature,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
@@ -107,8 +109,7 @@ export type SuiTransaction = {
 
 export class Transaction extends BaseTransaction {
   private _suiTransaction: SuiTransaction;
-  private _signature;
-  private _publicKey;
+  private _signature: Signature;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -125,6 +126,16 @@ export class Transaction extends BaseTransaction {
   /** @inheritDoc **/
   get id(): string {
     return this._id || UNAVAILABLE_TEXT;
+  }
+
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push(signature.toString('hex'));
+    this._signature = { publicKey, signature };
+    this.serializeSignedTx(publicKey, signature);
+  }
+
+  get suiSignature(): Signature {
+    return this._signature;
   }
 
   getInputCoins(): SuiObjectRef[] {
@@ -243,6 +254,30 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  private serializeSignedTx(publicKey: BasePublicKey, signature: Buffer): void {
+    const suiTx = this._suiTransaction;
+    const txData = {
+      kind: { Single: { Pay: suiTx.payTx } },
+      gasPayment: suiTx.gasPayment,
+      gasPrice: suiTx.gasPrice,
+      gasBudget: suiTx.gasBudget,
+      sender: suiTx.sender,
+    };
+    const scheme = new Uint8Array([0x00]);
+    const signatureBuffer = Buffer.concat([scheme, signature, Buffer.from(publicKey.pub)]);
+    const signedTx = {
+      data: txData,
+      txSignature: signatureBuffer,
+    };
+
+    const serialized = bcs.ser('SenderSignedData', signedTx).toBytes();
+    const typeTag = Array.from('SenderSignedData::').map((e) => e.charCodeAt(0));
+    const serializedFinal = new Uint8Array(typeTag.length + serialized.length);
+    serializedFinal.set(typeTag);
+    serializedFinal.set(serialized, typeTag.length);
+    this._id = Buffer.from(sha3.sha3_256(serializedFinal), 'hex').toString('base64');
+  }
+
   serialize(): string {
     const suiTx = this._suiTransaction;
     const txData = {
@@ -257,23 +292,8 @@ export class Transaction extends BaseTransaction {
     const serialized = new Uint8Array(TYPE_TAG.length + dataBytes.length);
     serialized.set(TYPE_TAG);
     serialized.set(dataBytes, TYPE_TAG.length);
-    if (this.signature.length > 0) {
-      const scheme = new Uint8Array([0x00]);
-      const signatureBuffer = Buffer.concat([
-        scheme,
-        Buffer.from(this._signature, 'hex'),
-        Buffer.from(this._publicKey, 'hex'),
-      ]);
-      const signedTx = {
-        data: txData,
-        txSignature: signatureBuffer,
-      };
-      const serialized = bcs.ser('SenderSignedData', signedTx).toBytes();
-      const typeTag = Array.from('SenderSignedData::').map((e) => e.charCodeAt(0));
-      const serializedFinal = new Uint8Array(typeTag.length + serialized.length);
-      serializedFinal.set(typeTag);
-      serializedFinal.set(serialized, typeTag.length);
-      this._id = Buffer.from(sha3.sha3_256(serializedFinal), 'hex').toString('base64');
+    if (this._signature !== undefined) {
+      this.serializeSignedTx(this._signature.publicKey, this._signature.signature);
     }
     return Buffer.from(serialized).toString('hex');
   }

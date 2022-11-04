@@ -23,5 +23,4 @@ transaction: d2e10356d9400fbb23fe662e43e8b10cd8381da609c4f3d96d53f92bb6735e57
 │     └── address: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
 └─┬ outputs: 1 sum=1.99999000
   └─┬ 0: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
-    ├── value: 1.99999000
-    └── type: taproot
+    └── value: 1.99999000

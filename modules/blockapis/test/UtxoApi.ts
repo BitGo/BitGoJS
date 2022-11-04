@@ -1,8 +1,11 @@
 import 'mocha';
 import * as assert from 'assert';
-import { BlockchairApi, BlockstreamApi, UtxoApi } from '../src';
+import { BlockchairApi, BlockstreamApi, UtxoApi, CachingHttpClient } from '../src';
 import { deepStrictEqualJSON, getFixture } from './fixtures';
-import { CachingHttpClient } from './CachingHttpClient';
+
+function isHttpEnabled(): boolean {
+  return process.env.BITGO_BLOCKAPIS_TEST_ENABLE_HTTP === '1';
+}
 
 function getTestAddresses(coinName: string): string[] {
   switch (coinName) {
@@ -68,7 +71,7 @@ class TestCase<T> {
     if (this.args[0] === nonexistentTx) {
       if (this.methodName === 'getTransactionStatus') {
         // Blockstream returns a 404 for missing transactions
-        return api.constructor.name === 'BlockstreamApi' && !CachingHttpClient.isHttpEnabled();
+        return api.constructor.name === 'BlockstreamApi' && !isHttpEnabled();
       }
       return true;
     }
@@ -84,7 +87,7 @@ class TestCase<T> {
 }
 
 function getHttpClient(name: string): CachingHttpClient {
-  return new CachingHttpClient(`${__dirname}/fixtures/responses/` + name);
+  return new CachingHttpClient(`${__dirname}/fixtures/responses/` + name, { isHttpEnabled: isHttpEnabled() });
 }
 
 function getApis(coinName: string): UtxoApi[] {

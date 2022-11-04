@@ -14,6 +14,7 @@ export const addresses = {
 export const sender = {
   address: addresses.validAddresses[0],
   publicKey: 'ISHc0JgGmuU1aX3QGc/YZ3ynq6CtrB0ZWcvObcVLElk=',
+  signatureHex: '6JD68SxFyiEOdEVFHDuxEHtq9NO9zmC2glSJf/XswlY2yp7HWnmVT1sMNz2YTzmatIROKqsh8dAHkjoHd3cvDg==',
 };
 
 export const recipients = [addresses.validAddresses[1]];
@@ -45,10 +46,6 @@ export const payTx = {
   coins,
   recipients,
   amounts: [AMOUNT],
-};
-
-export const signatures = {
-  signature1: '6JD68SxFyiEOdEVFHDuxEHtq9NO9zmC2glSJf/XswlY2yp7HWnmVT1sMNz2YTzmatIROKqsh8dAHkjoHd3cvDg==',
 };
 
 export const txIds = {

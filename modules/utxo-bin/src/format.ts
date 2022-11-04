@@ -1,11 +1,15 @@
 import { Chalk, Instance } from 'chalk';
 import * as archy from 'archy';
-import { TxNode, TxNodeValue } from './parse';
+import { ParserNode, ParserNodeValue } from './Parser';
 
 const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];
 
+export function formatSat(v: number): string {
+  return (v / 1e8).toFixed(8);
+}
+
 export function formatTree(
-  n: TxNode,
+  n: ParserNode,
   { hide = hideDefault, chalk = new Instance() }: { hide?: string[]; chalk?: Chalk } = {}
 ): string {
   function getLabel(label: string | number, v?: unknown): string {
@@ -16,7 +20,7 @@ export function formatTree(
     return arr.join(': ');
   }
 
-  function getLabelFromValue(v: TxNodeValue): string | undefined {
+  function getLabelFromValue(v: ParserNodeValue): string | undefined {
     switch (typeof v) {
       case 'undefined':
         return undefined;
@@ -35,7 +39,7 @@ export function formatTree(
     throw new Error(`could not get label from value`);
   }
 
-  function toArchy(n: TxNode): archy.Data {
+  function toArchy(n: ParserNode): archy.Data {
     return {
       label: getLabel(n.label, getLabelFromValue(n.value)),
       nodes: n.nodes ? n.nodes.flatMap((e) => (hide.includes(e.label) ? [] : [toArchy(e)])) : undefined,

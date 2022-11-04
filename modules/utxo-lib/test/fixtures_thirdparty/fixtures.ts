@@ -42,6 +42,11 @@ export function getFixtureInfo(network: Network): FixtureInfo {
         projectPath: 'dashpay/dash',
         tag: 'v0.17.0.3',
       };
+    case networks.ecash:
+      return {
+        projectPath: 'Bitcoin-ABC/bitcoin-abc',
+        tag: 'v0.26.4',
+      };
     case networks.dogecoin:
       return {
         projectPath: 'dogecoin/dogecoin',
@@ -100,6 +105,7 @@ export type TxValidVector = [
 ];
 
 export function testFixture<T>(
+  ctx: Mocha.Suite,
   network: Network,
   filename: string,
   callback: (this: Mocha.Context, data: T) => void
@@ -110,11 +116,12 @@ export function testFixture<T>(
 }
 
 export function testFixtureArray<T>(
+  ctx: Mocha.Suite,
   network: Network,
   filename: string,
   callback: (this: Mocha.Context, data: T[]) => void
 ): void {
-  testFixture<T[]>(network, filename, function (arr: T[]) {
+  testFixture<T[]>(ctx, network, filename, function (arr: T[]) {
     callback.call(
       this,
       arr.filter((v: unknown) => (v as string[]).length !== 1)

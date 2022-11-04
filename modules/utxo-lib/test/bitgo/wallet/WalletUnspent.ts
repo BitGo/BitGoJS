@@ -20,7 +20,6 @@ import {
   getWalletAddress,
   verifySignatureWithUnspent,
   toTNumber,
-  UnspentWithPrevTx,
   WalletUnspent,
   UtxoTransaction,
   createPsbtForNetwork,
@@ -29,14 +28,23 @@ import {
   addWalletOutputToPsbt,
   toPrevOutput,
   KeyName,
+  signInputP2shP2pk,
+  UnspentWithPrevTx,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
-import { mockWalletUnspent } from './util';
+import {
+  isReplayProtectionUnspent,
+  mockReplayProtectionUnspent,
+  mockWalletUnspent,
+  replayProtectionKeyPair,
+} from './util';
 import { defaultTestOutputAmount } from '../../transaction_util';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
+
+type InputType = outputScripts.ScriptType2Of3 | 'p2shP2pk';
 
 describe('WalletUnspent', function () {
   const network = networks.bitcoin;
@@ -68,78 +76,22 @@ describe('WalletUnspent', function () {
     assert.strictEqual(isWalletUnspent({ ...unspent, chain: 0, index: 0 } as Unspent), true);
   });
 
-  describe('unspentSum', function () {
-    const unspents = [
-      mockWalletUnspent(network, 123, {
-        keys: walletKeys,
-        vout: 0,
-      }),
-      mockWalletUnspent(network, 98765, {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    const bigUnspents = [
-      mockWalletUnspent(network, Number.MAX_SAFE_INTEGER, {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    const unspentsBig = [
-      mockWalletUnspent(network, BigInt(123), {
-        keys: walletKeys,
-        vout: 0,
-      }),
-      mockWalletUnspent(network, BigInt(98765), {
-        keys: walletKeys,
-        vout: 1,
-      }),
-    ];
-    it('sums number', function () {
-      assert.strictEqual(unspentSum(unspents, 'number'), 123 + 98765);
-    });
-    it('sums bigint', function () {
-      assert.strictEqual(unspentSum(unspentsBig, 'bigint'), BigInt(123 + 98765));
-    });
-    it('sums zero', function () {
-      assert.strictEqual(unspentSum([], 'number'), 0);
-      assert.strictEqual(unspentSum([], 'number'), 0);
-    });
-    it('throws on mixing number and bigint', function () {
-      assert.throws(() => {
-        unspentSum((unspentsBig as unknown as Unspent<number>[]).concat(unspents), 'number');
-      });
-      assert.throws(() => {
-        unspentSum((unspents as unknown as Unspent<bigint>[]).concat(unspentsBig), 'bigint');
-      });
-    });
-    it('throws on unsafe integer number', function () {
-      assert.throws(() => {
-        unspentSum(bigUnspents.concat(unspents), 'number');
-      });
-    });
-    it('throws on mismatch between unspent and amountType', function () {
-      assert.throws(() => {
-        unspentSum(unspents, 'bigint');
-      });
-      assert.throws(() => {
-        unspentSum(unspentsBig, 'number');
-      });
-    });
-  });
-
   function constructAndSignTransactionUsingPsbt(
-    unspents: WalletUnspent<bigint>[],
+    unspents: Unspent<bigint>[],
     signer: KeyName,
     cosigner: KeyName,
-    scriptType: outputScripts.ScriptType2Of3
+    outputType: outputScripts.ScriptType2Of3
   ): Transaction<bigint> {
     const psbt = createPsbtForNetwork({ network });
     const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
-    addWalletOutputToPsbt(psbt, walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, total - FEE);
+    addWalletOutputToPsbt(psbt, walletKeys, getInternalChainCode(outputType), CHANGE_INDEX, total - FEE);
 
     unspents.forEach((u) => {
-      addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner, network);
+      if (isWalletUnspent(u)) {
+        addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner, network);
+      } else {
+        throw new Error(`invalid unspent`);
+      }
     });
 
     // TODO: Test rederiving scripts from PSBT and keys only
@@ -170,88 +122,145 @@ describe('WalletUnspent', function () {
   }
 
   function constructAndSignTransactionUsingTransactionBuilder<TNumber extends number | bigint>(
-    unspents: WalletUnspent<TNumber>[],
+    unspents: Unspent<TNumber>[],
     signer: string,
     cosigner: string,
     amountType: 'number' | 'bigint' = 'number',
-    scriptType: outputScripts.ScriptType2Of3
+    outputType: outputScripts.ScriptType2Of3
   ): UtxoTransaction<TNumber> {
     const txb = createTransactionBuilderForNetwork<TNumber>(network);
     const total = BigInt(unspentSum<TNumber>(unspents, amountType));
     // Kinda weird, treating entire value as change, but tests the relevant paths
     txb.addOutput(
-      getWalletAddress(walletKeys, getInternalChainCode(scriptType), CHANGE_INDEX, network),
+      getWalletAddress(walletKeys, getInternalChainCode(outputType), CHANGE_INDEX, network),
       toTNumber<TNumber>(total - FEE, amountType)
     );
     unspents.forEach((u) => {
       addToTransactionBuilder(txb, u);
     });
+    unspents.forEach((u, i) => {
+      if (isReplayProtectionUnspent(u, network)) {
+        signInputP2shP2pk(txb, i, replayProtectionKeyPair);
+      }
+    });
+
     [
       WalletUnspentSigner.from(walletKeys, walletKeys[signer], walletKeys[cosigner]),
       WalletUnspentSigner.from(walletKeys, walletKeys[cosigner], walletKeys[signer]),
     ].forEach((walletSigner, nSignature) => {
       unspents.forEach((u, i) => {
-        signInputWithUnspent(txb, i, unspents[i], walletSigner);
+        if (isWalletUnspent(u)) {
+          signInputWithUnspent(txb, i, u, walletSigner);
+        } else if (isReplayProtectionUnspent(u, network)) {
+          return;
+        } else {
+          throw new Error(`unexpected unspent ${u.id}`);
+        }
       });
+
       const tx = nSignature === 0 ? txb.buildIncomplete() : txb.build();
       // Verify each signature for the unspent
       unspents.forEach((u, i) => {
+        if (isReplayProtectionUnspent(u, network)) {
+          // signature verification not implemented for replay protection unspents
+          return;
+        }
         assert.deepStrictEqual(
           verifySignatureWithUnspent(tx, i, unspents, walletKeys),
           walletKeys.triple.map((k) => k === walletKeys[signer] || (nSignature === 1 && k === walletKeys[cosigner]))
         );
       });
     });
+
     return txb.build();
   }
 
-  function runTestSignUnspent<TNumber extends number | bigint>(
-    scriptType: outputScripts.ScriptType2Of3,
-    signer: KeyName,
-    cosigner: KeyName,
-    amountType: 'number' | 'bigint' = 'number',
-    testOutputAmount = toTNumber<TNumber>(defaultTestOutputAmount, amountType)
-  ) {
-    it(`can be signed [scriptType=${scriptType} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
-      const unspents = [
-        mockWalletUnspent(network, testOutputAmount, {
-          keys: walletKeys,
-          chain: getExternalChainCode(scriptType),
-          vout: 0,
-        }),
-        mockWalletUnspent(network, testOutputAmount, {
-          keys: walletKeys,
-          chain: getInternalChainCode(scriptType),
-          vout: 1,
-        }),
-      ];
+  function runTestSignUnspents<TNumber extends number | bigint>({
+    inputScriptTypes,
+    outputScriptType,
+    signer,
+    cosigner,
+    amountType,
+    testOutputAmount,
+  }: {
+    inputScriptTypes: InputType[];
+    outputScriptType: outputScripts.ScriptType2Of3;
+    signer: KeyName;
+    cosigner: KeyName;
+    amountType: 'number' | 'bigint';
+    testOutputAmount: TNumber;
+  }) {
+    it(`can be signed [inputs=${inputScriptTypes} signer=${signer} cosigner=${cosigner} amountType=${amountType}]`, function () {
+      const unspents = inputScriptTypes.map((t, i): Unspent<TNumber> => {
+        if (outputScripts.isScriptType2Of3(t)) {
+          return mockWalletUnspent(network, testOutputAmount, {
+            keys: walletKeys,
+            chain: getExternalChainCode(t),
+            vout: i,
+          });
+        }
+
+        if (t === 'p2shP2pk') {
+          return mockReplayProtectionUnspent(network, toTNumber(1_000, amountType));
+        }
+
+        throw new Error(`invalid input type ${t}`);
+      });
+
       const txbTransaction = constructAndSignTransactionUsingTransactionBuilder(
         unspents,
         signer,
         cosigner,
         amountType,
-        scriptType
+        outputScriptType
       );
       if (amountType === 'bigint') {
+        if (inputScriptTypes.includes('p2shP2pk')) {
+          // FIMXE(BG-47824): add p2shP2pk support for Psbt
+          return;
+        }
         const psbtTransaction = constructAndSignTransactionUsingPsbt(
-          unspents as WalletUnspent<bigint>[],
+          unspents as Unspent<bigint>[],
           signer,
           cosigner,
-          scriptType
+          outputScriptType
         );
         assert.deepStrictEqual(txbTransaction.toBuffer(), psbtTransaction.toBuffer());
       }
     });
   }
 
-  outputScripts.scriptTypes2Of3.forEach((t) => {
+  function getInputScripts(): InputType[][] {
+    return outputScripts.scriptTypes2Of3.flatMap((t) => [
+      [t, t],
+      [t, t, 'p2shP2pk'],
+    ]);
+  }
+
+  function getSignerPairs(): [signer: KeyName, cosigner: KeyName][] {
     const keyNames: KeyName[] = ['user', 'backup', 'bitgo'];
-    keyNames.forEach((signer) => {
-      keyNames.forEach((cosigner) => {
-        if (signer !== cosigner) {
-          runTestSignUnspent(t, signer, cosigner);
-          runTestSignUnspent<bigint>(t, signer, cosigner, 'bigint', BigInt('10000000000000000'));
-        }
+    return keyNames.flatMap((signer) =>
+      keyNames.flatMap((cosigner): [KeyName, KeyName][] => (signer === cosigner ? [] : [[signer, cosigner]]))
+    );
+  }
+
+  getInputScripts().forEach((inputScriptTypes) => {
+    getSignerPairs().forEach(([signer, cosigner]) => {
+      runTestSignUnspents({
+        inputScriptTypes,
+        outputScriptType: 'p2sh',
+        signer,
+        cosigner,
+        amountType: 'number',
+        testOutputAmount: defaultTestOutputAmount,
+      });
+      runTestSignUnspents<bigint>({
+        inputScriptTypes,
+        outputScriptType: 'p2sh',
+        signer,
+        cosigner,
+        amountType: 'bigint',
+        testOutputAmount: BigInt('10000000000000000'),
       });
     });
   });
