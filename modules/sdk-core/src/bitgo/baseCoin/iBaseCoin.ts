@@ -7,7 +7,7 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils from '../utils/tss/eddsa';
-import { IWallet, IWallets, WalletData } from '../wallet';
+import { IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
@@ -144,7 +144,7 @@ export interface VerificationOptions {
 export interface VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: TransactionParams;
-  wallet: IWallet;
+  wallet: Wallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
   walletType?: 'onchain' | 'tss';

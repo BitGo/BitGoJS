@@ -123,7 +123,7 @@ export interface TransactionParams extends BaseTransactionParams {
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild<TNumber>;
-  wallet: IWallet;
+  wallet: Wallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
 }
