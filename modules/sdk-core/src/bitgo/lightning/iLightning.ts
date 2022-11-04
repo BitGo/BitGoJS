@@ -68,8 +68,7 @@ export type WPTransfer = t.TypeOf<typeof WPTransfer>;
 
 export const WithdrawResponse = t.strict(
   {
-    status: t.string,
-    transfer: WPTransfer,
+    txid: t.string,
   },
   'CreateWithdrawalResponse'
 );
