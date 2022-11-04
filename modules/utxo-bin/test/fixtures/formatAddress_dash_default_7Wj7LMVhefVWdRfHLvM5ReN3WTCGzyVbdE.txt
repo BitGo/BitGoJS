@@ -1,0 +1,12 @@
+address: 7Wj7LMVhefVWdRfHLvM5ReN3WTCGzyVbdE
+├─┬ base58
+│ ├── payload: 102f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+│ ├── version: 10
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+├── format: default
+├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│ └─┬ scriptPubKey: [23byte]
+│   ├── type: scripthash
+│   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+│   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
+└── network: dash
