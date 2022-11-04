@@ -1,15 +1,23 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { OutputSpend } from '@bitgo/blockapis';
 
 import { Parser, ParserNode } from './Parser';
 import { AddressParser } from './AddressParser';
 import { formatSat } from './format';
 import { ChainInfo } from './TxParser';
-import { OutputSpend } from '@bitgo/blockapis';
+import { parseHollowSegwitSpend, HollowSegwitSpend, getHollowSpendMessage } from './hollowSegwitSpend';
 
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
   buf.writeUInt32LE(n, 0);
   return buf;
+}
+
+function parseSignatureScript(
+  input: utxolib.TxInput,
+  network: utxolib.Network
+): utxolib.bitgo.ParsedSignatureScript | HollowSegwitSpend {
+  return parseHollowSegwitSpend(input, network) || utxolib.bitgo.parseSignatureScript(input);
 }
 
 export class InputOutputParser extends Parser {
@@ -110,18 +118,33 @@ export class InputOutputParser extends Parser {
     );
   }
 
+  parseSigScriptWithType(
+    tx: utxolib.bitgo.UtxoTransaction,
+    inputIndex: number,
+    parsed: utxolib.bitgo.ParsedSignatureScript | HollowSegwitSpend,
+    prevOutputs?: utxolib.TxOutput[]
+  ): ParserNode {
+    if (parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)) {
+      return this.node('sigScript', parsed.scriptType, [
+        this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
+        this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
+      ]);
+    }
+
+    if (parsed.scriptType === 'p2shP2wshHollow' || parsed.scriptType === 'p2shP2wpkhHollow') {
+      return this.node('sigScript', parsed.scriptType, [this.node('info', getHollowSpendMessage())]);
+    }
+
+    return this.node('sigScript', parsed.scriptType ?? 'unknown');
+  }
+
   parseSigScript(tx: utxolib.bitgo.UtxoTransaction, inputIndex: number, prevOutputs?: utxolib.TxOutput[]): ParserNode {
     try {
-      const parsed = utxolib.bitgo.parseSignatureScript(tx.ins[inputIndex]);
-      return this.node(
-        'sigScript',
-        parsed.scriptType ?? 'unknown',
-        parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)
-          ? [
-              this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
-              this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
-            ]
-          : []
+      return this.parseSigScriptWithType(
+        tx,
+        inputIndex,
+        parseSignatureScript(tx.ins[inputIndex], tx.network),
+        prevOutputs
       );
     } catch (e) {
       return this.node('error', String(e));

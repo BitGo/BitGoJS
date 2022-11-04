@@ -2,6 +2,7 @@
 import * as yargs from 'yargs';
 import * as fs from 'fs';
 import * as process from 'process';
+import { promisify } from 'util';
 
 const stdin: any = process.stdin;
 
@@ -18,6 +19,7 @@ import {
 } from './fetch';
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
+import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -27,6 +29,7 @@ type ArgsParseTransaction = {
   path?: string;
   txid?: string;
   all: boolean;
+  cache: boolean;
   format: OutputFormat;
   fetchAll: boolean;
   fetchStatus: boolean;
@@ -41,6 +44,16 @@ type ArgsParseAddress = {
   convert: boolean;
   address: string;
 };
+
+async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
+  if (cache) {
+    const mkdir = promisify(fs.mkdir);
+    const dir = `${process.env.HOME}/.cache/utxo-bin/`;
+    await mkdir(dir, { recursive: true });
+    return new CachingHttpClient(dir);
+  }
+  return new BaseHttpClient();
+}
 
 function getNetworkForName(name: string) {
   const network = utxolib.networks[name as utxolib.NetworkName];
@@ -100,6 +113,7 @@ export const cmdParseTx = {
       .option('parseOutputScript', { type: 'boolean', default: false })
       .option('maxOutputs', { type: 'number' })
       .option('all', { type: 'boolean', default: false })
+      .option('cache', { type: 'boolean', default: false, description: 'use local cache for http responses' })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
   },
 
@@ -107,9 +121,11 @@ export const cmdParseTx = {
     const network = getNetwork(argv);
     let data;
 
+    const httpClient = await getClient({ cache: argv.cache });
+
     if (argv.txid) {
       console.log('fetching txHex via blockapi...');
-      data = await fetchTransactionHex(argv.txid, network);
+      data = await fetchTransactionHex(httpClient, argv.txid, network);
     }
 
     if (argv.stdin || argv.path === '-') {
@@ -143,10 +159,10 @@ export const cmdParseTx = {
     }
 
     const parsed = getTxParser(argv).parse(tx, {
-      status: argv.fetchStatus ? await fetchTransactionStatus(txid, network) : undefined,
-      prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(tx) : undefined,
-      prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(tx) : undefined,
-      outputSpends: argv.fetchSpends ? await fetchOutputSpends(tx) : undefined,
+      status: argv.fetchStatus ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
+      prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : undefined,
+      prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(httpClient, tx) : undefined,
+      outputSpends: argv.fetchSpends ? await fetchOutputSpends(httpClient, tx) : undefined,
     });
 
     console.log(formatString(parsed, argv));
