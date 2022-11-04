@@ -1,11 +1,12 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import { UnexpectedAddressError, VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import {
   AbstractUtxoCoin,
+  AbstractUtxoCoinWallet,
   Output,
   TransactionExplanation,
   TransactionParams,
@@ -31,7 +32,7 @@ describe('Abstract UTXO Coin:', () => {
       },
     };
 
-    const wallet = sinon.createStubInstance(Wallet, {
+    const wallet = sinon.createStubInstance(AbstractUtxoCoinWallet, {
       migratedFrom: 'v1_wallet_base_address',
     });
 
@@ -154,8 +155,8 @@ describe('Abstract UTXO Coin:', () => {
     });
 
     it('should consider addresses derived from the custom change keys as internal spends', async () => {
-      const signedSendingWallet = sinon.createStubInstance(Wallet, stubData.signedSendingWallet as any);
-      const changeWallet = sinon.createStubInstance(Wallet, stubData.changeWallet as any);
+      const signedSendingWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, stubData.signedSendingWallet as any);
+      const changeWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, stubData.changeWallet as any);
 
       sinon.stub(coin, 'keychains').returns({
         get: sinon.stub().callsFake(({ id }) => {
@@ -192,6 +193,8 @@ describe('Abstract UTXO Coin:', () => {
           },
         ],
       } as any);
+
+      signedSendingWallet._wallet = signedSendingWallet._wallet || { customChangeKeySignatures };
 
       const parsedTransaction = await coin.parseTransaction({
         txParams: { changeAddress, recipients },
@@ -283,11 +286,11 @@ describe('Abstract UTXO Coin:', () => {
       },
     };
 
-    const unsignedSendingWallet = sinon.createStubInstance(Wallet, stubData.unsignedSendingWallet as any);
+    const unsignedSendingWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, stubData.unsignedSendingWallet as any);
 
     it('should fail if the user private key cannot be verified to match the user public key', async () => {
       sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.badKey as any);
-      const verifyWallet = sinon.createStubInstance(Wallet, {});
+      const verifyWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, {});
 
       await coin.verifyTransaction({
         txParams: {
