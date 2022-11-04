@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.0...@bitgo/blockapis@1.3.4) (2022-11-04)
+
+### Bug Fixes
+
+- **blockapis:** include test paths in tsconfig.json ([a964563](https://github.com/BitGo/BitGoJS/commit/a9645637ca399d7d184ac12563624125fadef35e))
+
 ## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.0...@bitgo/blockapis@1.3.2) (2022-10-27)
 
 **Note:** Version bump only for package @bitgo/blockapis
