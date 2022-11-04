@@ -7,7 +7,7 @@ address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
 │   ├── type: scripthash
 │   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
 │   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
-├── network: bitcoin, bitcoincash, bitcoinsv
+├── network: bitcoin, bitcoincash, bitcoinsv, ecash
 └─┬ converted
   ├── bitcoin: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── testnet: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
@@ -21,6 +21,8 @@ address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── dashTest: 8ijvHgPZnCt95j5YRBM2t2BQPxy76bvp6E
   ├── dogecoin: 9vkjF1HRukGmY2VoVSLzLPzmHUjwCvtAad
   ├── dogecoinTest: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
+  ├── ecash: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
+  ├── ecashTest: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
   ├── litecoin: MCDcp3dVnoFJSAQEBBfuuucnubxM6uQRD5
   ├── litecoinTest: QQvSgv1oUExJydWvNYLTnuo5we1tsV5DZ3
   ├── zcash: t3Nt5WVdfp1BUEJBE1jVhE5UJqZYz1DCoRU

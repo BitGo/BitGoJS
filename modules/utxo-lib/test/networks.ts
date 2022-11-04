@@ -6,6 +6,7 @@ import {
   getTestnet,
   isBitcoin,
   isBitcoinCash,
+  isECash,
   isBitcoinGold,
   isBitcoinSV,
   isDogecoin,
@@ -29,7 +30,7 @@ describe('networks', function () {
   const bitcoinSharedMessagePrefix = (network) => isBitcoin(network) || isBitcoinCash(network) || isBitcoinSV(network);
 
   const bitcoinMainnetSharedPubkeyPrefix = (network) =>
-    isMainnet(network) && (isBitcoin(network) || isBitcoinCash(network) || isBitcoinSV(network));
+    isMainnet(network) && (isBitcoin(network) || isBitcoinCash(network) || isECash(network) || isBitcoinSV(network));
 
   const bitcoinMainnetSharedScriptPrefix = (network) => bitcoinMainnetSharedPubkeyPrefix(network);
 
@@ -37,6 +38,7 @@ describe('networks', function () {
     isTestnet(network) &&
     (isBitcoin(network) ||
       isBitcoinCash(network) ||
+      isECash(network) ||
       isBitcoinGold(network) ||
       isBitcoinSV(network) ||
       isLitecoin(network));
@@ -45,6 +47,7 @@ describe('networks', function () {
     isTestnet(network) &&
     (isBitcoin(network) ||
       isBitcoinCash(network) ||
+      isECash(network) ||
       isBitcoinGold(network) ||
       isBitcoinSV(network) ||
       isDogecoin(network));
@@ -53,6 +56,7 @@ describe('networks', function () {
     isMainnet(network) &&
     (isBitcoin(network) ||
       isBitcoinCash(network) ||
+      isECash(network) ||
       isBitcoinGold(network) ||
       isBitcoinSV(network) ||
       isZcash(network));
@@ -106,6 +110,8 @@ describe('networks', function () {
           ['dashTest', false, false],
           ['dogecoin', false, false],
           ['dogecoinTest', false, false],
+          ['ecash', false, false],
+          ['ecashTest', false, false],
           ['litecoin', true, false],
           ['litecoinTest', true, false],
           ['zcash', false, false],

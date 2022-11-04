@@ -23,7 +23,7 @@ export function isSupportedAddressFormat(format: AddressFormat, network: Network
     case 'default':
       return true;
     case 'cashaddr':
-      return getMainnet(network) === networks.bitcoincash;
+      return [networks.bitcoincash, networks.ecash].includes(getMainnet(network));
   }
   throw new Error(`unknown address format ${format}`);
 }
@@ -41,6 +41,7 @@ export function fromOutputScriptWithFormat(outputScript: Buffer, format: Address
 
   switch (getMainnet(network)) {
     case networks.bitcoincash:
+    case networks.ecash:
       return bcashAddress.fromOutputScriptWithFormat(outputScript, format, network);
     default:
       return fromOutputScript(outputScript, network);
@@ -60,6 +61,7 @@ export function toOutputScriptWithFormat(address: string, format: AddressFormat,
 
   switch (getMainnet(network)) {
     case networks.bitcoincash:
+    case networks.ecash:
       return bcashAddress.toOutputScriptWithFormat(address, format, network);
     default:
       return toOutputScript(address, network);
