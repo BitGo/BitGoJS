@@ -1,19 +1,18 @@
+<!--
+# Please be aware of the following when making your pull request:
+
 ## Description
 
-<!--
 Please include a summary of your proposed changes and which issue is being addressed. Please also include relevant motivation and context. List any dependencies that are required for this change.
--->
 
 ## Issue Number
 
-<!--
 Internal Users - Please include the related internal tracking number (e.g. BG-000000).
 External Users - Please link to any relevant github issues as necessary.
- -->
 
 ## Type of change
 
-<!-- Please delete options that are not relevant. -->
+Please delete options that are not relevant.
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
@@ -22,9 +21,7 @@ External Users - Please link to any relevant github issues as necessary.
 
 # How Has This Been Tested?
 
-<!--
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
--->
 
 # Checklist:
 
@@ -37,3 +34,4 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I have made corresponding changes to the documentation and on any new/updated functions and/or methods - [jsdoc](https://jsdoc.app/)
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
+-->
