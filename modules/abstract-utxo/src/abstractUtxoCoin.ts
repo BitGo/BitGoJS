@@ -19,6 +19,7 @@ import {
   BitGoBase,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
+  IBaseCoin,
   InvalidAddressDerivationPropertyError,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
@@ -51,6 +52,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
+  WalletData,
 } from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
 
@@ -120,10 +122,27 @@ export interface TransactionParams extends BaseTransactionParams {
   changeAddress?: string;
 }
 
+// parseTransactions' return type makes use of WalletData's type but with customChangeKeySignatures as required.
+export interface AbstractUtxoCoinWalletData extends WalletData {
+  customChangeKeySignatures: {
+    user: string;
+    backup: string;
+    bitgo: string;
+  };
+}
+
+export class AbstractUtxoCoinWallet extends Wallet {
+  public _wallet: AbstractUtxoCoinWalletData;
+
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
+    super(bitgo, baseCoin, walletData);
+  }
+}
+
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild<TNumber>;
-  wallet: Wallet;
+  wallet: AbstractUtxoCoinWallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
 }
@@ -224,6 +243,7 @@ export interface VerifyUserPublicKeyOptions {
 export interface VerifyTransactionOptions<TNumber extends number | bigint = number>
   extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild<TNumber>;
+  wallet: AbstractUtxoCoinWallet;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
@@ -458,7 +478,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
 
-    const keySignatures = _.get(wallet, '_wallet.keySignatures');
+    const keySignatures = _.get(wallet, '_wallet.keySignatures', {});
 
     if (_.isUndefined(txPrebuild.txHex)) {
       throw new Error('missing required txPrebuild property txHex');
@@ -485,7 +505,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (customChangeWalletId) {
       // fetch keychains from custom change wallet for deriving addresses.
       // These keychains should be signed and this should be verified in verifyTransaction
-      const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures', {});
+      const customChangeKeySignatures = wallet._wallet.customChangeKeySignatures;
       const customChangeWallet: Wallet = await this.wallets().get({ id: customChangeWalletId });
       const customChangeKeys = await fetchKeychains(customChangeWallet);
 

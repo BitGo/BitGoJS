@@ -30,8 +30,8 @@
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
-    "build-docker": "docker build -f ../../Dockerfile --platform=linux/amd64 -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
-    "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
+    "build-docker": "docker build -f ../../Dockerfile --platform=linux/amd64 -t bitgo/express:latest -t bitgo/express:$(jq -r .version < package.json) ../..",
+    "push-docker": "docker push bitgo/express:latest bitgo/express:$(jq -r .version < package.json)",
     "check-fmt": "yarn prettier --check '{src,test}/**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
     "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
