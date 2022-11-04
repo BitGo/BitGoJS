@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.15.0...@bitgo/express@9.19.0) (2022-11-04)
+
+
+### Bug Fixes
+
+* update express configurations ([d434ece](https://github.com/BitGo/BitGoJS/commit/d434ece0ce942473064d0ba2009d4f11dd43bb96))
+
+
+### Features
+
+* add token enablement support in express ([4bd5f9e](https://github.com/BitGo/BitGoJS/commit/4bd5f9ef2388d0e615c1bfbe523f6d75ff223b7a))
+
+
+
+
+
 # [9.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.17.0...@bitgo/express@9.18.0) (2022-11-01)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@1.3.0...@bitgo/sdk-coin-bsc@2.0.0) (2022-11-04)
+
+### Features
+
+- **sdk-core:** add VSS share generation and verification ([619f254](https://github.com/BitGo/BitGoJS/commit/619f2542f9c44f8468460864f78b975a2ccb7b7f))
+
+### BREAKING CHANGES
+
+- **sdk-core:** Key shares require a `v` value for combination.
+  ISSUE: BG-57633
+
 ## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@1.3.0...@bitgo/sdk-coin-bsc@1.3.2) (2022-10-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

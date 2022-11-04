@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.4.0...@bitgo/abstract-utxo@1.8.0) (2022-11-04)
+
+### Bug Fixes
+
+- fix unit-test-all errors ([4adab4d](https://github.com/BitGo/BitGoJS/commit/4adab4dd363cdd4c21bd964fd3b6d5581bd63e46))
+- **sdk-coin-doge:** minor change in types ([db18dd9](https://github.com/BitGo/BitGoJS/commit/db18dd9f8a62432c89db76a9dbd81c7b3c586fc2))
+- **utxo-lib:** fixed unchecked cast to Number ([2f1d962](https://github.com/BitGo/BitGoJS/commit/2f1d9628bd9ec51a12d0c8dc0adeb60e94f32b1d))
+
+### Features
+
+- **utxo-lib:** bigintify dogecoin specific functions ([d5830a6](https://github.com/BitGo/BitGoJS/commit/d5830a6d6c17de5cefb138a639b94c0cbb37f5f0))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.4.0...@bitgo/abstract-utxo@1.6.0) (2022-10-27)
 
 ### Bug Fixes
