@@ -2709,7 +2709,7 @@ export class Wallet implements IWallet {
         const intentOption: IntentOptionsBase = {
           custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
-          intentType: 'signmessage',
+          intentType: 'signMessage',
           isTss: true,
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
