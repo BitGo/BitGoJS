@@ -18,7 +18,7 @@ import {
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
-import { unsign } from './psbt/inputUpdate';
+import { unsign } from './psbt/fromHalfSigned';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
