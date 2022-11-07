@@ -281,6 +281,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
           n: userToBitgoShare.n,
+          v: userToBitgoShare.v,
         },
         {
           from: 'backup',
@@ -288,6 +289,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
           n: backupToBitgoShare.n,
+          v: backupToBitgoShare.v,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
@@ -465,6 +467,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: bitGoToRecipientShare.publicShare,
           encryptedPrivateShare: bitGoToRecipientShare.privateShare,
           n: bitGoToRecipientShare.n!,
+          v: bitGoToRecipientShare.v,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
         senderPublicArmor: bitgoPublicGpgKey.armor(),

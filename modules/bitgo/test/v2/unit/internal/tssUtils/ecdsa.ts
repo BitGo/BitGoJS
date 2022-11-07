@@ -199,8 +199,7 @@ describe('TSS Ecdsa Utils:', async function () {
       should.equal(backupToBitgoEncryptedNShare.publicShare, encryptedNShare.publicShare);
     });
 
-    // TODO BG-61214 renable VSS
-    xit('should generate TSS key chains', async function () {
+    it('should generate TSS key chains', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
@@ -265,8 +264,7 @@ describe('TSS Ecdsa Utils:', async function () {
       backupKeychain.provider?.should.equal(backupProvider);
     });
 
-    // TODO BG-61214 renable VSS
-    xit('should generate TSS key chains with optional params', async function () {
+    it('should generate TSS key chains with optional params', async function () {
       const enterprise = 'enterprise';
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
@@ -718,6 +716,7 @@ describe('TSS Ecdsa Utils:', async function () {
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
           n: userToBitgoShare.n,
+          v: userToBitgoShare.v,
         },
         {
           from: 'bitgo',
@@ -725,6 +724,7 @@ describe('TSS Ecdsa Utils:', async function () {
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
           n: backupToBitgoShare.n,
+          v: backupToBitgoShare.v,
         },
       ],
     };

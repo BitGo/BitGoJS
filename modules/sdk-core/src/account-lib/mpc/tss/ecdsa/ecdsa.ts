@@ -108,17 +108,16 @@ export default class Ecdsa {
     // Add secret shares
     const x = allShares.map((participant) => hexToBigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
 
-    // TODO BG-61214 renable VSS
-    // // Verify shares.
-    // for (const share of nShares) {
-    //   if ('v' in share) {
-    //     try {
-    //       Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
-    //     } catch (err) {
-    //       throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
-    //     }
-    //   }
-    // }
+    // Verify shares.
+    for (const share of nShares) {
+      if (share.v) {
+        try {
+          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
+        } catch (err) {
+          throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
+        }
+      }
+    }
 
     // Chaincode will be used in future when we add support for key derivation for ecdsa
     const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
