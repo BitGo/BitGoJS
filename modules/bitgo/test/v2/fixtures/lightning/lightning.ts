@@ -111,39 +111,7 @@ export default {
   },
 
   withdraw: {
-    transfer: {
-      entries: [
-        {
-          address: '2NCDoKg3j3TrkiRa17npwnenbpadEaw3aFS',
-          wallet: '62acd3e4d1d77600074c70829a0940d8',
-          value: -30000,
-          valueString: '-30000',
-        },
-      ],
-      id: '62f428a4a8fe2800087908e901f26ae9',
-      coin: 'tbtc',
-      wallet: '62acd3e4d1d77600074c70829a0940d8',
-      heightId: '999999999-62f428a4a8fe2800087908e901f26ae9',
-      date: '2022-08-10T21:52:36.147Z',
-      type: 'send',
-      value: -30000,
-      valueString: '-30000',
-      baseValue: -30000,
-      baseValueString: '-30000',
-      payGoFee: 0,
-      payGoFeeString: '0',
-      state: 'pendingApproval',
-      instant: false,
-      isReward: false,
-      isFee: false,
-      tags: ['62acd3e4d1d77600074c70829a0940d8'],
-      history: [{ date: '2022-08-10T21:52:36.147Z', action: 'created' }],
-      coinSpecific: { lightning: true },
-      sequenceId: '3578',
-      createdTime: '2022-08-10T21:52:36.147Z',
-      sendAccounting: [],
-    },
-    status: 'unconfirmed',
+    txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
   },
 
   deposit: {
