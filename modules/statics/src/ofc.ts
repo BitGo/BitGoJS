@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { BaseNetwork, Networks, OfcNetwork } from './networks';
 
 export interface OfcConstructorOptions {
@@ -6,6 +6,7 @@ export interface OfcConstructorOptions {
   name: string;
   network: BaseNetwork;
   asset: UnderlyingAsset;
+  baseUnit: BaseUnit;
   features: CoinFeature[];
   decimalPlaces: number;
   isToken: boolean;
@@ -71,10 +72,10 @@ export function ofc(
   asset: UnderlyingAsset,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
-  isToken: boolean = true,
+  isToken = true,
   /** OFC tokens use SECP256K1 under the hood even if the chain doesn't **/
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
@@ -91,6 +92,7 @@ export function ofc(
       asset,
       kind,
       primaryKeyCurve,
+      baseUnit: BaseUnit.OFC,
     })
   );
 }
@@ -117,10 +119,10 @@ export function tofc(
   asset: UnderlyingAsset,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
-  isToken: boolean = true,
+  isToken = true,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -136,6 +138,7 @@ export function tofc(
       asset,
       kind,
       primaryKeyCurve,
+      baseUnit: BaseUnit.OFC,
     })
   );
 }
@@ -162,11 +165,11 @@ export function ofcerc20(
   asset: UnderlyingAsset,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
-  isToken: boolean = true,
-  addressCoin: string = 'eth',
+  isToken = true,
+  addressCoin = 'eth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -183,6 +186,7 @@ export function ofcerc20(
       kind,
       addressCoin,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -208,11 +212,11 @@ export function tofcerc20(
   asset: UnderlyingAsset,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
-  isToken: boolean = true,
-  addressCoin: string = 'teth',
+  isToken = true,
+  addressCoin = 'teth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -229,6 +233,7 @@ export function tofcerc20(
       kind,
       addressCoin,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }

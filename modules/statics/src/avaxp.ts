@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { AvalancheNetwork } from './networks';
 
 export interface AVAXPConstructorOptions {
@@ -26,6 +26,7 @@ export class AVAXPCoin extends BaseCoin {
       kind: CoinKind.CRYPTO,
       isToken: false,
       decimalPlaces: 9,
+      baseUnit: BaseUnit.ETH,
     });
 
     this.network = options.network;
@@ -58,7 +59,7 @@ export function avaxp(
   network: AvalancheNetwork,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AVAXPCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   /** All UTXOs BitGo supports are SECP256K1 **/
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1

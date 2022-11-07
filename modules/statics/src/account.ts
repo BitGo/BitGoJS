@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
@@ -8,6 +8,7 @@ export interface AccountConstructorOptions {
   alias?: string;
   network: AccountNetwork;
   asset: UnderlyingAsset;
+  baseUnit: BaseUnit;
   features: CoinFeature[];
   decimalPlaces: number;
   isToken: boolean;
@@ -392,6 +393,7 @@ export function account(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  baseUnit: BaseUnit,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix = '',
@@ -405,6 +407,7 @@ export function account(
       network,
       prefix,
       suffix,
+      baseUnit,
       features,
       decimalPlaces,
       isToken,
@@ -453,6 +456,7 @@ export function erc20(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -520,6 +524,7 @@ export function erc721(
       asset: UnderlyingAsset.ERC721,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -585,6 +590,7 @@ export function erc1155(
       asset: UnderlyingAsset.ERC1155,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -635,6 +641,7 @@ export function erc20CompatibleAccountCoin(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  baseUnit: BaseUnit,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
@@ -653,6 +660,7 @@ export function erc20CompatibleAccountCoin(
       asset,
       isToken: false,
       primaryKeyCurve,
+      baseUnit,
     })
   );
 }
@@ -696,6 +704,7 @@ export function celoToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -766,6 +775,7 @@ export function bscToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.BSC,
     })
   );
 }
@@ -837,6 +847,7 @@ export function stellarToken(
       network,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.XLM,
     })
   );
 }
@@ -908,6 +919,7 @@ export function tronToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.TRX,
     })
   );
 }
@@ -991,6 +1003,7 @@ export function hederaCoin(
       network,
       isToken: false,
       primaryKeyCurve,
+      baseUnit: BaseUnit.HBAR,
     })
   );
 }
@@ -1037,6 +1050,7 @@ export function hederaToken(
       network,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.HBAR,
     })
   );
 }
@@ -1084,6 +1098,7 @@ export function algoToken(
       network,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ALGO,
     })
   );
 }
@@ -1157,6 +1172,7 @@ export function eosToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.EOS,
     })
   );
 }
@@ -1227,6 +1243,7 @@ export function solToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.SOL,
     })
   );
 }
@@ -1299,6 +1316,7 @@ export function adaToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ADA,
     })
   );
 }
@@ -1370,6 +1388,7 @@ export function avaxErc20(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -1453,6 +1472,7 @@ export function polygonErc20(
       asset,
       isToken: true,
       primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
@@ -1535,6 +1555,7 @@ export function fiat(
       isToken,
       asset,
       primaryKeyCurve,
+      baseUnit: BaseUnit.FIAT,
     })
   );
 }

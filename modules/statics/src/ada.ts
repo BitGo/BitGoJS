@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { AdaNetwork } from './networks';
 
 export interface AdaConstructorOptions {
@@ -29,6 +29,7 @@ export class Ada extends BaseCoin {
       kind: CoinKind.CRYPTO,
       isToken: false,
       decimalPlaces: 6,
+      baseUnit: BaseUnit.ADA,
     });
 
     this.network = options.network;
