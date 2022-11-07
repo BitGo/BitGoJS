@@ -251,6 +251,8 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
   const feeRate = {
     bch: 20,
     tbch: 20,
+    bcha: 20,
+    tbcha: 20,
     bsv: 20,
     tbsv: 20,
     btc: 80,
