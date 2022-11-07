@@ -6,4 +6,5 @@ export const supportedCrossChainRecoveries = {
   ltc: ['btc', 'bch', 'bsv', 'doge'],
   bsv: ['btc', 'ltc', 'bch', 'doge'],
   doge: ['btc', 'bch', 'ltc', 'bsv'],
+  bcha: ['btc', 'bch'],
 };
