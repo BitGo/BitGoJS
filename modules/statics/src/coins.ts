@@ -62,8 +62,8 @@ const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
   utxo('tbch', 'Testnet Bitcoin Cash', Networks.test.bitcoinCash, UnderlyingAsset.BCH),
-  utxo('bcha', 'Bitcoin ABC', Networks.main.bitcoinABC, UnderlyingAsset.BCHA),
-  utxo('tbcha', 'Testnet Bitcoin ABC', Networks.test.bitcoinABC, UnderlyingAsset.BCHA),
+  utxo('bcha', 'ECash', Networks.main.eCash, UnderlyingAsset.BCHA),
+  utxo('tbcha', 'Testnet ECash', Networks.test.eCash, UnderlyingAsset.BCHA),
   utxo('bsv', 'Bitcoin SV', Networks.main.bitcoinSV, UnderlyingAsset.BSV),
   utxo('tbsv', 'Testnet Bitcoin SV', Networks.test.bitcoinSV, UnderlyingAsset.BSV),
   utxo('btc', 'Bitcoin', Networks.main.bitcoin, UnderlyingAsset.BTC),

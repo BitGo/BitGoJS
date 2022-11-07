@@ -253,21 +253,6 @@ class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   utxolibName = 'bitcoincashTestnet';
   explorerUrl = 'https://www.blockchain.com/bch-testnet/tx/';
 }
-
-class BitcoinABC extends Mainnet implements UtxoNetwork {
-  name = 'BitcoinABC';
-  family = CoinFamily.BCHA;
-  utxolibName = 'bitcoincash';
-  explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
-}
-
-class BitcoinABCTestnet extends Testnet implements UtxoNetwork {
-  name = 'BitcoinABCTestnet';
-  family = CoinFamily.BCHA;
-  utxolibName = 'bitcoincashTestnet';
-  explorerUrl = undefined;
-}
-
 class BitcoinSV extends Mainnet implements UtxoNetwork {
   name = 'BitcoinSV';
   family = CoinFamily.BSV;
@@ -322,6 +307,20 @@ class DogecoinTestnet extends Testnet implements UtxoNetwork {
   family = CoinFamily.DOGE;
   utxolibName = 'dogecoinTest';
   explorerUrl = 'https://blockexplorer.one/dogecoin/testnet/tx/';
+}
+
+class ECash extends Mainnet implements UtxoNetwork {
+  name = 'ECash';
+  family = CoinFamily.BCHA;
+  utxolibName = 'ecash';
+  explorerUrl = 'https://blockchair.com/ecash';
+}
+
+class ECashTestnet extends Testnet implements UtxoNetwork {
+  name = 'ECashTestnet';
+  family = CoinFamily.BCHA;
+  utxolibName = 'ecashTest';
+  explorerUrl = undefined;
 }
 
 class Polkadot extends Mainnet implements DotNetwork {
@@ -706,7 +705,6 @@ export const Networks = {
     avalancheP: Object.freeze(new AvalancheP()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
-    bitcoinABC: Object.freeze(new BitcoinABC()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
     bsc: Object.freeze(new BinanceSmartChain()),
@@ -715,6 +713,7 @@ export const Networks = {
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
     dot: Object.freeze(new Polkadot()),
+    eCash: Object.freeze(new ECash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
     ethereum2: Object.freeze(new Ethereum2()),
@@ -745,7 +744,6 @@ export const Networks = {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
-    bitcoinABC: Object.freeze(new BitcoinABCTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
@@ -753,6 +751,7 @@ export const Networks = {
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
     dot: Object.freeze(new PolkadotTestnet()),
+    eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
