@@ -82,6 +82,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
   lowFeeTxid?: string;
+  custodianTransactionId?: string;
 }
 export interface IntentRecipient {
   address: {
