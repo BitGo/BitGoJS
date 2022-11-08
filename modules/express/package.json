@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "9.19.0",
+  "version": "9.20.0",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
