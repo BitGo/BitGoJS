@@ -21,8 +21,4 @@ export class Tbch extends Bch {
   getFullName() {
     return 'Testnet Bitcoin Cash';
   }
-
-  getAddressPrefix() {
-    return 'bchtest';
-  }
 }

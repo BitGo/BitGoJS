@@ -23,10 +23,6 @@ export class Bch extends AbstractUtxoCoin {
     return 'Bitcoin Cash';
   }
 
-  getAddressPrefix() {
-    return 'bitcoincash';
-  }
-
   supportsBlockTarget() {
     return false;
   }
