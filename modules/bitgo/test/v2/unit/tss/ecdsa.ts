@@ -91,7 +91,7 @@ describe('Ecdsa tss helper functions tests', function () {
         decryptedNShare.u.should.equal(userKeyShare.nShares[i].u);
         const publicKey = userKeyShare.pShare.y + userKeyShare.pShare.chaincode;
         encryptedNShare.i.should.equal(i);
-        encryptedNShare.v!.should.equal(userKeyShare.nShares[3].v!);
+        encryptedNShare.vssProof!.should.equal(userKeyShare.nShares[3].v!);
         encryptedNShare.j.should.equal(1);
         encryptedNShare.publicShare.should.equal(publicKey);
       }

@@ -321,7 +321,7 @@ export async function encryptNShare(
     publicShare,
     encryptedPrivateShare,
     n: nShare.n,
-    v: nShare.v,
+    vssProof: nShare.v,
   };
 }
 
@@ -371,7 +371,7 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
     y: encryptedNShare.nShare.publicShare.slice(0, 66),
     u: u,
     chaincode: encryptedNShare.nShare.publicShare.slice(66, 130),
-    v: encryptedNShare.nShare.v,
+    v: encryptedNShare.nShare.vssProof,
   };
 
   return nShare;

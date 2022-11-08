@@ -565,14 +565,16 @@ describe('TSS Utils:', async function () {
         {
           from: 'bitgo',
           to: 'user',
-          publicShare: bitgoKeyShare.yShares[1].y + bitgoKeyShare.yShares[1].v + bitgoKeyShare.yShares[1].chaincode,
+          publicShare: bitgoKeyShare.yShares[1].y + bitgoKeyShare.yShares[1].chaincode,
           privateShare: encryptedBitgoToUserMessage.toString(),
+          vssProof: bitgoKeyShare.yShares[1].v,
         },
         {
           from: 'bitgo',
           to: 'backup',
-          publicShare: bitgoKeyShare.yShares[2].y + bitgoKeyShare.yShares[2].v + bitgoKeyShare.yShares[2].chaincode,
+          publicShare: bitgoKeyShare.yShares[2].y + bitgoKeyShare.yShares[2].chaincode,
           privateShare: encryptedBitgoToBackupMessage.toString(),
+          vssProof: bitgoKeyShare.yShares[2].v,
         },
       ],
     };
