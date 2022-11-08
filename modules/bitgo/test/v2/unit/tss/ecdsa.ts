@@ -84,15 +84,14 @@ describe('Ecdsa tss helper functions tests', function () {
       nock.cleanAll();
     });
 
-    // TODO BG-61214 renable VSS
-    xit('should encrypt n shares foreach user', async function () {
-
+    it('should encrypt n shares foreach user', async function () {
       for (let i = 2; i <= 3; i++) {
         const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey);
         const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, senderPublicArmor: userGpgKeypair.publicKey, recipientPrivateArmor: bitgoGpgKeypair.privateKey });
         decryptedNShare.u.should.equal(userKeyShare.nShares[i].u);
-        const publicKey = userKeyShare.pShare.y + userKeyShare.nShares[3].v + userKeyShare.pShare.chaincode;
+        const publicKey = userKeyShare.pShare.y + userKeyShare.pShare.chaincode;
         encryptedNShare.i.should.equal(i);
+        encryptedNShare.v!.should.equal(userKeyShare.nShares[3].v!);
         encryptedNShare.j.should.equal(1);
         encryptedNShare.publicShare.should.equal(publicKey);
       }
@@ -120,8 +119,7 @@ describe('Ecdsa tss helper functions tests', function () {
       nock.cleanAll();
     });
 
-    // TODO BG-58151 re-enable test
-    xit('should create combined user key', async function () {
+    it('should create combined user key', async function () {
       const bitgoToUserShare = await ECDSAMethods.encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, false);
       const backupToUserShare = await ECDSAMethods.encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, false);
       const combinedUserKey = await createCombinedKey(
@@ -148,8 +146,7 @@ describe('Ecdsa tss helper functions tests', function () {
       should.not.exist(combinedUserKey.signingMaterial.userNShare);
     });
 
-    // TODO BG-61214 renable VSS
-    xit('should create combined backup key', async function () {
+    it('should create combined backup key', async function () {
       const bitgoToBackupShare = await encryptNShare(
         bitgoKeyShare,
         2,
@@ -184,8 +181,7 @@ describe('Ecdsa tss helper functions tests', function () {
       should.not.exist(combinedBackupKey.signingMaterial.backupNShare);
     });
 
-    // TODO BG-58151 re-enable test
-    xit('should fail if common keychains do not match', async function () {
+    it('should fail if common keychains do not match', async function () {
       const bitgoToUserShare = await encryptNShare(
         bitgoKeyShare,
         1,
@@ -213,8 +209,7 @@ describe('Ecdsa tss helper functions tests', function () {
       ).should.be.rejectedWith('Common keychains do not match');
     });
 
-    // TODO BG-58151 re-enable test
-    xit('should fail if gpg keys are mismatched', async function () {
+    it('should fail if gpg keys are mismatched', async function () {
       const bitgoToUserShare = await encryptNShare(
         bitgoKeyShare,
         1,

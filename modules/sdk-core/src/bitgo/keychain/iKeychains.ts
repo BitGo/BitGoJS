@@ -76,6 +76,7 @@ export interface ApiKeyShare {
   privateShare: string;
   privateShareProof?: string;
   n?: string;
+  v?: string;
 }
 
 export interface CreateBackupOptions {
