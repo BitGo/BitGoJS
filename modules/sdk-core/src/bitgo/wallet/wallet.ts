@@ -2537,6 +2537,7 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
             feeOptions,
+            custodianTransactionId: params.custodianTransactionId,
           },
           apiVersion,
           params.preview
