@@ -1,5 +1,5 @@
-// Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
-// are listed in the array.
+// Supported cross-chain recovery routes. The object index is the coin to be recovered, and the value is
+// an array of valid coins for recipient wallets of the original accidental/unintentional deposit.
 export const supportedCrossChainRecoveries = {
   btc: ['bch', 'ltc', 'bsv', 'doge'],
   bch: ['btc', 'ltc', 'bsv', 'doge'],
