@@ -2,7 +2,7 @@
 # An elaborated scheme to build all the dependencies of all packages first in a cached layer
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
-FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446 AS filter-packages-json
+FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b AS filter-packages-json
 MAINTAINER Developer Relations <developer-relations-team@bitgo.com>
 
 COPY package.json yarn.lock lerna.json ./
@@ -12,8 +12,8 @@ COPY modules ./modules
 # delete all the non package.json files under `./modules/`
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
-FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446 AS builder
-RUN apk add --no-cache git python3 make g++ libtool autoconf automake
+FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b AS builder
+RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
@@ -31,8 +31,8 @@ RUN \
     rm -r modules/*/src
 
 
-FROM node:16-alpine@sha256:bf1e1c4761cd5e417b5ed60d5c599266270b728878089efcd1d63a8bd1dde446
-RUN apk add --no-cache tini
+FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b
+RUN apt-get update && apt-get install -y tini
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
@@ -195,4 +195,4 @@ USER node
 ENV NODE_ENV production
 ENV BITGO_BIND 0.0.0.0
 EXPOSE 3080
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]
