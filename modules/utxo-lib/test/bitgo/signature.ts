@@ -59,12 +59,12 @@ function runTestCheckScriptStructure<TNumber extends number | bigint = number>(
     let tx;
 
     if (scriptType === 'p2shP2pk') {
-      tx = getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, signer1, network, amountType);
+      tx = getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, signer1, network, { amountType });
     } else {
       if (!signer2) {
         throw new Error(`must set cosigner`);
       }
-      tx = getFullSignedTransaction2Of3<TNumber>(fixtureKeys, signer1, signer2, scriptType, network, amountType);
+      tx = getFullSignedTransaction2Of3<TNumber>(fixtureKeys, signer1, signer2, scriptType, network, { amountType });
     }
 
     const { script, witness } = tx.ins[0];
@@ -162,7 +162,7 @@ function runTestParseScript<TNumber extends number | bigint = number>(
   if (scriptType !== 'p2shP2pk') {
     it(`parses half-signed inputs [${getNetworkName(network)} ${scriptType} ${amountType}]`, async function () {
       await testParseSignedInputs(
-        getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+        getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
         'halfSigned',
         scriptType,
         { expectedPlaceholderSignatures: scriptType === 'p2tr' ? 1 : 2 }
@@ -173,14 +173,14 @@ function runTestParseScript<TNumber extends number | bigint = number>(
   it(`parses full-signed inputs [${getNetworkName(network)} ${scriptType} ${amountType}]`, async function () {
     if (scriptType === 'p2shP2pk') {
       await testParseSignedInputs(
-        getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, k1, network, amountType),
+        getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, k1, network, { amountType }),
         'fullSigned',
         scriptType,
         { expectedPlaceholderSignatures: 0 }
       );
     } else {
       await testParseSignedInputs(
-        getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+        getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
         'fullSigned',
         scriptType,
         { expectedPlaceholderSignatures: 0 }
@@ -294,7 +294,7 @@ function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
     )} ${amountType}`, function () {
       it(`verifies half-signed`, function () {
         checkSignTransaction(
-          getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+          getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
           scriptType,
           [k1],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
@@ -303,7 +303,7 @@ function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
 
       it(`verifies full-signed`, function () {
         checkSignTransaction(
-          getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+          getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
           scriptType,
           [k1, k2],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
@@ -314,7 +314,7 @@ function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
     describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${amountType} unsigned`, function () {
       it(`verifies unsigned`, function () {
         checkSignTransaction(
-          getUnsignedTransaction2Of3<TNumber>(fixtureKeys, scriptType, network, amountType),
+          getUnsignedTransaction2Of3<TNumber>(fixtureKeys, scriptType, network, { amountType }),
           scriptType,
           [],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
