@@ -1815,6 +1815,17 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'twdoge',
+    'Test Wrapped DOGE',
+    8,
+    '0x9338e875972294cf04b275c17828807d01375085',
+    UnderlyingAsset.TWDOGE,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     'tmatic',
     'Test Polygon',
     18,

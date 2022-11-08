@@ -744,6 +744,7 @@ export enum UnderlyingAsset {
   TRYB = 'tryb',
   TRYX = 'tryx',
   TUSD = 'tusd',
+  TWDOGE = 'twdoge',
   TXL = 'txl',
   UAIR = 'uair',
   UCO = 'uco',
