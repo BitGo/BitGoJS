@@ -1,8 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FC, PropsWithChildren } from 'react';
 import Navbar from '../Navbar/index';
 import { AppContainer, RouteContainer } from './styles';
 
-const Layout: FunctionComponent = ({ children }) => {
+const Layout: FC<PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <AppContainer>
       <Navbar />
