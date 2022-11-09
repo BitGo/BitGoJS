@@ -3,6 +3,7 @@ export * as keyutil from './keyutil';
 export * as nonStandardHalfSigned from './nonStandardHalfSigned';
 export * as outputScripts from './outputScripts';
 export * from './dash';
+export * from './parseInput';
 export * from './signature';
 export * from './transaction';
 export * from './types';

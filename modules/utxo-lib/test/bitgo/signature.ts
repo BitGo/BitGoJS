@@ -289,8 +289,9 @@ function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
   amountType: 'number' | 'bigint' = 'number'
 ) {
   if (k1 && k2) {
-    describe(`verifySignature
-${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)} ${amountType}`, function () {
+    describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(
+      k2
+    )} ${amountType}`, function () {
       it(`verifies half-signed`, function () {
         checkSignTransaction(
           getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
