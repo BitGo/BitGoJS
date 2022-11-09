@@ -21,8 +21,4 @@ export class Tbsv extends Bsv {
   getFullName(): string {
     return 'Testnet Bitcoin SV';
   }
-
-  getAddressPrefix(): string {
-    return 'bchtest';
-  }
 }

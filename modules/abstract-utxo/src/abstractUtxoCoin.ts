@@ -293,71 +293,22 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Helper to get the version number for an address
-   */
-  protected getAddressVersion(address: string): number | undefined {
-    // try decoding as base58 first
-    try {
-      const { version } = utxolib.address.fromBase58Check(address, this.network);
-      return version;
-    } catch (e) {
-      // try next format
-    }
-
-    // if coin does not support script types with bech32 encoding, do not attempt to parse
-    if (!this.supportsAddressType('p2wsh') && !this.supportsAddressType('p2tr')) {
-      return;
-    }
-
-    // otherwise, try decoding as bech32
-    try {
-      const { version, prefix } = utxolib.address.fromBech32(address);
-      if (_.isString(this.network.bech32) && prefix === this.network.bech32) {
-        return version;
-      }
-    } catch (e) {
-      // ignore errors, just fall through and return undefined
-    }
-  }
-
-  /**
-   * Helper to get the bech32 prefix for an address
-   */
-  protected getAddressPrefix(address: string): string | undefined {
-    // otherwise, try decoding as bech32
-    try {
-      const { prefix } = utxolib.address.fromBech32(address);
-      return prefix;
-    } catch (e) {
-      // ignore errors, just fall through and return undefined
-    }
-  }
-
-  /**
    * Check if an address is valid
    * @param address
-   * @param forceAltScriptSupport
+   * @param param
    */
-  isValidAddress(address: string, forceAltScriptSupport = false): boolean {
-    const validVersions: number[] = [this.network.pubKeyHash, this.network.scriptHash];
-    if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
-      validVersions.push(this.altScriptHash);
+  isValidAddress(address: string, param?: { anyFormat: boolean } | /* legacy parameter */ boolean): boolean {
+    if (typeof param === 'boolean' && param) {
+      throw new Error('deprecated');
     }
 
-    const addressVersion = this.getAddressVersion(address);
-
-    // the address version needs to be among the valid ones
-    const addressVersionValid = _.isNumber(addressVersion) && validVersions.includes(addressVersion);
-    const addressPrefix = this.getAddressPrefix(address);
-
-    if (!this.supportsAddressType('p2wsh') || _.isUndefined(addressPrefix)) {
-      return addressVersionValid;
+    const formats = param && param.anyFormat ? undefined : ['default' as const];
+    try {
+      utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    // address has a potential bech32 prefix, validate that
-    return (
-      _.isString(this.network.bech32) && this.network.bech32 === addressPrefix && address === address.toLowerCase()
-    );
   }
 
   /**

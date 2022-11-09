@@ -258,7 +258,10 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
     throw new Error('missing backupKey');
   }
 
-  if (_.isUndefined(params.recoveryDestination) || !coin.isValidAddress(params.recoveryDestination)) {
+  if (
+    _.isUndefined(params.recoveryDestination) ||
+    !coin.isValidAddress(params.recoveryDestination, { anyFormat: true })
+  ) {
     throw new Error('invalid recoveryDestination');
   }
 
