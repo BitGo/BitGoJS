@@ -295,14 +295,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   /**
    * Check if an address is valid
    * @param address
-   * @param forceAltScriptSupport
+   * @param param
    */
-  isValidAddress(address: string, forceAltScriptSupport = false): boolean {
-    if (forceAltScriptSupport) {
-      throw new Error(`deprecated`);
+  isValidAddress(address: string, param?: { anyFormat: boolean } | /* legacy parameter */ boolean): boolean {
+    if (typeof param === 'boolean' && param) {
+      throw new Error('deprecated');
     }
+
+    const formats = param && param.anyFormat ? undefined : ['default' as const];
     try {
-      utxolib.addressFormat.toOutputScriptTryFormats(address, this.network);
+      utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
       return true;
     } catch (e) {
       return false;
