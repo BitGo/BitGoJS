@@ -14,6 +14,7 @@ import {
   TransactionType,
   InvalidAddressError,
   UnexpectedAddressError,
+  ITransactionRecipient,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import {
@@ -21,8 +22,12 @@ import {
   TransactionFee,
   ExplainTransactionOptions,
   AvaxpVerifyTransactionOptions,
+  AvaxpTransactionStakingOptions,
 } from './iface';
+import utils from './lib/utils';
 import _ from 'lodash';
+import BigNumber from 'bignumber.js';
+import { isValidAddress } from 'ethereumjs-util';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -54,6 +59,66 @@ export class AvaxP extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /**
+   * Check if staking txn is valid, based on expected tx params.
+   *
+   * @param {AvaxpTransactionStakingOptions} stakingOptions expected staking params to check against
+   * @param {AvaxpLib.TransactionExplanation} explainedTx explained staking transaction
+   */
+  validateStakingTx(
+    stakingOptions: AvaxpTransactionStakingOptions,
+    explainedTx: AvaxpLib.TransactionExplanation
+  ): void {
+    const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
+    const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+    if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+      throw new Error('Tx outputs does not match with expected txParams');
+    }
+    if (stakingOptions?.amount !== explainedTx.outputAmount) {
+      throw new Error('Tx total amount does not match with expected total amount field');
+    }
+  }
+
+  /**
+   * Check if export txn is valid, based on expected tx params.
+   *
+   * @param {ITransactionRecipient[]} recipients expected recipients and info
+   * @param {string} memo txn memo to verify
+   * @param {AvaxpLib.TransactionExplanation} explainedTx explained export transaction
+   */
+  validateExportTx(
+    recipients: ITransactionRecipient[],
+    memo: string,
+    explainedTx: AvaxpLib.TransactionExplanation
+  ): void {
+    if (recipients.length !== 1 || explainedTx.outputs.length !== 1) {
+      throw new Error('Export Tx requires one recipient');
+    }
+
+    const totalAmount = new BigNumber(recipients[0].amount);
+
+    // TODO: BG-61019 - Take into consideration fees for ImportInC to get exact amount
+    if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+      throw new Error(
+        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${totalAmount}`
+      );
+    }
+
+    if (explainedTx.outputs && !utils.isValidAddress(explainedTx.outputs[0].address)) {
+      throw new Error(`Invalid P-chain address ${explainedTx.outputs[0].address}`);
+    }
+
+    const memoValue = memo.split('~');
+    if (!isValidAddress(memoValue[0])) {
+      throw new Error(`Txn memo must contain valid C-chain address destination, received: ${memo}`);
+    } else if (memoValue[0] !== recipients[0].address) {
+      throw new Error(
+        `Invalid C-chain receive address ${memoValue[0]}, does not match expected params address ${recipients[0].address}`
+      );
+    }
+  }
+
   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
     const txHex = params.txPrebuild && params.txPrebuild.txHex;
     if (!txHex) {
@@ -69,6 +134,7 @@ export class AvaxP extends BaseCoin {
     const explainedTx = tx.explainTransaction();
 
     const { type, stakingOptions, memo } = params.txParams;
+
     if (!type || explainedTx.type !== TransactionType[type]) {
       throw new Error('Tx type does not match with expected txParams type');
     }
@@ -78,16 +144,18 @@ export class AvaxP extends BaseCoin {
     switch (explainedTx.type) {
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
-        if (!params.txParams.recipients || params.txParams.recipients.length === 0) {
-          const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
-          const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
-
-          if (!_.isEqual(filteredOutputs, filteredRecipients)) {
-            throw new Error('Tx outputs does not match with expected txParams');
-          }
-          if (stakingOptions.amount !== explainedTx.outputAmount) {
-            throw new Error('Tx total amount does not match with expected total amount field');
-          }
+        if (params.txParams.recipients && params.txParams.recipients.length !== 0) {
+          throw new Error('Stake Tx does not require recipients');
+        }
+        this.validateStakingTx(stakingOptions, explainedTx);
+        break;
+      case TransactionType.Export:
+        if (!params.txParams.recipients) {
+          throw new Error('Export Tx requires a recipient');
+        } else if (!explainedTx.memo) {
+          throw new Error('Export Tx requires a memo with c-chain address');
+        } else {
+          this.validateExportTx(params.txParams.recipients, explainedTx.memo, explainedTx);
         }
         break;
       default:
