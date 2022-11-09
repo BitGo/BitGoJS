@@ -20,6 +20,7 @@ import { BaseTransaction } from './../../../account-lib/baseCoin/baseTransaction
 import { Ed25519BIP32 } from './../../../account-lib/mpc/hdTree';
 import _ = require('lodash');
 import { getTxRequest, sendSignatureShare } from '../common';
+import assert from 'assert';
 
 export { getTxRequest, sendSignatureShare };
 
@@ -228,8 +229,13 @@ export async function getBitgoToUserRShare(
   txRequestId: string
 ): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const signatureShares =
-    txRequest.apiVersion === 'full' ? txRequest.transactions[0].signatureShares : txRequest.signatureShares;
+  let signatureShares;
+  if (txRequest.apiVersion === 'full') {
+    assert(txRequest.transactions, 'transactions required as part of txRequest');
+    signatureShares = txRequest.transactions[0].signatureShares;
+  } else {
+    signatureShares = txRequest.signatureShares;
+  }
   if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
     throw new Error(`No signatures shares found for id: ${txRequestId}`);
   }

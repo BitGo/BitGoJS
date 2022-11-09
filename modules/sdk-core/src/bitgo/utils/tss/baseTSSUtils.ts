@@ -18,8 +18,8 @@ import {
   TxRequest,
   TxRequestVersion,
   BackupKeyShare,
-  IntentOptionsBase,
-  PopulatedIntentBase,
+  IntentOptionsForMessage,
+  PopulatedIntentForMessageSigning,
 } from './baseTypes';
 import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
@@ -204,16 +204,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param preview
    */
   async createTxRequestWithIntentForMessageSigning(
-    params: IntentOptionsBase,
+    params: IntentOptionsForMessage,
     apiVersion: TxRequestVersion = 'full',
     preview?: boolean
   ): Promise<TxRequest> {
-    const intentOptions: PopulatedIntentBase = {
+    const intentOptions: PopulatedIntentForMessageSigning = {
       intentType: params.intentType,
       sequenceId: params.sequenceId,
       comment: params.comment,
       memo: params.memo?.value,
       isTss: params.isTss,
+      messageRaw: params.messageRaw,
+      messageEncoded: params.messageEncoded ?? '',
     };
     const whitelistedParams = {
       intent: {

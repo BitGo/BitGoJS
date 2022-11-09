@@ -56,7 +56,7 @@ export interface TokenTransferRecipientParams {
   tokenId?: string;
   decimalPlaces?: number;
 }
-export interface IntentOptionsBase {
+interface IntentOptionsBase {
   reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
@@ -65,6 +65,11 @@ export interface IntentOptionsBase {
   memo?: Memo;
   custodianTransactionId?: string;
   custodianMessageId?: string;
+}
+
+export interface IntentOptionsForMessage extends IntentOptionsBase {
+  messageRaw: string;
+  messageEncoded?: string;
 }
 
 export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
@@ -95,12 +100,17 @@ export interface IntentRecipient {
   data?: string;
   tokenData?: TokenTransferRecipientParams;
 }
-export interface PopulatedIntentBase {
+interface PopulatedIntentBase {
   intentType: string;
   sequenceId?: string;
   comment?: string;
   memo?: string;
   isTss?: boolean;
+}
+
+export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
+  messageRaw: string;
+  messageEncoded: string;
 }
 
 export interface PopulatedIntent extends PopulatedIntentBase {
@@ -185,10 +195,16 @@ export type TxRequest = {
   // Only available in 'lite' version
   unsignedTxs: UnsignedTransactionTss[]; // Should override with blockchain / sig scheme specific unsigned tx
   // Only available in 'full' version
-  transactions: {
+  transactions?: {
     state: TransactionState;
     unsignedTx: UnsignedTransactionTss; // Should override with blockchain / sig specific unsigned tx
     signatureShares: SignatureShareRecord[];
+  }[];
+  messages?: {
+    state: TransactionState;
+    signatureShares: SignatureShareRecord[];
+    combineSigShare?: string;
+    txHash?: string;
   }[];
   apiVersion?: TxRequestVersion;
   latest: boolean;
@@ -213,7 +229,8 @@ export type TSSParams = {
 };
 
 export type TSSParamsForMessage = TSSParams & {
-  finalMessage: string;
+  messageRaw: string;
+  messageEncoded?: string;
 };
 
 export interface BitgoHeldBackupKeyShare {

@@ -22,7 +22,13 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction, IntentOptionsBase } from '../utils';
+import {
+  inferAddressType,
+  RequestTracer,
+  TxRequest,
+  EddsaUnsignedTransaction,
+  IntentOptionsForMessage,
+} from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -77,6 +83,8 @@ import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
+import { isCoinThatConstructFinalSignedMessageHash } from '../features/constructFinalSignedMessageHash';
+
 const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
@@ -1599,10 +1607,22 @@ export class Wallet implements IWallet {
       throw new Error('Message signing only supported for TSS wallets');
     }
     if (_.isFunction((this.baseCoin as any).encodeMessage)) {
-      assert(params.message);
       params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
     }
-    const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const presign = {
+      ...params,
+      walletData: this._wallet,
+      tssUtils: this.tssUtils,
+      prv: this.getUserPrv(userPrvOptions),
+      keychain: keychains[0],
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
+      pubs: keychains.map((k) => k.pub),
+      reqId: params.reqId,
+    };
     return this.signMessageTss(presign);
   }
 
@@ -2605,7 +2625,7 @@ export class Wallet implements IWallet {
     let unsignedTx: EddsaUnsignedTransaction;
 
     if (txRequest.apiVersion === 'full') {
-      if (txRequest.transactions.length !== 1) {
+      if (txRequest.transactions?.length !== 1) {
         throw new Error(`Expected a single unsigned tx for tx request with id: ${txRequest.txRequestId}`);
       }
 
@@ -2678,7 +2698,6 @@ export class Wallet implements IWallet {
     if (!params.prv) {
       throw new Error('prv required to sign transactions with TSS');
     }
-
     try {
       const signedTxRequest = await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
@@ -2707,37 +2726,39 @@ export class Wallet implements IWallet {
 
     try {
       let txRequest;
-      assert(params.message);
+      assert(params.message, 'message required for message signing');
       if (!params.message.txRequestId) {
-        const intentOption: IntentOptionsBase = {
+        const intentOption: IntentOptionsForMessage = {
           custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
           intentType: 'signMessage',
           isTss: true,
+          messageRaw: params.message.messageRaw,
+          messageEncoded: params.message?.messageEncoded ?? '',
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
       } else {
-        assert(params.message.txRequestId);
         txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId);
-      }
-      let finalMessage;
-      if (params.message.messageEncoded) {
-        finalMessage = params.message.messageEncoded;
-      } else {
-        // For the case that a TSS coin/token does not have any message encoding needed.
-        finalMessage = params.message.messageRaw;
       }
 
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
         txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
-        finalMessage,
+        messageRaw: params.message.messageRaw,
+        messageEncoded: params.message.messageEncoded,
       });
-      return {
-        txRequestId: signedMessageRequest.txRequestId,
-      };
+      assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
+      assert(
+        signedMessageRequest.messages[0].combineSigShare,
+        'Unable to find combineSigShare in' + ' signedMessageRequest.messages'
+      );
+      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
+        return this.baseCoin.constructFinalSignedMessageHash(signedMessageRequest.messages[0].combineSigShare);
+      }
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.mesages');
+      return signedMessageRequest.messages[0].txHash;
     } catch (e) {
       throw new Error('failed to sign message ' + e);
     }
