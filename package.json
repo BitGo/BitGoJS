@@ -31,6 +31,11 @@
     "https-browserify": "^1.0.0",
     "husky": "^8.0.1",
     "improved-yarn-audit": "^3.0.0",
+    "karma": "^5.1.1",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^4.0.0",
+    "karma-mocha": "^2.0.1",
+    "karma-typescript": "^5.0.3",
     "lerna": "^5.5.0",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
@@ -80,7 +85,7 @@
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream",
     "unit-test-changed": "lerna run unit-test --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream",
-    "browser-tests": "lerna run --scope bitgo compile && lerna run --scope bitgo browser-test && lerna run --scope @bitgo/web-demo test",
+    "browser-tests": "lerna run --scope bitgo compile && lerna run browser-test && lerna run --scope @bitgo/web-demo test",
     "gen-coverage-changed": "lerna run gen-coverage --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
     "coverage-changed": "lerna run upload-coverage --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel --",
     "unit-test": "lerna run unit-test --stream",
@@ -104,6 +109,5 @@
     "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix"
-  },
-  "dependencies": {}
+  }
 }
