@@ -26,6 +26,7 @@ module.exports = function (config) {
 
     plugins: [
       require('karma-jasmine'),
+      require('karma-mocha'),
       require('karma-typescript'),
       require('karma-chrome-launcher'),
     ],

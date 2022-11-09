@@ -10,7 +10,6 @@
     "bitgo"
   ],
   "scripts": {
-    "prepare": "npm run build",
     "build": "yarn tsc --build --incremental --verbose .",
     "lint": "eslint --quiet .",
     "unit-test": "mocha",
