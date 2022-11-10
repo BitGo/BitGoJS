@@ -1,6 +1,5 @@
 import {
   account,
-  AccountCoin,
   algoToken,
   avaxErc20,
   bscToken,
@@ -27,14 +26,15 @@ import {
   tsolToken,
   tstellarToken,
   ttronToken,
+  AccountCoin,
 } from './account';
+import { ada } from './ada';
+import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
 import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
-import { avaxp } from './avaxp';
-import { ada } from './ada';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -1041,7 +1041,12 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcdep', 'Deap Coin', 18, UnderlyingAsset.DEP),
   ofcerc20('ofcdfi', 'DeFiChain', 8, UnderlyingAsset.DFI),
   ofcerc20('ofcdydx', 'dYdX', 18, UnderlyingAsset.DYDX),
+  ofcerc20('ofcelf', 'Aelf', 18, UnderlyingAsset.ELF),
+  ofcerc20('ofcens', 'Ethereum Name Service', 18, UnderlyingAsset.ENS),
+  ofcerc20('ofceurs', 'Stasis EURS', 2, UnderlyingAsset.EURS),
   ofcerc20('ofcftt', 'FTX Token', 18, UnderlyingAsset.FTT),
+  ofcerc20('ofcfun', 'FunFair', 8, UnderlyingAsset.FUN),
+  ofcerc20('ofcfxs', 'Frax Share', 18, UnderlyingAsset.FXS),
   ofcerc20('ofcgbpt', 'Poundtoken', 18, UnderlyingAsset.GBPT),
   ofcerc20('ofcgrt', 'The Graph', 18, UnderlyingAsset.GRT),
   ofcerc20('ofcgfi', 'Goldfinch', 18, UnderlyingAsset.GFI),
