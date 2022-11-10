@@ -45,10 +45,12 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
     inputs,
     amountType = 'number',
     version,
+    roundTripPsbt = true,
   }: {
     inputs?: (TxOutPoint & TxOutput<TNumber>)[];
     amountType?: 'number' | 'bigint';
     version?: number;
+    roundTripPsbt?: boolean;
   } = {}
 ): T {
   const tx = createTransactionFromBuffer<TNumber>(buf, network, { version }, amountType);
@@ -61,25 +63,27 @@ export function parseTransactionRoundTrip<TNumber extends number | bigint, T ext
   if (inputs) {
     const bigintTx = tx.clone<bigint>('bigint');
     const bigintInputs = inputs.map((input) => ({ ...input, value: BigInt(input.value) }));
-    // Test UtxoPsbt.fromTransaction() implementation
-    assert.strictEqual(
-      UtxoPsbt.fromTransaction(bigintTx, bigintInputs)
-        .finalizeAllInputs()
-        .extractTransaction()
-        .toBuffer()
-        .toString('hex'),
-      buf.toString('hex')
-    );
-    // Test UtxoPsbt.toBuffer() and UtxoPsbt.fromBuffer() implementation
-    const psbt = createPsbtFromTransaction(bigintTx, bigintInputs);
-    assert.strictEqual(
-      createPsbtFromBuffer(psbt.toBuffer(), network)
-        .finalizeAllInputs()
-        .extractTransaction()
-        .toBuffer()
-        .toString('hex'),
-      buf.toString('hex')
-    );
+    if (roundTripPsbt) {
+      // Test UtxoPsbt.fromTransaction() implementation
+      assert.strictEqual(
+        UtxoPsbt.fromTransaction(bigintTx, bigintInputs)
+          .finalizeAllInputs()
+          .extractTransaction()
+          .toBuffer()
+          .toString('hex'),
+        buf.toString('hex')
+      );
+
+      // Test UtxoPsbt.toBuffer() and UtxoPsbt.fromBuffer() implementation
+      assert.strictEqual(
+        createPsbtFromBuffer(createPsbtFromTransaction(bigintTx, bigintInputs).toBuffer(), network)
+          .finalizeAllInputs()
+          .extractTransaction()
+          .toBuffer()
+          .toString('hex'),
+        buf.toString('hex')
+      );
+    }
     // Test `TransactionBuilder.fromTransaction()` implementation
     assert.strictEqual(
       createTransactionBuilderFromTransaction<TNumber>(tx, inputs).build().toBuffer().toString('hex'),

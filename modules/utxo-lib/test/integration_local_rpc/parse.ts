@@ -120,6 +120,7 @@ function runTestParse<TNumber extends number | bigint>(
         inputs: getPrevOutputs(),
         amountType,
         version: protocol.version,
+        roundTripPsbt: txType === 'spend',
       });
     });
 
