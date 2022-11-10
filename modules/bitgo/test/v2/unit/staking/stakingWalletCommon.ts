@@ -119,6 +119,28 @@ describe('Staking Wallet Common', function () {
 
   });
 
+  describe('cancelStakingRequest', function () {
+    it('should call staking-service to cancel staking request', async function () {
+      const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
+      const expected = {
+        ...fixtures.stakingRequest([
+          fixtures.transaction('REJECTED'),
+        ]),
+        status: 'REJECTED',
+      };
+      const msScope = nock(microservicesUri)
+        .delete(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${stakingRequestId}`)
+        .reply(200, expected);
+
+      const stakingRequest = await stakingWallet.cancelStakingRequest(stakingRequestId);
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
   describe('getStakingRequest', function () {
     it('should call staking-service to get staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';

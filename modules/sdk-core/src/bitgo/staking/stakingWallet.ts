@@ -60,6 +60,15 @@ export class StakingWallet implements IStakingWallet {
   }
 
   /**
+   * Cancel staking request
+   * @param stakingRequestId - id of the staking request to cancel
+   * @return StakingRequest
+   */
+  async cancelStakingRequest(stakingRequestId: string): Promise<StakingRequest> {
+    return await this.bitgo.del(this.bitgo.microservicesUrl(this.stakingRequestUrl(stakingRequestId))).result();
+  }
+
+  /**
    * Fetch delegations for a specific wallet
    * @param options - unstake options
    * @return StakingRequest
