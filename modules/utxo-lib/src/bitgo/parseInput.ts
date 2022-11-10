@@ -108,7 +108,12 @@ type ScriptPatternConstant =
 /**
  * Script elements that can be captured
  */
-type ScriptPatternCapture = ':pubkey' | ':signature' | ':buffer' | { ':script': ScriptPatternElement[] };
+type ScriptPatternCapture =
+  | ':pubkey'
+  | ':pubkey-xonly'
+  | ':signature'
+  | ':control-block'
+  | { ':script': ScriptPatternElement[] };
 
 type ScriptPatternElement = ScriptPatternConstant | ScriptPatternCapture;
 
@@ -117,10 +122,21 @@ type ScriptPatternElement = ScriptPatternConstant | ScriptPatternCapture;
  */
 type MatchResult = {
   ':pubkey': Buffer[];
-  ':buffer': Buffer[];
+  ':pubkey-xonly': Buffer[];
+  ':control-block': Buffer[];
   ':signature': (Buffer | 0)[];
   ':script': { buffer: Buffer; match: MatchResult }[];
 };
+
+function emptyMatchResult(): MatchResult {
+  return {
+    ':pubkey': [],
+    ':pubkey-xonly': [],
+    ':control-block': [],
+    ':signature': [],
+    ':script': [],
+  };
+}
 
 class MatchError extends Error {
   // this property is required to prohibit `return new Error()` when the return type demands `MatchError`
@@ -158,11 +174,14 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
       case 'OP_CHECKSIGVERIFY':
         return e === opcodes[p];
       case ':pubkey':
-        return Buffer.isBuffer(e) && (e.length === 32 || e.length === 33);
+        return Buffer.isBuffer(e) && e.length === 33;
+      case ':pubkey-xonly':
+        return Buffer.isBuffer(e) && e.length === 32;
       case ':signature':
         return Buffer.isBuffer(e) || isPlaceholderSignature(e);
-      case ':buffer':
-        return Buffer.isBuffer(e);
+      case ':control-block':
+        // The last stack element is called the control block c, and must have length 33 + 32m
+        return Buffer.isBuffer(e) && 33 <= e.length && e.length % 32 === 1;
       default:
         throw new Error(`unknown pattern element ${p}`);
     }
@@ -174,59 +193,51 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
 
   // Go over each pattern element.
   // Collect captures into a result object.
-  return pattern.reduce(
-    (obj: MatchResult | MatchError, p, i): MatchResult | MatchError => {
-      // if we had a previous mismatch, short-circuit
-      if (obj instanceof MatchError) {
-        return obj;
-      }
-
-      const e = script[i];
-
-      // for ':script' pattern elements, decompile script element and recurse
-      if (typeof p === 'object' && ':script' in p) {
-        if (!Buffer.isBuffer(e)) {
-          return new MatchError(`expected buffer for :script`);
-        }
-        const dec = bscript.decompile(e);
-        if (!dec) {
-          return new MatchError(`error decompiling nested script`);
-        }
-        const match = matchScript(dec, p[':script']);
-        if (match instanceof MatchError) {
-          return match;
-        }
-        obj[':script'].push({
-          buffer: e,
-          match,
-        });
-        return obj;
-      }
-
-      const match = matchElement(e, p);
-      if (!match) {
-        return MatchError.forPatternElement(p);
-      }
-
-      // if pattern element is a capture, add it to the result obj
-      if (p === ':signature' && e === 0) {
-        obj[p].push(e);
-      } else if (p === ':buffer' || p === ':pubkey' || p === ':signature') {
-        if (!Buffer.isBuffer(e)) {
-          throw new Error(`invalid capture value`);
-        }
-        obj[p].push(e);
-      }
-
+  return pattern.reduce((obj: MatchResult | MatchError, p, i): MatchResult | MatchError => {
+    // if we had a previous mismatch, short-circuit
+    if (obj instanceof MatchError) {
       return obj;
-    },
-    {
-      ':script': [],
-      ':signature': [],
-      ':buffer': [],
-      ':pubkey': [],
     }
-  );
+
+    const e = script[i];
+
+    // for ':script' pattern elements, decompile script element and recurse
+    if (typeof p === 'object' && ':script' in p) {
+      if (!Buffer.isBuffer(e)) {
+        return new MatchError(`expected buffer for :script`);
+      }
+      const dec = bscript.decompile(e);
+      if (!dec) {
+        return new MatchError(`error decompiling nested script`);
+      }
+      const match = matchScript(dec, p[':script']);
+      if (match instanceof MatchError) {
+        return match;
+      }
+      obj[':script'].push({
+        buffer: e,
+        match,
+      });
+      return obj;
+    }
+
+    const match = matchElement(e, p);
+    if (!match) {
+      return MatchError.forPatternElement(p);
+    }
+
+    // if pattern element is a capture, add it to the result obj
+    if (p === ':signature' && e === 0) {
+      obj[p].push(e);
+    } else if (p in obj) {
+      if (!Buffer.isBuffer(e)) {
+        throw new Error(`invalid capture value`);
+      }
+      obj[p].push(e);
+    }
+
+    return obj;
+  }, emptyMatchResult());
 }
 
 /**
@@ -369,13 +380,13 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   const match = matchScript(p.witness, [
     ':signature',
     ':signature',
-    { ':script': [':pubkey', 'OP_CHECKSIGVERIFY', ':pubkey', 'OP_CHECKSIG'] },
-    ':buffer',
+    { ':script': [':pubkey-xonly', 'OP_CHECKSIGVERIFY', ':pubkey-xonly', 'OP_CHECKSIG'] },
+    ':control-block',
   ]);
   if (match instanceof MatchError) {
     return match;
   }
-  const [controlBlock] = match[':buffer'];
+  const [controlBlock] = match[':control-block'];
   const scriptPathLevel = controlBlock.length === 65 ? 1 : controlBlock.length === 97 ? 2 : undefined;
 
   /* istanbul ignore next */
@@ -388,7 +399,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
     isSegwitInput: true,
     inputClassification: 'taproot',
     pubScript: match[':script'][0].buffer,
-    publicKeys: match[':script'][0].match[':pubkey'] as [Buffer, Buffer],
+    publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
     signatures: match[':signature'] as [Buffer, Buffer],
     controlBlock,
     scriptPathLevel,
