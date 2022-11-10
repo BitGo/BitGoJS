@@ -68,7 +68,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       i: 1,
       j: 3,
       y: bitGoToUserShare.publicShare.slice(0, 64),
-      v: bitGoToUserShare.publicShare.slice(64, 128),
+      v: bitGoToUserShare.vssProof,
       u: bitGoToUserPrivateShare.slice(0, 64),
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
@@ -136,7 +136,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       i: 2,
       j: 3,
       y: bitGoToBackupShare.publicShare.slice(0, 64),
-      v: bitGoToBackupShare.publicShare.slice(64, 128),
+      v: bitGoToBackupShare.vssProof,
       u: bitGoToBackupPrivateShare.slice(0, 64),
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
@@ -185,7 +185,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),
-      Buffer.from(userKeyShare.yShares[3].v!, 'hex'),
       Buffer.from(userKeyShare.uShare.chaincode, 'hex'),
     ]).toString('hex');
     const userToBitgoPrivateShare = Buffer.concat([
@@ -196,11 +195,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       publicShare: userToBitgoPublicShare,
       privateShare: userToBitgoPrivateShare,
       privateShareProof: await createShareProof(userGpgKey.privateKey, userToBitgoPrivateShare.slice(0, 64)),
+      v: userKeyShare.yShares[3].v,
     };
 
     const backupToBitgoPublicShare = Buffer.concat([
       Buffer.from(backupKeyShare.uShare.y, 'hex'),
-      Buffer.from(backupKeyShare.yShares[3].v!, 'hex'),
       Buffer.from(backupKeyShare.uShare.chaincode, 'hex'),
     ]).toString('hex');
     const backupToBitgoPrivateShare = Buffer.concat([
@@ -211,6 +210,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       publicShare: backupToBitgoPublicShare,
       privateShare: backupToBitgoPrivateShare,
       privateShareProof: await createShareProof(userGpgKey.privateKey, backupToBitgoPrivateShare.slice(0, 64)),
+      v: backupKeyShare.yShares[3].v,
     };
 
     return await this.createBitgoKeychainInWP(

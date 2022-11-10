@@ -197,8 +197,7 @@ export async function offerUserToBitgoRShare(
   const signatureShare: SignatureShareRecord = {
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,
-    // TODO(BG-61037): Fix signing with VSS
-    share: /* rShare.v + */ rShare.r + rShare.R,
+    share: rShare.v + rShare.r + rShare.R,
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
