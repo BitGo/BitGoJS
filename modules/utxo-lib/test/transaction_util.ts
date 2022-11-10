@@ -41,9 +41,15 @@ export function getSignKeyCombinations(length: number): BIP32Interface[][] {
 export function parseTransactionRoundTrip<TNumber extends number | bigint, T extends UtxoTransaction<TNumber>>(
   buf: Buffer,
   network: Network,
-  inputs?: (TxOutPoint & TxOutput<TNumber>)[],
-  amountType: 'number' | 'bigint' = 'number',
-  version?: number
+  {
+    inputs,
+    amountType = 'number',
+    version,
+  }: {
+    inputs?: (TxOutPoint & TxOutput<TNumber>)[];
+    amountType?: 'number' | 'bigint';
+    version?: number;
+  } = {}
 ): T {
   const tx = createTransactionFromBuffer<TNumber>(buf, network, { version }, amountType);
   assert.strictEqual(tx.byteLength(), buf.length);
