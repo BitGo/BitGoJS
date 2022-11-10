@@ -38,7 +38,7 @@ export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
   scriptType: undefined;
 }
 
-export interface ParsedSignatureScriptP2PK extends ParsedSignatureScript {
+export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
   inputClassification: 'scripthash';
   publicKeys: [Buffer];
@@ -262,7 +262,7 @@ type InputScriptsNativeSegwit = InputScripts<null, Buffer[]>;
 
 type InputScriptsUnknown = InputScripts<DecompiledScript | null, Buffer[] | null>;
 
-type InputParser<T extends ParsedSignatureScriptP2PK | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot> = (
+type InputParser<T extends ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot> = (
   p: InputScriptsUnknown
 ) => T | MatchError;
 
@@ -278,7 +278,7 @@ function isNativeSegwit(p: InputScriptsUnknown): p is InputScriptsNativeSegwit {
   return Boolean(!p.script && p.witness);
 }
 
-const parseP2PK: InputParser<ParsedSignatureScriptP2PK> = (p) => {
+const parseP2shP2pk: InputParser<ParsedSignatureScriptP2shP2pk> = (p) => {
   if (!isLegacy(p)) {
     return new MatchError(`expected legacy input`);
   }
@@ -411,9 +411,9 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScriptP2PK | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
+): ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const decScript = bscript.decompile(input.script);
-  const parsers = [parseP2PK, parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3] as const;
+  const parsers = [parseP2shP2pk, parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3] as const;
   for (const f of parsers) {
     const parsed = f({
       script: decScript?.length === 0 ? null : decScript,
