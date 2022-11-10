@@ -369,7 +369,7 @@ export function parseSignatureScript(
   input: TxInput
 ): ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const decScript = bscript.decompile(input.script);
-  const parsers = [parseP2shP2pk, parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3] as const;
+  const parsers = [parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3, parseP2shP2pk] as const;
   for (const f of parsers) {
     const parsed = f({
       script: decScript?.length === 0 ? null : decScript,
