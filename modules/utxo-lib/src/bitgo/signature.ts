@@ -12,7 +12,6 @@ import {
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
 import { Triple } from './types';
-import { classify } from '../';
 import { getMainnet, Network, networks } from '../networks';
 import { ecc as eccLib } from '../noble_ecc';
 import { parseSignatureScript2Of3 } from './parseInput';
@@ -99,7 +98,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       signatureBuffer = signatureBuffer.slice(0, -1);
     }
 
-    if (parsedScript.inputClassification === classify.types.P2TR) {
+    if (parsedScript.scriptType === 'p2tr') {
       if (verificationSettings.signatureIndex !== undefined) {
         throw new Error(`signatureIndex parameter not supported for p2tr`);
       }
@@ -139,9 +138,10 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
     } else {
       // slice the last byte from the signature hash input because it's the hash type
       const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
-      const transactionHash = parsedScript.isSegwitInput
-        ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
-        : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
+      const transactionHash =
+        parsedScript.scriptType === 'p2shP2wsh' || parsedScript.scriptType === 'p2wsh'
+          ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
+          : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
       const signedBy = publicKeys.filter((publicKey) =>
         eccLib.verify(
           transactionHash,

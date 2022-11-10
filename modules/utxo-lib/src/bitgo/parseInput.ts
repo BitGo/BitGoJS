@@ -4,22 +4,6 @@ import { TxInput, script as bscript } from 'bitcoinjs-lib';
 import { ScriptType } from './outputScripts';
 import { isTriple } from './types';
 
-const inputTypes = [
-  'multisig',
-  'nonstandard',
-  'nulldata',
-  'pubkey',
-  'pubkeyhash',
-  'scripthash',
-  'witnesspubkeyhash',
-  'witnessscripthash',
-  'taproot',
-  'taprootnofn',
-  'witnesscommitment',
-] as const;
-
-type InputType = typeof inputTypes[number];
-
 export function isPlaceholderSignature(v: number | Buffer): boolean {
   if (Buffer.isBuffer(v)) {
     return v.length === 0;
@@ -28,26 +12,17 @@ export function isPlaceholderSignature(v: number | Buffer): boolean {
 }
 
 export interface ParsedSignatureScript {
-  scriptType: ScriptType | undefined;
-  isSegwitInput: boolean;
-  inputClassification: InputType;
-  p2shOutputClassification?: string;
-}
-
-export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
-  scriptType: undefined;
+  scriptType: ScriptType;
 }
 
 export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
-  inputClassification: 'scripthash';
   publicKeys: [Buffer];
   signatures: [Buffer];
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
   scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
-  inputClassification: 'scripthash' | 'witnessscripthash';
   publicKeys: [Buffer, Buffer, Buffer];
   signatures:
     | [Buffer, Buffer] // fully-signed transactions with signatures
@@ -62,7 +37,6 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
  */
 export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScript {
   scriptType: 'p2tr';
-  inputClassification: 'taproot';
   publicKeys: [Buffer];
   signatures: [Buffer];
   pubScript: Buffer;
@@ -74,7 +48,6 @@ export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScri
  */
 export interface ParsedSignatureScriptTaprootScriptPath extends ParsedSignatureScript {
   scriptType: 'p2tr';
-  inputClassification: 'taproot';
   publicKeys: [Buffer, Buffer];
   signatures: [Buffer, Buffer];
   controlBlock: Buffer;
@@ -288,9 +261,6 @@ const parseP2shP2pk: InputParser<ParsedSignatureScriptP2shP2pk> = (p) => {
   }
   return {
     scriptType: 'p2shP2pk',
-    inputClassification: 'scripthash',
-    p2shOutputClassification: 'pubkey',
-    isSegwitInput: false,
     publicKeys: match[':script'][0].match[':pubkey'] as [Buffer],
     signatures: match[':signature'] as [Buffer],
   };
@@ -298,10 +268,7 @@ const parseP2shP2pk: InputParser<ParsedSignatureScriptP2shP2pk> = (p) => {
 
 function parseP2ms(
   decScript: DecompiledScript,
-  params: Pick<
-    ParsedSignatureScript2Of3,
-    'scriptType' | 'inputClassification' | 'p2shOutputClassification' | 'isSegwitInput'
-  >
+  params: Pick<ParsedSignatureScript2Of3, 'scriptType'>
 ): ParsedSignatureScript2Of3 | MatchError {
   const pattern2Of3: ScriptPatternElement[] = ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'];
 
@@ -335,9 +302,6 @@ const parseP2sh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   }
   return parseP2ms(p.script, {
     scriptType: 'p2sh',
-    inputClassification: 'scripthash',
-    p2shOutputClassification: 'multisig',
-    isSegwitInput: false,
   });
 };
 
@@ -347,9 +311,6 @@ const parseP2shP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   }
   return parseP2ms(p.witness, {
     scriptType: 'p2shP2wsh',
-    inputClassification: 'scripthash',
-    p2shOutputClassification: 'multisig',
-    isSegwitInput: true,
   });
 };
 
@@ -359,9 +320,6 @@ const parseP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   }
   return parseP2ms(p.witness, {
     scriptType: 'p2wsh',
-    inputClassification: 'witnessscripthash',
-    p2shOutputClassification: 'multisig',
-    isSegwitInput: true,
   });
 };
 
@@ -389,8 +347,6 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
 
   return {
     scriptType: 'p2tr',
-    isSegwitInput: true,
-    inputClassification: 'taproot',
     pubScript: match[':script'][0].buffer,
     publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
     signatures: match[':signature'] as [Buffer, Buffer],

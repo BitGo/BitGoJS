@@ -159,7 +159,7 @@ function runTestParseScript<TNumber extends number | bigint = number>(
         );
         break;
       default:
-        throw new Error(`unexpected scriptType ${parsed.scriptType}`);
+        throw new Error(`unexpected scriptType ${(parsed as any).scriptType}`);
     }
   }
 
@@ -366,9 +366,6 @@ describe('Signature (p2shP2pk)', function () {
         normDefault(parseSignatureScript(input)),
         normDefault({
           scriptType: 'p2shP2pk',
-          inputClassification: 'scripthash',
-          isSegwitInput: false,
-          p2shOutputClassification: 'pubkey',
           publicKeys: [fixtureKeys[0].publicKey],
           signatures: [
             '3045022100e637466be405032a633dcef0bd161305fe93d34ffe2aabc4af434d6f265912210220113d7085b1e00435a2583af82b8a4df3fb009a8d279d231351e42f31d6bac74401',
