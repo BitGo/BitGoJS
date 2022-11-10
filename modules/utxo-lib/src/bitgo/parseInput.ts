@@ -122,16 +122,31 @@ type MatchResult = {
   ':script': { buffer: Buffer; match: MatchResult }[];
 };
 
+class MatchError extends Error {
+  // this property is required to prohibit `return new Error()` when the return type demands `MatchError`
+  __type = 'MatchError';
+  constructor(message: string) {
+    super(message);
+  }
+
+  static forPatternElement(p: ScriptPatternElement): MatchError {
+    if (typeof p === 'object' && ':script' in p) {
+      return new MatchError(`error matching nested script`);
+    }
+    return new MatchError(`error matching ${p}`);
+  }
+}
+
 /**
  * @param script
  * @param pattern
  * @return MatchResult if script matches pattern. The result will contain the matched values.
  */
-function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]): MatchResult | undefined {
+function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]): MatchResult | MatchError {
   /**
    * Match a single script element with a ScriptPatternElement
    */
-  function matchElement(e: Buffer | number, p: ScriptPatternElement): boolean | MatchResult {
+  function matchElement(e: Buffer | number, p: ScriptPatternElement): MatchResult | boolean {
     switch (p) {
       case 'OP_0':
         return e === opcodes.OP_0 || (Buffer.isBuffer(e) && e.length === 0);
@@ -154,16 +169,16 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
   }
 
   if (script.length !== pattern.length) {
-    return;
+    return new MatchError(`length mismatch`);
   }
 
   // Go over each pattern element.
   // Collect captures into a result object.
   return pattern.reduce(
-    (obj: MatchResult | undefined, p, i): MatchResult | undefined => {
+    (obj: MatchResult | MatchError, p, i): MatchResult | MatchError => {
       // if we had a previous mismatch, short-circuit
-      if (!obj) {
-        return;
+      if (obj instanceof MatchError) {
+        return obj;
       }
 
       const e = script[i];
@@ -171,12 +186,15 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
       // for ':script' pattern elements, decompile script element and recurse
       if (typeof p === 'object' && ':script' in p) {
         if (!Buffer.isBuffer(e)) {
-          return;
+          return new MatchError(`expected buffer for :script`);
         }
         const dec = bscript.decompile(e);
-        const match = dec && matchScript(dec, p[':script']);
-        if (!match) {
-          return;
+        if (!dec) {
+          return new MatchError(`error decompiling nested script`);
+        }
+        const match = matchScript(dec, p[':script']);
+        if (match instanceof MatchError) {
+          return match;
         }
         obj[':script'].push({
           buffer: e,
@@ -187,7 +205,7 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
 
       const match = matchElement(e, p);
       if (!match) {
-        return;
+        return MatchError.forPatternElement(p);
       }
 
       // if pattern element is a capture, add it to the result obj
@@ -216,13 +234,15 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
  * @param patterns
  * @return first match
  */
-function matchScriptSome(script: DecompiledScript, patterns: ScriptPatternElement[][]): MatchResult | undefined {
+function matchScriptSome(script: DecompiledScript, patterns: ScriptPatternElement[][]): MatchResult | MatchError {
   for (const p of patterns) {
     const m = matchScript(script, p);
-    if (m) {
-      return m;
+    if (m instanceof MatchError) {
+      continue;
     }
+    return m;
   }
+  return new MatchError(`no match for script`);
 }
 
 type InputScripts<TScript, TWitness> = {
@@ -242,7 +262,7 @@ type InputParser<
     | ParsedSignatureScriptP2PK
     | ParsedSignatureScript2Of3
     | ParsedSignatureScriptTaproot
-> = (p: InputScriptsUnknown) => T | undefined;
+> = (p: InputScriptsUnknown) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
   return Boolean(p.script && !p.witness);
@@ -258,11 +278,11 @@ function isNativeSegwit(p: InputScriptsUnknown): p is InputScriptsNativeSegwit {
 
 const parseP2PK: InputParser<ParsedSignatureScriptP2PK> = (p) => {
   if (!isLegacy(p)) {
-    return;
+    return new MatchError(`expected legacy input`);
   }
   const match = matchScript(p.script, [':signature', { ':script': [':pubkey', 'OP_CHECKSIG'] }]);
-  if (!match) {
-    return;
+  if (match instanceof MatchError) {
+    return match;
   }
   return {
     scriptType: 'p2shP2pk',
@@ -278,7 +298,7 @@ function parseP2ms(
     ParsedSignatureScript2Of3,
     'scriptType' | 'inputClassification' | 'p2shOutputClassification' | 'isSegwitInput'
   >
-): ParsedSignatureScript2Of3 | undefined {
+): ParsedSignatureScript2Of3 | MatchError {
   const pattern2Of3: ScriptPatternElement[] = ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'];
 
   const match = matchScriptSome(decScript, [
@@ -287,8 +307,8 @@ function parseP2ms(
     /* half-signed, placeholder signatures */
     ['OP_0', ':signature', ':signature', ':signature', { ':script': pattern2Of3 }],
   ]);
-  if (!match) {
-    return;
+  if (match instanceof MatchError) {
+    return match;
   }
 
   const [redeemScript] = match[':script'];
@@ -307,7 +327,7 @@ function parseP2ms(
 
 const parseP2sh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isLegacy(p)) {
-    return;
+    return new MatchError(`expected legacy input`);
   }
   return parseP2ms(p.script, {
     scriptType: 'p2sh',
@@ -319,7 +339,7 @@ const parseP2sh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
 
 const parseP2shP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isWrappedSegwit(p)) {
-    return undefined;
+    return new MatchError(`expected wrapped segwit input`);
   }
   return parseP2ms(p.witness, {
     scriptType: 'p2shP2wsh',
@@ -331,7 +351,7 @@ const parseP2shP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
 
 const parseP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isNativeSegwit(p)) {
-    return;
+    return new MatchError(`expected native segwit`);
   }
   return parseP2ms(p.witness, {
     scriptType: 'p2wsh',
@@ -343,7 +363,7 @@ const parseP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
 
 const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   if (!isNativeSegwit(p)) {
-    return;
+    return new MatchError(`expected native segwit`);
   }
   // assumes no annex
   const match = matchScript(p.witness, [
@@ -352,8 +372,8 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
     { ':script': [':pubkey', 'OP_CHECKSIGVERIFY', ':pubkey', 'OP_CHECKSIG'] },
     ':buffer',
   ]);
-  if (!match) {
-    return;
+  if (match instanceof MatchError) {
+    return match;
   }
   const [controlBlock] = match[':buffer'];
   const scriptPathLevel = controlBlock.length === 65 ? 1 : controlBlock.length === 97 ? 2 : undefined;
@@ -394,9 +414,10 @@ export function parseSignatureScript(
       script: decScript?.length === 0 ? null : decScript,
       witness: input.witness.length === 0 ? null : input.witness,
     });
-    if (parsed) {
-      return parsed;
+    if (parsed instanceof MatchError) {
+      continue;
     }
+    return parsed;
   }
   throw new Error(`could not parse input`);
 }
