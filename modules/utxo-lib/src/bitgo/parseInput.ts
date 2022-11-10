@@ -84,6 +84,7 @@ export interface ParsedSignatureScriptTaprootScriptPath extends ParsedSignatureS
   publicKeys: [Buffer, Buffer];
   signatures: [Buffer, Buffer];
   controlBlock: Buffer;
+  leafVersion: number;
   /** Indicates the level inside the taptree. */
   scriptPathLevel: number;
   pubScript: Buffer;
@@ -403,6 +404,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
     signatures: match[':signature'] as [Buffer, Buffer],
     controlBlock,
     scriptPathLevel,
+    leafVersion: controlBlock[0] & 0xfe,
   };
 };
 
