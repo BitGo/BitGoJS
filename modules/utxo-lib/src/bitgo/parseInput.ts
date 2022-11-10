@@ -41,6 +41,8 @@ export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
 export interface ParsedSignatureScriptP2PK extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
   inputClassification: 'scripthash';
+  publicKeys: [Buffer];
+  signatures: [Buffer];
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
@@ -289,6 +291,8 @@ const parseP2PK: InputParser<ParsedSignatureScriptP2PK> = (p) => {
     inputClassification: 'scripthash',
     p2shOutputClassification: 'pubkey',
     isSegwitInput: false,
+    publicKeys: match[':script'][0].match[':pubkey'] as [Buffer],
+    signatures: match[':signature'] as [Buffer],
   };
 };
 
