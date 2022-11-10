@@ -28,7 +28,7 @@ export function isPlaceholderSignature(v: number | Buffer): boolean {
 }
 
 export interface ParsedSignatureScript {
-  scriptType: ScriptType | 'p2pkh' | undefined;
+  scriptType: ScriptType | undefined;
   isSegwitInput: boolean;
   inputClassification: InputType;
   p2shOutputClassification?: string;
@@ -41,14 +41,6 @@ export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
 export interface ParsedSignatureScriptP2PK extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
   inputClassification: 'scripthash';
-}
-
-export interface ParsedSignatureScriptP2PKH extends ParsedSignatureScript {
-  scriptType: 'p2pkh';
-  inputClassification: 'pubkeyhash';
-  signatures: [Buffer];
-  publicKeys: [Buffer];
-  pubScript?: Buffer;
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
@@ -268,13 +260,9 @@ type InputScriptsNativeSegwit = InputScripts<null, Buffer[]>;
 
 type InputScriptsUnknown = InputScripts<DecompiledScript | null, Buffer[] | null>;
 
-type InputParser<
-  T extends
-    | ParsedSignatureScriptP2PKH
-    | ParsedSignatureScriptP2PK
-    | ParsedSignatureScript2Of3
-    | ParsedSignatureScriptTaproot
-> = (p: InputScriptsUnknown) => T | MatchError;
+type InputParser<T extends ParsedSignatureScriptP2PK | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot> = (
+  p: InputScriptsUnknown
+) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
   return Boolean(p.script && !p.witness);
@@ -419,7 +407,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScriptP2PK | ParsedSignatureScriptP2PKH | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
+): ParsedSignatureScriptP2PK | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const decScript = bscript.decompile(input.script);
   const parsers = [parseP2PK, parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3] as const;
   for (const f of parsers) {
