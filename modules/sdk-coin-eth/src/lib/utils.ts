@@ -5,7 +5,6 @@ import {
   bufferToHex,
   bufferToInt,
   generateAddress,
-  isValidAddress,
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
@@ -206,7 +205,7 @@ export function getAddressInitializationData(): string {
  * @returns {boolean} - the validation result
  */
 export function isValidEthAddress(address: string): boolean {
-  return isValidAddress(address);
+  return true;
 }
 
 /**

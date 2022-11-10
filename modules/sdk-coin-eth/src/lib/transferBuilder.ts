@@ -3,7 +3,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import BN from 'bn.js';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
-import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
+import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidAmount } from './utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -62,12 +62,9 @@ export class TransferBuilder {
   }
 
   to(address: string): TransferBuilder {
-    if (isValidEthAddress(address)) {
-      this._signature = this._EMPTY_HEX_VALUE;
-      this._toAddress = address;
-      return this;
-    }
-    throw new InvalidParameterValueError('Invalid address');
+    this._signature = this._EMPTY_HEX_VALUE;
+    this._toAddress = address;
+    return this;
   }
 
   contractSequenceId(counter: number): TransferBuilder {
