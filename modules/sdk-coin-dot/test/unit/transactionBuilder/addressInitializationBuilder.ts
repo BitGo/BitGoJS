@@ -237,7 +237,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(rawTx.anonymous.signed);
+      builder.from(rawTx.pureProxy.signed);
       builder
         .validity({ firstValid: 8975007, maxDuration: 64 })
         .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05');
@@ -258,7 +258,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(rawTx.anonymous.unsigned);
+      builder.from(rawTx.pureProxy.unsigned);
       builder
         .validity({ firstValid: 8975007, maxDuration: 64 })
         .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05')

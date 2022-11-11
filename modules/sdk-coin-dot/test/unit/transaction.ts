@@ -1,10 +1,20 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import assert from 'assert';
 import should from 'should';
-import { KeyPair, Transaction, TransferBuilder, Interface } from '../../src';
+import {
+  KeyPair,
+  Transaction,
+  TransferBuilder,
+  Interface,
+  BatchTransactionBuilder,
+  StakingBuilder,
+  UnstakeBuilder,
+  WithdrawUnstakedBuilder,
+} from '../../src';
 import utils from '../../src/lib/utils';
 import { rawTx, accounts, jsonTransactions } from '../resources';
 import { buildTestConfig } from './transactionBuilder/base';
+import { STAKING_DESTINATION } from '../../src/lib/transaction';
 
 class StubTransaction extends Transaction {
   private _txJson: Interface.TxData;
@@ -23,9 +33,11 @@ class StubTransaction extends Transaction {
 
 describe('Dot Transaction', () => {
   let tx: StubTransaction;
+  const config = buildTestConfig();
+  const material = utils.getMaterial(config);
 
   beforeEach(() => {
-    tx = new StubTransaction(buildTestConfig());
+    tx = new StubTransaction(config);
   });
 
   describe('empty transaction', () => {
@@ -65,7 +77,7 @@ describe('Dot Transaction', () => {
 
   describe('should build from raw unsigned tx', async () => {
     it('Transaction size validation', async () => {
-      const builder = new TransferBuilder(buildTestConfig()).material(utils.getMaterial(buildTestConfig()));
+      const builder = new TransferBuilder(config).material(material);
       builder.from(rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })
@@ -163,6 +175,127 @@ describe('Dot Transaction', () => {
       explain.fee.fee.should.equal('0');
       explain.changeAmount.should.equal('0');
       explain.type.should.equal(TransactionType.StakingUnlock);
+    });
+  });
+
+  describe('inputs and outputs', () => {
+    it('should generate inputs and output for a batch staking transaction', async () => {
+      const builder = new BatchTransactionBuilder(config).material(material);
+      builder.from(rawTx.stake.batchAll.signed);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+
+      const tx = await builder.build();
+
+      should(tx.inputs).not.be.null();
+      should(tx.inputs.length).eql(2);
+
+      // Staked amount
+      should(tx.inputs[0].address).eql(accounts.account1.address);
+      should(tx.inputs[0].value).eql('500000000000');
+      should(tx.inputs[0].coin).eql('tdot');
+
+      // Add proxy storage fee
+      should(tx.inputs[1].address).eql(accounts.account1.address);
+      should(tx.inputs[1].value).eql('1002050000000');
+      should(tx.inputs[1].coin).eql('tdot');
+
+      should(tx.outputs).not.be.null();
+      should(tx.outputs.length).eql(2);
+
+      // Staked amount
+      should(tx.outputs[0].address).eql(STAKING_DESTINATION);
+      should(tx.outputs[0].value).eql('500000000000');
+      should(tx.outputs[0].coin).eql('tdot');
+
+      // Add proxy storage fee
+      should(tx.outputs[1].address).eql(accounts.stakingProxy.address);
+      should(tx.outputs[1].value).eql('1002050000000');
+      should(tx.outputs[1].coin).eql('tdot');
+    });
+
+    it('should generate inputs and output for a batch unstaking transaction', async () => {
+      const builder = new BatchTransactionBuilder(config).material(material);
+      builder.from(rawTx.unstake.batchAll.signed);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+
+      const tx = await builder.build();
+
+      should(tx.inputs).not.be.null();
+      should(tx.inputs.length).eql(1);
+
+      // Remove proxy storage fee refund
+      should(tx.inputs[0].address).eql(accounts.stakingProxy.address);
+      should(tx.inputs[0].value).eql('1002050000000');
+      should(tx.inputs[0].coin).eql('tdot');
+
+      should(tx.outputs).not.be.null();
+      should(tx.outputs.length).eql(1);
+
+      // Remove proxy storage fee refund
+      should(tx.outputs[0].address).eql(accounts.account1.address);
+      should(tx.outputs[0].value).eql('1002050000000');
+      should(tx.outputs[0].coin).eql('tdot');
+    });
+
+    it('should generate inputs and output for a stake more transaction', async () => {
+      const builder = new StakingBuilder(config).material(material);
+      builder.from(rawTx.stakeMore.signed);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+
+      const tx = await builder.build();
+
+      should(tx.inputs).not.be.null();
+      should(tx.inputs.length).eql(1);
+
+      // Amount to add to stake
+      should(tx.inputs[0].address).eql(accounts.account1.address);
+      should(tx.inputs[0].value).eql('90034235235322');
+      should(tx.inputs[0].coin).eql('tdot');
+
+      should(tx.outputs).not.be.null();
+      should(tx.outputs.length).eql(1);
+
+      should(tx.outputs[0].address).eql(STAKING_DESTINATION);
+      should(tx.outputs[0].value).eql('90034235235322');
+      should(tx.outputs[0].coin).eql('tdot');
+    });
+
+    it('should generate inputs and output for an unstake transaction', async () => {
+      const builder = new UnstakeBuilder(config).material(material);
+      builder.from(rawTx.unstake.signed);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+
+      const tx = await builder.build();
+
+      should(tx.inputs).not.be.null();
+      should(tx.inputs.length).eql(0);
+
+      should(tx.outputs).not.be.null();
+      should(tx.outputs.length).eql(0);
+    });
+
+    it('should generate inputs and output for a withdraw staked transaction', async () => {
+      const builder = new WithdrawUnstakedBuilder(config).material(material);
+      builder.from(rawTx.withdrawUnbonded.signed);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+
+      const tx = await builder.build();
+
+      should(tx.inputs).not.be.null();
+      should(tx.inputs.length).eql(0);
+
+      should(tx.outputs).not.be.null();
+      should(tx.outputs.length).eql(0);
     });
   });
 });

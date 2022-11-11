@@ -5,11 +5,12 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
   SigningError,
+  toUint8Array,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import Keyring, { decodeAddress } from '@polkadot/keyring';
+import Keyring, { decodeAddress, encodeAddress } from '@polkadot/keyring';
 import { u8aToBuffer } from '@polkadot/util';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
@@ -18,18 +19,32 @@ import { KeyPair } from './keyPair';
 import {
   AddAnonymousProxyArgs,
   AddProxyArgs,
+  AddProxyBatchCallArgs,
   BatchArgs,
+  BatchCallObject,
   ClaimArgs,
   DecodedTx,
   HexString,
-  StakeArgs,
+  MethodNames,
+  SectionNames,
   StakeArgsPayeeRaw,
+  StakeBatchCallArgs,
   TransactionExplanation,
   TxData,
   UnstakeArgs,
   WithdrawUnstakedArgs,
 } from './iface';
+import { getAddress, getDelegateAddress } from './iface_utils';
 import utils from './utils';
+import BigNumber from 'bignumber.js';
+import { Vec } from '@polkadot/types';
+import { PalletConstantMetadataV14 } from '@polkadot/types/interfaces';
+
+/**
+ * Use a dummy address as the destination of a bond or bondExtra because our inputs and outputs model
+ * doesn't seem to handle the concept of locking funds within a wallet as a method of transferring coins.
+ */
+export const STAKING_DESTINATION = encodeAddress('0x0000000000000000000000000000000000000000000000000000000000000000');
 
 export class Transaction extends BaseTransaction {
   protected _dotTransaction: UnsignedTransaction;
@@ -37,6 +52,8 @@ export class Transaction extends BaseTransaction {
   private _registry: TypeRegistry;
   private _chainName: string;
   private _sender: string;
+
+  private static FAKE_SIGNATURE = `0x${Buffer.from(new Uint8Array(256).fill(1)).toString('hex')}`;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -88,6 +105,19 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = utils.serializeSignedTransaction(
       this._dotTransaction,
       signature,
+      this._dotTransaction.metadataRpc,
+      this._registry
+    );
+  }
+
+  /**
+   * Returns a serialized representation of this transaction with a fake signature attached which
+   * can be used to estimate transaction fees.
+   */
+  fakeSign(): string {
+    return utils.serializeSignedTransaction(
+      this._dotTransaction,
+      Transaction.FAKE_SIGNATURE,
       this._dotTransaction.metadataRpc,
       this._registry
     );
@@ -152,7 +182,7 @@ export class Transaction extends BaseTransaction {
       const txMethod = decodedTx.method.args;
       if (utils.isProxyTransfer(txMethod)) {
         const keypairReal = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
+          pub: Buffer.from(decodeAddress(getAddress(txMethod))).toString('hex'),
         });
         result.owner = keypairReal.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         result.forceProxyType = txMethod.forceProxyType;
@@ -182,23 +212,27 @@ export class Transaction extends BaseTransaction {
     }
 
     if (this.type === TransactionType.StakingActivate) {
-      const txMethod = decodedTx.method.args as StakeArgs;
-      const keypair = new KeyPair({
-        pub: Buffer.from(decodeAddress(txMethod.controller.id, false, this._registry.chainSS58)).toString('hex'),
-      });
-
-      result.controller = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-      result.amount = txMethod.value;
-
-      const payee = txMethod.payee as StakeArgsPayeeRaw;
-      if (payee.account) {
+      const txMethod = decodedTx.method.args;
+      if (utils.isBond(txMethod)) {
         const keypair = new KeyPair({
-          pub: Buffer.from(decodeAddress(payee.account, false, this._registry.chainSS58)).toString('hex'),
+          pub: Buffer.from(decodeAddress(txMethod.controller.id, false, this._registry.chainSS58)).toString('hex'),
         });
-        result.payee = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-      } else {
-        const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as string;
-        result.payee = payeeType;
+
+        result.controller = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+        result.amount = txMethod.value;
+
+        const payee = txMethod.payee as StakeArgsPayeeRaw;
+        if (payee.account) {
+          const keypair = new KeyPair({
+            pub: Buffer.from(decodeAddress(payee.account, false, this._registry.chainSS58)).toString('hex'),
+          });
+          result.payee = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+        } else {
+          const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as string;
+          result.payee = payeeType;
+        }
+      } else if (utils.isBondExtra(decodedTx.method.args)) {
+        result.amount = decodedTx.method.args.maxAdditional;
       }
     }
 
@@ -206,9 +240,9 @@ export class Transaction extends BaseTransaction {
       let txMethod: AddAnonymousProxyArgs | AddProxyArgs;
       if ((decodedTx.method?.args as AddProxyArgs).delegate) {
         txMethod = decodedTx.method.args as AddProxyArgs;
-        const keypair = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
-        });
+        const delegateAddress = getDelegateAddress(txMethod);
+        const decodedAddress = decodeAddress(delegateAddress, false, this._registry.chainSS58);
+        const keypair = new KeyPair({ pub: Buffer.from(decodedAddress).toString('hex') });
         result.owner = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       } else {
         txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
@@ -345,57 +379,237 @@ export class Transaction extends BaseTransaction {
     }) as unknown as DecodedTx;
 
     if (this.type === TransactionType.Send) {
-      const txMethod = decodedTx.method.args;
-      let to: string;
-      let value: string;
-      let from: string;
-      if (utils.isProxyTransfer(txMethod)) {
-        const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
-          metadataRpc: this._dotTransaction.metadataRpc,
-          registry: this._registry,
-        });
-        const keypairDest = new KeyPair({
-          pub: Buffer.from(decodeAddress(decodedCall.dest.id)).toString('hex'),
-        });
-        const keypairFrom = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
-        });
-        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-        value = `${decodedCall.value}`;
-        from = keypairFrom.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-      } else if (utils.isTransferAll(txMethod)) {
-        const keypairDest = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
-        });
-        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-        value = 'sweep';
-        from = decodedTx.address;
-      } else if (utils.isTransfer(txMethod)) {
-        const keypairDest = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
-        });
-        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-        value = txMethod.value;
-        from = decodedTx.address;
-      } else {
-        throw new ParseTransactionError(`Loading inputs of unknown Transfer type parameters`);
-      }
-      this._outputs = [
-        {
-          address: to,
-          value,
-          coin: this._coinConfig.name,
-        },
-      ];
-
-      this._inputs = [
-        {
-          address: from,
-          value,
-          coin: this._coinConfig.name,
-        },
-      ];
+      this.decodeInputsAndOutputsForSend(decodedTx);
+    } else if (this.type === TransactionType.Batch) {
+      this.decodeInputsAndOutputsForBatch(decodedTx);
+    } else if (this.type === TransactionType.StakingActivate) {
+      this.decodeInputsAndOutputsForBond(decodedTx);
+    } else if (this.type === TransactionType.StakingUnlock) {
+      this.decodeInputsAndOutputsForUnbond(decodedTx);
+    } else if (this.type === TransactionType.StakingWithdraw) {
+      this.decodeInputsAndOutputsForWithdrawUnbond(decodedTx);
     }
+  }
+
+  private decodeInputsAndOutputsForSend(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args;
+    let to: string;
+    let value: string;
+    let from: string;
+    if (utils.isProxyTransfer(txMethod)) {
+      const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
+        metadataRpc: this._dotTransaction.metadataRpc,
+        registry: this._registry,
+      });
+      const keypairDest = new KeyPair({
+        pub: Buffer.from(decodeAddress(decodedCall.dest.id)).toString('hex'),
+      });
+      const keypairFrom = new KeyPair({
+        pub: Buffer.from(decodeAddress(getAddress(txMethod))).toString('hex'),
+      });
+      to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+      value = `${decodedCall.value}`;
+      from = keypairFrom.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+    } else if (utils.isTransferAll(txMethod)) {
+      const keypairDest = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
+      });
+      to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+      value = 'sweep';
+      from = decodedTx.address;
+    } else if (utils.isTransfer(txMethod)) {
+      const keypairDest = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
+      });
+      to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+      value = txMethod.value;
+      from = decodedTx.address;
+    } else {
+      throw new ParseTransactionError(`Loading inputs of unknown Transfer type parameters`);
+    }
+    this._outputs = [
+      {
+        address: to,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+
+    this._inputs = [
+      {
+        address: from,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+  }
+
+  private decodeInputsAndOutputsForBatch(decodedTx: DecodedTx) {
+    const sender = decodedTx.address;
+    this._inputs = [];
+    this._outputs = [];
+
+    const txMethod = decodedTx.method.args;
+    if (utils.isStakingBatch(txMethod)) {
+      if (!txMethod.calls) {
+        throw new InvalidTransactionError('failed to decode calls from batch transaction');
+      }
+
+      const bondMethod = (txMethod.calls[0] as BatchCallObject).callIndex;
+      const decodedBondCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(bondMethod)));
+      if (decodedBondCall.section !== SectionNames.Staking || decodedBondCall.method !== MethodNames.Bond) {
+        throw new InvalidTransactionError(
+          'Invalid batch transaction, only staking batch calls are supported, expected first call to be bond.'
+        );
+      }
+      const addProxyMethod = (txMethod.calls[1] as BatchCallObject).callIndex;
+      const decodedAddProxyCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(addProxyMethod)));
+      if (decodedAddProxyCall.section !== SectionNames.Proxy || decodedAddProxyCall.method !== MethodNames.AddProxy) {
+        throw new InvalidTransactionError(
+          'Invalid batch transaction, only staking batch calls are supported, expected second call to be addProxy.'
+        );
+      }
+
+      const stakeArgs = txMethod.calls[0].args as StakeBatchCallArgs;
+      const addProxyArgs = txMethod.calls[1].args as AddProxyBatchCallArgs;
+      const bondValue = `${stakeArgs.value}`;
+      const proxyAddress = getDelegateAddress(addProxyArgs);
+
+      this._inputs.push({
+        address: sender,
+        value: bondValue,
+        coin: this._coinConfig.name,
+      });
+      this._outputs.push({
+        address: STAKING_DESTINATION,
+        value: bondValue,
+        coin: this._coinConfig.name,
+      });
+
+      const addProxyCost = this.getAddProxyCost().toString(10);
+      this._inputs.push({
+        address: sender,
+        value: addProxyCost,
+        coin: this._coinConfig.name,
+      });
+      this._outputs.push({
+        address: proxyAddress,
+        value: addProxyCost,
+        coin: this._coinConfig.name,
+      });
+    } else if (utils.isUnstakingBatch(txMethod)) {
+      if (!txMethod.calls) {
+        throw new InvalidTransactionError('failed to decode calls from batch transaction');
+      }
+
+      const removeProxyMethod = (txMethod.calls[0] as BatchCallObject).callIndex;
+      const decodedRemoveProxyCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(removeProxyMethod)));
+      if (
+        decodedRemoveProxyCall.section !== SectionNames.Proxy ||
+        decodedRemoveProxyCall.method !== MethodNames.RemoveProxy
+      ) {
+        throw new InvalidTransactionError(
+          'Invalid batch transaction, only staking batch calls are supported, expected first call to be removeProxy.'
+        );
+      }
+      const chillMethod = (txMethod.calls[1] as BatchCallObject).callIndex;
+      const decodedChillCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(chillMethod)));
+      if (decodedChillCall.section !== SectionNames.Staking || decodedChillCall.method !== MethodNames.Chill) {
+        throw new InvalidTransactionError(
+          'Invalid batch transaction, only staking batch calls are supported, expected second call to be chill.'
+        );
+      }
+      const unstakeMethod = (txMethod.calls[2] as BatchCallObject).callIndex;
+      const decodedUnstakeCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(unstakeMethod)));
+      if (decodedUnstakeCall.section !== SectionNames.Staking || decodedUnstakeCall.method !== MethodNames.Unbond) {
+        throw new InvalidTransactionError(
+          'Invalid batch transaction, only staking batch calls are supported, expected third call to be unbond.'
+        );
+      }
+
+      const removeProxyArgs = txMethod.calls[0].args as AddProxyBatchCallArgs;
+      const proxyAddress = getDelegateAddress(removeProxyArgs);
+
+      const removeProxyCost = this.getRemoveProxyCost().toString(10);
+      this._inputs.push({
+        address: proxyAddress,
+        value: removeProxyCost,
+        coin: this._coinConfig.name,
+      });
+      this._outputs.push({
+        address: sender,
+        value: removeProxyCost,
+        coin: this._coinConfig.name,
+      });
+    }
+  }
+
+  private getRemoveProxyCost(): BigNumber {
+    return this.getAddProxyCost();
+  }
+
+  private getAddProxyCost(): BigNumber {
+    const proxyPallet = this._registry.metadata.pallets.find(
+      (p) => p.name.toString().toLowerCase() === SectionNames.Proxy
+    );
+    if (proxyPallet) {
+      const proxyDepositBase = this.getConstant('ProxyDepositBase', proxyPallet.constants);
+      const proxyDepositFactor = this.getConstant('ProxyDepositFactor', proxyPallet.constants);
+      return proxyDepositBase.plus(proxyDepositFactor);
+    } else {
+      const palletNames = this._registry.metadata.pallets.map((p) => p.name.toString().toLowerCase());
+      throw new Error(`Could not find ${SectionNames.Proxy} pallet in [${palletNames}]`);
+    }
+  }
+
+  private getConstant(name: string, constants: Vec<PalletConstantMetadataV14>): BigNumber {
+    const constant = constants.find((c) => c.name.toString() === name);
+    if (constant === undefined) {
+      const constantNames = constants.map((p) => p.name.toString());
+      throw new Error(`Could not find constant ${name} in [${constantNames}]`);
+    } else {
+      // Convert from Little-Endian to Big-Endian
+      const valueBe = Buffer.from(constant.value.toU8a(true).reverse()).toString('hex');
+      return BigNumber(valueBe, 16);
+    }
+  }
+
+  private decodeInputsAndOutputsForBond(decodedTx: DecodedTx) {
+    const sender = decodedTx.address;
+    this._inputs = [];
+    this._outputs = [];
+
+    const txMethod = decodedTx.method.args;
+    if (decodedTx.method.pallet === SectionNames.Staking) {
+      let bondValue = '0';
+      if (decodedTx.method.name === MethodNames.Bond && utils.isBond(txMethod)) {
+        bondValue = txMethod.value;
+      } else if (decodedTx.method.name === MethodNames.BondExtra && utils.isBondExtra(txMethod)) {
+        bondValue = txMethod.maxAdditional;
+      } else {
+        throw new ParseTransactionError(`Loading inputs of unknown StakingActivate type parameters`);
+      }
+      this._inputs.push({
+        address: sender,
+        value: bondValue,
+        coin: this._coinConfig.name,
+      });
+      this._outputs.push({
+        address: STAKING_DESTINATION,
+        value: bondValue,
+        coin: this._coinConfig.name,
+      });
+    }
+  }
+
+  private decodeInputsAndOutputsForUnbond(decodedTx: DecodedTx) {
+    this._inputs = [];
+    this._outputs = [];
+  }
+
+  private decodeInputsAndOutputsForWithdrawUnbond(decodedTx: DecodedTx) {
+    this._inputs = [];
+    this._outputs = [];
   }
 
   /**
