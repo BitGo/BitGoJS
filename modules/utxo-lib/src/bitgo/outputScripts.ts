@@ -178,8 +178,29 @@ function getTaptreeKeyCombinations(keys: Triple<Buffer>): Tuple<Buffer>[] {
   ];
 }
 
-export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number): bitcoinjs.Payment {
+function getRedeemIndex(keyCombinations: [Buffer, Buffer][], signer: Buffer, cosigner: Buffer): number {
+  signer = toXOnlyPublicKey(signer);
+  cosigner = toXOnlyPublicKey(cosigner);
+  const i = keyCombinations.findIndex(([a, b]) => {
+    if (a.length !== signer.length || b.length !== cosigner.length) {
+      throw new Error(`invalid comparison`);
+    }
+    return (a.equals(signer) && b.equals(cosigner)) || (a.equals(cosigner) && b.equals(signer));
+  });
+  if (0 <= i) {
+    return i;
+  }
+  throw new Error(`could not find singer/cosigner combination`);
+}
+
+export function createPaymentP2tr(
+  pubkeys: Triple<Buffer>,
+  redeemIndex?: number | { signer: Buffer; cosigner: Buffer }
+): bitcoinjs.Payment {
   const keyCombinations2of2 = getTaptreeKeyCombinations(pubkeys);
+  if (typeof redeemIndex === 'object') {
+    redeemIndex = getRedeemIndex(keyCombinations2of2, redeemIndex.signer, redeemIndex.cosigner);
+  }
   const redeems = keyCombinations2of2.map((pubkeys, index) =>
     bitcoinjs.payments.p2tr_ns(
       {
@@ -198,6 +219,19 @@ export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number)
     },
     { eccLib }
   );
+}
+
+export function getLeafHash(
+  params: bitcoinjs.Payment | { publicKeys: Triple<Buffer>; signer: Buffer; cosigner: Buffer }
+): Buffer {
+  if ('publicKeys' in params) {
+    params = createPaymentP2tr(params.publicKeys, params);
+  }
+  const { output, controlBlock, redeem } = params;
+  if (!output || !controlBlock || !redeem || !redeem.output) {
+    throw new Error(`invalid state`);
+  }
+  return taproot.getTapleafHash(eccLib, controlBlock, redeem.output);
 }
 
 export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {

@@ -1,98 +1,188 @@
 import * as assert from 'assert';
-import { ecc as eccLib, getNetworkName, Network, networks, taproot } from '../../../src';
+import { describe, it } from 'mocha';
+
+import { BIP32Interface, ecc as eccLib, getNetworkName, Network, networks, taproot } from '../../../src';
 import {
   isPlaceholderSignature,
   outputScripts,
   ParsedSignatureScriptTaprootScriptPath,
   parseSignatureScript,
+  PrevOutput,
+  UtxoPsbt,
+  UtxoTransaction,
   verifySignatureWithPublicKey,
 } from '../../../src/bitgo';
-import { getHalfSignedTransaction2Of3, getPrevOutputs } from '../../transaction_util';
-import { getDefaultWalletKeys } from '../../testutil';
+import { createOutputScript2of3, getLeafHash } from '../../../src/bitgo/outputScripts';
 import { getInputUpdate } from '../../../src/bitgo/psbt/fromHalfSigned';
-import { createOutputScript2of3 } from '../../../src/bitgo/outputScripts';
+
+import { getPrevOutputs, getTransactionStages } from '../../transaction_util';
+import { getDefaultWalletKeys, getKeyName } from '../../testutil';
 import { normDefault } from '../../testutil/normalize';
+
 type InputType = outputScripts.ScriptType2Of3 | 'p2shP2pk';
 function getInputScripts(): InputType[] {
   return [...outputScripts.scriptTypes2Of3, 'p2shP2pk'];
 }
 
-function runTest(scriptType: InputType, network: Network) {
-  const walletKeys = getDefaultWalletKeys();
-  describe(`getInputUpdate scriptType=${scriptType}, network=${getNetworkName(network)}`, function () {
-    let prevOutputs;
-    let tx;
-    before('create transaction', function () {
-      prevOutputs = getPrevOutputs(scriptType, BigInt(1e8), walletKeys.triple);
-      tx = getHalfSignedTransaction2Of3(walletKeys.triple, walletKeys.user, walletKeys.bitgo, scriptType, network, {
-        prevOutputs,
+const walletKeys = getDefaultWalletKeys();
+
+function runTest(scriptType: InputType, signer: BIP32Interface, cosigner: BIP32Interface, network: Network) {
+  describe(
+    `UtxoPsbt scriptType=${scriptType}, network=${getNetworkName(network)} ` +
+      `signer=${getKeyName(walletKeys.triple, signer)} ` +
+      `cosigner=${getKeyName(walletKeys.triple, cosigner)}`,
+    function () {
+      let prevOutputs: PrevOutput<bigint>[];
+      let unsigned: UtxoTransaction<bigint>;
+      let halfSigned: UtxoTransaction<bigint>;
+      let fullSigned: UtxoTransaction<bigint>;
+      before('create transaction', function () {
+        prevOutputs = getPrevOutputs(scriptType, BigInt(1e8), network, {
+          keys: walletKeys.triple,
+          prevTx: scriptType === 'p2sh' || scriptType === 'p2shP2pk',
+        });
+        ({ unsigned, halfSigned, fullSigned } = getTransactionStages(
+          walletKeys.triple,
+          signer,
+          cosigner,
+          scriptType,
+          network,
+          {
+            amountType: 'bigint',
+            outputAmount: BigInt(1e8),
+            prevOutputs,
+          }
+        ));
       });
-    });
-    it('matches expected value', function () {
-      const vin = 0;
 
-      const result = getInputUpdate(tx.clone() /* FIXME: make getInputUpdate non-destructive */, vin, prevOutputs[0]);
-      const parsed = parseSignatureScript(tx.ins[vin]);
-      assert(parsed.scriptType !== undefined);
+      it('has getInputUpdate with expected value', function () {
+        if (scriptType === 'p2shP2pk') {
+          this.skip();
+        }
+        const vin = 0;
 
-      function getTaprootUpdate(parsed: ParsedSignatureScriptTaprootScriptPath, pubkey: Buffer, signature: Buffer) {
-        return {
-          tapLeafScript: [
-            {
-              controlBlock: parsed.controlBlock,
-              script: parsed.pubScript,
-              leafVersion: parsed.leafVersion,
-            },
-          ],
-          tapScriptSig: [
-            {
-              leafHash: taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript),
-              pubkey,
-              signature,
-            },
-          ],
-        };
-      }
+        const result = getInputUpdate(
+          halfSigned.clone() /* FIXME: make getInputUpdate non-destructive */,
+          vin,
+          prevOutputs[0]
+        );
+        const parsed = parseSignatureScript(halfSigned.ins[vin]);
+        assert(parsed.scriptType !== undefined);
 
-      switch (scriptType) {
-        case 'p2shP2pk':
-          break;
-        case 'p2sh':
-        case 'p2shP2wsh':
-        case 'p2wsh':
-        case 'p2tr':
-          assert(parsed.scriptType === scriptType);
-          const { redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
-          const parsedSignatures = parsed.signatures.filter((s) => !isPlaceholderSignature(s));
-          const signedBy = walletKeys.publicKeys.filter((k) => verifySignatureWithPublicKey(tx, vin, prevOutputs, k));
+        function getTaprootUpdate(parsed: ParsedSignatureScriptTaprootScriptPath, pubkey: Buffer, signature: Buffer) {
+          return {
+            tapLeafScript: [
+              {
+                controlBlock: parsed.controlBlock,
+                script: parsed.pubScript,
+                leafVersion: parsed.leafVersion,
+              },
+            ],
+            tapScriptSig: [
+              {
+                leafHash: taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript),
+                pubkey,
+                signature,
+              },
+            ],
+          };
+        }
 
-          assert.strictEqual(parsedSignatures.length, 1);
-          assert.strictEqual(signedBy.length, 1);
-          assert(Buffer.isBuffer(parsedSignatures[0]));
-          assert.deepStrictEqual(
-            normDefault(result),
-            normDefault({
-              partialSig:
-                scriptType === 'p2tr'
-                  ? undefined
-                  : [
-                      {
-                        pubkey: signedBy[0],
-                        signature: parsedSignatures[0],
-                      },
-                    ],
-              redeemScript,
-              witnessScript,
-              ...(parsed.scriptType === 'p2tr' && 'controlBlock' in parsed
-                ? getTaprootUpdate(parsed, signedBy[0].slice(1), parsedSignatures[0])
-                : {}),
-            })
+        switch (scriptType) {
+          case 'p2sh':
+          case 'p2shP2wsh':
+          case 'p2wsh':
+          case 'p2tr':
+            assert(parsed.scriptType === scriptType);
+            const { redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+            const parsedSignatures = parsed.signatures.filter((s) => !isPlaceholderSignature(s));
+            const signedBy = walletKeys.publicKeys.filter((k) =>
+              verifySignatureWithPublicKey(halfSigned, vin, prevOutputs, k)
+            );
+
+            assert.strictEqual(parsedSignatures.length, 1);
+            assert.strictEqual(signedBy.length, 1);
+            assert.strictEqual(signedBy[0], signer.publicKey);
+            assert(Buffer.isBuffer(parsedSignatures[0]));
+            assert.deepStrictEqual(
+              normDefault(result),
+              normDefault({
+                nonWitnessUtxo: scriptType === 'p2sh' ? prevOutputs[0].prevTx : undefined,
+                partialSig:
+                  scriptType === 'p2tr'
+                    ? undefined
+                    : [
+                        {
+                          pubkey: signedBy[0],
+                          signature: parsedSignatures[0],
+                        },
+                      ],
+                redeemScript,
+                witnessScript,
+                ...(parsed.scriptType === 'p2tr' && 'controlBlock' in parsed
+                  ? getTaprootUpdate(parsed, signedBy[0].slice(1), parsedSignatures[0])
+                  : {}),
+              })
+            );
+        }
+      });
+
+      it('has equal unsigned tx', function () {
+        assert.strictEqual(
+          UtxoPsbt.fromTransaction(unsigned, prevOutputs).getUnsignedTx().toBuffer().toString('hex'),
+          unsigned.toBuffer().toString('hex')
+        );
+
+        if (scriptType !== 'p2shP2pk') {
+          assert.strictEqual(
+            UtxoPsbt.fromTransaction(halfSigned, prevOutputs).getUnsignedTx().toBuffer().toString('hex'),
+            unsigned.toBuffer().toString('hex')
           );
+        }
+      });
+
+      function signPsbt(startTx: UtxoTransaction<bigint>, signers: BIP32Interface[]) {
+        const psbt = UtxoPsbt.fromTransaction(startTx, prevOutputs);
+        signers.forEach((s) => {
+          if (scriptType === 'p2tr') {
+            psbt.signTaprootInput(0, s, [
+              getLeafHash({
+                publicKeys: walletKeys.publicKeys,
+                signer: signer.publicKey,
+                cosigner: cosigner.publicKey,
+              }),
+            ]);
+          } else {
+            psbt.signAllInputs(s);
+          }
+        });
+        psbt.finalizeAllInputs();
+        return psbt.extractTransaction();
       }
-    });
-  });
+
+      it('can go from unsigned to full-signed', function () {
+        // TODO(BG-57748): inputs lack some required information
+        this.skip();
+        assert.deepStrictEqual(
+          signPsbt(unsigned, [signer, cosigner]).toBuffer().toString('hex'),
+          fullSigned.toBuffer().toString('hex')
+        );
+      });
+
+      it('can go from half-signed to full-signed', function () {
+        if (scriptType === 'p2shP2pk') {
+          this.skip();
+        }
+        assert.deepStrictEqual(
+          signPsbt(halfSigned, [cosigner]).toBuffer().toString('hex'),
+          fullSigned.toBuffer().toString('hex')
+        );
+      });
+    }
+  );
 }
 
 getInputScripts().forEach((t) => {
-  runTest(t, networks.bitcoin);
+  runTest(t, walletKeys.user, walletKeys.bitgo, networks.bitcoin);
+  runTest(t, walletKeys.backup, walletKeys.user, networks.bitcoin);
 });

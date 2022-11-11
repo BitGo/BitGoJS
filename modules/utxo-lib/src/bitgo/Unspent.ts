@@ -120,7 +120,10 @@ export type TxOutPoint = {
  * Output reference and script data.
  * Suitable for use for `txb.addInput()`
  */
-export type PrevOutput<TNumber extends number | bigint = number> = TxOutPoint & TxOutput<TNumber>;
+export type PrevOutput<TNumber extends number | bigint = number> = TxOutPoint &
+  TxOutput<TNumber> & {
+    prevTx?: Buffer;
+  };
 
 /**
  * @return PrevOutput from Unspent

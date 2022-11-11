@@ -4,7 +4,12 @@ import { TxOutput } from 'bitcoinjs-lib';
 
 import { networks, Network } from '../src';
 
-import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  createOutputScriptP2shP2pk,
+  isScriptType2Of3,
+  ScriptType2Of3,
+} from '../src/bitgo/outputScripts';
 import {
   isTriple,
   createPsbtFromBuffer,
@@ -103,28 +108,46 @@ export function mockTransactionId(v = 0xff): string {
 export function getPrevOutput<TNumber extends number | bigint = number>(
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   value: TNumber,
+  network: Network,
   vout = 0,
-  keys: KeyTriple = fixtureKeys
+  {
+    keys = fixtureKeys,
+    prevTx,
+  }: {
+    keys?: KeyTriple;
+    prevTx?: UtxoTransaction<TNumber> | boolean;
+  } = {}
 ): PrevOutput<TNumber> {
+  const script = isScriptType2Of3(scriptType)
+    ? createOutputScript2of3(
+        keys.map((k) => k.publicKey),
+        scriptType
+      ).scriptPubKey
+    : createOutputScriptP2shP2pk(keys[0].publicKey).scriptPubKey;
+
+  if (prevTx === true) {
+    const txb = createTransactionBuilderForNetwork<TNumber>(network);
+    txb.addInput(Buffer.alloc(32).fill(1), 0);
+    txb.addOutput(script, value);
+    prevTx = txb.buildIncomplete();
+  }
+
   return {
-    txid: mockTransactionId(),
+    txid: prevTx ? prevTx.getId() : mockTransactionId(),
     vout,
-    script: isScriptType2Of3(scriptType)
-      ? createOutputScript2of3(
-          keys.map((k) => k.publicKey),
-          scriptType
-        ).scriptPubKey
-      : Buffer.from([]),
+    script,
     value,
+    prevTx: prevTx ? prevTx.toBuffer() : undefined,
   };
 }
 
 export function getPrevOutputs<TNumber extends number | bigint = number>(
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   value: TNumber,
-  keys: KeyTriple = fixtureKeys
+  network: Network,
+  { keys = fixtureKeys, prevTx }: { keys?: KeyTriple; prevTx?: boolean } = {}
 ): PrevOutput<TNumber>[] {
-  return [getPrevOutput<TNumber>(scriptType, value, 0, keys)];
+  return [getPrevOutput<TNumber>(scriptType, value, network, 0, { keys, prevTx })];
 }
 
 export type HalfSigner = {
@@ -146,7 +169,7 @@ export function getTransactionBuilder<TNumber extends number | bigint = number>(
   {
     amountType = 'number',
     outputAmount = defaultTestOutputAmount,
-    prevOutputs = getPrevOutputs<TNumber>(scriptType, toTNumber<TNumber>(outputAmount, amountType)),
+    prevOutputs = getPrevOutputs<TNumber>(scriptType, toTNumber<TNumber>(outputAmount, amountType), network),
   }: TransactionUtilBuildOptions<TNumber> = {}
 ): UtxoTransactionBuilder<TNumber> {
   const txBuilder = createTransactionBuilderForNetwork<TNumber>(network);
@@ -216,7 +239,7 @@ export function getFullSignedTransaction2Of3<TNumber extends number | bigint = n
   keys: KeyTriple,
   signer1: BIP32Interface,
   signer2: BIP32Interface,
-  scriptType: ScriptType2Of3,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
   network: Network,
   opts: TransactionUtilBuildOptions<TNumber> = {}
 ): UtxoTransaction<TNumber> {
@@ -230,4 +253,29 @@ export function getFullSignedTransaction2Of3<TNumber extends number | bigint = n
     network,
     opts
   ).build();
+}
+
+export function getTransactionStages<TNumber extends number | bigint>(
+  keys: KeyTriple,
+  signer1: BIP32Interface,
+  signer2: BIP32Interface,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  network: Network,
+  opts: TransactionUtilBuildOptions<TNumber>
+): {
+  unsigned: UtxoTransaction<TNumber>;
+  halfSigned: UtxoTransaction<TNumber>;
+  fullSigned: UtxoTransaction<TNumber>;
+} {
+  const halfSigned = getHalfSignedTransaction2Of3(keys, signer1, signer2, scriptType, network, opts);
+  const fullSigned =
+    scriptType === 'p2shP2pk'
+      ? halfSigned
+      : getFullSignedTransaction2Of3(keys, signer1, signer2, scriptType, network, opts);
+
+  return {
+    unsigned: getUnsignedTransaction2Of3(keys, scriptType, network, opts),
+    halfSigned,
+    fullSigned,
+  };
 }
