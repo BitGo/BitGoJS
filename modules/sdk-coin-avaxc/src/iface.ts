@@ -7,6 +7,7 @@ import {
   TransactionFee,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionType,
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -76,6 +77,7 @@ export interface HopTransactionBuildOptions {
   wallet: Wallet;
   recipients: Recipient[];
   walletPassphrase: string;
+  type?: keyof typeof TransactionType;
 }
 
 // For getExtraPrebuildParams
@@ -84,6 +86,7 @@ export interface BuildOptions {
   wallet?: Wallet;
   recipients?: Recipient[];
   walletPassphrase?: string;
+  type?: keyof typeof TransactionType;
   [index: string]: unknown;
 }
 

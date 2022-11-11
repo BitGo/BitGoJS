@@ -11,6 +11,7 @@ import { IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
+import { TransactionType } from '../../account-lib';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -179,6 +180,7 @@ export interface FeeEstimateOptions {
   recipient?: string;
   data?: string;
   amount?: string;
+  type?: keyof typeof TransactionType;
 }
 
 // TODO (SDKT-9): reverse engineer and add options
