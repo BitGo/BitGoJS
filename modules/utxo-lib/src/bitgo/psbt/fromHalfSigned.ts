@@ -47,14 +47,7 @@ export function getInputUpdate(tx: UtxoTransaction<bigint>, vin: number, prevOut
       throw new Error('Invalid scriptSig, failed to decompile');
     }
     if ((!input.witness || !input.witness.length) && decompiledScriptSig.length === 2) {
-      // P2PKH
-      const pubkey = decompiledScriptSig.pop();
-      const signature = decompiledScriptSig.pop();
-      if (!Buffer.isBuffer(pubkey) || !Buffer.isBuffer(signature)) {
-        throw new Error('Invalid pubkey or signature');
-      }
-      update.partialSig = [{ pubkey, signature }];
-      return update;
+      throw new Error();
     }
     redeemScript = decompiledScriptSig.pop();
     if (!Buffer.isBuffer(redeemScript)) {

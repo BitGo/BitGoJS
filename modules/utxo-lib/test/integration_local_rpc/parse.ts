@@ -116,13 +116,12 @@ function runTestParse<TNumber extends number | bigint>(
     }
 
     it(`round-trip`, function () {
-      parseTransactionRoundTrip(
-        Buffer.from(fixture.transaction.hex, 'hex'),
-        protocol.network,
-        getPrevOutputs(),
+      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+        inputs: getPrevOutputs(),
         amountType,
-        protocol.version
-      );
+        version: protocol.version,
+        roundTripPsbt: txType === 'spend',
+      });
     });
 
     it(`round-trip (high-precision values)`, function () {
@@ -139,7 +138,7 @@ function runTestParse<TNumber extends number | bigint>(
         o.value = (BigInt(1e16) + BigInt(1)) as TNumber;
         assert.notStrictEqual(BigInt(Number(o.value)), o.value);
       });
-      const txRoundTrip = parseTransactionRoundTrip(tx.toBuffer(), protocol.network, undefined, amountType);
+      const txRoundTrip = parseTransactionRoundTrip(tx.toBuffer(), protocol.network, { amountType });
       assert.strictEqual(txRoundTrip.outs.length, tx.outs.length);
       txRoundTrip.outs.forEach((o, i) => {
         assert.deepStrictEqual(o, tx.outs[i]);
