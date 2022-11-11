@@ -147,15 +147,16 @@ export function setPsbtDefaults(
       ) {
         throw new Error(`invalid version`);
       }
+      psbt.setDefaultsForVersion(network, version);
       break;
     default:
       if (version !== 1) {
         throw new Error(`invalid version`);
       }
+      // FIXME: set version here, because there's a bug in the upstream PSBT
+      // that defaults transactions to v2.
+      psbt.setVersion(version);
   }
-  // FIXME: Always call this, because there's a bug in the upstream PSBT that
-  // defaults transactions to v2.
-  psbt.setVersion(version);
 }
 
 export function createPsbtForNetwork(
