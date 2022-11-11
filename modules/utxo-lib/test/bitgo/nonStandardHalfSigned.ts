@@ -31,7 +31,7 @@ function runTest<TNumber extends number | bigint>(scriptType: ScriptType2Of3, am
           getDefaultCosigner(fixtureKeys, signKey),
           scriptType,
           network,
-          amountType
+          { amountType }
         );
 
         // Fixtures can only be constructed using utxolib < 1.10
