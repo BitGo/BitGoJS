@@ -254,3 +254,28 @@ export function getFullSignedTransaction2Of3<TNumber extends number | bigint = n
     opts
   ).build();
 }
+
+export function getTransactionStages<TNumber extends number | bigint>(
+  keys: KeyTriple,
+  signer1: BIP32Interface,
+  signer2: BIP32Interface,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  network: Network,
+  opts: TransactionUtilBuildOptions<TNumber>
+): {
+  unsigned: UtxoTransaction<TNumber>;
+  halfSigned: UtxoTransaction<TNumber>;
+  fullSigned: UtxoTransaction<TNumber>;
+} {
+  const halfSigned = getHalfSignedTransaction2Of3(keys, signer1, signer2, scriptType, network, opts);
+  const fullSigned =
+    scriptType === 'p2shP2pk'
+      ? halfSigned
+      : getFullSignedTransaction2Of3(keys, signer1, signer2, scriptType, network, opts);
+
+  return {
+    unsigned: getUnsignedTransaction2Of3(keys, scriptType, network, opts),
+    halfSigned,
+    fullSigned,
+  };
+}
