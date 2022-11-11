@@ -19,6 +19,7 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
+import { toXOnlyPublicKey } from './outputScripts';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -312,6 +313,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     leafHashes: Buffer[],
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
+    const pubkey = toXOnlyPublicKey(signer.publicKey);
     const input = checkForInput(this.data.inputs, inputIndex);
     // Figure out if this is script path or not, if not, tweak the private key
     if (!input.tapLeafScript?.length) {
@@ -339,7 +341,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     this.data.updateInput(inputIndex, {
       tapScriptSig: [
         {
-          pubkey: signer.publicKey.slice(1),
+          pubkey,
           signature,
           leafHash,
         },
