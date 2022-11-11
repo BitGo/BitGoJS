@@ -220,7 +220,7 @@ function checkSignTransaction<TNumber extends number | bigint>(
   signKeys: BIP32Interface[],
   testOutputAmount: TNumber
 ) {
-  const prevOutputs = getPrevOutputs<TNumber>(scriptType, testOutputAmount) as TxOutput<TNumber>[];
+  const prevOutputs = getPrevOutputs<TNumber>(scriptType, testOutputAmount, tx.network) as TxOutput<TNumber>[];
 
   // return true iff there are any valid signatures at all
   assertVerifySignatureEquals<TNumber>(tx, prevOutputs, signKeys.length > 0, testOutputAmount);
