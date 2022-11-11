@@ -37,9 +37,16 @@ function matchSignatures(hashFn: (hashType: number) => Buffer, script: Buffer, s
   return partialSig;
 }
 
-export function getInputUpdate(tx: UtxoTransaction<bigint>, vin: number, prevOut: TxOutput<bigint>): PsbtInputUpdate {
+export function getInputUpdate(
+  tx: UtxoTransaction<bigint>,
+  vin: number,
+  prevOut: TxOutput<bigint> & { prevTx?: Buffer }
+): PsbtInputUpdate {
   const input = tx.ins[vin];
   const update: PsbtInputUpdate = {};
+  if (prevOut.prevTx) {
+    update.nonWitnessUtxo = prevOut.prevTx;
+  }
   let redeemScript;
   if (input.script && input.script.length) {
     const decompiledScriptSig = bscript.decompile(input.script);
