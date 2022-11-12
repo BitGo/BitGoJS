@@ -349,4 +349,11 @@ export class Transaction extends BaseTransaction {
       memo: txJson.memo,
     };
   }
+
+  /**
+   * Check if this transaction is a P chain
+   */
+  get isTransactionForCChain(): boolean {
+    return utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID);
+  }
 }

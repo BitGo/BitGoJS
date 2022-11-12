@@ -422,7 +422,7 @@ describe('Avaxp', function () {
   });
 
   describe('verify transaction', function () {
-    it('should succeed to verify signed transaction', async () => {
+    it('should succeed to verify signed add validator transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
         txInfo: {},
@@ -432,7 +432,7 @@ describe('Avaxp', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify half signed transaction', async () => {
+    it('should succeed to verify half signed add validator transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
         txInfo: {},
@@ -442,20 +442,35 @@ describe('Avaxp', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify unsigned transaction', async () => {
+    it('should succeed to verify unsigned add validator transaction', async () => {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify transactions when recipients has extra data', async function () {
+    it('should succeed to verify add validator transactions when recipients has extra data ', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       txParams.data = 'data';
 
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    it('should succeed to verify import in C transaction', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_C.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
     });
 
     it('should succeed to verify export transaction', async () => {
@@ -630,6 +645,7 @@ describe('Avaxp', function () {
         })
         .should.be.rejectedWith('Tx outputs does not match with expected txParams');
     });
+
     it('should fail verify transactions when amount is number', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
