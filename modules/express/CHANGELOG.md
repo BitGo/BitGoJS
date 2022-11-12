@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.19.0...@bitgo/express@9.20.0) (2022-11-08)
+
+### Bug Fixes
+
+* fix(express): use buster slim over alpine ([60b810d](https://github.com/BitGo/BitGoJS/commit/60b810d7c3ae02f252b98c02a688e773af90653e))
+
 # [9.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.15.0...@bitgo/express@9.19.0) (2022-11-04)
 
 
