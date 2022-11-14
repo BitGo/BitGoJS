@@ -59,77 +59,95 @@ function runTest(
         ));
       });
 
-      it('has getInputUpdate with expected value', function () {
-        if (scriptType === 'p2shP2pk') {
-          this.skip();
-        }
-        const vin = 0;
+      function testGetInputUpdateForStage(stage: 'unsigned' | 'halfSigned') {
+        it(`has getInputUpdate with expected value, stage=${stage}`, function () {
+          if (scriptType === 'p2shP2pk') {
+            this.skip();
+          }
+          const tx = stage === 'unsigned' ? unsigned : halfSigned;
+          const vin = 0;
+          const nonWitnessUtxo = scriptType === 'p2sh' ? prevOutputs[vin].prevTx : undefined;
 
-        const result = getInputUpdate(
-          halfSigned.clone() /* FIXME: make getInputUpdate non-destructive */,
-          vin,
-          prevOutputs[0]
-        );
-        const parsed = parseSignatureScript(halfSigned.ins[vin]);
-        assert(parsed.scriptType !== undefined);
+          const result = getInputUpdate(
+            tx.clone() /* FIXME: make getInputUpdate non-destructive */,
+            vin,
+            prevOutputs[0]
+          );
 
-        function getTaprootUpdate(parsed: ParsedSignatureScriptTaprootScriptPath, pubkey: Buffer, signature: Buffer) {
-          return {
-            tapLeafScript: [
-              {
-                controlBlock: parsed.controlBlock,
-                script: parsed.pubScript,
-                leafVersion: parsed.leafVersion,
-              },
-            ],
-            tapScriptSig: [
-              {
-                leafHash: taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript),
-                pubkey,
-                signature,
-              },
-            ],
-          };
-        }
-
-        switch (scriptType) {
-          case 'p2sh':
-          case 'p2shP2wsh':
-          case 'p2wsh':
-          case 'p2tr':
-            assert(parsed.scriptType === scriptType);
-            const { redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
-            const parsedSignatures = parsed.signatures.filter((s) => !isPlaceholderSignature(s));
-            const signedBy = walletKeys.publicKeys.filter((k) =>
-              verifySignatureWithPublicKey(halfSigned, vin, prevOutputs, k)
-            );
-
-            assert.strictEqual(parsedSignatures.length, 1);
-            assert.strictEqual(signedBy.length, 1);
-            assert.strictEqual(signedBy[0], signer.publicKey);
-            assert(Buffer.isBuffer(parsedSignatures[0]));
+          if (stage === 'unsigned') {
             assert.deepStrictEqual(
               normDefault(result),
               normDefault({
-                nonWitnessUtxo: scriptType === 'p2sh' ? prevOutputs[0].prevTx : undefined,
-                partialSig:
-                  scriptType === 'p2tr'
-                    ? undefined
-                    : [
-                        {
-                          pubkey: signedBy[0],
-                          signature: parsedSignatures[0],
-                        },
-                      ],
-                redeemScript,
-                witnessScript,
-                ...(parsed.scriptType === 'p2tr' && 'controlBlock' in parsed
-                  ? getTaprootUpdate(parsed, signedBy[0].slice(1), parsedSignatures[0])
-                  : {}),
+                nonWitnessUtxo,
               })
             );
-        }
-      });
+            return;
+          }
+
+          const parsed = parseSignatureScript(tx.ins[vin]);
+          assert(parsed.scriptType !== undefined);
+
+          function getTaprootUpdate(parsed: ParsedSignatureScriptTaprootScriptPath, pubkey: Buffer, signature: Buffer) {
+            return {
+              tapLeafScript: [
+                {
+                  controlBlock: parsed.controlBlock,
+                  script: parsed.pubScript,
+                  leafVersion: parsed.leafVersion,
+                },
+              ],
+              tapScriptSig: [
+                {
+                  leafHash: taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript),
+                  pubkey,
+                  signature,
+                },
+              ],
+            };
+          }
+
+          switch (scriptType) {
+            case 'p2sh':
+            case 'p2shP2wsh':
+            case 'p2wsh':
+            case 'p2tr':
+              assert(parsed.scriptType === scriptType);
+              const { redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+              const parsedSignatures = parsed.signatures.filter((s) => !isPlaceholderSignature(s));
+              const signedBy = walletKeys.publicKeys.filter((k) =>
+                verifySignatureWithPublicKey(tx, vin, prevOutputs, k)
+              );
+
+              assert.strictEqual(parsedSignatures.length, 1);
+              assert.strictEqual(signedBy.length, 1);
+              assert.strictEqual(signedBy[0], signer.publicKey);
+              assert(Buffer.isBuffer(parsedSignatures[0]));
+              assert.deepStrictEqual(
+                normDefault(result),
+                normDefault({
+                  nonWitnessUtxo,
+                  partialSig:
+                    scriptType === 'p2tr'
+                      ? undefined
+                      : [
+                          {
+                            pubkey: signedBy[0],
+                            signature: parsedSignatures[0],
+                          },
+                        ],
+                  redeemScript,
+                  witnessScript,
+                  ...(parsed.scriptType === 'p2tr' && 'controlBlock' in parsed
+                    ? getTaprootUpdate(parsed, signedBy[0].slice(1), parsedSignatures[0])
+                    : {}),
+                })
+              );
+          }
+        });
+      }
+
+      testGetInputUpdateForStage('unsigned');
+      testGetInputUpdateForStage('halfSigned');
 
       it('has equal unsigned tx', function () {
         assert.strictEqual(
