@@ -19,14 +19,18 @@ import { getPrevOutputs, getTransactionStages } from '../../transaction_util';
 import { getDefaultWalletKeys, getKeyName } from '../../testutil';
 import { normDefault } from '../../testutil/normalize';
 
-type InputType = outputScripts.ScriptType2Of3 | 'p2shP2pk';
-function getInputScripts(): InputType[] {
+function getScriptTypes(): outputScripts.ScriptType[] {
   return [...outputScripts.scriptTypes2Of3, 'p2shP2pk'];
 }
 
 const walletKeys = getDefaultWalletKeys();
 
-function runTest(scriptType: InputType, signer: BIP32Interface, cosigner: BIP32Interface, network: Network) {
+function runTest(
+  scriptType: outputScripts.ScriptType,
+  signer: BIP32Interface,
+  cosigner: BIP32Interface,
+  network: Network
+) {
   describe(
     `UtxoPsbt scriptType=${scriptType}, network=${getNetworkName(network)} ` +
       `signer=${getKeyName(walletKeys.triple, signer)} ` +
@@ -182,7 +186,7 @@ function runTest(scriptType: InputType, signer: BIP32Interface, cosigner: BIP32I
   );
 }
 
-getInputScripts().forEach((t) => {
+getScriptTypes().forEach((t) => {
   runTest(t, walletKeys.user, walletKeys.bitgo, networks.bitcoin);
   runTest(t, walletKeys.backup, walletKeys.user, networks.bitcoin);
 });
