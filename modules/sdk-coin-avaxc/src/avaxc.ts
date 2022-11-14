@@ -779,7 +779,9 @@ export class AvaxC extends BaseCoin {
    */
   async postProcessPrebuild(params: TransactionPrebuild): Promise<TransactionPrebuild> {
     if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
-      await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+      if (params.hopTransaction.id.startsWith('0x')) {
+        await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+      } // TODO(BG-61823): Verify hop export tx
     }
     return params;
   }
@@ -926,6 +928,7 @@ export class AvaxC extends BaseCoin {
         wallet: buildParams.wallet,
         recipients: buildParams.recipients,
         walletPassphrase: buildParams.walletPassphrase,
+        type: buildParams.type,
       })) as any;
     }
     return {};
@@ -936,11 +939,12 @@ export class AvaxC extends BaseCoin {
    * @param buildParams The original build parameters
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  async createHopTransactionParams(buildParams: HopTransactionBuildOptions): Promise<HopParams> {
-    const wallet = buildParams.wallet;
-    const recipients = buildParams.recipients;
-    const walletPassphrase = buildParams.walletPassphrase;
-
+  async createHopTransactionParams({
+    wallet,
+    recipients,
+    walletPassphrase,
+    type,
+  }: HopTransactionBuildOptions): Promise<HopParams> {
     const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
     const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
     const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
@@ -961,6 +965,7 @@ export class AvaxC extends BaseCoin {
       recipient: recipientAddress,
       amount: recipientAmount,
       hop: true,
+      type,
     };
     const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
 
@@ -1012,6 +1017,9 @@ export class AvaxC extends BaseCoin {
     }
     if (params && params.amount) {
       query.amount = params.amount;
+    }
+    if (params && params.type) {
+      query.type = params.type;
     }
 
     return await this.bitgo.get(this.url('/tx/fee')).query(query).result();
