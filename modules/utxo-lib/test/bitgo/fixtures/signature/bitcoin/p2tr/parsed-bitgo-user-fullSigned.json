@@ -1,7 +1,5 @@
 {
   "scriptType": "p2tr",
-  "isSegwitInput": true,
-  "inputClassification": "taproot",
   "pubScript": "208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac",
   "publicKeys": [
     "8fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97",

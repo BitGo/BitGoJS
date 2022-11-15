@@ -202,21 +202,6 @@ function runTestParse<TNumber extends number | bigint>(
 
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
-
-        switch (scriptType) {
-          case 'p2sh':
-          case 'p2shP2wsh':
-            assert.strictEqual(result.inputClassification, 'scripthash');
-            break;
-          case 'p2wsh':
-            assert.strictEqual(result.inputClassification, 'witnessscripthash');
-            break;
-          case 'p2tr':
-            assert.strictEqual(result.inputClassification, 'taproot');
-            break;
-          default:
-            throw new Error(`unknown scriptType ${scriptType}`);
-        }
       });
     });
 
