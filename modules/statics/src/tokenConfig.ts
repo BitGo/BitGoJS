@@ -12,6 +12,7 @@ import {
   AdaCoin,
   Erc721Coin,
   Erc1155Coin,
+  TrxCoin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -38,6 +39,7 @@ export type CeloTokenConfig = BaseContractAddressConfig;
 export type EthLikeTokenConfig = BaseContractAddressConfig;
 export type EosTokenConfig = BaseContractAddressConfig;
 export type Erc20TokenConfig = BaseContractAddressConfig;
+export type TrxTokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
 
 export type SolTokenConfig = BaseNetworkConfig & {
@@ -98,6 +100,9 @@ export interface Tokens {
     ada: {
       tokens: AdaTokenConfig[];
     };
+    trx: {
+      tokens: TrxTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -135,6 +140,9 @@ export interface Tokens {
     };
     ada: {
       tokens: AdaTokenConfig[];
+    };
+    trx: {
+      tokens: TrxTokenConfig[];
     };
   };
 }
@@ -336,6 +344,20 @@ const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
+  if (coin instanceof TrxCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -375,6 +397,9 @@ export const tokens: Tokens = {
     ada: {
       tokens: formattedAdaTokens.filter((token) => token.network === 'Mainnet'),
     },
+    trx: {
+      tokens: formattedTrxTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -413,6 +438,9 @@ export const tokens: Tokens = {
     },
     ada: {
       tokens: formattedAdaTokens.filter((token) => token.network === 'Testnet'),
+    },
+    trx: {
+      tokens: formattedTrxTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
