@@ -12,11 +12,17 @@ import {
   UtxoTransaction,
   verifySignatureWithPublicKey,
 } from '../../../src/bitgo';
-import { createOutputScript2of3, getLeafHash } from '../../../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  getLeafHash,
+  hasWitnessData,
+  isScriptType2Of3,
+} from '../../../src/bitgo/outputScripts';
 import { getInputUpdate } from '../../../src/bitgo/psbt/fromHalfSigned';
 
 import { getPrevOutputs, getTransactionStages } from '../../transaction_util';
 import { getDefaultWalletKeys, getKeyName } from '../../testutil';
+
 import { normDefault } from '../../testutil/normalize';
 
 function getScriptTypes(): outputScripts.ScriptType[] {
@@ -61,18 +67,11 @@ function runTest(
 
       function testGetInputUpdateForStage(stage: 'unsigned' | 'halfSigned') {
         it(`has getInputUpdate with expected value, stage=${stage}`, function () {
-          if (scriptType === 'p2shP2pk') {
-            this.skip();
-          }
           const tx = stage === 'unsigned' ? unsigned : halfSigned;
           const vin = 0;
-          const nonWitnessUtxo = scriptType === 'p2sh' ? prevOutputs[vin].prevTx : undefined;
+          const nonWitnessUtxo = hasWitnessData(scriptType) ? undefined : prevOutputs[vin].prevTx;
 
-          const result = getInputUpdate(
-            tx.clone() /* FIXME: make getInputUpdate non-destructive */,
-            vin,
-            prevOutputs[0]
-          );
+          const result = getInputUpdate(tx, vin, prevOutputs);
 
           if (stage === 'unsigned') {
             assert.deepStrictEqual(
@@ -107,20 +106,24 @@ function runTest(
           }
 
           switch (scriptType) {
+            case 'p2shP2pk':
             case 'p2sh':
             case 'p2shP2wsh':
             case 'p2wsh':
             case 'p2tr':
               assert(parsed.scriptType === scriptType);
-              const { redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+              let redeemScript, witnessScript, signedBy;
+              if (isScriptType2Of3(scriptType)) {
+                ({ redeemScript, witnessScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType));
+                signedBy = walletKeys.publicKeys.filter((k) => verifySignatureWithPublicKey(tx, vin, prevOutputs, k));
+              } else {
+                signedBy = parsed.publicKeys;
+              }
               const parsedSignatures = parsed.signatures.filter((s) => !isPlaceholderSignature(s));
-              const signedBy = walletKeys.publicKeys.filter((k) =>
-                verifySignatureWithPublicKey(tx, vin, prevOutputs, k)
-              );
 
               assert.strictEqual(parsedSignatures.length, 1);
               assert.strictEqual(signedBy.length, 1);
-              assert.strictEqual(signedBy[0], signer.publicKey);
+              assert.deepStrictEqual(signedBy[0], signer.publicKey);
               assert(Buffer.isBuffer(parsedSignatures[0]));
               assert.deepStrictEqual(
                 normDefault(result),
@@ -142,6 +145,9 @@ function runTest(
                     : {}),
                 })
               );
+              break;
+            default:
+              throw new Error(`invalid type`);
           }
         });
       }
