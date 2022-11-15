@@ -35,10 +35,14 @@ export type VerificationSettings = {
 /**
  * Result for a individual signature verification
  */
-export type SignatureVerification = {
-  /** Set to the public key that signed for the signature */
-  signedBy: Buffer | undefined;
-};
+export type SignatureVerification =
+  | {
+      /** Set to the public key that signed for the signature */
+      signedBy: Buffer;
+      /** Set to the signature buffer */
+      signature: Buffer;
+    }
+  | { signedBy: undefined; signature: undefined };
 
 /**
  * @deprecated - use {@see verifySignaturesWithPublicKeys} instead
@@ -86,9 +90,9 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       verificationSettings.publicKey.slice(1).equals(buf)
   );
 
-  return signatures.map((signatureBuffer) => {
+  return signatures.map((signatureBuffer): SignatureVerification => {
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
-      return { signedBy: undefined };
+      return { signedBy: undefined, signature: undefined };
     }
 
     let hashType = Transaction.SIGHASH_DEFAULT;
@@ -129,10 +133,10 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       );
 
       if (signedBy.length === 0) {
-        return { signedBy: undefined };
+        return { signedBy: undefined, signature: undefined };
       }
       if (signedBy.length === 1) {
-        return { signedBy: signedBy[0] };
+        return { signedBy: signedBy[0], signature: signatureBuffer };
       }
       throw new Error(`illegal state: signed by multiple public keys`);
     } else {
@@ -158,10 +162,10 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       );
 
       if (signedBy.length === 0) {
-        return { signedBy: undefined };
+        return { signedBy: undefined, signature: undefined };
       }
       if (signedBy.length === 1) {
-        return { signedBy: signedBy[0] };
+        return { signedBy: signedBy[0], signature: signatureBuffer };
       }
       throw new Error(`illegal state: signed by multiple public keys`);
     }
@@ -219,16 +223,16 @@ function isSignatureByPublicKey(v: SignatureVerification, publicKey: Buffer): bo
 /**
  * @param transaction
  * @param inputIndex
- * @param prevOutputs - transaction outputs for inputs
- * @param publicKeys - public keys to check signatures for
- * @return array of booleans indicating a valid signature for every pubkey in _publicKeys_
+ * @param prevOutputs
+ * @param publicKeys
+ * @return array with signature corresponding to n-th key, undefined if no match found
  */
-export function verifySignatureWithPublicKeys<TNumber extends number | bigint>(
+export function getSignaturesWithPublicKeys<TNumber extends number | bigint>(
   transaction: UtxoTransaction<TNumber>,
   inputIndex: number,
   prevOutputs: TxOutput<TNumber>[],
   publicKeys: Buffer[]
-): boolean[] {
+): Array<Buffer | undefined> {
   if (transaction.ins.length !== prevOutputs.length) {
     throw new Error(`input length must match prevOutputs length`);
   }
@@ -241,7 +245,26 @@ export function verifySignatureWithPublicKeys<TNumber extends number | bigint>(
     prevOutputs
   );
 
-  return publicKeys.map((publicKey) => !!signatureVerifications.find((v) => isSignatureByPublicKey(v, publicKey)));
+  return publicKeys.map((publicKey) => {
+    const v = signatureVerifications.find((v) => isSignatureByPublicKey(v, publicKey));
+    return v ? v.signature : undefined;
+  });
+}
+
+/**
+ * @param transaction
+ * @param inputIndex
+ * @param prevOutputs - transaction outputs for inputs
+ * @param publicKeys - public keys to check signatures for
+ * @return array of booleans indicating a valid signature for every pubkey in _publicKeys_
+ */
+export function verifySignatureWithPublicKeys<TNumber extends number | bigint>(
+  transaction: UtxoTransaction<TNumber>,
+  inputIndex: number,
+  prevOutputs: TxOutput<TNumber>[],
+  publicKeys: Buffer[]
+): boolean[] {
+  return getSignaturesWithPublicKeys(transaction, inputIndex, prevOutputs, publicKeys).map((s) => s !== undefined);
 }
 
 /**
