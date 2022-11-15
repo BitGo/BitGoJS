@@ -103,6 +103,23 @@ describe('lightning API requests', function () {
     assert.deepStrictEqual(res, [fixtures.invoices[0]]);
     scope.done();
   });
+
+  it('should fetch lightning payments', async function () {
+    const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/payments`)
+      .reply(200, fixtures.payments);
+    const res = await wallet.lightning().getPayments();
+    assert.deepStrictEqual(res, fixtures.payments);
+    scope.done();
+  });
+
+  it('should fetch filtered lightning payments', async function () {
+    const scope = nock(bgUrl).get(`/api/v2/wallet/${wallet.id()}/lightning/payments`)
+      .query({ status: 'in_flight', limit: 1 })
+      .reply(200, [fixtures.payments[0]]);
+    const res = await wallet.lightning().getPayments({ status: 'in_flight', limit: 1 });
+    assert.deepStrictEqual(res, [fixtures.payments[0]]);
+    scope.done();
+  });
   
   it('should decode lnurl-pay', async function () {
     const lnurl = encodeLnurl('https://service.com/api?q=fake');
