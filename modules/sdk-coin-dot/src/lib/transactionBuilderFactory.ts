@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { Material, MethodNames } from './iface';
+import { RemoveProxyBuilder } from './proxyBuilder';
 import { SingletonRegistry } from './singletonRegistry';
 import { StakingBuilder } from './stakingBuilder';
 import { TransferBuilder } from './transferBuilder';
@@ -29,6 +30,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getAddressInitializationBuilder(): AddressInitializationBuilder {
     return new AddressInitializationBuilder(this._coinConfig).material(this._material);
+  }
+
+  getRemoveProxyBuilder(): RemoveProxyBuilder {
+    return new RemoveProxyBuilder(this._coinConfig).material(this._material);
   }
 
   getBatchTransactionBuilder(): BatchTransactionBuilder {
@@ -80,10 +85,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       methodName === MethodNames.Proxy
     ) {
       return this.getTransferBuilder();
-    } else if (methodName === MethodNames.Bond) {
+    } else if (methodName === MethodNames.Bond || methodName === MethodNames.BondExtra) {
       return this.getStakingBuilder();
     } else if (methodName === MethodNames.AddProxy) {
       return this.getAddressInitializationBuilder();
+    } else if (methodName === MethodNames.RemoveProxy) {
+      return this.getRemoveProxyBuilder();
     } else if (methodName === MethodNames.Unbond) {
       return this.getUnstakeBuilder();
     } else if (methodName === MethodNames.Chill) {
@@ -92,6 +99,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getWithdrawUnstakedBuilder();
     } else if (methodName === MethodNames.PayoutStakers) {
       return this.getClaimBuilder();
+    } else if (methodName === MethodNames.Batch || methodName === MethodNames.BatchAll) {
+      return this.getBatchTransactionBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }

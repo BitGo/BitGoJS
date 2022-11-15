@@ -15,4 +15,5 @@ export { ClaimBuilder } from './claimBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { SingletonRegistry } from './singletonRegistry';
 export { NativeTransferBuilder } from './nativeTransferBuilder';
+export { RemoveProxyBuilder } from './proxyBuilder';
 export { Interface, Utils };

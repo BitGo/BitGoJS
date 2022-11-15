@@ -7,13 +7,29 @@ import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayloa
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
+import { Args, BaseTxInfo, defineMethod, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct } from '@substrate/txwrapper-polkadot';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
+import * as _ from 'lodash';
 import nacl from 'tweetnacl';
-import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferAllArgs, TransferArgs, TxMethod } from './iface';
+import {
+  AddProxyBatchCallArgs,
+  BatchArgs,
+  BatchCallObject,
+  HexString,
+  Material,
+  ProxyArgs,
+  ProxyCallArgs,
+  StakeArgs,
+  StakeBatchCallArgs,
+  StakeMoreArgs,
+  TransferAllArgs,
+  TransferArgs,
+  TxMethod,
+  UnstakeBatchCallArgs,
+} from './iface';
 import { KeyPair } from '.';
 
 const PROXY_METHOD_ARG = 2;
@@ -265,6 +281,140 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Returns true if arg is of type BatchArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type BatchArgs, false otherwise.
+   */
+  isBatch(arg: TxMethod['args']): arg is BatchArgs {
+    return (arg as BatchArgs).calls !== undefined;
+  }
+
+  /**
+   * Returns true if arg is of type BatchArgs and the calls of the batch are staking calls: a stake
+   * call (bond) followed by an add proxy call (addProxy), false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type BatchArgs and the calls of the batch are staking calls: a stake
+   * call (bond) followed by an add proxy call (addProxy), false otherwise.
+   */
+  isStakingBatch(arg: TxMethod['args']): arg is BatchArgs {
+    const calls = (arg as BatchArgs).calls;
+    if (calls !== undefined) {
+      return (
+        calls.length === 2 && this.isStakeBatchCallArgs(calls[0].args) && this.isAddProxyBatchCallArgs(calls[1].args)
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if arg is of type StakeBatchCallArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type StakeBatchCallArgs, false otherwise.
+   */
+  isStakeBatchCallArgs(arg: BatchCallObject['args']): arg is StakeBatchCallArgs {
+    return (
+      (arg as StakeBatchCallArgs).value !== undefined &&
+      (arg as StakeBatchCallArgs).controller !== undefined &&
+      (arg as StakeBatchCallArgs).payee !== undefined
+    );
+  }
+
+  /**
+   * Returns true if arg is of type AddProxyBatchCallArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type AddProxyBatchCallArgs, false otherwise.
+   */
+  isAddProxyBatchCallArgs(arg: BatchCallObject['args']): arg is AddProxyBatchCallArgs {
+    return (
+      (arg as AddProxyBatchCallArgs).delegate !== undefined &&
+      (arg as AddProxyBatchCallArgs).proxy_type !== undefined &&
+      (arg as AddProxyBatchCallArgs).delay !== undefined
+    );
+  }
+
+  /**
+   * Returns true if arg is of type BatchArgs and the calls of the batch are unstaking calls: a remove
+   * proxy call (removeProxy), followed by a chill call, and an unstake call (unbond), false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type BatchArgs and the calls of the batch are unstaking calls: a remove
+   * proxy call (removeProxy), followed by a chill call, and an unstake call (unbond), false otherwise.
+   */
+  isUnstakingBatch(arg: TxMethod['args']): arg is BatchArgs {
+    const calls = (arg as BatchArgs).calls;
+    if (calls !== undefined) {
+      return (
+        calls.length === 3 &&
+        this.isRemoveProxyBatchCallArgs(calls[0].args) &&
+        _.isEmpty(calls[1].args) &&
+        this.isUnstakeBatchCallArgs(calls[2].args)
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if arg is of type AddProxyBatchCallArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type AddProxyBatchCallArgs, false otherwise.
+   */
+  isRemoveProxyBatchCallArgs(arg: BatchCallObject['args']): arg is AddProxyBatchCallArgs {
+    return (
+      (arg as AddProxyBatchCallArgs).delegate !== undefined &&
+      (arg as AddProxyBatchCallArgs).proxy_type !== undefined &&
+      (arg as AddProxyBatchCallArgs).delay !== undefined
+    );
+  }
+
+  /**
+   * Returns true if arg is of type UnstakeBatchCallArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type UnstakeBatchCallArgs, false otherwise.
+   */
+  isUnstakeBatchCallArgs(arg: BatchCallObject['args']): arg is UnstakeBatchCallArgs {
+    return (arg as UnstakeBatchCallArgs).value !== undefined;
+  }
+
+  /**
+   * Returns true if arg is of type StakeArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type StakeArgs, false otherwise.
+   */
+  isBond(arg: TxMethod['args']): arg is StakeArgs {
+    return (
+      (arg as StakeArgs).value !== undefined &&
+      (arg as StakeArgs).controller !== undefined &&
+      (arg as StakeArgs).payee !== undefined
+    );
+  }
+
+  /**
+   * Returns true if arg is of type StakeMoreArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type StakeMoreArgs, false otherwise.
+   */
+  isBondExtra(arg: TxMethod['args']): arg is StakeMoreArgs {
+    return (arg as StakeMoreArgs).maxAdditional !== undefined;
+  }
+
+  /**
    * extracts and returns the signature in hex format given a raw signed transaction
    *
    * @param {string} rawTx signed raw transaction
@@ -313,6 +463,57 @@ export class Utils implements BaseUtils {
   getAddressFormat(networkCoinName: DotAssetTypes): DotAddressFormat {
     return coinToAddressMap.get(networkCoinName) as DotAddressFormat;
   }
+
+  /**
+   * Creates a pure proxy extrinsic. Polkadot has renamed anonymous proxies to pure proxies, but
+   * the libraries we are using to build transactions have not been updated, as a stop gap we are
+   * defining the pure proxy extrinsic here.
+   *
+   * @param args Arguments to the createPure extrinsic.
+   * @param info Common information to all transactions.
+   * @param options Chain registry and metadata.
+   */
+  pureProxy(args: PureProxyArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction {
+    return defineMethod(
+      {
+        method: {
+          args,
+          name: 'createPure',
+          pallet: 'proxy',
+        },
+        ...info,
+      },
+      options
+    );
+  }
+
+  /**
+   * Removes '0x' from a given `string` if present.
+   *
+   * @param {string} str the string value.
+   *
+   * @return {string} a string without a '0x' prefix.
+   */
+  stripHexPrefix(str: string): string {
+    return this.isHexPrefixed(str) ? str.slice(2) : str;
+  }
+
+  /**
+   * Returns true if a string starts with '0x', false otherwise.
+   *
+   * @param {string} str the string value.
+   *
+   * @return {boolean} true if a string starts with '0x', false otherwise.
+   */
+  isHexPrefixed(str: string): boolean {
+    return str.slice(0, 2) === '0x';
+  }
+}
+
+interface PureProxyArgs extends Args {
+  proxyType: string;
+  delay: number;
+  index: number;
 }
 
 const utils = new Utils();

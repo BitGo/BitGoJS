@@ -4,6 +4,7 @@ import { methods } from '@substrate/txwrapper-polkadot';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
 import { MethodNames, ProxyArgs, ProxyType, TransferAllArgs, TransferArgs } from './iface';
+import { getAddress } from './iface_utils';
 import { SingletonRegistry } from './singletonRegistry';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -154,7 +155,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       }
     } else if (decodedTxn.method?.name === MethodNames.Proxy) {
       const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
-      const real = txMethod.real;
+      const real = getAddress(txMethod);
       const forceProxyType = txMethod.forceProxyType;
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: SingletonRegistry.getInstance(this._material),
@@ -193,7 +194,10 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
     } else if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
       this.owner({
-        address: utils.decodeDotAddress(txMethod.real, utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)),
+        address: utils.decodeDotAddress(
+          getAddress(txMethod),
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
+        ),
       });
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
