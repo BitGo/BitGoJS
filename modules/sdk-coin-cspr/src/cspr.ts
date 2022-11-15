@@ -11,7 +11,6 @@ import {
   BitGoBase,
   InvalidAddressError,
   InvalidTransactionError,
-  KeyIndices,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -64,6 +63,10 @@ interface TransactionOperation {
   validator: string;
 }
 
+interface CsprVerifyAddressOptions extends VerifyAddressOptions {
+  rootAddress: string;
+}
+
 export class Cspr extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -104,21 +107,19 @@ export class Cspr extends BaseCoin {
    *
    * @param {VerifyAddressOptions} params address and rootAddress to verify
    */
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address, keychains } = params;
+  async isWalletAddress(params: CsprVerifyAddressOptions): Promise<boolean> {
+    const { address, rootAddress } = params;
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
-    if (!keychains || keychains.length !== 3) {
-      throw new Error('Invalid keychains');
+    if (!this.isValidAddress(rootAddress)) {
+      throw new InvalidAddressError('wallet root address is not valid');
     }
 
-    const userPubKey = keychains[KeyIndices.USER].pub;
-    const rootAddress = new CsprLib.KeyPair({ pub: userPubKey }).getAddress();
-
-    const addressDetails = CsprLib.Utils.getAddressDetails(address);
-    if (addressDetails.address.toLowerCase() !== rootAddress.toLowerCase()) {
-      throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddress}`);
+    const newAddressDetails = CsprLib.Utils.getAddressDetails(address);
+    const rootAddressDetails = CsprLib.Utils.getAddressDetails(rootAddress);
+    if (newAddressDetails.address.toLowerCase() !== rootAddressDetails.address.toLowerCase()) {
+      throw new UnexpectedAddressError(`address validation failure: ${newAddressDetails.address} vs ${rootAddress}`);
     }
     return true;
   }
