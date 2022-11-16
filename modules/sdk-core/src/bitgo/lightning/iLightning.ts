@@ -27,6 +27,8 @@ export interface PayInvoiceParams {
 export interface GetInvoicesQuery {
   status?: string;
   limit?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface LnurlPayParams {

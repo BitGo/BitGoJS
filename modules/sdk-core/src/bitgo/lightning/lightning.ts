@@ -101,9 +101,12 @@ export class Lightning implements ILightning {
   }
 
   public async getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse> {
-    const queryParams: { status?: string; limit?: number } = {};
-    queryParams.status = query?.status;
-    queryParams.limit = query?.limit;
+    const queryParams = {
+      status: query?.status,
+      limit: query?.limit,
+      startDate: query?.startDate,
+      endDate: query?.endDate,
+    };
 
     const body = await this.bitgo
       .get(this.url + '/invoices')
