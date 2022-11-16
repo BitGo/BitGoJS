@@ -42,7 +42,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^3.0.0",
     "@bitgo/statics": "^11.0.0",
-    "@mysten/bcs": "^0.3.0",
+    "@mysten/bcs": "^0.4.0",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
     "js-sha3": "^0.8.0",

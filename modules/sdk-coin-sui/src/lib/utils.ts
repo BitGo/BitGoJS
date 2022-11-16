@@ -1,9 +1,7 @@
 import { BaseUtils, BuildTransactionError, ParseTransactionError, isValidEd25519PublicKey } from '@bitgo/sdk-core';
-import { bcs } from '@mysten/bcs';
 import BigNumber from 'bignumber.js';
-import { TYPE_TAG } from './transaction';
-
-export const SUI_ADDRESS_LENGTH = 20;
+import { SUI_ADDRESS_LENGTH, TYPE_TAG } from './constants';
+import { bcs } from './bcs';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
