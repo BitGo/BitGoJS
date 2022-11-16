@@ -158,6 +158,18 @@ export class AvaxP extends BaseCoin {
           this.validateExportTx(params.txParams.recipients, explainedTx.memo, explainedTx);
         }
         break;
+      case TransactionType.Import:
+        if (tx.isTransactionForCChain) {
+          if (
+            (params.txParams.recipients && params.txParams.recipients.length !== 0) ||
+            explainedTx.outputs.length !== 1
+          ) {
+            throw new Error('Expected 1 output in import txn and does not require recipients');
+          }
+        } else {
+          // TODO: BG-55595 - verify import txn on P chain
+        }
+        break;
       default:
         throw new Error('Tx type is not supported yet');
     }
