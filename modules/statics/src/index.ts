@@ -1,5 +1,6 @@
 export * from './base';
 export * from './coins';
+export * from './units';
 export * from './networks';
 export * from './errors';
 export * from './tokenConfig';
