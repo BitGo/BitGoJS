@@ -23,7 +23,7 @@ describe('Sui util library', function () {
 
   describe('isValidRawTransaction', function () {
     it('should succeed to validate a valid raw transaction', function () {
-      should.equal(utils.isValidRawTransaction(testData.TRANSFER_TX), true);
+      should.equal(utils.isValidRawTransaction(testData.TRANSFER_PAY_TX), true);
     });
     it('should fail to validate an invalid raw transaction', function () {
       should.doesNotThrow(() => utils.isValidRawTransaction(testData.INVALID_RAW_TX));

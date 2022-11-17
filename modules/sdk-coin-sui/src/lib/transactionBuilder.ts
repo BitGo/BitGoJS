@@ -8,21 +8,27 @@ import {
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { SuiObjectRef, SuiTransaction, Transaction } from './transaction';
+import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { PayTx } from './iface';
+import {
+  PayAllSuiTxDetails,
+  PaySuiTxDetails,
+  PayTx,
+  PayTxDetails,
+  SuiObjectRef,
+  SuiTransaction,
+  TxDetails,
+} from './iface';
 import assert from 'assert';
-
-// Need to keep in sync with
-// https://github.com/MystenLabs/sui/blob/f32877f2e40d35a008710c232e49b57aab886462/crates/sui-types/src/messages.rs#L338
-export const SUI_GAS_PRICE = 1;
+import { SUI_GAS_PRICE, SuiTransactionType } from './constants';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
 
+  protected _type: SuiTransactionType;
   protected _sender: string;
   protected _gasBudget: number;
   protected _gasPrice = SUI_GAS_PRICE;
@@ -74,6 +80,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  type(type: SuiTransactionType): this {
+    this._type = type;
+    return this;
+  }
+
   gasBudget(gasBudget: number): this {
     this.validateGasBudget(gasBudget);
     this._gasBudget = gasBudget;
@@ -109,9 +120,39 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
     this.gasPrice(txData.gasPrice);
-    this.payTx(txData.payTx);
     this.sender(txData.sender);
     this.gasPayment(txData.gasPayment);
+
+    let payTx;
+    let txDetails: TxDetails = txData.kind.Single;
+    if (txDetails.hasOwnProperty('Pay')) {
+      this.type(SuiTransactionType.Pay);
+      txDetails = txDetails as PayTxDetails;
+      payTx = {
+        coins: txDetails.Pay.coins,
+        recipients: txDetails.Pay.recipients,
+        amounts: txDetails.Pay.amounts,
+      };
+    } else if (txDetails.hasOwnProperty('PaySui')) {
+      this.type(SuiTransactionType.PaySui);
+      txDetails = txDetails as PaySuiTxDetails;
+      payTx = {
+        coins: txDetails.PaySui.coins,
+        recipients: txDetails.PaySui.recipients,
+        amounts: txDetails.PaySui.amounts,
+      };
+    } else if (txDetails.hasOwnProperty('PayAllSui')) {
+      this.type(SuiTransactionType.PayAllSui);
+      txDetails = txDetails as PayAllSuiTxDetails;
+      payTx = {
+        coins: txDetails.PayAllSui.coins,
+        recipients: [txDetails.PayAllSui.recipient],
+        amounts: [txDetails.PayAllSui.amount],
+      };
+    } else {
+      throw new Error('Transaction type not supported: ' + txDetails);
+    }
+    this.payTx(payTx);
   }
 
   /** @inheritdoc */
@@ -132,6 +173,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected buildSuiTransaction(): SuiTransaction {
+    assert(this._type, new BuildTransactionError('type is required before building'));
     assert(this._sender, new BuildTransactionError('sender is required before building'));
     assert(this._payTx, new BuildTransactionError('payTx is required before building'));
     assert(this._gasBudget, new BuildTransactionError('gasBudget is required before building'));
@@ -139,6 +181,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     assert(this._gasPayment, new BuildTransactionError('gasPayment is required before building'));
 
     return {
+      type: this._type,
       sender: this._sender,
       payTx: this._payTx,
       gasBudget: this._gasBudget,
@@ -242,6 +285,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Validates all fields are defined
    */
   private validateTransactionFields(): void {
+    if (this._type === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing type');
+    }
     if (this._sender === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing sender');
     }
