@@ -20,14 +20,14 @@ export function getInputUpdate(
     return nonWitnessUtxo ? { nonWitnessUtxo } : {};
   }
 
-  const parsed = parseSignatureScript(tx.ins[vin]);
+  const parsedInput = parseSignatureScript(tx.ins[vin]);
 
   function getPartialSigs(): PartialSig[] {
-    return getSignaturesWithPublicKeys(tx, vin, prevOuts, parsed.publicKeys).flatMap((signature, i) =>
+    return getSignaturesWithPublicKeys(tx, vin, prevOuts, parsedInput.publicKeys).flatMap((signature, i) =>
       signature
         ? [
             {
-              pubkey: parsed.publicKeys[i],
+              pubkey: parsedInput.publicKeys[i],
               signature,
             },
           ]
@@ -35,15 +35,15 @@ export function getInputUpdate(
     );
   }
 
-  if (!hasWitnessData(parsed.scriptType) && !nonWitnessUtxo) {
-    throw new Error(`scriptType ${parsed.scriptType} requires prevTx Buffer`);
+  if (!hasWitnessData(parsedInput.scriptType) && !nonWitnessUtxo) {
+    throw new Error(`scriptType ${parsedInput.scriptType} requires prevTx Buffer`);
   }
 
-  switch (parsed.scriptType) {
+  switch (parsedInput.scriptType) {
     case 'p2shP2pk':
       return {
         nonWitnessUtxo,
-        partialSig: [{ pubkey: parsed.publicKeys[0], signature: parsed.signatures[0] }],
+        partialSig: [{ pubkey: parsedInput.publicKeys[0], signature: parsedInput.signatures[0] }],
       };
     case 'p2sh':
     case 'p2wsh':
@@ -51,20 +51,20 @@ export function getInputUpdate(
       return omitUndefined({
         nonWitnessUtxo,
         partialSig: getPartialSigs(),
-        redeemScript: parsed.redeemScript,
-        witnessScript: parsed.witnessScript,
+        redeemScript: parsedInput.redeemScript,
+        witnessScript: parsedInput.witnessScript,
       });
     case 'p2tr':
-      if (!('controlBlock' in parsed)) {
+      if (!('controlBlock' in parsedInput)) {
         throw new Error(`keypath not implemented`);
       }
-      const leafHash = taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript);
+      const leafHash = taproot.getTapleafHash(eccLib, parsedInput.controlBlock, parsedInput.pubScript);
       return {
         tapLeafScript: [
           {
-            controlBlock: parsed.controlBlock,
-            script: parsed.pubScript,
-            leafVersion: parsed.leafVersion,
+            controlBlock: parsedInput.controlBlock,
+            script: parsedInput.pubScript,
+            leafVersion: parsedInput.leafVersion,
           },
         ],
         tapScriptSig: getPartialSigs().map((obj) => ({ ...obj, leafHash })),
