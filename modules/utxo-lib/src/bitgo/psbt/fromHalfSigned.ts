@@ -58,6 +58,7 @@ export function getInputUpdate(
       if (!('controlBlock' in parsed)) {
         throw new Error(`keypath not implemented`);
       }
+      const leafHash = taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript);
       return {
         tapLeafScript: [
           {
@@ -66,10 +67,7 @@ export function getInputUpdate(
             leafVersion: parsed.leafVersion,
           },
         ],
-        tapScriptSig: getPartialSigs().map((obj) => ({
-          ...obj,
-          leafHash: taproot.getTapleafHash(eccLib, parsed.controlBlock, parsed.pubScript),
-        })),
+        tapScriptSig: getPartialSigs().map((obj) => ({ ...obj, leafHash })),
       };
   }
 }
