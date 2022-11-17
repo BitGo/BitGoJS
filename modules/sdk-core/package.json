@@ -5,6 +5,8 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
@@ -65,6 +67,12 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.151"
+    "@types/lodash": "^4.14.151",
+    "nyc": "^15.0.0"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
   }
 }
