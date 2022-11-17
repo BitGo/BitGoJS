@@ -33,7 +33,7 @@ export interface XShare {
   m: string;
   n: string;
   y: string; // combined public key
-  x: string; // combined secret
+  u: string;
   chaincode: string;
 }
 
@@ -55,6 +55,7 @@ export interface WShare {
   m: string;
   n: string;
   y: string; // combined public key
+  u: string;
   k: string;
   w: string;
   gamma: string;
@@ -63,6 +64,8 @@ export interface WShare {
 export interface KShare {
   i: number;
   j: number;
+  u: string;
+  v: string;
   n: string;
   k: string;
 }

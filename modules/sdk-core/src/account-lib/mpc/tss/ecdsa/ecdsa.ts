@@ -105,8 +105,6 @@ export default class Ecdsa {
     const allShares = [pShare, ...nShares];
     // Compute the public key.
     const y = allShares.map((participant) => hexToBigInt(participant['y'])).reduce(Ecdsa.curve.pointAdd);
-    // Add secret shares
-    const x = allShares.map((participant) => hexToBigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
 
     // Verify shares.
     for (const share of nShares) {
@@ -133,7 +131,7 @@ export default class Ecdsa {
         m: pShare.m,
         n: pShare.n,
         y: bigIntToBufferBE(y, 33).toString('hex'),
-        x: bigIntToBufferBE(x, 32).toString('hex'),
+        u: pShare.uu,
         chaincode: bigIntToBufferBE(chaincode, 32).toString('hex'),
       },
       yShares: {},
@@ -160,6 +158,8 @@ export default class Ecdsa {
   signShare(xShare: XShare, yShare: YShare): SignShareRT {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
+    const { shares: split_u, v } = Ecdsa.shamir.split(bigIntFromBufferBE(Buffer.from(xShare.u, 'hex')), 2, 3);
+
     const k = Ecdsa.curve.scalarRandom();
     const gamma = Ecdsa.curve.scalarRandom();
 
@@ -178,6 +178,7 @@ export default class Ecdsa {
         m: xShare.m,
         n: xShare.n,
         y: xShare.y,
+        u: bigIntToBufferBE(split_u[xShare.i], 32).toString('hex'),
         k: bigIntToBufferBE(k, 32).toString('hex'),
         w: bigIntToBufferBE(w, 32).toString('hex'),
         gamma: bigIntToBufferBE(gamma, 32).toString('hex'),
@@ -188,6 +189,8 @@ export default class Ecdsa {
     signers.kShare = {
       i: yShare.j,
       j: xShare.i,
+      u: bigIntToBufferBE(split_u[yShare.j], 32).toString('hex'),
+      v: bigIntToBufferBE(v[0], 33).toString('hex'),
       n: pk.n.toString(16),
       k: bigIntToBufferBE(pk.encrypt(k), 32).toString('hex'),
     };
@@ -213,7 +216,12 @@ export default class Ecdsa {
     } else if ((shares.bShare && shares.muShare) || (shares.aShare && shares.wShare)) {
       isGammaShare = true;
       shareToBeSend = shares.aShare ? ({ ...shares.aShare } as MUShare) : ({ ...shares.muShare } as MUShare);
-      shareParticipant = shares.wShare ? ({ ...shares.wShare } as GShare) : ({ ...shares.bShare } as GShare);
+      function toGShare(share): GShare {
+        delete share.v;
+        delete share.u;
+        return share as GShare;
+      }
+      shareParticipant = shares.wShare ? toGShare({ ...shares.wShare }) : toGShare({ ...shares.bShare });
     } else {
       throw new Error('Invalid config for Sign Convert');
     }
