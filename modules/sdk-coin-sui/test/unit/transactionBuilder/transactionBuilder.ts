@@ -56,6 +56,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.gasPayment(testData.gasPayment);
     const tx = await txBuilder.build();
     const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX);
 
     const txBuilder2 = await factory.from(rawTx);
     await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
