@@ -143,6 +143,10 @@ export enum CoinFeature {
    * This coin is deprecated
    */
   DEPRECATED = 'deprecated',
+  /**
+   * This coin is a dummy object meant to be a placeholder for an unsupported token
+   */
+  GENERIC = 'generic',
 }
 
 /**
@@ -1019,6 +1023,16 @@ export enum UnderlyingAsset {
   'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG' = 'xlm:ARST-GCSAZVWXZKWS4XS223M5F54H2B6XPIIXZZGP7KEAIU6YSL5HDRGCI3DG',
   'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA' = 'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA',
 
+  // Eth NFTs
+  // generic NFTs
+  'erc721:token' = 'erc721:token',
+  'erc1155:token' = 'erc1155:token',
+  'nonstandard:token' = 'nonstandard:token',
+  // Test Eth NFTs
+  'terc721:token' = 'terc721:token',
+  'terc1155:token' = 'terc1155:token',
+  'tnonstandard:token' = 'tnonstandard:token',
+
   // Algorand mainnet tokens
   'algo:USDC-31566704' = 'algo:USDC-31566704',
   'algo:USDt-312769' = 'algo:USDt-312769',
@@ -1076,17 +1090,33 @@ export enum UnderlyingAsset {
   'polygon:ape' = 'polygon:ape',
   'polygon:srm' = 'polygon:srm',
 
+  // Polygon NFTs
+  // generic NFTs
+  'erc721:polygontoken' = 'erc721:polygontoken',
+  'erc1155:polygontoken' = 'erc1155:polygontoken',
+
   // BSC Token BEP-20
   'bsc:busd' = 'bsc:busd',
   'tbsc:busd' = 'tbsc:busd',
+  // BSC NFTs
+  // generic NFTs
+  'erc721:bsctoken' = 'erc721:bsctoken',
+  'erc1155:bsctoken' = 'erc1155:bsctoken',
+  // Test BSC NFTs
+  'terc721:bsctoken' = 'terc721:bsctoken',
+  'terc1155:bsctoken' = 'terc1155:bsctoken',
 
   // Polygon testnet tokens
   'tpolygon:derc20' = 'tpolygon:derc20',
   'tpolygon:link' = 'tpolygon:link',
   'tpolygon:name' = 'tpolygon:name',
+  // generic NFTs
+  'terc721:polygontoken' = 'terc721:polygontoken',
+  'terc1155:polygontoken' = 'terc1155:polygontoken',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
+  NONSTANDARD = 'nonstandard',
 
   // Cardano Token
   adaTestnetToken = 'temporary-placeholder',
