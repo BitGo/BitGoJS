@@ -37,7 +37,7 @@ export class Utils implements BaseUtils {
    */
   isValidRawTransaction(rawTransaction: string): boolean {
     try {
-      const data = Buffer.from(rawTransaction, 'hex');
+      const data = Buffer.from(rawTransaction, 'base64');
       const trimmedData = new Uint8Array(data.subarray(TYPE_TAG.length));
       const deserialized = bcs.de('TransactionData', trimmedData);
       bcs.ser('TransactionData', deserialized);

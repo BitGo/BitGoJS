@@ -259,11 +259,11 @@ export class Transaction extends BaseTransaction {
     if (this._signature !== undefined) {
       this._id = Buffer.from(sha3.sha3_256(serialized), 'hex').toString('base64');
     }
-    return Buffer.from(serialized).toString('hex');
+    return Buffer.from(serialized).toString('base64');
   }
 
-  static deserializeSuiTransaction(serializedHex: string): SuiTransaction {
-    const data = Buffer.from(serializedHex, 'hex');
+  static deserializeSuiTransaction(serializedTx: string): SuiTransaction {
+    const data = Buffer.from(serializedTx, 'base64');
     const trimmedData = new Uint8Array(data.subarray(TYPE_TAG.length));
     const k = bcs.de('TransactionData', trimmedData);
 
