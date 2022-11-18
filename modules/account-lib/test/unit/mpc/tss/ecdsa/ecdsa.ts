@@ -48,7 +48,25 @@ describe('TSS ECDSA TESTS', function () {
     const dKeyCombine = MPC.keyCombine(D.pShare, [E.nShares[1], F.nShares[1]]);
     const eKeyCombine = MPC.keyCombine(E.pShare, [D.nShares[2], F.nShares[2]]);
     const fKeyCombine = MPC.keyCombine(F.pShare, [D.nShares[3], E.nShares[3]]);
-    keyShares = [aKeyCombine, bKeyCombine, cKeyCombine, dKeyCombine, eKeyCombine, fKeyCombine];
+
+    // Shares for derived keys.
+    const path = 'm/0/1';
+    const aKeyDerive = MPC.keyDerive(A.pShare, [B.nShares[1], C.nShares[1]], path);
+    const gKeyCombine: ECDSA.KeyCombined = {
+      xShare: aKeyDerive.xShare,
+      yShares: aKeyCombine.yShares,
+    };
+    const hKeyCombine = MPC.keyCombine(B.pShare, [aKeyDerive.nShares[2], C.nShares[2]]);
+    keyShares = [
+      aKeyCombine,
+      bKeyCombine,
+      cKeyCombine,
+      dKeyCombine,
+      eKeyCombine,
+      fKeyCombine,
+      gKeyCombine,
+      hKeyCombine,
+    ];
     commonPublicKey = aKeyCombine.xShare.y;
     pallierMock.reset();
   });
@@ -124,7 +142,7 @@ describe('TSS ECDSA TESTS', function () {
     let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: string; shouldHash?: boolean }[];
 
     before(async () => {
-      const [A, B, C, D, E, F] = keyShares;
+      const [A, B, C, D, E, F, G, H] = keyShares;
 
       config = [
         { signerOne: A, signerTwo: B },
@@ -141,6 +159,9 @@ describe('TSS ECDSA TESTS', function () {
 
         // checks with no hashing
         { signerOne: A, signerTwo: B, shouldHash: false },
+
+        // Checks with derived subkey
+        { signerOne: G, signerTwo: H },
       ];
     });
 

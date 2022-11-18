@@ -228,7 +228,7 @@ export default class Eddsa {
       n: uShare.n,
       y: bigIntToBufferLE(subkey.pk, 32).toString('hex'),
       u: bigIntToBufferLE(subkey.sk, 32).toString('hex'),
-      prefix: bigIntToBufferBE(subkey.prefix, 32).toString('hex'),
+      prefix: bigIntToBufferBE(subkey.prefix!, 32).toString('hex'),
       chaincode: bigIntToBufferBE(subkey.chaincode, 32).toString('hex'),
     };
 
