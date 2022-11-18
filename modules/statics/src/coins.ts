@@ -1059,6 +1059,259 @@ export const coins = CoinMap.fromCoins([
   erc20('zoom', 'CoinZoom', 18, '0x69cf3091c91eb72db05e45c76e58225177dea742', UnderlyingAsset.ZOOM),
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
   erc20('zusd', 'Z.com Usd', 6, '0xc56c2b7e71b54d38aab6d52e94a04cbfa8f604fa', UnderlyingAsset.ZUSD),
+  erc20('adabear', '3X Short Cardano Token', 18, '0xb3299d4bab93bf04d5b11bc49cd6dfad1f77d23f', UnderlyingAsset.ADABEAR),
+  erc20('adabull', '3X Long Cardano Token', 18, '0x43de1145cd22f0a9cc99e51c205e6e81161df6b9', UnderlyingAsset.ADABULL),
+  erc20(
+    'algobear',
+    '3X Short Algorand Token',
+    18,
+    '0x057fb10e3fec001a40e6b75d3a30b99e23e54107',
+    UnderlyingAsset.ALGOBEAR
+  ),
+  erc20(
+    'algobull',
+    '3X Long Algorand Token',
+    18,
+    '0x584936357d68f5143f12e2e64f0089db93814dad',
+    UnderlyingAsset.ALGOBULL
+  ),
+  erc20(
+    'algohedge',
+    '1X Short Algorand Token',
+    18,
+    '0xfdc3d57eb7839ca68a2fad7a93799c8e8afa61b7',
+    UnderlyingAsset.ALGOHEDGE
+  ),
+  erc20(
+    'altbear',
+    '3X Short Altcoin Index Token',
+    18,
+    '0x90b417ab462440cf59767bcf72d0d91ca42f21ed',
+    UnderlyingAsset.ALTBEAR
+  ),
+  erc20(
+    'althedge',
+    '1X Short Altcoin Index Token',
+    18,
+    '0x258fec90b7788e60da3bc6f81d5839dc5b36a110',
+    UnderlyingAsset.ALTHEDGE
+  ),
+  erc20('asd', 'AscendEX token', 18, '0xff742d05420b6aca4481f635ad8341f81a6300c2', UnderlyingAsset.ASD),
+  erc20(
+    'atombear',
+    '3X Short Cosmos Token',
+    18,
+    '0x3b834a620751a811f65d8f599b3b72617a4418d0',
+    UnderlyingAsset.ATOMBEAR
+  ),
+  erc20('atombull', '3X Long Cosmos Token', 18, '0x75f0038b8fbfccafe2ab9a51431658871ba5182c', UnderlyingAsset.ATOMBULL),
+  erc20(
+    'bchbear',
+    '3X Short Bitcoin Cash Token',
+    18,
+    '0xa9fc65da36064ce545e87690e06f5de10c52c690',
+    UnderlyingAsset.BCHBEAR
+  ),
+  erc20(
+    'bchbull',
+    '3X Long Bitcoin Cash Token',
+    18,
+    '0x4c133e081dfb5858e39cca74e69bf603d409e57a',
+    UnderlyingAsset.BCHBULL
+  ),
+  erc20(
+    'bchhedge',
+    '1X Short Bitcoin Cash Token',
+    18,
+    '0x02e88a689fdfb920e7aa6174fb7ab72add3c5694',
+    UnderlyingAsset.BCHHEDGE
+  ),
+  erc20('bear', '3X Short Bitcoin Token', 18, '0x016ee7373248a80bde1fd6baa001311d233b3cfa', UnderlyingAsset.BEAR),
+  erc20('bnbbear', '3X Short BNB Token', 18, '0x6febdfc0a9d9502c45343fce0df08828def44795', UnderlyingAsset.BNBBEAR),
+  erc20('bnbbull', '3X Long BNB Token', 18, '0x9d1a62c2ad99019768b9126fda004a9952853f6e', UnderlyingAsset.BNBBULL),
+  erc20('bnbhedge', '1X Short BNB Token', 18, '0x2840ad41cf25ad58303ba24c416e79dce4161b4f', UnderlyingAsset.BNBHEDGE),
+  erc20(
+    'bsvbear',
+    '3X Short Bitcoin SV Token',
+    18,
+    '0xce49c3c92b33a1653f34811a9d7e34502bf12b89',
+    UnderlyingAsset.BSVBEAR
+  ),
+  erc20(
+    'bsvbull',
+    '3X Long Bitcoin SV Token',
+    18,
+    '0x6e13a9e4ae3d0678e511fb6d2ad531fcf0e247bf',
+    UnderlyingAsset.BSVBULL
+  ),
+  erc20(
+    'bsvhedge',
+    '1X Short Bitcoin SV Token',
+    18,
+    '0xf6254cd565c5e78dfb0030b0b14d1e6f482a2413',
+    UnderlyingAsset.BSVHEDGE
+  ),
+  erc20(
+    'btmxbear',
+    '3X Short BitMax Token Token',
+    18,
+    '0xdbf637f78624f896b92f801e81f6031b7865ed20',
+    UnderlyingAsset.BTMXBEAR
+  ),
+  erc20('bvol', 'Bitcoin Volatility Token', 18, '0x81824663353a9d29b01b2de9dd9a2bb271d298cd', UnderlyingAsset.BVOL),
+  erc20(
+    'dogebear',
+    '3X Short Dogecoin Token',
+    18,
+    '0xf1d32952e2fbb1a91e620b0fd7fbc8a8879a47f3',
+    UnderlyingAsset.DOGEBEAR
+  ),
+  erc20(
+    'dogebull',
+    '3X Long Dogecoin Token',
+    18,
+    '0x7aa6b33fb7f395ddbca7b7a33264a3c799fa626f',
+    UnderlyingAsset.DOGEBULL
+  ),
+  erc20(
+    'drgnbear',
+    '3X Short Dragon Index Token',
+    18,
+    '0x223fb5c14c00cfb70cf56bb63c2eef2d74fe1a78',
+    UnderlyingAsset.DRGNBEAR
+  ),
+  erc20(
+    'drgnbull',
+    '3X Long Dragon Index Token',
+    18,
+    '0x3335f16af9008bfd32f1ee6c2be5d4f84fa0b9da',
+    UnderlyingAsset.DRGNBULL
+  ),
+  erc20('eosbear', '3X Short EOS Token', 18, '0x3d3dd61b0f9a558759a21da42166042b114e12d5', UnderlyingAsset.EOSBEAR),
+  erc20('eosbull', '3X Long EOS Token', 18, '0xead7f3ae4e0bb0d8785852cc37cc9d0b5e75c06a', UnderlyingAsset.EOSBULL),
+  erc20('eoshedge', '1X Short EOS Token', 18, '0xb38f206615325306dddeb0794a6482486b6b78b8', UnderlyingAsset.EOSHEDGE),
+  erc20(
+    'etcbear',
+    '3X Short Ethereum Classic Token',
+    18,
+    '0xa340f0937a8c00db11c83cc16cec12310160f0b6',
+    UnderlyingAsset.ETCBEAR
+  ),
+  erc20(
+    'etcbull',
+    '3X Long Ethereum Classic Token',
+    18,
+    '0x974c98bc2e82fa18de92b7e697a1d9bd25682e80',
+    UnderlyingAsset.ETCBULL
+  ),
+  erc20(
+    'ethbear',
+    '3X Short Ethereum Token',
+    18,
+    '0x2f5e2c9002c058c063d21a06b6cabb50950130c8',
+    UnderlyingAsset.ETHBEAR
+  ),
+  erc20(
+    'ethhedge',
+    '1X Short Ethereum Token',
+    18,
+    '0x10e1e953ddba597011f8bfa806ab0cc3415a622b',
+    UnderlyingAsset.ETHHEDGE
+  ),
+  erc20('hedge', '1X Short Bitcoin Token', 18, '0x1fa3bc860bf823d792f04f662f3aa3a500a68814', UnderlyingAsset.HEDGE),
+  erc20(
+    'htbull',
+    '3X Long Huobi Token Token',
+    18,
+    '0x0d5e2681d2aadc91f7da4146740180a2190f0c79',
+    UnderlyingAsset.HTBULL
+  ),
+  erc20(
+    'ibvol',
+    'Inverse Bitcoin Volatility Token',
+    18,
+    '0x627e2ee3dbda546e168eaaff25a2c5212e4a95a0',
+    UnderlyingAsset.IBVOL
+  ),
+  erc20(
+    'linkbear',
+    '3X Short Chainlink Token',
+    18,
+    '0xa209ba34c01a2713a4453a656630cc9de8a362bc',
+    UnderlyingAsset.LINKBEAR
+  ),
+  erc20(
+    'linkbull',
+    '3X Long Chainlink Token',
+    18,
+    '0x83ad87c988ac0c6277c0c6234cc8108b20bb5d9b',
+    UnderlyingAsset.LINKBULL
+  ),
+  erc20('lowb', 'loser coin', 18, '0x69e5c11a7c30f0bf84a9faecbd5161aa7a94deca', UnderlyingAsset.LOWB),
+  erc20(
+    'ltcbear',
+    '3X Short Litecoin Token',
+    18,
+    '0xb422e605fbd765b80d2c4b5d8196c2f94144438b',
+    UnderlyingAsset.LTCBEAR
+  ),
+  erc20(
+    'maticbear',
+    '3X Short Matic Token',
+    18,
+    '0xbe893b4c214dbffc17ef1e338fbdb7061ff09237',
+    UnderlyingAsset.MATICBEAR
+  ),
+  erc20(
+    'maticbull',
+    '3X Long Matic Token',
+    18,
+    '0x7e03521b9da891ca3f79a8728e2eaeb24886c5f9',
+    UnderlyingAsset.MATICBULL
+  ),
+  erc20('okbbull', '3X Long OKB Token', 18, '0x8af785687ee8d75114b028997c9ca36b5cc67bc4', UnderlyingAsset.OKBBULL),
+  erc20('ptu', 'Pintu Token', 18, '0xc229c69eb3bb51828d0caa3509a05a51083898dd', UnderlyingAsset.PTU),
+  erc20('sos', 'SOS', 18, '0x3b484b82567a09e2588a13d54d032153f0c0aee0', UnderlyingAsset.SOS),
+  erc20(
+    'tomobear',
+    '3X Short TomoChain Token',
+    18,
+    '0xa1653cb37852249e4f18dfbc473a5ce3f88fa6ad',
+    UnderlyingAsset.TOMOBEAR
+  ),
+  erc20(
+    'tomobull',
+    '3X Long TomoChain Token',
+    18,
+    '0xa38920c00d1a5303db538a3ea08da7a779e1f751',
+    UnderlyingAsset.TOMOBULL
+  ),
+  erc20('trxbear', '3X Short TRX Token', 18, '0x86807da5b92d31f67e128771cacb85f3579646ea', UnderlyingAsset.TRXBEAR),
+  erc20('trxbull', '3X Long TRX Token', 18, '0xc175e77b04f2341517334ea3ed0b198a01a97383', UnderlyingAsset.TRXBULL),
+  erc20('trxhedge', '1X Short TRX Token', 18, '0xe58c8df0088cf27b26c7d546a9835deacc29496c', UnderlyingAsset.TRXHEDGE),
+  erc20(
+    'xautbear',
+    '3X Short Tether Gold Token',
+    18,
+    '0x31cbf205e26ba63296fdbd254a6b1be3ed28ce47',
+    UnderlyingAsset.XAUTBEAR
+  ),
+  erc20(
+    'xautbull',
+    '3X Long Tether Gold Token',
+    18,
+    '0xc9287623832668432099cef2ffdef3ced14f4315',
+    UnderlyingAsset.XAUTBULL
+  ),
+  erc20('xlmbear', '3X Short Stellar Token', 18, '0x960efd63ae895f165d874e6cc62501fd0e7dc50a', UnderlyingAsset.XLMBEAR),
+  erc20('xlmbull', '3X Long Stellar Token', 18, '0x3a43a04d80f9881d88080bf9fa8bb720afb6c966', UnderlyingAsset.XLMBULL),
+  erc20('xrpbear', '3X Short XRP Token', 18, '0x94fc5934cf5970e944a67de806eeb5a4b493c6e6', UnderlyingAsset.XRPBEAR),
+  erc20('xrpbull', '3X Long XRP Token', 18, '0x27c1ba4f85b8dc1c150157816623a6ce80b7f187', UnderlyingAsset.XRPBULL),
+  erc20('xrphedge', '1X Short XRP Token', 18, '0x55b54d8fb1640d1321d5164590e7b020ba43def2', UnderlyingAsset.XRPHEDGE),
+  erc20('xtzbear', '3X Short Tezos Token', 18, '0xbc41d05287498dec58129560de6bd1b8d4e3ac1d', UnderlyingAsset.XTZBEAR),
+  erc20('xtzbull', '3X Long Tezos Token', 18, '0x8af17a6396c8f315f6b6dbc6aa686c85f9b3e554', UnderlyingAsset.XTZBULL),
+  erc20('zecbear', '3X Short Zcash Token', 18, '0x78a8c84b4c23563be4518e7045016d3170130823', UnderlyingAsset.ZECBEAR),
+  erc20('zecbull', '3X Long Zcash Token', 18, '0xd437d88153daef4784cacd2084b1d8cc2d3312b8', UnderlyingAsset.ZECBULL),
   celoToken('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
   bscToken(
     'bsc:busd',
@@ -2841,6 +3094,78 @@ export const coins = CoinMap.fromCoins([
     9,
     'zebeczgi5fSEtbpfQKVZKCJ3WgYXxjkMUkNNx7fLKAF',
     UnderlyingAsset.ZBC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:blt',
+    'Blocto Token',
+    8,
+    'BLT1noyNr3GttckEVrtcfC6oyK6yV1DpPgSyXbncMwef',
+    UnderlyingAsset.BLT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:elu',
+    'Elumia Crowns',
+    9,
+    '4tJZhSdGePuMEfZQ3h5LaHjTPsw1iWTRFTojnZcwsAU6',
+    UnderlyingAsset.ELU,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:ip3',
+    'IP3',
+    9,
+    '3uejHm24sWmniGA5m4j4S1DVuGqzYBR5DJpevND4mivq',
+    UnderlyingAsset.IP3,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:jsol',
+    'JPOOL Solana Token',
+    9,
+    '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
+    UnderlyingAsset.JSOL,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:ktrc',
+    'Kotaro Chips',
+    9,
+    'ChywntqwNRzaoWYUcDQ3iALqcwSAVtjM2dPshz5AETMm',
+    UnderlyingAsset.KTRC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:mplx',
+    'Metaplex Token',
+    6,
+    'METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m',
+    UnderlyingAsset.MPLX,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:nova',
+    'NOVA FINANCE',
+    9,
+    'BDrL8huis6S5tpmozaAaT5zhE5A7ZBAB2jMMvpKEeF8A',
+    UnderlyingAsset.NOVA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:slcl',
+    'Solcial token',
+    9,
+    'SLCLww7nc1PD2gQPQdGayHviVVcpMthnqUz2iWKhNQV',
+    UnderlyingAsset.SLCL,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:stsol',
+    'Lido Staked SOL',
+    9,
+    '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
+    UnderlyingAsset.STSOL,
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
