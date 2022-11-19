@@ -369,6 +369,7 @@ export async function generateGPGKeyPair(
       },
     ],
     curve: keyCurve,
+    date: new Date('2022-11-01T03:24:00'),
   });
 
   return gpgKey;
