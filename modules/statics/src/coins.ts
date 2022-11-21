@@ -1,16 +1,19 @@
 import {
   account,
+  AccountCoin,
   algoToken,
   avaxErc20,
   bscToken,
   celoToken,
   eosToken,
+  erc1155,
   erc20,
   erc20CompatibleAccountCoin,
   erc721,
   fiat,
   hederaCoin,
   hederaToken,
+  nonstandardToken,
   polygonErc20,
   solToken,
   stellarToken,
@@ -19,6 +22,7 @@ import {
   tbscToken,
   tceloToken,
   teosToken,
+  terc1155,
   terc20,
   terc721,
   tpolygonErc20,
@@ -26,7 +30,6 @@ import {
   tsolToken,
   tstellarToken,
   ttronToken,
-  AccountCoin,
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
@@ -58,6 +61,13 @@ const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFea
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
 const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const GENERIC_TOKEN_FEATURES = [
+  CoinFeature.ACCOUNT_MODEL,
+  CoinFeature.REQUIRES_BIG_NUMBER,
+  CoinFeature.VALUELESS_TRANSFER,
+  CoinFeature.TRANSACTION_DATA,
+  CoinFeature.GENERIC,
+];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC),
@@ -1320,6 +1330,26 @@ export const coins = CoinMap.fromCoins([
     '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     UnderlyingAsset['bsc:busd']
   ),
+  erc721(
+    'erc721:bsctoken',
+    'Generic BSC ERC721',
+    '0xerc721:bsctoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.bsc,
+    KeyCurve.Secp256k1
+  ),
+  erc1155(
+    'erc1155:bsctoken',
+    'Generic BSC ERC1155',
+    '0xerc1155:bsctoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.bsc,
+    KeyCurve.Secp256k1
+  ),
   ofcerc20('ofc1inch', '1Inch Token', 18, UnderlyingAsset['1INCH']),
   ofcerc20('ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
   ofcerc20('ofcaave', 'Aave', 18, UnderlyingAsset.AAVE),
@@ -2167,7 +2197,41 @@ export const coins = CoinMap.fromCoins([
     '0x78867bbeef44f2326bf8ddd1941a4439382ef2a7',
     UnderlyingAsset['tbsc:busd']
   ),
+  terc721(
+    'terc721:bsctoken',
+    'Generic BSC ERC721',
+    '0xterc721:bsctoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.bsc,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'terc1155:bsctoken',
+    'Generic BSC ERC1155',
+    '0xterc1155:bsctoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.bsc,
+    KeyCurve.Secp256k1
+  ),
   erc721('erc721:witch', 'Crypto Coven', '0x5180db8f5c931aae63c74266b211f580155ecac8'),
+  erc721('erc721:token', 'Generic ETH ERC721', '0xerc721:token', GENERIC_TOKEN_FEATURES),
+  erc1155('erc1155:token', 'Generic ETH ERC1155', '0xerc1155:token', GENERIC_TOKEN_FEATURES),
+  nonstandardToken('nonstandard:token', 'Generic ETH Nonstandard', '0xnonstandard:token', GENERIC_TOKEN_FEATURES),
+  terc721('terc721:token', 'Generic ETH ERC721', '0xterc721:token', GENERIC_TOKEN_FEATURES),
+  terc1155('terc1155:token', 'Generic ETH ERC1155', '0xterc1155:token', GENERIC_TOKEN_FEATURES),
+  nonstandardToken(
+    'tnonstandard:token',
+    'Generic ETH Nonstandard',
+    '0xtnonstandard:token',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.goerli
+  ),
   terc721('terc721:bitgoerc721', 'Test BITGO ERC 721 Token', '0x8397b091514c1f7bebb9dea6ac267ea23b570605'),
   terc721('terc1155:bitgoerc1155', 'Test BITGO ERC 1155 Token', '0x87cd6a40640befdd96e563b788a6b1fb3e07a186'),
   tofcerc20('ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
@@ -3346,6 +3410,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['polygon:ape']
   ),
   polygonErc20('polygon:srm', 'Serum', 6, '0x6bf2eb299e51fc5df30dec81d9445dde70e3f185', UnderlyingAsset['polygon:srm']),
+  erc721(
+    'erc721:polygontoken',
+    'Generic Polygon ERC721',
+    '0xerc721:polygontoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.polygon,
+    KeyCurve.Secp256k1
+  ),
+  erc1155(
+    'erc1155:polygontoken',
+    'Generic Polygon ERC1155',
+    '0xerc1155:polygontoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.polygon,
+    KeyCurve.Secp256k1
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     'tpolygon:derc20',
@@ -3366,6 +3450,26 @@ export const coins = CoinMap.fromCoins([
     'Polygon Test NAME',
     '0xba4bfed386dac111866aa2369319f2c2daf454af',
     AccountCoin.DEFAULT_FEATURES,
+    '',
+    '',
+    Networks.test.polygon,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'terc721:polygontoken',
+    'Generic Polygon ERC721',
+    '0xterc721:polygontoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.polygon,
+    KeyCurve.Secp256k1
+  ),
+  terc1155(
+    'terc1155:polygontoken',
+    'Generic Polygon ERC1155',
+    '0xterc1155:polygontoken',
+    GENERIC_TOKEN_FEATURES,
     '',
     '',
     Networks.test.polygon,
