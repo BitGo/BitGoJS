@@ -96,12 +96,14 @@ export class AvaxP extends BaseCoin {
       throw new Error('Export Tx requires one recipient');
     }
 
-    const totalAmount = new BigNumber(recipients[0].amount);
+    const recipientAmount = new BigNumber(recipients[0].amount);
 
-    // TODO: BG-61019 - Take into consideration fees for ImportInC to get exact amount
-    if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+    if (
+      recipientAmount.isGreaterThan(explainedTx.outputAmount) ||
+      recipientAmount.plus(explainedTx.fee.fee).isLessThan(explainedTx.outputAmount)
+    ) {
       throw new Error(
-        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${totalAmount}`
+        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${recipientAmount} and fixed fee ${explainedTx.fee.fee}`
       );
     }
 

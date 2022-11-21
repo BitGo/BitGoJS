@@ -520,7 +520,7 @@ describe('Avaxp', function () {
       await basecoin
         .verifyTransaction({ txParams, txPrebuild })
         .should.be.rejectedWith(
-          `Tx total amount ${EXPORT_P_2_C_VERIFY.amount} does not match with expected total amount field 9999999`
+          `Tx total amount ${EXPORT_P_2_C_VERIFY.amount} does not match with expected total amount field 9999999 and fixed fee 1000000`
         );
     });
 
