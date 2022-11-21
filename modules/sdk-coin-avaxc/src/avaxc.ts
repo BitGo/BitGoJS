@@ -959,10 +959,17 @@ export class AvaxC extends BaseCoin {
     if (recipients.length !== 1) {
       throw new Error('must send to exactly 1 recipient');
     }
-    const recipientAddress = recipients[0].address;
+
+    const recipient = recipients[0].address || recipients[0].walletId;
+
+    if (!recipient) {
+      throw new Error('recipient should specify address or wallet id');
+    }
+
+    // const recipientAddress = recipient.address;
     const recipientAmount = recipients[0].amount;
     const feeEstimateParams = {
-      recipient: recipientAddress,
+      recipient,
       amount: recipientAmount,
       hop: true,
       type,
@@ -975,7 +982,7 @@ export class AvaxC extends BaseCoin {
     // Payment id a random number so its different for every tx
     const paymentId = Math.floor(Math.random() * 10000000000).toString();
     const hopDigest: Buffer = AvaxC.getHopDigest([
-      recipientAddress,
+      recipient,
       recipientAmount,
       gasPriceMax.toString(),
       gasLimit.toString(),

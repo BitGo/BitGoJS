@@ -2,7 +2,6 @@ import {
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   PresignTransactionOptions as BasePresignTransactionOptions,
-  Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionFee,
   TransactionParams,
@@ -12,6 +11,13 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
+
+export interface WalletRecipient {
+  address?: string;
+  walletId?: string;
+  amount: string;
+  data?: string;
+}
 
 export interface PrecreateBitGoOptions {
   enterprise?: string;
@@ -52,7 +58,7 @@ export interface EIP1559 {
 
 // region Recovery
 export interface UnformattedTxInfo {
-  recipient: Recipient;
+  recipient: WalletRecipient;
 }
 
 export interface OfflineVaultTxInfo {
@@ -64,7 +70,7 @@ export interface OfflineVaultTxInfo {
   coin: string;
   gasPrice: number;
   gasLimit: number;
-  recipients: Recipient[];
+  recipients: WalletRecipient[];
   walletContractAddress: string;
   amount: string;
   backupKeyNonce: number;
@@ -75,7 +81,7 @@ export interface OfflineVaultTxInfo {
 // For createHopTransactionParams
 export interface HopTransactionBuildOptions {
   wallet: Wallet;
-  recipients: Recipient[];
+  recipients: WalletRecipient[];
   walletPassphrase: string;
   type?: keyof typeof TransactionType;
 }
@@ -84,7 +90,7 @@ export interface HopTransactionBuildOptions {
 export interface BuildOptions {
   hop?: boolean;
   wallet?: Wallet;
-  recipients?: Recipient[];
+  recipients?: WalletRecipient[];
   walletPassphrase?: string;
   type?: keyof typeof TransactionType;
   [index: string]: unknown;
@@ -127,7 +133,7 @@ export interface HopPrebuild {
 
 // For txPreBuild
 export interface TxInfo {
-  recipients: Recipient[];
+  recipients: WalletRecipient[];
   from: string;
   txid: string;
 }
@@ -174,7 +180,7 @@ export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
   halfSigned: {
     txHex?: never;
-    recipients: Recipient[];
+    recipients: WalletRecipient[];
     expiration?: number;
     eip1559?: EIP1559;
   };

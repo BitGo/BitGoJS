@@ -416,6 +416,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
     address?: string;
+    walletId?: string;
     amount: string | number;
     feeLimit?: string;
     data?: string;
