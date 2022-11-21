@@ -42,7 +42,7 @@ coins.forEach((coin, coinName) => {
       it('does not support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
       });
-    } else if (coin.family === CoinFamily.AVAXP || coin.features.includes(CoinFeature.GENERIC)) {
+    } else if (coin.family === CoinFamily.AVAXP || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it('does not require custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
       });

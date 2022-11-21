@@ -118,7 +118,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
 
     // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
     // do not use a valid address format for generic tokens because they not have onchain addresses
-    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/) && !options.features.includes(CoinFeature.GENERIC)) {
+    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/) && !options.features.includes(CoinFeature.GENERIC_TOKEN)) {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
