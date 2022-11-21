@@ -24,7 +24,7 @@ For more general information about the BitGo API, please see our [REST API Docum
 
 # Release Notes
 
-You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/RELEASE_NOTES.md).
+You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/CHANGELOG.md).
 
 # Example Usage
 

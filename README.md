@@ -27,9 +27,9 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 
 # Release Notes
 
-Each module provides release notes in `modules/*/RELEASE_NOTES.md`.
+Each module provides release notes in `modules/*/CHANGELOG.md`.
 
-The release notes for the `bitgo` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/RELEASE_NOTES.md).
+The release notes for the `bitgo` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/CHANGELOG.md).
 
 ## Release Cycle
 
