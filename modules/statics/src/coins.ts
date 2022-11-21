@@ -3232,6 +3232,86 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.STSOL,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'sol:psol',
+    'pSOL (Parrot SOL)',
+    9,
+    '9EaLkQrbjmbbuZG9Wdpo8qfNUEjHATJFSycEmw6f1rGX',
+    UnderlyingAsset.PSOL,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:tkmk',
+    'TOKAMAK ON SOLANA',
+    9,
+    'TKMKgSh3aADsmjr4yFWG52tkCQvmDxsQC1he1aBsi65',
+    UnderlyingAsset.TKMK,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:bbsamo',
+    'BabySamoio',
+    1,
+    '7ViSurf5Ve2a8qDWFYsfU8GFmRttQvS5paJ8L94QZgo7',
+    UnderlyingAsset.BBSAMO,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:csol',
+    'Solend SOL',
+    9,
+    '5h6ssFpeDeRbzsEHDbTQNH7nVGgsKrZydxdSTnLm6QdV',
+    UnderlyingAsset.CSOL,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:rin',
+    'Aldrin',
+    9,
+    'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
+    UnderlyingAsset.ALDRIN,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:tupolis',
+    'tuPOLIS',
+    8,
+    '658FZo9B4HgKxsKsM7cUHN7jfNFgC7YftusWWYWc4piD',
+    UnderlyingAsset.TUPOLIS,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:xaury',
+    'Aurory',
+    9,
+    'xAURp5XmAG7772mfkSy6vRAjGK9JofYjc3dmQDWdVDP',
+    UnderlyingAsset.XAURY,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:scp',
+    'SCOPE',
+    6,
+    '5HbkoVbaMnJYEuiTqeC7cBMSK2zG2MFfoxc9e6VkWPQS',
+    UnderlyingAsset.SCOPE,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:tusrm',
+    'tuSRM',
+    6,
+    '4QSK13NTKxTBExbMjHFsj3QfHBn4Hfp3DGLSba8GvFvh',
+    UnderlyingAsset.TUSRM,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:lqid',
+    'LQID',
+    6,
+    'A6aY2ceogBz1VaXBxm1j2eJuNZMRqrWUAnKecrMH85zj',
+    UnderlyingAsset.LQID,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'tsol:srm',
     'Serum',
