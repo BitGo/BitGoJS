@@ -146,7 +146,7 @@ export enum CoinFeature {
   /**
    * This coin is a dummy object meant to be a placeholder for an unsupported token
    */
-  GENERIC = 'generic',
+  GENERIC_TOKEN = 'genericToken',
 }
 
 /**

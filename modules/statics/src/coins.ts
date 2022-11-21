@@ -66,7 +66,7 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.REQUIRES_BIG_NUMBER,
   CoinFeature.VALUELESS_TRANSFER,
   CoinFeature.TRANSACTION_DATA,
-  CoinFeature.GENERIC,
+  CoinFeature.GENERIC_TOKEN,
 ];
 
 export const coins = CoinMap.fromCoins([
