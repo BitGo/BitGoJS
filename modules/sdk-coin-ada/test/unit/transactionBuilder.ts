@@ -89,6 +89,25 @@ describe('ADA Transaction Builder', async () => {
     builtTx.getFee.should.equal('168493');
   });
 
+  it('should not calculate fee and use one passed in', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    txBuilder.output({
+      address:
+        'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
+      amount: '7328383',
+    });
+    txBuilder.changeAddress(testData.address.address2, '1000000000');
+    txBuilder.ttl(800000000);
+    txBuilder.fee('170000');
+    txBuilder.sign({ key: testData.privateKeys.prvKey4 });
+    const builtTx = (await txBuilder.build()) as Transaction;
+    builtTx.getFee.should.equal('170000');
+  });
+
   it('build a send from unsigned rawTx', async () => {
     const txBuilder = factory.from(testData.rawTx.unsignedTx2);
     const builtTx = await txBuilder.build();
