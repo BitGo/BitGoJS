@@ -68,10 +68,11 @@ describe('Consolidate account', () => {
       .should.be.rejectedWith('consolidate address must be an array of addresses');
   });
 
-  function createConsolidateMocks(res, allowsAccountConsolidations = false) {
+  function createConsolidateMocks(res, allowsAccountConsolidations = false, supportsTss = false) {
     const consolidationStub = sinon.stub().returns(res);
     const walletStub = { sendAccountConsolidations: consolidationStub };
     const coinStub = {
+      supportsTss: () => supportsTss,
       allowsAccountConsolidations: () => allowsAccountConsolidations,
       wallets: () => ({ get: () => Promise.resolve(walletStub) }),
     };
