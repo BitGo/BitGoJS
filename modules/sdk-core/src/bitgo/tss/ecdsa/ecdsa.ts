@@ -208,7 +208,13 @@ export async function sendShareToBitgo(
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
-      responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.AShare);
+      responseFromBitgo = await getBitgoToUserLatestShare(
+        bitgo,
+        walletId,
+        txRequestId,
+        ReceivedShareType.AShare,
+        requestType
+      );
       break;
     case SendShareType.MUShare:
       const shareToSend = share as MuDShare;
@@ -220,7 +226,13 @@ export async function sendShareToBitgo(
         share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
       };
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
-      responseFromBitgo = await getBitgoToUserLatestShare(bitgo, walletId, txRequestId, ReceivedShareType.DShare);
+      responseFromBitgo = await getBitgoToUserLatestShare(
+        bitgo,
+        walletId,
+        txRequestId,
+        ReceivedShareType.DShare,
+        requestType
+      );
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;
@@ -247,11 +259,22 @@ export async function getBitgoToUserLatestShare(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
-  shareType: ReceivedShareType
+  shareType: ReceivedShareType,
+  requestType: RequestType
 ): Promise<SendShareToBitgoRT> {
   let responseFromBitgo: SendShareToBitgoRT;
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const userShares = txRequest.transactions[0].signatureShares;
+  let userShares;
+  switch (requestType) {
+    case RequestType.tx:
+      assert(txRequest.transactions, 'transactions required as part of txRequest');
+      userShares = txRequest.transactions[0].signatureShares;
+      break;
+    case RequestType.message:
+      assert(txRequest.messages, 'messages required as part of txRequest');
+      userShares = txRequest.messages[0].signatureShares;
+      break;
+  }
   if (!userShares || !userShares.length) {
     throw new Error('user share is not present');
   }

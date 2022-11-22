@@ -41,12 +41,14 @@ import {
   HalfSignedTransaction,
   FullySignedTransaction,
   MPCAlgorithm,
+  ECDSAMethods,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import { calculateForwarderV1Address, getProxyInitcode } from './lib';
+import { intToHex, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -1750,6 +1752,25 @@ export class Eth extends BaseCoin {
   encodeMessage(message: string): string {
     const prefix = `\u0019Ethereum Signed Message:\n${message.length}`;
     return prefix.concat(message);
+  }
+
+  /**
+   *  Create the final signed message hash from the combine share
+   * @param combineShare
+   */
+  constructFinalSignedMessageHash(combineShare: string): string {
+    const combineSigArray = combineShare.split(ECDSAMethods.delimeter);
+    const signature = {
+      recid: parseInt(combineSigArray[0], 10),
+      r: combineSigArray[1],
+      s: combineSigArray[2],
+      y: combineSigArray[3],
+    };
+    const v = 27 + signature.recid;
+    const vHex = intToHex(v);
+    const vStr = stripHexPrefix(vHex);
+    const finalSig = addHexPrefix(signature.r.concat(signature.s, vStr));
+    return finalSig;
   }
 
   private isETHAddress(address: string): boolean {

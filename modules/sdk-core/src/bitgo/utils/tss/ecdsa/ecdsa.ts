@@ -587,13 +587,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let signablePayload;
 
     if (requestType === RequestType.tx) {
+      assert(txRequestResolved.transactions, 'Unable to find transactions in txRequest');
       signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
-      const finalMessage = (params as TSSParamsForMessage).finalMessage;
-      assert(finalMessage);
-      signablePayload = Buffer.from(finalMessage, 'hex');
+      const finalMessage = (params as TSSParamsForMessage).messageEncoded;
+      assert(finalMessage, 'finalMessage is required');
+      signablePayload = Buffer.from(finalMessage);
     }
-
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
       bitgoToUserDShare,
@@ -630,8 +630,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
   async signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
-    if (!params.finalMessage) {
-      throw new Error('finalMessage required to sign message');
+    if (!params.messageRaw) {
+      throw new Error('Raw message required to sign message');
     }
     return this.signRequestBase(params, RequestType.message);
   }

@@ -17,6 +17,9 @@ import {
   TssUtils,
   TxRequest,
   Wallet,
+  SignatureShareType,
+  Ecdsa,
+  Keychains,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -2034,6 +2037,7 @@ describe('V2 Wallet:', function () {
     });
 
     describe('Message Signing', function () {
+      const txHash = '0xrrrsss1b';
       const txRequestForMessageSigning: TxRequest = {
         txRequestId: 'id',
         transactions: [],
@@ -2050,6 +2054,12 @@ describe('V2 Wallet:', function () {
         walletId: 'walletId',
         unsignedTxs: [],
         unsignedMessages: [],
+        messages: [{
+          state: 'signed',
+          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+          combineSigShare: '0:rrr:sss:3',
+          txHash,
+        }],
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
@@ -2058,10 +2068,13 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '' }]);
+        sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 
       afterEach(async function () {
         sinon.restore();
+        nock.cleanAll();
       });
 
       it('should throw error for unsupported coins', async function () {
@@ -2088,7 +2101,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw, txRequestId },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2105,7 +2118,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2121,7 +2134,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2131,7 +2144,7 @@ describe('V2 Wallet:', function () {
             reqId,
             message: { messageRaw, txRequestId },
             prv: '',
-          }).should.be.rejectedWith('prv required to sign message with TSS');
+          }).should.be.rejectedWith('keychain does not have property encryptedPrv');
         });
       });
 
