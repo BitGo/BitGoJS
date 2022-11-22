@@ -111,6 +111,7 @@ interface PopulatedIntentBase {
 export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
   messageRaw: string;
   messageEncoded: string;
+  custodianMessageId?: string;
 }
 
 export interface PopulatedIntent extends PopulatedIntentBase {
