@@ -209,6 +209,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     preview?: boolean
   ): Promise<TxRequest> {
     const intentOptions: PopulatedIntentForMessageSigning = {
+      custodianMessageId: params.custodianMessageId,
       intentType: params.intentType,
       sequenceId: params.sequenceId,
       comment: params.comment,
@@ -217,6 +218,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       messageRaw: params.messageRaw,
       messageEncoded: params.messageEncoded ?? '',
     };
+
     const whitelistedParams = {
       intent: {
         ...intentOptions,
@@ -224,6 +226,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       apiVersion,
       preview,
     };
+
     const txRequest = (await this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
       .send(whitelistedParams)
