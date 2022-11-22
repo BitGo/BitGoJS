@@ -22,6 +22,13 @@ export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
 export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
 
 /**
+ * @return true iff scriptType requires witness data
+ */
+export function hasWitnessData(scriptType: ScriptType): scriptType is 'p2shP2wsh' | 'p2wsh' | 'p2tr' {
+  return ['p2shP2wsh', 'p2wsh', 'p2tr'].includes(scriptType);
+}
+
+/**
  * @param network
  * @param scriptType
  * @return true iff script type is supported for network

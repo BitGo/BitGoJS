@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { Transaction, networks } from '../../../src';
 import {
   isWalletUnspent,
-  isUnspentWithPrevTx,
   formatOutputId,
   getOutputIdForInput,
   parseOutputId,
@@ -20,7 +19,6 @@ import {
   getWalletAddress,
   verifySignatureWithUnspent,
   toTNumber,
-  WalletUnspent,
   UtxoTransaction,
   createPsbtForNetwork,
   createPsbtFromTransaction,
@@ -29,7 +27,6 @@ import {
   toPrevOutput,
   KeyName,
   signInputP2shP2pk,
-  UnspentWithPrevTx,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
@@ -77,7 +74,7 @@ describe('WalletUnspent', function () {
   });
 
   function constructAndSignTransactionUsingPsbt(
-    unspents: Unspent<bigint>[],
+    unspents: (Unspent<bigint> & { prevTx?: Buffer })[],
     signer: KeyName,
     cosigner: KeyName,
     outputType: outputScripts.ScriptType2Of3
@@ -104,19 +101,8 @@ describe('WalletUnspent', function () {
 
     const psbt2 = createPsbtFromTransaction(
       tx,
-      unspents.map((u) => toPrevOutput<bigint>(u, network))
+      unspents.map((u) => ({ ...toPrevOutput<bigint>(u, network), prevTx: u.prevTx }))
     );
-    const nonWitnessUnspents = unspents.filter((u): u is WalletUnspent<bigint> & UnspentWithPrevTx =>
-      isUnspentWithPrevTx(u)
-    );
-    const txBufs = Object.fromEntries(
-      psbt2.getNonWitnessPreviousTxids().map((txid) => {
-        const u = nonWitnessUnspents.find((u) => parseOutputId(u.id).txid === txid);
-        if (u === undefined) throw new Error('No prevtx found');
-        return [txid, u.prevTx];
-      })
-    );
-    psbt2.addNonWitnessUtxos(txBufs);
     assert(psbt2.validateSignaturesOfAllInputs());
     return tx;
   }

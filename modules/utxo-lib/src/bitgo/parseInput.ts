@@ -1,7 +1,7 @@
 import * as opcodes from 'bitcoin-ops';
 import { TxInput, script as bscript } from 'bitcoinjs-lib';
 
-import { ScriptType } from './outputScripts';
+import { isScriptType2Of3, ScriptType } from './outputScripts';
 import { isTriple } from './types';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
@@ -30,6 +30,8 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
        For p2sh, the placeholder is OP_0 (number 0) */
     | [Buffer | 0, Buffer | 0, Buffer | 0];
   pubScript: Buffer;
+  redeemScript: Buffer | undefined;
+  witnessScript: Buffer | undefined;
 }
 
 /**
@@ -268,7 +270,7 @@ const parseP2shP2pk: InputParser<ParsedSignatureScriptP2shP2pk> = (p) => {
 
 function parseP2ms(
   decScript: DecompiledScript,
-  params: Pick<ParsedSignatureScript2Of3, 'scriptType'>
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
 ): ParsedSignatureScript2Of3 | MatchError {
   const pattern2Of3: ScriptPatternElement[] = ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'];
 
@@ -289,10 +291,12 @@ function parseP2ms(
   }
 
   return {
-    ...params,
+    scriptType,
     publicKeys: redeemScript.match[':pubkey'],
     pubScript: redeemScript.buffer,
     signatures: match[':signature'] as ParsedSignatureScript2Of3['signatures'],
+    redeemScript: scriptType === 'p2sh' ? redeemScript.buffer : undefined,
+    witnessScript: scriptType === 'p2shP2wsh' || scriptType === 'p2wsh' ? redeemScript.buffer : undefined,
   };
 }
 
@@ -300,27 +304,21 @@ const parseP2sh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isLegacy(p)) {
     return new MatchError(`expected legacy input`);
   }
-  return parseP2ms(p.script, {
-    scriptType: 'p2sh',
-  });
+  return parseP2ms(p.script, 'p2sh');
 };
 
 const parseP2shP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isWrappedSegwit(p)) {
     return new MatchError(`expected wrapped segwit input`);
   }
-  return parseP2ms(p.witness, {
-    scriptType: 'p2shP2wsh',
-  });
+  return { ...parseP2ms(p.witness, 'p2shP2wsh'), redeemScript: p.script[0] as Buffer };
 };
 
 const parseP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
   if (!isNativeSegwit(p)) {
     return new MatchError(`expected native segwit`);
   }
-  return parseP2ms(p.witness, {
-    scriptType: 'p2wsh',
-  });
+  return parseP2ms(p.witness, 'p2wsh');
 };
 
 const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
@@ -384,7 +382,11 @@ export function parseSignatureScript(
 }
 
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
-  const result = parseSignatureScript(input) as ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot;
+  const result = parseSignatureScript(input);
+
+  if (!isScriptType2Of3(result.scriptType)) {
+    throw new Error(`invalid script type`);
+  }
 
   if (!result.signatures) {
     throw new Error(`missing signatures`);
@@ -392,9 +394,6 @@ export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2
   if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
     throw new Error(`unexpected pubkey count`);
   }
-  if (!result.pubScript || result.pubScript.length === 0) {
-    throw new Error(`pubScript missing or empty`);
-  }
 
-  return result;
+  return result as ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot;
 }
