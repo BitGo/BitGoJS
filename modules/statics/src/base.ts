@@ -63,6 +63,10 @@ export enum CoinFamily {
  */
 export enum CoinFeature {
   /*
+   * This coin supports creating an EVM transaction using Metamask Institutional (MMI).
+   */
+  METAMASK_INSTITUTIONAL = 'metamask-institutional',
+  /*
    * The valueless transfer feature indicates that it is valid to send a transaction which moves zero units of the coin.
    *
    * An example is Ethereum, which uses zero value transactions to trigger contract calls.
