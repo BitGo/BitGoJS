@@ -93,5 +93,10 @@ describe('units', () => {
         BigInt('69999999999999999280')
       );
     });
+
+    it('should allow changing the numerator of the trading pair', () => {
+      // $3.38 market value for 1 eth at 338.2582 cents market price
+      toMarketValueBaseUnits('teth', 338.2582, BigInt(10000000000000000).toString(), 'tsusd').should.equal(BigInt(338));
+    });
   });
 });
