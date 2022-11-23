@@ -1,3 +1,5 @@
+import assert from 'assert';
+import openpgp from 'openpgp';
 import { BitGoBase } from '../bitgoBase';
 import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
@@ -67,4 +69,50 @@ export async function sendSignatureShare(
       signerShare,
     })
     .result();
+}
+
+/**
+ * Verifies that a TSS wallet signature was produced with the expected key and that the signed data contains the
+ * expected common keychain as well as the expected user and backup key ids
+ */
+export async function commonVerifyWalletSignature(params: {
+  walletSignature: openpgp.Key;
+  bitgoPub: openpgp.Key;
+  commonKeychain: string;
+  userKeyId: string;
+  backupKeyId: string;
+}): Promise<{ value: ArrayBuffer }[]> {
+  const { walletSignature, bitgoPub, commonKeychain, userKeyId, backupKeyId } = params;
+
+  // By ensuring that the fingerprints of the walletSignature and the bitgoPub are different and that any of the results
+  // from calling verifyPrimaryUser is valid we know that the signature was actually produced by the private key
+  // belonging to the bitgoPub.
+  if (walletSignature.keyPacket.getFingerprint() === bitgoPub.keyPacket.getFingerprint()) {
+    throw new Error('Invalid HSM GPG signature');
+  }
+
+  const verificationResult = await walletSignature.verifyPrimaryUser([bitgoPub]);
+  const isValid = verificationResult.some((result) => result.valid);
+  if (!isValid) {
+    throw new Error('Invalid HSM GPG signature');
+  }
+  const primaryUser = await walletSignature.getPrimaryUser();
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore the rawNotations property is missing from the type but it actually exists
+  const rawNotations: { value: Uint8Array }[] = primaryUser.user.otherCertifications[0].rawNotations;
+
+  assert(rawNotations.length === 5, 'invalid wallet signatures');
+
+  assert(
+    commonKeychain === Buffer.from(rawNotations[0].value).toString(),
+    'wallet signature does not match common keychain'
+  );
+  assert(userKeyId === Buffer.from(rawNotations[1].value).toString(), `wallet signature does not match user key id`);
+  assert(
+    backupKeyId === Buffer.from(rawNotations[2].value).toString(),
+    'wallet signature does not match backup key id'
+  );
+
+  return rawNotations;
 }

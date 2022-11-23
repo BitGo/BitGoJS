@@ -1,4 +1,5 @@
-import { SignatureShareRecord } from '@bitgo/sdk-core';
+import * as openpgp from 'openpgp';
+import { createSharedDataProof, SignatureShareRecord } from '@bitgo/sdk-core';
 import { getRoute } from '../internal/tssUtils/common';
 import * as nock from 'nock';
 
@@ -18,4 +19,29 @@ export async function nockGetTxRequest(params: {walletId: string, txRequestId: s
   return nock('https://bitgo.fakeurl')
     .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
     .reply(200, params.response);
+}
+
+export async function createWalletSignatures(
+  privateKeyArmored: string,
+  publicKeyToCertArmoredUser: string,
+  publicKeyToCertArmoredBackup: string,
+  notations: { name: string; value: string }[]
+): Promise<string> {
+  const userWalletSigArmored = await createSharedDataProof(privateKeyArmored, publicKeyToCertArmoredUser, notations);
+  const backupWalletSigArmored = await createSharedDataProof(privateKeyArmored, publicKeyToCertArmoredBackup, notations);
+
+  const certsUserKey = await openpgp.readKey({ armoredKey: userWalletSigArmored });
+  const certsBackupKey = await openpgp.readKey({ armoredKey: backupWalletSigArmored });
+
+  const mergedWalletKeys = new openpgp.PacketList();
+  certsUserKey.toPacketList().forEach((packet) => mergedWalletKeys.push(packet));
+  certsBackupKey.toPacketList().forEach((packet) => mergedWalletKeys.push(packet));
+
+  // the underlying function only requires two arguments but the according .d.ts file for openpgp has the further
+  // arguments marked as mandatory as well.
+  // Once the following PR has been merged and released we no longer need the ts-ignore:
+  // https://github.com/openpgpjs/openpgpjs/pull/1576
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return openpgp.armor(openpgp.enums.armor.publicKey, mergedWalletKeys.write());
 }
