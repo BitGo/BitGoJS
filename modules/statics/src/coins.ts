@@ -40,6 +40,10 @@ import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
+const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
+const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
+const ETH_FEATURES_WITH_STAKING_AND_MMI = [...ETH_FEATURES_WITH_STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
+
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
@@ -58,8 +62,8 @@ const SOL_FEATURES = [
   CoinFeature.STAKING,
 ];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
-const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+
+const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -119,7 +123,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.AVAXC,
     BaseUnit.ETH,
-    ETH_FEATURES
+    ETH_FEATURES_WITH_MMI
   ),
   account(
     'tavaxc',
@@ -128,7 +132,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.AVAXC,
     BaseUnit.ETH,
-    ETH_FEATURES
+    ETH_FEATURES_WITH_MMI
   ),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, BaseUnit.CSPR, CSPR_FEATURES),
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, BaseUnit.CSPR, CSPR_FEATURES),
@@ -143,7 +147,15 @@ export const coins = CoinMap.fromCoins([
     DOT_FEATURES,
     KeyCurve.Ed25519
   ),
-  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, BaseUnit.ETH, ETH_FEATURES_WITH_STAKING), // we should probably refactor this into a eth() method
+  account(
+    'eth',
+    'Ethereum',
+    Networks.main.ethereum,
+    18,
+    UnderlyingAsset.ETH,
+    BaseUnit.ETH,
+    ETH_FEATURES_WITH_STAKING_AND_MMI
+  ), // we should probably refactor this into a eth() method
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES,
     CoinFeature.DEPRECATED,
@@ -155,7 +167,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETH,
     BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING
+    ETH_FEATURES_WITH_STAKING_AND_MMI
   ),
   account(
     'eth2',
@@ -271,7 +283,15 @@ export const coins = CoinMap.fromCoins([
     NEAR_FEATURES,
     KeyCurve.Ed25519
   ),
-  account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, BaseUnit.BSC, ETH_FEATURES),
+  account(
+    'bsc',
+    'Binance Smart Chain',
+    Networks.main.bsc,
+    18,
+    UnderlyingAsset.BSC,
+    BaseUnit.BSC,
+    ETH_FEATURES_WITH_MMI
+  ),
   account(
     'tbsc',
     'Testnet Binance Smart Chain',
@@ -279,7 +299,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    ETH_FEATURES
+    ETH_FEATURES_WITH_MMI
   ),
   account(
     'polygon',
@@ -288,7 +308,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING
+    ETH_FEATURES_WITH_STAKING_AND_MMI
   ),
   account(
     'tpolygon',
@@ -297,7 +317,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING
+    ETH_FEATURES_WITH_STAKING_AND_MMI
   ),
   erc20CompatibleAccountCoin(
     'celo',
