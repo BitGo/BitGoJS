@@ -55,9 +55,8 @@ export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions 
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
-    walletId?: string;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];
@@ -415,7 +414,7 @@ export interface SendOptions {
 export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
     feeLimit?: string;
     data?: string;

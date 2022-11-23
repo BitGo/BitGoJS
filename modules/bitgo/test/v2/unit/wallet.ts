@@ -1300,42 +1300,6 @@ describe('V2 Wallet:', function () {
 
       response.isDone().should.be.true();
     });
-
-    it('should pass walletId parameter through when building transactions in recipient field', async function () {
-      const recipients = [{
-        walletId: 'bbb',
-        amount: '1000',
-      }];
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ recipients }))
-        .reply(200);
-      try {
-        await wallet.prebuildTransaction({ recipients });
-      } catch (e) {
-        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
-        // we only care about /tx/build and whether walletId is an allowed parameter in prebuildTransaction
-      }
-      response.isDone().should.be.true();
-    });
-
-    it('should fail when neither address nor walletId is passed in recipient field', async function () {
-      const recipients = [{
-        amount: '1000',
-      }];
-
-      await wallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field must have either an address or walletId');
-    });
-
-    it('should fail when both address and walletId are passed in recipient field', async function () {
-      const recipients = [{
-        address: 'abc',
-        amount: '1000',
-        walletId: 'abc',
-      }];
-
-      await wallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field can only have one of: address or walletId');
-    });
   });
 
   describe('Maximum Spendable', function maximumSpendable() {
@@ -1604,24 +1568,6 @@ describe('V2 Wallet:', function () {
             feeString: '5000',
           },
         });
-      });
-
-      it('should fail when neither address nor walletId is passed in recipient field -- tss wallet', async function () {
-        const recipients = [{
-          amount: '1000',
-        }];
-
-        await tssWallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field must have either an address or walletId');
-      });
-
-      it('should fail when both address and walletId are passed in recipient field -- tss wallet', async function () {
-        const recipients = [{
-          address: 'abc',
-          amount: '1000',
-          walletId: 'abc',
-        }];
-
-        await tssWallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field can only have one of: address or walletId');
       });
 
       it('should build a multiple recipient transfer transaction with memo', async function () {

@@ -74,7 +74,7 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
 
 export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
     data?: string;
     tokenName?: string;
@@ -91,7 +91,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
 }
 export interface IntentRecipient {
   address: {
-    address?: string;
+    address: string;
   };
   amount: {
     value: string | number;

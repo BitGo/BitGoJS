@@ -1451,7 +1451,7 @@ export class Wallet implements IWallet {
    * Fetch a transaction prebuild (unsigned transaction) from BitGo
    *
    * @param {Object} params
-   * @param {{address: string | walletId: string, amount: string}} params.recipients - list of recipients and necessary recipient information
+   * @param {{address: string, amount: string}} params.recipients - list of recipients and necessary recipient information
    * @param {Number} params.numBlocks - Estimates the approximate fee per kilobyte necessary for a transaction confirmation within numBlocks blocks
    * @param {Number} params.feeRate - the desired feeRate for the transaction in base units/kB
    * @param {Number} params.maxFeeRate - upper limit for feeRate in base units/kB
@@ -1482,16 +1482,6 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
-    if (params.recipients) {
-      for (const recipient of params.recipients) {
-        if (!recipient.address && !recipient.walletId) {
-          throw new Error('recipient field must have either an address or walletId');
-        } else if (recipient.address && recipient.walletId) {
-          throw new Error('recipient field can only have one of: address or walletId');
-        }
-      }
-    }
-
     if (this._wallet.multisigType === 'tss') {
       return this.prebuildTransactionTss(params);
     }
