@@ -173,21 +173,36 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected buildSuiTransaction(): SuiTransaction {
-    assert(this._type, new BuildTransactionError('type is required before building'));
-    assert(this._sender, new BuildTransactionError('sender is required before building'));
-    assert(this._payTx, new BuildTransactionError('payTx is required before building'));
-    assert(this._gasBudget, new BuildTransactionError('gasBudget is required before building'));
-    assert(this._gasPrice, new BuildTransactionError('gasPrice is required before building'));
-    assert(this._gasPayment, new BuildTransactionError('gasPayment is required before building'));
+    this.validateTransactionFields();
+
+    let payTx;
+    if (this._type === SuiTransactionType.PaySui || this._type === SuiTransactionType.PayAllSui) {
+      const inputCoins = this.reorderInputCoins();
+      payTx = { coins: inputCoins, recipients: this._payTx.recipients, amounts: this._payTx.amounts };
+    }
 
     return {
       type: this._type,
       sender: this._sender,
-      payTx: this._payTx,
+      payTx: payTx ?? this._payTx,
       gasBudget: this._gasBudget,
       gasPrice: this._gasPrice,
       gasPayment: this._gasPayment,
     };
+  }
+
+  reorderInputCoins(): SuiObjectRef[] {
+    const coinIds = this._payTx.coins.map((coin) => coin.objectId);
+    const inputCoins: SuiObjectRef[] = [];
+    inputCoins.push(...this._payTx.coins);
+    if (!coinIds.includes(this._gasPayment.objectId)) {
+      inputCoins.push(this._gasPayment);
+    }
+
+    const gasPaymentIndex = inputCoins.findIndex((coin) => coin.objectId === this._gasPayment.objectId);
+    inputCoins[gasPaymentIndex] = inputCoins[0];
+    inputCoins[0] = this._gasPayment;
+    return inputCoins;
   }
 
   // region Validators
@@ -285,29 +300,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Validates all fields are defined
    */
   private validateTransactionFields(): void {
-    if (this._type === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing type');
-    }
-    if (this._sender === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing sender');
-    }
-    if (this._gasBudget === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing gas budget');
-    }
-    if (this._gasPrice === undefined || this._gasPrice !== SUI_GAS_PRICE) {
-      throw new BuildTransactionError('Invalid transaction: missing/incorrect gas price');
-    }
-    if (this._payTx === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing payTx');
-    }
-    if (this._gasPayment === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing gas payment');
+    assert(this._type, new BuildTransactionError('type is required before building'));
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._payTx, new BuildTransactionError('payTx is required before building'));
+    assert(this._gasBudget, new BuildTransactionError('gasBudget is required before building'));
+    assert(this._gasPrice, new BuildTransactionError('gasPrice is required before building'));
+    assert(this._gasPayment, new BuildTransactionError('gasPayment is required before building'));
+
+    if (this._gasPrice !== SUI_GAS_PRICE) {
+      throw new BuildTransactionError('Invalid transaction: incorrect gas price');
     }
 
     const coinIds = this._payTx.coins.map((coin) => coin.objectId);
-    if (coinIds.includes(this._gasPayment.objectId)) {
+    if (coinIds.includes(this._gasPayment.objectId) && this._type === SuiTransactionType.Pay) {
       throw new BuildTransactionError(
-        `Invalid gas Payment ${this._gasPayment.objectId}, cannot be one of the inputCoins`
+        `Invalid gas payment ${this._gasPayment.objectId}: cannot be one of the inputCoins`
       );
     }
   }

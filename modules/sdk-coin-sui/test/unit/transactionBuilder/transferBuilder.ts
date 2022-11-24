@@ -14,7 +14,7 @@ describe('Sui Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.type(SuiTransactionType.Pay);
       txBuilder.sender(testData.sender.address);
-      txBuilder.payTx(testData.payTx);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
       txBuilder.gasBudget(GAS_BUDGET);
       txBuilder.gasPayment(testData.gasPayment);
       const tx = await txBuilder.build();
