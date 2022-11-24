@@ -977,12 +977,6 @@ export class AvaxC extends BaseCoin {
     walletPassphrase,
     type,
   }: HopTransactionBuildOptions): Promise<HopParams> {
-    const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
-    const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-    const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
-    if (!userPrvBuffer) {
-      throw new Error('invalid userPrv');
-    }
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
     }
@@ -1006,22 +1000,14 @@ export class AvaxC extends BaseCoin {
     const gasPriceMax = gasPrice * 5;
     // Payment id a random number so its different for every tx
     const paymentId = Math.floor(Math.random() * 10000000000).toString();
-    const hopDigest: Buffer = AvaxC.getHopDigest([
-      recipientAddress,
-      recipientAmount,
-      gasPriceMax.toString(),
-      gasLimit.toString(),
-      paymentId,
-    ]);
 
-    const userReqSig = optionalDeps.ethUtil.addHexPrefix(
-      Buffer.from(secp256k1.ecdsaSign(hopDigest, userPrvBuffer).signature).toString('hex')
-    );
+    // TODO(BG-62671): after completed [Wallet-platform] Remove use of userReqSig for avaxc hop transaction
+    const userReqSig = '0x';
 
     return {
       hopParams: {
-        gasPriceMax,
         userReqSig,
+        gasPriceMax,
         paymentId,
       },
       gasLimit,
