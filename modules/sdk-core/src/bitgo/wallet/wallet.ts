@@ -1934,7 +1934,6 @@ export class Wallet implements IWallet {
       return this.sendManyTss(params);
     }
 
-    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [
       'recipients',
       'numBlocks',
@@ -1961,7 +1960,18 @@ export class Wallet implements IWallet {
       'trustlines',
       'transferId',
       'stakingOptions',
+      'hop',
+      'type',
     ]);
+
+    if (this._wallet.type === 'custodial') {
+      const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
+      Object.assign(selectParams, extraParams);
+
+      return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
+    }
+
+    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
     return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
