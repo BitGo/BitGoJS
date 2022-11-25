@@ -74,9 +74,7 @@ export interface OfflineVaultTxInfo {
 
 // For createHopTransactionParams
 export interface HopTransactionBuildOptions {
-  wallet: Wallet;
   recipients: Recipient[];
-  walletPassphrase: string;
   type?: keyof typeof TransactionType;
 }
 

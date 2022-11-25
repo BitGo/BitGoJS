@@ -948,8 +948,7 @@ export class AvaxC extends BaseCoin {
       !_.isUndefined(buildParams.hop) &&
       buildParams.hop &&
       !_.isUndefined(buildParams.wallet) &&
-      !_.isUndefined(buildParams.recipients) &&
-      !_.isUndefined(buildParams.walletPassphrase)
+      !_.isUndefined(buildParams.recipients)
     ) {
       if (this.isToken()) {
         throw new Error(
@@ -957,9 +956,7 @@ export class AvaxC extends BaseCoin {
         );
       }
       return (await this.createHopTransactionParams({
-        wallet: buildParams.wallet,
         recipients: buildParams.recipients,
-        walletPassphrase: buildParams.walletPassphrase,
         type: buildParams.type,
       })) as any;
     }
@@ -968,15 +965,10 @@ export class AvaxC extends BaseCoin {
 
   /**
    * Creates the extra parameters needed to build a hop transaction
-   * @param buildParams The original build parameters
+   * @param {HopTransactionBuildOptions} The original build parameters
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  async createHopTransactionParams({
-    wallet,
-    recipients,
-    walletPassphrase,
-    type,
-  }: HopTransactionBuildOptions): Promise<HopParams> {
+  async createHopTransactionParams({ recipients, type }: HopTransactionBuildOptions): Promise<HopParams> {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
     }
