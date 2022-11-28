@@ -496,6 +496,7 @@ export interface WalletData {
   };
   multisigType: 'onchain' | 'tss';
   type?: WalletType;
+  tokens?: Record<string, any>[];
 }
 
 export interface RecoverTokenOptions {
