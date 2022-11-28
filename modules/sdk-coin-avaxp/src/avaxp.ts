@@ -23,6 +23,7 @@ import {
   ExplainTransactionOptions,
   AvaxpVerifyTransactionOptions,
   AvaxpTransactionStakingOptions,
+  AvaxpTransactionParams,
 } from './iface';
 import utils from './lib/utils';
 import _ from 'lodash';
@@ -121,6 +122,28 @@ export class AvaxP extends BaseCoin {
     }
   }
 
+  /**
+   * Check if import txn into P is valid, based on expected tx params.
+   *
+   * @param {AvaxpLib.AvaxpEntry[]} explainedTxInputs tx inputs (unspents to be imported)
+   * @param {AvaxpTransactionParams} txParams expected tx info to check against
+   */
+  validateImportTx(explainedTxInputs: AvaxpLib.AvaxpEntry[], txParams: AvaxpTransactionParams): void {
+    if (txParams.unspents) {
+      if (explainedTxInputs.length !== txParams.unspents.length) {
+        throw new Error(`Expected ${txParams.unspents.length} UTXOs, transaction had ${explainedTxInputs.length}`);
+      }
+
+      const unspents = new Set(txParams.unspents);
+
+      for (const unspent of explainedTxInputs) {
+        if (!unspents.has(unspent.id)) {
+          throw new Error(`Transaction should not contain the UTXO: ${unspent.id}`);
+        }
+      }
+    }
+  }
+
   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
     const txHex = params.txPrebuild && params.txPrebuild.txHex;
     if (!txHex) {
@@ -163,6 +186,7 @@ export class AvaxP extends BaseCoin {
         break;
       case TransactionType.Import:
         if (tx.isTransactionForCChain) {
+          // Import to C-chain
           if (
             (params.txParams.recipients && params.txParams.recipients.length !== 0) ||
             explainedTx.outputs.length !== 1
@@ -170,7 +194,11 @@ export class AvaxP extends BaseCoin {
             throw new Error('Expected 1 output in import txn and does not require recipients');
           }
         } else {
-          // TODO: BG-55595 - verify import txn on P chain
+          // Import to P-chain
+          if (explainedTx.outputs.length !== 1) {
+            throw new Error('Expected 1 output in import txn');
+          }
+          this.validateImportTx(explainedTx.inputs, params.txParams);
         }
         break;
       default:

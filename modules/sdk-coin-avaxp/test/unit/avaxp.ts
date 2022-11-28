@@ -473,6 +473,44 @@ describe('Avaxp', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify import to P transaction', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_P.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+        unspents: ['e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L:0'],
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify import to P transaction with wrong unspents', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_P.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+        unspents: ['test:1'],
+      };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith(
+          'Transaction should not contain the UTXO: e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L:0'
+        );
+    });
+
     it('should succeed to verify export transaction', async () => {
       const txPrebuild = {
         txHex: EXPORT_P_2_C_VERIFY.txHex,
