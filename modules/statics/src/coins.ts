@@ -1342,6 +1342,29 @@ export const coins = CoinMap.fromCoins([
   erc20('xtzbull', '3X Long Tezos Token', 18, '0x8af17a6396c8f315f6b6dbc6aa686c85f9b3e554', UnderlyingAsset.XTZBULL),
   erc20('zecbear', '3X Short Zcash Token', 18, '0x78a8c84b4c23563be4518e7045016d3170130823', UnderlyingAsset.ZECBEAR),
   erc20('zecbull', '3X Long Zcash Token', 18, '0xd437d88153daef4784cacd2084b1d8cc2d3312b8', UnderlyingAsset.ZECBULL),
+  erc20('cow', 'CoW Protocol Token', 18, '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab', UnderlyingAsset.COW),
+  erc20('cpool', 'Clearpool', 18, '0x66761fa41377003622aee3c7675fc7b5c1c2fac5', UnderlyingAsset.CPOOL),
+  erc20('eoserc20', 'EOS ERC20 Token', 18, '0x86fa049857e0209aa7d9e616f7eb3b3b78ecfdb0', UnderlyingAsset.EOS, [
+    ...AccountCoin.DEFAULT_FEATURES,
+    CoinFeature.DEPRECATED,
+  ]),
+  erc20('frax', 'Frax', 18, '0x853d955acef822db058eb8505911ed77f175b99e', UnderlyingAsset.FRAX),
+  erc20('inv', 'Inverse DAO', 18, '0x41d5d79431a913c4ae7d69a668ecdfe5ff9dfb68', UnderlyingAsset.INV),
+  erc20(
+    'matter',
+    'Antimatter.Finance Governance Token',
+    18,
+    '0x9b99cca871be05119b2012fd4474731dd653febe',
+    UnderlyingAsset.MATTER
+  ),
+  erc20('metis', 'Metis Token', 18, '0x9e32b13ce7f2e80a01932b42553652e053d6ed8e', UnderlyingAsset.METIS),
+  erc20('mim', 'Magic Internet Money', 18, '0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3', UnderlyingAsset.MIM),
+  erc20('steth', 'stETH', 18, '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', UnderlyingAsset.STETH),
+  erc20('synth-susd', 'Synth sUSD', 18, '0x57ab1ec28d129707052df4df418d58a2d46d5f51', UnderlyingAsset['SYNTH-SUSD']),
+  erc20('swag', 'Swag Token', 18, '0x87edffde3e14c7a66c9b9724747a1c5696b742e6', UnderlyingAsset.SWAG),
+  erc20('uos', 'Ultra Token', 18, '0xd13c7342e1ef687c5ad21b27c2b65d772cab5c8c', UnderlyingAsset.UOS),
+  erc20('xdefi', 'XDEFI', 18, '0x72b886d09c117654ab7da13a14d603001de0b777', UnderlyingAsset.XDEFI),
+
   celoToken('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
   bscToken(
     'bsc:busd',
