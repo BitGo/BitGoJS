@@ -62,7 +62,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   private _counter: number;
   private _fee: Fee;
-  private _value: string;
+  protected _value: string;
 
   // the signature on the external ETH transaction
   private _txSignature: SignatureParts;
