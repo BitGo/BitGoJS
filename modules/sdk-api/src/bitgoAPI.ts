@@ -18,6 +18,7 @@ import { createHmac } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   AliasEnvironments,
+  BaseCoin,
   BitGoBase,
   BitGoRequest,
   CoinConstructor,
@@ -31,7 +32,6 @@ import {
   getSharedSecret,
   GetSharingKeyOptions,
   GlobalCoinFactory,
-  IBaseCoin,
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
@@ -307,7 +307,7 @@ export class BitGoAPI implements BitGoBase {
    * Create a basecoin object
    * @param name
    */
-  public coin(name: string): IBaseCoin {
+  public coin(name: string): BaseCoin {
     return GlobalCoinFactory.getInstance(this, name);
   }
 
