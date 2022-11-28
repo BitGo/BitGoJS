@@ -183,6 +183,7 @@ export class Wallet implements IWallet {
       'sequenceId',
       'strategy',
       'sourceChain',
+      'destinationChain',
       'targetWalletUnspents',
       'trustlines',
       'type',
