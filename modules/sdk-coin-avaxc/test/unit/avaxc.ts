@@ -10,7 +10,7 @@ import { Eth } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C } from '../resources/avaxc';
-import { TavaxP, AvaxpLib } from '@bitgo/sdk-coin-avaxp';
+import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 
 nock.enableNetConnect();
 
@@ -32,7 +32,7 @@ describe('Avalanche C-Chain', function () {
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
   const hopExportTx =
     '0x000000000001000000057fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d50000000000000000000000000000000000000000000000000000000000000000000000011fe3de7886be9e53072d6762e9fa1fc27dddfb0500000000061465b23d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000006052340000000000000000000000002000000038b2ce3381003fdf86900280a4ec86b384b5d5c99b7fc1f65220b9a0b2f431578b8bb6ee130bf563af1fab1503135fbd423e442d5e9b73abd5622fe02000000010000000900000001af20066197fa3b72bea3d7cc503c60918c098378b958fbb5da8c6f438d0f4e380e506bb2c38dc88dd97c81e982706c48623937c2fe22b31248ed9fd34951480b0173b4e9ca';
-  const hopExportTxId = '2siZfqtJx1uQJWm6stetz7RJLpgEFtFV931Dv1rq1TzVpM521c';
+  const hopExportTxId = '0xc4b5ca6e7d8c9c24bb9934afcb5c87e6db472dbe31111b778445f8f9c5352966';
 
   before(function () {
     const bitgoKeyXprv =
@@ -52,7 +52,7 @@ describe('Avalanche C-Chain', function () {
     hopExportTxBitgoSignature =
       '0xaa' +
       Buffer.from(
-        secp256k1.ecdsaSign(AvaxpLib.Utils.cb58Decode(hopExportTxId), bitgoKey.privateKey).signature
+        secp256k1.ecdsaSign(Buffer.from(hopExportTxId.slice(2), 'hex'), bitgoKey.privateKey).signature
       ).toString('hex');
 
     const env = 'test';
@@ -488,40 +488,6 @@ describe('Avalanche C-Chain', function () {
         };
         const isTransactionVerified = await tavaxCoin.verifyTransaction(verifyAvaxcTransactionOptions);
         isTransactionVerified.should.equal(true);
-      });
-
-      it('should fail verify if signature invalid', async function () {
-        const verifyAvaxcTransactionOptions = {
-          txParams,
-          txPrebuild: {
-            ...txPrebuild,
-            hopTransaction: { ...txPrebuild.hopTransaction, id: '7TSsJRJv4BAYaVorqERjAXceGkVpF84AwozpuVLJRHm3H9Nhh' },
-          },
-          wallet,
-          verification,
-        };
-        await tavaxCoin
-          .verifyTransaction(verifyAvaxcTransactionOptions)
-          .should.be.rejectedWith(`Hop txid signature invalid`);
-      });
-
-      it('should fail verify if signature valid but txids do not mach', async function () {
-        const verifyAvaxcTransactionOptions = {
-          txParams,
-          txPrebuild: {
-            ...txPrebuild,
-            hopTransaction: {
-              ...txPrebuild.hopTransaction,
-              id: AvaxpLib.Utils.cb58Encode(Buffer.from(hopTxid.slice(2), 'hex') as any),
-              signature: hopTxBitgoSignature,
-            },
-          },
-          wallet,
-          verification,
-        };
-        await tavaxCoin
-          .verifyTransaction(verifyAvaxcTransactionOptions)
-          .should.be.rejectedWith(`Signed hop txid does not equal actual txid`);
       });
     });
 

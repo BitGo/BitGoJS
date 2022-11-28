@@ -79,14 +79,14 @@ export class AvaxC extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  getChain() {
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
   /**
    * Get the base chain that the coin exists on.
    */
-  getBaseChain() {
+  getBaseChain(): string {
     return this.getChain();
   }
 
@@ -94,7 +94,7 @@ export class AvaxC extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
@@ -809,9 +809,7 @@ export class AvaxC extends BaseCoin {
     const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
     const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
     const messageBuffer: Buffer =
-      hopPrebuild.type === 'Export'
-        ? Buffer.from(AvaxpLib.Utils.cb58Decode(id))
-        : Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
+      hopPrebuild.type === 'Export' ? AvaxC.getTxHash(tx) : Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
     const sig = new Uint8Array(signatureBuffer.length === 64 ? signatureBuffer : signatureBuffer.slice(1));
     const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
@@ -840,9 +838,6 @@ export class AvaxC extends BaseCoin {
         }
       }
       // TODO(BG-59774): Implement verifySignature without using Private Key
-      if (explainHopExportTx.id !== id) {
-        throw new Error(`Signed hop txid does not equal actual txid`);
-      }
     } else {
       const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
       // If original params are given, we can check them against the transaction prebuild params
@@ -1042,6 +1037,17 @@ export class AvaxC extends BaseCoin {
   static getHopDigest(paramsArr: string[]): Buffer {
     const hash = Keccak('keccak256');
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
+    return hash.digest();
+  }
+
+  /**
+   * Calculate tx hash like evm from tx hex.
+   * @param {string} tx
+   * @returns {Buffer} tx hash
+   */
+  static getTxHash(tx: string): Buffer {
+    const hash = Keccak('keccak256');
+    hash.update(optionalDeps.ethUtil.stripHexPrefix(tx), 'hex');
     return hash.digest();
   }
 
