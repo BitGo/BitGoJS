@@ -2381,19 +2381,17 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('Fetch crossChain UTXOs (AVAX)', function () {
-
+  describe('AVAX tests', function() {
     let bgUrl;
     let basecoin;
     let walletData;
     let wallet;
-    before(async function () {
+
+    before(async function() {
       nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
-      basecoin = bitgo.coin('tavaxp');
       walletData = {
         id: '5b34252f1bf349930e34020a00000000',
-        coin: 'tavaxp',
         keys: [
           '5b3424f91bf349930e34017500000000',
           '5b3424f91bf349930e34017600000000',
@@ -2401,12 +2399,14 @@ describe('V2 Wallet:', function () {
         ],
         coinSpecific: {},
       };
-      wallet = new Wallet(bitgo, basecoin, walletData);
     });
 
-    it('should fetch cross chain utxos', async function () {
-      const params = { sourceChain: 'C' };
+    it('should fetch cross-chain utxos', async function () {
+      basecoin = bitgo.coin('tavaxp');
+      walletData.coin = 'tavaxp';
+      wallet = new Wallet(bitgo, basecoin, walletData);
 
+      const params = { sourceChain: 'C' };
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/crossChainUnspents`;
       const scope =
         nock(bgUrl)
@@ -2436,6 +2436,42 @@ describe('V2 Wallet:', function () {
       scope.isDone().should.be.True();
     });
 
+    it('sendMany should work for C > P export with custodial wallet', async function () {
+      basecoin = bitgo.coin('tavaxc');
+      walletData.coin = 'tavaxc';
+      walletData.type = 'custodial';
+      wallet = new Wallet(bitgo, basecoin, walletData);
 
+      const address = 'P-fuji1e56pc4966qsevzhwgkym5l0jfma9llkqnrr4gh~P-fuji1kq05zm9nmlq8p3ld55k79dl3qay6c0e3atj56v~P-fuji1rp46z30qg457xc3dpffyxcgzpflxc85mhkjme3';
+      const initiateTxParams = {
+        recipients: [{
+          amount: '10000000000000000', // 0.01 AVAX
+          address,
+        }],
+        hop: true,
+        type: 'Export',
+      };
+
+      const initiateTxPath = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/initiate`;
+      const response = nock(bgUrl)
+        .post(initiateTxPath, _.matches(initiateTxParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+
+      const feeEstimationPath = `/api/v2/${wallet.coin()}/tx/fee?hop=true&recipient=${address}&amount=10000000000000000&type=Export`;
+      nock(bgUrl)
+        .get(feeEstimationPath)
+        .reply(200, {
+          feeEstimate: '718750000000000',
+          gasLimitEstimate: 500000,
+        });
+
+      try {
+        await wallet.sendMany(initiateTxParams);
+      } catch (e) {
+        console.log(e);
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      response.isDone().should.be.true();
+    });
   });
 });
