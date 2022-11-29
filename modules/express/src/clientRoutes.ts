@@ -607,7 +607,11 @@ export async function handleV2ConsolidateAccount(req: express.Request) {
 
   let result: any;
   try {
-    result = await wallet.sendAccountConsolidations(req.body);
+    if (coin.supportsTss()) {
+      result = await wallet.sendAccountConsolidations(createTSSSendParams(req));
+    } else {
+      result = await wallet.sendAccountConsolidations(createSendParams(req));
+    }
   } catch (err) {
     err.status = 400;
     throw err;

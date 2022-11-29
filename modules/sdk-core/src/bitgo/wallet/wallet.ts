@@ -2658,21 +2658,26 @@ export class Wallet implements IWallet {
     params: WalletSignTransactionOptions = {},
     coin: IBaseCoin
   ): Promise<TxRequest> {
-    if (!params.txRequestId) {
-      throw new Error('txRequestId required to sign transactions with TSS');
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
     }
 
     if (!params.customRShareGeneratingFunction) {
-      throw new Error('Generator function for R share required to sign transactions with External Signer');
+      throw new Error('Generator function for R share required to sign transactions with External Signer.');
     }
 
     if (!params.customGShareGeneratingFunction) {
-      throw new Error('Generator function for G share required to sign transactions with External Signer');
+      throw new Error('Generator function for G share required to sign transactions with External Signer.');
     }
 
     try {
       const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
-        params.txRequestId,
+        txRequestId,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
       );
