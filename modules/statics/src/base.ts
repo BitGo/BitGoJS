@@ -825,6 +825,7 @@ export enum UnderlyingAsset {
   SOLVE = 'solve',
   SRNT = 'srnt',
   SRM = 'srm',
+  STRK = 'strk',
   STARS = 'stars',
   STBU = 'stbu',
   STC = 'stc',
