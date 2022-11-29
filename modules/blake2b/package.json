@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/blake2b",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Blake2b (64-bit version) in pure JavaScript",
   "main": "index.js",
   "dependencies": {

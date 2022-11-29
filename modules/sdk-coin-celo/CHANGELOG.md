@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.3.0...@bitgo/sdk-coin-celo@1.3.5) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-celo:** fix precision bug in celo build/sign ([15b47c7](https://github.com/BitGo/BitGoJS/commit/15b47c73c9550ab8060b59cc1d1f8c2ce5cb0361))
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.3.0...@bitgo/sdk-coin-celo@1.3.4) (2022-11-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.0...@bitgo/sdk-coin-polygon@1.3.5) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-polygon:** remove unused data in recovery ([6ee161c](https://github.com/BitGo/BitGoJS/commit/6ee161c28e2e627456541b479d8f362fbf96979d))
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.0...@bitgo/sdk-coin-polygon@1.3.4) (2022-11-04)
 
 ### Bug Fixes

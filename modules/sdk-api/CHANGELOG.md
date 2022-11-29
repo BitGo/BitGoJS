@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.4.0...@bitgo/sdk-api@1.9.0) (2022-11-29)
+
+### Features
+
+- allow the sdk to optionally send cookies with the request to custom domains ([e40349e](https://github.com/BitGo/BitGoJS/commit/e40349e8e36e946fe8630e94b0796e34b4aee51b))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.4.0...@bitgo/sdk-api@1.8.0) (2022-11-04)
 
 ### Features

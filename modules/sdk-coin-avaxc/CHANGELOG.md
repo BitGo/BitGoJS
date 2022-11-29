@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.2.0...@bitgo/sdk-coin-avaxc@2.3.0) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-avaxc:** add tx type to fee estimation and build params ([83a12be](https://github.com/BitGo/BitGoJS/commit/83a12be8d41a8796160737ccb48a9a3e98495042))
+
+### Features
+
+- **sdk-coin-avaxc:** hop export tx verify signature uses keccak256 for tx ([cd940b5](https://github.com/BitGo/BitGoJS/commit/cd940b5244a18f06882921da2448a4fbb2cdbdf4))
+- **sdk-coin-avaxc:** remove use of suer req sig for hot tx ([fa231e8](https://github.com/BitGo/BitGoJS/commit/fa231e8ae08bcbb5ab48bd7cf19a624f46c92ea7))
+- **sdk-coin-avaxc:** verify c to p hop export tx ([e34e2e9](https://github.com/BitGo/BitGoJS/commit/e34e2e95b4fb3fb6d7eb078408bab5403e64145c))
+
 ## [2.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.2.0...@bitgo/sdk-coin-avaxc@2.2.4) (2022-11-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

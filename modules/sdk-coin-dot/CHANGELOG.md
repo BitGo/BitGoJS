@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.3.0...@bitgo/sdk-coin-dot@2.0.0) (2022-11-29)
+
+### Features
+
+- **sdk-coin-dot:** add support for staking transactions ([b67eaa0](https://github.com/BitGo/BitGoJS/commit/b67eaa06723b1a235cb2c6f948ece34cc42a9256))
+
+### BREAKING CHANGES
+
+- **sdk-coin-dot:** Uddate the 'westendMetadataRpc' constant to
+  spec version 9320. Update PolkadotTestnet.specVersion to
+  9320 and PolkadotTestnet.txVersion to 14.
+  Ticket: BOS-469
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.3.0...@bitgo/sdk-coin-dot@1.3.4) (2022-11-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

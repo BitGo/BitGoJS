@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@7.0.0) (2022-11-29)
+
+### Bug Fixes
+
+- add test paths to tsconfig.json ([68cd7e8](https://github.com/BitGo/BitGoJS/commit/68cd7e8119914fe4a78ab1f5def5490f7a493118))
+- **utxo-bin:** change signature of `getNetworkName()` ([6e673c6](https://github.com/BitGo/BitGoJS/commit/6e673c60548a784cc71bdecf487249b441c1d5ea))
+- **utxo-lib:** bump bitcoinjs-lib for PSBT fix ([633df05](https://github.com/BitGo/BitGoJS/commit/633df05eec6beed4b2e9ee271d3609261f816c97))
+- **utxo-lib:** fix testFixtureArray ([83109e4](https://github.com/BitGo/BitGoJS/commit/83109e406320ffe771c4ba662f010422f7df8387))
+- **utxo-lib:** sanitize signer.pubkey in signTaprootInput ([3ddc36c](https://github.com/BitGo/BitGoJS/commit/3ddc36c2a1b7f4070157811f218d3f82517c06fc))
+- **utxo-lib:** update links in network docs ([ea47851](https://github.com/BitGo/BitGoJS/commit/ea47851142b1a511aeded55943db59090b34ea8d))
+
+### Code Refactoring
+
+- rename addChangeOutputToPsbt to addWalletOutputToPsbt, move ([189a129](https://github.com/BitGo/BitGoJS/commit/189a1294a947964336b7694832bd0bb5edd1752a))
+- tweak names of some Unspent types ([8a43518](https://github.com/BitGo/BitGoJS/commit/8a4351897089c74caab440aa3633ab933a28a245))
+- **utxo-lib:** deprecate p2pkh parsing ([21bc364](https://github.com/BitGo/BitGoJS/commit/21bc36453df30f09af66e4d8d6fa5b44a185d454))
+- **utxo-lib:** remove unused props from ParsedSignatureScript ([ddc6ab7](https://github.com/BitGo/BitGoJS/commit/ddc6ab7e5c4fc7f12175d850f4ebd68d54cd509b))
+- **utxo-lib:** rename addToPsbt to addWalletUnspentToPsbt ([c271386](https://github.com/BitGo/BitGoJS/commit/c27138602636b563b5fa2f2d4dc710a09a597288))
+
+### Features
+
+- **root:** add ecash network configuration & use in tests ([55c6963](https://github.com/BitGo/BitGoJS/commit/55c69632de8823473880a9fc216de9191bcdfd3e))
+- **utxo-lib:** add `getTapleafHash` method to outputScripts.ts ([cc283ca](https://github.com/BitGo/BitGoJS/commit/cc283ca54b7de260c3e9c74c5daf07cc89eefaee))
+- **utxo-lib:** add method `getSignaturesWithPublicKeys` ([2e53327](https://github.com/BitGo/BitGoJS/commit/2e53327ed4f23f28840782b39e5e3f1d76a345b0))
+- **utxo-lib:** add method hasWitnessData(scriptType) ([db7f5d2](https://github.com/BitGo/BitGoJS/commit/db7f5d270e47f153347569a66d4ca5bd4c5e2f88))
+- **utxo-lib:** add methods fromOutput, fromOutputWithPrevTx ([77d90e2](https://github.com/BitGo/BitGoJS/commit/77d90e2ea8991a0216c52467d387fb1e4e6b642e))
+- **utxo-lib:** add more precise capture groups ([dd93180](https://github.com/BitGo/BitGoJS/commit/dd93180396deb72dcccf38b08736d30ca75590ae))
+- **utxo-lib:** add replay protection unspent tests to WalletUnspent ([cbcaf76](https://github.com/BitGo/BitGoJS/commit/cbcaf7605d3f505906d604dd00acbaa61f8563cc))
+- **utxo-lib:** add replay protection unspent utils to wallet/util.ts ([b1188c3](https://github.com/BitGo/BitGoJS/commit/b1188c3247fe72ee679398ec0dd593793c4f7185))
+- **utxo-lib:** add test for Psbt full signing ([56a767e](https://github.com/BitGo/BitGoJS/commit/56a767eb679d872338e1fbd3b3d21f552c7751e3))
+- **utxo-lib:** add tests for getInputUpdate ([a0c3efc](https://github.com/BitGo/BitGoJS/commit/a0c3efc735fb475bc9b85153807e6eb2e9d73d24))
+- **utxo-lib:** allow passing `prevTx` in getInputUpdate ([b1c91bc](https://github.com/BitGo/BitGoJS/commit/b1c91bcda40e4a8caed8302ff0206d3dfce85f9f))
+- **utxo-lib:** allow passing `prevTx` in getPrevOutput(s) ([8df4fb6](https://github.com/BitGo/BitGoJS/commit/8df4fb65953080f01c01c6d5e045a7bce46f7b7d))
+- **utxo-lib:** compute getTapleafHash only once per signature ([571241a](https://github.com/BitGo/BitGoJS/commit/571241a8104b61588ef5c2fcb25763776655dff6))
+- **utxo-lib:** parse leafVersion in parseInput.ts ([854d7fc](https://github.com/BitGo/BitGoJS/commit/854d7fcc6010a784e12a952e9b4fbe9c4b9942cc))
+- **utxo-lib:** parse pubkey and signature in parseP2PK ([8dc189a](https://github.com/BitGo/BitGoJS/commit/8dc189a5da5541b0860f81c2071f1f7013b4ba7a))
+- **utxo-lib:** parse redeemScript, witnessScritpt ([793689d](https://github.com/BitGo/BitGoJS/commit/793689d5f16f7ae64dc7be6a8370d9764b1240a3))
+- **utxo-lib:** remove dependency on `classify` in parseSignatureScript ([460ce6a](https://github.com/BitGo/BitGoJS/commit/460ce6aa2a2b9b5958910076007546807efc23c2))
+- **utxo-lib:** test getInputUpdate for unsigned tx ([dbfd08a](https://github.com/BitGo/BitGoJS/commit/dbfd08a64f44a9ddd3da314068f81e6d3087cd94))
+- **utxo-lib:** use MatchError instead of `undefined` in parseInput ([ac699ea](https://github.com/BitGo/BitGoJS/commit/ac699eaaa8803b549f8224d40b1d17072be168f1))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** remove some properties of ParsedSignatureScript
+  Issue: BG-57748
+- **utxo-lib:** deprecate p2pkh parsing
+- **utxo-lib:** rename addToPsbt to addWalletUnspentToPsbt
+- addChangeOutputToPsbt renamed to addWalletOutputToPsbt
+- function and type rename
+
 # [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@6.0.0) (2022-11-04)
 
 ### Bug Fixes
