@@ -1560,7 +1560,7 @@ export const coins = CoinMap.fromCoins([
   ),
   stellarToken(
     'xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-    'US Dollar',
+    'AnchorUSD',
     7,
     UnderlyingAsset['xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'],
     'anchorusd.com',
