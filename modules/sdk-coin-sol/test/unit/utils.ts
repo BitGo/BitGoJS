@@ -261,11 +261,12 @@ describe('SOL util library', function () {
     });
     it('should fail for invalid instruction type', function () {
       const accountPubkey = testData.authAccount.pub;
-      const programId = testData.nonceAccount.pub;
 
-      const assignInstruction = SystemProgram.assign({
-        accountPubkey: new PublicKey(accountPubkey),
-        programId: new PublicKey(programId),
+      const assignInstruction = SystemProgram.nonceWithdraw({
+        noncePubkey: new PublicKey(accountPubkey),
+        authorizedPubkey: new PublicKey(accountPubkey),
+        toPubkey: new PublicKey(accountPubkey),
+        lamports: 200,
       });
       should(() => Utils.validateIntructionTypes([assignInstruction])).throwError(
         'Invalid transaction, instruction type not supported: ' + Utils.getInstructionType(assignInstruction)

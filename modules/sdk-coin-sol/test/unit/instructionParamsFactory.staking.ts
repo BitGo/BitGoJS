@@ -4,7 +4,14 @@ import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory
 import { TransactionType } from '@bitgo/sdk-core';
 import { InstructionParams, Nonce, StakingActivate, StakingDeactivate, StakingWithdraw } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
-import { Lockup, PublicKey, StakeProgram, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import {
+  Keypair as SolKeypair,
+  Lockup,
+  PublicKey,
+  StakeProgram,
+  SystemProgram,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 
 describe('Instruction Parser Staking Tests: ', function () {
@@ -314,6 +321,8 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          amount: undefined,
+          unstakingAddress: undefined,
         },
       };
 
@@ -323,7 +332,7 @@ describe('Instruction Parser Staking Tests: ', function () {
       };
 
       const instructions = [nonceAdvanceInstruction, ...stakingDeactivateInstructions, memoInstruction];
-      const instructionsData = [nonceAdvanceParams, stakingDeactivateParams, memoParams];
+      const instructionsData = [nonceAdvanceParams, memoParams, stakingDeactivateParams];
       const result = instructionParamsFactory(TransactionType.StakingDeactivate, instructions);
       should.deepEqual(result, instructionsData);
     });
@@ -362,6 +371,8 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          amount: undefined,
+          unstakingAddress: undefined,
         },
       };
 
@@ -371,7 +382,7 @@ describe('Instruction Parser Staking Tests: ', function () {
       };
 
       const instructions = [memoInstruction, ...stakingDeactivateInstructions, nonceAdvanceInstruction];
-      const instructionsData = [memoParams, stakingDeactivateParams, nonceAdvanceParams];
+      const instructionsData = [memoParams, nonceAdvanceParams, stakingDeactivateParams];
       const result = instructionParamsFactory(TransactionType.StakingDeactivate, instructions);
       should.deepEqual(result, instructionsData);
     });
@@ -392,6 +403,8 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          amount: undefined,
+          unstakingAddress: undefined,
         },
       };
 
@@ -436,6 +449,8 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          amount: undefined,
+          unstakingAddress: undefined,
         },
       };
 
@@ -447,6 +462,499 @@ describe('Instruction Parser Staking Tests: ', function () {
       const instructionsData = [stakingActivateParams];
       const result = instructionParamsFactory(TransactionType.StakingDeactivate, instructions);
       should.deepEqual(result, instructionsData);
+    });
+
+    describe('Partially deactivate stake instructions', function () {
+      describe('Input validation', function () {
+        it('Should throw an error if the Allocate instruction is missing', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: splitStakeAccount,
+            programId: StakeProgram.programId,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, missing allocate unstake account instruction'
+          );
+        });
+
+        it('Should throw an error if the Assign instruction is missing', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: splitStakeAccount,
+            space: StakeProgram.space,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, missing assign unstake account instruction'
+          );
+        });
+
+        it('Should throw an error if the Split instruction is missing', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: splitStakeAccount,
+            space: StakeProgram.space,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: splitStakeAccount,
+            programId: StakeProgram.programId,
+          });
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, missing split stake account instruction'
+          );
+        });
+
+        it('Should throw an error if the allocated account does not match the assigned account', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: new SolKeypair().publicKey,
+            space: StakeProgram.space,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: splitStakeAccount,
+            programId: StakeProgram.programId,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, must allocate and assign the same public key'
+          );
+        });
+
+        [199, 201].forEach((space) => {
+          it(`Should throw an error if the correct amount of space is not allocated for the split account - ${space}`, () => {
+            const fromAccount = new PublicKey(testData.authAccount.pub);
+            const nonceAccount = testData.nonceAccount.pub;
+            const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+            const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+            const memo = 'test memo';
+
+            // Instructions
+            const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+              noncePubkey: new PublicKey(nonceAccount),
+              authorizedPubkey: fromAccount,
+            });
+
+            const allocateInstruction = SystemProgram.allocate({
+              accountPubkey: splitStakeAccount,
+              space,
+            });
+
+            const assignInstruction = SystemProgram.assign({
+              accountPubkey: splitStakeAccount,
+              programId: StakeProgram.programId,
+            });
+
+            const splitInstructions = StakeProgram.split({
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            }).instructions;
+
+            const stakingDeactivateInstructions = StakeProgram.deactivate({
+              authorizedPubkey: fromAccount,
+              stakePubkey: splitStakeAccount,
+            }).instructions;
+
+            const memoInstruction = new TransactionInstruction({
+              keys: [],
+              programId: new PublicKey(MEMO_PROGRAM_PK),
+              data: Buffer.from(memo),
+            });
+
+            const instructions = [
+              nonceAdvanceInstruction,
+              allocateInstruction,
+              assignInstruction,
+              ...splitInstructions,
+              ...stakingDeactivateInstructions,
+              memoInstruction,
+            ];
+            should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+              `Invalid partial deactivate stake transaction, unstaking account must allocate ${StakeProgram.space} bytes`
+            );
+          });
+        });
+
+        it('Should throw an error if the allocated account is not assigned to the StakeProgram', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: splitStakeAccount,
+            space: StakeProgram.space,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: splitStakeAccount,
+            programId: SystemProgram.programId,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, the unstake account must be assigned to the Stake Program'
+          );
+        });
+
+        it('Should throw an error if the split account is not allocated', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const key = new SolKeypair().publicKey;
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: key,
+            space: StakeProgram.space,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: key,
+            programId: StakeProgram.programId,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: stakingAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, must allocate the unstaking account'
+          );
+        });
+
+        it('Should throw an error if the stake account and the split account are the same account', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: stakingAccount,
+            space: StakeProgram.space,
+          });
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: stakingAccount,
+            programId: StakeProgram.programId,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: stakingAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, the unstaking account must be different from the Stake Account'
+          );
+        });
+      });
+
+      it('Should parse partial deactivate stake tx instructions with memo and durable nonce', () => {
+        const fromAccount = new PublicKey(testData.authAccount.pub);
+        const nonceAccount = testData.nonceAccount.pub;
+        const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+        const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+        const memo = 'test memo';
+
+        // Instructions
+        const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(nonceAccount),
+          authorizedPubkey: fromAccount,
+        });
+
+        const allocateInstruction = SystemProgram.allocate({
+          accountPubkey: splitStakeAccount,
+          space: StakeProgram.space,
+        });
+
+        const assignInstruction = SystemProgram.assign({
+          accountPubkey: splitStakeAccount,
+          programId: StakeProgram.programId,
+        });
+
+        const splitInstructions = StakeProgram.split({
+          stakePubkey: stakingAccount,
+          authorizedPubkey: fromAccount,
+          splitStakePubkey: splitStakeAccount,
+          lamports: 100000,
+        }).instructions;
+
+        const stakingDeactivateInstructions = StakeProgram.deactivate({
+          authorizedPubkey: fromAccount,
+          stakePubkey: splitStakeAccount,
+        }).instructions;
+
+        const memoInstruction = new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from(memo),
+        });
+
+        // Params
+        const nonceAdvanceParams: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: { walletNonceAddress: nonceAccount, authWalletAddress: fromAccount.toString() },
+        };
+
+        const stakingDeactivateParams: StakingDeactivate = {
+          type: InstructionBuilderTypes.StakingDeactivate,
+          params: {
+            fromAddress: fromAccount.toString(),
+            stakingAddress: stakingAccount.toString(),
+            amount: '100000',
+            unstakingAddress: splitStakeAccount.toString(),
+          },
+        };
+
+        const memoParams: InstructionParams = {
+          type: InstructionBuilderTypes.Memo,
+          params: { memo },
+        };
+
+        const instructions = [
+          nonceAdvanceInstruction,
+          allocateInstruction,
+          assignInstruction,
+          ...splitInstructions,
+          ...stakingDeactivateInstructions,
+          memoInstruction,
+        ];
+        const instructionsData = [nonceAdvanceParams, memoParams, stakingDeactivateParams];
+        const result = instructionParamsFactory(TransactionType.StakingDeactivate, instructions);
+        should.deepEqual(result, instructionsData);
+      });
     });
   });
 
