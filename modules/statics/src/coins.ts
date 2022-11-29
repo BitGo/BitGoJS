@@ -956,6 +956,7 @@ export const coins = CoinMap.fromCoins([
   erc20('solve', 'Solve Token', 8, '0x446c9033e7516d820cc9a2ce2d0b7328b579406f', UnderlyingAsset.SOLVE),
   erc20('srm', 'Serum', 6, '0x476c5e26a75bd202a9683ffd34359c0cc15be0ff', UnderlyingAsset.SRM),
   erc20('srnt', 'Serenity', 18, '0xbc7942054f77b82e8a71ace170e4b00ebae67eb6', UnderlyingAsset.SRNT),
+  erc20('strk', 'StarkNet Token', 18, '0xca14007eff0db1f8135f4c25b34de49ab0d42766', UnderlyingAsset.STRK),
   erc20('stbu', 'Stobox Token', 18, '0x212dd60d4bf0da8372fe8116474602d429e5735f', UnderlyingAsset.STBU),
   erc20('stc', 'Student Coin', 2, '0xb8b7791b1a445fb1e202683a0a329504772e0e52', UnderlyingAsset.STC),
   erc20('stcv2', 'Student Coin V2', 18, '0x15b543e986b8c34074dfc9901136d9355a537e7e', UnderlyingAsset.STCV2),
