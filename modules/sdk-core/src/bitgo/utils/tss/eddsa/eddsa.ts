@@ -354,10 +354,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions, 'Unable to find transactions in txRequest');
+    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
       txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions[0].unsignedTx
+        ? txRequestResolved.transactions![0].unsignedTx
         : txRequestResolved.unsignedTxs[0];
 
     const signingKey = MPC.keyDerive(
@@ -394,10 +394,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions, 'Unable to find transactions in txRequest');
+    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
       txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions[0].unsignedTx
+        ? txRequestResolved.transactions![0].unsignedTx
         : txRequestResolved.unsignedTxs[0];
 
     const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
@@ -475,10 +475,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions, 'Unable to find transactions in txRequest');
+    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
       txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions[0].unsignedTx
+        ? txRequestResolved.transactions![0].unsignedTx
         : txRequestResolved.unsignedTxs[0];
 
     const signingKey = MPC.keyDerive(

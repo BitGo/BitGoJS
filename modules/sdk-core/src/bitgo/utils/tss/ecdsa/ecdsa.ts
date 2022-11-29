@@ -587,8 +587,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let signablePayload;
 
     if (requestType === RequestType.tx) {
-      assert(txRequestResolved.transactions, 'Unable to find transactions in txRequest');
-      signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
+      assert(
+        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
+        'Unable to find transactions in txRequest'
+      );
+      const unsignedTx =
+        txRequestResolved.apiVersion === 'full'
+          ? txRequestResolved.transactions![0].unsignedTx
+          : txRequestResolved.unsignedTxs[0];
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
       const finalMessage = (params as TSSParamsForMessage).messageEncoded;
       assert(finalMessage, 'finalMessage is required');
