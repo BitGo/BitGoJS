@@ -218,12 +218,45 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
 
-  const deactivateStaking = StakeProgram.deactivate({
-    stakePubkey: new PublicKey(stakingAddress),
-    authorizedPubkey: new PublicKey(fromAddress),
-  });
+  if (data.params.amount && data.params.unstakingAddress) {
+    const tx = new Transaction();
 
-  return deactivateStaking.instructions;
+    const unstakingAddress = new PublicKey(data.params.unstakingAddress);
+    const allocateAccount = SystemProgram.allocate({
+      accountPubkey: unstakingAddress,
+      space: StakeProgram.space,
+    });
+    tx.add(allocateAccount);
+
+    const assignAccount = SystemProgram.assign({
+      accountPubkey: unstakingAddress,
+      programId: StakeProgram.programId,
+    });
+    tx.add(assignAccount);
+
+    const splitStake = StakeProgram.split({
+      stakePubkey: new PublicKey(stakingAddress),
+      authorizedPubkey: new PublicKey(fromAddress),
+      splitStakePubkey: unstakingAddress,
+      lamports: new BigNumber(data.params.amount).toNumber(),
+    });
+    tx.add(splitStake.instructions[1]);
+
+    const deactivateStaking = StakeProgram.deactivate({
+      stakePubkey: unstakingAddress,
+      authorizedPubkey: new PublicKey(fromAddress),
+    });
+    tx.add(deactivateStaking);
+
+    return tx.instructions;
+  } else {
+    const deactivateStaking = StakeProgram.deactivate({
+      stakePubkey: new PublicKey(stakingAddress),
+      authorizedPubkey: new PublicKey(fromAddress),
+    });
+
+    return deactivateStaking.instructions;
+  }
 }
 
 /**

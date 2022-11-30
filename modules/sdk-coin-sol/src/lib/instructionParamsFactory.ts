@@ -1,8 +1,13 @@
 import {
+  AllocateParams,
+  AssignParams,
   CreateAccountParams,
+  DeactivateStakeParams,
   DelegateStakeParams,
   InitializeStakeParams,
+  SplitStakeParams,
   StakeInstruction,
+  StakeProgram,
   SystemInstruction,
   TransactionInstruction,
 } from '@solana/web3.js';
@@ -228,8 +233,15 @@ function validateStakingInstructions(stakingInstructions: StakingInstructions) {
 }
 
 /**
- * Parses Solana instructions to create deactivate tx instructions params
- * Only supports Nonce, StakingDeactivate, and Memo Solana instructions
+ * Parses Solana instructions to create deactivate stake tx instructions params. Supports full stake
+ * account deactivation and partial stake account deactivation.
+ *
+ * When partially deactivating a stake account this method expects the following instructions: Allocate,
+ * to allocate a new staking account, Assign, to assign the newly created staking account to the
+ * Stake Program, Split, to split the current stake account, and StakingDeactivate to deactivate the
+ * newly created stake account.
+ *
+ * Supports Nonce, StakingDeactivate, Memo, Allocate, Assign, and Split Solana instructions.
  *
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for staking deactivate tx
@@ -238,6 +250,7 @@ function parseStakingDeactivateInstructions(
   instructions: TransactionInstruction[]
 ): Array<Nonce | StakingDeactivate | Memo> {
   const instructionData: Array<Nonce | StakingDeactivate | Memo> = [];
+  const unstakingInstructions = {} as UnstakingInstructions;
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -261,20 +274,90 @@ function parseStakingDeactivateInstructions(
         instructionData.push(memo);
         break;
 
+      case ValidInstructionTypesEnum.Allocate:
+        unstakingInstructions.allocate = SystemInstruction.decodeAllocate(instruction);
+        break;
+
+      case ValidInstructionTypesEnum.Assign:
+        unstakingInstructions.assign = SystemInstruction.decodeAssign(instruction);
+        break;
+
+      case ValidInstructionTypesEnum.Split:
+        unstakingInstructions.split = StakeInstruction.decodeSplit(instruction);
+        break;
+
       case ValidInstructionTypesEnum.StakingDeactivate:
-        const deactivateInstruction = StakeInstruction.decodeDeactivate(instruction);
-        const stakingDeactivate: StakingDeactivate = {
-          type: InstructionBuilderTypes.StakingDeactivate,
-          params: {
-            fromAddress: deactivateInstruction.authorizedPubkey.toString(),
-            stakingAddress: deactivateInstruction.stakePubkey.toString(),
-          },
-        };
-        instructionData.push(stakingDeactivate);
+        unstakingInstructions.deactivate = StakeInstruction.decodeDeactivate(instruction);
         break;
     }
   }
+
+  validateUnstakingInstructions(unstakingInstructions);
+  const stakingDeactivate: StakingDeactivate = {
+    type: InstructionBuilderTypes.StakingDeactivate,
+    params: {
+      fromAddress: unstakingInstructions.deactivate?.authorizedPubkey.toString() || '',
+      stakingAddress:
+        unstakingInstructions.split?.stakePubkey.toString() ||
+        unstakingInstructions.deactivate?.stakePubkey.toString() ||
+        '',
+      amount: unstakingInstructions.split?.lamports.toString(),
+      unstakingAddress: unstakingInstructions.split?.splitStakePubkey.toString(),
+    },
+  };
+  instructionData.push(stakingDeactivate);
+
   return instructionData;
+}
+
+interface UnstakingInstructions {
+  allocate?: AllocateParams;
+  assign?: AssignParams;
+  split?: SplitStakeParams;
+  deactivate?: DeactivateStakeParams;
+}
+
+function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructions) {
+  if (!unstakingInstructions.deactivate) {
+    throw new NotSupported('Invalid deactivate stake transaction, missing deactivate stake account instruction');
+  } else if (unstakingInstructions.allocate || unstakingInstructions.assign || unstakingInstructions.split) {
+    if (!unstakingInstructions.allocate) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, missing allocate unstake account instruction'
+      );
+    } else if (!unstakingInstructions.assign) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, missing assign unstake account instruction'
+      );
+    } else if (!unstakingInstructions.split) {
+      throw new NotSupported('Invalid partial deactivate stake transaction, missing split stake account instruction');
+    } else if (
+      unstakingInstructions.allocate.accountPubkey.toString() !== unstakingInstructions.assign.accountPubkey.toString()
+    ) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, must allocate and assign the same public key'
+      );
+    } else if (unstakingInstructions.allocate.space !== StakeProgram.space) {
+      throw new NotSupported(
+        `Invalid partial deactivate stake transaction, unstaking account must allocate ${StakeProgram.space} bytes`
+      );
+    } else if (unstakingInstructions.assign.programId.toString() !== StakeProgram.programId.toString()) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, the unstake account must be assigned to the Stake Program'
+      );
+    } else if (
+      unstakingInstructions.allocate.accountPubkey.toString() !==
+      unstakingInstructions.split.splitStakePubkey.toString()
+    ) {
+      throw new NotSupported('Invalid partial deactivate stake transaction, must allocate the unstaking account');
+    } else if (
+      unstakingInstructions.split.stakePubkey.toString() === unstakingInstructions.split.splitStakePubkey.toString()
+    ) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, the unstaking account must be different from the Stake Account'
+      );
+    }
+  }
 }
 
 /**

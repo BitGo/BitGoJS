@@ -27,6 +27,8 @@ describe('Sol Staking Deactivate Builder', () => {
           params: {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
+            amount: undefined,
+            unstakingAddress: undefined,
           },
         },
       ]);
@@ -43,16 +45,18 @@ describe('Sol Staking Deactivate Builder', () => {
       const txJson = tx.toJson();
       txJson.instructionsData.should.deepEqual([
         {
+          type: 'Memo',
+          params: {
+            memo: 'Test deactivate',
+          },
+        },
+        {
           type: 'Deactivate',
           params: {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
-          },
-        },
-        {
-          type: 'Memo',
-          params: {
-            memo: 'Test deactivate',
+            amount: undefined,
+            unstakingAddress: undefined,
           },
         },
       ]);
@@ -72,6 +76,8 @@ describe('Sol Staking Deactivate Builder', () => {
           params: {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
+            amount: undefined,
+            unstakingAddress: undefined,
           },
         },
       ]);
@@ -87,16 +93,18 @@ describe('Sol Staking Deactivate Builder', () => {
       const txJson = tx.toJson();
       txJson.instructionsData.should.deepEqual([
         {
+          type: 'Memo',
+          params: {
+            memo: 'Test deactivate',
+          },
+        },
+        {
           type: 'Deactivate',
           params: {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
-          },
-        },
-        {
-          type: 'Memo',
-          params: {
-            memo: 'Test deactivate',
+            amount: undefined,
+            unstakingAddress: undefined,
           },
         },
       ]);
@@ -115,6 +123,43 @@ describe('Sol Staking Deactivate Builder', () => {
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
+    });
+
+    it('building a partial staking deactivate tx', async () => {
+      const txBuilder = factory
+        .getStakingDeactivateBuilder()
+        .sender(wallet.pub)
+        .stakingAddress(stakeAccount.pub)
+        .unstakingAddress(testData.splitStakeAccount.pub)
+        .amount('100000')
+        .nonce(recentBlockHash);
+      txBuilder.sign({ key: wallet.prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      txJson.instructionsData.should.deepEqual([
+        {
+          type: 'Deactivate',
+          params: {
+            fromAddress: wallet.pub,
+            stakingAddress: stakeAccount.pub,
+            amount: '100000',
+            unstakingAddress: testData.splitStakeAccount.pub,
+          },
+        },
+      ]);
+      should.equal(rawTx, testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX);
+
+      const tx2 = await factory.from(testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX).build();
+      const txJson2 = tx2.toJson();
+      tx2.toBroadcastFormat();
+
+      delete tx['_id'];
+      delete tx2['_id'];
+
+      should.deepEqual(tx, tx2);
+      should.deepEqual(txJson2, txJson2);
     });
   });
 
@@ -139,6 +184,38 @@ describe('Sol Staking Deactivate Builder', () => {
       txBuilder.sender(wallet.pub).nonce(recentBlockHash);
       txBuilder.stakingAddress(wallet.pub);
       await txBuilder.build().should.rejectedWith('Sender address cannot be the same as the Staking address');
+    });
+
+    it('building a partial staking deactivate tx without an amount', async () => {
+      const txBuilder = factory
+        .getStakingDeactivateBuilder()
+        .sender(wallet.pub)
+        .nonce(recentBlockHash)
+        .stakingAddress(testData.stakeAccount.pub)
+        .unstakingAddress(testData.splitStakeAccount.pub);
+      txBuilder.sign({ key: wallet.prv });
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
+        );
+    });
+
+    it('building a partial staking deactivate tx without an unstaking address', async () => {
+      const txBuilder = factory
+        .getStakingDeactivateBuilder()
+        .sender(wallet.pub)
+        .nonce(recentBlockHash)
+        .stakingAddress(testData.stakeAccount.pub)
+        .amount('10');
+      txBuilder.sign({ key: wallet.prv });
+
+      await txBuilder
+        .build()
+        .should.be.rejectedWith(
+          'When partially unstaking the unstaking address must be set before building the transaction'
+        );
     });
   });
 });
