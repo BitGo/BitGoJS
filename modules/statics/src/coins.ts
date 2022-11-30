@@ -147,28 +147,18 @@ export const coins = CoinMap.fromCoins([
     DOT_FEATURES,
     KeyCurve.Ed25519
   ),
-  account(
-    'eth',
-    'Ethereum',
-    Networks.main.ethereum,
-    18,
-    UnderlyingAsset.ETH,
-    BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING_AND_MMI
-  ), // we should probably refactor this into a eth() method
+  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
+    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+    CoinFeature.TSS,
+  ]), // we should probably refactor this into a eth() method
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES,
     CoinFeature.DEPRECATED,
   ]),
-  account(
-    'gteth',
-    'Goerli Testnet Ethereum',
-    Networks.test.goerli,
-    18,
-    UnderlyingAsset.ETH,
-    BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING_AND_MMI
-  ),
+  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
+    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+    CoinFeature.TSS,
+  ]),
   account(
     'eth2',
     'Ethereum 2.0',
@@ -176,7 +166,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETH2,
     BaseUnit.ETH,
-    ETH2_FEATURES,
+    [...ETH2_FEATURES, CoinFeature.TSS],
     KeyCurve.BLS
   ),
   account(
@@ -283,42 +273,22 @@ export const coins = CoinMap.fromCoins([
     NEAR_FEATURES,
     KeyCurve.Ed25519
   ),
-  account(
-    'bsc',
-    'Binance Smart Chain',
-    Networks.main.bsc,
-    18,
-    UnderlyingAsset.BSC,
-    BaseUnit.BSC,
-    ETH_FEATURES_WITH_MMI
-  ),
-  account(
-    'tbsc',
-    'Testnet Binance Smart Chain',
-    Networks.test.bsc,
-    18,
-    UnderlyingAsset.BSC,
-    BaseUnit.BSC,
-    ETH_FEATURES_WITH_MMI
-  ),
-  account(
-    'polygon',
-    'Polygon',
-    Networks.main.polygon,
-    18,
-    UnderlyingAsset.POLYGON,
-    BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING_AND_MMI
-  ),
-  account(
-    'tpolygon',
-    'Testnet Polygon',
-    Networks.test.polygon,
-    18,
-    UnderlyingAsset.POLYGON,
-    BaseUnit.ETH,
-    ETH_FEATURES_WITH_STAKING_AND_MMI
-  ),
+  account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, BaseUnit.BSC, [
+    ...ETH_FEATURES_WITH_MMI,
+    CoinFeature.TSS,
+  ]),
+  account('tbsc', 'Testnet Binance Smart Chain', Networks.test.bsc, 18, UnderlyingAsset.BSC, BaseUnit.BSC, [
+    ...ETH_FEATURES_WITH_MMI,
+    CoinFeature.TSS,
+  ]),
+  account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
+    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+    CoinFeature.TSS,
+  ]),
+  account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
+    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+    CoinFeature.TSS,
+  ]),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
