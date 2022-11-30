@@ -14,6 +14,9 @@ describe('Dot Transfer Builder', () => {
   const sender = accounts.account1;
   const receiver = accounts.account2;
 
+  // Consolidation/sweep tx's do not deseialize amounts.
+  const consolidationValue = '0';
+
   beforeEach(() => {
     const config = buildTestConfig();
     builder = new TransferBuilder(config).material(utils.getMaterial(config));
@@ -344,11 +347,11 @@ describe('Dot Transfer Builder', () => {
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);
-      should.deepEqual(inputs.value, 'sweep');
+      should.deepEqual(inputs.value, consolidationValue);
 
       const outputs = tx.outputs[0];
       should.deepEqual(outputs.address, receiver.address);
-      should.deepEqual(outputs.value, 'sweep');
+      should.deepEqual(outputs.value, consolidationValue);
     });
 
     it('should build an unsigned sweep transaction', async () => {
@@ -376,11 +379,11 @@ describe('Dot Transfer Builder', () => {
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);
-      should.deepEqual(inputs.value, 'sweep');
+      should.deepEqual(inputs.value, consolidationValue);
 
       const outputs = tx.outputs[0];
       should.deepEqual(outputs.address, receiver.address);
-      should.deepEqual(outputs.value, 'sweep');
+      should.deepEqual(outputs.value, consolidationValue);
     });
 
     it('should build from raw signed sweep transaction', async () => {
@@ -403,11 +406,11 @@ describe('Dot Transfer Builder', () => {
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);
-      should.deepEqual(inputs.value, 'sweep');
+      should.deepEqual(inputs.value, consolidationValue);
 
       const outputs = tx.outputs[0];
       should.deepEqual(outputs.address, receiver.address);
-      should.deepEqual(outputs.value, 'sweep');
+      should.deepEqual(outputs.value, consolidationValue);
     });
 
     it('should build from an unsigned sweep transaction', async () => {
@@ -432,11 +435,11 @@ describe('Dot Transfer Builder', () => {
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);
-      should.deepEqual(inputs.value, 'sweep');
+      should.deepEqual(inputs.value, consolidationValue);
 
       const outputs = tx.outputs[0];
       should.deepEqual(outputs.address, receiver.address);
-      should.deepEqual(outputs.value, 'sweep');
+      should.deepEqual(outputs.value, consolidationValue);
     });
   });
 });
