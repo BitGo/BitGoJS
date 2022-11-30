@@ -30,7 +30,9 @@
     "@bitgo/statics": "^11.0.0",
     "@bitgo/utxo-lib": "^6.0.0",
     "archy": "^1.0.0",
+    "bech32": "^2.0.0",
     "bs58check": "^2.1.2",
+    "cashaddress": "^1.1.0",
     "chalk": "4",
     "yargs": "^17.3.1"
   },
