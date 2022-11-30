@@ -47,6 +47,8 @@ export interface AvaxpTransactionParams extends TransactionParams {
     type?: string;
     value: string;
   };
+  unspents?: string[];
+  sourceChain?: string;
 }
 
 export interface AvaxpVerifyTransactionOptions extends VerifyTransactionOptions {
