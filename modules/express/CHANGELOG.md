@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.15.0...@bitgo/express@9.21.0) (2022-11-29)
+
+
+### Bug Fixes
+
+* update express configurations ([d434ece](https://github.com/BitGo/BitGoJS/commit/d434ece0ce942473064d0ba2009d4f11dd43bb96))
+
+
+### Features
+
+* add token enablement support in express ([4bd5f9e](https://github.com/BitGo/BitGoJS/commit/4bd5f9ef2388d0e615c1bfbe523f6d75ff223b7a))
+* **express:** consolidate account support in external signer ([414e0df](https://github.com/BitGo/BitGoJS/commit/414e0dfc1f33d02f740db2e2e9d5af28166d9f72))
+
+
+
+
+
 # [9.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.19.0...@bitgo/express@9.20.0) (2022-11-08)
 
 ### Bug Fixes

@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@12.0.0) (2022-11-29)
+
+### Bug Fixes
+
+- fix typo in Everscale, add Everscale as Offchain / Prime token ([21bf769](https://github.com/BitGo/BitGoJS/commit/21bf769fa6e2165797d3d9562955b7bd371ad0e6))
+- **statics:** change cardano testnet url to preprod testnet ([6bc09c4](https://github.com/BitGo/BitGoJS/commit/6bc09c4c2306d792e1ed522c3e828a34597c842d))
+- update explorer url for test mysten ([3d21e88](https://github.com/BitGo/BitGoJS/commit/3d21e885e5883e3cf8259a1142ef4a31de1408a9))
+- update XLM USD token name ([62c8d37](https://github.com/BitGo/BitGoJS/commit/62c8d37bb52620f11d3ff5a7cc73f7a9cca07ffe))
+
+### Features
+
+- add new erc20s and sol tokens ([354a429](https://github.com/BitGo/BitGoJS/commit/354a4296c682f6d3a787309ddb7d196b1cbf9e11))
+- add tokens to trading ([8105e05](https://github.com/BitGo/BitGoJS/commit/8105e052bbdf914bcd749c87bd78e5db4e1bf4ce))
+- onboard new sol tokens ([0ada8c4](https://github.com/BitGo/BitGoJS/commit/0ada8c4caa1e97b6f46557af3676c32ea531b55d))
+- **sdk-coin-dot:** add support for staking transactions ([b67eaa0](https://github.com/BitGo/BitGoJS/commit/b67eaa06723b1a235cb2c6f948ece34cc42a9256))
+- **sdk-coin-trx:** add tron token skeleton ([03198b0](https://github.com/BitGo/BitGoJS/commit/03198b0e23e6c87ce2d34d08973abca301f88252))
+- **statics:** add base unit for coins ([b2950e9](https://github.com/BitGo/BitGoJS/commit/b2950e9f5fd71d1f8e29189fd1fa5193c4afc76f))
+- **statics:** add erc20 tokens to ofc support ([7ac56af](https://github.com/BitGo/BitGoJS/commit/7ac56af6b842e81d3c0bc0ee80889efcd4dc8385))
+- **statics:** add ofc coins for dogecoin ([8052caf](https://github.com/BitGo/BitGoJS/commit/8052caf2ab7aeff9610d59473efe1859678870ca))
+- **statics:** add polygon tokens ([ea32562](https://github.com/BitGo/BitGoJS/commit/ea32562ed4ae553418a8e75eb2e63a47415e047e))
+- **statics:** add SOLEND (SLND) Solana token to statics ([e39edb4](https://github.com/BitGo/BitGoJS/commit/e39edb4fcb6694bf9b75710d4434e7a0d35f0d62))
+- **statics:** add twdoge ([bc7a68a](https://github.com/BitGo/BitGoJS/commit/bc7a68aac9eb1a41b59c0eccff0412bbd9d3cfa0))
+- **statics:** add wdoge ([842a8da](https://github.com/BitGo/BitGoJS/commit/842a8da1bac398606a3b4ee00861885e3a8748d3))
+- **statics:** onboard select erc20 and sol tokens ([640e273](https://github.com/BitGo/BitGoJS/commit/640e273e9c264ea9b515cb6e6123c9ae103e18dd))
+- **statics:** use eCash instead of BitcoinABC in networks ([cf9cdbb](https://github.com/BitGo/BitGoJS/commit/cf9cdbbe76da587ba7c3c8d7d85faa640fac1000))
+
+### BREAKING CHANGES
+
+- updated name of XLM USD token
+- **sdk-coin-dot:** Uddate the 'westendMetadataRpc' constant to
+  spec version 9320. Update PolkadotTestnet.specVersion to
+  9320 and PolkadotTestnet.txVersion to 14.
+  Ticket: BOS-469
+- **statics:** new fields are all required, so needs to be filled in
+  Ticket: BG-53493
+- **statics:** Removing Bitcoin ABC terminology because it has
+  been rebranded to eCash. Updating its network here so that it's
+  consistent with the terms used in other modules.
+- Adds Everscale as Offchain / Prime token
+  BG-59397
+
 # [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@11.0.0) (2022-11-04)
 
 ### Bug Fixes

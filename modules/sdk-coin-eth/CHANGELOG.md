@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.2.0...@bitgo/sdk-coin-eth@2.7.0) (2022-11-29)
+
+### Bug Fixes
+
+- multiple issues with message signing ([d703b9a](https://github.com/BitGo/BitGoJS/commit/d703b9a6149c4fe26ad16001f5f681389c8f8aba))
+- remove encoding from message sent to bitgo ([d300963](https://github.com/BitGo/BitGoJS/commit/d300963da1333dc5b970fd3afe9f3dedb3fe9896))
+- **sdk-coin-celo:** fix precision bug in celo build/sign ([15b47c7](https://github.com/BitGo/BitGoJS/commit/15b47c73c9550ab8060b59cc1d1f8c2ce5cb0361))
+- **sdk-core:** properly translate tx type to transferToken intent BG-60250 ([eb518f9](https://github.com/BitGo/BitGoJS/commit/eb518f97ab973661493170421ad91b18cd370d89))
+
+### Features
+
+- create txrequest for message signing ([4ee1a9c](https://github.com/BitGo/BitGoJS/commit/4ee1a9ceb748984cbd3b243fbba3ac0b54564e34))
+- implement isWalletAddress for SUI ([a3696ab](https://github.com/BitGo/BitGoJS/commit/a3696ab00f693da2db4ef32034a85504dc5aa4c5))
+- **sdk-coin-eth:** add fillnonce capability to sdk ([6d9a965](https://github.com/BitGo/BitGoJS/commit/6d9a9657cbd1ee273294e1ed4e44ed192915648b))
+
 # [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.2.0...@bitgo/sdk-coin-eth@2.6.0) (2022-11-04)
 
 ### Bug Fixes

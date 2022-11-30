@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@1.3.0...@bitgo/sdk-coin-bcha@1.5.0) (2022-11-29)
+
+### Features
+
+- **root:** add ecash network configuration & use in tests ([55c6963](https://github.com/BitGo/BitGoJS/commit/55c69632de8823473880a9fc216de9191bcdfd3e))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@1.3.0...@bitgo/sdk-coin-bcha@1.4.0) (2022-11-04)
 
 ### Features
