@@ -415,7 +415,7 @@ export class Transaction extends BaseTransaction {
         pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
       });
       to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
-      value = 'sweep';
+      value = '0'; // DOT transferAll's do not deserialize amounts
       from = decodedTx.address;
     } else if (utils.isTransfer(txMethod)) {
       const keypairDest = new KeyPair({
