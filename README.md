@@ -38,8 +38,7 @@ The BitGoJS SDK use a number of branches to control the development of various p
 | Branch       | Status   | NPM      | Description                                                                                                                                                |
 |--------------|----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `master`     | Unstable | N/A      | Ongoing development of SDK packages                                                                                                                        |
-| `rel/rc`     | Unstable | `rc`     | Deployed packages from `master` to `npm` for internal and external testing                                                                                 |
-| `rel/latest` | Stable   | `latest` | Deployed packages from `rel/rc` to `rel/latest`. This includes Express and is recommended to use `rel/latest` when not using Docker images for Express. |
+| `rel/latest` | Stable   | `latest` | Deployed packages from `master` to `rel/latest`. This includes Express and is recommended to use `rel/latest` when not using Docker images for Express. |
 
 Other tags may be released to npm (e.g. `hotfix`, `dev`, etc...), but are not considered critical to the common path for consumers usage of SDK packages unless otherwise stated.
 
