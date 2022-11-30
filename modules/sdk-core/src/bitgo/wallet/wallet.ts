@@ -1964,6 +1964,8 @@ export class Wallet implements IWallet {
       'stakingOptions',
       'hop',
       'type',
+      'sourceChain',
+      'destinationChain',
     ]);
 
     if (this._wallet.type === 'custodial') {
