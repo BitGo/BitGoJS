@@ -6,6 +6,7 @@
         "id": "4e7134b992a57b35acec657974fb0dbaff5304f6b3645037f05f526352b18e50:1",
         "address": "3PeXf4UiyRneENKQrarZ3yt9dwTM4xgFZQ",
         "value": 100000000,
+        "valueString": "100000000",
         "chain": 11,
         "index": 0
       },
@@ -13,6 +14,7 @@
         "id": "98a101ffd98d2ce1bcddfb4b34ac071ac54da417377cceb468ddcdcc4ef19a3e:1",
         "address": "3Qz9psfsDLD1F7W2hdKzcyPxn16BkSxpZN",
         "value": 200000000,
+        "valueString": "200000000",
         "chain": 11,
         "index": 2
       },
@@ -20,6 +22,7 @@
         "id": "67b1893259423705b645ccdae1c050ea8e43017bd292d97e0e5a80b8405ad5bc:1",
         "address": "381yBi3uNArm5xCHCtW4FGay4wJRzSGegj",
         "value": 300000000,
+        "valueString": "300000000",
         "chain": 11,
         "index": 3
       }

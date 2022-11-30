@@ -5,21 +5,24 @@
       {
         "id": "2e6cd69dbdb3a04e4b0f94cfb6554ea61a8226bc8de0e63d23f1cb87b03aca6e:1",
         "address": "9xae6AdiekWGuFXbSuCGUFdzPc8RyQ9USD",
-        "value": "9000000000000000",
+        "value": 9000000000000000,
+        "valueString": "9000000000000000",
         "chain": 1,
         "index": 0
       },
       {
         "id": "038614de4388140a27d8f9fae5443cdcc0283738c8249a6b675950fae8a57193:1",
         "address": "9xF1zJqNn1hiNPd5jUiKq4y7ReBaFTfSf2",
-        "value": "18000000000000001",
+        "value": 18000000000000001,
+        "valueString": "18000000000000001",
         "chain": 1,
         "index": 2
       },
       {
         "id": "b1542eaff30c471adaf0886941697e80a08af3e79408f87a729f578b35b82afb:1",
         "address": "9rog6DJM66N8yChktk9j948hCWyQGHV84D",
-        "value": "27000000000000001",
+        "value": 27000000000000001,
+        "valueString": "27000000000000001",
         "chain": 1,
         "index": 3
       }
