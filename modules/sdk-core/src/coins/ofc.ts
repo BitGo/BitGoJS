@@ -17,6 +17,10 @@ import {
 } from '../';
 
 export class Ofc extends BaseCoin {
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
+  }
+
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Ofc(bitgo);
   }
