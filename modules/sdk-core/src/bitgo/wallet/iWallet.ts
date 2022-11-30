@@ -52,6 +52,8 @@ export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions 
   enableTokens: TokenEnablement[];
 }
 
+export type ApiVersion = 'lite' | 'full';
+
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
@@ -104,6 +106,7 @@ export interface PrebuildTransactionOptions {
   lowFeeTxid?: string;
   isTss?: boolean;
   custodianTransactionId?: string;
+  apiVersion?: ApiVersion;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -143,6 +146,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   txPrebuild?: TransactionPrebuild;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
   customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
+  apiVersion?: ApiVersion;
   [index: string]: unknown;
 }
 

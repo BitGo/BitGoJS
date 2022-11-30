@@ -1682,6 +1682,18 @@ describe('V2 Wallet:', function () {
         }).should.be.rejectedWith('transaction type not supported: stake');
       });
 
+      it('should fail for full api version compatibility', async function () {
+        await custodialTssWallet.prebuildTransaction({
+          reqId,
+          apiVersion: 'lite',
+          recipients: [{
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          }],
+          type: 'transfer',
+        }).should.be.rejectedWith(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
+      });
+
       it('should build a single recipient transfer transaction for full', async function () {
         const recipients = [{
           address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
@@ -1941,6 +1953,44 @@ describe('V2 Wallet:', function () {
         intent.nonce!.should.equal(nonce);
         intent.isTss!.should.equal(true);
         intent.intentType.should.equal('fillNonce');
+      });
+
+      it('should build a single recipient transfer transaction providing apiVersion parameter as "full" ', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        }, 'full');
+
+        const txPrebuild = await custodialTssWallet.prebuildTransaction({
+          reqId,
+          apiVersion: 'full',
+          recipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: custodialTssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            apiVersion: 'full',
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
       });
     });
 
