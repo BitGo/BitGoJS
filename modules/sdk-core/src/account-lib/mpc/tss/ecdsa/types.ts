@@ -1,6 +1,8 @@
 // Private share of the user generated during key generation
 export interface PShare {
   i: number; // participant index
+  t?: number; // threshold
+  c?: number; // number of shares
   l: string; // lambda value for paillier secret key
   m: string; // mu value for paillier secret key
   u: string; // shamir share of secret
@@ -47,6 +49,11 @@ export interface YShare {
 export interface KeyCombined {
   xShare: XShare;
   yShares: Record<number, YShare>;
+}
+
+export interface SubkeyShare {
+  xShare: XShare;
+  nShares: Record<number, NShare>;
 }
 
 export interface WShare {
