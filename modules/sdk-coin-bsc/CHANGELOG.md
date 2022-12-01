@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.0.0...@bitgo/sdk-coin-bsc@3.1.0) (2022-12-01)
+
+### Features
+
+- **sdk-core:** add keyDerive to ECDSA TSS implementation ([9ff1d89](https://github.com/BitGo/BitGoJS/commit/9ff1d89ba0e42d53640f0fe7b71c53d1a2eb4a10))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@1.3.0...@bitgo/sdk-coin-bsc@3.0.0) (2022-11-29)
 
 ### Features

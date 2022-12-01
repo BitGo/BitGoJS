@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.9.0...@bitgo/abstract-utxo@1.10.0) (2022-12-01)
+
+### Features
+
+- **abstract-utxo:** add valueString to unspents for doge recovery flow ([439f95c](https://github.com/BitGo/BitGoJS/commit/439f95c4e337e33a0812ac28b03e46b52e4a9fde))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.4.0...@bitgo/abstract-utxo@1.9.0) (2022-11-29)
 
 ### Bug Fixes

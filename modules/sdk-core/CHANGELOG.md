@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.0.0...@bitgo/sdk-core@4.1.0) (2022-12-01)
+
+### Bug Fixes
+
+- **sdk-core:** fix tss signing ([79882b1](https://github.com/BitGo/BitGoJS/commit/79882b1b3a2f722877aaa1def76aba10776717aa))
+- **sdk-core:** whitelist source and destination chain params ([5724d22](https://github.com/BitGo/BitGoJS/commit/5724d22130ebacf65e1545cab18ee602e1dff231))
+- update ofc coin for ibasecoin changes ([65986c6](https://github.com/BitGo/BitGoJS/commit/65986c6405e2771b6c7c85dd8b62bf99d6cd8c41))
+
+### Features
+
+- **bitgo:** add api version input ([42f353f](https://github.com/BitGo/BitGoJS/commit/42f353f0b33857963d66739d34b0d0cac85e82db))
+- **sdk-core:** add keyDerive to ECDSA TSS implementation ([9ff1d89](https://github.com/BitGo/BitGoJS/commit/9ff1d89ba0e42d53640f0fe7b71c53d1a2eb4a10))
+
 # [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@2.2.0...@bitgo/sdk-core@4.0.0) (2022-11-29)
 
 ### Bug Fixes
