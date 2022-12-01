@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.0.0...bitgo@16.1.0) (2022-12-01)
+
+
+### Features
+
+* **abstract-utxo:** add valueString to unspents for doge recovery flow ([439f95c](https://github.com/BitGo/BitGoJS/commit/439f95c4e337e33a0812ac28b03e46b52e4a9fde))
+* **bitgo:** add api version input ([42f353f](https://github.com/BitGo/BitGoJS/commit/42f353f0b33857963d66739d34b0d0cac85e82db))
+* **sdk-core:** add keyDerive to ECDSA TSS implementation ([9ff1d89](https://github.com/BitGo/BitGoJS/commit/9ff1d89ba0e42d53640f0fe7b71c53d1a2eb4a10))
+
+
+
+
+
 # [16.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@14.5.0...bitgo@16.0.0) (2022-11-29)
 
 

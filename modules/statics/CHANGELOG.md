@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.0.0...@bitgo/statics@12.1.0) (2022-12-01)
+
+### Features
+
+- **statics:** add TSS feature flag to ETH ([9226ca9](https://github.com/BitGo/BitGoJS/commit/9226ca9ebf23b2171bffaf05b5090d8189110d56))
+
 # [12.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@8.2.0...@bitgo/statics@12.0.0) (2022-11-29)
 
 ### Bug Fixes

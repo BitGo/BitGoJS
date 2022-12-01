@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.0.0...@bitgo/sdk-coin-dot@2.0.1) (2022-12-01)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** update DOT transferAll value to zero ([5bb9852](https://github.com/BitGo/BitGoJS/commit/5bb98529179121d075090d7d22f1ebf1c4ee7dec))
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@1.3.0...@bitgo/sdk-coin-dot@2.0.0) (2022-11-29)
 
 ### Features

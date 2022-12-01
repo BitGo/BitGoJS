@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.5.0...@bitgo/utxo-bin@2.6.0) (2022-12-01)
+
+### Features
+
+- **utxo-bin:** show parseAddress info for bech32(m), cashaddress ([a485d7d](https://github.com/BitGo/BitGoJS/commit/a485d7d983d8eeba2b4ff083fd8f633ee065008d))
+
 # [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.3.0...@bitgo/utxo-bin@2.5.0) (2022-11-29)
 
 ### Bug Fixes
