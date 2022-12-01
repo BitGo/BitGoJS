@@ -104,6 +104,10 @@ function runTest(
         }
       });
       psbt.finalizeAllInputs();
+      assert.deepStrictEqual(
+        psbt.getSignatureValidationArray(walletKeys.publicKeys),
+        [true, false, true] /* [true, true, false] in second call */
+      );
       return psbt.extractTransaction();
     }
 

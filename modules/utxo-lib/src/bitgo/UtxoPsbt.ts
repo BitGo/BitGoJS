@@ -218,6 +218,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return results.reduce((final, res) => res && final, true);
   }
 
+  /**
+   * @param publicKeys
+   * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
+   */
+  getSignatureValidationArray(publicKeys: Buffer[]): boolean[] {
+    throw new Error();
+  }
+
   validateTaprootSignaturesOfInput(inputIndex: number): boolean {
     const input = this.data.inputs[inputIndex];
     const mySigs = (input || {}).tapScriptSig;
