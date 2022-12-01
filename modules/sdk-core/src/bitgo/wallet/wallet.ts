@@ -2554,6 +2554,8 @@ export class Wallet implements IWallet {
               maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
               gasLimit: params.gasLimit,
             };
+    } else if (params.gasLimit !== undefined) {
+      feeOptions = { gasLimit: params.gasLimit };
     } else {
       feeOptions = undefined;
     }

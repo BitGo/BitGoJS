@@ -1300,6 +1300,22 @@ describe('V2 Wallet:', function () {
 
       response.isDone().should.be.true();
     });
+
+    it('should pass gas limit parameter through when building transaction for sui', async function () {
+      const params = { gasLimit: 100 };
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
+      const response = nock(bgUrl)
+        .post(path, _.matches(params)) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+      try {
+        await wallet.prebuildTransaction(params);
+      } catch (e) {
+        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
+        // we only care about /tx/build and whether reservation is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
   });
 
   describe('Maximum Spendable', function maximumSpendable() {
