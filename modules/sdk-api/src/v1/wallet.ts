@@ -2185,66 +2185,70 @@ Wallet.prototype.shareWallet = function (params, callback) {
   const self = this;
   let sharing;
   let sharedKeychain;
-  return this.bitgo
-    .getSharingKey({ email: params.email.toLowerCase() })
-    .then(function (result) {
-      sharing = result;
+  return Bluebird.resolve(
+    this.bitgo
+      .getSharingKey({ email: params.email.toLowerCase() })
+      .then(function (result) {
+        sharing = result;
 
-      if (needsKeychain) {
-        return self.getEncryptedUserKeychain({}).then(function (keychain) {
-          // Decrypt the user key with a passphrase
-          if (keychain.encryptedXprv) {
-            if (!params.walletPassphrase) {
-              throw new Error('Missing walletPassphrase argument');
+        if (needsKeychain) {
+          return self.getEncryptedUserKeychain({}).then(function (keychain) {
+            // Decrypt the user key with a passphrase
+            if (keychain.encryptedXprv) {
+              if (!params.walletPassphrase) {
+                throw new Error('Missing walletPassphrase argument');
+              }
+              try {
+                keychain.xprv = self.bitgo.decrypt({
+                  password: params.walletPassphrase,
+                  input: keychain.encryptedXprv,
+                });
+              } catch (e) {
+                throw new Error('Unable to decrypt user keychain');
+              }
+
+              const eckey = makeRandomKey();
+              const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
+              const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+
+              sharedKeychain = {
+                xpub: keychain.xpub,
+                encryptedXprv: newEncryptedXprv,
+                fromPubKey: eckey.publicKey.toString('hex'),
+                toPubKey: sharing.pubkey,
+                path: sharing.path,
+              };
             }
-            try {
-              keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-            } catch (e) {
-              throw new Error('Unable to decrypt user keychain');
-            }
+          });
+        }
+      })
+      .then(function () {
+        interface Options {
+          user: any;
+          permissions: string;
+          reshare: boolean;
+          message: string;
+          disableEmail: any;
+          keychain?: any;
+          skipKeychain?: boolean;
+        }
 
-            const eckey = makeRandomKey();
-            const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
-            const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+        const options: Options = {
+          user: sharing.userId,
+          permissions: params.permissions,
+          reshare: params.reshare,
+          message: params.message,
+          disableEmail: params.disableEmail,
+        };
+        if (sharedKeychain) {
+          options.keychain = sharedKeychain;
+        } else if (params.skipKeychain) {
+          options.keychain = {};
+        }
 
-            sharedKeychain = {
-              xpub: keychain.xpub,
-              encryptedXprv: newEncryptedXprv,
-              fromPubKey: eckey.publicKey.toString('hex'),
-              toPubKey: sharing.pubkey,
-              path: sharing.path,
-            };
-          }
-        });
-      }
-    })
-    .then(function () {
-      interface Options {
-        user: any;
-        permissions: string;
-        reshare: boolean;
-        message: string;
-        disableEmail: any;
-        keychain?: any;
-        skipKeychain?: boolean;
-      }
-
-      const options: Options = {
-        user: sharing.userId,
-        permissions: params.permissions,
-        reshare: params.reshare,
-        message: params.message,
-        disableEmail: params.disableEmail,
-      };
-      if (sharedKeychain) {
-        options.keychain = sharedKeychain;
-      } else if (params.skipKeychain) {
-        options.keychain = {};
-      }
-
-      return self.createShare(options);
-    })
-    .nodeify(callback);
+        return self.createShare(options);
+      })
+  ).nodeify(callback);
 };
 
 Wallet.prototype.removeUser = function (params, callback) {

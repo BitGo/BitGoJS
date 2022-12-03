@@ -19,7 +19,11 @@ nock.disableNetConnect();
 
 const TestBitGo = {
   TEST_WALLET1_PASSCODE: 'iVWeATjqLS1jJShrPpETti0b',
+  TEST_SHARED_KEY_USER: 'shared_key_test@bitgo.com',
+  TEST_USERID: '54d3e3a4b08fa6dc0a0002c07f8a9f86',
+  TEST_SHARED_KEY_USERID: '54d418de4ea11d050b0006186d08ea5c',
 };
+
 const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
 BitGoAPI.prototype.fetchConstants = function () {
   // @ts-expect-error - no implicit this
@@ -1385,4 +1389,78 @@ describe('Wallet Prototype Methods', function () {
       });
     });
   });
+
+  describe('share wallet', function () {
+    // before(function () {
+    //   return bitgo
+    //     .wallets()
+    //     .listShares({})
+    //     .then(function (result) {
+    //       const cancels = result.outgoing.map(function (share) {
+    //         return bitgo.wallets().cancelShare({ walletShareId: share.id });
+    //       });
+    //       return Q.all(cancels);
+    //     });
+    // });
+
+    it('share a wallet (spend)', async function () {
+      await bitgo.unlock({ otp: '0000000' });
+      const result = await fakeWallet.shareWallet({
+        email: TestBitGo.TEST_SHARED_KEY_USER,
+        walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        permissions: 'view,spend',
+      });
+      result.should.have.property('walletId');
+      result.should.have.property('fromUser');
+      result.should.have.property('toUser');
+      result.should.have.property('state');
+      result.walletId.should.equal(fakeWallet.id());
+      result.fromUser.should.equal(TestBitGo.TEST_USERID);
+      result.toUser.should.equal(TestBitGo.TEST_SHARED_KEY_USERID);
+      result.state.should.equal('active');
+
+      result.should.have.property('id');
+      // done();
+    });
+  });
+
+  // let bitgoSharedKeyUser;
+  // describe('Get wallet share list', function () {
+  //   before(function (done) {
+  //     bitgoSharedKeyUser = new TestBitGo();
+  //     bitgoSharedKeyUser.initializeTestVars();
+  //     bitgoSharedKeyUser
+  //       .authenticate({
+  //         username: TestBitGo.TEST_SHARED_KEY_USER,
+  //         password: TestBitGo.TEST_SHARED_KEY_PASSWORD,
+  //         otp: '0000000',
+  //       })
+  //       .then(function (success) {
+  //         done();
+  //       })
+  //       .done();
+  //   });
+
+  //   it('wallet share should be in sender list', function (done) {
+  //     bitgo
+  //       .wallets()
+  //       .listShares({})
+  //       .then(function (result) {
+  //         result.outgoing.should.containDeep([{ id: walletShareIdWithAdminPermissions }]);
+  //         done();
+  //       })
+  //       .done();
+  //   });
+
+  //   it('wallet share should be in receiver list', function (done) {
+  //     bitgoSharedKeyUser
+  //       .wallets()
+  //       .listShares({})
+  //       .then(function (result) {
+  //         result.incoming.should.containDeep([{ id: walletShareIdWithAdminPermissions }]);
+  //         done();
+  //       })
+  //       .done();
+  //   });
+  // });
 });
