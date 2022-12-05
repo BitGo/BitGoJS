@@ -147,7 +147,7 @@ export function setPsbtDefaults(
       ) {
         throw new Error(`invalid version`);
       }
-      psbt.setDefaultsForVersion(network, version);
+      (psbt as ZcashPsbt).setDefaultsForVersion(network, version);
       break;
     default:
       if (version !== 1) {
