@@ -107,6 +107,7 @@ export interface PrebuildTransactionOptions {
   isTss?: boolean;
   custodianTransactionId?: string;
   apiVersion?: ApiVersion;
+  keepAlive?: boolean;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
