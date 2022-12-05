@@ -13,6 +13,7 @@ import utils from './utils';
 
 export abstract class NativeTransferBuilder extends TransactionBuilder {
   protected _sweepFreeBalance = false;
+  protected _keepAddressAlive = true;
   protected _amount: string;
   protected _to: string;
   protected _owner: string;
@@ -37,7 +38,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       transferTx = methods.balances.transferAll(
         {
           dest: this._to,
-          keepAlive: false,
+          keepAlive: this._keepAddressAlive,
         },
         baseTxInfo.baseTxInfo,
         baseTxInfo.options
@@ -73,14 +74,19 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
 
   /**
    *
-   * Set this to be a sweep transaction, using TransferAll with keepAlive set to false
+   * Set this to be a sweep transaction, using TransferAll with keepAlive set to true by default.
+   * If keepAlive is false, the entire address will be swept (including the 1 DOT minimum).
    *
+   * @param {boolean} keepAlive - keep the address alive after this sweep
    * @returns {TransferBuilder} This transfer builder.
    *
    * @see https://github.com/paritytech/txwrapper-core/blob/main/docs/modules/txwrapper_substrate_src.methods.balances.md#transferall
    */
-  sweep(): this {
+  sweep(keepAlive?: boolean): this {
     this._sweepFreeBalance = true;
+    if (keepAlive) {
+      this._keepAddressAlive = keepAlive;
+    }
     return this;
   }
 
