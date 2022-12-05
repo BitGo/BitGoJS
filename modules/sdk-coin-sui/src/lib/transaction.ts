@@ -13,9 +13,10 @@ import { SuiObjectRef, SuiTransaction, TransactionExplanation, TxData, TxDetails
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { bcs } from './bcs';
-import * as sha3 from 'js-sha3';
 import { SUI_GAS_PRICE, SuiTransactionType, TYPE_TAG, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
+import { sha3_256 } from 'js-sha3';
+import { fromHEX, toB64 } from '@mysten/bcs';
 
 export class Transaction extends BaseTransaction {
   private _suiTransaction: SuiTransaction;
@@ -257,9 +258,34 @@ export class Transaction extends BaseTransaction {
     serialized.set(TYPE_TAG);
     serialized.set(dataBytes, TYPE_TAG.length);
     if (this._signature !== undefined) {
-      this._id = Buffer.from(sha3.sha3_256(serialized), 'hex').toString('base64');
+      const signatureBytes = this._signature.signature;
+      const publicKeyBytes = new Uint8Array(Buffer.from(this._signature.publicKey.pub, 'hex'));
+      const schemeByte = new Uint8Array([0x00]);
+      const txSignature = new Uint8Array(1 + signatureBytes.length + publicKeyBytes.length);
+      txSignature.set(schemeByte);
+      txSignature.set(signatureBytes, 1);
+      txSignature.set(publicKeyBytes, 1 + signatureBytes.length);
+
+      const senderSignedData = { data: txData, txSignature };
+      const senderSignedDataBytes = bcs.ser('SenderSignedData', senderSignedData).toBytes();
+      const hash = this.getSha256Hash('SenderSignedData', senderSignedDataBytes);
+      this._id = toB64(hash);
     }
     return Buffer.from(serialized).toString('base64');
+  }
+
+  private getSha256Hash(typeTag: string, data: Uint8Array): Uint8Array {
+    const hash = sha3_256.create();
+
+    const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
+
+    const dataWithTag = new Uint8Array(typeTagBytes.length + data.length);
+    dataWithTag.set(typeTagBytes);
+    dataWithTag.set(data, typeTagBytes.length);
+
+    hash.update(dataWithTag);
+
+    return fromHEX(hash.hex());
   }
 
   static deserializeSuiTransaction(serializedTx: string): SuiTransaction {

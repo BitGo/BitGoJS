@@ -55,6 +55,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.gasBudget(testData.GAS_BUDGET);
     txBuilder.gasPayment(testData.gasPayment);
     const tx = await txBuilder.build();
+    should.equal(tx.id, 'UNAVAILABLE');
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX);
 
@@ -62,6 +63,7 @@ describe('Sui Transaction Builder', async () => {
     await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
     const signedTx = await txBuilder2.build();
     should.equal(signedTx.type, TransactionType.Send);
+    should.equal(signedTx.id, 'OiE/7VcID6Fyt60LtuKsod58VxYkCcGKtwTUBHLG57Y=');
 
     const rawSignedTx = signedTx.toBroadcastFormat();
     should.equal(rawSignedTx, testData.TRANSFER_PAY_SUI_TX);
