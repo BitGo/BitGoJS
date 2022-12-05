@@ -1971,7 +1971,6 @@ export class Wallet implements IWallet {
     if (this._wallet.type === 'custodial') {
       const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
       Object.assign(selectParams, extraParams);
-
       return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
     }
 
