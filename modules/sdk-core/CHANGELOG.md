@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.1.0...@bitgo/sdk-core@4.2.0) (2022-12-06)
+
+### Features
+
+- **sdk-coin-polygon:** crossChainRecovery support ([9b42813](https://github.com/BitGo/BitGoJS/commit/9b4281333a8d3835219e566e31cba28ab448c85f))
+- **sdk-core:** add source destination chain to send many ([1b27a48](https://github.com/BitGo/BitGoJS/commit/1b27a486e4be24cb2a66606e9ddf35699280393c))
+
 # [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.0.0...@bitgo/sdk-core@4.1.0) (2022-12-01)
 
 ### Bug Fixes

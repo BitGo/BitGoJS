@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.21.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.21.1...@bitgo/express@9.21.2) (2022-12-06)
+
+
+### Bug Fixes
+
+* resolve express and qs dependencies ([5d39e37](https://github.com/BitGo/BitGoJS/commit/5d39e3767600d177529743a240499075555331fa))
+
+
+
+
+
 ## [9.21.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.21.0...@bitgo/express@9.21.1) (2022-12-01)
 
 **Note:** Version bump only for package @bitgo/express
