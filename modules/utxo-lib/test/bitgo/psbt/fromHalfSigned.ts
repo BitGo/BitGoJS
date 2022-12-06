@@ -27,6 +27,11 @@ function runTest(
   const signerName = getKeyName(walletKeys.triple, signer);
   const cosignerName = getKeyName(walletKeys.triple, cosigner);
   const networkName = getNetworkName(network);
+  const signingKeys = [
+    signerName === 'user' || cosignerName === 'user',
+    signerName === 'backup' || cosignerName === 'backup',
+    signerName === 'bitgo' || cosignerName === 'bitgo',
+  ];
   describe(`UtxoPsbt ${[
     `scriptType=${scriptType}`,
     `network=${networkName}`,
@@ -103,6 +108,7 @@ function runTest(
           psbt.signAllInputs(s);
         }
       });
+      assert.deepStrictEqual(psbt.getSignatureValidationArray(0, walletKeys.publicKeys), signingKeys);
       psbt.finalizeAllInputs();
       return psbt.extractTransaction();
     }

@@ -218,10 +218,22 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return results.reduce((final, res) => res && final, true);
   }
 
-  validateTaprootSignaturesOfInput(inputIndex: number): boolean {
+  validateTaprootSignaturesOfInput(inputIndex: number, pubkey?: Buffer): boolean {
     const input = this.data.inputs[inputIndex];
-    const mySigs = (input || {}).tapScriptSig;
-    if (!input || !mySigs || mySigs.length < 1) throw new Error('No signatures to validate');
+    const tapSigs = (input || {}).tapScriptSig;
+    if (!input || !tapSigs || tapSigs.length < 1) {
+      throw new Error('No signatures to validate');
+    }
+    let mySigs;
+    if (pubkey) {
+      const xOnlyPubkey = toXOnlyPublicKey(pubkey);
+      mySigs = tapSigs.filter((sig) => sig.pubkey.equals(xOnlyPubkey));
+      if (mySigs.length < 1) {
+        throw new Error('No signatures for this pubkey');
+      }
+    } else {
+      mySigs = tapSigs;
+    }
     const results: boolean[] = [];
 
     for (const pSig of mySigs) {
@@ -239,6 +251,30 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       results.push(eccLib.verifySchnorr(hash, pubkey, sig));
     }
     return results.every((res) => res === true);
+  }
+
+  /**
+   * @param publicKeys
+   * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
+   * If no signature in the tx or no public key matching signature, the validation is considered as false.
+   */
+  getSignatureValidationArray(inputIndex: number, publicKeys: Buffer[]): boolean[] {
+    const noSigErrorMessages = ['No signatures to validate', 'No signatures for this pubkey'];
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const isP2tr = input.tapScriptSig?.length;
+    return publicKeys.map((publicKey) => {
+      try {
+        return isP2tr
+          ? this.validateTaprootSignaturesOfInput(inputIndex, publicKey)
+          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), publicKey);
+      } catch (err) {
+        // Not an elegant solution. Might need upstream changes like custom error types.
+        if (noSigErrorMessages.includes(err.message)) {
+          return false;
+        }
+        throw err;
+      }
+    });
   }
 
   /**
