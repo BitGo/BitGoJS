@@ -8,13 +8,19 @@
  * Copyright 2020, BitGo, Inc.  All Rights Reserved.
  */
 
-import { BitGo } from 'bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc'; // Replace with your given coin (e.g. Ltc, Tltc)
+require('dotenv').config({ path: '../../.env' });
 
-// set this to 'test' environment for testing, etc.
-const bitgo = new BitGo({ env: 'prod' });
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test', // Change this to env: 'production' when you are ready for production
+});
 
-// TODO: set this to the wallet you want to create for
-const coin = 'btc';
+// Set the coin name to match the blockchain and network
+// btc = bitcoin, tbtc = testnet bitcoin
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
 // Create the wallet
 async function main() {

@@ -3,22 +3,26 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
+
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
 const coin = 'tbtc';
-const basecoin = bitgo.coin(coin);
-// TODO: set your access token here
-const accessToken = '';
+bitgo.register(coin, Tbtc.createInstance);
+
 const walletId = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
 
-  const walletInstance = await basecoin.wallets().get({ id: walletId });
-  const addresses = await walletInstance.addresses();
+  const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
+  const addresses = await wallet.addresses();
 
-  console.log('Wallet ID:', walletInstance.id());
+  console.log('Wallet ID:', wallet.id());
   for (const address of addresses.addresses) {
     console.log(`Address id: ${address.id}`);
     console.log(`Address: ${address.address}`);

@@ -4,22 +4,20 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
-import { BitGo } from 'bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-// change this to env: 'production' when you are ready for production
-const bitgo = new BitGo({ env: 'test' });
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
-// TODO: set your access token here
-const accessToken = '';
-
-// Set the coin type of an active wallet in your BitGo account
-// e.g. tbtc
-const network = '';
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
-  const coin = bitgo.coin(network);
+  const coin = bitgo.coin(coin);
 
   const notifications = await coin.webhooks().listNotifications();
 

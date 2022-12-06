@@ -3,21 +3,23 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo, Coin } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-const coin = 'tltc';
-const basecoin = bitgo.coin(coin) as Coin.Ltc;
-// TODO: set your access token here
-const accessToken = '';
-const walletId = '5941ce2db42fcbc70717e5a898fd1595';
-// TODO: set your passphrase here
-const walletPassphrase = null;
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
+
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
+
+const walletId = '';
+const walletPassphrase = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
-  const walletInstance = await basecoin.wallets().get({ id: walletId });
+  const walletInstance = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const newReceiveAddress1 = await walletInstance.createAddress();
   const newReceiveAddress2 = await walletInstance.createAddress();
@@ -35,7 +37,7 @@ async function main() {
     ],
     walletPassphrase: walletPassphrase,
   });
-  const explanation = await basecoin.explainTransaction({ txHex: transaction.tx });
+  const explanation = await bitgo.coin(coin).explainTransaction({ txHex: transaction.tx });
 
   console.log('Wallet ID:', walletInstance.id());
   console.log('Current Receive Address:', walletInstance.receiveAddress());

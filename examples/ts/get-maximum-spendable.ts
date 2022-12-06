@@ -10,23 +10,25 @@
 
  * Copyright 2018, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-// TODO: set your access token here
-// You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = '';
-
-// TODO: get the wallet with this id
-const id = '';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
 const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
+
+const walletId = '';
+
 const basecoin = bitgo.coin(coin);
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
 
-  const walletInstance = await basecoin.wallets().get({ id: id });
+  const wallet = await basecoin.wallets().get({ id: walletId });
 
   // You may include any, all, or none of these optional parameters
   const optionalParams = {
@@ -57,7 +59,7 @@ async function main() {
   // any other combination you'd like to specify
   //
 
-  const response = await walletInstance.maximumSpendable(optionalParams);
+  const response = await wallet.maximumSpendable(optionalParams);
 
   console.log('Wallet ID:', id);
   console.log('Coin:', response.coin);

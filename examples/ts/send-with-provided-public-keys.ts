@@ -14,19 +14,21 @@
  *
  * Copyright 2021, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
-
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 const debug = require('debug')('send-with-pubkeys*');
 
-// TODO: set your access token here
-const accessToken = '';
-// TODO: set your wallet id here
-const walletId = 'wallet_id';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
-const coin = 'tltc';
-// TODO: set your passphrase here
-const walletPassphrase = null;
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
+
+const walletId = '';
+const walletPassphrase = '';
 
 const recipients = [
   {
@@ -43,8 +45,6 @@ const keychains = {
 };
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
   const basecoin = bitgo.coin(coin);
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 

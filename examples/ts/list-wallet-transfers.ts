@@ -6,23 +6,26 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tltc } from '@bitgo/sdk-coin-ltc';
+require('dotenv').config({ path: '../../.env' });
+
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
 const coin = 'tltc';
-const basecoin = bitgo.coin(coin);
-// TODO: set your access token here
-const accessToken = '';
+bitgo.register(coin, Tltc.createInstance);
+
 const walletId = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  const wallet = await basecoin.wallets().get({ id: walletId });
+  const transfers = await wallet.transfers();
 
-  const walletInstance = await basecoin.wallets().get({ id: walletId });
-  const transfers = await walletInstance.transfers();
-
-  console.log('Wallet ID:', walletInstance.id());
-  console.log('Current Receive Address:', walletInstance.receiveAddress());
+  console.log('Wallet ID:', wallet.id());
+  console.log('Current Receive Address:', wallet.receiveAddress());
   console.log('Wallet Transactions:', JSON.stringify(transfers, null, 4));
 }
 

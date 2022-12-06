@@ -6,11 +6,17 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-// TODO: set your access token here
-const accessToken = '';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
+
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
 // TODO: set the id of the wallet to share
 const walletId = '';
@@ -25,11 +31,7 @@ const perms = 'view';
 // TODO: provide the passphrase for the wallet being shared
 const passphrase = null;
 
-const coin = 'tltc';
-
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const shareResult = await wallet.shareWallet({

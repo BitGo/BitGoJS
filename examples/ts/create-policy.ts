@@ -7,21 +7,22 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  *
  */
-import { BitGo, Wallet } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-// TODO: set your access token here
-const accessToken = '';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
-// TODO: put the new policy on the wallet with this id
-const id = '';
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
-const coin = 'tltc';
+const walletId = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
-  const wallet: Wallet = await bitgo.coin(coin).wallets().get({ id });
+  const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   console.log(`Setting new velocity limit policy on wallet ${wallet.label()}`);
 
