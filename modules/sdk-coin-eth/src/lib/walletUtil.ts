@@ -5,6 +5,7 @@ export const v1WalletInitializationFirstBytes = '0x60806040';
 export const v1CreateWalletMethodId = '0x7117f3fa';
 export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
+export const recoveryWalletInitializationFirstBytes = '0x60c06040';
 export const flushForwarderTokensMethodId = '0x2da03409';
 export const flushCoinsMethodId = '0x6b9f96ea';
 

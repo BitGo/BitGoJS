@@ -64,6 +64,7 @@ import {
   createV1WalletTypes,
   v1CreateWalletMethodId,
   createV1ForwarderTypes,
+  recoveryWalletInitializationFirstBytes,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -472,6 +473,7 @@ export function classifyTransaction(data: string): TransactionType {
  */
 const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
+  [recoveryWalletInitializationFirstBytes]: TransactionType.RecoveryWalletDeployment,
   [v1CreateWalletMethodId]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [v1CreateForwarderMethodId]: TransactionType.AddressInitialization,
