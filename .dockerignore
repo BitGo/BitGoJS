@@ -19,7 +19,7 @@ node_modules/
 **/.prettierignore
 **/.prettierrc*
 modules/**/scripts
-modules/**/example*
+**/examples*
 lerna-debug.log
 modules/**/webpack.config.js
 modules/**/node_modules

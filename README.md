@@ -44,7 +44,7 @@ Other tags may be released to npm (e.g. `hotfix`, `dev`, etc...), but are not co
 
 # Examples
 
-Examples can be found in each of the modules specific to the module use cases. Starter examples can be found [here](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo/example).
+Examples can be found in each of the modules specific to the module use cases. Starter examples can be found [here](https://github.com/BitGo/BitGoJS/tree/master/examples).
 
 # NodeJS Version Support Policy
 
