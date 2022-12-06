@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.0.0...@bitgo/utxo-lib@7.1.0) (2022-12-06)
+
+### Bug Fixes
+
+- **utxo-lib:** hit correct function in zec psbt setup ([05ff530](https://github.com/BitGo/BitGoJS/commit/05ff530d80a1fff51e5c1aae6afc011702c03d59))
+- **utxo-lib:** use network byte order for ZEC consensusBranchId ([221cb06](https://github.com/BitGo/BitGoJS/commit/221cb0611a6f0269a83dc8805dc00f611f8b8f0a))
+- **utxo-lib:** ZEC PSBT version defaults ([29a2c82](https://github.com/BitGo/BitGoJS/commit/29a2c8206865ae6db4521b7c23add3ec58ae45db))
+
+### Features
+
+- **utxo-lib:** add psbt getSignatureValidationArray function ([480f743](https://github.com/BitGo/BitGoJS/commit/480f74337e931edc76f158dce5fd6b0431a399f7))
+
 # [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@3.2.0...@bitgo/utxo-lib@7.0.0) (2022-11-29)
 
 ### Bug Fixes

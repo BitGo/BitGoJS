@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.0.1...@bitgo/sdk-coin-dot@2.1.0) (2022-12-06)
+
+### Features
+
+- **sdk-coin-dot:** add keepAlive flag to DOT sweep constructor ([d6fa397](https://github.com/BitGo/BitGoJS/commit/d6fa3973e28beff3abf464b76819d35407ee59a7))
+
 ## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.0.0...@bitgo/sdk-coin-dot@2.0.1) (2022-12-01)
 
 ### Bug Fixes
