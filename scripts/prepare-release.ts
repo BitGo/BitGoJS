@@ -36,7 +36,7 @@ const getLernaModules = async (): Promise<void> => {
 
 const walk = (dir: string): string[] => {
   let results: string[] = [];
-  const ignoredFolders = [/modules\/bitgo\/example/, /node_modules/];
+  const ignoredFolders = [/node_modules/];
   const list = readdirSync(dir);
   list.forEach((file) => {
     file = path.join(dir, file);
