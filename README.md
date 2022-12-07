@@ -48,29 +48,22 @@ Examples can be found in each of the modules specific to the module use cases. S
 
 # NodeJS Version Support Policy
 
-We only support [Long-Term Support](https://github.com/nodejs/Release) versions of Node, with the current set of
-supported versions described in the [`engines` property of the `bitgo` module package.json](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/package.json#L18).
+BitGoJS currently provides support for the following Node versions per package.json engines policy:
+```
+"engines": {
+  "node": ">=14.18.0 <17",
+  "npm": ">=3.10.10"
+}
+```
 
-We specifically limit our support to LTS versions of Node, not because this package won't work on other versions, but
-because LTS versions tend to be the most widely used in practice. It's possible the packages in this repository will
-work correctly on newer or older versions of Node, but we typeically don't run automated tests against non-LTS (odd
-numbered) versions of Node, with the possible exception of the latest odd numbered version for advanced awareness of
-upcoming breaks in version support.
+We specifically limit our support to these versions of Node, not because this package won't work on other versions, but because these versions tend to be the most widely used in practice. It's possible the packages in this repository will work correctly on newer or older versions of Node, but we typically don't run automated tests against non-specified versions of Node (including odd versions), with the possible exception of the latest odd numbered version for advanced awareness of upcoming breaks in version support.
 
-As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our
-package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a
-new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any
-pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that
-allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes
-work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test
-suite on the latest release of the following versions of node:
+As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test suite on the latest release of the following versions of node:
 
-* `14`
+* `>=14.18.0`
 * `16`
 
-JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning
-if your version of Node does not fall within the range specified by our node engines property. If you encounter issues
-installing this package on a supported version of Node, please report the issue to us.
+JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.
 
 # Notes for Developers
 

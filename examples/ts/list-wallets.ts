@@ -7,17 +7,19 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
-// TODO: set your access token here
-const accessToken = '';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
-const coin = 'tltc';
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
   const wallets = await bitgo.coin(coin).wallets().list({});
 
   for (const wallet of wallets.wallets) {

@@ -7,25 +7,27 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
-import { BitGo } from 'bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tdoge } from '@bitgo/sdk-coin-doge'; // Replace with your given coin (e.g. Ltc, Tltc)
+require('dotenv').config({ path: '../../.env' });
 
-const bitgo = new BitGo({ env: 'test' });
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test', // Change this to env: 'production' when you are ready for production
+});
 
-// TODO: set your access token here
-// You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = '';
+// Set the coin name to match the blockchain and network
+// doge = dogecoin, tdoge = testnet dogecoin
+const coin = 'tdoge';
+bitgo.register(coin, Tdoge.createInstance);
 
 // TODO: get the wallet with this id
 const id = '';
-
-const coin = 'tdoge';
 const amount = '';
 const toAddress = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
-  const wallet = yield bitgo.coin(coin).wallets().get({ id });
+  const wallet = await bitgo.coin(coin).wallets().get({ id });
 
   console.log(`Wallet label: ${wallet.label()}`);
 
@@ -42,4 +44,4 @@ async function main() {
 
 }
 
-main().catch((err) => console.log('Error: ', err));
+main().catch((e) => console.log(e));

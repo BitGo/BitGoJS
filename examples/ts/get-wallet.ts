@@ -7,23 +7,30 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo } from 'bitgo';
-const bitgo = new BitGo({ env: 'test' });
 
-// TODO: set your access token here
-// You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = '';
+/**
+ * 1. Replace Tltc with your coin import (@bitgo/sdk-coin-ltc)
+ * 2. Replace env (test | prod)
+ * 3. Replace coin name (tltc)
+ * 4. Get the wallet by the wallets' id
+ */
 
-// TODO: get the wallet with this id
-const id = '';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tltc } from '@bitgo/sdk-coin-ltc';
+require('dotenv').config({ path: '../../.env' });
 
-const coin = 'tltc';
+const bitgo = new BitGoAPI({
+  accessToken: process.env.TESTNET_ACCESS_TOKEN,
+  env: 'test',
+});
 
-// Create the wallet with Bluebird coroutines
+const coin = 'tbtc';
+bitgo.register(coin, Tltc.createInstance);
+
+const walletId = '';
+
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-
-  const wallet = await bitgo.coin(coin).wallets().get({ id });
+  const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   console.log(`Wallet label: ${wallet.label()}`);
 }
