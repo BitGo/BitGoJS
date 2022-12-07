@@ -192,11 +192,10 @@ export class Utils implements BaseUtils {
     network: AvalancheNetwork,
     message: BufferAvax,
     signature: BufferAvax,
-    prv: BufferAvax
+    pubkey: BufferAvax
   ): boolean {
     const ky = new KeyPairAvax(network.hrp, network.networkID.toString());
-    ky.importKey(prv);
-    return ky.verify(message, signature);
+    return ky.recover(message, signature).equals(pubkey);
   }
 
   /**
@@ -204,15 +203,15 @@ export class Utils implements BaseUtils {
    * @param network
    * @param message
    * @param signature
-   * @param prv
+   * @param pubkey
    * @return true if it's verify successful
    */
-  verifySignature(network: AvalancheNetwork, message: Buffer, signature: Buffer, prv: Buffer): boolean {
+  verifySignature(network: AvalancheNetwork, message: Buffer, signature: Buffer, pubkey: Buffer): boolean {
     return this.verifySignatureAvaxBuffer(
       network,
       BufferAvax.from(message),
       BufferAvax.from(signature),
-      BufferAvax.from(prv)
+      BufferAvax.from(pubkey)
     );
   }
 

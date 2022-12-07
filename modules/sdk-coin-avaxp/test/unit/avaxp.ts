@@ -269,12 +269,13 @@ describe('Avaxp', function () {
   describe('Sign Message', () => {
     it('should be performed', async () => {
       const keyPairToSign = new AvaxpLib.KeyPair();
-      const prvKey = keyPairToSign.getPrivateKey();
+      const publicKey = keyPairToSign.getPublicKey({ compressed: true });
+
       const keyPair = keyPairToSign.getKeys();
       const messageToSign = Buffer.from(randomBytes(32));
       const signature = await basecoin.signMessage(keyPair, messageToSign.toString('hex'));
 
-      const verify = AvaxpLib.Utils.verifySignature(basecoin._staticsCoin.network, messageToSign, signature, prvKey!);
+      const verify = AvaxpLib.Utils.verifySignature(basecoin._staticsCoin.network, messageToSign, signature, publicKey);
       verify.should.be.true();
     });
 
