@@ -94,3 +94,8 @@ bcs.registerStructType('TransactionData', {
   gasPrice: 'u64',
   gasBudget: 'u64',
 });
+
+bcs.registerStructType('SenderSignedData', {
+  data: 'TransactionData',
+  txSignature: 'vector<u8>',
+});
