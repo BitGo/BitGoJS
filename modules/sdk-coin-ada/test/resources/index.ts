@@ -169,8 +169,10 @@ export const wrwUser = {
     'ed312d0db4615688219c43231eb4b98d5883c0b44bcfef1956290555995ad68ef7c22917b4a\n' +
     '8b69183864b83cc7028655cd7a70ef76d6948d809a15050054840',
   walletPassphrase: 'Ghghjkg!455544llll',
-  walletAddress0: 'addr_test1vzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wqh92pry',
-  walletAddress1: 'addr_test1vq4suqea0cq3urvhnaglcxxkfxvgk8sqy49edvlgfmu49mqhtthuv',
+  walletAddress0:
+    'addr_test1qzvmazmpgfhjyppwlsw29zjjwazcsfk62z9zv5vsv24p0wyeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uq0ge2pq',
+  walletAddress1:
+    'addr_test1qq4suqea0cq3urvhnaglcxxkfxvgk8sqy49edvlgfmu49myeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uqe66rk7',
 };
 
 export const testnetUTXO = {
