@@ -1,6 +1,6 @@
 import { IRequestTracer } from '../../../api';
-import { Key, SerializedKeyPair } from 'openpgp';
-import { KeychainsTriplet, IBaseCoin } from '../../baseCoin';
+import { Key, readKey, SerializedKeyPair } from 'openpgp';
+import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { Keychain } from '../../keychain';
 import { getTxRequest } from '../../tss';
@@ -8,12 +8,13 @@ import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
 import * as _ from 'lodash';
 import {
+  BitgoGPGPublicKey,
+  BitgoHeldBackupKeyShare,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
   ITssUtils,
   PrebuildTransactionWithIntentOptions,
   SignatureShareRecord,
-  BitgoHeldBackupKeyShare,
   TSSParams,
   TxRequest,
   TxRequestVersion,
@@ -23,7 +24,7 @@ import {
   IntentOptionsForTypedData,
   PopulatedIntentForTypedDataSigning,
 } from './baseTypes';
-import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss';
+import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -247,12 +248,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       preview,
     };
 
-    const txRequest = (await this.bitgo
+    return this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
       .send(whitelistedParams)
-      .result()) as TxRequest;
-
-    return txRequest;
+      .result();
   }
 
   /**
@@ -313,8 +312,22 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * Checks whether the third party backup provider is valid/supported
    * @param backupProvider - the backup provider client selected
    */
-  public isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
+  isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
     // As of now, BitGo is the only supported KRS provider for TSS
     return !!(backupProvider && backupProvider === 'BitGoKRS');
+  }
+
+  /**
+   * It gets the appropriate BitGo GPG public key for key creation based on a
+   * combination of coin and the feature flags on the user and their enterprise if set.
+   * @param enterpriseId - enterprise under which user wants to create the wallet
+   */
+  public async getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId: string | undefined): Promise<Key> {
+    const response: BitgoGPGPublicKey = await this.bitgo
+      .get(this.baseCoin.url('/tss/pubkey'))
+      .query({ enterpriseId })
+      .result();
+    const bitgoPublicKeyStr = response.publicKey as string;
+    return readKey({ armoredKey: bitgoPublicKeyStr });
   }
 }

@@ -224,7 +224,7 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, userKeyShare, backupKeyShare: backupKeyShare });
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, userKeyShare, backupKeyShare });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,

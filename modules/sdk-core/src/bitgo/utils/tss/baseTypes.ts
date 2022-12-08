@@ -265,6 +265,12 @@ export interface BackupKeyShare {
   userHeldKeyShare?: KeyShare;
 }
 
+export interface BitgoGPGPublicKey {
+  name: string;
+  publicKey: string;
+  enterpriseId: string;
+}
+
 /**
  * Common Interface for implementing signature scheme specific
  * util functions

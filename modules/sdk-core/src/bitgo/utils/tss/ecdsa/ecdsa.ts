@@ -124,7 +124,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const isThirdPartyBackup = this.isValidThirdPartyBackupProvider(params.backupProvider);
     const backupKeyShare = await this.createBackupKeyShares(isThirdPartyBackup, userGpgKey);
 
-    const bitgoPublicGpgKey = (await this.getBitgoPublicGpgKey()) ?? this.bitgoPublicGpgKey;
+    // Get the BitGo public key based on user/enterprise feature flags
+    // If it doesn't work, use the default public key from the constants
+    const bitgoPublicGpgKey =
+      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise)) ?? this.bitgoPublicGpgKey;
 
     const bitgoKeychain = await this.createBitgoKeychain({
       userGpgKey,
@@ -471,7 +474,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     const backupToUserShare = await encryptNShare(otherShare, recipientIndex, userGpgKey.publicKey);
-    assert(bitGoToRecipientShare.n);
     const encryptedNShares: DecryptableNShare[] = [
       {
         nShare: backupToUserShare,
@@ -484,7 +486,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           j: 3,
           publicShare: bitGoToRecipientShare.publicShare,
           encryptedPrivateShare: bitGoToRecipientShare.privateShare,
-          n: bitGoToRecipientShare.n,
+          n: bitGoToRecipientShare.n!,
           vssProof: bitGoToRecipientShare.vssProof,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
