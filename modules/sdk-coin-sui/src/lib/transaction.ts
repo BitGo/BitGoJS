@@ -253,7 +253,7 @@ export class Transaction extends BaseTransaction {
   serialize(): string {
     const txData = this.getTxData();
 
-    const dataBytes = bcs.ser('TransactionData', txData).toBytes();
+    const dataBytes = bcs.ser('TransactionData', txData, 8192).toBytes();
     const serialized = new Uint8Array(TYPE_TAG.length + dataBytes.length);
     serialized.set(TYPE_TAG);
     serialized.set(dataBytes, TYPE_TAG.length);
