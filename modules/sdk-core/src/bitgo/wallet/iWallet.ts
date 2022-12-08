@@ -6,6 +6,7 @@ import {
   SignedTransaction,
   TransactionPrebuild,
   VerificationOptions,
+  TypedData,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
@@ -156,6 +157,11 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
 
 export interface WalletSignMessageOptions extends WalletSignBaseOptions {
   message?: Message;
+  custodianMessageId?: string;
+}
+
+export interface WalletSignTypedDataOptions extends WalletSignMessageOptions {
+  typedData: TypedData<any>;
   custodianMessageId?: string;
 }
 
@@ -633,5 +639,6 @@ export interface IWallet {
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
   lightning(): ILightning;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
+  signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
 }

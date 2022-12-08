@@ -2955,6 +2955,18 @@
     npmlog "^6.0.2"
     write-file-atomic "^4.0.1"
 
+"@metamask/eth-sig-util@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@metamask/eth-sig-util/-/eth-sig-util-5.0.2.tgz#c518279a6e17a88135a13d53a0b970f145ff8bce"
+  integrity sha512-RU6fG/H6/UlBol221uBkq5C7w3TwLK611nEZliO2u+kO0vHKGBXnIPlhI0tzKUigjhUeOd9mhCNbNvhh0LKt9Q==
+  dependencies:
+    "@ethereumjs/util" "^8.0.0"
+    bn.js "^4.11.8"
+    ethereum-cryptography "^1.1.2"
+    ethjs-util "^0.1.6"
+    tweetnacl "^1.0.3"
+    tweetnacl-util "^0.15.1"
+
 "@mysten/bcs@^0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.4.0.tgz#d0c9deb91918fcd37a2f1eb30621ac5a58ef6381"
