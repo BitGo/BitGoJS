@@ -27,7 +27,6 @@ import {
   defaultConstants,
   EncryptOptions,
   EnvironmentName,
-  Environments,
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
@@ -186,12 +185,7 @@ export class BitGoAPI implements BitGoBase {
       if (params.stellarFederationServerUrl) {
         common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
       }
-      if (
-        params.customRootURI &&
-        params.customRootURI !== Environments.prod.uri &&
-        params.customRootURI !== Environments.test.uri &&
-        params.cookiesPropagationEnabled
-      ) {
+      if (params.cookiesPropagationEnabled) {
         this.cookiesPropagationEnabled = true;
       }
     } else {
