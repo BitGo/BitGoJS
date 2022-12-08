@@ -1,4 +1,4 @@
-import { SerializedKeyPair } from 'openpgp';
+import { Key, SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet, TypedMessage, MessageTypes } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
@@ -222,6 +222,14 @@ export type TxRequest = {
   latest: boolean;
 };
 
+export type CreateKeychainParamsBase = {
+  userGpgKey: SerializedKeyPair<string>;
+  bitgoKeychain?: Keychain;
+  passphrase?: string;
+  enterprise?: string;
+  originalPasscodeEncryptionCode?: string;
+};
+
 export enum SignatureShareType {
   USER = 'user',
   BACKUP = 'backup',
@@ -267,33 +275,12 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     keyId: string,
     commonKeychain: string,
     userKeyShare: KeyShare,
-    bitgoKeychain: Keychain
+    bitgoKeychain: Keychain,
+    bitgoPublicGpgKey?: Key
   ): Promise<BitgoHeldBackupKeyShare>;
-  createUserKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeychain: Keychain,
-    passphrase: string,
-    originalPasscodeEncryptionCode: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain>;
-  createBackupKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeychain: Keychain,
-    passphrase: string,
-    backupXpubProvider?: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain>;
-  createBitgoKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    enterprise: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain>;
+  createUserKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
+  createBackupKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
+  createBitgoKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
   createKeychains(params: {
     passphrase: string;
     enterprise?: string;

@@ -25,7 +25,7 @@ import {
   TSSParams,
   TxRequest,
 } from '../baseTypes';
-import { KeyShare, YShare } from './types';
+import { CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 
@@ -97,14 +97,15 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param [passphrase] - optional wallet passphrase used to encrypt user's signing materials
    * @param [originalPasscodeEncryptionCode] - optional encryption code needed for wallet password reset for hot wallets
    */
-  async createUserKeychain(
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeychain: Keychain,
-    passphrase?: string,
-    originalPasscodeEncryptionCode?: string
-  ): Promise<Keychain> {
+  async createUserKeychain({
+    userGpgKey,
+    userKeyShare,
+    backupKeyShare,
+    bitgoKeychain,
+    passphrase,
+    originalPasscodeEncryptionCode,
+  }: CreateEddsaKeychainParams): Promise<Keychain> {
+    assert(bitgoKeychain);
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -174,13 +175,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param [passphrase] - optional wallet passphrase used to encrypt user's signing materials
    */
-  async createBackupKeychain(
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeychain: Keychain,
-    passphrase?: string
-  ): Promise<Keychain> {
+  async createBackupKeychain({
+    userGpgKey,
+    userKeyShare,
+    backupKeyShare,
+    bitgoKeychain,
+    passphrase,
+  }: CreateEddsaKeychainParams): Promise<Keychain> {
+    assert(bitgoKeychain);
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -245,13 +247,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - user's TSS key share
    * @param backupKeyShare - backup's TSS key share
+   * @param enterprise - enterprise associated to the wallet
    */
-  async createBitgoKeychain(
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    enterprise?: string
-  ): Promise<Keychain> {
+  async createBitgoKeychain({
+    userGpgKey,
+    userKeyShare,
+    backupKeyShare,
+    enterprise,
+  }: CreateEddsaKeychainParams): Promise<Keychain> {
     // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),
@@ -311,22 +314,27 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');
 
-    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
-    const userKeychainPromise = this.createUserKeychain(
+    const bitgoKeychain = await this.createBitgoKeychain({
+      userGpgKey,
+      userKeyShare,
+      backupKeyShare,
+      enterprise: params.enterprise,
+    });
+    const userKeychainPromise = this.createUserKeychain({
       userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      params.passphrase,
-      params.originalPasscodeEncryptionCode
-    );
-    const backupKeychainPromise = this.createBackupKeychain(
+      enterprise: params.passphrase,
+      originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+    });
+    const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      params.passphrase
-    );
+      passphrase: params.passphrase,
+    });
     const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
 
     // create wallet

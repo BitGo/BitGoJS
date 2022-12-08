@@ -1,6 +1,6 @@
 import { EDDSA } from '../../../../account-lib/mpc/tss';
 import BaseTSSUtils from '../baseTSSUtils';
-import { UnsignedTransactionTss } from '../baseTypes';
+import { CreateKeychainParamsBase, UnsignedTransactionTss } from '../baseTypes';
 
 export type KeyShare = EDDSA.KeyShare;
 export type YShare = EDDSA.YShare;
@@ -10,6 +10,11 @@ export type EddsaUnsignedTransaction = UnsignedTransactionTss;
 export type IEddsaUtils = BaseTSSUtils<KeyShare>;
 /** @deprecated Use IEddsaUtils */
 export type ITssUtils = IEddsaUtils;
+
+export type CreateEddsaKeychainParams = CreateKeychainParamsBase & {
+  userKeyShare: EDDSA.KeyShare;
+  backupKeyShare: EDDSA.KeyShare;
+};
 
 // For backward compatibility
 export {

@@ -38,13 +38,14 @@ describe('TSS Ecdsa Utils:', async function () {
   let bitgoKeyShare;
   let userKeyShare: KeyShare;
   let backupKeyShare: KeyShare;
+  let bitgoPublicKey: openpgp.Key;
   let userGpgKey: openpgp.SerializedKeyPair<string> & {
     revocationCertificate: string;
   };
   let backupGpgKey: openpgp.SerializedKeyPair<string> & {
     revocationCertificate: string;
   };
-  let bitGoGPGKey: openpgp.SerializedKeyPair<string> & {
+  let bitGoGPGKeyPair: openpgp.SerializedKeyPair<string> & {
     revocationCertificate: string;
   };
   let nockedBitGoKeychain: Keychain;
@@ -92,10 +93,11 @@ describe('TSS Ecdsa Utils:', async function () {
         },
       ],
     })];
-    [userGpgKey, backupGpgKey, bitGoGPGKey] = await Promise.all(gpgKeyPromises);
+    [userGpgKey, backupGpgKey, bitGoGPGKeyPair] = await Promise.all(gpgKeyPromises);
+    bitgoPublicKey = await openpgp.readKey({ armoredKey: bitGoGPGKeyPair.publicKey });
     const constants = {
       mpc: {
-        bitgoPublicKey: bitGoGPGKey.publicKey,
+        bitgoPublicKey: bitGoGPGKeyPair.publicKey,
       },
     };
 
@@ -139,37 +141,37 @@ describe('TSS Ecdsa Utils:', async function () {
 
   describe('TSS key chains', async function() {
     it('should create backup key share held by BitGo', async function () {
-      const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKey);
+      const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       const result = await tssUtils.createBitgoHeldBackupKeyShare(userGpgKey);
       result.should.eql(expectedKeyShare);
     });
 
     it('should finalize backup key share held by BitGo', async function () {
       const commonKeychain = '4428';
-      const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKey);
-      const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(coinName, originalKeyShare, commonKeychain, userKeyShare, bitGoGPGKey, nockedBitGoKeychain);
+      const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
+      const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(coinName, originalKeyShare, commonKeychain, userKeyShare, bitGoGPGKeyPair, nockedBitGoKeychain);
 
-      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain);
+      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain, bitgoPublicKey);
       result.should.eql(expectedFinalKeyShare);
     });
 
     it('should create a user keychain from third party backup provider', async function() {
-      const backupKeyShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKey);
+      const backupKeyShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: backupKeyShares,
       };
       assert(backupShareHolder.bitGoHeldKeyShares);
-      const userKeychain = await tssUtils.createUserKeychainFromThirdPartyBackup(userGpgKey, userKeyShare, backupShareHolder.bitGoHeldKeyShares?.keyShares, nockedBitGoKeychain, 'password', '1234');
+      const userKeychain = await tssUtils.createUserKeychainFromThirdPartyBackup(userGpgKey, bitgoPublicKey, userKeyShare, backupShareHolder.bitGoHeldKeyShares?.keyShares, nockedBitGoKeychain, 'password', '1234');
       userKeychain.should.deepEqual(nockedUserKeychain);
     });
 
     it('should get the respective backup key shares based on provider', async function() {
-      await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKey);
+      await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       let backupKeyShares = await tssUtils.createBackupKeyShares(true, userGpgKey);
       should.exist(backupKeyShares.bitGoHeldKeyShares);
       should.not.exist(backupKeyShares.userHeldKeyShare);
 
-      await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKey);
+      await nockCreateBitgoHeldBackupKeyShare(coinName, userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       backupKeyShares = await tssUtils.createBackupKeyShares(false, userGpgKey);
       should.exist(backupKeyShares.userHeldKeyShare);
       should.not.exist(backupKeyShares.bitGoHeldKeyShares);
@@ -177,7 +179,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('getBackupEncryptedNShare should get valid encrypted n shares based on provider', async function() {
       // Backup key held by third party
-      const bitgoHeldBackupKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKey);
+      const bitgoHeldBackupKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupKeyShare,
       };
@@ -203,15 +205,22 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupShareHolder);
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare: backupShareHolder,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      });
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
         userGpgKey,
+        bitgoPublicKey,
         1,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
         'passphrase'), tssUtils.createParticipantKeychain(
         backupGpgKey,
+        bitgoPublicKey,
         2,
         userKeyShare,
         backupKeyShare,
@@ -232,30 +241,41 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('should generate TSS key chains when backup provider is BitGo', async function () {
       const backupProvider = 'BitGoKRS';
-      const isThirdPartyBackup = true;
-      const bitgoHeldBackupShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKey);
+      const isThirdPartyBackup = tssUtils.isValidThirdPartyBackupProvider('BitGoKRS');
+      const bitgoHeldBackupShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupShares,
       };
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupShareHolder, undefined, isThirdPartyBackup);
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare: backupShareHolder,
+        enterprise: undefined,
+        isThirdPartyBackup,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      });
       assert(bitgoKeychain.commonKeychain);
 
-      await nockFinalizeBitgoHeldBackupKeyShare(coinName, bitgoHeldBackupShares, bitgoKeychain.commonKeychain, userKeyShare, bitGoGPGKey, bitgoKeychain);
+      await nockFinalizeBitgoHeldBackupKeyShare(coinName, bitgoHeldBackupShares, bitgoKeychain.commonKeychain, userKeyShare, bitGoGPGKeyPair, bitgoKeychain);
 
-      const userBackupKeyChainPromises = [tssUtils.createUserKeychain(
+      const userBackupKeyChainPromises = [tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
-        backupShareHolder,
+        backupKeyShare: backupShareHolder,
         bitgoKeychain,
-        'passphrase',
-        undefined,
-        isThirdPartyBackup), tssUtils.createBackupKeychain(
+        passphrase: 'passphrase',
+        enterprise: undefined,
+        isThirdPartyBackup,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      }), tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
-        backupShareHolder,
+        backupKeyShare: backupShareHolder,
         bitgoKeychain,
-        undefined,
-        backupProvider)];
+        enterprise: undefined,
+        bitgoPublicGpgKey: bitgoPublicKey,
+        backupProvider,
+      })];
       const [userKeychain, backupKeychain] = await Promise.all(userBackupKeyChainPromises);
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
@@ -269,9 +289,16 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupShareHolder, enterprise);
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare: backupShareHolder,
+        enterprise,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      });
       const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
         userGpgKey,
+        bitgoPublicKey,
         1,
         userKeyShare,
         backupKeyShare,
@@ -279,6 +306,7 @@ describe('TSS Ecdsa Utils:', async function () {
         'passphrase',
         'originalPasscodeEncryptionCode'), tssUtils.createParticipantKeychain(
         backupGpgKey,
+        bitgoPublicKey,
         2,
         userKeyShare,
         backupKeyShare,
@@ -301,35 +329,44 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupShareHolder);
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare: backupShareHolder,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      });
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       const testKeyShares = otherKeyShares;
       const testCasesPromises = [
-        tssUtils.createParticipantKeychain(
+        await tssUtils.createParticipantKeychain(
           userGpgKey,
+          bitgoPublicKey,
           1,
           userKeyShare,
           testKeyShares[0],
           bitgoKeychain,
           'passphrase').should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
+        await tssUtils.createParticipantKeychain(
           userGpgKey,
+          bitgoPublicKey,
           1,
           testKeyShares[1],
           backupKeyShare,
           bitgoKeychain,
           'passphrase')
           .should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
+        await tssUtils.createParticipantKeychain(
           backupGpgKey,
+          bitgoPublicKey,
           2,
           testKeyShares[2],
           backupKeyShare,
           bitgoKeychain,
           'passphrase')
           .should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
+        await tssUtils.createParticipantKeychain(
           backupGpgKey,
+          bitgoPublicKey,
           2,
           userKeyShare,
           testKeyShares[3],
