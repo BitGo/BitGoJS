@@ -10,7 +10,13 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { ContractType } from './enum';
-import { decodeTransaction } from './utils';
+import {
+  decodeTransaction,
+  decodeDataParams,
+  getBase58AddressFromHex,
+  tokenMainnetContractAddresses,
+  tokenTestnetContractAddresses,
+} from './utils';
 import { ContractEntry, RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';
 
 /**
@@ -86,13 +92,36 @@ export class Transaction extends BaseTransaction {
       case ContractType.TriggerSmartContract:
         this._type = TransactionType.ContractCall;
         const contractCallValues = (rawData.contract[0] as TriggerSmartContract).parameter.value;
+        const contractAddress = contractCallValues.contract_address;
+        if (
+          tokenMainnetContractAddresses.includes(contractAddress) ||
+          tokenTestnetContractAddresses.includes(contractAddress)
+        ) {
+          // this is then a token smart contract transaction and the data must be decoded
+          const types = ['address', 'uint256'];
+          const data = Buffer.from(contractCallValues.data, 'base64').toString('hex');
+          const decodedData = decodeDataParams(types, data);
+          const recipient_address = getBase58AddressFromHex(decodedData[0]);
+          const value = decodedData[1].toString();
+          output = {
+            address: recipient_address,
+            value,
+          };
+          input = {
+            address: contractCallValues.owner_address,
+            contractAddress,
+            data,
+            value,
+          };
+          break;
+        }
         output = {
           address: contractCallValues.owner_address,
           value: '0',
         };
         input = {
           address: contractCallValues.owner_address,
-          contractAddress: contractCallValues.contract_address,
+          contractAddress,
           data: contractCallValues.data,
           value: '0',
         };
