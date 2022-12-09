@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [12.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.1.0...@bitgo/statics@12.1.1) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/statics
+
 # [12.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.0.0...@bitgo/statics@12.1.0) (2022-12-01)
 
 ### Features
