@@ -28,6 +28,7 @@ const encryptNShare = ECDSAMethods.encryptNShare;
 
 /** @inheritdoc */
 export class EcdsaUtils extends baseTSSUtils<KeyShare> {
+  // We do not have full support for 3-party verification (w/ external source) of key shares and signature shares. There is no 3rd party key service support with this release.
   private bitgoPublicGpgKey: openpgp.Key | undefined = undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
