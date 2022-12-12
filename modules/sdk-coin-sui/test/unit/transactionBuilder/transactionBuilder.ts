@@ -63,7 +63,7 @@ describe('Sui Transaction Builder', async () => {
     await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
     const signedTx = await txBuilder2.build();
     should.equal(signedTx.type, TransactionType.Send);
-    should.equal(signedTx.id, 'OiE/7VcID6Fyt60LtuKsod58VxYkCcGKtwTUBHLG57Y=');
+    should.equal(signedTx.id, '2c8i3zZGqDALQQS8gdB8yVK1mXgKvzRY3wUPNjA1NwNx');
 
     const rawSignedTx = signedTx.toBroadcastFormat();
     should.equal(rawSignedTx, testData.TRANSFER_PAY_SUI_TX);
@@ -90,7 +90,6 @@ describe('Sui Transaction Builder', async () => {
 
     reserialized.should.be.deepEqual(tx);
     reserialized.toBroadcastFormat().should.equal(rawTx);
-    console.log(testData.payTxWithoutGasPayment.coins.length);
   });
 
   it('should fail to build if missing type', async function () {
