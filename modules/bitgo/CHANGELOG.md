@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [16.1.2](https://github.com/BitGo/BitGoJS/compare/bitgo@16.1.1...bitgo@16.1.2) (2022-12-09)
+
+
+### Bug Fixes
+
+* enable cookie propagation gating for test and prod ([da6ddb3](https://github.com/BitGo/BitGoJS/commit/da6ddb30d99cb50f1434399a967f7d99e9fc5187))
+
+
+
+
+
 ## [16.1.1](https://github.com/BitGo/BitGoJS/compare/bitgo@16.1.0...bitgo@16.1.1) (2022-12-06)
 
 **Note:** Version bump only for package bitgo

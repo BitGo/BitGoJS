@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.2...@bitgo/sdk-coin-ada@2.3.3) (2022-12-09)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** fix address retrieval in recover function ([db1febf](https://github.com/BitGo/BitGoJS/commit/db1febfac30e2a2d54796821a10dd965fb798701))
+
 ## [2.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.1...@bitgo/sdk-coin-ada@2.3.2) (2022-12-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

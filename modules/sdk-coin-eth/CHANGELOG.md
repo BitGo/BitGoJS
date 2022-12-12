@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.8.0...@bitgo/sdk-coin-eth@2.9.0) (2022-12-09)
+
+### Features
+
+- **sdk-coin-eth:** build from rawTx ([152bced](https://github.com/BitGo/BitGoJS/commit/152bced4d9b2cade28c638b691030286bab61ff4))
+
 # [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.7.1...@bitgo/sdk-coin-eth@2.8.0) (2022-12-06)
 
 ### Features

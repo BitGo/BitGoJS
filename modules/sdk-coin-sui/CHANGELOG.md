@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.2...@bitgo/sdk-coin-sui@1.6.3) (2022-12-09)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add signed data to serialized str ([1f49745](https://github.com/BitGo/BitGoJS/commit/1f49745f2c8ba2e1f3016e21448c1c6519fd4a73))
+- **sdk-coin-sui:** fix serialization byte size ([750a16d](https://github.com/BitGo/BitGoJS/commit/750a16df89fa282d567aad1e362a4e772acb4832))
+
 ## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.1...@bitgo/sdk-coin-sui@1.6.2) (2022-12-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui
