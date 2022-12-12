@@ -385,7 +385,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const prevoutScripts: Buffer[] = [];
     const prevoutValues: bigint[] = [];
 
-    for (const input of this.data.inputs) {
+    this.data.inputs.forEach((input, i) => {
       let prevout;
       if (input.nonWitnessUtxo) {
         // TODO: This could be costly, either cache it here, or find a way to share with super
@@ -394,17 +394,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
           this.tx.network
         );
 
-        const prevoutHash = txInputs[inputIndex].hash;
+        const prevoutHash = txInputs[i].hash;
         const utxoHash = nonWitnessUtxoTx.getHash();
 
         // If a non-witness UTXO is provided, its hash must match the hash specified in the prevout
         if (!prevoutHash.equals(utxoHash)) {
-          throw new Error(
-            `Non-witness UTXO hash for input #${inputIndex} doesn't match the hash specified in the prevout`
-          );
+          throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
         }
 
-        const prevoutIndex = txInputs[inputIndex].index;
+        const prevoutIndex = txInputs[i].index;
         prevout = nonWitnessUtxoTx.outs[prevoutIndex];
       } else if (input.witnessUtxo) {
         prevout = input.witnessUtxo;
@@ -413,7 +411,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       }
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
-    }
+    });
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }
