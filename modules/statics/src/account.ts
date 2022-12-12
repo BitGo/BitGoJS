@@ -332,22 +332,6 @@ export class AdaCoin extends AccountCoinToken {
 }
 
 /**
- * The Trx network supports tokens
- * Trx tokens are identified by their smart contract address
- *
- */
-export class TrxCoin extends AccountCoinToken {
-  public contractAddress: string;
-  constructor(options: Erc20ConstructorOptions) {
-    super({
-      ...options,
-    });
-
-    this.contractAddress = options.contractAddress;
-  }
-}
-
-/**
  * The AVAX C Chain network support tokens
  * AVAX C Chain Tokens are ERC20 coins
  */
@@ -1405,77 +1389,6 @@ export function tadaToken(
   network: AccountNetwork = Networks.test.ada
 ) {
   return adaToken(name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
-}
-
-/**
- * Factory function for trx token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractAddress smart contract address of the token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Cardano main network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
- */
-export function trxToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.trx,
-  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
-) {
-  return Object.freeze(
-    new TrxCoin({
-      name,
-      fullName,
-      network,
-      contractAddress,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-      baseUnit: BaseUnit.TRX,
-    })
-  );
-}
-
-/**
- * Factory function for testnet trx token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractAddress smart contract address of the token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the testnet Cardano network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- */
-export function ttrxToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.trx
-) {
-  return trxToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

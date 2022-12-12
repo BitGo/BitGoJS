@@ -12,7 +12,7 @@ import {
   AdaCoin,
   Erc721Coin,
   Erc1155Coin,
-  TrxCoin,
+  TronErc20Coin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -345,7 +345,7 @@ const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
 }, []);
 
 const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
-  if (coin instanceof TrxCoin) {
+  if (coin instanceof TronErc20Coin) {
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
