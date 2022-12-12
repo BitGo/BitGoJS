@@ -139,6 +139,21 @@ export function toPrevOutput<TNumber extends number | bigint>(
 }
 
 /**
+ * @return PrevOutput with prevTx from Unspent
+ */
+export function toPrevOutputWithPrevTx<TNumber extends number | bigint>(
+  u: Unspent<TNumber> & { prevTx?: Buffer },
+  network: Network
+): PrevOutput<TNumber> {
+  const prevTx = u.prevTx;
+  return {
+    ...parseOutputId(u.id),
+    ...toOutput(u, network),
+    prevTx,
+  };
+}
+
+/**
  * @param txb
  * @param u
  * @param sequence - sequenceId

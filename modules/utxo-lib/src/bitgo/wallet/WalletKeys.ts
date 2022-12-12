@@ -15,6 +15,23 @@ import { Triple } from '../types';
 
 export type KeyName = 'user' | 'backup' | 'bitgo';
 
+/**
+ * @param index
+ * @return KeyName based on index value location. 0=user, 1=backup & 2=bitgo
+ */
+export function indexToKeyName(index: number): KeyName {
+  switch (index) {
+    case 0:
+      return 'user';
+    case 1:
+      return 'backup';
+    case 2:
+      return 'bitgo';
+    default:
+      throw new Error('Invalid index range to get KeyName');
+  }
+}
+
 export function eqPublicKey(a: BIP32Interface, b: BIP32Interface): boolean {
   return a.publicKey.equals(b.publicKey);
 }
