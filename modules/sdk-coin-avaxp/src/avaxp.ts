@@ -158,21 +158,22 @@ export class AvaxP extends BaseCoin {
     }
     const explainedTx = tx.explainTransaction();
 
-    const { type, stakingOptions, memo } = params.txParams;
+    const { type, stakingOptions } = params.txParams;
     // TODO(BG-62112): change ImportToC type to Import
     if (!type || (type !== 'ImportToC' && explainedTx.type !== TransactionType[type])) {
       throw new Error('Tx type does not match with expected txParams type');
     }
 
-    if (memo && explainedTx.memo !== memo.value) {
-      throw new Error('Tx memo does not match with expected txParams memo');
-    }
     switch (explainedTx.type) {
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
         if (params.txParams.recipients && params.txParams.recipients.length !== 0) {
           throw new Error('Stake Tx does not require recipients');
         }
+        if (params.txParams.memo && explainedTx.memo !== params.txParams.memo.value) {
+          throw new Error('Tx memo does not match with expected txParams memo');
+        }
+
         this.validateStakingTx(stakingOptions, explainedTx);
         break;
       case TransactionType.Export:
