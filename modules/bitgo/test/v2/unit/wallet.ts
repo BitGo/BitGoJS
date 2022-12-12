@@ -550,6 +550,38 @@ describe('V2 Wallet:', function () {
       await wallet.createAddress({ allowSkipVerifyAddress: 'abc' }).should.be.rejectedWith(message);
       // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
+
+      message = 'forwarderVersion has to be an integer 0, 1 or 2';
+      await wallet.createAddress({ forwarderVersion: 3 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ forwarderVersion: -1 }).should.be.rejectedWith(message);
+    });
+
+    it('address creation with forwarder version 2 succeeds', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 2 })
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0x5e61b64f38f1b5f85078fb84b27394830b4c8e80',
+          chain: 0,
+          index: 1,
+          coin: 'tpolygon',
+          lastNonce: 0,
+          wallet: '63785f95af7c760007cfae068c2f31ae',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2022-12-02T18:49:42.348Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0x1',
+            pendingDeployment: true,
+            forwarderVersion: 2,
+            isTss: true,
+          },
+        });
+      const address = await ethWallet.createAddress({ chain: 0, forwarderVersion: 2 });
+      address.coinSpecific.forwarderVersion.should.equal(2);
+      scope.isDone().should.be.true();
     });
 
     it('verify address when pendingChainInitialization is true in case of eth v1 forwarder', async function () {
