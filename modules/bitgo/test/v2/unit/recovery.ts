@@ -7,9 +7,12 @@ import * as nock from 'nock';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
+import { ECDSAMethodTypes, krsProviders } from '@bitgo/sdk-core';
+import { keyShares } from '../fixtures/tss/ecdsaFixtures';
+import * as sjcl from '@bitgo/sjcl';
+
 const recoveryNocks = require('../lib/recovery-nocks');
 
-import { krsProviders } from '@bitgo/sdk-core';
 nock.disableNetConnect();
 
 describe('Recovery:', function () {
@@ -440,6 +443,34 @@ describe('Recovery:', function () {
       nock.cleanAll();
     });
     let recoveryParams;
+
+    const nockTSSData: any[] = [
+      {
+        params: {
+          module: 'account',
+          action: 'txlist',
+          address: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        },
+        response: {
+          status: '0',
+          message: 'No transactions found',
+          result: [],
+        },
+      },
+      {
+        params: {
+          module: 'account',
+          action: 'balance',
+          address: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        },
+        response: {
+          status: '1',
+          message: 'OK',
+          result: '1000000000000000000',
+        },
+      },
+    ];
+
     before(() => {
       recoveryParams = {
         userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -648,6 +679,80 @@ describe('Recovery:', function () {
       transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       transaction.recipient.should.have.property('amount');
       transaction.recipient.amount.should.equal('9999999999999999928');
+    });
+
+    it('should construct a recovery tx with TSS', async function () {
+      recoveryNocks.nockEthRecovery(bitgo, nockTSSData);
+
+      const basecoin = bitgo.coin('teth');
+
+      const userKey = keyShares.userKeyShare;
+      const backupKey = keyShares.backupKeyShare;
+      const bitgoKey = keyShares.bitgoKeyShare;
+
+      const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
+        pShare: userKey.pShare,
+        backupNShare: backupKey.nShares[1],
+        bitgoNShare: bitgoKey.nShares[1],
+      };
+
+      const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
+        pShare: backupKey.pShare,
+        userNShare: userKey.nShares[2],
+        bitgoNShare: bitgoKey.nShares[2],
+      };
+
+      const encryptedBackupSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, JSON.stringify(backupSigningMaterial));
+      const encryptedUserSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, JSON.stringify(userSigningMaterial));
+
+      recoveryParams = {
+        userKey: encryptedUserSigningMaterial,
+        backupKey: encryptedBackupSigningMaterial,
+        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        isTss: true,
+      };
+
+      const recovery = await basecoin.recover(recoveryParams);
+      // id and tx will always be different because of expireTime
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+
+    it('should construct an unsigned sweep tx with TSS', async function () {
+      recoveryNocks.nockEthRecovery(bitgo, nockTSSData);
+
+      const basecoin = bitgo.coin('teth');
+
+      const userKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+      const backupKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+
+      recoveryParams = {
+        userKey: userKey,
+        backupKey: backupKey,
+        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        isTss: true,
+        gasPrice: '20000000000',
+        gasLimit: '500000',
+      };
+
+      const transaction = await basecoin.recover(recoveryParams);
+      should.exist(transaction);
+      transaction.should.have.property('tx');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('20000000000');
+      transaction.should.have.property('recipient');
+      transaction.recipient.should.have.property('address');
+      transaction.recipient.address.should.equal('0xac05da78464520aa7c9d4c19bd7a440b111b3054');
+      transaction.recipient.should.have.property('amount');
+      transaction.recipient.amount.should.equal('990000000000000000');
     });
   });
 });
