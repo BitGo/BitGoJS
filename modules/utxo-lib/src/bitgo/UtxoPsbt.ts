@@ -64,6 +64,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  getSignatureCount(inputIndex: number): number {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Math.max(
+      Array.isArray(input.partialSig) ? input.partialSig.length : 0,
+      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0
+    );
+  }
+
   getNonWitnessPreviousTxids(): string[] {
     const txInputs = this.txInputs; // These are somewhat costly to extract
     const txidSet = new Set<string>();

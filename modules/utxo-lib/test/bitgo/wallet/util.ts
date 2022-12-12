@@ -9,6 +9,8 @@ import {
   UnspentWithPrevTx,
   UtxoTransaction,
   fromOutputWithPrevTx,
+  isSegwit,
+  fromOutput,
 } from '../../../src/bitgo';
 
 import {
@@ -113,8 +115,9 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
       BigInt(value),
       network
     );
+    const unspent = isSegwit(chain) ? fromOutput(prevTransaction, vout) : fromOutputWithPrevTx(prevTransaction, vout);
     return {
-      ...fromOutputWithPrevTx(prevTransaction, vout),
+      ...unspent,
       chain,
       index,
       value,
