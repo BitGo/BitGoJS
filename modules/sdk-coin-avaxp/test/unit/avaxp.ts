@@ -754,6 +754,11 @@ describe('Avaxp', function () {
       basecoin.isValidAddress(multiSigValidAddress).should.be.false();
     });
 
+    it('should validate valid c-chain address', () => {
+      const address = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
+      basecoin.isValidAddress(address).should.be.true();
+    });
+
     it('should throw when verifying address if address length doesnt match keychain length', async function () {
       const validAddresses = [
         {

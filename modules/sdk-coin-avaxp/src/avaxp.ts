@@ -28,7 +28,7 @@ import {
 import utils from './lib/utils';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { isValidAddress } from 'ethereumjs-util';
+import { isValidAddress as isValidEthAddress } from 'ethereumjs-util';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -113,7 +113,7 @@ export class AvaxP extends BaseCoin {
     }
 
     const memoValue = memo.split('~');
-    if (!isValidAddress(memoValue[0])) {
+    if (!isValidEthAddress(memoValue[0])) {
       throw new Error(`Txn memo must contain valid C-chain address destination, received: ${memo}`);
     } else if (memoValue[0] !== recipients[0].address) {
       throw new Error(
@@ -307,6 +307,11 @@ export class AvaxP extends BaseCoin {
   isValidAddress(address: string | string[]): boolean {
     if (address === undefined) {
       return false;
+    }
+
+    // validate eth address for cross-chain txs to c-chain
+    if (typeof address === 'string' && isValidEthAddress(address)) {
+      return true;
     }
 
     return AvaxpLib.Utils.isValidAddress(address);
