@@ -6,7 +6,6 @@ import {
   VerifyAddressOptions,
   SignedTransaction,
   ParseTransactionOptions,
-  MethodNotImplementedError,
   BaseTransaction,
   InvalidTransactionError,
   FeeEstimateOptions,
@@ -15,6 +14,7 @@ import {
   InvalidAddressError,
   UnexpectedAddressError,
   ITransactionRecipient,
+  ParsedTransaction,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import {
@@ -343,8 +343,8 @@ export class AvaxP extends BaseCoin {
     return { fee: '0' };
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {
-    throw new MethodNotImplementedError('parseTransaction method not implemented');
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   /**

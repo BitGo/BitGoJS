@@ -386,6 +386,10 @@ export abstract class BaseCoin implements IBaseCoin {
     throw new Error('deprecated method');
   }
 
+  /**
+   * Only used in PendingApproval for comparing PAYGo fees purpose
+   * @param params options for parsing
+   */
   abstract parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
 
   /**
