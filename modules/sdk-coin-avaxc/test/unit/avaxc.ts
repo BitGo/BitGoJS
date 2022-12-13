@@ -144,6 +144,24 @@ describe('Avalanche C-Chain', function () {
       tavaxCoin.isValidAddress(address).should.be.true();
       avaxCoin.isValidAddress(address).should.be.true();
     });
+
+    it('should validate an array of p-chain addresses', function () {
+      const address = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+        'NodeID-143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+      ];
+
+      tavaxCoin.isValidAddress(address).should.be.true();
+      avaxCoin.isValidAddress(address).should.be.true();
+    });
+
+    it('should validate a p-chain multsig address string', function () {
+      const address =
+        'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59~P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822~P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4';
+      tavaxCoin.isValidAddress(address).should.be.true();
+      avaxCoin.isValidAddress(address).should.be.true();
+    });
   });
 
   describe('keys validations failure cases', () => {
