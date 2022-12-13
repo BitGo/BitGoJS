@@ -23,6 +23,7 @@ import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
+import { Buffer } from 'buffer';
 
 // region utils to sign
 interface signatureSerialized {
@@ -185,6 +186,8 @@ export class Transaction extends BaseTransaction {
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
+      sourceChain: this.sourceChain,
+      destinationChain: this.destinationChain,
     };
   }
 
@@ -355,5 +358,59 @@ export class Transaction extends BaseTransaction {
    */
   get isTransactionForCChain(): boolean {
     return utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID);
+  }
+
+  /**
+   * get the source chain id or undefined if it's a cross chain transfer.
+   */
+  get sourceChain(): string | undefined {
+    let blockchainID;
+    switch (this.type) {
+      case TransactionType.Import:
+        blockchainID = (this.avaxPTransaction as ImportTx | EVMImportTx).getSourceChain();
+        break;
+      case TransactionType.Export:
+        blockchainID = (this.avaxPTransaction as ExportTx | EVMExportTx).getBlockchainID();
+        break;
+      default:
+        return undefined;
+    }
+    return this.blockchainIDtoAlias(blockchainID);
+  }
+
+  /**
+   * get the destinationChain or undefined if it's a cross chain transfer.
+   */
+  get destinationChain(): string | undefined {
+    let blockchainID;
+    switch (this.type) {
+      case TransactionType.Import:
+        blockchainID = (this.avaxPTransaction as ImportTx | EVMImportTx).getBlockchainID();
+        break;
+      case TransactionType.Export:
+        blockchainID = (this.avaxPTransaction as ExportTx | EVMExportTx).getDestinationChain();
+        break;
+      default:
+        return undefined;
+    }
+    return this.blockchainIDtoAlias(blockchainID);
+  }
+
+  /**
+   * Convert a blockchainId buffer to string and return P or C alias if match of any of that chains.
+   * @param {BufferAvax} blockchainIDBuffer
+   * @return {string} blocchainID or alias if exists.
+   * @private
+   */
+  private blockchainIDtoAlias(blockchainIDBuffer: BufferAvax): string {
+    const blockchainId = utils.cb58Encode(blockchainIDBuffer);
+    switch (blockchainId) {
+      case this._network.cChainBlockchainID:
+        return 'C';
+      case this._network.blockchainID:
+        return 'P';
+      default:
+        return blockchainId;
+    }
   }
 }
