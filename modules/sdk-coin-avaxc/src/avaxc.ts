@@ -37,7 +37,7 @@ import {
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
-import { bufferToHex } from 'ethereumjs-util';
+import { bufferToHex, pubToAddress } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
   AvaxSignTransactionOptions,
@@ -738,6 +738,23 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
+   * Verify signature for an atomic transaction using atomic builder.
+   * @param txHex
+   * @return true if signature is from the input address
+   * @private
+   */
+  private async verifySignatureForAtomicTransaction(txHex: string): Promise<boolean> {
+    const txBuilder = this.getAtomicBuilder().from(txHex);
+    const tx = await txBuilder.build();
+    const payload = tx.signablePayload;
+    const signatures = tx.signature.map((s) => Buffer.from(s, 'hex'));
+    const recoverPubky = signatures.map((s) => AvaxpLib.Utils.recoverySignature(_.get(tx, '_network'), payload, s));
+    const expectedSenders = recoverPubky.map((r) => pubToAddress(r, true));
+    const senders = tx.inputs.map((i) => AvaxpLib.Utils.parseAddress(i.address));
+    return expectedSenders.every((e) => senders.some((sender) => e.equals(sender)));
+  }
+
+  /**
    * Explains an EVM transaction using regular eth txn builder
    * @param tx
    * @private
@@ -838,7 +855,9 @@ export class AvaxC extends BaseCoin {
           );
         }
       }
-      // TODO(BG-59774): Implement verifySignature without using Private Key
+      if (!(await this.verifySignatureForAtomicTransaction(tx))) {
+        throw new Error(`Invalid hop transaction signature, txid: ${id}`);
+      }
     } else {
       const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
       // If original params are given, we can check them against the transaction prebuild params
