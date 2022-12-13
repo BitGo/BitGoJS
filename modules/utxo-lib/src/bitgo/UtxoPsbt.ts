@@ -1,25 +1,14 @@
 import { Psbt as PsbtBase } from 'bip174';
 import { TapBip32Derivation, Transaction as ITransaction, TransactionFromBuffer } from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
-import * as opcodes from 'bitcoin-ops';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
-import {
-  taproot,
-  HDSigner,
-  Psbt,
-  PsbtTransaction,
-  Transaction,
-  TxOutput,
-  Network,
-  ecc as eccLib,
-  script as bscript,
-} from '..';
+import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { toXOnlyPublicKey } from './outputScripts';
+import { parseTaprootScript2of3PubKeys, toXOnlyPublicKey } from './outputScripts';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -73,6 +62,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const psbt = this.createPsbt(opts, psbtBase);
     // Upstream checks for duplicate inputs here, but it seems to be of dubious value.
     return psbt;
+  }
+
+  getSignatureCount(inputIndex: number): number {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Math.max(
+      Array.isArray(input.partialSig) ? input.partialSig.length : 0,
+      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0
+    );
   }
 
   getNonWitnessPreviousTxids(): string[] {
@@ -170,17 +167,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const decompiled = bscript.decompile(script);
-    if (!decompiled || decompiled?.length !== 4) {
-      throw new Error('Not a valid bitgo n-of-n script.');
-    }
-    const [pubkey1, op_checksigverify, pubkey2, op_checksig] = decompiled;
-    if (!Buffer.isBuffer(pubkey1) || !Buffer.isBuffer(pubkey2)) {
-      throw new Error('Public Keys are not buffers.');
-    }
-    if (op_checksigverify !== opcodes.OP_CHECKSIGVERIFY || op_checksig !== opcodes.OP_CHECKSIG) {
-      throw new Error('Opcodes do not correspond to a valid bitgo script');
-    }
+    const [pubkey1, pubkey2] = parseTaprootScript2of3PubKeys(script);
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {
@@ -406,7 +393,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const prevoutScripts: Buffer[] = [];
     const prevoutValues: bigint[] = [];
 
-    for (const input of this.data.inputs) {
+    this.data.inputs.forEach((input, i) => {
       let prevout;
       if (input.nonWitnessUtxo) {
         // TODO: This could be costly, either cache it here, or find a way to share with super
@@ -415,17 +402,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
           this.tx.network
         );
 
-        const prevoutHash = txInputs[inputIndex].hash;
+        const prevoutHash = txInputs[i].hash;
         const utxoHash = nonWitnessUtxoTx.getHash();
 
         // If a non-witness UTXO is provided, its hash must match the hash specified in the prevout
         if (!prevoutHash.equals(utxoHash)) {
-          throw new Error(
-            `Non-witness UTXO hash for input #${inputIndex} doesn't match the hash specified in the prevout`
-          );
+          throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
         }
 
-        const prevoutIndex = txInputs[inputIndex].index;
+        const prevoutIndex = txInputs[i].index;
         prevout = nonWitnessUtxoTx.outs[prevoutIndex];
       } else if (input.witnessUtxo) {
         prevout = input.witnessUtxo;
@@ -434,7 +419,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       }
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
-    }
+    });
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }
