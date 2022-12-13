@@ -103,7 +103,8 @@ export class AvaxC extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return !!address && isValidEthAddress(address);
+    // also validate p-chain address for cross-chain txs
+    return !!address && (isValidEthAddress(address) || AvaxpLib.Utils.isValidAddress(address));
   }
 
   isToken(): boolean {
