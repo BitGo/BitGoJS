@@ -90,6 +90,10 @@ export class Sui extends BaseCoin {
     return 'eddsa';
   }
 
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
