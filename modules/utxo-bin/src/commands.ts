@@ -1,8 +1,11 @@
 /* eslint-disable no-console */
-import * as yargs from 'yargs';
+import * as assert from 'assert';
 import * as fs from 'fs';
 import * as process from 'process';
+import * as crypto from 'crypto';
 import { promisify } from 'util';
+
+import * as yargs from 'yargs';
 
 const stdin: any = process.stdin;
 
@@ -20,6 +23,7 @@ import {
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
+import { generateAddress } from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -187,3 +191,54 @@ export const cmdParseAddress = {
     console.log(formatString(parsed, argv));
   },
 } as const;
+
+export const cmdGenerateXpubs: yargs.CommandModule<unknown, { seed: string }> = {
+  command: 'generateXpubs',
+
+  builder(b) {
+    return b.option('seed', { type: 'string', required: true });
+  },
+
+  handler(argv) {
+    function genWithSuffix(suffix: string) {
+      const bytes = crypto.createHash('sha256').update(`${argv.seed}/${suffix}`).digest();
+      return utxolib.bip32.fromSeed(bytes);
+    }
+
+    const xpubs = [0, 1, 2].map((suffix) => genWithSuffix(`/${suffix}`).neutered().toBase58());
+    xpubs.forEach((p) => console.log(p));
+  },
+};
+
+export const cmdGenerateAddress: yargs.CommandModule<
+  unknown,
+  {
+    network: string;
+    xpubs: (string | number)[];
+    chain: number;
+    index: number;
+  }
+> = {
+  command: 'generateAddress',
+
+  builder(b) {
+    return b
+      .option('network', { alias: 'n', type: 'string', default: 'bitcoin' })
+      .option('xpubs', { type: 'string', demandOption: true })
+      .array('xpubs')
+      .option('chain', { type: 'number', demandOption: true })
+      .option('index', { type: 'number', demandOption: true });
+  },
+
+  handler(argv) {
+    const { xpubs } = argv;
+    xpubs.forEach((v) => {
+      assert(typeof v === 'string');
+    });
+    return generateAddress({
+      ...argv,
+      xpubs: argv.xpubs as string[],
+      network: getNetwork(argv),
+    });
+  },
+};
