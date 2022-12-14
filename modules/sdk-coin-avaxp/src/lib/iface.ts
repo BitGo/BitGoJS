@@ -34,6 +34,8 @@ export interface TxData {
   signatures: string[];
   outputs: Entry[];
   changeOutputs: Entry[];
+  sourceChain?: string;
+  destinationChain?: string;
 }
 
 /**
