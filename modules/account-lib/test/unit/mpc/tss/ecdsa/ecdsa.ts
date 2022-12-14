@@ -1,4 +1,5 @@
 import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -17,6 +18,12 @@ describe('TSS ECDSA TESTS', function () {
     '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
     'hex',
   );
+  function bigIntFromBufferBE(buf: Buffer): bigint {
+    return BigInt('0x' + buf.toString('hex'));
+  }
+  const bip32ParentSk = 'ae2530183a6de2477c4c36af9fcddf00b24c3ffd3358f1956f1eccda5f1cdbbe';
+  const bip32ParentPk = '027259b4fea13585b85b0dff181886ea6a1abca818539d25c408c5ecfea776ae5f';
+  const bip32ParentChaincode = 'baf41c6b7d19a6be71ecf41188a56cf401d42250fa8dfa8c1660ef1ce3513454';
   before(async () => {
     const pallierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
@@ -136,6 +143,50 @@ describe('TSS ECDSA TESTS', function () {
         }
       }
     });
+
+    it('should derive bip32 child private key correctly', async function () {
+      const parentSk = Buffer.from(bip32ParentSk, 'hex');
+      const parentPk = Buffer.from(bip32ParentPk, 'hex');
+      const parentChaincode = Buffer.from(bip32ParentChaincode, 'hex');
+
+      for (let index = 0; index < 10; index++) {
+        const path = `m/0/1/${index}`;
+        const childNodeActual = Ecdsa.hdTree.privateDerive(
+          {
+            pk: bigIntFromBufferBE(parentPk),
+            sk: bigIntFromBufferBE(parentSk),
+            chaincode: bigIntFromBufferBE(parentChaincode),
+          },
+          path,
+        );
+
+        const childNodeExpected = bip32.fromPrivateKey(parentSk, parentChaincode).derivePath(path);
+
+        childNodeActual.pk.toString(16).should.equal(childNodeExpected.publicKey.toString('hex').slice(1));
+        childNodeActual.sk.toString(16).should.equal(childNodeExpected.privateKey?.toString('hex'));
+        childNodeActual.chaincode.toString(16).should.equal(childNodeExpected.chainCode.toString('hex'));
+      }
+    });
+
+    it('should derive bip32 child public key correctly', async function () {
+      const parentPk = Buffer.from(bip32ParentPk, 'hex');
+      const parentChaincode = Buffer.from(bip32ParentChaincode, 'hex');
+      for (let index = 0; index < 10; index++) {
+        const path = `m/0/1/${index}`;
+        const childNodeActual = Ecdsa.hdTree.publicDerive(
+          {
+            pk: bigIntFromBufferBE(parentPk),
+            chaincode: bigIntFromBufferBE(parentChaincode),
+          },
+          path,
+        );
+
+        const childNodeExpected = bip32.fromPublicKey(parentPk, parentChaincode).derivePath(path);
+
+        childNodeActual.pk.toString(16).should.equal(childNodeExpected.publicKey.toString('hex').slice(1));
+        childNodeActual.chaincode.toString(16).should.equal(childNodeExpected.chainCode.toString('hex'));
+      }
+    });
   });
 
   describe('ECDSA Signing', async function () {
@@ -165,7 +216,7 @@ describe('TSS ECDSA TESTS', function () {
       ];
     });
 
-    for (let index = 0; index < 8; index++) {
+    for (let index = 0; index < 9; index++) {
       it(`should properly sign the message case ${index}`, async function () {
         // Step One
         // signerOne, signerTwo have decided to sign the message
