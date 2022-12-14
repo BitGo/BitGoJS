@@ -184,7 +184,7 @@ export class Wallets implements IWallets {
     const label = params.label;
     const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
-    const isCold = !!params.userKey;
+    const isCold = !!params.userKey && params.multisigType !== 'onchain';
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
       m: 2,
