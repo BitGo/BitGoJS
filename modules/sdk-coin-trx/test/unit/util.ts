@@ -147,4 +147,22 @@ describe('Util library should', function () {
     should.equal(parsedTx.actives[0].type, 2);
     should.equal(parsedTx.actives[0].threshold, 2);
   });
+
+  it('should encode and decode data parameters for transfer', () => {
+    const types = ['address', 'uint256'];
+    const amount = 1000000000;
+    const values = [addressHex, amount];
+    const methodId = '0xa9059cbb';
+    const data = Utils.encodeDataParams(types, values, methodId);
+    data.should.equal(
+      'a9059cbb0000000000000000000000002c2ba4a9ff6c53207dc5b686bfecf75ea7b80577000000000000000000000000000000000000000000000000000000003b9aca00'
+    );
+
+    const decodedData = Utils.decodeDataParams(
+      types,
+      'a9059cbb0000000000000000000000002c2ba4a9ff6c53207dc5b686bfecf75ea7b80577000000000000000000000000000000000000000000000000000000003b9aca00'
+    );
+    decodedData[0].should.equal(addressHex.toLocaleLowerCase());
+    decodedData[1].toNumber().should.equal(amount);
+  });
 });

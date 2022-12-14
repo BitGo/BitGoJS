@@ -3,6 +3,7 @@ export * from './address';
 export * from './transaction';
 export * from './wrappedBuilder';
 export * from './contractCallBuilder';
+export * from './builder';
 
 import * as Enum from './enum';
 import * as Interface from './iface';

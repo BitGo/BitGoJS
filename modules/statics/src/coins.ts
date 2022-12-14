@@ -1616,6 +1616,8 @@ export const coins = CoinMap.fromCoins([
   ),
   tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65', UnderlyingAsset.WBTC),
   tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
+  tronToken('trx:usdc', 'USD Coin', 6, 'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8', UnderlyingAsset.USDC),
+  tronToken('trx:usdt', 'Tether USD', 6, 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', UnderlyingAsset.USDT),
   algoToken(
     'algo:USDC-31566704',
     undefined,
@@ -2277,6 +2279,8 @@ export const coins = CoinMap.fromCoins([
   ),
   ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf', UnderlyingAsset.WBTC),
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
+  ttronToken('ttrx:usdc', 'USD Coin', 6, 'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id', UnderlyingAsset.USDC),
+  ttronToken('ttrx:usdt', 'Tether USD', 6, 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs', UnderlyingAsset.USDT),
   talgoToken(
     'talgo:USDC-10458941',
     undefined,
