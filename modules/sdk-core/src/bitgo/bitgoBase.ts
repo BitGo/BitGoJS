@@ -1,5 +1,6 @@
 import { BitGoRequest, DecryptOptions, EncryptOptions, GetSharingKeyOptions, IRequestTracer } from '../api';
 import { IBaseCoin } from './baseCoin';
+import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
 
 export interface BitGoBase {
@@ -19,4 +20,5 @@ export interface BitGoBase {
   put(url: string): BitGoRequest;
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
+  register(name: string, coin: CoinConstructor): void;
 }
