@@ -43,7 +43,20 @@ describe('Sui Transaction Builder', async () => {
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX);
     const reserialized = await factory.from(rawTx).build();
-    reserialized.should.be.deepEqual(tx);
+    reserialized.inputs.should.deepEqual([
+      {
+        address: testData.sender.address,
+        value: '',
+        coin: 'tsui',
+      },
+    ]);
+    reserialized.outputs.should.deepEqual([
+      {
+        address: testData.recipients[0],
+        value: '',
+        coin: 'tsui',
+      },
+    ]);
     reserialized.toBroadcastFormat().should.equal(rawTx);
   });
 
@@ -70,6 +83,7 @@ describe('Sui Transaction Builder', async () => {
     const reserializedTxBuilder = factory.from(rawSignedTx);
     reserializedTxBuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
     const reserialized = await reserializedTxBuilder.build();
+
     reserialized.should.be.deepEqual(signedTx);
     reserialized.toBroadcastFormat().should.equal(rawSignedTx);
   });
@@ -291,9 +305,9 @@ describe('Sui Transaction Builder', async () => {
           txBuilder.payTx({
             coins: testData.coinsWithGasPayment,
             recipients: testData.recipients,
-            amounts: [0],
+            amounts: [-1],
           })
-        ).throw('Invalid or missing amounts, got: 0');
+        ).throw('Invalid or missing amounts, got: -1');
       }
     });
   });

@@ -36,7 +36,6 @@ export interface PayAllSuiTxDetails {
   PayAllSui: {
     coins: SuiObjectRef[];
     recipient: string;
-    amount: number;
   };
 }
 
