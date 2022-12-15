@@ -913,7 +913,7 @@ export class Eth extends BaseCoin {
    * @param replayProtectionOptions
    * @returns {Promise<OfflineVaultTxInfo>}
    */
-  async formatForOfflineVaultTSS(
+  formatForOfflineVaultTSS(
     txInfo: UnformattedTxInfo,
     ethTx: EthTxLib.Transaction | EthTxLib.FeeMarketEIP1559Transaction,
     userKey: string,
@@ -923,7 +923,7 @@ export class Eth extends BaseCoin {
     backupKeyNonce: number,
     eip1559?: EIP1559,
     replayProtectionOptions?: ReplayProtectionOptions
-  ): Promise<OfflineVaultTxInfo> {
+  ): OfflineVaultTxInfo {
     if (!ethTx.to) {
       throw new Error('Eth tx must have a `to` address');
     }
@@ -1175,7 +1175,7 @@ export class Eth extends BaseCoin {
    * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param params.recoveryDestination {String} target address to send recovered funds to
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo | ECDSAMethodTypes.Signature> {
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     if (params.isTss) {
       return this.recoverTSS(params);
     }
