@@ -1,13 +1,11 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
-import * as opcodes from 'bitcoin-ops';
 
 import { Network, supportsSegwit, supportsTaproot, taproot } from '..';
 
 import { isTriple, Triple, Tuple } from './types';
 
 import { ecc as eccLib } from '../noble_ecc';
-import { script as bscript } from 'bitcoinjs-lib';
 
 export { scriptTypeForChain } from './wallet/chains';
 
@@ -287,23 +285,4 @@ function createTaprootScript2of3(pubkeys: Triple<Buffer>): SpendableScript {
   return {
     scriptPubKey: output,
   };
-}
-
-/**
- * @param script Bitgo taproot script path script
- * @return 2 public keys from the script
- */
-export function parseTaprootScript2of3PubKeys(script: Buffer): [Buffer, Buffer] {
-  const decompiled = bscript.decompile(script);
-  if (!decompiled || decompiled?.length !== 4) {
-    throw new Error('Not a valid bitgo n-of-n script.');
-  }
-  const [pubkey1, op_checksigverify, pubkey2, op_checksig] = decompiled;
-  if (!Buffer.isBuffer(pubkey1) || !Buffer.isBuffer(pubkey2)) {
-    throw new Error('Public Keys are not buffers.');
-  }
-  if (op_checksigverify !== opcodes.OP_CHECKSIGVERIFY || op_checksig !== opcodes.OP_CHECKSIG) {
-    throw new Error('Opcodes do not correspond to a valid bitgo script');
-  }
-  return [pubkey1, pubkey2];
 }

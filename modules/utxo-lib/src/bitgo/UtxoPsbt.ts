@@ -8,7 +8,8 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { parseTaprootScript2of3PubKeys, toXOnlyPublicKey } from './outputScripts';
+import { toXOnlyPublicKey } from './outputScripts';
+import { parsePubScript } from './parseInput';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -64,7 +65,21 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  /**
+   * @return true iff PSBT input is finalized
+   */
+  isInputFinalized(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
+  }
+
+  /**
+   * @return partialSig/tapScriptSig count iff input is not finalized
+   */
   getSignatureCount(inputIndex: number): number {
+    if (this.isInputFinalized(inputIndex)) {
+      throw new Error('Input is already finalized');
+    }
     const input = checkForInput(this.data.inputs, inputIndex);
     return Math.max(
       Array.isArray(input.partialSig) ? input.partialSig.length : 0,
@@ -167,7 +182,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const [pubkey1, pubkey2] = parseTaprootScript2of3PubKeys(script);
+    const [pubkey1, pubkey2] = parsePubScript(script, 'p2tr').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {

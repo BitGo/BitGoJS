@@ -1,7 +1,7 @@
 import * as opcodes from 'bitcoin-ops';
 import { TxInput, script as bscript } from 'bitcoinjs-lib';
 
-import { isScriptType2Of3, ScriptType } from './outputScripts';
+import { isScriptType2Of3, ScriptType, ScriptType2Of3 } from './outputScripts';
 import { isTriple } from './types';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
@@ -11,14 +11,65 @@ export function isPlaceholderSignature(v: number | Buffer): boolean {
   return v === 0;
 }
 
-export interface ParsedSignatureScript {
+/**
+ * @return true iff P2TR script path's control block matches BitGo's need
+ */
+export function isValidControlBock(controlBlock: Buffer): boolean {
+  // The last stack element is called the control block c, and must have length 33 + 32m
+  return Buffer.isBuffer(controlBlock) && 33 <= controlBlock.length && controlBlock.length % 32 === 1;
+}
+
+/**
+ * @return script path level for P2TR control block
+ */
+export function calculateScriptPathLevel(controlBlock: Buffer): number {
+  if (!Buffer.isBuffer(controlBlock)) {
+    throw new Error('Invalid control block type.');
+  }
+  if (controlBlock.length === 65) {
+    return 1;
+  }
+  if (controlBlock.length === 97) {
+    return 2;
+  }
+  throw new Error('unexpected control block length.');
+}
+
+/**
+ * @return leaf version for P2TR control block.
+ */
+export function getScriptPathLevel(controlBlock: Buffer): number {
+  if (Buffer.isBuffer(controlBlock) && controlBlock.length > 0) {
+    return controlBlock[0] & 0xfe;
+  }
+  throw new Error('unexpected leafVersion.');
+}
+
+interface ParsedScript {
   scriptType: ScriptType;
 }
+
+export type ParsedPubScript = ParsedScript;
+export type ParsedSignatureScript = ParsedScript;
 
 export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
   publicKeys: [Buffer];
   signatures: [Buffer];
+}
+
+export interface ParsedPubScriptTaprootScriptPath extends ParsedPubScript {
+  scriptType: 'p2tr';
+  publicKeys: [Buffer, Buffer];
+  pubScript: Buffer;
+}
+
+export interface ParsedPubScript2Of3 extends ParsedPubScript {
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
+  publicKeys: [Buffer, Buffer, Buffer];
+  pubScript: Buffer;
+  redeemScript: Buffer | undefined;
+  witnessScript: Buffer | undefined;
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
@@ -150,8 +201,7 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
       case ':signature':
         return Buffer.isBuffer(e) || isPlaceholderSignature(e);
       case ':control-block':
-        // The last stack element is called the control block c, and must have length 33 + 32m
-        return Buffer.isBuffer(e) && 33 <= e.length && e.length % 32 === 1;
+        return Buffer.isBuffer(e) && isValidControlBock(e);
       default:
         throw new Error(`unknown pattern element ${p}`);
     }
@@ -239,6 +289,13 @@ type InputScriptsUnknown = InputScripts<DecompiledScript | null, Buffer[] | null
 
 type InputParser<T extends ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot> = (
   p: InputScriptsUnknown
+) => T | MatchError;
+
+export type InputPubScript = Buffer;
+
+type PubScriptParser<T extends ParsedPubScriptTaprootScriptPath | ParsedPubScript2Of3> = (
+  p: InputPubScript,
+  ScriptType2Of3
 ) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
@@ -336,12 +393,9 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
     return match;
   }
   const [controlBlock] = match[':control-block'];
-  const scriptPathLevel = controlBlock.length === 65 ? 1 : controlBlock.length === 97 ? 2 : undefined;
+  const scriptPathLevel = calculateScriptPathLevel(controlBlock);
 
-  /* istanbul ignore next */
-  if (scriptPathLevel === undefined) {
-    throw new Error(`unexpected control block length ${controlBlock.length}`);
-  }
+  const leafVersion = getScriptPathLevel(controlBlock);
 
   return {
     scriptType: 'p2tr',
@@ -350,7 +404,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
     signatures: match[':signature'] as [Buffer, Buffer],
     controlBlock,
     scriptPathLevel,
-    leafVersion: controlBlock[0] & 0xfe,
+    leafVersion,
   };
 };
 
@@ -396,4 +450,74 @@ export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2
   }
 
   return result as ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot;
+}
+
+const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (
+  pubScript,
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
+) => {
+  const match = matchScript(
+    [pubScript],
+    [{ ':script': ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'] }]
+  );
+  if (match instanceof MatchError) {
+    return match;
+  }
+
+  const [redeemScript] = match[':script'];
+
+  if (!isTriple(redeemScript.match[':pubkey'])) {
+    throw new Error('invalid pubkey count');
+  }
+
+  return {
+    scriptType,
+    publicKeys: redeemScript.match[':pubkey'],
+    pubScript: redeemScript.buffer,
+    redeemScript: scriptType === 'p2sh' ? redeemScript.buffer : undefined,
+    witnessScript: scriptType === 'p2shP2wsh' || scriptType === 'p2wsh' ? redeemScript.buffer : undefined,
+  };
+};
+
+const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> = (pubScript, scriptType: 'p2tr') => {
+  const match = matchScript(
+    [pubScript],
+    [{ ':script': [':pubkey-xonly', 'OP_CHECKSIGVERIFY', ':pubkey-xonly', 'OP_CHECKSIG'] }]
+  );
+  if (match instanceof MatchError) {
+    return match;
+  }
+
+  return {
+    scriptType: 'p2tr',
+    pubScript: match[':script'][0].buffer,
+    publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
+  };
+};
+
+/**
+ * @return pubScript (scriptPubKey/redeemScript/witnessScript) is parsed.
+ * P2SH => scriptType, pubScript (redeemScript), redeemScript, public keys
+ * PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
+ * P2SH-PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
+ * P2TR => scriptType, pubScript, controlBlock, scriptPathLevel, leafVersion, pub keys, signatures.
+ */
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: ScriptType2Of3
+): ParsedPubScript2Of3 | ParsedPubScriptTaprootScriptPath {
+  const result =
+    scriptType === 'p2tr'
+      ? parseP2tr2Of3PubScript(inputPubScript, scriptType)
+      : parseP2msPubScript(inputPubScript, scriptType);
+
+  if (result instanceof MatchError) {
+    throw new Error(result.message);
+  }
+
+  if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
+    throw new Error('unexpected pubkey count');
+  }
+
+  return result;
 }
