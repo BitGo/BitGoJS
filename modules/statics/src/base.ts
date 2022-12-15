@@ -233,6 +233,7 @@ export enum UnderlyingAsset {
   ALTBEAR = 'altbear',
   ALTBULL = 'altbull',
   ALTHEDGE = 'althedge',
+  AMKT = 'amkt',
   AMN = 'amn',
   AMO = 'amo',
   AMP = 'amp',
@@ -467,6 +468,7 @@ export enum UnderlyingAsset {
   FIXED = 'fixed',
   FLY = 'fly',
   FMF = 'fmf',
+  FORT = 'fort',
   FORTH = 'forth',
   FRAX = 'frax',
   FRONT = 'front',
@@ -1117,6 +1119,7 @@ export enum UnderlyingAsset {
   'polygon:fcd' = 'polygon:fcd',
   'polygon:ape' = 'polygon:ape',
   'polygon:srm' = 'polygon:srm',
+  'polygon:fly' = 'polygon:fly',
 
   // Polygon NFTs
   // generic NFTs
