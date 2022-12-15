@@ -1402,7 +1402,6 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcelf', 'Aelf', 18, UnderlyingAsset.ELF),
   ofcerc20('ofcens', 'Ethereum Name Service', 18, UnderlyingAsset.ENS),
   ofcerc20('ofceurs', 'Stasis EURS', 2, UnderlyingAsset.EURS),
-  ofcerc20('ofcfil', 'Filecoin', 18, UnderlyingAsset.FIL),
   ofcerc20('ofcftt', 'FTX Token', 18, UnderlyingAsset.FTT),
   ofcerc20('ofcfun', 'FunFair', 8, UnderlyingAsset.FUN),
   ofcerc20('ofcfxs', 'Frax Share', 18, UnderlyingAsset.FXS),
