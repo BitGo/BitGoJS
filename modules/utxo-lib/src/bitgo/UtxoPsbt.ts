@@ -64,7 +64,21 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  /**
+   * @return true iff PSBT input is finalized
+   */
+  isInputFinalized(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
+  }
+
+  /**
+   * @return partialSig/tapScriptSig count iff input is not finalized
+   */
   getSignatureCount(inputIndex: number): number {
+    if (this.isInputFinalized(inputIndex)) {
+      throw new Error('Input is already finalized');
+    }
     const input = checkForInput(this.data.inputs, inputIndex);
     return Math.max(
       Array.isArray(input.partialSig) ? input.partialSig.length : 0,

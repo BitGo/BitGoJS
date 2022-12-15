@@ -11,6 +11,8 @@ import {
   fromOutputWithPrevTx,
   isSegwit,
   fromOutput,
+  outputScripts,
+  getExternalChainCode,
 } from '../../../src/bitgo';
 
 import {
@@ -26,6 +28,7 @@ import { mockTransactionId } from '../../transaction_util';
 import * as utxolib from '../../../src';
 import * as noble from '@noble/secp256k1';
 import { BIP32Interface } from 'bip32';
+import { InputType } from '../psbt/Psbt';
 
 export function mockOutputId(vout: number): string {
   return formatOutputId({
@@ -123,4 +126,22 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
       value,
     };
   }
+}
+
+export function mockUnspents<TNumber extends number | bigint>(
+  rootWalletKeys: RootWalletKeys,
+  inputScriptTypes: InputType[],
+  testOutputAmount: TNumber,
+  network: Network
+): WalletUnspent<TNumber>[] {
+  return inputScriptTypes.map((t, i): WalletUnspent<TNumber> => {
+    if (outputScripts.isScriptType2Of3(t)) {
+      return mockWalletUnspent(network, testOutputAmount, {
+        keys: rootWalletKeys,
+        chain: getExternalChainCode(t),
+        vout: i,
+      });
+    }
+    throw new Error(`invalid input type ${t}`);
+  });
 }

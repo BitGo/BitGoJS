@@ -1,185 +1,177 @@
 import * as assert from 'assert';
 
 import { networks } from '../../../src';
-import {
-  isWalletUnspent,
-  Unspent,
-  createTransactionBuilderForNetwork,
-  getInternalChainCode,
-  getExternalChainCode,
-  addToTransactionBuilder,
-  signInputWithUnspent,
-  WalletUnspentSigner,
-  RootWalletKeys,
-  outputScripts,
-  unspentSum,
-  getWalletAddress,
-  toTNumber,
-  UtxoTransaction,
-  KeyName,
-  WalletUnspent,
-  UtxoTransactionBuilder,
-  scriptTypeForChain,
-  UtxoPsbt,
-  parseSignatureScript2Of3,
-} from '../../../src/bitgo';
+import { getExternalChainCode, outputScripts, KeyName } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
-import { mockWalletUnspent } from '../wallet/util';
 import { defaultTestOutputAmount } from '../../transaction_util';
-import { toWalletPsbt, signWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
+import { parsePsbtInput, toWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
+import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
+import { createOutputScript2of3 } from '../../../src/bitgo/outputScripts';
+import { mockUnspents } from '../wallet/util';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
 
-type InputType = outputScripts.ScriptType2Of3 | 'p2shP2pk';
-type SignatureTargetType = 'unsigned' | 'halfsigned' | 'fullsigned';
+export type AmountType = 'number' | 'bigint';
+export type InputType = outputScripts.ScriptType2Of3;
+export type SignatureTargetType = 'unsigned' | 'halfsigned' | 'fullsigned';
+
+const network = networks.bitcoin;
+const rootWalletKeys = getDefaultWalletKeys();
+
+describe('Parse PSBT', function () {
+  it('fail to parse finalized psbt', function () {
+    const unspents = mockUnspents(
+      rootWalletKeys,
+      outputScripts.scriptTypes2Of3.map((inputType) => inputType),
+      BigInt('10000000000000000'),
+      network
+    );
+    const txBuilderParams = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'fullsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+    const tx = constructTransactionUsingTxBuilder(unspents, rootWalletKeys, txBuilderParams);
+    const psbt = toWalletPsbt(tx, toBigInt(unspents), rootWalletKeys);
+    psbt.validateSignaturesOfAllInputs();
+    psbt.finalizeAllInputs();
+    psbt.data.inputs.forEach((input, i) => {
+      assert.throws(
+        () => parsePsbtInput(psbt, i),
+        (e) => e.message === 'Finalized PSBT parsing is not supported'
+      );
+    });
+  });
+
+  it('fail to parse input with more than one script type metadata', function () {
+    const unspents = mockUnspents(rootWalletKeys, ['p2tr'], BigInt('10000000000000000'), network);
+
+    const txBuilderParams = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'halfsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+
+    const txP2tr = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams);
+    const psbtP2tr = toWalletPsbt(txP2tr, toBigInt([unspents[0]]), rootWalletKeys);
+
+    const walletKeys = rootWalletKeys.deriveForChainAndIndex(getExternalChainCode('p2sh'), 0);
+    const { redeemScript } = createOutputScript2of3(walletKeys.publicKeys, 'p2sh');
+    psbtP2tr.updateInput(0, { redeemScript });
+
+    assert.throws(
+      () => parsePsbtInput(psbtP2tr, 0),
+      (e) => e.message === 'Found both p2sh and p2tr PSBT metadata.'
+    );
+  });
+
+  it('fail to parse more than one tap leaf script per input', function () {
+    const unspents = mockUnspents(rootWalletKeys, ['p2tr'], BigInt('10000000000000000'), network);
+
+    const txBuilderParams = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'halfsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+
+    const txP2tr1 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams);
+    const psbtP2tr1 = toWalletPsbt(txP2tr1, toBigInt([unspents[0]]), rootWalletKeys);
+
+    const txBuilderParams2 = {
+      signer: 'user' as KeyName,
+      cosigner: 'backup' as KeyName,
+      amountType: 'bigint' as AmountType,
+      outputType: 'p2sh' as InputType,
+      signatureTarget: 'halfsigned' as SignatureTargetType,
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    };
+
+    const txP2tr2 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams2);
+    const psbtP2tr2 = toWalletPsbt(txP2tr2, toBigInt([unspents[0]]), rootWalletKeys);
+
+    const txBuilderParams3 = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'unsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+    const txP2tr3 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams3);
+    const psbtP2tr3 = toWalletPsbt(txP2tr3, toBigInt([unspents[0]]), rootWalletKeys);
+    if (psbtP2tr1.data.inputs[0].tapLeafScript && psbtP2tr2.data.inputs[0].tapLeafScript) {
+      const tapLeafScripts = [psbtP2tr1.data.inputs[0].tapLeafScript[0], psbtP2tr2.data.inputs[0].tapLeafScript[0]];
+      psbtP2tr3.updateInput(0, { tapLeafScript: tapLeafScripts });
+
+      assert.throws(
+        () => parsePsbtInput(psbtP2tr3, 0),
+        (e) => e.message === 'Bitgo only supports a single tap leaf script per input.'
+      );
+    }
+  });
+
+  it('fail to parse input with signatures and without script', function () {
+    const unspents = mockUnspents(rootWalletKeys, ['p2tr'], BigInt('10000000000000000'), network);
+
+    const txBuilderParams = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'halfsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+
+    const txP2tr1 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams);
+    const psbtP2tr1 = toWalletPsbt(txP2tr1, toBigInt([unspents[0]]), rootWalletKeys);
+
+    const txBuilderParams2 = {
+      signer: 'user',
+      cosigner: 'bitgo',
+      amountType: 'bigint',
+      outputType: 'p2sh',
+      signatureTarget: 'unsigned',
+      network,
+      changeIndex: CHANGE_INDEX,
+      fee: FEE,
+    } as const;
+    const txP2tr2 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams2);
+    const psbtP2tr2 = toWalletPsbt(txP2tr2, toBigInt([unspents[0]]), rootWalletKeys);
+    if (psbtP2tr1.data.inputs[0].tapScriptSig) {
+      psbtP2tr2.updateInput(0, { tapScriptSig: psbtP2tr1.data.inputs[0].tapScriptSig });
+
+      assert.throws(
+        () => parsePsbtInput(psbtP2tr2, 0),
+        (e) => e.message === 'Invalid PSBT state. Signatures found without scripts.'
+      );
+    }
+  });
+});
 
 describe('Psbt from transaction using wallet unspents', function () {
-  const network = networks.bitcoin;
-  const rootWalletKeys = getDefaultWalletKeys();
-
-  function signTxBuilder<TNumber extends number | bigint>(
-    txb: UtxoTransactionBuilder<TNumber, UtxoTransaction<TNumber>>,
-    unspents: Unspent<TNumber>[],
-    signer: string,
-    cosigner: string,
-    signatureTarget: SignatureTargetType
-  ) {
-    let walletUnspentSigners: WalletUnspentSigner<RootWalletKeys>[] = [];
-
-    if (signatureTarget === 'halfsigned') {
-      walletUnspentSigners = [
-        WalletUnspentSigner.from(rootWalletKeys, rootWalletKeys[signer], rootWalletKeys[cosigner]),
-      ];
-    } else if (signatureTarget === 'fullsigned') {
-      walletUnspentSigners = [
-        WalletUnspentSigner.from(rootWalletKeys, rootWalletKeys[signer], rootWalletKeys[cosigner]),
-        WalletUnspentSigner.from(rootWalletKeys, rootWalletKeys[cosigner], rootWalletKeys[signer]),
-      ];
-    }
-
-    walletUnspentSigners.forEach((walletSigner, nSignature) => {
-      unspents.forEach((u, i) => {
-        if (isWalletUnspent(u)) {
-          signInputWithUnspent(txb, i, u, walletSigner);
-        } else {
-          throw new Error(`unexpected unspent ${u.id}`);
-        }
-      });
-    });
-
-    return signatureTarget === 'fullsigned' ? txb.build() : txb.buildIncomplete();
-  }
-
-  function verifyHalfSignedSignature(
-    tx: UtxoTransaction<bigint>,
-    psbt: UtxoPsbt<UtxoTransaction<bigint>>,
-    unspents: WalletUnspent<bigint>[]
-  ) {
-    unspents.forEach((u, i) => {
-      if (isWalletUnspent(u)) {
-        const txScript = parseSignatureScript2Of3(tx.ins[i]);
-
-        let psbtSigs: Buffer[] | undefined;
-        if (psbt.data.inputs[i].tapScriptSig) {
-          psbtSigs = psbt.data.inputs[i].tapScriptSig?.map((sig) => sig.signature);
-        } else if (psbt.data.inputs[i].partialSig) {
-          psbtSigs = psbt.data.inputs[i].partialSig?.map((sig) => sig.signature);
-        } else {
-          assert.fail(`missing half signed signatures in psbt for ${u.id}`);
-        }
-
-        assert.deepStrictEqual(
-          psbtSigs && psbtSigs.length === 1,
-          true,
-          `Invalid half signed signatures count in psbt for ${u.id}`
-        );
-
-        const psbtSig = (psbtSigs as Buffer[])[0];
-        const sigMatched = txScript.signatures.some((txSig) => Buffer.isBuffer(txSig) && txSig.equals(psbtSig));
-        assert.deepStrictEqual(sigMatched, true);
-      } else {
-        throw new Error(`invalid input type at ${i}`);
-      }
-    });
-  }
-
-  function constructTransactionUsingTxBuilder<TNumber extends number | bigint>(
-    unspents: Unspent<TNumber>[],
-    signer: string,
-    cosigner: string,
-    amountType: 'number' | 'bigint' = 'number',
-    outputType: outputScripts.ScriptType2Of3,
-    signatureTarget: SignatureTargetType
-  ) {
-    const txb = createTransactionBuilderForNetwork<TNumber>(network);
-    const total = BigInt(unspentSum<TNumber>(unspents, amountType));
-    // Kinda weird, treating entire value as change, but tests the relevant paths
-    txb.addOutput(
-      getWalletAddress(rootWalletKeys, getInternalChainCode(outputType), CHANGE_INDEX, network),
-      toTNumber<TNumber>(total - FEE, amountType)
-    );
-    unspents.forEach((u) => {
-      addToTransactionBuilder(txb, u);
-    });
-
-    return signTxBuilder<TNumber>(txb, unspents, signer, cosigner, signatureTarget);
-  }
-
-  function constructPsbtUsingTransactionAndSign(
-    tx: UtxoTransaction<bigint>,
-    unspents: WalletUnspent<bigint>[],
-    signer: KeyName,
-    cosigner: KeyName,
-    signatureTarget: SignatureTargetType
-  ) {
-    // converted psbt is signed as per signatureTarget
-    const psbt = toWalletPsbt(tx, unspents, rootWalletKeys);
-    if (signatureTarget === 'fullsigned') {
-      return psbt;
-    }
-
-    if (signatureTarget === 'halfsigned') {
-      verifyHalfSignedSignature(tx, psbt, unspents);
-    }
-
-    // Now signing to make it fully signed psbt.
-    // So it will be easy to verify its validity with another similar tx to be built with tx builder.
-    unspents.forEach((u, i) => {
-      if (isWalletUnspent(u)) {
-        try {
-          if (signatureTarget === 'unsigned') {
-            signWalletPsbt(psbt, i, rootWalletKeys[signer], u);
-          }
-          signWalletPsbt(psbt, i, rootWalletKeys[cosigner], u);
-
-          // unsigned p2tr does not contain tapLeafScript & tapBip32Derivation.
-          // So it's signing is expected to fail
-          assert.deepStrictEqual(
-            signatureTarget === 'unsigned' && scriptTypeForChain(u.chain) === 'p2tr',
-            false,
-            'unsigned p2tr sign should fail'
-          );
-        } catch (err) {
-          if (err.message === 'unsigned p2tr sign should fail') {
-            throw err;
-          }
-          assert.deepStrictEqual(signatureTarget, 'unsigned');
-          assert.deepStrictEqual(scriptTypeForChain(u.chain), 'p2tr');
-          assert.deepStrictEqual(psbt.data.inputs[i].tapLeafScript, undefined);
-          assert.deepStrictEqual(psbt.data.inputs[i].tapBip32Derivation, undefined);
-          assert.deepStrictEqual(psbt.data.inputs[i].tapScriptSig, undefined);
-          assert.ok(psbt.data.inputs[i].witnessUtxo);
-        }
-      } else {
-        throw new Error(`invalid unspent`);
-      }
-    });
-
-    return psbt;
-  }
-
   function runTestSignUnspents<TNumber extends number | bigint>({
     inputScriptTypes,
     outputScriptType,
@@ -197,38 +189,32 @@ describe('Psbt from transaction using wallet unspents', function () {
     testOutputAmount: TNumber;
     signatureTarget: SignatureTargetType;
   }) {
-    const unspents = inputScriptTypes.map((t, i): Unspent<TNumber> => {
-      if (outputScripts.isScriptType2Of3(t)) {
-        return mockWalletUnspent(network, testOutputAmount, {
-          keys: rootWalletKeys,
-          chain: getExternalChainCode(t),
-          vout: i,
-        });
-      }
-
-      throw new Error(`invalid input type ${t}`);
-    });
     it(`can be signed [inputs=${inputScriptTypes} signer=${signer} cosigner=${cosigner} amountType=${amountType} signatureTarget=${signatureTarget}]`, function () {
-      const tx = constructTransactionUsingTxBuilder(
-        unspents,
+      const unspents = mockUnspents(rootWalletKeys, inputScriptTypes, testOutputAmount, network);
+      // const txBuilderParams = { network, changeIndex: CHANGE_INDEX, fee: FEE };
+      const txBuilderParams = {
         signer,
         cosigner,
         amountType,
-        outputScriptType,
-        signatureTarget
-      );
+        outputType: outputScriptType,
+        signatureTarget: signatureTarget,
+        network,
+        changeIndex: CHANGE_INDEX,
+        fee: FEE,
+      };
+      const tx = constructTransactionUsingTxBuilder(unspents, rootWalletKeys, txBuilderParams);
 
-      const txBigInt = tx.clone<bigint>('bigint');
-      const unspentsBigInt = unspents.map((u) => {
-        if (isWalletUnspent(u)) {
-          return { ...u, value: BigInt(u.value) };
-        } else {
-          throw new Error(`invalid unspent`);
-        }
-      });
+      const unspentBigInt = toBigInt(unspents);
 
-      const psbt = constructPsbtUsingTransactionAndSign(txBigInt, unspentsBigInt, signer, cosigner, signatureTarget);
+      const psbt = toWalletPsbt(tx, unspentBigInt, rootWalletKeys);
 
+      validatePsbtParsing(tx, psbt, unspentBigInt, signatureTarget);
+
+      if (signatureTarget !== 'fullsigned') {
+        // Now signing to make it fully signed psbt.
+        // So it will be easy to verify its validity with another similar tx to be built with tx builder.
+        signPsbt(psbt, unspentBigInt, rootWalletKeys, signer, cosigner, signatureTarget);
+      }
       // unsigned p2tr does not contain tapLeafScript & tapBip32Derivation.
       // So it's signature validation is expected to fail
       const containsP2trInput = inputScriptTypes.includes('p2tr');
@@ -242,14 +228,19 @@ describe('Psbt from transaction using wallet unspents', function () {
         psbt.finalizeAllInputs();
         const txFromPsbt = psbt.extractTransaction();
 
-        const txFromTxBuilder = constructTransactionUsingTxBuilder(
-          unspents,
+        const txBuilderParams2 = {
           signer,
           cosigner,
           amountType,
-          outputScriptType,
-          'fullsigned'
-        );
+          outputType: outputScriptType,
+          signatureTarget: 'fullsigned' as SignatureTargetType,
+          network,
+          changeIndex: CHANGE_INDEX,
+          fee: FEE,
+        };
+
+        // New legacy tx resembles the signed psbt.
+        const txFromTxBuilder = constructTransactionUsingTxBuilder(unspents, rootWalletKeys, txBuilderParams2);
 
         assert.deepStrictEqual(txFromPsbt.getHash(), txFromTxBuilder.getHash());
       }
