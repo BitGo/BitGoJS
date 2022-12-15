@@ -17,38 +17,43 @@ import {
   BitGoBase,
   checkKrsProvider,
   common,
+  ECDSA,
+  Ecdsa,
+  ECDSAMethods,
+  ECDSAMethodTypes,
   EthereumLibraryUnavailableError,
   FeeEstimateOptions,
+  FullySignedTransaction,
   getIsKrsRecovery,
   getIsUnsignedSweep,
+  HalfSignedTransaction,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IWallet,
   KeyPair,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
-  UnexpectedAddressError,
   PresignTransactionOptions as BasePresignTransactionOptions,
+  Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  UnexpectedAddressError,
   Util,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
-  Recipient,
-  HalfSignedTransaction,
-  FullySignedTransaction,
-  MPCAlgorithm,
-  ECDSAMethods,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
-import { calculateForwarderV1Address, getProxyInitcode } from './lib';
-import { intToHex, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
+import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } from './lib';
+import { addHexPrefix, intToHex, stripHexPrefix } from 'ethereumjs-util';
+import BN from 'bn.js';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -205,13 +210,14 @@ export interface RecoverOptions {
   userKey: string;
   backupKey: string;
   walletPassphrase?: string;
-  walletContractAddress: string;
+  walletContractAddress: string; // use this as walletBaseAddress for TSS
   recoveryDestination: string;
   krsProvider?: string;
   gasPrice?: number;
   gasLimit?: number;
   eip1559?: EIP1559;
   replayProtectionOptions?: ReplayProtectionOptions;
+  isTss?: boolean;
 }
 
 export interface BuildTransactionParams {
@@ -345,29 +351,39 @@ export class Eth extends BaseCoin {
     return new Eth(bitgo, staticsCoin);
   }
 
-  static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+  /**
+   * Gets correct Eth Common object based on params from either recovery or tx building
+   * @param eip1559 {EIP1559} configs that specify whether we should construct an eip1559 tx
+   * @param replayProtectionOptions {ReplayProtectionOptions} check if chain id supports replay protection
+   */
+  private static getEthCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions) {
     // if eip1559 params are specified, default to london hardfork, otherwise,
     // default to tangerine whistle to avoid replay protection issues
-    const defaultHardfork = !!params.eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
     const defaultCommon = new optionalDeps.EthCommon.default({
       chain: optionalDeps.EthCommon.Chain.Mainnet,
       hardfork: defaultHardfork,
     });
 
     // if replay protection options are set, override the default common setting
-    const ethCommon = params.replayProtectionOptions
-      ? optionalDeps.EthCommon.default.isSupportedChainId(
-          new optionalDeps.ethUtil.BN(params.replayProtectionOptions.chain)
-        )
+    const ethCommon = replayProtectionOptions
+      ? optionalDeps.EthCommon.default.isSupportedChainId(new optionalDeps.ethUtil.BN(replayProtectionOptions.chain))
         ? new optionalDeps.EthCommon.default({
-            chain: params.replayProtectionOptions.chain,
-            hardfork: params.replayProtectionOptions.hardfork,
+            chain: replayProtectionOptions.chain,
+            hardfork: replayProtectionOptions.hardfork,
           })
         : optionalDeps.EthCommon.default.custom({
-            chainId: new optionalDeps.ethUtil.BN(params.replayProtectionOptions.chain),
-            defaultHardfork: params.replayProtectionOptions.hardfork,
+            chainId: new optionalDeps.ethUtil.BN(replayProtectionOptions.chain),
+            defaultHardfork: replayProtectionOptions.hardfork,
           })
       : defaultCommon;
+    return ethCommon;
+  }
+
+  static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+    // if eip1559 params are specified, default to london hardfork, otherwise,
+    // default to tangerine whistle to avoid replay protection issues
+    const ethCommon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
 
     const baseParams = {
       to: params.to,
@@ -885,6 +901,52 @@ export class Eth extends BaseCoin {
   }
 
   /**
+   * Helper function for recover()
+   * This transforms the unsigned transaction information into a format the BitGo offline vault expects
+   * @param txInfo
+   * @param ethTx
+   * @param userKey
+   * @param backupKey
+   * @param gasPrice
+   * @param gasLimit
+   * @param eip1559
+   * @param replayProtectionOptions
+   * @returns {Promise<OfflineVaultTxInfo>}
+   */
+  formatForOfflineVaultTSS(
+    txInfo: UnformattedTxInfo,
+    ethTx: EthTxLib.Transaction | EthTxLib.FeeMarketEIP1559Transaction,
+    userKey: string,
+    backupKey: string,
+    gasPrice: Buffer,
+    gasLimit: number,
+    backupKeyNonce: number,
+    eip1559?: EIP1559,
+    replayProtectionOptions?: ReplayProtectionOptions
+  ): OfflineVaultTxInfo {
+    if (!ethTx.to) {
+      throw new Error('Eth tx must have a `to` address');
+    }
+    const response: OfflineVaultTxInfo = {
+      tx: ethTx.serialize().toString('hex'),
+      txHex: ethTx.getMessageToSign(false).toString('hex'),
+      userKey,
+      backupKey,
+      coin: this.getChain(),
+      gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+      gasLimit,
+      recipients: [txInfo.recipient],
+      walletContractAddress: ethTx.to.toString(),
+      amount: txInfo.recipient.amount,
+      backupKeyNonce: backupKeyNonce,
+      eip1559,
+      replayProtectionOptions,
+    };
+    _.extend(response, txInfo);
+    return response;
+  }
+
+  /**
    * Check whether the gas price passed in by user are within our max and min bounds
    * If they are not set, set them to the defaults
    * @param userGasPrice user defined gas price
@@ -929,7 +991,7 @@ export class Eth extends BaseCoin {
       throw new Error('missing backupKey');
     }
 
-    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
+    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub') && !params.isTss) {
       throw new Error('missing wallet passphrase');
     }
 
@@ -940,6 +1002,167 @@ export class Eth extends BaseCoin {
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
+  }
+
+  private signRecoveryTSS(
+    userKeyCombined: ECDSA.KeyCombined,
+    backupKeyCombined: ECDSA.KeyCombined,
+    txHex: string
+  ): ECDSAMethodTypes.Signature {
+    const MPC = new Ecdsa();
+
+    const signerOneIndex = userKeyCombined.xShare.i;
+    const signerTwoIndex = backupKeyCombined.xShare.i;
+    const signShares: ECDSA.SignShareRT = MPC.signShare(
+      userKeyCombined.xShare,
+      userKeyCombined.yShares[signerTwoIndex]
+    );
+
+    let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
+      xShare: backupKeyCombined.xShare,
+      yShare: backupKeyCombined.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
+      kShare: signShares.kShare,
+    });
+
+    const signConvertS12: ECDSA.SignConvertRT = MPC.signConvert({
+      aShare: signConvertS21.aShare,
+      wShare: signShares.wShare,
+    });
+
+    signConvertS21 = MPC.signConvert({
+      muShare: signConvertS12.muShare,
+      bShare: signConvertS21.bShare,
+    });
+
+    const [signCombineOne, signCombineTwo] = [
+      MPC.signCombine({
+        gShare: signConvertS12.gShare as ECDSA.GShare,
+        signIndex: {
+          i: (signConvertS12.muShare as ECDSA.MUShare).i,
+          j: (signConvertS12.muShare as ECDSA.MUShare).j,
+        },
+      }),
+      MPC.signCombine({
+        gShare: signConvertS21.gShare as ECDSA.GShare,
+        signIndex: {
+          i: (signConvertS21.muShare as ECDSA.MUShare).i,
+          j: (signConvertS21.muShare as ECDSA.MUShare).j,
+        },
+      }),
+    ];
+
+    const MESSAGE = Buffer.from(txHex, 'hex');
+
+    const [signA, signB] = [
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
+    ];
+
+    const signature = MPC.constructSignature([signA, signB]);
+
+    return signature;
+  }
+
+  /**
+   * Helper which combines key shares of user and backup
+   * */
+  private getKeyCombinedFromTssKeyShares(
+    userPublicOrPrivateKeyShare: string,
+    backupPrivateOrPublicKeyShare: string,
+    walletPassphrase?: string
+  ) {
+    let backupPrv;
+    let userPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupPrivateOrPublicKeyShare,
+        password: walletPassphrase,
+      });
+      userPrv = this.bitgo.decrypt({
+        input: userPublicOrPrivateKeyShare,
+        password: walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+
+    const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
+    const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
+
+    if (!userSigningMaterial.backupNShare) {
+      throw new Error('Invalid user key - missing backupNShare');
+    }
+
+    if (!backupSigningMaterial.userNShare) {
+      throw new Error('Invalid backup key - missing userNShare');
+    }
+
+    const MPC = new Ecdsa();
+
+    const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
+    const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
+      backupSigningMaterial.bitgoNShare,
+      backupSigningMaterial.userNShare,
+    ]);
+
+    if (
+      userKeyCombined.xShare.y !== backupKeyCombined.xShare.y ||
+      userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
+    ) {
+      throw new Error('Common keychains do not match');
+    }
+
+    return [userKeyCombined, backupKeyCombined];
+  }
+
+  /**
+   * Helper which Adds signatures to tx object and re-serializes tx
+   * */
+  private getSignedTxFromSignature(
+    ethCommon: EthCommon.default,
+    tx: EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction,
+    signature: ECDSAMethodTypes.Signature
+  ) {
+    // get signed Tx from signature
+    const txData = tx.toJSON();
+    const yParity = signature.recid;
+    const baseParams = {
+      to: txData.to,
+      nonce: new BN(stripHexPrefix(txData.nonce!), 'hex'),
+      value: new BN(stripHexPrefix(txData.value!), 'hex'),
+      gasLimit: new BN(stripHexPrefix(txData.gasLimit!), 'hex'),
+      data: txData.data,
+      r: addHexPrefix(signature.r),
+      s: addHexPrefix(signature.s),
+    };
+
+    let finalTx;
+    if (txData.maxFeePerGas && txData.maxPriorityFeePerGas) {
+      finalTx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          ...baseParams,
+          maxPriorityFeePerGas: new BN(stripHexPrefix(txData.maxPriorityFeePerGas!), 'hex'),
+          maxFeePerGas: new BN(stripHexPrefix(txData.maxFeePerGas!), 'hex'),
+          v: new BN(yParity.toString()),
+        },
+        { common: ethCommon }
+      );
+    } else if (txData.gasPrice) {
+      const v = BigInt(35) + BigInt(yParity) + BigInt(ethCommon.chainIdBN().toNumber()) * BigInt(2);
+      finalTx = LegacyTransaction.fromTxData(
+        {
+          ...baseParams,
+          v: new BN(v.toString()),
+          gasPrice: new BN(stripHexPrefix(txData.gasPrice!.toString()), 'hex'),
+        },
+        { common: ethCommon }
+      );
+    }
+
+    return finalTx;
   }
 
   /**
@@ -953,6 +1176,123 @@ export class Eth extends BaseCoin {
    * @param params.recoveryDestination {String} target address to send recovered funds to
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    if (params.isTss) {
+      return this.recoverTSS(params);
+    }
+    return this.recoverEth(params);
+  }
+
+  /**
+   * Recovers a tx with TSS key shares
+   * same expected arguments as recover method, but with TSS key shares
+   */
+  private async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    this.validateRecoveryParams(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    // Clean up whitespace from entered values
+    const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
+    const backupPrivateOrPublicKeyShare = params.backupKey.replace(/\s/g, '');
+
+    // Set new eth tx fees (using default config values from platform)
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+
+    let backupKeyAddress;
+    let userKeyCombined;
+    let backupKeyCombined;
+
+    if (isUnsignedSweep) {
+      const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
+      backupKeyAddress = backupKeyPair.getAddress();
+    } else {
+      [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+        userPublicOrPrivateKeyShare,
+        backupPrivateOrPublicKeyShare,
+        params.walletPassphrase
+      );
+      const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
+      backupKeyAddress = backupKeyPair.getAddress();
+    }
+
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+
+    // get balance of backupKey to ensure funds are available to pay fees
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
+      );
+    }
+
+    // get balance of wallet and deduct fees to get transaction amount, wallet contract address acts as base address for tss?
+    const txAmount = backupKeyBalance.sub(totalGasNeeded);
+
+    // build recipients object
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: txAmount.toString(10),
+      },
+    ];
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      gasLimit: gasLimit.toString(10),
+    };
+
+    const txParams = {
+      to: params.recoveryDestination, // no contract address, so this field should not be used anyways
+      nonce: backupKeyNonce,
+      value: txAmount,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: Buffer.from('0x'), // no contract call
+      eip1559: params.eip1559,
+      replayProtectionOptions: params.replayProtectionOptions,
+    };
+
+    let tx = Eth.buildTransaction(txParams);
+
+    if (isUnsignedSweep) {
+      return this.formatForOfflineVaultTSS(
+        txInfo,
+        tx,
+        userPublicOrPrivateKeyShare,
+        backupPrivateOrPublicKeyShare,
+        gasPrice,
+        gasLimit,
+        backupKeyNonce,
+        params.eip1559,
+        params.replayProtectionOptions
+      );
+    }
+
+    const signableHex = tx.getMessageToSign(false).toString('hex');
+
+    const signature = this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
+    tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
+
+    return {
+      id: addHexPrefix(tx.hash().toString('hex')),
+      tx: addHexPrefix(tx.serialize().toString('hex')),
+    };
+  }
+
+  /**
+   * Recovers a tx with non-TSS keys
+   * same expected arguments as recover method (original logic before adding TSS recover path)
+   */
+  private async recoverEth(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     const isKrsRecovery = getIsKrsRecovery(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
@@ -1080,8 +1420,7 @@ export class Eth extends BaseCoin {
       replayProtectionOptions: params.replayProtectionOptions,
     };
 
-    // Build contract call and sign it
-    let tx = Eth.buildTransaction(txParams);
+    const tx = Eth.buildTransaction(txParams);
 
     if (isUnsignedSweep) {
       return this.formatForOfflineVault(
@@ -1096,19 +1435,10 @@ export class Eth extends BaseCoin {
       );
     }
 
-    if (!isKrsRecovery) {
-      tx = tx.sign(backupSigningKey);
-    }
-
     const signedTx: RecoveryInfo = {
       id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
       tx: tx.serialize().toString('hex'),
     };
-
-    if (isKrsRecovery) {
-      signedTx.backupKey = backupKey;
-      signedTx.coin = this.getChain();
-    }
 
     return signedTx;
   }
