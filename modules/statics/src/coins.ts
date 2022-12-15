@@ -419,6 +419,13 @@ export const coins = CoinMap.fromCoins([
     '0xd829664cdbf3195b2ce76047a65de29e7ed0a9a8',
     UnderlyingAsset.ALTBULL
   ),
+  erc20(
+    'amkt',
+    'Alongside Crypto Market Index',
+    18,
+    '0xf17a3fe536f8f7847f1385ec1bc967b2ca9cae8d',
+    UnderlyingAsset.AMKT
+  ),
   erc20('amn', 'Amon', 18, '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', UnderlyingAsset.AMN),
   erc20('amo', 'AMO Token', 18, '0x38c87aa89b2b8cd9b95b736e1fa7b612ea972169', UnderlyingAsset.AMO),
   erc20('amp', 'AMP Token', 18, '0xff20817765cb7f73d4bde2e66e067e58d11095c2', UnderlyingAsset.AMP),
@@ -618,6 +625,7 @@ export const coins = CoinMap.fromCoins([
   erc20('fire', 'Ceramic Token', 18, '0x2033e559cddff6dd36ec204e3014faa75a01052e', UnderlyingAsset.FIRE),
   erc20('fly', 'FlyCoin', 18, '0x4e568ab95f029e8df1e39b30c9d6d076eaa15945', UnderlyingAsset.FLY),
   erc20('fmf', 'Formosa Financial', 18, '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc', UnderlyingAsset.FMF),
+  erc20('fort', 'Forta', 18, '0x41545f8b9472d758bb669ed8eaeeecd7a9c4ec29', UnderlyingAsset.FORT),
   erc20(
     'forth',
     'Ampleforth Governance Token',
@@ -3513,6 +3521,13 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['polygon:ape']
   ),
   polygonErc20('polygon:srm', 'Serum', 6, '0x6bf2eb299e51fc5df30dec81d9445dde70e3f185', UnderlyingAsset['polygon:srm']),
+  polygonErc20(
+    'polygon:fly',
+    'Flycoin',
+    18,
+    '0x486ffaf06a681bf22b5209e9ffce722662a60e8c',
+    UnderlyingAsset['polygon:fly']
+  ),
   erc721(
     'erc721:polygontoken',
     'Generic Polygon ERC721',
