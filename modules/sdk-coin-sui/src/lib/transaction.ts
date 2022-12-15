@@ -1,7 +1,6 @@
 import {
   BaseKey,
   BaseTransaction,
-  Entry,
   InvalidTransactionError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
@@ -100,7 +99,6 @@ export class Transaction extends BaseTransaction {
           PayAllSui: {
             coins: tx.payTx.coins,
             recipient: tx.payTx.recipients[0],
-            amount: tx.payTx.amounts[0],
           },
         };
         break;
@@ -164,19 +162,20 @@ export class Transaction extends BaseTransaction {
     const payTx = tx.payTx;
     const recipients = payTx.recipients;
     const amounts = payTx.amounts;
-    if (recipients.length !== amounts.length) {
+    if (tx.type !== SuiTransactionType.PayAllSui && recipients.length !== amounts.length) {
       throw new Error(
         `The length of recipients ${recipients.length} does not equal to the length of amounts ${amounts.length}`
       );
     }
 
-    const outputs: Entry[] = recipients.map((recipient, index) => ({
+    const isEmptyAmount = amounts.length === 0;
+    this._outputs = recipients.map((recipient, index) => ({
       address: recipient,
-      value: amounts[index].toString(),
+      value: isEmptyAmount ? '' : amounts[index].toString(),
       coin: this._coinConfig.name,
     }));
 
-    const totalAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
+    const totalAmount = isEmptyAmount ? '' : amounts.reduce((accumulator, current) => accumulator + current, 0);
     this._inputs = [
       {
         address: tx.sender,
@@ -184,7 +183,6 @@ export class Transaction extends BaseTransaction {
         coin: this._coinConfig.name,
       },
     ];
-    this._outputs = outputs;
   }
 
   /**
@@ -234,7 +232,6 @@ export class Transaction extends BaseTransaction {
           PayAllSui: {
             coins: suiTx.payTx.coins,
             recipient: suiTx.payTx.recipients[0],
-            amount: suiTx.payTx.amounts[0],
           },
         };
         break;
@@ -340,7 +337,7 @@ export class Transaction extends BaseTransaction {
       case SuiTransactionType.PayAllSui:
         coins = k.kind.Single.PayAllSui.coins;
         recipients = [k.kind.Single.PayAllSui.recipient];
-        amounts = [k.kind.Single.PayAllSui.amount];
+        amounts = []; // PayAllSui deserialization doesn't return the amount
         break;
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');

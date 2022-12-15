@@ -48,7 +48,6 @@ bcs.registerStructType('PaySuiTx', {
 bcs.registerStructType('PayAllSuiTx', {
   coins: 'vector<SuiObjectRef>',
   recipient: 'address',
-  amount: 'u64', // Even though Mysten sdk doesn't register amount field, adding this so that we can get the amount when deserializing
 });
 
 bcs

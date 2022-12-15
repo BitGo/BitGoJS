@@ -147,7 +147,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       payTx = {
         coins: txDetails.PayAllSui.coins,
         recipients: [txDetails.PayAllSui.recipient],
-        amounts: [txDetails.PayAllSui.amount],
+        amounts: [], // PayAllSui deserialization doesn't return the amount
       };
     } else {
       throw new Error('Transaction type not supported: ' + txDetails);
@@ -236,7 +236,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError(`Invalid payTx, missing amounts`);
     }
 
-    if (payTx.recipients.length !== payTx.amounts.length) {
+    if (this._type !== SuiTransactionType.PayAllSui && payTx.recipients.length !== payTx.amounts.length) {
       throw new BuildTransactionError(
         `recipients length ${payTx.recipients.length} must equal to amounts length ${payTx.amounts.length}`
       );
