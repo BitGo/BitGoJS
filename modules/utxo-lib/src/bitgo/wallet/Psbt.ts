@@ -3,7 +3,6 @@ import { UtxoTransaction } from '../UtxoTransaction';
 import {
   createOutputScript2of3,
   getLeafHash,
-  parseTaprootScript2of3PubKeys,
   ScriptType2Of3,
   scriptTypeForChain,
   toXOnlyPublicKey,
@@ -44,7 +43,7 @@ interface WalletSigner {
 }
 
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
-  const parsedPublicKeys = parseTaprootScript2of3PubKeys(script);
+  const parsedPublicKeys = parsePubScript(script, 'p2tr').publicKeys;
   const walletSigners = parsedPublicKeys.map((publicKey) => {
     const index = walletKeys.publicKeys.findIndex((walletPublicKey) =>
       toXOnlyPublicKey(walletPublicKey).equals(publicKey)

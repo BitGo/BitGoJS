@@ -8,7 +8,8 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { parseTaprootScript2of3PubKeys, toXOnlyPublicKey } from './outputScripts';
+import { toXOnlyPublicKey } from './outputScripts';
+import { parsePubScript } from './parseInput';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -181,7 +182,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const [pubkey1, pubkey2] = parseTaprootScript2of3PubKeys(script);
+    const [pubkey1, pubkey2] = parsePubScript(script, 'p2tr').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {
