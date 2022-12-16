@@ -325,7 +325,7 @@ export class Polygon extends Eth {
    * @param {String} params.recoveryDestination target address to send recovered funds to
    * @returns {Promise<RecoveryInfo | OfflineVaultTxInfo>}
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  async recoverEth(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 

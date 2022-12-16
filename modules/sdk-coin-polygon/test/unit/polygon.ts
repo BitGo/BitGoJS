@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { common, ECDSAMethodTypes, FullySignedTransaction, Recipient, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/utxo-lib';
 import nock from 'nock';
@@ -9,6 +9,8 @@ import { Polygon, Tpolygon, TransactionBuilder, TransferBuilder } from '../../sr
 import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
 import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/sdk-coin-eth';
+import * as sjcl from '@bitgo/sjcl';
+
 nock.enableNetConnect();
 
 describe('Polygon', function () {
@@ -609,6 +611,102 @@ describe('Polygon', function () {
       decodedTx.should.have.property('gasPrice');
       decodedTx.should.have.property('nonce');
       decodedTx.should.have.property('to');
+    });
+
+    it('should construct a recovery tx with TSS', async function () {
+      const backupKeyAddress = '0xe7406dc43d13f698fb41a345c7783d39a4c2d191';
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getTxListRequest(backupKeyAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(backupKeyAddress))
+        .reply(200, mockData.getBalanceResponse);
+
+      const basecoin = bitgo.coin('tpolygon') as Polygon;
+      const userKey = mockData.keyShares.userKeyShare;
+      const backupKey = mockData.keyShares.backupKeyShare;
+      const bitgoKey = mockData.keyShares.bitgoKeyShare;
+
+      const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
+        pShare: userKey.pShare,
+        backupNShare: backupKey.nShares[1],
+        bitgoNShare: bitgoKey.nShares[1],
+      };
+
+      const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
+        pShare: backupKey.pShare,
+        userNShare: userKey.nShares[2],
+        bitgoNShare: bitgoKey.nShares[2],
+      };
+
+      const encryptedBackupSigningMaterial = sjcl.encrypt(
+        TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        JSON.stringify(backupSigningMaterial)
+      );
+      const encryptedUserSigningMaterial = sjcl.encrypt(
+        TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        JSON.stringify(userSigningMaterial)
+      );
+
+      const recoveryParams = {
+        userKey: encryptedUserSigningMaterial,
+        backupKey: encryptedBackupSigningMaterial,
+        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        isTss: true,
+      };
+
+      const recovery = await basecoin.recover(recoveryParams);
+      // id and tx will always be different because of expireTime
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+
+    it('should construct an unsigned sweep tx with TSS', async function () {
+      const backupKeyAddress = '0xe7406dc43d13f698fb41a345c7783d39a4c2d191';
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getTxListRequest(backupKeyAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(backupKeyAddress))
+        .reply(200, mockData.getBalanceResponse);
+
+      const basecoin = bitgo.coin('tpolygon') as Polygon;
+
+      const userKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+      const backupKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+
+      const recoveryParams = {
+        userKey: userKey,
+        backupKey: backupKey,
+        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        isTss: true,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+      };
+
+      const transaction = (await basecoin.recover(recoveryParams)) as OfflineVaultTxInfo;
+      should.exist(transaction);
+      transaction.should.have.property('tx');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('20000000000');
+      transaction.should.have.property('recipient');
+      const recipient = (transaction as any).recipient as Recipient;
+      recipient.should.have.property('address');
+      recipient.address.should.equal('0xac05da78464520aa7c9d4c19bd7a440b111b3054');
+      recipient.should.have.property('amount');
+      recipient.amount.should.equal('9989999999999999928');
     });
 
     it('should be able to second sign', async function () {
