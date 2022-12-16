@@ -3,7 +3,7 @@
  */
 import * as secp256k1 from 'secp256k1';
 import { randomBytes } from 'crypto';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { bip32, networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import {
@@ -28,6 +28,7 @@ import {
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
+import assert from 'assert';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -202,6 +203,28 @@ export class Trx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const coinConfig = coins.get(this.getChain());
+    if (coinConfig.isToken) {
+      const { txPrebuild: txPrebuild, txParams: txParams } = params;
+      assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
+      const rawTx = txPrebuild.txHex;
+
+      const txBuilder = getBuilder(this.getChain()).from(rawTx);
+      const tx = await txBuilder.build();
+
+      if (!txParams.recipients) {
+        throw new Error('missing required tx params property recipients');
+      }
+
+      if (
+        txParams.recipients[0].address === tx.outputs[0].address &&
+        txParams.recipients[0].amount === tx.outputs[0].value
+      ) {
+        return true;
+      } else {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+    }
     return true;
   }
 
