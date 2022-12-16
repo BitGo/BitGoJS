@@ -368,7 +368,7 @@ export class Transaction extends BaseTransaction {
 
     const outputs: TransactionRecipient[] = recipients.map((recipient, index) => ({
       address: recipient,
-      amount: amounts[index].toString(),
+      amount: amounts.length === 0 ? '' : amounts[index].toString(),
     }));
     const outputAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
 
