@@ -26,6 +26,12 @@ const Navbar = () => {
       >
         BitGo API
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/coins'}
+        onClick={() => navigate('/coins')}
+      >
+        Coins
+      </NavItem>
     </NavbarContainer>
   );
 };

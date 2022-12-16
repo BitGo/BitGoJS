@@ -37,9 +37,6 @@ export class CoinFactory {
    * @throws Error
    */
   public register(name: string, coin: CoinConstructor): void {
-    if (this.coinConstructors.has(name)) {
-      throw new Error(`coin '${name}' is already defined`);
-    }
     this.coinConstructors.set(name, coin);
   }
 

@@ -3,3 +3,4 @@ export * from './eth';
 export * from './gteth';
 export * from './teth';
 export * from './lib';
+export * from './register';
