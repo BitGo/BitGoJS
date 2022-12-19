@@ -45,6 +45,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
+  TypedData,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
@@ -54,6 +55,7 @@ import type * as EthCommon from '@ethereumjs/common';
 import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } from './lib';
 import { addHexPrefix, intToHex, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
+import { TypedDataUtils, SignTypedDataVersion } from '@metamask/eth-sig-util';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -2070,7 +2072,13 @@ export class Eth extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc */
   supportsMessageSigning(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  supportsSigningTypedData(): boolean {
     return true;
   }
 
@@ -2082,6 +2090,35 @@ export class Eth extends BaseCoin {
   encodeMessage(message: string): string {
     const prefix = `\u0019Ethereum Signed Message:\n${message.length}`;
     return prefix.concat(message);
+  }
+
+  /**
+   * Transform the Typed data to accomodate the blockchain requirements (EIP-712)
+   * @param typedData the typed data to prepare
+   * @return a buffer of the result
+   */
+  encodeTypedData(typedData: TypedData<never>): Buffer {
+    const version = typedData.version;
+    if (version === SignTypedDataVersion.V1) {
+      throw new Error('SignTypedData v1 is not supported due to security concerns');
+    }
+
+    const sanitizedData = TypedDataUtils.sanitizeData(typedData.typedDataRaw);
+    const parts = [Buffer.from('1901', 'hex')];
+    const eip712Domain = 'EIP712Domain';
+    parts.push(TypedDataUtils.hashStruct(eip712Domain, sanitizedData.domain, sanitizedData.types, version));
+
+    if (sanitizedData.primaryType !== eip712Domain) {
+      parts.push(
+        TypedDataUtils.hashStruct(
+          sanitizedData.primaryType as string,
+          sanitizedData.message,
+          sanitizedData.types,
+          version
+        )
+      );
+    }
+    return Buffer.concat(parts);
   }
 
   /**

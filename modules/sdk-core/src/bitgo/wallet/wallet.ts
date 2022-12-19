@@ -28,6 +28,7 @@ import {
   TxRequest,
   EddsaUnsignedTransaction,
   IntentOptionsForMessage,
+  IntentOptionsForTypedData,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
@@ -77,6 +78,7 @@ import {
   WalletData,
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
+  WalletSignTypedDataOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
@@ -1582,11 +1584,44 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Sign a typed structured data using TSS
+   * @param params
+   */
+  async signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
+    if (!this.baseCoin.supportsSigningTypedData()) {
+      throw new Error(`Sign typed data not supported for ${this.baseCoin.getFullName()}`);
+    }
+    if (!params.typedData) {
+      throw new Error(`Typed data required`);
+    }
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+    if (_.isFunction((this.baseCoin as any).encodeTypedData)) {
+      params.typedData.typedDataEncoded = (this.baseCoin as any).encodeTypedData(params.typedData);
+    }
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const presign = {
+      ...params,
+      walletData: this._wallet,
+      tssUtils: this.tssUtils,
+      prv: this.getUserPrv(userPrvOptions),
+      keychain: keychains[0],
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
+      pub: keychains.map((k) => k.pub),
+      reqId: params.reqId,
+    };
+    return this.signTypedDataTss(presign);
+  }
+
+  /**
    *  Sign a message using TSS
    * @param params
-   * - messagePrebuild
-   * - [keychain / key] (object) or prv (string)
-   * - walletPassphrase
+   * - Message
+   * - custodianMessageId
    */
   async signMessage(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
     if (!this.baseCoin.supportsMessageSigning()) {
@@ -2771,15 +2806,66 @@ export class Wallet implements IWallet {
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
       assert(
         signedMessageRequest.messages[0].combineSigShare,
-        'Unable to find combineSigShare in' + ' signedMessageRequest.messages'
+        'Unable to find combineSigShare in signedMessageRequest.messages'
       );
       if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
         return this.baseCoin.constructFinalSignedMessageHash(signedMessageRequest.messages[0].combineSigShare);
       }
-      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.mesages');
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
       return signedMessageRequest.messages[0].txHash;
     } catch (e) {
       throw new Error('failed to sign message ' + e);
+    }
+  }
+
+  /**
+   * Signs a typed data from a TSS wallet.
+   * @param params
+   * @private
+   */
+  private async signTypedDataTss(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
+    assert(params.reqId, 'reqId required for signing typed data');
+    if (!params.prv) {
+      throw new Error('prv required to sign typed data with TSS');
+    }
+
+    try {
+      let txRequest;
+      assert(params.typedData, 'typedData required for typed data signing');
+      if (!params.typedData.txRequestId) {
+        const intentOptions: IntentOptionsForTypedData = {
+          custodianMessageId: params.custodianMessageId,
+          reqId: params.reqId,
+          intentType: 'signTypedStructuredData',
+          isTss: true,
+          typedDataRaw: params.typedData.typedDataRaw,
+          typedDataEncoded: params.typedData.typedDataEncoded!.toString(),
+        };
+        txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
+        params.typedData.txRequestId = txRequest.txRequestId;
+      } else {
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId);
+      }
+
+      const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
+        txRequest,
+        prv: params.prv,
+        reqId: params.reqId || new RequestTracer(),
+        messageRaw: params.typedData.typedDataRaw,
+        messageEncoded: params.message?.messageEncoded,
+      });
+      assert(signedTypedDataRequest.messages, 'Unable to find messages in signedTypedDataRequest');
+      assert(
+        signedTypedDataRequest.messages[0].combineSigShare,
+        'Unable to find combineSigShare in signedTypedDataRequest.messages'
+      );
+      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
+        return this.baseCoin.constructFinalSignedMessageHash(signedTypedDataRequest.messages[0].combineSigShare);
+      }
+      assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
+      return signedTypedDataRequest.messages[0].txHash;
+    } catch (e) {
+      throw new Error('failed to sign typed data ' + e);
     }
   }
 
