@@ -84,7 +84,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
    */
   sweep(keepAlive?: boolean): this {
     this._sweepFreeBalance = true;
-    if (keepAlive) {
+    if (keepAlive !== undefined) {
       this._keepAddressAlive = keepAlive;
     }
     return this;
