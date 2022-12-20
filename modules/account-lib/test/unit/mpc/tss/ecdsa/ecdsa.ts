@@ -17,6 +17,7 @@ describe('TSS ECDSA TESTS', function () {
     '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
     'hex',
   );
+  let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
     const pallierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
@@ -32,7 +33,7 @@ describe('TSS ECDSA TESTS', function () {
       .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
       .onCall(5)
       .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair);
-    const [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
+    [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     // Needs to run this serially for testing deterministic key generation
     // to get specific pallier keys to be assigned
@@ -136,6 +137,28 @@ describe('TSS ECDSA TESTS', function () {
         }
       }
     });
+
+    it('should derive unhardened child keys', async function () {
+      // parent key
+      const aKeyCombine = keyShares[0];
+      const commonKeychain = aKeyCombine.xShare.y + aKeyCombine.xShare.chaincode;
+
+      for (let index = 0; index < 10; index++) {
+        const path = `m/0/0/${index}`;
+
+        const subkey = MPC.keyDerive(A.pShare, [B.nShares[1], C.nShares[1]], path);
+
+        const derive1: string = MPC.deriveUnhardened(commonKeychain, path);
+        const derive2: string = MPC.deriveUnhardened(commonKeychain, path);
+
+        derive1.should.equal(derive2, 'derivation should be deterministic');
+
+        (subkey.xShare.y + subkey.xShare.chaincode).should.equal(
+          derive1,
+          'subkey common keychain should match derived keychain',
+        );
+      }
+    });
   });
 
   describe('ECDSA Signing', async function () {
@@ -165,7 +188,7 @@ describe('TSS ECDSA TESTS', function () {
       ];
     });
 
-    for (let index = 0; index < 8; index++) {
+    for (let index = 0; index < 9; index++) {
       it(`should properly sign the message case ${index}`, async function () {
         // Step One
         // signerOne, signerTwo have decided to sign the message

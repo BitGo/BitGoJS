@@ -230,6 +230,34 @@ export default class Ecdsa {
   }
 
   /**
+   * Derives a child common keychain from common keychain
+   *
+   * @param {commonKeychain} The common keychain as a hex string.
+   * @param {path} The BIP-32 path to derive.
+   * @return {string} The derived common keychain as a hex string.
+   */
+  deriveUnhardened(commonKeychain: string, path: string): string {
+    if (Ecdsa.hdTree === undefined) {
+      throw new Error("Can't derive key without HDTree implementation");
+    }
+
+    const keychain = Buffer.from(commonKeychain, 'hex');
+
+    const derivedPublicKeychain = Ecdsa.hdTree.publicDerive(
+      {
+        pk: bigIntFromBufferBE(keychain.slice(0, 33)),
+        chaincode: bigIntFromBufferBE(keychain.slice(33)),
+      },
+      path
+    );
+
+    const derivedPk = bigIntToBufferBE(derivedPublicKeychain.pk, 33).toString('hex');
+    const derivedChaincode = bigIntToBufferBE(derivedPublicKeychain.chaincode, 32).toString('hex');
+
+    return derivedPk + derivedChaincode;
+  }
+
+  /**
    * Create signing shares.
    * @param {xShare} xShare Private xShare of current participant signer
    * @param {YShare} yShare yShare corresponding to the other participant signer
