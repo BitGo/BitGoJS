@@ -315,7 +315,7 @@ export class Polygon extends Eth {
   }
 
   /**
-   * Builds a funds recovery transaction without BitGo
+   * Builds a funds recovery transaction without BitGo for non-TSS transaction
    * @param params
    * @param {String} params.userKey [encrypted] xprv or xpub
    * @param {String} params.backupKey [encrypted] xprv or xpub if the xprv is held by a KRS provider
@@ -325,7 +325,7 @@ export class Polygon extends Eth {
    * @param {String} params.recoveryDestination target address to send recovered funds to
    * @returns {Promise<RecoveryInfo | OfflineVaultTxInfo>}
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  async recoverEthLike(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
