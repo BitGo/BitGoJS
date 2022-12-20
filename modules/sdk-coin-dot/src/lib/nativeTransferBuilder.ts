@@ -4,6 +4,7 @@ import { methods } from '@substrate/txwrapper-polkadot';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
 import { MethodNames, ProxyArgs, ProxyType, TransferAllArgs, TransferArgs } from './iface';
+import { getAddress } from './iface_utils';
 import { SingletonRegistry } from './singletonRegistry';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -12,6 +13,7 @@ import utils from './utils';
 
 export abstract class NativeTransferBuilder extends TransactionBuilder {
   protected _sweepFreeBalance = false;
+  protected _keepAddressAlive = true;
   protected _amount: string;
   protected _to: string;
   protected _owner: string;
@@ -36,7 +38,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       transferTx = methods.balances.transferAll(
         {
           dest: this._to,
-          keepAlive: false,
+          keepAlive: this._keepAddressAlive,
         },
         baseTxInfo.baseTxInfo,
         baseTxInfo.options
@@ -72,14 +74,19 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
 
   /**
    *
-   * Set this to be a sweep transaction, using TransferAll with keepAlive set to false
+   * Set this to be a sweep transaction, using TransferAll with keepAlive set to true by default.
+   * If keepAlive is false, the entire address will be swept (including the 1 DOT minimum).
    *
+   * @param {boolean} keepAlive - keep the address alive after this sweep
    * @returns {TransferBuilder} This transfer builder.
    *
    * @see https://github.com/paritytech/txwrapper-core/blob/main/docs/modules/txwrapper_substrate_src.methods.balances.md#transferall
    */
-  sweep(): this {
+  sweep(keepAlive?: boolean): this {
     this._sweepFreeBalance = true;
+    if (keepAlive !== undefined) {
+      this._keepAddressAlive = keepAlive;
+    }
     return this;
   }
 
@@ -154,7 +161,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       }
     } else if (decodedTxn.method?.name === MethodNames.Proxy) {
       const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
-      const real = txMethod.real;
+      const real = getAddress(txMethod);
       const forceProxyType = txMethod.forceProxyType;
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: SingletonRegistry.getInstance(this._material),
@@ -193,7 +200,10 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
     } else if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
       this.owner({
-        address: utils.decodeDotAddress(txMethod.real, utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)),
+        address: utils.decodeDotAddress(
+          getAddress(txMethod),
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
+        ),
       });
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {

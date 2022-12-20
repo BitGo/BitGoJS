@@ -17,6 +17,13 @@ import {
   TssUtils,
   TxRequest,
   Wallet,
+  SignatureShareType,
+  Ecdsa,
+  Keychains,
+  TypedData,
+  TypedMessage,
+  MessageTypes,
+  SignTypedDataVersion,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -547,6 +554,38 @@ describe('V2 Wallet:', function () {
       await wallet.createAddress({ allowSkipVerifyAddress: 'abc' }).should.be.rejectedWith(message);
       // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
+
+      message = 'forwarderVersion has to be an integer 0, 1 or 2';
+      await wallet.createAddress({ forwarderVersion: 3 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ forwarderVersion: -1 }).should.be.rejectedWith(message);
+    });
+
+    it('address creation with forwarder version 2 succeeds', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 2 })
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0x5e61b64f38f1b5f85078fb84b27394830b4c8e80',
+          chain: 0,
+          index: 1,
+          coin: 'tpolygon',
+          lastNonce: 0,
+          wallet: '63785f95af7c760007cfae068c2f31ae',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2022-12-02T18:49:42.348Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0x1',
+            pendingDeployment: true,
+            forwarderVersion: 2,
+            isTss: true,
+          },
+        });
+      const address = await ethWallet.createAddress({ chain: 0, forwarderVersion: 2 });
+      address.coinSpecific.forwarderVersion.should.equal(2);
+      scope.isDone().should.be.true();
     });
 
     it('verify address when pendingChainInitialization is true in case of eth v1 forwarder', async function () {
@@ -1298,40 +1337,20 @@ describe('V2 Wallet:', function () {
       response.isDone().should.be.true();
     });
 
-    it('should pass walletId parameter through when building transactions in recipient field', async function () {
-      const recipients = [{
-        walletId: 'bbb',
-        amount: '1000',
-      }];
+    it('should pass gas limit parameter through when building transaction for sui', async function () {
+      const params = { gasLimit: 100 };
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ recipients }))
+        .post(path, _.matches(params)) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
       try {
-        await wallet.prebuildTransaction({ recipients });
+        await wallet.prebuildTransaction(params);
       } catch (e) {
         // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
-        // we only care about /tx/build and whether walletId is an allowed parameter in prebuildTransaction
+        // we only care about /tx/build and whether reservation is an allowed parameter
       }
+
       response.isDone().should.be.true();
-    });
-
-    it('should fail when neither address nor walletId is passed in recipient field', async function () {
-      const recipients = [{
-        amount: '1000',
-      }];
-
-      await wallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field must have either an address or walletId');
-    });
-
-    it('should fail when both address and walletId are passed in recipient field', async function () {
-      const recipients = [{
-        address: 'abc',
-        amount: '1000',
-        walletId: 'abc',
-      }];
-
-      await wallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field can only have one of: address or walletId');
     });
   });
 
@@ -1603,24 +1622,6 @@ describe('V2 Wallet:', function () {
         });
       });
 
-      it('should fail when neither address nor walletId is passed in recipient field -- tss wallet', async function () {
-        const recipients = [{
-          amount: '1000',
-        }];
-
-        await tssWallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field must have either an address or walletId');
-      });
-
-      it('should fail when both address and walletId are passed in recipient field -- tss wallet', async function () {
-        const recipients = [{
-          address: 'abc',
-          amount: '1000',
-          walletId: 'abc',
-        }];
-
-        await tssWallet.prebuildTransaction({ recipients }).should.be.rejectedWith('recipient field can only have one of: address or walletId');
-      });
-
       it('should build a multiple recipient transfer transaction with memo', async function () {
         const recipients = [{
           address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
@@ -1731,6 +1732,18 @@ describe('V2 Wallet:', function () {
           }],
           type: 'stake',
         }).should.be.rejectedWith('transaction type not supported: stake');
+      });
+
+      it('should fail for full api version compatibility', async function () {
+        await custodialTssWallet.prebuildTransaction({
+          reqId,
+          apiVersion: 'lite',
+          recipients: [{
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          }],
+          type: 'transfer',
+        }).should.be.rejectedWith(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
       });
 
       it('should build a single recipient transfer transaction for full', async function () {
@@ -1993,6 +2006,44 @@ describe('V2 Wallet:', function () {
         intent.isTss!.should.equal(true);
         intent.intentType.should.equal('fillNonce');
       });
+
+      it('should build a single recipient transfer transaction providing apiVersion parameter as "full" ', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        }, 'full');
+
+        const txPrebuild = await custodialTssWallet.prebuildTransaction({
+          reqId,
+          apiVersion: 'full',
+          recipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: custodialTssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            apiVersion: 'full',
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
     });
 
     describe('Transaction signing', function () {
@@ -2034,6 +2085,7 @@ describe('V2 Wallet:', function () {
     });
 
     describe('Message Signing', function () {
+      const txHash = '0xrrrsss1b';
       const txRequestForMessageSigning: TxRequest = {
         txRequestId: 'id',
         transactions: [],
@@ -2050,6 +2102,12 @@ describe('V2 Wallet:', function () {
         walletId: 'walletId',
         unsignedTxs: [],
         unsignedMessages: [],
+        messages: [{
+          state: 'signed',
+          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+          combineSigShare: '0:rrr:sss:3',
+          txHash,
+        }],
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
@@ -2058,10 +2116,13 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '' }]);
+        sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 
       afterEach(async function () {
         sinon.restore();
+        nock.cleanAll();
       });
 
       it('should throw error for unsupported coins', async function () {
@@ -2088,7 +2149,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw, txRequestId },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2105,7 +2166,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2121,7 +2182,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual({ txRequestId } );
+          signMessage.should.deepEqual(txHash);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2131,8 +2192,252 @@ describe('V2 Wallet:', function () {
             reqId,
             message: { messageRaw, txRequestId },
             prv: '',
-          }).should.be.rejectedWith('prv required to sign message with TSS');
+          }).should.be.rejectedWith('keychain does not have property encryptedPrv');
         });
+      });
+
+    });
+
+    describe('Typed Data Signing', function () {
+      const txHash = '0xrrrsss1b';
+      const txRequestForTypedDataSigning: TxRequest = {
+        txRequestId: 'id',
+        transactions: [],
+        intent: {
+          intentType: 'signMessage',
+        },
+        date: new Date().toISOString(),
+        latest: true,
+        state: 'pendingUserSignature',
+        userId: 'userId',
+        walletType: 'hot',
+        policiesChecked: false,
+        version: 1,
+        walletId: 'walletId',
+        unsignedTxs: [],
+        unsignedMessages: [],
+        messages: [{
+          state: 'signed',
+          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+          combineSigShare: '0:rrr:sss:3',
+          txHash,
+        }],
+      };
+      let signTxRequestForMessage;
+      const messageSigningCoins = ['teth', 'tpolygon'];
+      const types: MessageTypes = {
+        EIP712Domain: [
+          {
+            name: 'name',
+            type: 'string',
+          },
+          {
+            name: 'version',
+            type: 'string',
+          },
+          {
+            name: 'chainId',
+            type: 'uint256',
+          },
+          {
+            name: 'verifyingContract',
+            type: 'address',
+          },
+          {
+            name: 'salt',
+            type: 'bytes32',
+          }],
+        Message: [{ name: 'data', type: 'string' }] };
+      const typedMessage: TypedMessage<MessageTypes> = {
+        domain: {
+          name: 'bitgo',
+          version: '1',
+          chainId: 1,
+          verifyingContract: '0x0000000000000000000000000000000000000000',
+          salt: Buffer.from(new Int32Array([1, 2, 3])),
+        }, primaryType: 'Message', types,
+        message: { data: 'bitgo says hello!' },
+      };
+      const typedDataBase:TypedData<any> = {
+        typedDataRaw: typedMessage,
+        version: SignTypedDataVersion.V3,
+      };
+
+      beforeEach(async function () {
+        signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
+        signTxRequestForMessage.resolves(txRequestForTypedDataSigning);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '' }]);
+        sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
+      });
+
+      afterEach(async function () {
+        sinon.restore();
+        nock.cleanAll();
+      });
+
+      it('should throw error for unsupported coins', async function () {
+
+        await tssWallet.signTypedData({
+          reqId,
+          typedData: typedDataBase,
+          prv: 'secretKey',
+        }).should.be.rejectedWith('Sign typed data not supported for Testnet Solana');
+      });
+
+      it('should throw error for sign typed data V1', async function () {
+        const typedData = { ...typedDataBase };
+        typedData.version = SignTypedDataVersion.V1;
+        nock(bgUrl)
+          .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+          .reply(200, { txRequests: [txRequestForTypedDataSigning] });
+
+        await tssEthWallet.signTypedData({
+          reqId,
+          typedData,
+          prv: 'secretKey',
+        }).should.be.rejectedWith('SignTypedData v1 is not supported due to security concerns');
+
+      });
+
+      messageSigningCoins.map((coinName) => {
+        tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
+        const txRequestId = txRequestForTypedDataSigning.txRequestId;
+        typedDataBase.txRequestId = txRequestId;
+
+        describe(`sign typed data V3 for ${coinName}`, async function() {
+          const typedData = { ...typedDataBase };
+          typedData.version = SignTypedDataVersion.V3;
+
+          it('should sign typed data V3', async function () {
+            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .reply(200, { txRequests: [txRequestForTypedDataSigning] });
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+
+          it('should sign typed data V3 when custodianMessageID is provided', async function () {
+            typedData.txRequestId = txRequestId;
+            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .reply(200, { txRequests: [txRequestForTypedDataSigning] });
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              custodianMessageId: 'unittest',
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+
+          it('should fail to sign typed data V3 with empty prv', async function () {
+            await tssEthWallet.signTypedData({
+              reqId,
+              typedData: typedDataBase,
+              prv: '',
+            }).should.be.rejectedWith('keychain does not have property encryptedPrv');
+          });
+
+          it('should sign typed data V3 when txRequestId not provided ', async function () {
+            delete typedData.txRequestId;
+            const signedTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
+              .reply(200, txRequestForTypedDataSigning);
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+        });
+
+        describe(`sign typed data V4 for ${coinName}`, async function() {
+          const typedData = { ...typedDataBase };
+          typedData.version = SignTypedDataVersion.V4;
+          it('should sign typed data V4', async function () {
+            typedData.txRequestId = txRequestId;
+            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .reply(200, { txRequests: [txRequestForTypedDataSigning] });
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+
+          it('should sign typed data V4 when custodianMessageID is provided', async function () {
+            typedData.txRequestId = txRequestId;
+            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .reply(200, { txRequests: [txRequestForTypedDataSigning] });
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              custodianMessageId: 'unittest',
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+
+          it('should fail to sign typed data V4 with empty prv', async function () {
+            await tssEthWallet.signTypedData({
+              reqId,
+              typedData: typedDataBase,
+              prv: '',
+            }).should.be.rejectedWith('keychain does not have property encryptedPrv');
+          });
+
+          it('should sign typed data V4 when txRequestId not provided ', async function () {
+            delete typedData.txRequestId;
+            const signedTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
+            nock(bgUrl)
+              .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
+              .reply(200, txRequestForTypedDataSigning);
+
+            const signedTypedData = await tssEthWallet.signTypedData({
+              reqId,
+              typedData,
+              prv: 'secretKey',
+            });
+            signedTypedData.should.deepEqual(txHash);
+            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
+            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+          });
+        });
+
       });
 
     });
@@ -2422,19 +2727,17 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('Fetch crossChain UTXOs (AVAX)', function () {
-
+  describe('AVAX tests', function() {
     let bgUrl;
     let basecoin;
     let walletData;
     let wallet;
-    before(async function () {
+
+    before(async function() {
       nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
-      basecoin = bitgo.coin('tavaxp');
       walletData = {
         id: '5b34252f1bf349930e34020a00000000',
-        coin: 'tavaxp',
         keys: [
           '5b3424f91bf349930e34017500000000',
           '5b3424f91bf349930e34017600000000',
@@ -2442,12 +2745,14 @@ describe('V2 Wallet:', function () {
         ],
         coinSpecific: {},
       };
-      wallet = new Wallet(bitgo, basecoin, walletData);
     });
 
-    it('should fetch cross chain utxos', async function () {
-      const params = { sourceChain: 'C' };
+    it('should fetch cross-chain utxos', async function () {
+      basecoin = bitgo.coin('tavaxp');
+      walletData.coin = 'tavaxp';
+      wallet = new Wallet(bitgo, basecoin, walletData);
 
+      const params = { sourceChain: 'C' };
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/crossChainUnspents`;
       const scope =
         nock(bgUrl)
@@ -2477,6 +2782,42 @@ describe('V2 Wallet:', function () {
       scope.isDone().should.be.True();
     });
 
+    it('sendMany should work for C > P export with custodial wallet', async function () {
+      basecoin = bitgo.coin('tavaxc');
+      walletData.coin = 'tavaxc';
+      walletData.type = 'custodial';
+      wallet = new Wallet(bitgo, basecoin, walletData);
 
+      const address = 'P-fuji1e56pc4966qsevzhwgkym5l0jfma9llkqnrr4gh~P-fuji1kq05zm9nmlq8p3ld55k79dl3qay6c0e3atj56v~P-fuji1rp46z30qg457xc3dpffyxcgzpflxc85mhkjme3';
+      const initiateTxParams = {
+        recipients: [{
+          amount: '10000000000000000', // 0.01 AVAX
+          address,
+        }],
+        hop: true,
+        type: 'Export',
+      };
+
+      const initiateTxPath = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/initiate`;
+      const response = nock(bgUrl)
+        .post(initiateTxPath, _.matches(initiateTxParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+
+      const feeEstimationPath = `/api/v2/${wallet.coin()}/tx/fee?hop=true&recipient=${address}&amount=10000000000000000&type=Export`;
+      nock(bgUrl)
+        .get(feeEstimationPath)
+        .reply(200, {
+          feeEstimate: '718750000000000',
+          gasLimitEstimate: 500000,
+        });
+
+      try {
+        await wallet.sendMany(initiateTxParams);
+      } catch (e) {
+        console.log(e);
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      response.isDone().should.be.true();
+    });
   });
 });

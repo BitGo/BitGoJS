@@ -48,6 +48,8 @@ export enum TransactionType {
   // Cross chain transfer at Avax
   Export,
   Import,
+  // Cross chain Recovery for evm like chains
+  RecoveryWalletDeployment,
 }
 
 /**

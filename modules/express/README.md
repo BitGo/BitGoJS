@@ -230,4 +230,4 @@ Wildcards using `*` are also supported. For example, all bitgo debug namespaces 
 
 # Release Notes
 
-You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/RELEASE_NOTES.md).
+You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/CHANGELOG.md).

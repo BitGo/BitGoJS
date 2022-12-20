@@ -1,6 +1,7 @@
 import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import * as secp from '@noble/secp256k1';
+import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { randomBytes, createHash, Hash } from 'crypto';
 import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
@@ -11,6 +12,7 @@ import {
   PShare,
   KeyShare,
   KeyCombined,
+  SubkeyShare,
   BShare,
   AShare,
   Signature,
@@ -37,6 +39,7 @@ const _3n = BigInt(3);
  */
 export default class Ecdsa {
   static curve: Secp256k1Curve = new Secp256k1Curve();
+  static hdTree: HDTree = new BIP32();
   static shamir: Shamir = new Shamir(Ecdsa.curve);
   /**
    * Generate shares for participant at index and split keys `(threshold,numShares)` ways.
@@ -64,9 +67,11 @@ export default class Ecdsa {
     const { shares: uShares, v } = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
       i: index,
-      l: privateKey.lambda.toString(16),
-      m: privateKey.mu.toString(16),
-      n: publicKey.n.toString(16),
+      t: threshold,
+      c: numShares,
+      l: bigIntToBufferBE(privateKey.lambda, 192).toString('hex'),
+      m: bigIntToBufferBE(privateKey.mu, 192).toString('hex'),
+      n: bigIntToBufferBE(publicKey.n, 384).toString('hex'),
       y: bigIntToBufferBE(y, 33).toString('hex'),
       u: bigIntToBufferBE(uShares[index], 32).toString('hex'),
       uu: u.toString(),
@@ -148,6 +153,108 @@ export default class Ecdsa {
       };
     }
     return participants;
+  }
+
+  /**
+   * Derive shares for a BIP-32 subkey.
+   * @param {PShare} The user's p-share.
+   * @param {NShare[]} The n-shares received from the other participants.
+   * @param {string} The BIP-32 path to derive.
+   * @returns {SubkeyShare} Returns the private x-share and n-shares to
+   * be distributed to participants at their corresponding index.
+   */
+  keyDerive(pShare: PShare, nShares: NShare[], path: string): SubkeyShare {
+    const yValues = [pShare, ...nShares].map((share) => hexToBigInt(share.y));
+    const y = yValues.reduce((partial, share) => Ecdsa.curve.pointAdd(partial, share));
+    const u = BigInt(pShare.uu);
+    let contribChaincode = hexToBigInt(pShare.chaincode);
+    const chaincodes = [contribChaincode, ...nShares.map(({ chaincode }) => hexToBigInt(chaincode))];
+    const chaincode = chaincodes.reduce((acc, chaincode) => (acc + chaincode) % chaincodeBase);
+
+    // Verify shares.
+    for (const share of nShares) {
+      if (share.v) {
+        try {
+          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
+        } catch (err) {
+          throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
+        }
+      }
+    }
+
+    // Derive subkey.
+    const subkey = Ecdsa.hdTree.privateDerive({ pk: y, sk: u, chaincode }, path);
+
+    // Calculate new public key contribution.
+    const contribY = Ecdsa.curve.basePointMult(subkey.sk);
+
+    // Calculate new chaincode contribution.
+    const chaincodeDelta = (chaincodeBase + subkey.chaincode - chaincode) % chaincodeBase;
+    contribChaincode = (contribChaincode + chaincodeDelta) % chaincodeBase;
+
+    // Calculate new u values.
+    const { shares: split_u, v } = Ecdsa.shamir.split(subkey.sk, pShare.t || 2, pShare.c || 3);
+
+    // Calculate new signing key.
+    const x = [split_u[pShare.i], ...nShares.map(({ u }) => hexToBigInt(u))].reduce(Ecdsa.curve.scalarAdd);
+
+    const P_i: XShare = {
+      i: pShare.i,
+      l: pShare.l,
+      m: pShare.m,
+      n: pShare.n,
+      y: bigIntToBufferBE(subkey.pk, 33).toString('hex'),
+      x: bigIntToBufferBE(x, 32).toString('hex'),
+      chaincode: bigIntToBufferBE(subkey.chaincode, 32).toString('hex'),
+    };
+
+    const shares: SubkeyShare = {
+      xShare: P_i,
+      nShares: {},
+    };
+
+    for (let ind = 0; ind < nShares.length; ind++) {
+      const P_j = nShares[ind];
+      shares.nShares[P_j.j] = {
+        i: P_j.j,
+        j: P_i.i,
+        n: P_j.n,
+        u: bigIntToBufferBE(split_u[P_j.j], 32).toString('hex'),
+        y: bigIntToBufferBE(contribY, 32).toString('hex'),
+        v: bigIntToBufferBE(v[0], 32).toString('hex'),
+        chaincode: bigIntToBufferBE(contribChaincode, 32).toString('hex'),
+      };
+    }
+
+    return shares;
+  }
+
+  /**
+   * Derives a child common keychain from common keychain
+   *
+   * @param {commonKeychain} The common keychain as a hex string.
+   * @param {path} The BIP-32 path to derive.
+   * @return {string} The derived common keychain as a hex string.
+   */
+  deriveUnhardened(commonKeychain: string, path: string): string {
+    if (Ecdsa.hdTree === undefined) {
+      throw new Error("Can't derive key without HDTree implementation");
+    }
+
+    const keychain = Buffer.from(commonKeychain, 'hex');
+
+    const derivedPublicKeychain = Ecdsa.hdTree.publicDerive(
+      {
+        pk: bigIntFromBufferBE(keychain.slice(0, 33)),
+        chaincode: bigIntFromBufferBE(keychain.slice(33)),
+      },
+      path
+    );
+
+    const derivedPk = bigIntToBufferBE(derivedPublicKeychain.pk, 33).toString('hex');
+    const derivedChaincode = bigIntToBufferBE(derivedPublicKeychain.chaincode, 32).toString('hex');
+
+    return derivedPk + derivedChaincode;
   }
 
   /**

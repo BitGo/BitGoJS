@@ -20,18 +20,18 @@ describe('Sui Transaction', () => {
 
   describe('From raw transaction', () => {
     it('should build a transfer from raw hex', function () {
-      tx.fromRawTransaction(testData.TRANSFER_TX);
+      tx.fromRawTransaction(testData.TRANSFER_PAY_TX);
       const json = tx.toJson();
       should.equal(json.sender, testData.sender.address);
     });
     it('should fail to build a transfer from incorrect raw hex', function () {
-      should.throws(() => tx.fromRawTransaction('random' + testData.TRANSFER_TX), 'incorrect raw data');
+      should.throws(() => tx.fromRawTransaction('random' + testData.TRANSFER_PAY_TX), 'incorrect raw data');
     });
   });
 
   describe('Explain transaction', () => {
-    it('should explain a transfer transaction', function () {
-      tx.fromRawTransaction(testData.TRANSFER_TX);
+    it('should explain a transfer pay transaction', function () {
+      tx.fromRawTransaction(testData.TRANSFER_PAY_TX);
       const explainedTransaction = tx.explainTransaction();
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
@@ -43,6 +43,26 @@ describe('Sui Transaction', () => {
           },
         ],
         outputAmount: testData.AMOUNT,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: testData.GAS_BUDGET.toString() },
+        type: 0,
+      });
+    });
+
+    it('should explain a transfer payAll transaction', function () {
+      tx.fromRawTransaction(testData.TRANSFER_PAY_ALL_SUI_TX);
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: 'UNAVAILABLE',
+        outputs: [
+          {
+            address: testData.recipients[0],
+            amount: '', // deserialize doesn't return amount for PayAllSui
+          },
+        ],
+        outputAmount: 0,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.GAS_BUDGET.toString() },

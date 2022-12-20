@@ -28,12 +28,9 @@ describe('Third-Party Fixtures', function () {
             transaction = ZcashTransaction.fromBuffer(buffer, false, 'number', network as ZcashNetwork);
           } else if (isDogecoin(network)) {
             [signatureHash] = rest as [string];
-            transaction = parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(
-              buffer,
-              network,
-              undefined,
-              'bigint'
-            );
+            transaction = parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(buffer, network, {
+              amountType: 'bigint',
+            });
           } else {
             [signatureHash] = rest as [string];
             transaction = parseTransactionRoundTrip(buffer, network);
@@ -72,12 +69,9 @@ describe('Third-Party Fixtures', function () {
           vectors.forEach((v: TxValidVector, i) => {
             const [, /* inputs , */ txHex] = v;
             if (isDogecoin(network)) {
-              parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(
-                Buffer.from(txHex, 'hex'),
-                network,
-                undefined,
-                'bigint'
-              );
+              parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(Buffer.from(txHex, 'hex'), network, {
+                amountType: 'bigint',
+              });
             } else {
               parseTransactionRoundTrip(Buffer.from(txHex, 'hex'), network);
             }

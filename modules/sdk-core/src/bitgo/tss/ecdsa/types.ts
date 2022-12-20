@@ -39,7 +39,7 @@ export type EncryptedNShare = {
   // signed and encrypted gpg armor
   encryptedPrivateShare: string;
   n: string;
-  v?: string;
+  vssProof?: string;
 };
 
 // NShare with information needed to decrypt and verify a GPG mesasge

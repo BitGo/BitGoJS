@@ -404,4 +404,42 @@ describe('Eth Transaction builder wallet initialization', function () {
     const txFromRaw = await txBuiderFromRaw.build();
     should.deepEqual(tx.id, txFromRaw.id);
   });
+
+  describe('Recovery Wallet', function () {
+    it('should build and sign using txHex', async () => {
+      const txBuilder = getBuilder('gteth') as TransactionBuilder;
+      const txHex = testData.RECOVERY_WALLET_DEPLOYMENT_TXHEX;
+      txBuilder.from(txHex);
+      const xpriv =
+        'xprv9s21ZrQH143K2YKSzZa2fv7QTzZ5Ui45ZUzygDwhfeHodwHbWtUUSKqikMKZR9Z751NMekrjXKBykb8mhvoTrKMRodKBvNDH4XKPkccF1K4';
+      txBuilder.sign({ key: xpriv });
+      const signedTx = await txBuilder.build();
+      should.exists(signedTx.toBroadcastFormat());
+    });
+
+    it('succeed when build via contract call', async () => {
+      const txBuilder = getBuilder('gteth') as TransactionBuilder;
+      txBuilder.type(TransactionType.ContractCall);
+      txBuilder.fee({
+        eip1559: {
+          maxFeePerGas: '100',
+          maxPriorityFeePerGas: '10',
+        },
+        fee: '100',
+        gasLimit: '10000',
+      });
+
+      const data = testData.SEND_FUNDS_METHOD_CALL;
+      txBuilder.counter(1);
+      txBuilder.data(data);
+      txBuilder.contract('0xd536f4b9f9127a39f19820ca18baac7cd157471f');
+      const tx = await txBuilder.build();
+      const txhex = tx.toBroadcastFormat();
+      const builderFrom = getBuilder('gteth') as TransactionBuilder;
+      builderFrom.from(txhex);
+      const txFrom = await builderFrom.build();
+      should.deepEqual(tx.id, txFrom.id);
+      should.deepEqual(tx.toJson(), txFrom.toJson());
+    });
+  });
 });

@@ -14,6 +14,8 @@ import {
   GetInvoicesQuery,
   GetInvoicesResponse,
   DecodedLnurlPayRequest,
+  GetPaymentsQuery,
+  GetPaymentsResponse,
 } from './iLightning';
 import { decodeLnurlPay, fetchLnurlPayInvoice } from './lightningUtils';
 import { BitGoBase } from '../bitgoBase';
@@ -101,15 +103,39 @@ export class Lightning implements ILightning {
   }
 
   public async getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse> {
-    const queryParams: { status?: string; limit?: number } = {};
-    queryParams.status = query?.status;
-    queryParams.limit = query?.limit;
+    const queryParams = {
+      status: query?.status,
+      limit: query?.limit,
+      startDate: query?.startDate,
+      endDate: query?.endDate,
+    };
 
     const body = await this.bitgo
       .get(this.url + '/invoices')
       .query(queryParams)
       .result();
     return decodeOrElse(GetInvoicesResponse.name, GetInvoicesResponse, body, (errors) => {
+      throw new Error(`error(s) parsing response body: ${errors}`);
+    });
+  }
+
+  /**
+   * fetches lightning payments by status, limit, startDate and endDate
+   * @param query
+   * @return {GetPaymentsResponse}
+   */
+  public async getPayments(query?: GetPaymentsQuery): Promise<GetPaymentsResponse> {
+    const queryParams: { status?: string; limit?: number; startDate?: string; endDate?: string } = {};
+    queryParams.status = query?.status;
+    queryParams.limit = query?.limit;
+    queryParams.startDate = query?.startDate;
+    queryParams.endDate = query?.endDate;
+
+    const body = await this.bitgo
+      .get(this.url + '/payments')
+      .query(queryParams)
+      .result();
+    return decodeOrElse(GetPaymentsResponse.name, GetPaymentsResponse, body, (errors) => {
       throw new Error(`error(s) parsing response body: ${errors}`);
     });
   }

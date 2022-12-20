@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.4.1...@bitgo/sdk-coin-avaxp@3.4.2) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.4.0...@bitgo/sdk-coin-avaxp@3.4.1) (2022-12-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.3.0...@bitgo/sdk-coin-avaxp@3.4.0) (2022-12-01)
+
+### Features
+
+- **sdk-coin-avaxp:** verify import in P ([ce70af4](https://github.com/BitGo/BitGoJS/commit/ce70af459d1e2dcd1025178a930ddf8a84454bfd))
+
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.2.0...@bitgo/sdk-coin-avaxp@3.3.0) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** fix fee management for export in c tx builder ([598de65](https://github.com/BitGo/BitGoJS/commit/598de65b972991dcb59f09ebf6f0d12b3658adbb))
+
+### Features
+
+- **sdk-coin-avaxp:** add verify for import in c ([5969795](https://github.com/BitGo/BitGoJS/commit/596979560ba3f2e70133d7cff93432f12ccdc7ea))
+- **sdk-coin-avaxp:** update verify transaction to support exports ([f62fb6a](https://github.com/BitGo/BitGoJS/commit/f62fb6a1011438d0b670b92098fc1202dc172741))
+- **sdk-coin-avaxp:** updated export txn verify for fees ([4a089cd](https://github.com/BitGo/BitGoJS/commit/4a089cd30e479bfcf201b2578debbdb1c52e8933))
+
 ## [3.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.2.0...@bitgo/sdk-coin-avaxp@3.2.4) (2022-11-04)
 
 ### Bug Fixes

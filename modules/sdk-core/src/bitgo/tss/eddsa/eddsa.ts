@@ -1,3 +1,6 @@
+import assert from 'assert';
+import openpgp from 'openpgp';
+import sodium from 'libsodium-wrappers-sumo';
 import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
 import { BitGoBase } from './../../bitgoBase';
 import {
@@ -19,7 +22,7 @@ import {
 import { BaseTransaction } from './../../../account-lib/baseCoin/baseTransaction';
 import { Ed25519BIP32 } from './../../../account-lib/mpc/hdTree';
 import _ = require('lodash');
-import { getTxRequest, sendSignatureShare } from '../common';
+import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 
 export { getTxRequest, sendSignatureShare };
 
@@ -228,8 +231,13 @@ export async function getBitgoToUserRShare(
   txRequestId: string
 ): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const signatureShares =
-    txRequest.apiVersion === 'full' ? txRequest.transactions[0].signatureShares : txRequest.signatureShares;
+  let signatureShares;
+  if (txRequest.apiVersion === 'full') {
+    assert(txRequest.transactions, 'transactions required as part of txRequest');
+    signatureShares = txRequest.transactions[0].signatureShares;
+  } else {
+    signatureShares = txRequest.signatureShares;
+  }
   if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
     throw new Error(`No signatures shares found for id: ${txRequestId}`);
   }
@@ -386,4 +394,34 @@ export async function getTSSSignature(
   }
   const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
   return rawSignature;
+}
+
+/**
+ * Verifies that a TSS wallet signature was produced with the expected key and that the signed data contains the
+ * expected common keychain, the expected user and backup key ids as well as the public share that is generated from the
+ * private share that was passed in.
+ */
+export async function verifyWalletSignature(params: {
+  walletSignature: openpgp.Key;
+  bitgoPub: openpgp.Key;
+  commonKeychain: string;
+  userKeyId: string;
+  backupKeyId: string;
+  decryptedShare: string;
+  verifierIndex: 1 | 2; // the index of the verifier, 1 means user, 2 means backup
+}): Promise<void> {
+  const rawNotations = await commonVerifyWalletSignature(params);
+
+  const { decryptedShare, verifierIndex } = params;
+
+  const publicShare =
+    Buffer.from(
+      await sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(decryptedShare.slice(0, 64), 'hex'))
+    ).toString('hex') + decryptedShare.slice(64);
+  const publicShareRawNotationIndex = 2 + verifierIndex;
+
+  assert(
+    publicShare === Buffer.from(rawNotations[publicShareRawNotationIndex].value).toString(),
+    'bitgo share mismatch'
+  );
 }

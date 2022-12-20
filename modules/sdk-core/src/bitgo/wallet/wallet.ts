@@ -22,7 +22,14 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, RequestTracer, TxRequest, EddsaUnsignedTransaction, IntentOptionsBase } from '../utils';
+import {
+  inferAddressType,
+  RequestTracer,
+  TxRequest,
+  EddsaUnsignedTransaction,
+  IntentOptionsForMessage,
+  IntentOptionsForTypedData,
+} from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -71,12 +78,15 @@ import {
   WalletData,
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
+  WalletSignTypedDataOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
+import { isCoinThatConstructFinalSignedMessageHash } from '../features/constructFinalSignedMessageHash';
+
 const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
@@ -143,6 +153,7 @@ export class Wallet implements IWallet {
   prebuildWhitelistedParams(): string[] {
     return [
       'addressType',
+      'apiVersion',
       'changeAddress',
       'consolidateAddresses',
       'cpfpFeeRate',
@@ -151,6 +162,7 @@ export class Wallet implements IWallet {
       'feeRate',
       'gasLimit',
       'gasPrice',
+      'hopParams',
       'idfSignedTimestamp',
       'idfUserId',
       'idfVersion',
@@ -173,6 +185,8 @@ export class Wallet implements IWallet {
       'reservation',
       'sequenceId',
       'strategy',
+      'sourceChain',
+      'destinationChain',
       'targetWalletUnspents',
       'trustlines',
       'type',
@@ -1050,8 +1064,8 @@ export class Wallet implements IWallet {
     }
 
     if (!_.isUndefined(forwarderVersion)) {
-      if (!_.isInteger(forwarderVersion) || forwarderVersion < 0 || forwarderVersion > 1) {
-        throw new Error('forwarderVersion has to be an integer between 0 and 1');
+      if (!_.isInteger(forwarderVersion) || forwarderVersion < 0 || forwarderVersion > 2) {
+        throw new Error('forwarderVersion has to be an integer 0, 1 or 2');
       }
       addressParams.forwarderVersion = forwarderVersion;
     }
@@ -1441,7 +1455,7 @@ export class Wallet implements IWallet {
    * Fetch a transaction prebuild (unsigned transaction) from BitGo
    *
    * @param {Object} params
-   * @param {{address: string | walletId: string, amount: string}} params.recipients - list of recipients and necessary recipient information
+   * @param {{address: string, amount: string}} params.recipients - list of recipients and necessary recipient information
    * @param {Number} params.numBlocks - Estimates the approximate fee per kilobyte necessary for a transaction confirmation within numBlocks blocks
    * @param {Number} params.feeRate - the desired feeRate for the transaction in base units/kB
    * @param {Number} params.maxFeeRate - upper limit for feeRate in base units/kB
@@ -1472,16 +1486,6 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
-    if (params.recipients) {
-      for (const recipient of params.recipients) {
-        if (!recipient.address && !recipient.walletId) {
-          throw new Error('recipient field must have either an address or walletId');
-        } else if (recipient.address && recipient.walletId) {
-          throw new Error('recipient field can only have one of: address or walletId');
-        }
-      }
-    }
-
     if (this._wallet.multisigType === 'tss') {
       return this.prebuildTransactionTss(params);
     }
@@ -1536,7 +1540,7 @@ export class Wallet implements IWallet {
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
-    const { txPrebuild } = params;
+    const { txPrebuild, apiVersion } = params;
 
     if (_.isFunction(params.customGShareGeneratingFunction) && _.isFunction(params.customRShareGeneratingFunction)) {
       // invoke external signer TSS for EdDSA workflow
@@ -1554,7 +1558,7 @@ export class Wallet implements IWallet {
     });
 
     if (this._wallet.multisigType === 'tss') {
-      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions) });
+      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions), apiVersion });
     }
 
     let { pubs } = params;
@@ -1580,11 +1584,44 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Sign a typed structured data using TSS
+   * @param params
+   */
+  async signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
+    if (!this.baseCoin.supportsSigningTypedData()) {
+      throw new Error(`Sign typed data not supported for ${this.baseCoin.getFullName()}`);
+    }
+    if (!params.typedData) {
+      throw new Error(`Typed data required`);
+    }
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+    if (_.isFunction((this.baseCoin as any).encodeTypedData)) {
+      params.typedData.typedDataEncoded = (this.baseCoin as any).encodeTypedData(params.typedData);
+    }
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const presign = {
+      ...params,
+      walletData: this._wallet,
+      tssUtils: this.tssUtils,
+      prv: this.getUserPrv(userPrvOptions),
+      keychain: keychains[0],
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
+      pub: keychains.map((k) => k.pub),
+      reqId: params.reqId,
+    };
+    return this.signTypedDataTss(presign);
+  }
+
+  /**
    *  Sign a message using TSS
    * @param params
-   * - messagePrebuild
-   * - [keychain / key] (object) or prv (string)
-   * - walletPassphrase
+   * - Message
+   * - custodianMessageId
    */
   async signMessage(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
     if (!this.baseCoin.supportsMessageSigning()) {
@@ -1597,10 +1634,22 @@ export class Wallet implements IWallet {
       throw new Error('Message signing only supported for TSS wallets');
     }
     if (_.isFunction((this.baseCoin as any).encodeMessage)) {
-      assert(params.message);
       params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
     }
-    const presign = { ...params, walletData: this._wallet, tssUtils: this.tssUtils };
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const presign = {
+      ...params,
+      walletData: this._wallet,
+      tssUtils: this.tssUtils,
+      prv: this.getUserPrv(userPrvOptions),
+      keychain: keychains[0],
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
+      pubs: keychains.map((k) => k.pub),
+      reqId: params.reqId,
+    };
     return this.signMessageTss(presign);
   }
 
@@ -1922,7 +1971,6 @@ export class Wallet implements IWallet {
       return this.sendManyTss(params);
     }
 
-    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [
       'recipients',
       'numBlocks',
@@ -1949,7 +1997,19 @@ export class Wallet implements IWallet {
       'trustlines',
       'transferId',
       'stakingOptions',
+      'hop',
+      'type',
+      'sourceChain',
+      'destinationChain',
     ]);
+
+    if (this._wallet.type === 'custodial') {
+      const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
+      Object.assign(selectParams, extraParams);
+      return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
+    }
+
+    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
     return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
@@ -2503,8 +2563,16 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+    if (
+      params.apiVersion === 'lite' &&
+      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa')
+    ) {
+      throw new Error(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
+    }
+
     const apiVersion =
-      this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite';
+      params.apiVersion ||
+      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite');
 
     // Two options different implementations of fees seems to now be supported, for now we will support both to be backwards compatible
     // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
@@ -2520,6 +2588,8 @@ export class Wallet implements IWallet {
               maxPriorityFeePerGas: Number(params.eip1559?.maxPriorityFeePerGas),
               gasLimit: params.gasLimit,
             };
+    } else if (params.gasLimit !== undefined) {
+      feeOptions = { gasLimit: params.gasLimit };
     } else {
       feeOptions = undefined;
     }
@@ -2603,7 +2673,7 @@ export class Wallet implements IWallet {
     let unsignedTx: EddsaUnsignedTransaction;
 
     if (txRequest.apiVersion === 'full') {
-      if (txRequest.transactions.length !== 1) {
+      if (txRequest.transactions?.length !== 1) {
         throw new Error(`Expected a single unsigned tx for tx request with id: ${txRequest.txRequestId}`);
       }
 
@@ -2635,21 +2705,26 @@ export class Wallet implements IWallet {
     params: WalletSignTransactionOptions = {},
     coin: IBaseCoin
   ): Promise<TxRequest> {
-    if (!params.txRequestId) {
-      throw new Error('txRequestId required to sign transactions with TSS');
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
     }
 
     if (!params.customRShareGeneratingFunction) {
-      throw new Error('Generator function for R share required to sign transactions with External Signer');
+      throw new Error('Generator function for R share required to sign transactions with External Signer.');
     }
 
     if (!params.customGShareGeneratingFunction) {
-      throw new Error('Generator function for G share required to sign transactions with External Signer');
+      throw new Error('Generator function for G share required to sign transactions with External Signer.');
     }
 
     try {
       const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
-        params.txRequestId,
+        txRequestId,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
       );
@@ -2676,12 +2751,12 @@ export class Wallet implements IWallet {
     if (!params.prv) {
       throw new Error('prv required to sign transactions with TSS');
     }
-
     try {
       const signedTxRequest = await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
+        apiVersion: params.apiVersion,
       });
       return {
         txRequestId: signedTxRequest.txRequestId,
@@ -2705,39 +2780,92 @@ export class Wallet implements IWallet {
 
     try {
       let txRequest;
-      assert(params.message);
+      assert(params.message, 'message required for message signing');
       if (!params.message.txRequestId) {
-        const intentOption: IntentOptionsBase = {
+        const intentOption: IntentOptionsForMessage = {
           custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
           intentType: 'signMessage',
           isTss: true,
+          messageRaw: params.message.messageRaw,
+          messageEncoded: params.message?.messageEncoded ?? '',
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
       } else {
-        assert(params.message.txRequestId);
         txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId);
-      }
-      let finalMessage;
-      if (params.message.messageEncoded) {
-        finalMessage = params.message.messageEncoded;
-      } else {
-        // For the case that a TSS coin/token does not have any message encoding needed.
-        finalMessage = params.message.messageRaw;
       }
 
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
         txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
-        finalMessage,
+        messageRaw: params.message.messageRaw,
+        messageEncoded: params.message.messageEncoded,
       });
-      return {
-        txRequestId: signedMessageRequest.txRequestId,
-      };
+      assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
+      assert(
+        signedMessageRequest.messages[0].combineSigShare,
+        'Unable to find combineSigShare in signedMessageRequest.messages'
+      );
+      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
+        return this.baseCoin.constructFinalSignedMessageHash(signedMessageRequest.messages[0].combineSigShare);
+      }
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+      return signedMessageRequest.messages[0].txHash;
     } catch (e) {
       throw new Error('failed to sign message ' + e);
+    }
+  }
+
+  /**
+   * Signs a typed data from a TSS wallet.
+   * @param params
+   * @private
+   */
+  private async signTypedDataTss(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
+    assert(params.reqId, 'reqId required for signing typed data');
+    if (!params.prv) {
+      throw new Error('prv required to sign typed data with TSS');
+    }
+
+    try {
+      let txRequest;
+      assert(params.typedData, 'typedData required for typed data signing');
+      if (!params.typedData.txRequestId) {
+        const intentOptions: IntentOptionsForTypedData = {
+          custodianMessageId: params.custodianMessageId,
+          reqId: params.reqId,
+          intentType: 'signTypedStructuredData',
+          isTss: true,
+          typedDataRaw: params.typedData.typedDataRaw,
+          typedDataEncoded: params.typedData.typedDataEncoded!.toString(),
+        };
+        txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
+        params.typedData.txRequestId = txRequest.txRequestId;
+      } else {
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId);
+      }
+
+      const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
+        txRequest,
+        prv: params.prv,
+        reqId: params.reqId || new RequestTracer(),
+        messageRaw: params.typedData.typedDataRaw,
+        messageEncoded: params.message?.messageEncoded,
+      });
+      assert(signedTypedDataRequest.messages, 'Unable to find messages in signedTypedDataRequest');
+      assert(
+        signedTypedDataRequest.messages[0].combineSigShare,
+        'Unable to find combineSigShare in signedTypedDataRequest.messages'
+      );
+      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
+        return this.baseCoin.constructFinalSignedMessageHash(signedTypedDataRequest.messages[0].combineSigShare);
+      }
+      assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
+      return signedTypedDataRequest.messages[0].txHash;
+    } catch (e) {
+      throw new Error('failed to sign typed data ' + e);
     }
   }
 
@@ -2765,7 +2893,7 @@ export class Wallet implements IWallet {
     }
 
     // ECDSA TSS uses TxRequestFull
-    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full') {
       return signedTransaction;
     }
 

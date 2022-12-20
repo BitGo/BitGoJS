@@ -453,11 +453,21 @@ export class Sol extends BaseCoin {
 
     await tssUtils!.deleteSignatureShares(txRequestId);
     const recreated = await tssUtils!.getTxRequest(txRequestId);
+    let txHex = '';
+    if (recreated.unsignedTxs) {
+      txHex = recreated.unsignedTxs[0]?.serializedTxHex;
+    } else {
+      txHex = recreated.transactions ? recreated.transactions[0]?.unsignedTx.serializedTxHex : '';
+    }
+
+    if (!txHex) {
+      throw new Error('Missing serialized tx hex');
+    }
 
     return Promise.resolve({
       ...params,
       txPrebuild: recreated,
-      txHex: recreated.unsignedTxs[0].serializedTxHex,
+      txHex,
     });
   }
 

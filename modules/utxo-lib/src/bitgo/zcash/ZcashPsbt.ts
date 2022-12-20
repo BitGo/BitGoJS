@@ -47,7 +47,7 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     let consensusBranchId: number | undefined = undefined;
     psbt.data.globalMap.unknownKeyVals?.forEach(({ key, value }, i) => {
       if (key.equals(CONSENSUS_BRANCH_ID_KEY)) {
-        consensusBranchId = value.readUint32BE();
+        consensusBranchId = value.readUint32LE();
       }
     });
     switch (psbt.tx.version) {
@@ -84,7 +84,7 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
       return super.toBuffer();
     }
     const value = Buffer.alloc(4);
-    value.writeUint32BE(this.tx.consensusBranchId);
+    value.writeUint32LE(this.tx.consensusBranchId);
     this.addUnknownKeyValToGlobal({ key: CONSENSUS_BRANCH_ID_KEY, value });
     if (!this.data.globalMap.unknownKeyVals) {
       throw new Error('Failed adding consensus branch id to unknownKeyVals');

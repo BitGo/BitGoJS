@@ -120,7 +120,10 @@ export type TxOutPoint = {
  * Output reference and script data.
  * Suitable for use for `txb.addInput()`
  */
-export type PrevOutput<TNumber extends number | bigint = number> = TxOutPoint & TxOutput<TNumber>;
+export type PrevOutput<TNumber extends number | bigint = number> = TxOutPoint &
+  TxOutput<TNumber> & {
+    prevTx?: Buffer;
+  };
 
 /**
  * @return PrevOutput from Unspent
@@ -132,6 +135,28 @@ export function toPrevOutput<TNumber extends number | bigint>(
   return {
     ...parseOutputId(u.id),
     ...toOutput(u, network),
+  };
+}
+
+/**
+ * @return PrevOutput with prevTx from Unspent
+ */
+export function toPrevOutputWithPrevTx<TNumber extends number | bigint>(
+  u: Unspent<TNumber> & { prevTx?: unknown },
+  network: Network
+): PrevOutput<TNumber> {
+  let prevTx;
+  if (typeof u.prevTx === 'string') {
+    prevTx = Buffer.from(u.prevTx, 'hex');
+  } else if (Buffer.isBuffer(u.prevTx)) {
+    prevTx = u.prevTx;
+  } else if (u.prevTx !== undefined) {
+    throw new Error(`Invalid prevTx type for unspent ${u.prevTx}`);
+  }
+  return {
+    ...parseOutputId(u.id),
+    ...toOutput(u, network),
+    prevTx,
   };
 }
 

@@ -1,8 +1,8 @@
 import { SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
-import { KeychainsTriplet } from '../../baseCoin';
+import { KeychainsTriplet, TypedMessage, MessageTypes } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
-import { Memo, WalletType } from '../../wallet';
+import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 
@@ -56,7 +56,7 @@ export interface TokenTransferRecipientParams {
   tokenId?: string;
   decimalPlaces?: number;
 }
-export interface IntentOptionsBase {
+interface IntentOptionsBase {
   reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
@@ -67,9 +67,19 @@ export interface IntentOptionsBase {
   custodianMessageId?: string;
 }
 
+export interface IntentOptionsForMessage extends IntentOptionsBase {
+  messageRaw: string;
+  messageEncoded?: string;
+}
+
+export interface IntentOptionsForTypedData extends IntentOptionsBase {
+  typedDataRaw: TypedMessage<any>;
+  typedDataEncoded?: string;
+}
+
 export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase {
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
     data?: string;
     tokenName?: string;
@@ -86,7 +96,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
 }
 export interface IntentRecipient {
   address: {
-    address?: string;
+    address: string;
   };
   amount: {
     value: string | number;
@@ -95,12 +105,24 @@ export interface IntentRecipient {
   data?: string;
   tokenData?: TokenTransferRecipientParams;
 }
-export interface PopulatedIntentBase {
+interface PopulatedIntentBase {
   intentType: string;
   sequenceId?: string;
   comment?: string;
   memo?: string;
   isTss?: boolean;
+}
+
+export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
+  messageRaw: string;
+  messageEncoded: string;
+  custodianMessageId?: string;
+}
+
+export interface PopulatedIntentForTypedDataSigning<T extends MessageTypes> extends PopulatedIntentBase {
+  messageRaw: TypedMessage<T>;
+  messageEncoded: string;
+  custodianMessageId?: string;
 }
 
 export interface PopulatedIntent extends PopulatedIntentBase {
@@ -185,10 +207,16 @@ export type TxRequest = {
   // Only available in 'lite' version
   unsignedTxs: UnsignedTransactionTss[]; // Should override with blockchain / sig scheme specific unsigned tx
   // Only available in 'full' version
-  transactions: {
+  transactions?: {
     state: TransactionState;
     unsignedTx: UnsignedTransactionTss; // Should override with blockchain / sig specific unsigned tx
     signatureShares: SignatureShareRecord[];
+  }[];
+  messages?: {
+    state: TransactionState;
+    signatureShares: SignatureShareRecord[];
+    combineSigShare?: string;
+    txHash?: string;
   }[];
   apiVersion?: TxRequestVersion;
   latest: boolean;
@@ -210,10 +238,12 @@ export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
   prv: string;
   reqId: IRequestTracer;
+  apiVersion?: ApiVersion;
 };
 
 export type TSSParamsForMessage = TSSParams & {
-  finalMessage: string;
+  messageRaw: string | TypedMessage<any>;
+  messageEncoded?: string;
 };
 
 export interface BitgoHeldBackupKeyShare {

@@ -57,6 +57,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  fee(fee: string): this {
+    this._fee = BigNum.from_str(fee);
+    return this;
+  }
+
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
@@ -204,9 +209,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
       // calculate the fee based off our dummy transaction
       const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str('440'));
-      this._transaction.fee(fee.to_str());
       this._fee = fee;
     }
+    this._transaction.fee(this._fee.to_str());
     // now calculate the change based off of <utxoBalance> - <fee> - <amountToSend>
     // reset the outputs collection because now our last output has changed
     outputs = CardanoWasm.TransactionOutputs.new();

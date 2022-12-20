@@ -8,6 +8,7 @@ import { StakingCall } from './stakingCall';
 import { getCommon, walletSimpleByteCode } from './utils';
 import { TransferBuilder } from './transferBuilder';
 import { addHexPrefix } from 'ethereumjs-util';
+import BigNumber from 'bignumber.js';
 
 export class TransactionBuilder extends EthTransactionBuilder {
   // Staking specific parameters
@@ -229,6 +230,31 @@ export class TransactionBuilder extends EthTransactionBuilder {
    */
   protected getFinalV(): string {
     return addHexPrefix(this._common.chainIdBN().toString(16));
+  }
+
+  /**
+   * The value to send along with this transaction. 0 by default
+   *
+   * @param {string} value The value to send along with this transaction
+   */
+  value(value: string): void {
+    this.validatePrecision(value, 'Value');
+    this._value = value;
+  }
+
+  validatePrecision(value: string, context?: string): void {
+    context = context ? context + ' ' : '';
+    const valueNumber = Number(value);
+    // the Celo library internally converts the string value to a number and converts to hex, which can result in a loss of precision for numbers with >= 15 significant digits
+    const valueBigNumber = new BigNumber(valueNumber.toString(16), 16);
+    if (isNaN(valueNumber)) {
+      throw new BuildTransactionError(`${context}${value} is not a valid number`);
+    } else if (!valueBigNumber.isEqualTo(valueNumber)) {
+      // TODO(BG-62714): remove this check once the celo library is fixed
+      throw new BuildTransactionError(
+        `${context}${value} cannot be represented by a JS number, please try using fewer significant digits. We are working to support all values in the future.`
+      );
+    }
   }
   // endregion
 }

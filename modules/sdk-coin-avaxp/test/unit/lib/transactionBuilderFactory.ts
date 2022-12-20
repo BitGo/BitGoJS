@@ -1,10 +1,13 @@
 import assert from 'assert';
 import * as testData from '../../resources/avaxp';
 import * as errorMessage from '../../resources/errors';
-import { TransactionBuilderFactory } from '../../../src/lib';
+import { TransactionBuilderFactory, TxData } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { IMPORT_P } from '../../resources/tx/importP';
+import { IMPORT_C } from '../../resources/tx/importC';
+import { EXPORT_C } from '../../resources/tx/exportC';
+import { ADDVALIDATOR_SAMPLES } from '../../resources/avaxp';
 
 describe('AvaxP Transaction Builder Factory', () => {
   const factory = new TransactionBuilderFactory(coins.get('tavaxp'));
@@ -113,6 +116,61 @@ describe('AvaxP Transaction Builder Factory', () => {
       txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
       txExplain.type.should.equal(TransactionType.AddValidator);
       txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
+    });
+  });
+
+  describe('Cross chain transfer has source and destination chains', () => {
+    const p2cTxs = [
+      IMPORT_P.fullsigntxHex,
+      IMPORT_P.halfsigntxHex,
+      IMPORT_P.unsignedTxHex,
+      EXPORT_C.fullsigntxHex,
+      EXPORT_C.unsignedTxHex,
+    ];
+
+    const c2pTxs = [
+      IMPORT_C.fullsigntxHex,
+      IMPORT_C.halfsigntxHex,
+      IMPORT_C.unsignedTxHex,
+      testData.EXPORT_P_2_C.fullsigntxHex,
+      testData.EXPORT_P_2_C.halfsigntxHex,
+      testData.EXPORT_P_2_C.unsignedTxHex,
+    ];
+
+    const noCrossChainTxs = [
+      ADDVALIDATOR_SAMPLES.fullsigntxHex,
+      ADDVALIDATOR_SAMPLES.halfsigntxHex,
+      ADDVALIDATOR_SAMPLES.unsignedTxHex,
+    ];
+
+    async function toJson(txHex: string): Promise<TxData> {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(txHex);
+      const tx = await txBuilder.build();
+      return tx.toJson();
+    }
+
+    it('Should json have sourceChain C and destinationChain P', async () => {
+      for (const rawTx of p2cTxs) {
+        const txJson = await toJson(rawTx);
+        txJson.sourceChain!.should.equal('C');
+        txJson.destinationChain!.should.equal('P');
+      }
+    });
+
+    it('Should json have sourceChain P and destinationChain C', async () => {
+      for (const rawTx of c2pTxs) {
+        const txJson = await toJson(rawTx);
+        txJson.sourceChain!.should.equal('P');
+        txJson.destinationChain!.should.equal('C');
+      }
+    });
+
+    it('Should json have not sourceChain either destinationChain ', async () => {
+      for (const rawTx of noCrossChainTxs) {
+        const txJson = await toJson(rawTx);
+        txJson.should.property('sourceChain').be.undefined();
+        txJson.should.property('destinationChain').be.undefined();
+      }
     });
   });
 });

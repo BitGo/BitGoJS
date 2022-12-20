@@ -4,15 +4,17 @@ import { GAS_BUDGET } from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
+import { SuiTransactionType } from '../../../src/lib/constants';
 
 describe('Sui Transfer Builder', () => {
   const factory = getBuilderFactory('tsui');
 
   describe('Succeed', () => {
-    it('should build a transfer tx', async function () {
+    it('should build a transfer pay tx', async function () {
       const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Pay);
       txBuilder.sender(testData.sender.address);
-      txBuilder.payTx(testData.payTx);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
       txBuilder.gasBudget(GAS_BUDGET);
       txBuilder.gasPayment(testData.gasPayment);
       const tx = await txBuilder.build();
@@ -32,7 +34,7 @@ describe('Sui Transfer Builder', () => {
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.TRANSFER_TX);
+      should.equal(rawTx, testData.TRANSFER_PAY_TX);
     });
   });
 

@@ -38,6 +38,108 @@
     },
     {
       "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-coin-ada"
+    },
+    {
+      "path": "../sdk-coin-algo"
+    },
+    {
+      "path": "../sdk-coin-avaxc"
+    },
+    {
+      "path": "../sdk-coin-avaxp"
+    },
+    {
+      "path": "../sdk-coin-bch"
+    },
+    {
+      "path": "../sdk-coin-bcha"
+    },
+    {
+      "path": "../sdk-coin-bsc"
+    },
+    {
+      "path": "../sdk-coin-bsv"
+    },
+    {
+      "path": "../sdk-coin-btc"
+    },
+    {
+      "path": "../sdk-coin-btg"
+    },
+    {
+      "path": "../sdk-coin-celo"
+    },
+    {
+      "path": "../sdk-coin-cspr"
+    },
+    {
+      "path": "../sdk-coin-dash"
+    },
+    {
+      "path": "../sdk-coin-doge"
+    },
+    {
+      "path": "../sdk-coin-dot"
+    },
+    {
+      "path": "../sdk-coin-eos"
+    },
+    {
+      "path": "../sdk-coin-etc"
+    },
+    {
+      "path": "../sdk-coin-eth"
+    },
+    {
+      "path": "../sdk-coin-eth2"
+    },
+    {
+      "path": "../sdk-coin-ethw"
+    },
+    {
+      "path": "../sdk-coin-hbar"
+    },
+    {
+      "path": "../sdk-coin-ltc"
+    },
+    {
+      "path": "../sdk-coin-near"
+    },
+    {
+      "path": "../sdk-coin-polygon"
+    },
+    {
+      "path": "../sdk-coin-rbtc"
+    },
+    {
+      "path": "../sdk-coin-sol"
+    },
+    {
+      "path": "../sdk-coin-stx"
+    },
+    {
+      "path": "../sdk-coin-sui"
+    },
+    {
+      "path": "../sdk-coin-trx"
+    },
+    {
+      "path": "../sdk-coin-xlm"
+    },
+    {
+      "path": "../sdk-coin-xrp"
+    },
+    {
+      "path": "../sdk-coin-xtz"
+    },
+    {
+      "path": "../sdk-coin-zec"
     }
   ]
 }

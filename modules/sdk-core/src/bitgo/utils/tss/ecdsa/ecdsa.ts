@@ -28,6 +28,7 @@ const encryptNShare = ECDSAMethods.encryptNShare;
 
 /** @inheritdoc */
 export class EcdsaUtils extends baseTSSUtils<KeyShare> {
+  // We do not have full support for 3-party verification (w/ external source) of key shares and signature shares. There is no 3rd party key service support with this release.
   private bitgoPublicGpgKey: openpgp.Key | undefined = undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
@@ -281,7 +282,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
           n: userToBitgoShare.n,
-          v: userToBitgoShare.v,
+          vssProof: userToBitgoShare.vssProof,
         },
         {
           from: 'backup',
@@ -289,7 +290,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
           n: backupToBitgoShare.n,
-          v: backupToBitgoShare.v,
+          vssProof: backupToBitgoShare.vssProof,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
@@ -467,7 +468,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           publicShare: bitGoToRecipientShare.publicShare,
           encryptedPrivateShare: bitGoToRecipientShare.privateShare,
           n: bitGoToRecipientShare.n!,
-          v: bitGoToRecipientShare.v,
+          vssProof: bitGoToRecipientShare.vssProof,
         },
         recipientPrivateArmor: userGpgKey.privateKey,
         senderPublicArmor: bitgoPublicGpgKey.armor(),
@@ -587,13 +588,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let signablePayload;
 
     if (requestType === RequestType.tx) {
-      signablePayload = Buffer.from(txRequestResolved.transactions[0].unsignedTx.signableHex, 'hex');
+      assert(
+        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
+        'Unable to find transactions in txRequest'
+      );
+      const unsignedTx =
+        txRequestResolved.apiVersion === 'full'
+          ? txRequestResolved.transactions![0].unsignedTx
+          : txRequestResolved.unsignedTxs[0];
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
-      const finalMessage = (params as TSSParamsForMessage).finalMessage;
-      assert(finalMessage);
-      signablePayload = Buffer.from(finalMessage, 'hex');
+      const finalMessage = (params as TSSParamsForMessage).messageEncoded;
+      assert(finalMessage, 'finalMessage is required');
+      signablePayload = Buffer.from(finalMessage);
     }
-
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
       bitgoToUserDShare,
@@ -630,8 +638,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
   async signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
-    if (!params.finalMessage) {
-      throw new Error('finalMessage required to sign message');
+    if (!params.messageRaw) {
+      throw new Error('Raw message required to sign message');
     }
     return this.signRequestBase(params, RequestType.message);
   }

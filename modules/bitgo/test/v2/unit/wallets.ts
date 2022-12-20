@@ -132,6 +132,19 @@ describe('V2 Wallets:', function () {
         .reply(200, {});
       await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', walletVersion: 1 } as any);
     });
+
+    it('creates a new hot wallet with userKey', async function () {
+      nock(bgUrl)
+        .post('/api/v2/tbtc/wallet', function (body) {
+          body.type.should.equal('hot');
+          body.should.have.property('keys');
+          body.should.have.property('m');
+          body.should.have.property('n');
+          return true;
+        })
+        .reply(200, {});
+      await wallets.add({ label: 'label', enterprise: 'enterprise', type: 'hot', keys: [], m: 2, n: 3, userKey: 'test123' });
+    });
   });
 
   describe('Generate wallet:', function () {

@@ -18,8 +18,10 @@ import {
   TxRequest,
   TxRequestVersion,
   BackupKeyShare,
-  IntentOptionsBase,
-  PopulatedIntentBase,
+  IntentOptionsForMessage,
+  PopulatedIntentForMessageSigning,
+  IntentOptionsForTypedData,
+  PopulatedIntentForTypedDataSigning,
 } from './baseTypes';
 import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
 
@@ -204,17 +206,60 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param preview
    */
   async createTxRequestWithIntentForMessageSigning(
-    params: IntentOptionsBase,
+    params: IntentOptionsForMessage,
     apiVersion: TxRequestVersion = 'full',
     preview?: boolean
   ): Promise<TxRequest> {
-    const intentOptions: PopulatedIntentBase = {
+    const intentOptions: PopulatedIntentForMessageSigning = {
+      custodianMessageId: params.custodianMessageId,
       intentType: params.intentType,
       sequenceId: params.sequenceId,
       comment: params.comment,
       memo: params.memo?.value,
       isTss: params.isTss,
+      messageRaw: params.messageRaw,
+      messageEncoded: params.messageEncoded ?? '',
     };
+
+    return this.createTxRequestBase(intentOptions, apiVersion, preview);
+  }
+
+  /**
+   * Create a tx request from params for type data signing
+   *
+   * @param params
+   * @param apiVersion
+   * @param preview
+   */
+  async createTxRequestWithIntentForTypedDataSigning(
+    params: IntentOptionsForTypedData,
+    apiVersion: TxRequestVersion = 'full',
+    preview?: boolean
+  ): Promise<TxRequest> {
+    const intentOptions: PopulatedIntentForTypedDataSigning<any> = {
+      custodianMessageId: params.custodianMessageId,
+      intentType: params.intentType,
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      memo: params.memo?.value,
+      isTss: params.isTss,
+      messageRaw: params.typedDataRaw,
+      messageEncoded: params.typedDataEncoded ?? '',
+    };
+
+    return this.createTxRequestBase(intentOptions, apiVersion, preview);
+  }
+
+  /**
+   * Calls Bitgo API to create tx request.
+   *
+   * @private
+   */
+  private async createTxRequestBase(
+    intentOptions: PopulatedIntentForTypedDataSigning<any> | PopulatedIntentForMessageSigning,
+    apiVersion: TxRequestVersion,
+    preview?: boolean
+  ): Promise<TxRequest> {
     const whitelistedParams = {
       intent: {
         ...intentOptions,
@@ -222,6 +267,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       apiVersion,
       preview,
     };
+
     const txRequest = (await this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
       .send(whitelistedParams)

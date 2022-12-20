@@ -117,7 +117,8 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
     });
 
     // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
-    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/)) {
+    // do not use a valid address format for generic tokens because they not have onchain addresses
+    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/) && !options.features.includes(CoinFeature.GENERIC_TOKEN)) {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
@@ -552,6 +553,47 @@ export function terc721(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return erc721(name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
+}
+
+/**
+ * Factory function for nonstandard token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Ethereum main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function nonstandardToken(
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new ContractAddressDefinedToken({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: 0,
+      asset: UnderlyingAsset.NONSTANDARD,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
 }
 
 /**

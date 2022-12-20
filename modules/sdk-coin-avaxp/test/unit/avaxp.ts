@@ -14,7 +14,12 @@ import * as _ from 'lodash';
 
 import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 import { IMPORT_P } from '../resources/tx/importP';
-import { ADDVALIDATOR_SAMPLES, EXPORT_P_2_C, EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT } from '../resources/avaxp';
+import {
+  ADDVALIDATOR_SAMPLES,
+  EXPORT_P_2_C,
+  EXPORT_P_2_C_VERIFY,
+  EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT,
+} from '../resources/avaxp';
 import { IMPORT_C } from '../resources/tx/importC';
 import { EXPORT_C } from '../resources/tx/exportC';
 import assert from 'assert';
@@ -417,7 +422,7 @@ describe('Avaxp', function () {
   });
 
   describe('verify transaction', function () {
-    it('should succeed to verify signed transaction', async () => {
+    it('should succeed to verify signed add validator transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
         txInfo: {},
@@ -427,7 +432,7 @@ describe('Avaxp', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify half signed transaction', async () => {
+    it('should succeed to verify half signed add validator transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
         txInfo: {},
@@ -437,20 +442,199 @@ describe('Avaxp', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify unsigned transaction', async () => {
+    it('should succeed to verify unsigned add validator transaction', async () => {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify transactions when recipients has extra data', async function () {
+    it('should succeed to verify add validator transactions when recipients has extra data ', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       txParams.data = 'data';
 
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    it('should succeed to verify import in C transaction', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_C.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify import to P transaction', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_P.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+        unspents: ['e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L:0'],
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify import to P transaction with wrong unspents', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_P.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+        memo: undefined,
+        unspents: ['test:1'],
+      };
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+        })
+        .should.be.rejectedWith(
+          'Transaction should not contain the UTXO: e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L:0'
+        );
+    });
+
+    it('should succeed to verify export transaction', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_P_2_C_VERIFY.txHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_P_2_C_VERIFY.receiveAddress,
+            amount: EXPORT_P_2_C_VERIFY.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+        memo: {
+          value: EXPORT_P_2_C_VERIFY.memo,
+          type: 'text',
+        },
+      };
+
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail verify export transaction with wrong amount', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_P_2_C_VERIFY.txHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_P_2_C_VERIFY.receiveAddress,
+            amount: '9999999',
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+        memo: {
+          value: EXPORT_P_2_C_VERIFY.memo,
+          type: 'text',
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(
+          `Tx total amount ${EXPORT_P_2_C_VERIFY.amount} does not match with expected total amount field 9999999 and fixed fee 1000000`
+        );
+    });
+
+    it('should fail verify export transaction with wrong c-address in memo', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_P_2_C_VERIFY.txHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_P_2_C_VERIFY.receiveAddress2,
+            amount: EXPORT_P_2_C_VERIFY.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+        memo: {
+          value: EXPORT_P_2_C_VERIFY.memo,
+          type: 'text',
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(
+          `Invalid C-chain receive address ${EXPORT_P_2_C_VERIFY.receiveAddress}, does not match expected params address ${EXPORT_P_2_C_VERIFY.receiveAddress2}`
+        );
+    });
+
+    it('should fail verify export transaction with no memo', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_C.unsignedTxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_P_2_C_VERIFY.receiveAddress2,
+            amount: EXPORT_P_2_C_VERIFY.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(`Export Tx requires a memo with c-chain address`);
+    });
+
+    it('should fail verify export transaction with invalid C address in memo', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_P_2_C.unsignedTxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_P_2_C.pAddresses,
+            amount: EXPORT_P_2_C.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+        memo: {
+          value: EXPORT_P_2_C.memo,
+          type: 'text',
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(
+          `Txn memo must contain valid C-chain address destination, received: Export AVAX from P-Chain to C-Chain and consume multisig output and create multisig atomic output`
+        );
     });
 
     it('should fail verify transactions when have different type', async function () {
@@ -499,6 +683,7 @@ describe('Avaxp', function () {
         })
         .should.be.rejectedWith('Tx outputs does not match with expected txParams');
     });
+
     it('should fail verify transactions when amount is number', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -567,6 +752,11 @@ describe('Avaxp', function () {
       const multiSigValidAddress =
         'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59~invalid-address~P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4';
       basecoin.isValidAddress(multiSigValidAddress).should.be.false();
+    });
+
+    it('should validate valid c-chain address', () => {
+      const address = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
+      basecoin.isValidAddress(address).should.be.true();
     });
 
     it('should throw when verifying address if address length doesnt match keychain length', async function () {

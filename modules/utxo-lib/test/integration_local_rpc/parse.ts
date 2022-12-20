@@ -60,6 +60,7 @@ function runTestParse<TNumber extends number | bigint>(
   const fixtureName = `${txType}_${scriptType}.json`;
   describe(`${fixtureName} amountType=${amountType}`, function () {
     let fixture: TransactionFixtureWithInputs;
+    let txBuffer: Buffer;
     let parsedTx: UtxoTransaction<TNumber>;
 
     before(async function () {
@@ -70,8 +71,9 @@ function runTestParse<TNumber extends number | bigint>(
         },
         fixtureName
       );
+      txBuffer = Buffer.from(fixture.transaction.hex, 'hex');
       parsedTx = createTransactionFromBuffer<TNumber>(
-        Buffer.from(fixture.transaction.hex, 'hex'),
+        txBuffer,
         protocol.network,
         { version: protocol.version },
         amountType
@@ -112,17 +114,18 @@ function runTestParse<TNumber extends number | bigint>(
         ...getOutputIdForInput(i),
         script: getPrevOutputScript(i),
         value: getPrevOutputValue(i),
+        prevTx: txBuffer,
       }));
     }
 
     it(`round-trip`, function () {
-      parseTransactionRoundTrip(
-        Buffer.from(fixture.transaction.hex, 'hex'),
-        protocol.network,
-        getPrevOutputs(),
+      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+        inputs: getPrevOutputs(),
         amountType,
-        protocol.version
-      );
+        version: protocol.version,
+        // FIXME: prevTx parsing for Zcash not working yet
+        roundTripPsbt: txType === 'spend' && protocol.network !== networks.zcashTest,
+      });
     });
 
     it(`round-trip (high-precision values)`, function () {
@@ -139,7 +142,7 @@ function runTestParse<TNumber extends number | bigint>(
         o.value = (BigInt(1e16) + BigInt(1)) as TNumber;
         assert.notStrictEqual(BigInt(Number(o.value)), o.value);
       });
-      const txRoundTrip = parseTransactionRoundTrip(tx.toBuffer(), protocol.network, undefined, amountType);
+      const txRoundTrip = parseTransactionRoundTrip(tx.toBuffer(), protocol.network, { amountType });
       assert.strictEqual(txRoundTrip.outs.length, tx.outs.length);
       txRoundTrip.outs.forEach((o, i) => {
         assert.deepStrictEqual(o, tx.outs[i]);
@@ -203,21 +206,6 @@ function runTestParse<TNumber extends number | bigint>(
 
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
-
-        switch (scriptType) {
-          case 'p2sh':
-          case 'p2shP2wsh':
-            assert.strictEqual(result.inputClassification, 'scripthash');
-            break;
-          case 'p2wsh':
-            assert.strictEqual(result.inputClassification, 'witnessscripthash');
-            break;
-          case 'p2tr':
-            assert.strictEqual(result.inputClassification, 'taproot');
-            break;
-          default:
-            throw new Error(`unknown scriptType ${scriptType}`);
-        }
       });
     });
 

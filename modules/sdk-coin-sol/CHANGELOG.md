@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.1...@bitgo/sdk-coin-sol@2.3.2) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+## [2.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.0...@bitgo/sdk-coin-sol@2.3.1) (2022-12-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.2.5...@bitgo/sdk-coin-sol@2.3.0) (2022-12-01)
+
+### Features
+
+- **bitgo:** add api version input ([42f353f](https://github.com/BitGo/BitGoJS/commit/42f353f0b33857963d66739d34b0d0cac85e82db))
+- **sdk-coin-sol:** add support for partially unstaking ([bc9680b](https://github.com/BitGo/BitGoJS/commit/bc9680b819045b89b0e8e833e3a8d90bdc302497))
+
+## [2.2.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.2.0...@bitgo/sdk-coin-sol@2.2.5) (2022-11-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
 ## [2.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.2.0...@bitgo/sdk-coin-sol@2.2.4) (2022-11-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

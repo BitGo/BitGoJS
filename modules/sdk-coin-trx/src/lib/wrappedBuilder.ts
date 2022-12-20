@@ -9,6 +9,7 @@ import { decodeTransaction } from './utils';
 import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { TransactionReceipt } from './iface';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 /**
  * Wrapped Builder class
@@ -36,6 +37,10 @@ export class WrappedBuilder extends TransactionBuilder {
 
   getTransactionBuilder(tx?: TransactionReceipt | string): TransactionBuilder {
     return this.initializeBuilder(tx, new TransactionBuilder(this._coinConfig));
+  }
+
+  getTokenTransferBuilder(tx?: TransactionReceipt | string): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
   }
 
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {

@@ -13,6 +13,19 @@ import {
   TriggerSmartContract,
 } from './iface';
 import { ContractType, PermissionType } from './enum';
+import { AbiCoder, hexConcat } from 'ethers/lib/utils';
+
+const ADDRESS_PREFIX_REGEX = /^(41)/;
+const ADDRESS_PREFIX = '41';
+
+export const tokenMainnetContractAddresses = [
+  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
+  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+];
+export const tokenTestnetContractAddresses = [
+  'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
+  'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+];
 
 /**
  * Tron-specific helper functions
@@ -392,4 +405,44 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
  */
 export function toHex(buffer: Buffer | Uint8Array): string {
   return hex.encode(buffer, true);
+}
+
+/**
+ * Returns a Keccak-256 encoded string of the parameters
+ *
+ * @param types - strings describing the types of the values
+ * @param values - value to encode
+ * @param methodId - the first 4 bytes of the function selector
+ */
+export function encodeDataParams(types: string[], values: any[], methodId: string): string {
+  types.forEach((type, index) => {
+    if (type == 'address') {
+      values[index] = values[index].replace(ADDRESS_PREFIX_REGEX, '0x');
+    }
+  });
+
+  const abiCoder = new AbiCoder();
+  let data;
+  try {
+    data = abiCoder.encode(types, values);
+  } catch (e) {
+    console.log(e); // do something with this error i.e. throw it
+  }
+  return hexConcat([methodId, data]).replace(/^(0x)/, '');
+}
+
+/**
+ * Returns the decoded values according to the array of types
+ *
+ * @param types - strings describing the types of the values
+ * @param data - encoded string
+ */
+export function decodeDataParams(types: string[], data: string): any[] {
+  const abiCoder = new AbiCoder();
+  data = '0x' + data.substring(8);
+  return abiCoder.decode(types, data).reduce((obj, arg, index) => {
+    if (types[index] == 'address') arg = ADDRESS_PREFIX + arg.substr(2).toLowerCase();
+    obj.push(arg);
+    return obj;
+  }, []);
 }

@@ -50,7 +50,7 @@ export const TransferAllTransactionSchema = joi.object({
   to: addressSchema.required(),
 });
 
-export const StakeTransactionSchema = joi.object({
+const CreateStakeTransactionSchema = joi.object({
   value: joi.string().required(),
   controller: addressSchema.required(),
   payee: [
@@ -65,7 +65,19 @@ export const StakeTransactionSchema = joi.object({
       Account: joi.string().required(),
     }),
   ],
+  addToStake: joi.boolean().equal(false).optional(),
 });
+
+const StakeMoreTransactionSchema = joi.object({
+  value: joi.string().required(),
+  addToStake: joi.boolean().equal(true).required(),
+  controller: joi.forbidden(), // Only allow undefined
+  payee: joi.forbidden(), // Only allow undefined
+});
+
+export const StakeTransactionSchema = joi
+  .alternatives(CreateStakeTransactionSchema, StakeMoreTransactionSchema)
+  .match('one');
 
 export const AddressInitializationSchema = joi.object({
   proxyType: joi

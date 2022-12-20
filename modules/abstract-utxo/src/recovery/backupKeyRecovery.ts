@@ -16,6 +16,9 @@ const {
 type ChainCode = utxolib.bitgo.ChainCode;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
+type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
+  valueString: string;
+};
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 import { VirtualSizes } from '@bitgo/unspents';
@@ -43,9 +46,9 @@ export interface OfflineVaultTxInfo<TNumber extends number | bigint = number> {
   inputs: WalletUnspent<TNumber>[];
 }
 
-export interface FormattedOfflineVaultTxInfo<TNumber extends number | bigint = number> {
+export interface FormattedOfflineVaultTxInfo {
   txInfo: {
-    unspents: WalletUnspent<TNumber>[];
+    unspents: WalletUnspentJSON[];
   };
   txHex: string;
   feeInfo: Record<string, never>;
@@ -63,11 +66,13 @@ function formatForOfflineVault<TNumber extends number | bigint = number>(
   coinName: string,
   txInfo: OfflineVaultTxInfo<TNumber>,
   txHex: string
-): FormattedOfflineVaultTxInfo<TNumber> {
+): FormattedOfflineVaultTxInfo {
   return {
     txHex,
     txInfo: {
-      unspents: txInfo.inputs,
+      unspents: txInfo.inputs.map((input) => {
+        return { ...input, value: Number(input.value), valueString: input.value.toString() };
+      }),
     },
     feeInfo: {},
     coin: coinName,
@@ -249,7 +254,7 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
   coin: AbstractUtxoCoin,
   bitgo: BitGoBase,
   params: RecoverParams
-): Promise<BackupKeyRecoveryTransansaction<TNumber> | FormattedOfflineVaultTxInfo<TNumber>> {
+): Promise<BackupKeyRecoveryTransansaction<TNumber> | FormattedOfflineVaultTxInfo> {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }

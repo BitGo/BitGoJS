@@ -32,20 +32,23 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txInfo: TxInfo;
   source: string;
 }
+export interface AvaxpTransactionStakingOptions {
+  startTime: string;
+  endTime: string;
+  nodeID: string;
+  amount: string;
+  delegationFeeRate?: number;
+}
 export interface AvaxpTransactionParams extends TransactionParams {
   type: string;
-  stakingOptions: {
-    startTime: string;
-    endTime: string;
-    nodeID: string;
-    amount: string;
-    delegationFeeRate?: number;
-  };
+  stakingOptions: AvaxpTransactionStakingOptions;
   locktime?: number;
   memo?: {
     type?: string;
     value: string;
   };
+  unspents?: string[];
+  sourceChain?: string;
 }
 
 export interface AvaxpVerifyTransactionOptions extends VerifyTransactionOptions {

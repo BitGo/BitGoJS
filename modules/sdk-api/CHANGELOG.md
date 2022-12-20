@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.2...@bitgo/sdk-api@1.9.3) (2022-12-09)
+
+### Bug Fixes
+
+- enable cookie propagation gating for test and prod ([da6ddb3](https://github.com/BitGo/BitGoJS/commit/da6ddb30d99cb50f1434399a967f7d99e9fc5187))
+
+## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.1...@bitgo/sdk-api@1.9.2) (2022-12-06)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.0...@bitgo/sdk-api@1.9.1) (2022-12-01)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.4.0...@bitgo/sdk-api@1.9.0) (2022-11-29)
+
+### Features
+
+- allow the sdk to optionally send cookies with the request to custom domains ([e40349e](https://github.com/BitGo/BitGoJS/commit/e40349e8e36e946fe8630e94b0796e34b4aee51b))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.4.0...@bitgo/sdk-api@1.8.0) (2022-11-04)
 
 ### Features

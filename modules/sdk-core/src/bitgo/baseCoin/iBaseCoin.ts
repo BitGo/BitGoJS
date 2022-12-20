@@ -11,6 +11,7 @@ import { IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
+import { TransactionType } from '../../account-lib';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -179,6 +180,7 @@ export interface FeeEstimateOptions {
   recipient?: string;
   data?: string;
   amount?: string;
+  type?: keyof typeof TransactionType;
 }
 
 // TODO (SDKT-9): reverse engineer and add options
@@ -254,6 +256,57 @@ export interface TransactionPrebuild extends BaseSignable {
 export interface Message extends BaseSignable {
   messageRaw: string;
   messageEncoded?: string;
+}
+
+export interface MessageTypeProperty {
+  name: string;
+  type: string;
+}
+export interface MessageTypes {
+  EIP712Domain: MessageTypeProperty[];
+  [additionalProperties: string]: MessageTypeProperty[];
+}
+
+export enum SignTypedDataVersion {
+  V1 = 'V1',
+  V3 = 'V3',
+  V4 = 'V4',
+}
+
+/**
+ * This is the message format used for `signTypeData`, for all versions
+ * except `V1`.
+ *
+ * @template T - The custom types used by this message.
+ * @property types - The custom types used by this message.
+ * @property primaryType - The type of the message.
+ * @property domain - Signing domain metadata. The signing domain is the intended context for the
+ * signature (e.g. the dapp, protocol, etc. that it's intended for). This data is used to
+ * construct the domain seperator of the message.
+ * @property domain.name - The name of the signing domain.
+ * @property domain.version - The current major version of the signing domain.
+ * @property domain.chainId - The chain ID of the signing domain.
+ * @property domain.verifyingContract - The address of the contract that can verify the signature.
+ * @property domain.salt - A disambiguating salt for the protocol.
+ * @property message - The message to be signed.
+ */
+export interface TypedMessage<T extends MessageTypes> {
+  types: T;
+  primaryType: keyof T;
+  domain: {
+    name?: string;
+    version?: string;
+    chainId?: number;
+    verifyingContract?: string;
+    salt?: ArrayBuffer;
+  };
+  message: Record<string, unknown>;
+}
+
+export interface TypedData<T extends MessageTypes> extends BaseSignable {
+  typedDataRaw: TypedMessage<T>;
+  version: SignTypedDataVersion;
+  typedDataEncoded?: Buffer;
 }
 
 export interface AddressCoinSpecific {
@@ -386,6 +439,7 @@ export interface IBaseCoin {
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
   supportsMessageSigning(): boolean;
+  supportsSigningTypedData(): boolean;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;

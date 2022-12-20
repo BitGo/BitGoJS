@@ -282,6 +282,20 @@ export class Transaction extends BaseTransaction {
             coin: this._coinConfig.name,
           });
           break;
+        case InstructionBuilderTypes.StakingDeactivate:
+          if (instruction.params.amount && instruction.params.unstakingAddress) {
+            inputs.push({
+              address: instruction.params.stakingAddress,
+              value: instruction.params.amount,
+              coin: this._coinConfig.name,
+            });
+            outputs.push({
+              address: instruction.params.unstakingAddress,
+              value: instruction.params.amount,
+              coin: this._coinConfig.name,
+            });
+          }
+          break;
         case InstructionBuilderTypes.StakingWithdraw:
           inputs.push({
             address: instruction.params.stakingAddress,

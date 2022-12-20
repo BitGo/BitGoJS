@@ -15,6 +15,7 @@ export interface Keychain {
   commonPub?: string;
   commonKeychain?: string;
   keyShares?: ApiKeyShare[];
+  walletHSMGPGPublicKeySigs?: string;
 }
 
 export interface ChangedKeychains {
@@ -76,7 +77,7 @@ export interface ApiKeyShare {
   privateShare: string;
   privateShareProof?: string;
   n?: string;
-  v?: string;
+  vssProof?: string;
 }
 
 export interface CreateBackupOptions {

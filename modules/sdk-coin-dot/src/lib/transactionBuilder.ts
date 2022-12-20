@@ -212,6 +212,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.method(decodedTxn.method as unknown as TxMethod);
     return this._transaction;
   }
+
+  getMethodAndArguments(): string {
+    this.validateTransaction(this.transaction);
+    const unsignedTransaction = this.buildTransaction();
+    return unsignedTransaction.method;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.setTransaction(this.buildTransaction());

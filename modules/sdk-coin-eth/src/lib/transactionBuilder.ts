@@ -62,7 +62,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   private _counter: number;
   private _fee: Fee;
-  private _value: string;
+  protected _value: string;
 
   // the signature on the external ETH transaction
   private _txSignature: SignatureParts;
@@ -130,6 +130,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     switch (this._type) {
       case TransactionType.WalletInitialization:
         return this.buildWalletInitializationTransaction(this._walletVersion);
+      case TransactionType.RecoveryWalletDeployment:
+        return this.buildBase(this._data);
       case TransactionType.Send:
       case TransactionType.SendERC721:
       case TransactionType.SendERC1155:
@@ -208,6 +210,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this.walletVersion(1);
           this.setContract(transactionJson.to);
         }
+        break;
+      case TransactionType.RecoveryWalletDeployment:
+        this.data(transactionJson.data);
         break;
       case TransactionType.FlushTokens:
         this.setContract(transactionJson.to);
@@ -340,6 +345,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     switch (this._type) {
       case TransactionType.WalletInitialization:
         this.validateWalletInitializationFields();
+        break;
+      case TransactionType.RecoveryWalletDeployment:
+        this.validateDataField();
         break;
       case TransactionType.Send:
       case TransactionType.SendERC721:
@@ -722,7 +730,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // region generic contract call
   data(encodedCall: string): void {
-    if (this._type !== TransactionType.ContractCall) {
+    const supportedTransactionTypes = [TransactionType.ContractCall, TransactionType.RecoveryWalletDeployment];
+    if (!supportedTransactionTypes.includes(this._type)) {
       throw new BuildTransactionError('data can only be set for contract call transaction types');
     }
     this._data = encodedCall;

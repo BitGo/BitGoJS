@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.1.1...@bitgo/account-lib@4.1.2) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+## [4.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.1.0...@bitgo/account-lib@4.1.1) (2022-12-06)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.0.0...@bitgo/account-lib@4.1.0) (2022-12-01)
+
+### Features
+
+- **sdk-core:** add keyDerive to ECDSA TSS implementation ([9ff1d89](https://github.com/BitGo/BitGoJS/commit/9ff1d89ba0e42d53640f0fe7b71c53d1a2eb4a10))
+
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@4.0.0) (2022-11-29)
+
+### Features
+
+- **sdk-coin-sui:** added sui to account-lib ([e4a21fc](https://github.com/BitGo/BitGoJS/commit/e4a21fc2895ef66508fbc231dc11baf24ae4cf5a))
+- **sdk-core:** add VSS share generation and verification ([619f254](https://github.com/BitGo/BitGoJS/commit/619f2542f9c44f8468460864f78b975a2ccb7b7f))
+
+### BREAKING CHANGES
+
+- **sdk-core:** Key shares require a `v` value for combination.
+  ISSUE: BG-57633
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.23.0...@bitgo/account-lib@3.0.0) (2022-11-04)
 
 ### Features

@@ -2,6 +2,9 @@ import { Entry, TransactionExplanation as BaseTransactionExplanation, Transactio
 import { BaseTx as PMVBaseTx, TransferableOutput, Tx as PMVTx } from 'avalanche/dist/apis/platformvm';
 import { EVMBaseTx, EVMOutput, Tx as EMVTx } from 'avalanche/dist/apis/evm';
 
+export interface AvaxpEntry extends Entry {
+  id: string;
+}
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
   rewardAddresses: string[];
@@ -31,6 +34,8 @@ export interface TxData {
   signatures: string[];
   outputs: Entry[];
   changeOutputs: Entry[];
+  sourceChain?: string;
+  destinationChain?: string;
 }
 
 /**

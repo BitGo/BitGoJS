@@ -2,7 +2,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SUI_GAS_PRICE } from '../../../src/lib/transactionBuilder';
+import { SUI_GAS_PRICE, SuiTransactionType } from '../../../src/lib/constants';
 
 describe('Sui Transaction Builder', async () => {
   let builders;
@@ -13,49 +13,118 @@ describe('Sui Transaction Builder', async () => {
     done();
   });
 
-  it('should start and build an empty transfer tx', async function () {
+  it('should start and build an empty transfer pay tx', async function () {
     const txBuilder = factory.getTransferBuilder();
+    txBuilder.type(SuiTransactionType.Pay);
     txBuilder.sender(testData.sender.address);
-    txBuilder.payTx(testData.payTx);
+    txBuilder.payTx(testData.payTxWithoutGasPayment);
     txBuilder.gasBudget(testData.GAS_BUDGET);
     txBuilder.gasPayment(testData.gasPayment);
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
 
     const rawTx = tx.toBroadcastFormat();
-    should.equal(rawTx, testData.TRANSFER_TX);
+    should.equal(rawTx, testData.TRANSFER_PAY_TX);
     const reserialized = await factory.from(rawTx).build();
     reserialized.should.be.deepEqual(tx);
     reserialized.toBroadcastFormat().should.equal(rawTx);
   });
 
-  it('should build and sign a transfer tx', async function () {
+  it('should start and build an empty transfer payAllSui tx', async function () {
     const txBuilder = factory.getTransferBuilder();
+    txBuilder.type(SuiTransactionType.PayAllSui);
     txBuilder.sender(testData.sender.address);
-    txBuilder.payTx(testData.payTx);
+    txBuilder.payTx(testData.payTxWithGasPayment);
     txBuilder.gasBudget(testData.GAS_BUDGET);
     txBuilder.gasPayment(testData.gasPayment);
     const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+
     const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX);
+    const reserialized = await factory.from(rawTx).build();
+    reserialized.inputs.should.deepEqual([
+      {
+        address: testData.sender.address,
+        value: '',
+        coin: 'tsui',
+      },
+    ]);
+    reserialized.outputs.should.deepEqual([
+      {
+        address: testData.recipients[0],
+        value: '',
+        coin: 'tsui',
+      },
+    ]);
+    reserialized.toBroadcastFormat().should.equal(rawTx);
+  });
+
+  it('should build and sign a transfer paySui tx', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.type(SuiTransactionType.PaySui);
+    txBuilder.sender(testData.sender.address);
+    txBuilder.payTx(testData.payTxWithGasPayment);
+    txBuilder.gasBudget(testData.GAS_BUDGET);
+    txBuilder.gasPayment(testData.gasPayment);
+    const tx = await txBuilder.build();
+    should.equal(tx.id, 'UNAVAILABLE');
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX);
 
     const txBuilder2 = await factory.from(rawTx);
     await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
     const signedTx = await txBuilder2.build();
     should.equal(signedTx.type, TransactionType.Send);
+    should.equal(signedTx.id, '2c8i3zZGqDALQQS8gdB8yVK1mXgKvzRY3wUPNjA1NwNx');
 
     const rawSignedTx = signedTx.toBroadcastFormat();
-    should.equal(rawSignedTx, testData.TRANSFER_TX);
+    should.equal(rawSignedTx, testData.TRANSFER_PAY_SUI_TX);
     const reserializedTxBuilder = factory.from(rawSignedTx);
     reserializedTxBuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
     const reserialized = await reserializedTxBuilder.build();
+
     reserialized.should.be.deepEqual(signedTx);
     reserialized.toBroadcastFormat().should.equal(rawSignedTx);
   });
 
+  it('should build a paySui tx even if gasPayment is not in payTx.coins', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.type(SuiTransactionType.PaySui);
+    txBuilder.sender(testData.sender.address);
+    txBuilder.payTx(testData.payTxWithoutGasPayment);
+    txBuilder.gasBudget(testData.GAS_BUDGET);
+    txBuilder.gasPayment(testData.gasPayment);
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX);
+    const reserialized = await factory.from(rawTx).build();
+
+    reserialized.should.be.deepEqual(tx);
+    reserialized.toBroadcastFormat().should.equal(rawTx);
+  });
+
+  it('should fail to build if missing type', async function () {
+    for (const txBuilder of builders) {
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx({
+        coins: testData.coinsWithGasPayment,
+        recipients: [testData.recipients[0]],
+        amounts: [testData.AMOUNT],
+      });
+      txBuilder.gasBudget(testData.GAS_BUDGET);
+      txBuilder.gasPayment(testData.gasPayment);
+      await txBuilder.build().should.rejectedWith('type is required before building');
+    }
+  });
+
   it('should fail to build if missing sender', async function () {
     for (const txBuilder of builders) {
+      txBuilder.type(SuiTransactionType.Pay);
       txBuilder.payTx({
-        coins: testData.coins,
+        coins: testData.coinsWithoutGasPayment,
         recipients: [testData.recipients[0]],
         amounts: [testData.AMOUNT],
       });
@@ -67,6 +136,7 @@ describe('Sui Transaction Builder', async () => {
 
   it('should fail to build if missing payTx', async function () {
     for (const txBuilder of builders) {
+      txBuilder.type(SuiTransactionType.PaySui);
       txBuilder.sender(testData.sender.address);
       txBuilder.gasBudget(testData.GAS_BUDGET);
       txBuilder.gasPayment(testData.gasPayment);
@@ -76,9 +146,10 @@ describe('Sui Transaction Builder', async () => {
 
   it('should fail to build if missing gasBudget', async function () {
     for (const txBuilder of builders) {
+      txBuilder.type(SuiTransactionType.Pay);
       txBuilder.sender(testData.sender.address);
       txBuilder.payTx({
-        coins: testData.coins,
+        coins: testData.coinsWithoutGasPayment,
         recipients: [testData.recipients[0]],
         amounts: [testData.AMOUNT],
       });
@@ -89,9 +160,10 @@ describe('Sui Transaction Builder', async () => {
 
   it('should fail to build if missing gasPayment', async function () {
     for (const txBuilder of builders) {
+      txBuilder.type(SuiTransactionType.Pay);
       txBuilder.sender(testData.sender.address);
       txBuilder.payTx({
-        coins: testData.coins,
+        coins: testData.coinsWithoutGasPayment,
         recipients: [testData.recipients[0]],
         amounts: [testData.AMOUNT],
       });
@@ -100,8 +172,25 @@ describe('Sui Transaction Builder', async () => {
     }
   });
 
+  it('should fail to build if gasPayment exists in inputCoins for Pay', async function () {
+    for (const txBuilder of builders) {
+      txBuilder.type(SuiTransactionType.Pay);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx({
+        coins: testData.coinsWithGasPayment,
+        recipients: [testData.recipients[0]],
+        amounts: [testData.AMOUNT],
+      });
+      txBuilder.gasBudget(testData.GAS_BUDGET);
+      txBuilder.gasPayment(testData.gasPayment);
+      await txBuilder
+        .build()
+        .should.rejectedWith(`Invalid gas payment ${testData.gasPayment.objectId}: cannot be one of the inputCoins`);
+    }
+  });
+
   it('should build a send from rawTx', async function () {
-    const txBuilder = factory.from(testData.TRANSFER_TX);
+    const txBuilder = factory.from(testData.TRANSFER_PAY_TX);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(builtTx.id, 'UNAVAILABLE');
@@ -120,14 +209,16 @@ describe('Sui Transaction Builder', async () => {
     const jsonTx = builtTx.toJson();
     jsonTx.gasBudget.should.equal(testData.GAS_BUDGET);
     jsonTx.gasPrice.should.equal(SUI_GAS_PRICE);
-    jsonTx.payTx.should.deepEqual({
-      coins: testData.coins,
-      recipients: [testData.recipients[0]],
-      amounts: [testData.AMOUNT],
+    jsonTx.kind.Single.should.deepEqual({
+      Pay: {
+        coins: testData.coinsWithoutGasPayment,
+        recipients: [testData.recipients[0]],
+        amounts: [testData.AMOUNT],
+      },
     });
     jsonTx.sender.should.equal(testData.sender.address);
     jsonTx.gasPayment.should.deepEqual(testData.gasPayment);
-    builtTx.toBroadcastFormat().should.equal(testData.TRANSFER_TX);
+    builtTx.toBroadcastFormat().should.equal(testData.TRANSFER_PAY_TX);
   });
 
   describe('sender tests', async () => {
@@ -178,7 +269,7 @@ describe('Sui Transaction Builder', async () => {
   describe('payTx tests', async () => {
     it('should succeed for valid payTx', function () {
       for (const txBuilder of builders) {
-        should.doesNotThrow(() => txBuilder.payTx(testData.payTx));
+        should.doesNotThrow(() => txBuilder.payTx(testData.payTxWithGasPayment));
       }
     });
 
@@ -193,30 +284,30 @@ describe('Sui Transaction Builder', async () => {
         ).throw('Invalid payTx, missing coins');
         should(() =>
           txBuilder.payTx({
-            coins: testData.coins,
+            coins: testData.coinsWithGasPayment,
             amounts: [testData.AMOUNT],
           })
         ).throw('Invalid payTx, missing recipients');
         should(() =>
           txBuilder.payTx({
-            coins: testData.coins,
+            coins: testData.coinsWithGasPayment,
             recipients: testData.recipients,
           })
         ).throw('Invalid payTx, missing amounts');
         should(() =>
           txBuilder.payTx({
-            coins: testData.coins,
+            coins: testData.coinsWithGasPayment,
             recipients: [testData.recipients[0], testData.recipients[0]],
             amounts: [testData.AMOUNT],
           })
         ).throw('recipients length 2 must equal to amounts length 1');
         should(() =>
           txBuilder.payTx({
-            coins: testData.coins,
+            coins: testData.coinsWithGasPayment,
             recipients: testData.recipients,
-            amounts: [0],
+            amounts: [-1],
           })
-        ).throw('Invalid or missing amounts, got: 0');
+        ).throw('Invalid or missing amounts, got: -1');
       }
     });
   });

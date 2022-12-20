@@ -6,7 +6,6 @@ import {
   VerifyAddressOptions,
   SignedTransaction,
   ParseTransactionOptions,
-  MethodNotImplementedError,
   BaseTransaction,
   InvalidTransactionError,
   FeeEstimateOptions,
@@ -14,6 +13,8 @@ import {
   TransactionType,
   InvalidAddressError,
   UnexpectedAddressError,
+  ITransactionRecipient,
+  ParsedTransaction,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import {
@@ -21,8 +22,13 @@ import {
   TransactionFee,
   ExplainTransactionOptions,
   AvaxpVerifyTransactionOptions,
+  AvaxpTransactionStakingOptions,
+  AvaxpTransactionParams,
 } from './iface';
+import utils from './lib/utils';
 import _ from 'lodash';
+import BigNumber from 'bignumber.js';
+import { isValidAddress as isValidEthAddress } from 'ethereumjs-util';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -54,6 +60,90 @@ export class AvaxP extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /**
+   * Check if staking txn is valid, based on expected tx params.
+   *
+   * @param {AvaxpTransactionStakingOptions} stakingOptions expected staking params to check against
+   * @param {AvaxpLib.TransactionExplanation} explainedTx explained staking transaction
+   */
+  validateStakingTx(
+    stakingOptions: AvaxpTransactionStakingOptions,
+    explainedTx: AvaxpLib.TransactionExplanation
+  ): void {
+    const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
+    const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+    if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+      throw new Error('Tx outputs does not match with expected txParams');
+    }
+    if (stakingOptions?.amount !== explainedTx.outputAmount) {
+      throw new Error('Tx total amount does not match with expected total amount field');
+    }
+  }
+
+  /**
+   * Check if export txn is valid, based on expected tx params.
+   *
+   * @param {ITransactionRecipient[]} recipients expected recipients and info
+   * @param {string} memo txn memo to verify
+   * @param {AvaxpLib.TransactionExplanation} explainedTx explained export transaction
+   */
+  validateExportTx(
+    recipients: ITransactionRecipient[],
+    memo: string,
+    explainedTx: AvaxpLib.TransactionExplanation
+  ): void {
+    if (recipients.length !== 1 || explainedTx.outputs.length !== 1) {
+      throw new Error('Export Tx requires one recipient');
+    }
+
+    const recipientAmount = new BigNumber(recipients[0].amount);
+
+    if (
+      recipientAmount.isGreaterThan(explainedTx.outputAmount) ||
+      recipientAmount.plus(explainedTx.fee.fee).isLessThan(explainedTx.outputAmount)
+    ) {
+      throw new Error(
+        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${recipientAmount} and fixed fee ${explainedTx.fee.fee}`
+      );
+    }
+
+    if (explainedTx.outputs && !utils.isValidAddress(explainedTx.outputs[0].address)) {
+      throw new Error(`Invalid P-chain address ${explainedTx.outputs[0].address}`);
+    }
+
+    const memoValue = memo.split('~');
+    if (!isValidEthAddress(memoValue[0])) {
+      throw new Error(`Txn memo must contain valid C-chain address destination, received: ${memo}`);
+    } else if (memoValue[0] !== recipients[0].address) {
+      throw new Error(
+        `Invalid C-chain receive address ${memoValue[0]}, does not match expected params address ${recipients[0].address}`
+      );
+    }
+  }
+
+  /**
+   * Check if import txn into P is valid, based on expected tx params.
+   *
+   * @param {AvaxpLib.AvaxpEntry[]} explainedTxInputs tx inputs (unspents to be imported)
+   * @param {AvaxpTransactionParams} txParams expected tx info to check against
+   */
+  validateImportTx(explainedTxInputs: AvaxpLib.AvaxpEntry[], txParams: AvaxpTransactionParams): void {
+    if (txParams.unspents) {
+      if (explainedTxInputs.length !== txParams.unspents.length) {
+        throw new Error(`Expected ${txParams.unspents.length} UTXOs, transaction had ${explainedTxInputs.length}`);
+      }
+
+      const unspents = new Set(txParams.unspents);
+
+      for (const unspent of explainedTxInputs) {
+        if (!unspents.has(unspent.id)) {
+          throw new Error(`Transaction should not contain the UTXO: ${unspent.id}`);
+        }
+      }
+    }
+  }
+
   async verifyTransaction(params: AvaxpVerifyTransactionOptions): Promise<boolean> {
     const txHex = params.txPrebuild && params.txPrebuild.txHex;
     if (!txHex) {
@@ -68,26 +158,48 @@ export class AvaxP extends BaseCoin {
     }
     const explainedTx = tx.explainTransaction();
 
-    const { type, stakingOptions, memo } = params.txParams;
-    if (!type || explainedTx.type !== TransactionType[type]) {
+    const { type, stakingOptions } = params.txParams;
+    // TODO(BG-62112): change ImportToC type to Import
+    if (!type || (type !== 'ImportToC' && explainedTx.type !== TransactionType[type])) {
       throw new Error('Tx type does not match with expected txParams type');
     }
-    if (memo && explainedTx.memo !== memo.value) {
-      throw new Error('Tx memo does not match with expected txParams memo');
-    }
+
     switch (explainedTx.type) {
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
-        if (!params.txParams.recipients || params.txParams.recipients.length === 0) {
-          const filteredRecipients = [{ address: stakingOptions.nodeID, amount: stakingOptions.amount }];
-          const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+        if (params.txParams.recipients && params.txParams.recipients.length !== 0) {
+          throw new Error('Stake Tx does not require recipients');
+        }
+        if (params.txParams.memo && explainedTx.memo !== params.txParams.memo.value) {
+          throw new Error('Tx memo does not match with expected txParams memo');
+        }
 
-          if (!_.isEqual(filteredOutputs, filteredRecipients)) {
-            throw new Error('Tx outputs does not match with expected txParams');
+        this.validateStakingTx(stakingOptions, explainedTx);
+        break;
+      case TransactionType.Export:
+        if (!params.txParams.recipients) {
+          throw new Error('Export Tx requires a recipient');
+        } else if (!explainedTx.memo) {
+          throw new Error('Export Tx requires a memo with c-chain address');
+        } else {
+          this.validateExportTx(params.txParams.recipients, explainedTx.memo, explainedTx);
+        }
+        break;
+      case TransactionType.Import:
+        if (tx.isTransactionForCChain) {
+          // Import to C-chain
+          if (
+            (params.txParams.recipients && params.txParams.recipients.length !== 0) ||
+            explainedTx.outputs.length !== 1
+          ) {
+            throw new Error('Expected 1 output in import txn and does not require recipients');
           }
-          if (stakingOptions.amount !== explainedTx.outputAmount) {
-            throw new Error('Tx total amount does not match with expected total amount field');
+        } else {
+          // Import to P-chain
+          if (explainedTx.outputs.length !== 1) {
+            throw new Error('Expected 1 output in import txn');
           }
+          this.validateImportTx(explainedTx.inputs, params.txParams);
         }
         break;
       default:
@@ -197,6 +309,11 @@ export class AvaxP extends BaseCoin {
       return false;
     }
 
+    // validate eth address for cross-chain txs to c-chain
+    if (typeof address === 'string' && isValidEthAddress(address)) {
+      return true;
+    }
+
     return AvaxpLib.Utils.isValidAddress(address);
   }
 
@@ -226,8 +343,8 @@ export class AvaxP extends BaseCoin {
     return { fee: '0' };
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {
-    throw new MethodNotImplementedError('parseTransaction method not implemented');
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   /**

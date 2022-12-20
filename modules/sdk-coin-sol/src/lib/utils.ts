@@ -17,6 +17,7 @@ import {
   MEMO_PROGRAM_PK,
   stakingActivateInstructionsIndexes,
   stakingDeactivateInstructionsIndexes,
+  stakingPartialDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
@@ -253,7 +254,10 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.WalletInitialization;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
     return TransactionType.StakingActivate;
-  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes)) {
+  } else if (
+    matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes) ||
+    matchTransactionTypeByInstructionsOrder(instructions, stakingPartialDeactivateInstructionsIndexes)
+  ) {
     return TransactionType.StakingDeactivate;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
     return TransactionType.StakingWithdraw;

@@ -161,6 +161,16 @@ export abstract class MpcUtils {
       }
     }
 
+    if (params.feeOptions !== undefined) {
+      return {
+        ...baseIntent,
+        memo: params.memo?.value,
+        token: params.tokenName,
+        enableTokens: params.enableTokens,
+        feeOptions: params.feeOptions,
+      };
+    }
+
     return {
       ...baseIntent,
       memo: params.memo?.value,

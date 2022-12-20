@@ -60,23 +60,39 @@ function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, network: ut
   }
 }
 
-function getAddresses(n: utxolib.Network): string[] {
+function getAddresses(n: utxolib.Network): [format: string, address: string][] {
   const keys = getKeyTriple('parseAddress');
   return scriptTypes
     .filter((t) => isSupportedDepositType(n, t))
-    .map((t) => utxolib.address.fromOutputScript(createScriptPubKey(keys, t, n), n));
+    .flatMap((t) =>
+      utxolib.addressFormat.addressFormats
+        .filter((format) => utxolib.addressFormat.isSupportedAddressFormat(format, n))
+        .map((format): [string, string] => [
+          format,
+          utxolib.addressFormat.fromOutputScriptWithFormat(createScriptPubKey(keys, t, n), format, n),
+        ])
+    );
 }
 
 function parse(address: string, args: string[]) {
   return getAddressParser(yargs.command(cmdParseAddress).parseSync(args)).parse(address);
 }
 
-function testParseAddress(address: string, args: string[], suffix: string) {
+function testParseAddress(
+  network: utxolib.Network,
+  addressFormat: string,
+  address: string,
+  args: string[],
+  suffix: string
+) {
   describe(`parse address ${address} with arguments ${args.join(' ')}`, function () {
     it(`formats address`, async function () {
       const formatted = formatTreeNoColor(parse(address, args));
       assert.strictEqual(
-        await getFixtureString(`test/fixtures/formatAddress_${address}${suffix}`, formatted),
+        await getFixtureString(
+          `test/fixtures/formatAddress_${utxolib.getNetworkName(network)}_${addressFormat}_${address}${suffix}`,
+          formatted
+        ),
         formatted
       );
     });
@@ -84,10 +100,10 @@ function testParseAddress(address: string, args: string[], suffix: string) {
 }
 
 utxolib.getNetworkList().forEach((n) => {
-  getAddresses(n).forEach((address, i) => {
-    testParseAddress(address, [], '.txt');
-    if (n === utxolib.networks.bitcoin && i === 0) {
-      testParseAddress(address, ['--all'], '.all.txt');
+  getAddresses(n).forEach(([addressFormat, address], i) => {
+    testParseAddress(n, addressFormat, address, [], '.txt');
+    if ([utxolib.networks.bitcoin, utxolib.networks.bitcoincash, utxolib.networks.ecash].includes(n) && i === 0) {
+      testParseAddress(n, addressFormat, address, ['--all'], '.all.txt');
     }
   });
 });

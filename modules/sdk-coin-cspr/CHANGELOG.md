@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.7...@bitgo/sdk-coin-cspr@1.2.8) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cspr
+
+## [1.2.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.6...@bitgo/sdk-coin-cspr@1.2.7) (2022-12-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cspr
+
+## [1.2.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.5...@bitgo/sdk-coin-cspr@1.2.6) (2022-12-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cspr
+
+## [1.2.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.0...@bitgo/sdk-coin-cspr@1.2.5) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-cspr:** fix isWalletAddress ([d3e53cb](https://github.com/BitGo/BitGoJS/commit/d3e53cb8217efe8cc1298aaaa1e0e3409e1c22f8))
+
 ## [1.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.0...@bitgo/sdk-coin-cspr@1.2.4) (2022-11-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cspr

@@ -17,6 +17,7 @@ module.exports = {
       'superagent-proxy': false,
       // use the default version here since we're webpacking ourselves
       '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
+      async: path.resolve('../../node_modules/async/index.js'),
     },
     fallback: {
       constants: false,
@@ -34,6 +35,7 @@ module.exports = {
       url: require.resolve('url/'),
       vm: false,
       zlib: false,
+      async: require.resolve('async'),
     },
   },
   externals: ['morgan', 'superagent-proxy'],
@@ -44,7 +46,7 @@ module.exports = {
     }),
 
     new webpack.NormalModuleReplacementPlugin(/\@emurgo\/cardano-serialization-lib-nodejs/, '@emurgo/cardano-serialization-lib-browser'),
- 
+
     new webpack.ContextReplacementPlugin(/cardano-serialization-lib-browser/),
   ],
   node: {

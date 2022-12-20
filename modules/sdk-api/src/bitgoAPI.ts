@@ -18,6 +18,7 @@ import { createHmac } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   AliasEnvironments,
+  BaseCoin,
   BitGoBase,
   BitGoRequest,
   CoinConstructor,
@@ -26,12 +27,10 @@ import {
   defaultConstants,
   EncryptOptions,
   EnvironmentName,
-  Environments,
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
   GlobalCoinFactory,
-  IBaseCoin,
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
@@ -186,12 +185,7 @@ export class BitGoAPI implements BitGoBase {
       if (params.stellarFederationServerUrl) {
         common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
       }
-      if (
-        params.customRootURI &&
-        params.customRootURI !== Environments.prod.uri &&
-        params.customRootURI !== Environments.test.uri &&
-        params.cookiesPropagationEnabled
-      ) {
+      if (params.cookiesPropagationEnabled) {
         this.cookiesPropagationEnabled = true;
       }
     } else {
@@ -307,7 +301,7 @@ export class BitGoAPI implements BitGoBase {
    * Create a basecoin object
    * @param name
    */
-  public coin(name: string): IBaseCoin {
+  public coin(name: string): BaseCoin {
     return GlobalCoinFactory.getInstance(this, name);
   }
 

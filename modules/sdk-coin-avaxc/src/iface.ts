@@ -7,10 +7,11 @@ import {
   TransactionFee,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionType,
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
+import { TransactionPrebuild as EthTransactionPrebuild } from '@bitgo/sdk-coin-eth';
 
 export interface PrecreateBitGoOptions {
   enterprise?: string;
@@ -73,9 +74,8 @@ export interface OfflineVaultTxInfo {
 
 // For createHopTransactionParams
 export interface HopTransactionBuildOptions {
-  wallet: Wallet;
   recipients: Recipient[];
-  walletPassphrase: string;
+  type?: keyof typeof TransactionType;
 }
 
 // For getExtraPrebuildParams
@@ -84,6 +84,7 @@ export interface BuildOptions {
   wallet?: Wallet;
   recipients?: Recipient[];
   walletPassphrase?: string;
+  type?: keyof typeof TransactionType;
   [index: string]: unknown;
 }
 
@@ -120,7 +121,11 @@ export interface HopPrebuild {
   nonce: number;
   userReqSig: string;
   gasPriceMax: number;
+  type?: keyof typeof TransactionType;
 }
+
+// Replace Eth.HopPrebuild with AvaxC.HopPrebuild
+export type TransactionPrebuild = Omit<EthTransactionPrebuild, 'hopTransaction'> & { hopTransaction?: HopPrebuild };
 
 // For txPreBuild
 export interface TxInfo {

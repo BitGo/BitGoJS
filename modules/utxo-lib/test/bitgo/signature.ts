@@ -29,6 +29,12 @@ import {
   getUnsignedTransaction2Of3,
 } from '../transaction_util';
 import { getTransactionWithHighS } from './signatureModify';
+import { normDefault } from '../testutil/normalize';
+import { getKeyName } from '../testutil';
+
+function keyName(k: BIP32Interface): string | undefined {
+  return getKeyName(fixtureKeys, k);
+}
 
 async function readFixture<T>(
   network: Network,
@@ -42,10 +48,6 @@ async function readFixture<T>(
   );
 }
 
-function keyName(k: BIP32Interface): string | undefined {
-  return ['user', 'backup', 'bitgo'][fixtureKeys.indexOf(k)];
-}
-
 function runTestCheckScriptStructure<TNumber extends number | bigint = number>(
   network: Network,
   scriptType: ScriptType2Of3 | 'p2shP2pk',
@@ -53,68 +55,70 @@ function runTestCheckScriptStructure<TNumber extends number | bigint = number>(
   signer2?: BIP32Interface,
   amountType: 'number' | 'bigint' = 'number'
 ) {
-  it(`has expected script structure [${getNetworkName(network)} ${scriptType} ${keyName(signer1)} ${
-    signer2 ? keyName(signer2) : ''
-  } ${amountType}]`, async function () {
-    let tx;
+  it(
+    `has expected script structure [${getNetworkName(network)} ${scriptType} ` +
+      `${keyName(signer1)} ${signer2 ? keyName(signer2) : ''} ${amountType}]`,
+    async function () {
+      let tx;
 
-    if (scriptType === 'p2shP2pk') {
-      tx = getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, signer1, network, amountType);
-    } else {
-      if (!signer2) {
-        throw new Error(`must set cosigner`);
-      }
-      tx = getFullSignedTransaction2Of3<TNumber>(fixtureKeys, signer1, signer2, scriptType, network, amountType);
-    }
-
-    const { script, witness } = tx.ins[0];
-    const scriptDecompiled = bscript.decompile(script);
-    if (!scriptDecompiled) {
-      throw new Error();
-    }
-    const scriptASM = bscript.toASM(script).split(' ');
-    const classifyInput = classify.input(script);
-    const classifyWitness = classify.witness(witness);
-
-    let pubScript;
-    let classifyPubScript;
-    let pubScriptASM;
-
-    let tapscript;
-    let tapscriptASM;
-    let classifyTapscript;
-
-    if (classifyInput === 'scripthash' || classifyWitness === 'witnessscripthash') {
-      if (witness.length) {
-        pubScript = witness[witness.length - 1];
+      if (scriptType === 'p2shP2pk') {
+        tx = getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, signer1, network, { amountType });
       } else {
-        pubScript = scriptDecompiled[scriptDecompiled.length - 1] as Buffer;
+        if (!signer2) {
+          throw new Error(`must set cosigner`);
+        }
+        tx = getFullSignedTransaction2Of3<TNumber>(fixtureKeys, signer1, signer2, scriptType, network, { amountType });
       }
 
-      classifyPubScript = classify.output(pubScript);
-      pubScriptASM = bscript.toASM(pubScript).split(' ');
-    } else if (classifyWitness === 'taproot') {
-      tapscript = witness[witness.length - 2];
-      classifyTapscript = classify.output(tapscript);
-      tapscriptASM = bscript.toASM(tapscript).split(' ');
+      const { script, witness } = tx.ins[0];
+      const scriptDecompiled = bscript.decompile(script);
+      if (!scriptDecompiled) {
+        throw new Error();
+      }
+      const scriptASM = bscript.toASM(script).split(' ');
+      const classifyInput = classify.input(script);
+      const classifyWitness = classify.witness(witness);
+
+      let pubScript;
+      let classifyPubScript;
+      let pubScriptASM;
+
+      let tapscript;
+      let tapscriptASM;
+      let classifyTapscript;
+
+      if (classifyInput === 'scripthash' || classifyWitness === 'witnessscripthash') {
+        if (witness.length) {
+          pubScript = witness[witness.length - 1];
+        } else {
+          pubScript = scriptDecompiled[scriptDecompiled.length - 1] as Buffer;
+        }
+
+        classifyPubScript = classify.output(pubScript);
+        pubScriptASM = bscript.toASM(pubScript).split(' ');
+      } else if (classifyWitness === 'taproot') {
+        tapscript = witness[witness.length - 2];
+        classifyTapscript = classify.output(tapscript);
+        tapscriptASM = bscript.toASM(tapscript).split(' ');
+      }
+
+      const structure = {
+        publicKeys: fixtureKeys.map((k) => k.publicKey.toString('hex')),
+        script: script?.toString('hex'),
+        witness: witness?.map((w) => w.toString('hex')),
+        scriptASM,
+        pubScriptASM,
+        tapscriptASM,
+        classifyInput,
+        classifyWitness,
+        classifyPubScript,
+        classifyTapscript,
+      };
+
+      const fixtureName = ['structure', keyName(signer1), signer2 ? keyName(signer2) : 'none'].join('-');
+      fixtureUtil.assertEqualJSON(structure, await readFixture(network, scriptType, fixtureName, structure));
     }
-
-    const structure = {
-      publicKeys: fixtureKeys.map((k) => k.publicKey.toString('hex')),
-      script: script?.toString('hex'),
-      witness: witness?.map((w) => w.toString('hex')),
-      scriptASM,
-      pubScriptASM,
-      tapscriptASM,
-      classifyInput,
-      classifyWitness,
-      classifyPubScript,
-      classifyTapscript,
-    };
-
-    const fixtureName = ['structure', keyName(signer1), signer2 ? keyName(signer2) : 'none'].join('-');
-    fixtureUtil.assertEqualJSON(structure, await readFixture(network, scriptType, fixtureName, structure));
-  });
+  );
 }
 
 function runTestParseScript<TNumber extends number | bigint = number>(
@@ -155,14 +159,14 @@ function runTestParseScript<TNumber extends number | bigint = number>(
         );
         break;
       default:
-        throw new Error(`unexpected scriptType ${parsed.scriptType}`);
+        throw new Error(`unexpected scriptType ${(parsed as any).scriptType}`);
     }
   }
 
   if (scriptType !== 'p2shP2pk') {
     it(`parses half-signed inputs [${getNetworkName(network)} ${scriptType} ${amountType}]`, async function () {
       await testParseSignedInputs(
-        getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+        getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
         'halfSigned',
         scriptType,
         { expectedPlaceholderSignatures: scriptType === 'p2tr' ? 1 : 2 }
@@ -173,14 +177,14 @@ function runTestParseScript<TNumber extends number | bigint = number>(
   it(`parses full-signed inputs [${getNetworkName(network)} ${scriptType} ${amountType}]`, async function () {
     if (scriptType === 'p2shP2pk') {
       await testParseSignedInputs(
-        getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, k1, network, amountType),
+        getFullSignedTransactionP2shP2pk<TNumber>(fixtureKeys, k1, network, { amountType }),
         'fullSigned',
         scriptType,
         { expectedPlaceholderSignatures: 0 }
       );
     } else {
       await testParseSignedInputs(
-        getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+        getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
         'fullSigned',
         scriptType,
         { expectedPlaceholderSignatures: 0 }
@@ -220,7 +224,7 @@ function checkSignTransaction<TNumber extends number | bigint>(
   signKeys: BIP32Interface[],
   testOutputAmount: TNumber
 ) {
-  const prevOutputs = getPrevOutputs<TNumber>(scriptType, testOutputAmount) as TxOutput<TNumber>[];
+  const prevOutputs = getPrevOutputs<TNumber>(scriptType, testOutputAmount, tx.network) as TxOutput<TNumber>[];
 
   // return true iff there are any valid signatures at all
   assertVerifySignatureEquals<TNumber>(tx, prevOutputs, signKeys.length > 0, testOutputAmount);
@@ -289,11 +293,12 @@ function runTestCheckSignatureVerify<TNumber extends number | bigint = number>(
   amountType: 'number' | 'bigint' = 'number'
 ) {
   if (k1 && k2) {
-    describe(`verifySignature
-${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)} ${amountType}`, function () {
+    describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(
+      k2
+    )} ${amountType}`, function () {
       it(`verifies half-signed`, function () {
         checkSignTransaction(
-          getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+          getHalfSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
           scriptType,
           [k1],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
@@ -302,7 +307,7 @@ ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)} ${amountT
 
       it(`verifies full-signed`, function () {
         checkSignTransaction(
-          getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, amountType),
+          getFullSignedTransaction2Of3<TNumber>(fixtureKeys, k1, k2, scriptType, network, { amountType }),
           scriptType,
           [k1, k2],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
@@ -313,7 +318,7 @@ ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)} ${amountT
     describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${amountType} unsigned`, function () {
       it(`verifies unsigned`, function () {
         checkSignTransaction(
-          getUnsignedTransaction2Of3<TNumber>(fixtureKeys, scriptType, network, amountType),
+          getUnsignedTransaction2Of3<TNumber>(fixtureKeys, scriptType, network, { amountType }),
           scriptType,
           [],
           toTNumber<TNumber>(defaultTestOutputAmount, amountType)
@@ -357,12 +362,16 @@ describe('Signature (p2shP2pk)', function () {
     const signedTransaction = getFullSignedTransactionP2shP2pk(fixtureKeys, fixtureKeys[0], networks.bitcoin);
 
     signedTransaction.ins.forEach((input) => {
-      assert.deepStrictEqual(parseSignatureScript(input), {
-        scriptType: 'p2shP2pk',
-        inputClassification: 'scripthash',
-        isSegwitInput: false,
-        p2shOutputClassification: 'pubkey',
-      });
+      assert.deepStrictEqual(
+        normDefault(parseSignatureScript(input)),
+        normDefault({
+          scriptType: 'p2shP2pk',
+          publicKeys: [fixtureKeys[0].publicKey],
+          signatures: [
+            '3045022100e637466be405032a633dcef0bd161305fe93d34ffe2aabc4af434d6f265912210220113d7085b1e00435a2583af82b8a4df3fb009a8d279d231351e42f31d6bac74401',
+          ],
+        })
+      );
     });
   });
 

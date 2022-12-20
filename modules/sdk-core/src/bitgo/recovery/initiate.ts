@@ -68,7 +68,22 @@ export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; us
   return backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 }
 
-export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {
+export function getIsUnsignedSweep({
+  backupKey,
+  userKey,
+  isTss,
+}: {
+  backupKey: string;
+  userKey: string;
+  isTss?: boolean;
+}): boolean {
+  if (isTss) {
+    try {
+      return typeof JSON.parse(backupKey) === 'string' && typeof JSON.parse(userKey) === 'string';
+    } catch (e) {
+      return true;
+    }
+  }
   return backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 }
 

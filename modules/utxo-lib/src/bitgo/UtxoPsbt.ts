@@ -1,24 +1,15 @@
 import { Psbt as PsbtBase } from 'bip174';
 import { TapBip32Derivation, Transaction as ITransaction, TransactionFromBuffer } from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
-import * as opcodes from 'bitcoin-ops';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
-import {
-  taproot,
-  HDSigner,
-  Psbt,
-  PsbtTransaction,
-  Transaction,
-  TxOutput,
-  Network,
-  ecc as eccLib,
-  script as bscript,
-} from '..';
+import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
+import { toXOnlyPublicKey } from './outputScripts';
+import { parsePubScript } from './parseInput';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -72,6 +63,28 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const psbt = this.createPsbt(opts, psbtBase);
     // Upstream checks for duplicate inputs here, but it seems to be of dubious value.
     return psbt;
+  }
+
+  /**
+   * @return true iff PSBT input is finalized
+   */
+  isInputFinalized(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
+  }
+
+  /**
+   * @return partialSig/tapScriptSig count iff input is not finalized
+   */
+  getSignatureCount(inputIndex: number): number {
+    if (this.isInputFinalized(inputIndex)) {
+      throw new Error('Input is already finalized');
+    }
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return Math.max(
+      Array.isArray(input.partialSig) ? input.partialSig.length : 0,
+      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0
+    );
   }
 
   getNonWitnessPreviousTxids(): string[] {
@@ -169,17 +182,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const decompiled = bscript.decompile(script);
-    if (!decompiled || decompiled?.length !== 4) {
-      throw new Error('Not a valid bitgo n-of-n script.');
-    }
-    const [pubkey1, op_checksigverify, pubkey2, op_checksig] = decompiled;
-    if (!Buffer.isBuffer(pubkey1) || !Buffer.isBuffer(pubkey2)) {
-      throw new Error('Public Keys are not buffers.');
-    }
-    if (op_checksigverify !== opcodes.OP_CHECKSIGVERIFY || op_checksig !== opcodes.OP_CHECKSIG) {
-      throw new Error('Opcodes do not correspond to a valid bitgo script');
-    }
+    const [pubkey1, pubkey2] = parsePubScript(script, 'p2tr').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {
@@ -217,10 +220,22 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return results.reduce((final, res) => res && final, true);
   }
 
-  validateTaprootSignaturesOfInput(inputIndex: number): boolean {
+  validateTaprootSignaturesOfInput(inputIndex: number, pubkey?: Buffer): boolean {
     const input = this.data.inputs[inputIndex];
-    const mySigs = (input || {}).tapScriptSig;
-    if (!input || !mySigs || mySigs.length < 1) throw new Error('No signatures to validate');
+    const tapSigs = (input || {}).tapScriptSig;
+    if (!input || !tapSigs || tapSigs.length < 1) {
+      throw new Error('No signatures to validate');
+    }
+    let mySigs;
+    if (pubkey) {
+      const xOnlyPubkey = toXOnlyPublicKey(pubkey);
+      mySigs = tapSigs.filter((sig) => sig.pubkey.equals(xOnlyPubkey));
+      if (mySigs.length < 1) {
+        throw new Error('No signatures for this pubkey');
+      }
+    } else {
+      mySigs = tapSigs;
+    }
     const results: boolean[] = [];
 
     for (const pSig of mySigs) {
@@ -238,6 +253,30 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       results.push(eccLib.verifySchnorr(hash, pubkey, sig));
     }
     return results.every((res) => res === true);
+  }
+
+  /**
+   * @param publicKeys
+   * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
+   * If no signature in the tx or no public key matching signature, the validation is considered as false.
+   */
+  getSignatureValidationArray(inputIndex: number, publicKeys: Buffer[]): boolean[] {
+    const noSigErrorMessages = ['No signatures to validate', 'No signatures for this pubkey'];
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const isP2tr = input.tapScriptSig?.length;
+    return publicKeys.map((publicKey) => {
+      try {
+        return isP2tr
+          ? this.validateTaprootSignaturesOfInput(inputIndex, publicKey)
+          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), publicKey);
+      } catch (err) {
+        // Not an elegant solution. Might need upstream changes like custom error types.
+        if (noSigErrorMessages.includes(err.message)) {
+          return false;
+        }
+        throw err;
+      }
+    });
   }
 
   /**
@@ -312,6 +351,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     leafHashes: Buffer[],
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
+    const pubkey = toXOnlyPublicKey(signer.publicKey);
     const input = checkForInput(this.data.inputs, inputIndex);
     // Figure out if this is script path or not, if not, tweak the private key
     if (!input.tapLeafScript?.length) {
@@ -339,7 +379,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     this.data.updateInput(inputIndex, {
       tapScriptSig: [
         {
-          pubkey: signer.publicKey.slice(1),
+          pubkey,
           signature,
           leafHash,
         },
@@ -368,7 +408,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const prevoutScripts: Buffer[] = [];
     const prevoutValues: bigint[] = [];
 
-    for (const input of this.data.inputs) {
+    this.data.inputs.forEach((input, i) => {
       let prevout;
       if (input.nonWitnessUtxo) {
         // TODO: This could be costly, either cache it here, or find a way to share with super
@@ -377,17 +417,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
           this.tx.network
         );
 
-        const prevoutHash = txInputs[inputIndex].hash;
+        const prevoutHash = txInputs[i].hash;
         const utxoHash = nonWitnessUtxoTx.getHash();
 
         // If a non-witness UTXO is provided, its hash must match the hash specified in the prevout
         if (!prevoutHash.equals(utxoHash)) {
-          throw new Error(
-            `Non-witness UTXO hash for input #${inputIndex} doesn't match the hash specified in the prevout`
-          );
+          throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
         }
 
-        const prevoutIndex = txInputs[inputIndex].index;
+        const prevoutIndex = txInputs[i].index;
         prevout = nonWitnessUtxoTx.outs[prevoutIndex];
       } else if (input.witnessUtxo) {
         prevout = input.witnessUtxo;
@@ -396,7 +434,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       }
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
-    }
+    });
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }

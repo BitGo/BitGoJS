@@ -650,6 +650,7 @@ describe('Casper', function () {
     });
 
     it('should verify address with payment id', async function () {
+      const rootAddress = '020250fe213706e46aaa32cb23f0705833c6d3ce7652e8e5a1349dde102aadf014b7';
       const keychains = [
         {
           id: '624f0dcc93cbcc0008d88df2369a565e',
@@ -683,20 +684,63 @@ describe('Casper', function () {
         {
           address: '020250fe213706e46aaa32cb23f0705833c6d3ce7652e8e5a1349dde102aadf014b7',
           keychains,
+          rootAddress,
         },
         {
           address: '020250FE213706E46AAA32CB23F0705833C6D3CE7652E8E5A1349DDE102AADF014B7?transferId=0',
           keychains,
+          rootAddress,
         },
         {
           address: '020250fe213706e46aaa32cb23f0705833c6d3ce7652e8e5a1349dde102aadf014b7?transferId=5555',
           keychains,
+          rootAddress,
         },
       ];
 
       for (const addressParams of validAddresses) {
         (await basecoin.verifyAddress(addressParams)).should.be.true();
       }
+    });
+  });
+
+  describe('isWalletAddress', function () {
+    const rootAddress = '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e5?transferId=4';
+
+    it('should be valid', async function () {
+      await basecoin
+        .isWalletAddress({
+          address: '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e5?transferId=5',
+          rootAddress,
+        })
+        .should.be.resolvedWith(true);
+      await basecoin
+        .isWalletAddress({
+          address: '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e5?transferId=500',
+          rootAddress,
+        })
+        .should.be.resolvedWith(true);
+      await basecoin
+        .isWalletAddress({
+          address: '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e5',
+          rootAddress,
+        })
+        .should.be.resolvedWith(true);
+      await basecoin
+        .isWalletAddress({
+          address: '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e5?transferId=1',
+          rootAddress,
+        })
+        .should.be.resolvedWith(true);
+    });
+
+    it('should be invalid', async function () {
+      await basecoin
+        .isWalletAddress({
+          address: '0203d4c6ed4a40f5aa7371a73c79dd208a646ebc8c9f5c7fe0b4c73844365f0e62e6',
+          rootAddress,
+        })
+        .should.be.rejected();
     });
   });
 });

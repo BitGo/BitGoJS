@@ -16,7 +16,7 @@ describe('SUI:', function () {
   let newTxParams;
 
   const txPrebuild = {
-    txHex: testData.TRANSFER_TX,
+    txHex: testData.TRANSFER_PAY_TX,
     txInfo: {},
   };
 
@@ -83,7 +83,7 @@ describe('SUI:', function () {
   describe('Explain Transaction: ', () => {
     it('should explain a transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
-        txHex: testData.TRANSFER_TX,
+        txHex: testData.TRANSFER_PAY_TX,
       });
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
@@ -131,7 +131,7 @@ describe('SUI:', function () {
     };
 
     it('should parse a transfer transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER_TX });
+      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER_PAY_TX });
 
       parsedTransaction.should.deepEqual({
         inputs: [transferInputsResponse],
@@ -142,7 +142,9 @@ describe('SUI:', function () {
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
       const stub = sinon.stub(Sui.prototype, 'explainTransaction');
       stub.resolves(undefined);
-      await basecoin.parseTransaction({ txHex: testData.TRANSFER_TX }).should.be.rejectedWith('Invalid transaction');
+      await basecoin
+        .parseTransaction({ txHex: testData.TRANSFER_PAY_TX })
+        .should.be.rejectedWith('Invalid transaction');
       stub.restore();
     });
   });

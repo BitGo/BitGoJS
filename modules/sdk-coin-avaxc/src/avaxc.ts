@@ -37,7 +37,7 @@ import {
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
-import { bufferToHex } from 'ethereumjs-util';
+import { bufferToHex, pubToAddress } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
   AvaxSignTransactionOptions,
@@ -79,14 +79,14 @@ export class AvaxC extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  getChain() {
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
   /**
    * Get the base chain that the coin exists on.
    */
-  getBaseChain() {
+  getBaseChain(): string {
     return this.getChain();
   }
 
@@ -94,7 +94,7 @@ export class AvaxC extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
@@ -103,7 +103,8 @@ export class AvaxC extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return !!address && isValidEthAddress(address);
+    // also validate p-chain address for cross-chain txs
+    return !!address && (isValidEthAddress(address) || AvaxpLib.Utils.isValidAddress(address));
   }
 
   isToken(): boolean {
@@ -155,12 +156,17 @@ export class AvaxC extends BaseCoin {
       if (txParams.recipients.length !== 1) {
         throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
       }
-
       // Check tx sends to hop address
-      const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
-        optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
-      );
-      const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+      let expectedHopAddress;
+      if (txPrebuild.hopTransaction.type === 'Export') {
+        const decodedHopTx = await this.explainAtomicTransaction(txPrebuild.hopTransaction.tx);
+        expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.inputs[0].address);
+      } else {
+        const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+          optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+        );
+        expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+      }
       const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
       if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
         throw new Error('recipient address of txPrebuild does not match hop address');
@@ -732,6 +738,23 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
+   * Verify signature for an atomic transaction using atomic builder.
+   * @param txHex
+   * @return true if signature is from the input address
+   * @private
+   */
+  private async verifySignatureForAtomicTransaction(txHex: string): Promise<boolean> {
+    const txBuilder = this.getAtomicBuilder().from(txHex);
+    const tx = await txBuilder.build();
+    const payload = tx.signablePayload;
+    const signatures = tx.signature.map((s) => Buffer.from(s, 'hex'));
+    const recoverPubky = signatures.map((s) => AvaxpLib.Utils.recoverySignature(_.get(tx, '_network'), payload, s));
+    const expectedSenders = recoverPubky.map((r) => pubToAddress(r, true));
+    const senders = tx.inputs.map((i) => AvaxpLib.Utils.parseAddress(i.address));
+    return expectedSenders.every((e) => senders.some((sender) => e.equals(sender)));
+  }
+
+  /**
    * Explains an EVM transaction using regular eth txn builder
    * @param tx
    * @private
@@ -803,42 +826,68 @@ export class AvaxC extends BaseCoin {
     const serverXpub = common.Environments[this.bitgo.getEnv()].hsmXpub;
     const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
     const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
-    const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
+    const messageBuffer: Buffer =
+      hopPrebuild.type === 'Export' ? AvaxC.getTxHash(tx) : Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
-    const sig = new Uint8Array(signatureBuffer.slice(1));
+    const sig = new Uint8Array(signatureBuffer.length === 64 ? signatureBuffer : signatureBuffer.slice(1));
     const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
     if (!isValidSignature) {
       throw new Error(`Hop txid signature invalid`);
     }
 
-    const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
-    // If original params are given, we can check them against the transaction prebuild params
-    if (!_.isNil(originalParams)) {
-      const { recipients } = originalParams;
+    if (hopPrebuild.type === 'Export') {
+      const explainHopExportTx = await this.explainAtomicTransaction(tx);
+      // If original params are given, we can check them against the transaction prebuild params
+      if (!_.isNil(originalParams)) {
+        const { recipients } = originalParams;
 
-      // Then validate that the tx params actually equal the requested params
-      const originalAmount = new BigNumber(recipients[0].amount);
-      const originalDestination: string = recipients[0].address;
+        // Then validate that the tx params actually equal the requested params to nano avax plus import tx fee.
+        const originalAmount = new BigNumber(recipients[0].amount).div(1e9).plus(1e6).toFixed(0);
+        const originalDestination: string | undefined = recipients[0].address;
+        const hopAmount = explainHopExportTx.outputAmount;
+        const hopDestination = explainHopExportTx.outputs[0].address;
+        if (originalAmount !== hopAmount) {
+          throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
+        }
+        if (originalDestination && hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
+          throw new Error(
+            `Hop destination: ${hopDestination} does not equal original recipient: ${originalDestination}`
+          );
+        }
+      }
+      if (!(await this.verifySignatureForAtomicTransaction(tx))) {
+        throw new Error(`Invalid hop transaction signature, txid: ${id}`);
+      }
+    } else {
+      const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
+      // If original params are given, we can check them against the transaction prebuild params
+      if (!_.isNil(originalParams)) {
+        const { recipients } = originalParams;
 
-      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value as unknown as Buffer));
-      if (!builtHopTx.to) {
-        throw new Error(`Transaction does not have a destination address`);
-      }
-      const hopDestination = builtHopTx.to.toString();
-      if (!hopAmount.eq(originalAmount)) {
-        throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
-      }
-      if (hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
-        throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
-      }
-    }
+        // Then validate that the tx params actually equal the requested params
+        const originalAmount = new BigNumber(recipients[0].amount);
+        const originalDestination: string = recipients[0].address;
 
-    if (!builtHopTx.verifySignature()) {
-      // We dont want to continue at all in this case, at risk of AVAX being stuck on the hop address
-      throw new Error(`Invalid hop transaction signature, txid: ${id}`);
-    }
-    if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
-      throw new Error(`Signed hop txid does not equal actual txid`);
+        const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value as unknown as Buffer));
+        if (!builtHopTx.to) {
+          throw new Error(`Transaction does not have a destination address`);
+        }
+        const hopDestination = builtHopTx.to.toString();
+        if (!hopAmount.eq(originalAmount)) {
+          throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
+        }
+        if (hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
+          throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
+        }
+      }
+
+      if (!builtHopTx.verifySignature()) {
+        // We dont want to continue at all in this case, at risk of AVAX being stuck on the hop address
+        throw new Error(`Invalid hop transaction signature, txid: ${id}`);
+      }
+      if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
+        throw new Error(`Signed hop txid does not equal actual txid`);
+      }
     }
   }
 
@@ -914,8 +963,7 @@ export class AvaxC extends BaseCoin {
       !_.isUndefined(buildParams.hop) &&
       buildParams.hop &&
       !_.isUndefined(buildParams.wallet) &&
-      !_.isUndefined(buildParams.recipients) &&
-      !_.isUndefined(buildParams.walletPassphrase)
+      !_.isUndefined(buildParams.recipients)
     ) {
       if (this.isToken()) {
         throw new Error(
@@ -923,9 +971,8 @@ export class AvaxC extends BaseCoin {
         );
       }
       return (await this.createHopTransactionParams({
-        wallet: buildParams.wallet,
         recipients: buildParams.recipients,
-        walletPassphrase: buildParams.walletPassphrase,
+        type: buildParams.type,
       })) as any;
     }
     return {};
@@ -933,20 +980,10 @@ export class AvaxC extends BaseCoin {
 
   /**
    * Creates the extra parameters needed to build a hop transaction
-   * @param buildParams The original build parameters
+   * @param {HopTransactionBuildOptions} The original build parameters
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  async createHopTransactionParams(buildParams: HopTransactionBuildOptions): Promise<HopParams> {
-    const wallet = buildParams.wallet;
-    const recipients = buildParams.recipients;
-    const walletPassphrase = buildParams.walletPassphrase;
-
-    const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
-    const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-    const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
-    if (!userPrvBuffer) {
-      throw new Error('invalid userPrv');
-    }
+  async createHopTransactionParams({ recipients, type }: HopTransactionBuildOptions): Promise<HopParams> {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
     }
@@ -961,6 +998,7 @@ export class AvaxC extends BaseCoin {
       recipient: recipientAddress,
       amount: recipientAmount,
       hop: true,
+      type,
     };
     const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
 
@@ -969,22 +1007,14 @@ export class AvaxC extends BaseCoin {
     const gasPriceMax = gasPrice * 5;
     // Payment id a random number so its different for every tx
     const paymentId = Math.floor(Math.random() * 10000000000).toString();
-    const hopDigest: Buffer = AvaxC.getHopDigest([
-      recipientAddress,
-      recipientAmount,
-      gasPriceMax.toString(),
-      gasLimit.toString(),
-      paymentId,
-    ]);
 
-    const userReqSig = optionalDeps.ethUtil.addHexPrefix(
-      Buffer.from(secp256k1.ecdsaSign(hopDigest, userPrvBuffer).signature).toString('hex')
-    );
+    // TODO(BG-62671): after completed [Wallet-platform] Remove use of userReqSig for avaxc hop transaction
+    const userReqSig = '0x';
 
     return {
       hopParams: {
-        gasPriceMax,
         userReqSig,
+        gasPriceMax,
         paymentId,
       },
       gasLimit,
@@ -1013,6 +1043,9 @@ export class AvaxC extends BaseCoin {
     if (params && params.amount) {
       query.amount = params.amount;
     }
+    if (params && params.type) {
+      query.type = params.type;
+    }
 
     return await this.bitgo.get(this.url('/tx/fee')).query(query).result();
   }
@@ -1024,6 +1057,17 @@ export class AvaxC extends BaseCoin {
   static getHopDigest(paramsArr: string[]): Buffer {
     const hash = Keccak('keccak256');
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
+    return hash.digest();
+  }
+
+  /**
+   * Calculate tx hash like evm from tx hex.
+   * @param {string} tx
+   * @returns {Buffer} tx hash
+   */
+  static getTxHash(tx: string): Buffer {
+    const hash = Keccak('keccak256');
+    hash.update(optionalDeps.ethUtil.stripHexPrefix(tx), 'hex');
     return hash.digest();
   }
 

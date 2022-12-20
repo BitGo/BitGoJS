@@ -10,6 +10,7 @@ import { Eth } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C } from '../resources/avaxc';
+import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 
 nock.enableNetConnect();
 
@@ -18,6 +19,7 @@ describe('Avalanche C-Chain', function () {
   let tavaxCoin;
   let avaxCoin;
   let hopTxBitgoSignature;
+  let hopExportTxBitgoSignature;
 
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
@@ -28,6 +30,9 @@ describe('Avalanche C-Chain', function () {
   const hopTxid = '0x4af65143bc77da2b50f35b3d13cacb4db18f026bf84bc0743550bc57b9b53351';
   const userReqSig =
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
+  const hopExportTx =
+    '0x000000000001000000057fc93d85c6d62c5b2ac0b519c87010ea5294012d1e407030d6acd0021cac10d50000000000000000000000000000000000000000000000000000000000000000000000011fe3de7886be9e53072d6762e9fa1fc27dddfb0500000000061465b23d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa000000070000000006052340000000000000000000000002000000038b2ce3381003fdf86900280a4ec86b384b5d5c99b7fc1f65220b9a0b2f431578b8bb6ee130bf563af1fab1503135fbd423e442d5e9b73abd5622fe02000000010000000900000001af20066197fa3b72bea3d7cc503c60918c098378b958fbb5da8c6f438d0f4e380e506bb2c38dc88dd97c81e982706c48623937c2fe22b31248ed9fd34951480b0173b4e9ca';
+  const hopExportTxId = '0xc4b5ca6e7d8c9c24bb9934afcb5c87e6db472dbe31111b778445f8f9c5352966';
 
   before(function () {
     const bitgoKeyXprv =
@@ -37,18 +42,26 @@ describe('Avalanche C-Chain', function () {
       throw new Error('no privateKey');
     }
     const bitgoXpub = bitgoKey.neutered().toBase58();
+
     hopTxBitgoSignature =
       '0xaa' +
       Buffer.from(secp256k1.ecdsaSign(Buffer.from(hopTxid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString(
         'hex'
       );
 
+    hopExportTxBitgoSignature =
+      '0xaa' +
+      Buffer.from(
+        secp256k1.ecdsaSign(Buffer.from(hopExportTxId.slice(2), 'hex'), bitgoKey.privateKey).signature
+      ).toString('hex');
+
     const env = 'test';
-    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env });
     bitgo.safeRegister('avaxc', AvaxC.createInstance);
     bitgo.safeRegister('tavaxc', TavaxC.createInstance);
     bitgo.safeRegister('teth', Eth.createInstance);
-    common.Environments[env].hsmXpub = bitgoXpub;
+    bitgo.safeRegister('tavaxp', TavaxP.createInstance);
+    common.Environments[bitgo.getEnv()].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
   });
 
@@ -128,6 +141,24 @@ describe('Avalanche C-Chain', function () {
 
     it('validate valid eth address', () => {
       const address = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
+      tavaxCoin.isValidAddress(address).should.be.true();
+      avaxCoin.isValidAddress(address).should.be.true();
+    });
+
+    it('should validate an array of p-chain addresses', function () {
+      const address = [
+        'P-fuji15x3z4rvk8e7vwa6g9lkyg89v5dwknp44858uex',
+        'P-avax143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+        'NodeID-143q8lsy3y4ke9d6zeltre8u2ateed6uk9ka0nu',
+      ];
+
+      tavaxCoin.isValidAddress(address).should.be.true();
+      avaxCoin.isValidAddress(address).should.be.true();
+    });
+
+    it('should validate a p-chain multsig address string', function () {
+      const address =
+        'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59~P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822~P-fuji1hdk7ntw0huhqmlhlheme9t7scsy9lhfhw3ywy4';
       tavaxCoin.isValidAddress(address).should.be.true();
       avaxCoin.isValidAddress(address).should.be.true();
     });
@@ -366,6 +397,116 @@ describe('Avalanche C-Chain', function () {
 
       const isTransactionVerified = await tavaxCoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
       isTransactionVerified.should.equal(true);
+    });
+
+    describe('Hop export tx verify', () => {
+      const wallet = new Wallet(bitgo, tavaxCoin, {});
+      const hopDestinationAddress =
+        'P-fuji13vkwxwqsq07ls6gq9q9yajrt8p946hye5zq3w3~P-fuji178atz5p3xhaagglygt27nde6h4tz9lsznwq2dh~P-fuji1kl7p7efzpwdqkt6rz4ut3wmwuyct7436q6l9h5';
+      const hopAddress = '0x1fe3de7886be9e53072d6762e9fa1fc27dddfb05';
+      const importTxFee = 1e6;
+      const amount = 100000000000000000;
+      const txParams = {
+        recipients: [{ amount, address: hopDestinationAddress }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+        hop: true,
+        type: 'Export',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '102000050000000000', address: hopAddress }],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: false,
+        coin: 'tavaxc',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+        hopTransaction: {
+          tx: hopExportTx,
+          id: hopExportTxId,
+          signature: hopExportTxBitgoSignature,
+          paymentId: '4933349984',
+          gasPrice: '50',
+          gasLimit: 1,
+          amount: '101000000',
+          recipient: hopDestinationAddress,
+          nonce: 0,
+          userReqSig:
+            '0x06fd0b1f8859a40d9fb2d1a65d54da5d645a1d81bbb8c1c5b037051843ec0d3c22433ec7f50cc97fa041cbf8d9ff5ddf7ed41f72a08fa3f1983fd651a33a4441',
+          gasPriceMax: 7187500000,
+          type: 'Export',
+        },
+      };
+
+      const verification = {};
+
+      before(() => {
+        txPrebuild.hopTransaction.signature = hopExportTxBitgoSignature;
+      });
+
+      it('should verify successfully', async function () {
+        const verifyAvaxcTransactionOptions = { txParams, txPrebuild, wallet, verification };
+        const isTransactionVerified = await tavaxCoin.verifyTransaction(verifyAvaxcTransactionOptions);
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should fail verify for amount plus 1', async function () {
+        const verifyAvaxcTransactionOptions = {
+          txParams: { ...txParams, recipients: [{ amount: amount + 1e9, address: hopDestinationAddress }] },
+          txPrebuild,
+          wallet,
+          verification,
+        };
+
+        await tavaxCoin
+          .verifyTransaction(verifyAvaxcTransactionOptions)
+          .should.be.rejectedWith(
+            `Hop amount: ${amount / 1e9 + importTxFee} does not equal original amount: ${
+              amount / 1e9 + importTxFee + 1
+            }`
+          );
+      });
+
+      it('should fail verify for changed prebuild hop address', async function () {
+        const verifyAvaxcTransactionOptions = {
+          txParams,
+          txPrebuild: { ...txPrebuild, recipients: [{ address: address2, amount: '102000050000000000' }] },
+          wallet,
+          verification,
+        };
+        await tavaxCoin
+          .verifyTransaction(verifyAvaxcTransactionOptions)
+          .should.be.rejectedWith(`recipient address of txPrebuild does not match hop address`);
+      });
+
+      it('should fail verify for changed address', async function () {
+        const hopDestinationAddressDiff =
+          'P-fuji13vkwxwqsq07ls6gq8q9yajrt8p946hye5zq3w3~P-fuji178atz5p3xhabgglygt27nde6h4tz9lsznwq2dh~P-fuji1kl7p7efzpwdqkt6rz4ut3wmwuyct7436q6l9h6';
+        const verifyAvaxcTransactionOptions = {
+          txParams: { ...txParams, recipients: [{ amount: amount, address: hopDestinationAddressDiff }] },
+          txPrebuild,
+          wallet,
+          verification,
+        };
+        await tavaxCoin
+          .verifyTransaction(verifyAvaxcTransactionOptions)
+          .should.be.rejectedWith(
+            `Hop destination: ${hopDestinationAddress} does not equal original recipient: ${hopDestinationAddressDiff}`
+          );
+      });
+
+      it('should verify if walletId is used instead of address', async function () {
+        const verifyAvaxcTransactionOptions = {
+          txParams: { ...txParams, recipients: [{ amount: amount, walletId: 'same wallet' }] },
+          txPrebuild,
+          wallet,
+          verification,
+        };
+        const isTransactionVerified = await tavaxCoin.verifyTransaction(verifyAvaxcTransactionOptions);
+        isTransactionVerified.should.equal(true);
+      });
     });
 
     it('should reject when client txParams are missing', async function () {

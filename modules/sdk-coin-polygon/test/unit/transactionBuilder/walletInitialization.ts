@@ -2,6 +2,7 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
+import { getBuilder } from '../../getBuilder';
 import { coins } from '@bitgo/statics';
 
 describe('Polygon wallet initialization', function () {
@@ -104,6 +105,41 @@ describe('Polygon wallet initialization', function () {
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
       const tx = await txBuilder.build();
       should.equal(tx.toJson().v, '0x027125');
+    });
+
+    it('wallet deployment transaction for recovery', async () => {
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.type(TransactionType.RecoveryWalletDeployment);
+      txBuilder.data(testData.RECOVERY_WALLET_BYTE_CODE);
+      txBuilder.fee({
+        eip1559: {
+          maxFeePerGas: '100',
+          maxPriorityFeePerGas: '10',
+        },
+        fee: '100',
+        gasLimit: '10000',
+      });
+      txBuilder.counter(1);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson._type, 'EIP1559');
+      should.equal(txJson.gasLimit, '10000');
+      should.exists(tx.toBroadcastFormat());
+    });
+
+    it('fail when data is not passed recovery', async () => {
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.type(TransactionType.RecoveryWalletDeployment);
+      txBuilder.fee({
+        eip1559: {
+          maxFeePerGas: '100',
+          maxPriorityFeePerGas: '10',
+        },
+        fee: '100',
+        gasLimit: '10000',
+      });
+      txBuilder.counter(1);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
     });
   });
 });

@@ -44,49 +44,6 @@ describe('Constructor', function () {
     bitgo.should.have.property('_validate');
   });
 
-  describe('cookiesPropagationEnabled argument', function () {
-    it('fail to instantiate with invalid combinations of arguments', function() {
-      (() => {
-        new BitGoJS.BitGo({ env: 'testnet', cookiesPropagationEnabled: true } as any);
-      }).should.throw(/Cookies are only allowed when custom URIs are in use/);
-      (() => {
-        new BitGoJS.BitGo({ env: 'custom', customRootURI: 'https://app.bitgo.com', cookiesPropagationEnabled: true } as any);
-      }).should.throw(/Cookies are only allowed when custom URIs are in use/);
-    });
-
-    it('cookiesPropagationEnabled is enabled explicitly', function() {
-      const bitgo = new BitGoJS.BitGo({
-        env: 'custom',
-        customRootURI: 'https://app.example.local',
-        cookiesPropagationEnabled: true,
-      });
-
-      bitgo.should.have.property('cookiesPropagationEnabled');
-      bitgo.cookiesPropagationEnabled.should.equal(true);
-    });
-
-    it('cookiesPropagationEnabled is disabled explicitly', function() {
-      const bitgo = new BitGoJS.BitGo({
-        env: 'custom',
-        customRootURI: 'https://app.example.local',
-        cookiesPropagationEnabled: false,
-      });
-
-      bitgo.should.have.property('cookiesPropagationEnabled');
-      bitgo.cookiesPropagationEnabled.should.equal(false);
-    });
-
-    it('cookiesPropagationEnabled is disabled by default', function() {
-      const bitgo = new BitGoJS.BitGo({
-        env: 'custom',
-        customRootURI: 'https://app.example.local',
-      });
-
-      bitgo.should.have.property('cookiesPropagationEnabled');
-      bitgo.cookiesPropagationEnabled.should.equal(false);
-    });
-  });
-
 });
 
 describe('BitGo environment', function () {

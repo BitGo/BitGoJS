@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 import * as t from 'io-ts';
 
 export interface CreateInvoiceParams {
@@ -27,6 +28,15 @@ export interface PayInvoiceParams {
 export interface GetInvoicesQuery {
   status?: string;
   limit?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface GetPaymentsQuery {
+  status?: string;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface LnurlPayParams {
@@ -48,7 +58,6 @@ export const WPTransferEntry = t.partial(
   'WPTransferEntry'
 );
 
-// eslint-disable-next-line no-redeclare
 export type WPTransferEntry = t.TypeOf<typeof WPTransferEntry>;
 
 export const WPTransfer = t.type(
@@ -63,7 +72,6 @@ export const WPTransfer = t.type(
   'WPTransfer'
 );
 
-// eslint-disable-next-line no-redeclare
 export type WPTransfer = t.TypeOf<typeof WPTransfer>;
 
 export const WithdrawResponse = t.strict(
@@ -73,7 +81,6 @@ export const WithdrawResponse = t.strict(
   'CreateWithdrawalResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type WithdrawResponse = t.TypeOf<typeof WithdrawResponse>;
 
 export const CreateInvoiceResponse = t.strict(
@@ -89,7 +96,6 @@ export const CreateInvoiceResponse = t.strict(
   'CreateInvoiceResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type CreateInvoiceResponse = t.TypeOf<typeof CreateInvoiceResponse>;
 
 export const CreateDepositAddressResponse = t.strict(
@@ -99,7 +105,6 @@ export const CreateDepositAddressResponse = t.strict(
   'CreateDepositAddressResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type CreateDepositAddressResponse = t.TypeOf<typeof CreateDepositAddressResponse>;
 
 export const DepositResponse = t.strict(
@@ -110,7 +115,6 @@ export const DepositResponse = t.strict(
   'DepositResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type DepositResponse = t.TypeOf<typeof DepositResponse>;
 
 export const PayInvoiceResponse = t.strict(
@@ -122,7 +126,6 @@ export const PayInvoiceResponse = t.strict(
   'PayInvoiceResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type PayInvoiceResponse = t.TypeOf<typeof PayInvoiceResponse>;
 
 export const GetBalanceResponse = t.strict(
@@ -134,7 +137,6 @@ export const GetBalanceResponse = t.strict(
   'GetBalanceResponse'
 );
 
-// eslint-disable-next-line no-redeclare
 export type GetBalanceResponse = t.TypeOf<typeof GetBalanceResponse>;
 
 const InvoiceInfo = t.strict({
@@ -150,8 +152,25 @@ const InvoiceInfo = t.strict({
 
 export const GetInvoicesResponse = t.array(InvoiceInfo);
 
-// eslint-disable-next-line no-redeclare
 export type GetInvoicesResponse = t.TypeOf<typeof GetInvoicesResponse>;
+
+const PaymentInfo = t.strict({
+  paymentHash: t.string,
+  walletId: t.string,
+  status: t.union([t.literal('in_flight'), t.literal('settled'), t.literal('failed')]),
+  amount: t.union([t.number, t.undefined]),
+  invoice: t.string,
+  sendQueueId: t.string,
+  failureReason: t.union([t.string, t.undefined]),
+  fee: t.union([t.number, t.undefined]),
+  feeLimit: t.number,
+  paymentPreimage: t.union([t.string, t.undefined]),
+  destination: t.string,
+});
+
+export const GetPaymentsResponse = t.array(PaymentInfo);
+
+export type GetPaymentsResponse = t.TypeOf<typeof GetPaymentsResponse>;
 
 export const LnurlPayResponse = t.strict({
   tag: t.literal('payRequest'),
@@ -164,7 +183,6 @@ export const LnurlPayResponse = t.strict({
   metadata: t.string,
 });
 
-// eslint-disable-next-line no-redeclare
 export type LnurlPayResponse = t.TypeOf<typeof LnurlPayResponse>;
 
 export type DecodedLnurlPayRequest = LnurlPayResponse & {
@@ -185,4 +203,5 @@ export interface ILightning {
   getInvoices(query?: GetInvoicesQuery): Promise<GetInvoicesResponse>;
   decodeLnurlPay(lnurl: string): Promise<DecodedLnurlPayRequest>;
   fetchLnurlPayInvoice(params: LnurlPayParams): Promise<string>;
+  getPayments(query?: GetPaymentsQuery): Promise<GetPaymentsResponse>;
 }

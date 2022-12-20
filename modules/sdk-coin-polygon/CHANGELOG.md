@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.4.0...@bitgo/sdk-coin-polygon@1.4.1) (2022-12-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polygon
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.6...@bitgo/sdk-coin-polygon@1.4.0) (2022-12-06)
+
+### Features
+
+- **sdk-coin-polygon:** crossChainRecovery support ([9b42813](https://github.com/BitGo/BitGoJS/commit/9b4281333a8d3835219e566e31cba28ab448c85f))
+
+## [1.3.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.5...@bitgo/sdk-coin-polygon@1.3.6) (2022-12-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polygon
+
+## [1.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.0...@bitgo/sdk-coin-polygon@1.3.5) (2022-11-29)
+
+### Bug Fixes
+
+- **sdk-coin-polygon:** remove unused data in recovery ([6ee161c](https://github.com/BitGo/BitGoJS/commit/6ee161c28e2e627456541b479d8f362fbf96979d))
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.3.0...@bitgo/sdk-coin-polygon@1.3.4) (2022-11-04)
 
 ### Bug Fixes

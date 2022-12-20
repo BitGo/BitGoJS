@@ -5,9 +5,11 @@ import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import { ValidationResult } from 'joi';
 import { AddAnonymousProxyArgs, AddProxyArgs, MethodNames, ProxyType } from './iface';
+import { getDelegateAddress } from './iface_utils';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { AddressInitializationSchema, AnonymousAddressInitializationSchema } from './txnSchema';
+import utils from './utils';
 
 export class AddressInitializationBuilder extends TransactionBuilder {
   protected _delegate: string;
@@ -55,7 +57,7 @@ export class AddressInitializationBuilder extends TransactionBuilder {
    */
   protected buildAnonymousProxyTransaction(): UnsignedTransaction {
     const baseTxInfo = this.createBaseTxInfo();
-    return methods.proxy.anonymous(
+    return utils.pureProxy(
       {
         proxyType: this._proxyType,
         index: this._index,
@@ -133,8 +135,8 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     let validationResult;
     if (decodedTxn.method?.name === MethodNames.AddProxy) {
       const txMethod = decodedTxn.method.args as unknown as AddProxyArgs;
-      validationResult = this.validateAddProxyFields(txMethod.delegate, txMethod.proxyType, txMethod.delay);
-    } else if (decodedTxn.method?.name === MethodNames.Anonymous) {
+      validationResult = this.validateAddProxyFields(getDelegateAddress(txMethod), txMethod.proxyType, txMethod.delay);
+    } else if (decodedTxn.method?.name === MethodNames.Anonymous || decodedTxn.method?.name === MethodNames.PureProxy) {
       const txMethod = decodedTxn.method.args as unknown as AddAnonymousProxyArgs;
       validationResult = this.validateAnonymousProxyFields(
         parseInt(txMethod.index, 10),
@@ -152,10 +154,10 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
     if (this._method?.name === MethodNames.AddProxy) {
       const txMethod = this._method.args as AddProxyArgs;
-      this.owner({ address: txMethod.delegate });
+      this.owner({ address: getDelegateAddress(txMethod) });
       this.type(txMethod.proxyType);
       this.delay(new BigNumber(txMethod.delay).toString());
-    } else if (this._method?.name === MethodNames.Anonymous) {
+    } else if (this._method?.name === MethodNames.Anonymous || this._method?.name === MethodNames.PureProxy) {
       const txMethod = this._method.args as AddAnonymousProxyArgs;
       this.index(new BigNumber(txMethod.index).toNumber());
       this.type(txMethod.proxyType);

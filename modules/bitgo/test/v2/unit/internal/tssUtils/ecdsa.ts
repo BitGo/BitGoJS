@@ -716,7 +716,7 @@ describe('TSS Ecdsa Utils:', async function () {
           publicShare: userToBitgoShare.publicShare,
           privateShare: userToBitgoShare.encryptedPrivateShare,
           n: userToBitgoShare.n,
-          v: userToBitgoShare.v,
+          vssProof: userToBitgoShare.vssProof,
         },
         {
           from: 'bitgo',
@@ -724,7 +724,7 @@ describe('TSS Ecdsa Utils:', async function () {
           publicShare: backupToBitgoShare.publicShare,
           privateShare: backupToBitgoShare.encryptedPrivateShare,
           n: backupToBitgoShare.n,
-          v: backupToBitgoShare.v,
+          vssProof: backupToBitgoShare.vssProof,
         },
       ],
     };

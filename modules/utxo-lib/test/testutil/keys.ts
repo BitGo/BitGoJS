@@ -17,6 +17,10 @@ export function getKeyTriple(seed: string): KeyTriple {
   return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
 }
 
+export function getKeyName(triple: Triple<BIP32Interface>, k: BIP32Interface): string | undefined {
+  return ['user', 'backup', 'bitgo'][triple.indexOf(k)];
+}
+
 export function getDefaultCosigner<T>(keyset: Triple<T>, signer: T): T {
   const eq = (a: T, b: T) => a === b || (Buffer.isBuffer(a) && Buffer.isBuffer(b) && a.equals(b));
   const [user, backup, bitgo] = keyset;

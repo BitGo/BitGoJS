@@ -6,6 +6,7 @@ import {
   SignedTransaction,
   TransactionPrebuild,
   VerificationOptions,
+  TypedData,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
@@ -52,12 +53,13 @@ export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions 
   enableTokens: TokenEnablement[];
 }
 
+export type ApiVersion = 'lite' | 'full';
+
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
-    walletId?: string;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];
@@ -105,6 +107,11 @@ export interface PrebuildTransactionOptions {
   lowFeeTxid?: string;
   isTss?: boolean;
   custodianTransactionId?: string;
+  apiVersion?: ApiVersion;
+  /**
+   * If set to false, sweep all funds including the required minimums for address(es). E.g. Polkadot (DOT) requires 1 DOT minimum.
+   */
+  keepAlive?: boolean;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -144,11 +151,17 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   txPrebuild?: TransactionPrebuild;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
   customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
+  apiVersion?: ApiVersion;
   [index: string]: unknown;
 }
 
 export interface WalletSignMessageOptions extends WalletSignBaseOptions {
   message?: Message;
+  custodianMessageId?: string;
+}
+
+export interface WalletSignTypedDataOptions extends WalletSignMessageOptions {
+  typedData: TypedData<any>;
   custodianMessageId?: string;
 }
 
@@ -415,7 +428,7 @@ export interface SendOptions {
 export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
+    address: string;
     amount: string | number;
     feeLimit?: string;
     data?: string;
@@ -497,6 +510,7 @@ export interface WalletData {
   };
   multisigType: 'onchain' | 'tss';
   type?: WalletType;
+  tokens?: Record<string, any>[];
 }
 
 export interface RecoverTokenOptions {
@@ -625,5 +639,6 @@ export interface IWallet {
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
   lightning(): ILightning;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
+  signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
 }

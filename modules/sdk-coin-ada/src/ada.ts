@@ -19,7 +19,7 @@ import {
   AddressFormat,
   Environments,
 } from '@bitgo/sdk-core';
-import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory } from './lib';
+import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
@@ -252,6 +252,9 @@ export class Ada extends BaseCoin {
       throw new Error(`Failed to retrieve address info for address ${walletAddr}`);
     }
     const body = res.body[0];
+    if (body === undefined) {
+      return { balance: 0, utxoSet: [] };
+    }
     return { balance: body.balance, utxoSet: body.utxo_set };
   }
 
@@ -299,12 +302,17 @@ export class Ada extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const stakeKeyPair = new AdaKeyPair({ pub: MPC.deriveUnhardened(bitgoKey, 'm/0').slice(0, 64) });
 
     for (let i = startIdx; i < numIteration + startIdx; i++) {
       const currPath = `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-      const keyPair = new AdaKeyPair({ pub: accountId });
-      const senderAddr = keyPair.getAddress(addrFormat);
+      const paymentKeyPair = new AdaKeyPair({ pub: accountId });
+      const senderAddr = Utils.default.createBaseAddressWithStakeAndPaymentKey(
+        stakeKeyPair,
+        paymentKeyPair,
+        addrFormat
+      );
       const { balance, utxoSet } = await this.getAddressInfo(senderAddr);
       if (balance <= 0) {
         continue;

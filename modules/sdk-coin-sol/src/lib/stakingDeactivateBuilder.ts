@@ -6,10 +6,12 @@ import { InstructionBuilderTypes } from './constants';
 import { StakingDeactivate } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { validateAddress } from './utils';
+import { isValidStakingAmount, validateAddress } from './utils';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
+  protected _amount?: string;
+  protected _unstakingAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -27,6 +29,10 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         const deactivateInstruction: StakingDeactivate = instruction;
         this.sender(deactivateInstruction.params.fromAddress);
         this.stakingAddress(deactivateInstruction.params.stakingAddress);
+        if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
+          this.amount(deactivateInstruction.params.amount);
+          this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
+        }
       }
     }
   }
@@ -45,6 +51,38 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Optional amount to unstake expressed in Lamports, 1 SOL = 1_000_000_000 lamports, to be used
+   * when partially unstaking. If not given then the entire staked amount will be unstaked.
+   *
+   * @param {string} amount The partial amount to unstake, expressed in Lamports.
+   * @returns {StakingDeactivateBuilder} This staking builder.
+   *
+   * @see https://docs.solana.com/cli/delegate-stake#split-stake
+   */
+  amount(amount: string): this {
+    if (!isValidStakingAmount(amount)) {
+      throw new BuildTransactionError('If given, amount cannot be zero or less');
+    }
+    this._amount = amount;
+    return this;
+  }
+
+  /**
+   * When partially unstaking move the amount to unstake to this account and initiate the
+   * unstake process. The original stake account will continue staking.
+   *
+   * @param {string} unstakingAddress An account used to unstake a partial amount.
+   * @returns {StakingDeactivateBuilder} This staking builder.
+   *
+   * @see https://docs.solana.com/cli/delegate-stake#split-stake
+   */
+  unstakingAddress(unstakingAddress: string): this {
+    validateAddress(unstakingAddress, 'unstakingAddress');
+    this._unstakingAddress = unstakingAddress;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
@@ -54,11 +92,27 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
     }
 
+    if (this._amount) {
+      assert(
+        this._unstakingAddress,
+        'When partially unstaking the unstaking address must be set before building the transaction'
+      );
+    }
+
+    if (this._unstakingAddress) {
+      assert(
+        this._amount,
+        'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
+      );
+    }
+
     const stakingDeactivateData: StakingDeactivate = {
       type: InstructionBuilderTypes.StakingDeactivate,
       params: {
         fromAddress: this._sender,
         stakingAddress: this._stakingAddress,
+        amount: this._amount,
+        unstakingAddress: this._unstakingAddress,
       },
     };
     this._instructionsData = [stakingDeactivateData];
