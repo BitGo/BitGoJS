@@ -99,10 +99,10 @@ function updatePsbtInput(
   } else {
     if (signatureCount === 0) {
       const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
-      if (witnessScript) {
+      if (witnessScript && psbt.data.inputs[inputIndex].witnessScript === undefined) {
         psbt.updateInput(inputIndex, { witnessScript });
       }
-      if (redeemScript) {
+      if (redeemScript && psbt.data.inputs[inputIndex].redeemScript === undefined) {
         psbt.updateInput(inputIndex, { redeemScript });
       }
     }
