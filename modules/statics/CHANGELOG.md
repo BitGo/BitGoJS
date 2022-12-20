@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.1.1...@bitgo/statics@13.0.0) (2022-12-20)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** fix tron tokens in statics ([79459c9](https://github.com/BitGo/BitGoJS/commit/79459c982e07d7ec6b9e720b0ad325a00ed59e8f))
+- **statics:** add missing backing erc20 for fil ([8bea5bf](https://github.com/BitGo/BitGoJS/commit/8bea5bf02b51856e6c65ce55cca657c7246f1562))
+
+### BREAKING CHANGES
+
+- **sdk-coin-trx:** TrxCoin & factory methods removed from statics due to existing class TronErc20Coin
+
 ## [12.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.1.0...@bitgo/statics@12.1.1) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/statics

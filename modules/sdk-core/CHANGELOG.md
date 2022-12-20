@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.2.1...@bitgo/sdk-core@4.3.0) (2022-12-20)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** fix parseTransaction throwing error for pending ([c9fea95](https://github.com/BitGo/BitGoJS/commit/c9fea9505616557ea7e27d34829adc4ffa922697))
+- **sdk-core:** fix generate wallets isCold param ([ff22908](https://github.com/BitGo/BitGoJS/commit/ff229088405cf09be4bc86bdbdee340b37b551a6))
+
+### Features
+
+- added eip712 sign typed data ([6d2cbea](https://github.com/BitGo/BitGoJS/commit/6d2cbeaa04de80c12b41dcd1e88f886011f46b30))
+- **core:** add register to base interface ([2c08793](https://github.com/BitGo/BitGoJS/commit/2c087937608f6fa6246cf44a29c91ef40713fb74))
+- **sdk-coin-eth:** add support for tss recoveries ([5954c7d](https://github.com/BitGo/BitGoJS/commit/5954c7dd1d32b2f60e8c41d31d7b205ccc51ecc4))
+- **sdk-core:** allow forwarder version 2 ([7b9a05b](https://github.com/BitGo/BitGoJS/commit/7b9a05b89f68ac13858911e002be7adf3304646f))
+- **sdk-core:** derive unhardened method for ecdsa ([4684bff](https://github.com/BitGo/BitGoJS/commit/4684bff6cfaf7071f3b454327afe4067d65318c9))
+
 ## [4.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.2.0...@bitgo/sdk-core@4.2.1) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/sdk-core

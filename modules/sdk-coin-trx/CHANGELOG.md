@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.3.3...@bitgo/sdk-coin-trx@1.4.0) (2022-12-20)
+
+### Features
+
+- **sdk-coin-trx:** add tron tokens in verifyTransaction method ([06c8592](https://github.com/BitGo/BitGoJS/commit/06c85923af1bd00bc841fa9f825954806c643b4e))
+- **sdk-coin-trx:** add trx token transaction builder ([7358905](https://github.com/BitGo/BitGoJS/commit/7358905d1197d4d65e44d2e1b4d992b267097999))
+- **sdk-coin-trx:** export trx token transaction builder ([2869c69](https://github.com/BitGo/BitGoJS/commit/2869c69a2aa1e6fd8616c86182b9e158ec34252d))
+
 ## [1.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.3.2...@bitgo/sdk-coin-trx@1.3.3) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.3...@bitgo/sdk-coin-sui@1.6.4) (2022-12-20)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add allowAccountConsolidations ([0a6ca38](https://github.com/BitGo/BitGoJS/commit/0a6ca38b9403f08bd489b01b1edd3265b139aabc))
+- **sdk-coin-sui:** exclude signer data from tx digest ([88db48e](https://github.com/BitGo/BitGoJS/commit/88db48e0b5a4947a9d49814f34a90213b15e1af5))
+- **sdk-coin-sui:** fix explainTransaction when amounts is empty ([783471b](https://github.com/BitGo/BitGoJS/commit/783471bbdfb6187746e34f0430d11cdafa463eac))
+- **sdk-coin-sui:** remove amount from payAll serialized txn ([ddf9273](https://github.com/BitGo/BitGoJS/commit/ddf92737910e73e5c73abb0d5d775e5831903f63))
+
 ## [1.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.2...@bitgo/sdk-coin-sui@1.6.3) (2022-12-09)
 
 ### Bug Fixes
