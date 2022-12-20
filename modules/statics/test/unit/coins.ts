@@ -1,5 +1,15 @@
 import 'should';
-import { BaseNetwork, CoinFamily, CoinFeature, coins, Erc20Coin, EthereumNetwork, NetworkType } from '../../src';
+import {
+  BaseNetwork,
+  OfcCoin,
+  CoinFamily,
+  CoinFeature,
+  coins,
+  Erc20Coin,
+  EthereumNetwork,
+  NetworkType,
+  CoinKind,
+} from '../../src';
 
 interface DuplicateCoinObject {
   name: string;
@@ -38,7 +48,20 @@ coins.forEach((coin, coinName) => {
       coin.baseUnit.should.be.not.empty();
     });
 
-    if (coin.family === CoinFamily.XTZ) {
+    // OfcCoin names are 'ofc' + 'basecoin' so for all OfcCoins we are checking that there is a corresponding basecoin
+    if (coin instanceof OfcCoin && coin.kind !== CoinKind.FIAT) {
+      it('requires on-chain definition', () => {
+        const ofcCoinName = coin.name;
+        const baseCoinName = ofcCoinName.slice(3);
+        coins.has(baseCoinName).should.eql(true);
+      });
+    }
+
+    if (coin.family === CoinFamily.ETH) {
+      it('requires custody', () => {
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(true);
+      });
+    } else if (coin.family === CoinFamily.XTZ) {
       it('does not support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
       });

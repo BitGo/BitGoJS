@@ -72,6 +72,7 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.TRANSACTION_DATA,
   CoinFeature.GENERIC_TOKEN,
 ];
+const ETH_GENERIC_TOKEN_FEATURES = [...GENERIC_TOKEN_FEATURES, CoinFeature.CUSTODY];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC),
@@ -1483,7 +1484,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcstorj', 'Storj', 8, UnderlyingAsset.STORJ),
   ofcerc20('ofcsxp', 'Swipe', 18, UnderlyingAsset.SXP),
   ofcerc20('ofctribe', 'Tribe', 18, UnderlyingAsset.TRIBE),
-  ofcerc20('ofctrueusd', 'TrueUSD', 18, UnderlyingAsset.TUSD),
+  ofcerc20('ofctrueusd', 'TrueUSD', 18, UnderlyingAsset.TUSD, CoinKind.FIAT),
   ofcerc20('ofcuma', 'UMA Voting Token V1', 18, UnderlyingAsset.UMA),
   ofcerc20('ofcwxt', 'Wirex', 18, UnderlyingAsset.WXT),
   ofcerc20('ofcxsgd', 'StraitsX', 6, UnderlyingAsset.XSGD),
@@ -2246,16 +2247,16 @@ export const coins = CoinMap.fromCoins([
     KeyCurve.Secp256k1
   ),
   erc721('erc721:witch', 'Crypto Coven', '0x5180db8f5c931aae63c74266b211f580155ecac8'),
-  erc721('erc721:token', 'Generic ETH ERC721', '0xerc721:token', GENERIC_TOKEN_FEATURES),
-  erc1155('erc1155:token', 'Generic ETH ERC1155', '0xerc1155:token', GENERIC_TOKEN_FEATURES),
-  nonstandardToken('nonstandard:token', 'Generic ETH Nonstandard', '0xnonstandard:token', GENERIC_TOKEN_FEATURES),
-  terc721('terc721:token', 'Generic ETH ERC721', '0xterc721:token', GENERIC_TOKEN_FEATURES),
-  terc1155('terc1155:token', 'Generic ETH ERC1155', '0xterc1155:token', GENERIC_TOKEN_FEATURES),
+  erc721('erc721:token', 'Generic ETH ERC721', '0xerc721:token', ETH_GENERIC_TOKEN_FEATURES),
+  erc1155('erc1155:token', 'Generic ETH ERC1155', '0xerc1155:token', ETH_GENERIC_TOKEN_FEATURES),
+  nonstandardToken('nonstandard:token', 'Generic ETH Nonstandard', '0xnonstandard:token', ETH_GENERIC_TOKEN_FEATURES),
+  terc721('terc721:token', 'Generic ETH ERC721', '0xterc721:token', ETH_GENERIC_TOKEN_FEATURES),
+  terc1155('terc1155:token', 'Generic ETH ERC1155', '0xterc1155:token', ETH_GENERIC_TOKEN_FEATURES),
   nonstandardToken(
     'tnonstandard:token',
     'Generic ETH Nonstandard',
     '0xtnonstandard:token',
-    GENERIC_TOKEN_FEATURES,
+    ETH_GENERIC_TOKEN_FEATURES,
     '',
     '',
     Networks.test.goerli
