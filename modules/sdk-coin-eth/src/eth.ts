@@ -1181,14 +1181,14 @@ export class Eth extends BaseCoin {
     if (params.isTss) {
       return this.recoverTSS(params);
     }
-    return this.recoverEth(params);
+    return this.recoverEthLike(params);
   }
 
   /**
    * Recovers a tx with TSS key shares
    * same expected arguments as recover method, but with TSS key shares
    */
-  private async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  protected async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
@@ -1294,7 +1294,7 @@ export class Eth extends BaseCoin {
    * Recovers a tx with non-TSS keys
    * same expected arguments as recover method (original logic before adding TSS recover path)
    */
-  private async recoverEth(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  protected async recoverEthLike(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     const isKrsRecovery = getIsKrsRecovery(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);

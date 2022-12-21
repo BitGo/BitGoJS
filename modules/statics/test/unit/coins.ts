@@ -57,7 +57,7 @@ coins.forEach((coin, coinName) => {
       });
     }
 
-    if (coin.family === CoinFamily.ETH) {
+    if (coin.family === CoinFamily.ETH || coin.family === CoinFamily.ETH2 || coin.family === CoinFamily.ETHW) {
       it('requires custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(true);
       });

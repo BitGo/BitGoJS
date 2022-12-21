@@ -16,5 +16,6 @@ export {
   AvaxERC20Token,
   SolCoin,
   HederaToken,
+  TronErc20Coin,
 } from './account';
 export { CoinMap } from './map';
