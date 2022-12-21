@@ -43,6 +43,12 @@ export interface TxInfo {
   txid: string;
 }
 
+export interface AddressInfo {
+  address: string;
+  chain: number;
+  index: number;
+}
+
 export interface TronTransactionExplanation extends TransactionExplanation {
   expiration: number;
   timestamp: number;
@@ -51,6 +57,7 @@ export interface TronTransactionExplanation extends TransactionExplanation {
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
+  addressInfo?: AddressInfo;
   feeInfo: TransactionFee;
 }
 
@@ -136,6 +143,11 @@ export class Trx extends BaseCoin {
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
   valuelessTransferAllowed(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  allowsAccountConsolidations(): boolean {
     return true;
   }
 
@@ -229,6 +241,18 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Derive a user key using the chain path of the address
+   * @param key
+   * @param path
+   * @returns {string} derived private key
+   */
+  deriveKeyWithPath({ key, path }: { key: string; path: string }): string {
+    const keychain = bip32.fromBase58(key);
+    const derivedKeyNode = keychain.derivePath(path);
+    return derivedKeyNode.toBase58();
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
@@ -239,7 +263,17 @@ export class Trx extends BaseCoin {
    */
   async signTransaction(params: TronSignTransactionOptions): Promise<SignedTransaction> {
     const txBuilder = getBuilder(this.getChain()).from(params.txPrebuild.txHex);
-    txBuilder.sign({ key: params.prv });
+
+    let key;
+    const { chain, index } = params.txPrebuild?.addressInfo ?? { chain: 0, index: 0 };
+    if (chain === 0 && index === 0) {
+      key = params.prv;
+    } else {
+      const derivationPath = `0/0/${chain}/${index}`;
+      key = this.deriveKeyWithPath({ key: params.prv, path: derivationPath });
+    }
+    txBuilder.sign({ key });
+
     const transaction = await txBuilder.build();
     const response = {
       txHex: JSON.stringify(transaction.toJson()),
