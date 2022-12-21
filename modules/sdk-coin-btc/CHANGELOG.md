@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.2.8...@bitgo/sdk-coin-btc@1.3.0) (2022-12-20)
+
+### Features
+
+- **core:** add register to base interface ([2c08793](https://github.com/BitGo/BitGoJS/commit/2c087937608f6fa6246cf44a29c91ef40713fb74))
+
 ## [1.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.2.7...@bitgo/sdk-coin-btc@1.2.8) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

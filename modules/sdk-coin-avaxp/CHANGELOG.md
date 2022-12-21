@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.4.2...@bitgo/sdk-coin-avaxp@3.5.0) (2022-12-20)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** fix parseTransaction throwing error for pending ([c9fea95](https://github.com/BitGo/BitGoJS/commit/c9fea9505616557ea7e27d34829adc4ffa922697))
+- **sdk-coin-avaxp:** verify transaction memo only for p chain tx ([7df39cc](https://github.com/BitGo/BitGoJS/commit/7df39cc10283b95ceb4af00fdcdffc17a6204edd))
+
+### Features
+
+- **sdk-coin-avaxp:** add cros chain data to tx json ([fbb7a86](https://github.com/BitGo/BitGoJS/commit/fbb7a86c15ce88f7c72efb665d79052e44179a1a))
+- **sdk-coin-avaxp:** add validation for cross-chain addresses ([cf775ea](https://github.com/BitGo/BitGoJS/commit/cf775ea2df099c1dda7455697f73bea39878c029))
+
 ## [3.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.4.1...@bitgo/sdk-coin-avaxp@3.4.2) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

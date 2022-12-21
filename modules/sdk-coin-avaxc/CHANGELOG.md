@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.3.3...@bitgo/sdk-coin-avaxc@2.4.0) (2022-12-20)
+
+### Features
+
+- **sdk-coin-avaxc:** add validation for cross-chain addresses ([99ec345](https://github.com/BitGo/BitGoJS/commit/99ec3456f61802859fff873cd53de63624e5a170))
+- **sdk-coin-avaxc:** verify signature for hop export tx ([dbae7af](https://github.com/BitGo/BitGoJS/commit/dbae7aff63298d6c0fac360a81845d0e71704e08))
+
 ## [2.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.3.2...@bitgo/sdk-coin-avaxc@2.3.3) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

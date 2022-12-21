@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.1.2...@bitgo/account-lib@4.2.0) (2022-12-20)
+
+### Features
+
+- **sdk-core:** derive unhardened method for ecdsa ([4684bff](https://github.com/BitGo/BitGoJS/commit/4684bff6cfaf7071f3b454327afe4067d65318c9))
+
 ## [4.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.1.1...@bitgo/account-lib@4.1.2) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/account-lib
