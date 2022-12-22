@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.9.0...@bitgo/sdk-coin-eth@2.10.0) (2022-12-20)
+
+### Features
+
+- added eip712 sign typed data ([6d2cbea](https://github.com/BitGo/BitGoJS/commit/6d2cbeaa04de80c12b41dcd1e88f886011f46b30))
+- **sdk-coin-eth:** add support for tss recoveries ([5954c7d](https://github.com/BitGo/BitGoJS/commit/5954c7dd1d32b2f60e8c41d31d7b205ccc51ecc4))
+
 # [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.8.0...@bitgo/sdk-coin-eth@2.9.0) (2022-12-09)
 
 ### Features

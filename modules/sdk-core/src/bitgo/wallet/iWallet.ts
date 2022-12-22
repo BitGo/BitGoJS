@@ -308,6 +308,11 @@ export interface DeployForwardersOptions {
   id?: string;
 }
 
+export interface FundForwardersOptions {
+  forwarderAddress: string;
+  amount?: string;
+}
+
 export interface FlushForwarderTokenOptions {
   address?: string;
   id?: string;

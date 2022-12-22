@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.1.0...@bitgo/utxo-lib@7.2.0) (2022-12-20)
+
+### Features
+
+- **utxo-lib:** adding psbt parser to index ([12e1f6b](https://github.com/BitGo/BitGoJS/commit/12e1f6b552e249abfabebb3e297194b736a2052e))
+- **utxo-lib:** function for bitgo psbt parsing ([0a1fda3](https://github.com/BitGo/BitGoJS/commit/0a1fda32d6b6aa6f36cb57c7138dc3d06fff4813))
+- **utxo-lib:** issue with psbt taproot signing is fixed ([82d2d8b](https://github.com/BitGo/BitGoJS/commit/82d2d8b7e133f833bced8396a3ae8756bf6ba2f5))
+- **utxo-lib:** make psbt taproot pub keys parsing a function ([f6cd15c](https://github.com/BitGo/BitGoJS/commit/f6cd15c2ec7e9fa690b4ee4f5fe271c8236cc684))
+- **utxo-lib:** new psbt parser is used for p2tr pub key ([305c6b7](https://github.com/BitGo/BitGoJS/commit/305c6b748e59146811b799eae55836f860e7c6cb))
+- **utxo-lib:** one function for transaction to psbt ([bb94dd8](https://github.com/BitGo/BitGoJS/commit/bb94dd85ca35b056f483fcfb1bb0c82ac0f44f71))
+
 # [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.0.0...@bitgo/utxo-lib@7.1.0) (2022-12-06)
 
 ### Bug Fixes

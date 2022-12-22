@@ -47,6 +47,7 @@ import {
   FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
   FreezeOptions,
+  FundForwardersOptions,
   GetAddressOptions,
   GetPrvOptions,
   GetTransactionOptions,
@@ -85,7 +86,6 @@ import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
-import { isCoinThatConstructFinalSignedMessageHash } from '../features/constructFinalSignedMessageHash';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2808,10 +2808,7 @@ export class Wallet implements IWallet {
         signedMessageRequest.messages[0].combineSigShare,
         'Unable to find combineSigShare in signedMessageRequest.messages'
       );
-      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
-        return this.baseCoin.constructFinalSignedMessageHash(signedMessageRequest.messages[0].combineSigShare);
-      }
-      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.mesages');
       return signedMessageRequest.messages[0].txHash;
     } catch (e) {
       throw new Error('failed to sign message ' + e);
@@ -2859,9 +2856,6 @@ export class Wallet implements IWallet {
         signedTypedDataRequest.messages[0].combineSigShare,
         'Unable to find combineSigShare in signedTypedDataRequest.messages'
       );
-      if (isCoinThatConstructFinalSignedMessageHash(this.baseCoin)) {
-        return this.baseCoin.constructFinalSignedMessageHash(signedTypedDataRequest.messages[0].combineSigShare);
-      }
       assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
       return signedTypedDataRequest.messages[0].txHash;
     } catch (e) {
@@ -2898,5 +2892,22 @@ export class Wallet implements IWallet {
     }
 
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
+  }
+
+  /**
+   * Send funds from a fee address to a forwarder. Only supports eth-like coins.
+   *
+   * @param {Object} params - parameters object
+   * @param {String} params.forwarderAddress - Address of the forwarder to send funds to.
+   * @param {String} params.amount - Amount to send the forwarder (optional). If not given, defaults to sending an estimate of the amount needed for a fund recovery
+   * @returns {*}
+   */
+  public async fundForwarder(params: FundForwardersOptions): Promise<any> {
+    if (_.isUndefined(params.forwarderAddress)) {
+      throw new Error('forwarder address required');
+    }
+    const url = this.url('/fundForwarder');
+    this._wallet = await this.bitgo.post(url).send(params).result();
+    return this._wallet;
   }
 }

@@ -19,7 +19,6 @@ import {
   common,
   ECDSA,
   Ecdsa,
-  ECDSAMethods,
   ECDSAMethodTypes,
   EthereumLibraryUnavailableError,
   FeeEstimateOptions,
@@ -53,7 +52,7 @@ import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } from './lib';
-import { addHexPrefix, intToHex, stripHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { TypedDataUtils, SignTypedDataVersion } from '@metamask/eth-sig-util';
 
@@ -2119,25 +2118,6 @@ export class Eth extends BaseCoin {
       );
     }
     return Buffer.concat(parts);
-  }
-
-  /**
-   *  Create the final signed message hash from the combine share
-   * @param combineShare
-   */
-  constructFinalSignedMessageHash(combineShare: string): string {
-    const combineSigArray = combineShare.split(ECDSAMethods.delimeter);
-    const signature = {
-      recid: parseInt(combineSigArray[0], 10),
-      r: combineSigArray[1],
-      s: combineSigArray[2],
-      y: combineSigArray[3],
-    };
-    const v = 27 + signature.recid;
-    const vHex = intToHex(v);
-    const vStr = stripHexPrefix(vHex);
-    const finalSig = addHexPrefix(signature.r.concat(signature.s, vStr));
-    return finalSig;
   }
 
   private isETHAddress(address: string): boolean {

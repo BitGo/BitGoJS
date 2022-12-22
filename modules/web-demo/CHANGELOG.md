@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.3.8...@bitgo/web-demo@1.4.0) (2022-12-20)
+
+### Features
+
+- **web-demo:** add dynamic coin page ([b346f7e](https://github.com/BitGo/BitGoJS/commit/b346f7e4264bf42eb288d5168f501c160d18d391))
+
 ## [1.3.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.3.7...@bitgo/web-demo@1.3.8) (2022-12-09)
 
 **Note:** Version bump only for package @bitgo/web-demo

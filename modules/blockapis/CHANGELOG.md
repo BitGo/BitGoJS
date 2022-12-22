@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.6...@bitgo/blockapis@1.3.7) (2022-12-20)
+
+### Bug Fixes
+
+- **blockapis:** upgrade @types/superagent from 4.1.15 to 4.1.16 ([199e053](https://github.com/BitGo/BitGoJS/commit/199e053aa561c201c6e66819f26b1b6e383fb64e))
+
 ## [1.3.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.5...@bitgo/blockapis@1.3.6) (2022-12-06)
 
 **Note:** Version bump only for package @bitgo/blockapis
