@@ -91,12 +91,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  gasPrice(gasPrice: number): this {
-    this.validateGasPrice(gasPrice);
-    this._gasPrice = gasPrice;
-    return this;
-  }
-
   payTx(payTx: PayTx): this {
     this.validateTxPay(payTx);
     this._payTx = payTx;
@@ -119,7 +113,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._signatures = [tx.suiSignature];
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
-    this.gasPrice(txData.gasPrice);
     this.sender(txData.sender);
     this.gasPayment(txData.gasPayment);
 
@@ -177,8 +170,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     let payTx;
     if (this._type === SuiTransactionType.PaySui || this._type === SuiTransactionType.PayAllSui) {
-      const inputCoins = this.reorderInputCoins();
-      payTx = { coins: inputCoins, recipients: this._payTx.recipients, amounts: this._payTx.amounts };
+      if (!this._gasPayment) {
+        this._gasPayment = this._payTx.coins[0];
+      } else {
+        const inputCoins = this.reorderInputCoins();
+        payTx = { coins: inputCoins, recipients: this._payTx.recipients, amounts: this._payTx.amounts };
+      }
     }
 
     return {
@@ -191,17 +188,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     };
   }
 
+  // Reorder input coins so the first coin is the gas payment
   reorderInputCoins(): SuiObjectRef[] {
     const coinIds = this._payTx.coins.map((coin) => coin.objectId);
     const inputCoins: SuiObjectRef[] = [];
     inputCoins.push(...this._payTx.coins);
     if (!coinIds.includes(this._gasPayment.objectId)) {
-      inputCoins.push(this._gasPayment);
+      inputCoins.unshift(this._gasPayment);
+    } else {
+      const gasPaymentIndex = inputCoins.findIndex((coin) => coin.objectId === this._gasPayment.objectId);
+      inputCoins[gasPaymentIndex] = inputCoins[0];
+      inputCoins[0] = this._gasPayment;
     }
 
-    const gasPaymentIndex = inputCoins.findIndex((coin) => coin.objectId === this._gasPayment.objectId);
-    inputCoins[gasPaymentIndex] = inputCoins[0];
-    inputCoins[0] = this._gasPayment;
     return inputCoins;
   }
 
@@ -304,18 +303,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     assert(this._sender, new BuildTransactionError('sender is required before building'));
     assert(this._payTx, new BuildTransactionError('payTx is required before building'));
     assert(this._gasBudget, new BuildTransactionError('gasBudget is required before building'));
-    assert(this._gasPrice, new BuildTransactionError('gasPrice is required before building'));
-    assert(this._gasPayment, new BuildTransactionError('gasPayment is required before building'));
 
-    if (this._gasPrice !== SUI_GAS_PRICE) {
-      throw new BuildTransactionError('Invalid transaction: incorrect gas price');
-    }
+    if (this._type === SuiTransactionType.Pay) {
+      assert(this._gasPayment, new BuildTransactionError('gasPayment is required for type Pay before building'));
 
-    const coinIds = this._payTx.coins.map((coin) => coin.objectId);
-    if (coinIds.includes(this._gasPayment.objectId) && this._type === SuiTransactionType.Pay) {
-      throw new BuildTransactionError(
-        `Invalid gas payment ${this._gasPayment.objectId}: cannot be one of the inputCoins`
-      );
+      const coinIds = this._payTx.coins.map((coin) => coin.objectId);
+      if (coinIds.includes(this._gasPayment.objectId) && this._type === SuiTransactionType.Pay) {
+        throw new BuildTransactionError(
+          `Invalid gas payment ${this._gasPayment.objectId}: cannot be one of the inputCoins`
+        );
+      }
     }
   }
 
