@@ -6,5 +6,5 @@ module.exports = {
   reporter: 'min',
   'reporter-option': ['cdn=true', 'json=false', 'consoleReporter=spec'],
   exit: true,
-  spec: ['test/unit/**/*.ts'],
+  spec: ['src/**/*.test.ts'],
 }

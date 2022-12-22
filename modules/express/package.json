@@ -29,6 +29,7 @@
     "build": "yarn tsc --build --incremental --verbose .",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
+    "swagger": "ts-node swagger.ts",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
     "build-docker": "docker build -f ../../Dockerfile --platform=linux/amd64 -t bitgo/express:latest -t bitgo/express:$(jq -r .version < package.json) ../..",
     "push-docker": "docker push bitgo/express:latest bitgo/express:$(jq -r .version < package.json)",
@@ -48,7 +49,11 @@
     "express": "^4.16.4",
     "lodash": "^4.17.20",
     "morgan": "^1.9.1",
-    "superagent": "^3.8.3"
+    "nodemon": "^2.0.20",
+    "superagent": "^3.8.3",
+    "swagger-autogen": "^2.22.0",
+    "swagger-ui-express": "^4.6.0",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^1.2.5",
@@ -71,6 +76,7 @@
     "sinon": "^13.0.1",
     "supertest": "^4.0.2",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
+    "swagger-jsdoc": "^6.2.5",
     "typescript": "^4.2.4"
   },
   "lint-staged": {

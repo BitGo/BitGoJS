@@ -11,6 +11,7 @@ import * as morgan from 'morgan';
 import * as fs from 'fs';
 import { Request as StaticRequest } from 'express-serve-static-core';
 import * as timeout from 'connect-timeout';
+import * as swaggerUi from 'swagger-ui-express';
 
 import { Config, config } from './config';
 
@@ -21,6 +22,8 @@ import { IpcError, NodeEnvironmentError, TlsConfigurationError, ExternalSignerCo
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
+
+const swaggerFile = require('./swagger-output.json');
 
 /**
  * Set up the logging middleware provided by morgan
@@ -272,6 +275,8 @@ export function app(cfg: Config): express.Application {
 
   app.use(timeout(cfg.timeout));
 
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
   // Decorate the client routes
   setupRoutes(app, cfg);
 
@@ -322,4 +327,16 @@ export async function init(): Promise<void> {
   } else {
     server.listen(port, bind, startup(cfg, baseUri));
   }
+}
+
+init();
+
+export function setupSigningRoutes(app: express.Application, config: Config): void {
+  app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
+  app.post(
+    '/api/v2/:coin/tssshare/:sharetype',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2GenerateShareTSS)
+  );
 }
