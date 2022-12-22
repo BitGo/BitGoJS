@@ -47,6 +47,7 @@ import {
   FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
   FreezeOptions,
+  FundForwardersOptions,
   GetAddressOptions,
   GetPrvOptions,
   GetTransactionOptions,
@@ -2891,5 +2892,22 @@ export class Wallet implements IWallet {
     }
 
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
+  }
+
+  /**
+   * Send funds from a fee address to a forwarder. Only supports eth-like coins.
+   *
+   * @param {Object} params - parameters object
+   * @param {String} params.forwarderAddress - Address of the forwarder to send funds to.
+   * @param {String} params.amount - Amount to send the forwarder (optional). If not given, defaults to sending an estimate of the amount needed for a fund recovery
+   * @returns {*}
+   */
+  public async fundForwarder(params: FundForwardersOptions): Promise<any> {
+    if (_.isUndefined(params.forwarderAddress)) {
+      throw new Error('forwarder address required');
+    }
+    const url = this.url('/fundForwarder');
+    this._wallet = await this.bitgo.post(url).send(params).result();
+    return this._wallet;
   }
 }
