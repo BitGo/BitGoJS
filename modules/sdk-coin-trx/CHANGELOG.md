@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.4.0...@bitgo/sdk-coin-trx@1.5.0) (2022-12-23)
+
+### Bug Fixes
+
+- resolve security audit for jsonwebtoken ([ed06bde](https://github.com/BitGo/BitGoJS/commit/ed06bdef907a4e59c4fdc4a6f4be99930c215dd3))
+
+### Features
+
+- **sdk-coin-trx:** support signing trx consolidations ([54fc2b0](https://github.com/BitGo/BitGoJS/commit/54fc2b064b5086a9d6dac98eca30ffa2222f5c29))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.3.3...@bitgo/sdk-coin-trx@1.4.0) (2022-12-20)
 
 ### Features

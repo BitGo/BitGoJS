@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.3.0...@bitgo/sdk-core@5.0.0) (2022-12-23)
+
+### Bug Fixes
+
+- remove final sig construction for message signing ([c7c8a98](https://github.com/BitGo/BitGoJS/commit/c7c8a988449264c0be0d422b89f4390d713e9064))
+
+### Features
+
+- **sdk-core:** support fund forwader ([7dbab14](https://github.com/BitGo/BitGoJS/commit/7dbab14c74ae5faf99289f1cf2a3aacc558f6987))
+
+### BREAKING CHANGES
+
+- remove final sig construction
+
 # [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.2.1...@bitgo/sdk-core@4.3.0) (2022-12-20)
 
 ### Bug Fixes
