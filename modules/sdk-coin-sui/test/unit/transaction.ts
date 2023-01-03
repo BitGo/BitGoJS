@@ -51,7 +51,7 @@ describe('Sui Transaction', () => {
     });
 
     it('should explain a transfer payAll transaction', function () {
-      tx.fromRawTransaction(testData.TRANSFER_PAY_ALL_SUI_TX);
+      tx.fromRawTransaction(testData.TRANSFER_PAY_ALL_SUI_TX_WITH_GAS_PAYMENT_AND_IN_PAYTX);
       const explainedTransaction = tx.explainTransaction();
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
