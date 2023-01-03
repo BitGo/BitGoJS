@@ -112,6 +112,8 @@ export const cmdParseTx = {
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
       .option('parseOutputScript', { type: 'boolean', default: false })
       .option('maxOutputs', { type: 'number' })
+      .option('vin', { type: 'number' })
+      .array('vin')
       .option('all', { type: 'boolean', default: false })
       .option('cache', { type: 'boolean', default: false, description: 'use local cache for http responses' })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
