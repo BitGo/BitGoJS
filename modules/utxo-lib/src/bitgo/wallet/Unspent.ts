@@ -89,6 +89,24 @@ export interface WalletUnspentLegacy<TNumber extends number | bigint = number> e
   witnessScript?: string;
 }
 
+export function addReplayProtectionUnspentToPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  u: Unspent<bigint>,
+  redeemScript: Buffer,
+  network: Network
+): void {
+  const { txid, vout } = toPrevOutput(u, network);
+  if (!isUnspentWithPrevTx(u)) {
+    throw new Error('Error, require previous tx to add to PSBT');
+  }
+  psbt.addInput({
+    hash: txid,
+    index: vout,
+    nonWitnessUtxo: u.prevTx,
+    redeemScript,
+  });
+}
+
 export function addWalletUnspentToPsbt(
   psbt: UtxoPsbt<UtxoTransaction<bigint>>,
   u: WalletUnspent<bigint>,
