@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@13.0.0...@bitgo/statics@13.1.0) (2022-12-23)
+
+### Features
+
+- **sdk-coin-trx:** export TronErc20Coin class ([0528cb0](https://github.com/BitGo/BitGoJS/commit/0528cb0939047b5fd38a8a3baa494bafba76d0ed))
+
 # [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@12.1.1...@bitgo/statics@13.0.0) (2022-12-20)
 
 ### Bug Fixes

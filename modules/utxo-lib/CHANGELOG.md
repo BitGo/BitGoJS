@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.2.0...@bitgo/utxo-lib@7.3.0) (2022-12-23)
+
+### Features
+
+- **utxo-lib:** support for unsigned tx with pub scripts ([17fdc06](https://github.com/BitGo/BitGoJS/commit/17fdc06403d56bd037fdf0b926ac97bf94e8c3f9))
+
 # [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.1.0...@bitgo/utxo-lib@7.2.0) (2022-12-20)
 
 ### Features
