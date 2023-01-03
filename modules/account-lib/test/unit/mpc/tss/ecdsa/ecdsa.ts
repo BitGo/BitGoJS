@@ -1,8 +1,16 @@
-import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
+import { Ecdsa, ECDSA, rangeProof } from '@bitgo/sdk-core';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
-import { paillerKeys, mockNShares, mockPShare, mockDKeyShare, mockEKeyShare, mockFKeyShare } from '../fixtures/ecdsa';
+import {
+  ntildes,
+  paillerKeys,
+  mockNShares,
+  mockPShare,
+  mockDKeyShare,
+  mockEKeyShare,
+  mockFKeyShare,
+} from '../fixtures/ecdsa';
 import { Hash, randomBytes } from 'crypto';
 /**
  * @prettier
@@ -163,8 +171,9 @@ describe('TSS ECDSA TESTS', function () {
 
   describe('ECDSA Signing', async function () {
     let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: string; shouldHash?: boolean }[];
+    let ntildeMock;
 
-    before(async () => {
+    before(() => {
       const [A, B, C, D, E, F, G, H] = keyShares;
 
       config = [
@@ -186,6 +195,15 @@ describe('TSS ECDSA TESTS', function () {
         // Checks with derived subkey
         { signerOne: G, signerTwo: H },
       ];
+
+      ntildeMock = sinon.stub(rangeProof, 'generateNTilde');
+      for (let i = 0; i < ntildes.length; i++) {
+        ntildeMock.onCall(i).returns(ntildes[i] as unknown as ECDSA.NTilde);
+      }
+    });
+
+    after(() => {
+      ntildeMock.reset();
     });
 
     for (let index = 0; index < 9; index++) {
@@ -195,25 +213,34 @@ describe('TSS ECDSA TESTS', function () {
         const signerOne = config[index].signerOne;
         const signerOneIndex = config[index].signerOne.xShare.i;
         const signerTwo = config[index].signerTwo;
-        const signerTwoIndex = config[index].signerTwo.xShare.i;
 
         // Step Two
+        // Second signer generates their range proof challenge.
+        const signerTwoWithChallenge: ECDSA.KeyCombined = MPC.signChallenge(
+          signerTwo.xShare,
+          signerTwo.yShares[signerOneIndex],
+        );
+
+        // Step Three
         // Sign Shares are created by one of the participants (signerOne)
         // with its private XShare and YShare corresponding to the other participant (signerTwo)
         // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-        const signShares: ECDSA.SignShareRT = MPC.signShare(signerOne.xShare, signerOne.yShares[signerTwoIndex]);
+        const signShares: ECDSA.SignShareRT = MPC.signShare(
+          signerOne.xShare,
+          signerTwoWithChallenge.yShares[signerOneIndex],
+        );
 
-        // Step Three
+        // Step Four
         // signerTwo receives the KShare from signerOne and uses it produce private
         // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
         // which is sent to signerOne
         let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
-          xShare: signerTwo.xShare,
+          xShare: signerTwoWithChallenge.xShare,
           yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
         });
 
-        // Step Four
+        // Step Five
         // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
         // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
         // is sent to signerTwo to produce its Gamma Share
@@ -222,16 +249,15 @@ describe('TSS ECDSA TESTS', function () {
           wShare: signShares.wShare,
         });
 
-        // Step Five
+        // Step Six
         // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
         // uses it produce private GShare (Gamma Share)
-
         signConvertS21 = MPC.signConvert({
           muShare: signConvertS12.muShare,
           bShare: signConvertS21.bShare,
         });
 
-        // Step Six
+        // Step Seven
         // signerOne and signerTwo both have successfully generated GShares and they use
         // the sign combine function to generate their private omicron shares and
         // delta shares which they share to each other
@@ -255,7 +281,7 @@ describe('TSS ECDSA TESTS', function () {
 
         const MESSAGE = Buffer.from('TOO MANY SECRETS');
 
-        // Step Seven
+        // Step Eight
         // signerOne and signerTwo shares the delta share from each other
         // and finally signs the message using their private OShare
         // and delta share received from the other signer
@@ -280,12 +306,12 @@ describe('TSS ECDSA TESTS', function () {
           ),
         ];
 
-        // Step Eight
+        // Step Nine
         // Construct the final signature
 
         const signature = MPC.constructSignature([signA, signB]);
 
-        // Step Nine
+        // Step Ten
         // Verify signature
 
         const isValid = MPC.verify(MESSAGE, signature, hashGenerator(config[index].hash), config[index].shouldHash);
