@@ -620,11 +620,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userSigningMaterial.bitgoNShare,
       userSigningMaterial.backupNShare,
     ]);
+    const signingKeyWithChallenge = MPC.signChallenge(signingKey.xShare, signingKey.yShares[3]);
 
     const threshold = 2;
     const numShares = 3;
     const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
-    const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
+    const userSignShare = await ECDSAMethods.createUserSignShare(
+      signingKeyWithChallenge.xShare,
+      signingKeyWithChallenge.yShares[3]
+    );
 
     const u = bigIntToBufferBE(uShares.shares[3], 32).toString('hex');
 

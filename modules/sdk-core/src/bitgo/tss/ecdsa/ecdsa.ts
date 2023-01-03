@@ -17,7 +17,9 @@ import {
   SignShare,
   WShare,
   XShare,
+  XShareWithNTilde,
   YShare,
+  YShareWithNTilde,
   SendShareToBitgoRT,
   ReceivedShareType,
   BShare,
@@ -105,7 +107,10 @@ export async function createCombinedKey(
  * @param {YShare} yShare YShare from Bitgo
  * @returns {Promise<SignShare>}
  */
-export async function createUserSignShare(xShare: XShare, yShare: YShare): Promise<SignShare> {
+export async function createUserSignShare(
+  xShare: XShare | XShareWithNTilde,
+  yShare: YShare | YShareWithNTilde
+): Promise<SignShare> {
   if (xShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid XShare, XShare doesn't belong to the User`);
   }
@@ -423,6 +428,18 @@ function validateSharesLength(shares: string[], expectedLength: number, shareNam
   }
 }
 
+function validateOptionalValues(shares: string[], start: number, end: number, shareName: string, valueName: string) {
+  let found = false;
+  for (let i = start; i < end; i++) {
+    if (shares[i]) {
+      found = true;
+    } else if (found) {
+      throw new Error(`Inconsistent optional ${valueName} value in ${shareName} share`);
+    }
+  }
+  return found;
+}
+
 /**
  * parses K share from signature share record
  * @param share - signature share record
@@ -431,13 +448,30 @@ function validateSharesLength(shares: string[], expectedLength: number, shareNam
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
 
-  validateSharesLength(shares, 2, 'K');
+  validateSharesLength(shares, 11, 'K');
+  const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
+
+  let proof;
+  if (hasProof) {
+    proof = {
+      z: shares[5],
+      u: shares[6],
+      w: shares[7],
+      s: shares[8],
+      s1: shares[9],
+      s2: shares[10],
+    };
+  }
 
   return {
     i: getParticipantIndex(share.to),
     j: getParticipantIndex(share.from),
     k: shares[0],
     n: shares[1],
+    ntilde: shares[2],
+    h1: shares[3],
+    h2: shares[4],
+    proof,
   };
 }
 
@@ -450,7 +484,11 @@ export function convertKShare(share: KShare): SignatureShareRecord {
   return {
     to: getParticipantFromIndex(share.i),
     from: getParticipantFromIndex(share.j),
-    share: `${share.k}${delimeter}${share.n}`,
+    share: `${share.k}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${
+      share.h2
+    }${delimeter}${share.proof?.z || ''}${delimeter}${share.proof?.u || ''}${delimeter}${
+      share.proof?.w || ''
+    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}`,
   };
 }
 
@@ -461,7 +499,58 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 4, 'A');
+  validateSharesLength(shares, 37, 'A');
+  const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
+  const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
+  const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
+
+  let proof;
+  if (hasProof) {
+    proof = {
+      z: shares[7],
+      u: shares[8],
+      w: shares[9],
+      s: shares[10],
+      s1: shares[11],
+      s2: shares[12],
+    };
+  }
+
+  let gammaProof;
+  if (hasGammaProof) {
+    gammaProof = {
+      z: shares[13],
+      zprm: shares[14],
+      t: shares[15],
+      v: shares[16],
+      w: shares[17],
+      s: shares[18],
+      s1: shares[19],
+      s2: shares[20],
+      t1: shares[21],
+      t2: shares[22],
+      u: shares[23],
+      x: shares[24],
+    };
+  }
+
+  let wProof;
+  if (hasWProof) {
+    wProof = {
+      z: shares[25],
+      zprm: shares[26],
+      t: shares[27],
+      v: shares[28],
+      w: shares[29],
+      s: shares[30],
+      s1: shares[31],
+      s2: shares[32],
+      t1: shares[33],
+      t2: shares[34],
+      u: shares[35],
+      x: shares[36],
+    };
+  }
 
   return {
     i: getParticipantIndex(share.to),
@@ -470,6 +559,12 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     alpha: shares[1],
     mu: shares[2],
     n: shares[3],
+    ntilde: shares[4],
+    h1: shares[5],
+    h2: shares[6],
+    proof,
+    gammaProof,
+    wProof,
   };
 }
 
@@ -482,7 +577,29 @@ export function convertAShare(share: AShare): SignatureShareRecord {
   return {
     to: getParticipantFromIndex(share.i),
     from: getParticipantFromIndex(share.j),
-    share: `${share.k}${delimeter}${share.alpha}${delimeter}${share.mu}${delimeter}${share.n}`,
+    share: `${share.k}${delimeter}${share.alpha}${delimeter}${share.mu}${delimeter}${share.n}${delimeter}${
+      share.ntilde
+    }${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.proof?.z || ''}${delimeter}${
+      share.proof?.u || ''
+    }${delimeter}${share.proof?.w || ''}${delimeter}${share.proof?.s || ''}${delimeter}${
+      share.proof?.s1 || ''
+    }${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}${delimeter}${
+      share.gammaProof?.z || ''
+    }${delimeter}${share.gammaProof?.zprm || ''}${delimeter}${share.gammaProof?.t || ''}${delimeter}${
+      share.gammaProof?.v || ''
+    }${delimeter}${share.gammaProof?.v || ''}${delimeter}${share.gammaProof?.w || ''}${delimeter}${
+      share.gammaProof?.s || ''
+    }${delimeter}${share.gammaProof?.s1 || ''}${delimeter}${share.gammaProof?.s2 || ''}${delimeter}${
+      share.gammaProof?.t1 || ''
+    }${delimeter}${share.gammaProof?.t2 || ''}${delimeter}${share.gammaProof?.u || ''}${delimeter}${
+      share.gammaProof?.x || ''
+    }${delimeter}${share.wProof?.z || ''}${delimeter}${share.wProof?.zprm || ''}${delimeter}${
+      share.wProof?.t || ''
+    }${delimeter}${share.wProof?.v || ''}${delimeter}${share.wProof?.w || ''}${delimeter}${
+      share.wProof?.s || ''
+    }${delimeter}${share.wProof?.s1 || ''}${delimeter}${share.wProof?.s2 || ''}${delimeter}${
+      share.wProof?.t1 || ''
+    }${delimeter}${share.wProof?.t2 || ''}${delimeter}${share.wProof?.u || ''}${delimeter}${share.wProof?.x || ''}`,
   };
 }
 
@@ -493,13 +610,53 @@ export function convertAShare(share: AShare): SignatureShareRecord {
  */
 export function parseMuShare(share: SignatureShareRecord): MUShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 2, 'Mu');
+  validateSharesLength(shares, 26, 'Mu');
+  const hasGammaProof = validateOptionalValues(shares, 2, 14, 'Mu', 'gammaProof');
+  const hasWProof = validateOptionalValues(shares, 14, 26, 'Mu', 'wProof');
+
+  let gammaProof;
+  if (hasGammaProof) {
+    gammaProof = {
+      z: shares[2],
+      zprm: shares[3],
+      t: shares[4],
+      v: shares[5],
+      w: shares[6],
+      s: shares[7],
+      s1: shares[8],
+      s2: shares[9],
+      t1: shares[10],
+      t2: shares[11],
+      u: shares[12],
+      x: shares[13],
+    };
+  }
+
+  let wProof;
+  if (hasWProof) {
+    wProof = {
+      z: shares[14],
+      zprm: shares[15],
+      t: shares[16],
+      v: shares[17],
+      w: shares[18],
+      s: shares[19],
+      s1: shares[20],
+      s2: shares[21],
+      t1: shares[22],
+      t2: shares[23],
+      u: shares[24],
+      x: shares[25],
+    };
+  }
 
   return {
     i: getParticipantIndex(share.to),
     j: getParticipantIndex(share.from),
     alpha: shares[0],
     mu: shares[1],
+    gammaProof,
+    wProof,
   };
 }
 
@@ -512,7 +669,23 @@ export function convertMuShare(share: MUShare): SignatureShareRecord {
   return {
     to: getParticipantFromIndex(share.i),
     from: getParticipantFromIndex(share.j),
-    share: `${share.alpha}${delimeter}${share.mu}`,
+    share: `${share.alpha}${delimeter}${share.mu}${delimeter}${share.gammaProof?.z || ''}${delimeter}${
+      share.gammaProof?.zprm || ''
+    }${delimeter}${share.gammaProof?.t || ''}${delimeter}${share.gammaProof?.v || ''}${delimeter}${
+      share.gammaProof?.w || ''
+    }${delimeter}${share.gammaProof?.s || ''}${delimeter}${share.gammaProof?.s1 || ''}${delimeter}${
+      share.gammaProof?.s2 || ''
+    }${delimeter}${share.gammaProof?.t1 || ''}${delimeter}${share.gammaProof?.t2 || ''}${delimeter}${
+      share.gammaProof?.u || ''
+    }${delimeter}${share.gammaProof?.x || ''}${delimeter}${share.wProof?.z || ''}${delimeter}${
+      share.wProof?.zprm || ''
+    }${delimeter}${share.wProof?.t || ''}${delimeter}${share.wProof?.v || ''}${delimeter}${
+      share.wProof?.w || ''
+    }${delimeter}${share.wProof?.s || ''}${delimeter}${share.wProof?.s1 || ''}${delimeter}${
+      share.wProof?.s2 || ''
+    }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
+      share.wProof?.u || ''
+    }${delimeter}${share.wProof?.x || ''}`,
   };
 }
 
@@ -643,7 +816,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(share.i),
-    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}`,
+    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}`,
   };
 }
 
@@ -654,7 +827,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 9, 'B');
+  validateSharesLength(shares, 13, 'B');
 
   return {
     i: getParticipantIndex(share.to),
@@ -667,6 +840,10 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     l: shares[6],
     m: shares[7],
     n: shares[8],
+    ntilde: shares[9],
+    h1: shares[10],
+    h2: shares[11],
+    ck: shares[12],
   };
 }
 

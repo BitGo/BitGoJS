@@ -1,3 +1,42 @@
+// NTilde challenge values
+export interface NTilde {
+  ntilde: bigint;
+  h1: bigint;
+  h2: bigint;
+}
+
+// String-serialized NTilde values.
+export interface NTildeShare {
+  ntilde: string;
+  h1: string;
+  h2: string;
+}
+
+// Range proof values
+export interface RangeProof {
+  z: bigint;
+  u: bigint;
+  w: bigint;
+  s: bigint;
+  s1: bigint;
+  s2: bigint;
+}
+
+// Range proof values
+export interface RangeProofWithCheck {
+  z: bigint;
+  zprm: bigint;
+  t: bigint;
+  v: bigint;
+  w: bigint;
+  s: bigint;
+  s1: bigint;
+  s2: bigint;
+  t1: bigint;
+  t2: bigint;
+  u: bigint;
+}
+
 // Private share of the user generated during key generation
 export interface PShare {
   i: number; // participant index
@@ -39,6 +78,8 @@ export interface XShare {
   chaincode: string;
 }
 
+export type XShareWithNTilde = XShare & NTildeShare;
+
 // YShares used during signature generation
 export interface YShare {
   i: number;
@@ -46,9 +87,16 @@ export interface YShare {
   n: string;
 }
 
+export type YShareWithNTilde = YShare & NTildeShare;
+
 export interface KeyCombined {
   xShare: XShare;
   yShares: Record<number, YShare>;
+}
+
+export interface KeyCombinedWithNTilde {
+  xShare: XShareWithNTilde;
+  yShares: Record<number, YShareWithNTilde>;
 }
 
 export interface SubkeyShare {
@@ -62,30 +110,68 @@ export interface WShare {
   m: string;
   n: string;
   y: string; // combined public key
+  ntilde: string;
+  h1: string;
+  h2: string;
+  ck: string;
   k: string;
   w: string;
   gamma: string;
+}
+
+export interface RangeProofShare {
+  z: string;
+  u: string;
+  w: string;
+  s: string;
+  s1: string;
+  s2: string;
 }
 
 export interface KShare {
   i: number;
   j: number;
   n: string;
+  ntilde: string;
+  h1: string;
+  h2: string;
   k: string;
+  proof?: RangeProofShare;
 }
 export interface SignShareRT {
   wShare: WShare;
   kShare: KShare;
 }
 
+export interface RangeProofWithCheckShare {
+  z: string;
+  zprm: string;
+  t: string;
+  v: string;
+  w: string;
+  s: string;
+  s1: string;
+  s2: string;
+  t1: string;
+  t2: string;
+  u: string;
+  x: string;
+}
+
 // Alpha Share
 export interface AShare {
   i: number;
   j: number;
-  n?: string;
-  k?: string;
-  alpha?: string;
-  mu?: string;
+  n: string;
+  ntilde: string;
+  h1: string;
+  h2: string;
+  k: string;
+  alpha: string;
+  mu: string;
+  proof?: RangeProofShare;
+  gammaProof?: RangeProofWithCheckShare;
+  wProof?: RangeProofWithCheckShare;
 }
 
 // Beta Share
@@ -101,13 +187,15 @@ export interface MUShare {
   j: number;
   alpha: string;
   mu: string;
+  gammaProof?: RangeProofWithCheckShare;
+  wProof?: RangeProofWithCheckShare;
 }
 
 // Gamma Share
 export interface GShare {
   i: number;
-  l?: string;
-  m?: string;
+  l: string;
+  m: string;
   n: string;
   y: string; // combined public key
   k: string;

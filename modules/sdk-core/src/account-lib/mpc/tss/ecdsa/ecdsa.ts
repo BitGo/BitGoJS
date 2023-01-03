@@ -7,11 +7,14 @@ import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
+import * as rangeProof from './rangeproof';
 import {
+  RangeProofWithCheck,
   NShare,
   PShare,
   KeyShare,
   KeyCombined,
+  KeyCombinedWithNTilde,
   SubkeyShare,
   BShare,
   AShare,
@@ -28,11 +31,17 @@ import {
   SignShareRT,
   KShare,
   XShare,
+  XShareWithNTilde,
   YShare,
+  YShareWithNTilde,
 } from './types';
 
 const _1n = BigInt(1);
 const _3n = BigInt(3);
+
+function hasNTilde(share: XShare | YShare): share is XShareWithNTilde | YShareWithNTilde {
+  return 'ntilde' in share;
+}
 
 /**
  * ECDSA TSS implementation supporting 2:n Threshold
@@ -265,16 +274,53 @@ export default class Ecdsa {
   }
 
   /**
+   * Generate a range proof challenge and add it to shares previously created
+   * by #keyCombine.
+   * @param {XShare} xShare Private xShare of signer
+   * @param {YShare} yShare YShare of the other participant involved in
+   * this signing operation
+   * @returns {KeyCombined} The new XShare and YShares with the amended
+   * challenge values
+   */
+  signChallenge(xShare: XShare, yShare: YShare): KeyCombinedWithNTilde {
+    const challenge = rangeProof.generateNTilde(3072);
+    const ntilde = bigIntToBufferBE(challenge.ntilde, 384).toString('hex');
+    const h1 = bigIntToBufferBE(challenge.h1, 384).toString('hex');
+    const h2 = bigIntToBufferBE(challenge.h2, 384).toString('hex');
+    const shares = {
+      xShare: { ...xShare, ntilde, h1, h2 },
+      yShares: {
+        [yShare.j]: {
+          i: yShare.j,
+          j: yShare.i,
+          n: xShare.n,
+          ntilde,
+          h1,
+          h2,
+        },
+      },
+    };
+    return shares;
+  }
+
+  /**
    * Create signing shares.
    * @param {xShare} xShare Private xShare of current participant signer
    * @param {YShare} yShare yShare corresponding to the other participant signer
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  signShare(xShare: XShare, yShare: YShare): SignShareRT {
+  signShare(xShare: XShare | XShareWithNTilde, yShare: YShare | YShareWithNTilde): SignShareRT {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
+    // Generate a challenge if ntilde is not present in the xShare.
+    if (!hasNTilde(xShare)) {
+      xShare = this.signChallenge(xShare, yShare).xShare;
+    }
+
     const k = Ecdsa.curve.scalarRandom();
+    const rk = rangeProof.randomCoPrimeTo(pk.n);
+    const ck = pk.encrypt(k, rk);
     const gamma = Ecdsa.curve.scalarRandom();
 
     const d = Ecdsa.curve.scalarMult(Ecdsa.curve.scalarSub(BigInt(yShare.j), BigInt(xShare.i)), BigInt(xShare.i));
@@ -285,6 +331,8 @@ export default class Ecdsa {
       Ecdsa.curve.scalarInvert(d),
     ].reduce(Ecdsa.curve.scalarMult);
 
+    const { ntilde: ntildea, h1: h1a, h2: h2a } = xShare as XShareWithNTilde;
+
     const signers: SignShareRT = {
       wShare: {
         i: xShare.i,
@@ -292,18 +340,51 @@ export default class Ecdsa {
         m: xShare.m,
         n: xShare.n,
         y: xShare.y,
+        ntilde: ntildea!,
+        h1: h1a!,
+        h2: h2a!,
         k: bigIntToBufferBE(k, 32).toString('hex'),
+        ck: bigIntToBufferBE(ck, 768).toString('hex'),
         w: bigIntToBufferBE(w, 32).toString('hex'),
         gamma: bigIntToBufferBE(gamma, 32).toString('hex'),
       },
       kShare: {} as KShare,
     };
 
+    let proofShare;
+    if (hasNTilde(yShare)) {
+      const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
+      const proof = rangeProof.prove(
+        Ecdsa.curve,
+        pk,
+        {
+          ntilde: hexToBigInt(ntildeb),
+          h1: hexToBigInt(h1b),
+          h2: hexToBigInt(h2b),
+        },
+        ck,
+        k,
+        rk
+      );
+      proofShare = {
+        z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+        u: bigIntToBufferBE(proof.u, 768).toString('hex'),
+        w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+        s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+        s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+        s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+      };
+    }
+
     signers.kShare = {
       i: yShare.j,
       j: xShare.i,
       n: pk.n.toString(16),
-      k: bigIntToBufferBE(pk.encrypt(k), 32).toString('hex'),
+      ntilde: ntildea,
+      h1: h1a,
+      h2: h2a,
+      k: bigIntToBufferBE(ck, 768).toString('hex'),
+      proof: proofShare,
     };
 
     return signers;
@@ -316,82 +397,285 @@ export default class Ecdsa {
    * @returns {SignConvertRT}
    */
   signConvert(shares: SignConvert): SignConvertRT {
-    let shareParticipant: BShare | GShare, shareToBeSend: AShare | MUShare;
+    let shareParticipant: Partial<BShare> | Partial<GShare>, shareToBeSent: Partial<AShare> | MUShare;
     let isGammaShare = false;
+    let kShare: Partial<KShare> = {};
     if (shares.xShare && shares.yShare && shares.kShare) {
       const xShare = shares.xShare; // currentParticipant secret xShare
-      const yShare = shares.yShare;
+      const yShare = {
+        ...shares.yShare,
+        ntilde: shares.kShare.ntilde,
+        h1: shares.kShare.h1,
+        h2: shares.kShare.h2,
+      };
       const signShare = this.signShare(xShare, yShare);
-      shareToBeSend = { ...shares.kShare, alpha: '', mu: '' } as AShare;
-      shareParticipant = { ...signShare.wShare, beta: '', nu: '' } as BShare;
+      kShare = signShare.kShare;
+      shareToBeSent = { ...shares.kShare } as Partial<AShare>;
+      shareParticipant = { ...signShare.wShare } as Partial<BShare>;
     } else if ((shares.bShare && shares.muShare) || (shares.aShare && shares.wShare)) {
       isGammaShare = true;
-      shareToBeSend = shares.aShare ? ({ ...shares.aShare } as MUShare) : ({ ...shares.muShare } as MUShare);
-      shareParticipant = shares.wShare ? ({ ...shares.wShare } as GShare) : ({ ...shares.bShare } as GShare);
+      shareToBeSent = shares.aShare ? ({ ...shares.aShare } as MUShare) : ({ ...shares.muShare } as MUShare);
+      shareParticipant = shares.wShare ? ({ ...shares.wShare } as Partial<GShare>) : ({ ...shares.bShare } as GShare);
     } else {
       throw new Error('Invalid config for Sign Convert');
     }
-    if (shareParticipant.i !== shareToBeSend.i) {
+    if (shareParticipant.i !== shareToBeSent.i) {
       throw new Error('Shares from same participant');
     }
-    if (shareToBeSend['alpha']) {
-      const pk = getPaillierPublicKey(hexToBigInt(shareParticipant.n));
+    if ((shareToBeSent as AShare).alpha) {
+      const bShareParticipant = shareParticipant as BShare;
+      const aShareToBeSent = shareToBeSent as AShare;
+      const pka = getPaillierPublicKey(hexToBigInt(bShareParticipant.n));
+      const ntildea = hexToBigInt(bShareParticipant.ntilde);
+      const h1a = hexToBigInt(bShareParticipant.h1);
+      const h2a = hexToBigInt(bShareParticipant.h2);
+      const ck = hexToBigInt(bShareParticipant.ck);
+      // Verify $\gamma_i \in Z_{N^2}$.
+      if (
+        aShareToBeSent.gammaProof &&
+        !rangeProof.verifyWithCheck(
+          Ecdsa.curve,
+          pka,
+          {
+            ntilde: ntildea,
+            h1: h1a,
+            h2: h2a,
+          },
+          {
+            z: hexToBigInt(aShareToBeSent.gammaProof.z),
+            zprm: hexToBigInt(aShareToBeSent.gammaProof.zprm),
+            t: hexToBigInt(aShareToBeSent.gammaProof.t),
+            v: hexToBigInt(aShareToBeSent.gammaProof.v),
+            w: hexToBigInt(aShareToBeSent.gammaProof.w),
+            s: hexToBigInt(aShareToBeSent.gammaProof.s),
+            s1: hexToBigInt(aShareToBeSent.gammaProof.s1),
+            s2: hexToBigInt(aShareToBeSent.gammaProof.s2),
+            t1: hexToBigInt(aShareToBeSent.gammaProof.t1),
+            t2: hexToBigInt(aShareToBeSent.gammaProof.t2),
+            u: hexToBigInt(aShareToBeSent.gammaProof.u),
+          },
+          ck,
+          hexToBigInt(aShareToBeSent.alpha),
+          hexToBigInt(aShareToBeSent.gammaProof.x)
+        )
+      ) {
+        throw new Error('could not verify signing share');
+      }
+      // Verify $\w_i \in Z_{N^2}$.
+      if (
+        aShareToBeSent.wProof &&
+        !rangeProof.verifyWithCheck(
+          Ecdsa.curve,
+          pka,
+          {
+            ntilde: ntildea,
+            h1: h1a,
+            h2: h2a,
+          },
+          {
+            z: hexToBigInt(aShareToBeSent.wProof.z),
+            zprm: hexToBigInt(aShareToBeSent.wProof.zprm),
+            t: hexToBigInt(aShareToBeSent.wProof.t),
+            v: hexToBigInt(aShareToBeSent.wProof.v),
+            w: hexToBigInt(aShareToBeSent.wProof.w),
+            s: hexToBigInt(aShareToBeSent.wProof.s),
+            s1: hexToBigInt(aShareToBeSent.wProof.s1),
+            s2: hexToBigInt(aShareToBeSent.wProof.s2),
+            t1: hexToBigInt(aShareToBeSent.wProof.t1),
+            t2: hexToBigInt(aShareToBeSent.wProof.t2),
+            u: hexToBigInt(aShareToBeSent.wProof.u),
+          },
+          ck,
+          hexToBigInt(aShareToBeSent.mu),
+          hexToBigInt(aShareToBeSent.wProof.x)
+        )
+      ) {
+        throw new Error('could not verify share');
+      }
       const sk = new paillierBigint.PrivateKey(
-        hexToBigInt(shareParticipant.l as string),
-        hexToBigInt(shareParticipant.m as string),
-        pk
+        hexToBigInt(bShareParticipant.l as string),
+        hexToBigInt(bShareParticipant.m as string),
+        pka
       );
-      const alpha = sk.decrypt(hexToBigInt(shareToBeSend.alpha));
-      shareParticipant['alpha'] = bigIntToBufferBE(Ecdsa.curve.scalarReduce(alpha), 32).toString('hex');
-      const mu = sk.decrypt(hexToBigInt(shareToBeSend.mu as string)); // recheck encrypted number
-      shareParticipant['mu'] = bigIntToBufferBE(Ecdsa.curve.scalarReduce(mu), 32).toString('hex');
-      delete shareParticipant['l'];
-      delete shareParticipant['m'];
-      delete shareToBeSend['alpha'];
-      delete shareToBeSend['mu'];
+      const gShareParticipant = shareParticipant as GShare;
+      const muShareToBeSent = shareToBeSent as MUShare;
+      const alpha = sk.decrypt(hexToBigInt(aShareToBeSent.alpha));
+      gShareParticipant.alpha = bigIntToBufferBE(Ecdsa.curve.scalarReduce(alpha), 32).toString('hex');
+      const mu = sk.decrypt(hexToBigInt(aShareToBeSent.mu as string)); // recheck encrypted number
+      gShareParticipant.mu = bigIntToBufferBE(Ecdsa.curve.scalarReduce(mu), 32).toString('hex');
+      const partialShareParticipant = shareParticipant as Partial<GShare>;
+      const partialShareToBeSent = muShareToBeSent as Partial<MUShare>;
+      delete partialShareParticipant.l;
+      delete partialShareParticipant.m;
+      delete partialShareToBeSent.alpha;
+      delete partialShareToBeSent.mu;
     }
-    if (shareToBeSend['k']) {
-      const n = hexToBigInt(shareToBeSend['n']); // Paillier pub from other signer
-      let pk = getPaillierPublicKey(n);
-      const k = hexToBigInt(shareToBeSend['k']);
-
+    if ((shareToBeSent as AShare).k) {
+      const bShareParticipant = shareParticipant as BShare;
+      const aShareToBeSent = shareToBeSent as AShare;
+      const n = hexToBigInt(aShareToBeSent.n); // Paillier pub from other signer
+      const pka = getPaillierPublicKey(n);
+      const ntildea = hexToBigInt(aShareToBeSent.ntilde);
+      const h1a = hexToBigInt(aShareToBeSent.h1);
+      const h2a = hexToBigInt(aShareToBeSent.h2);
+      const ntildeb = hexToBigInt(bShareParticipant.ntilde);
+      const h1b = hexToBigInt(bShareParticipant.h1);
+      const h2b = hexToBigInt(bShareParticipant.h2);
+      const k = hexToBigInt(aShareToBeSent.k);
+      if (
+        aShareToBeSent.proof &&
+        !rangeProof.verify(
+          Ecdsa.curve,
+          pka,
+          {
+            ntilde: ntildeb,
+            h1: h1b,
+            h2: h2b,
+          },
+          {
+            z: hexToBigInt(aShareToBeSent.proof.z),
+            u: hexToBigInt(aShareToBeSent.proof.u),
+            w: hexToBigInt(aShareToBeSent.proof.w),
+            s: hexToBigInt(aShareToBeSent.proof.s),
+            s1: hexToBigInt(aShareToBeSent.proof.s1),
+            s2: hexToBigInt(aShareToBeSent.proof.s2),
+          },
+          k
+        )
+      ) {
+        throw new Error('Could not verify signing share');
+      }
+      // MtA $k_j, \gamma_i$.
       const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
-      shareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(beta0)), 32).toString(
+      bShareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(beta0)), 32).toString(
         'hex'
       );
-      const alpha = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.gamma)), pk.encrypt(beta0));
-      shareToBeSend.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
-
+      const g = hexToBigInt(bShareParticipant.gamma);
+      const rb = rangeProof.randomCoPrimeTo(pka.n);
+      const cb = pka.encrypt(beta0, rb);
+      const alpha = pka.addition(pka.multiply(k, g), cb);
+      aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
+      // Prove $\gamma_i \in Z_{N^2}$.
+      const gx = Ecdsa.curve.basePointMult(g);
+      let proof: RangeProofWithCheck;
+      proof = rangeProof.proveWithCheck(
+        Ecdsa.curve,
+        pka,
+        {
+          ntilde: ntildea,
+          h1: h1a,
+          h2: h2a,
+        },
+        k,
+        alpha,
+        g,
+        beta0,
+        rb,
+        gx
+      );
+      Object.assign(aShareToBeSent, {
+        gammaProof: {
+          z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+          zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
+          t: bigIntToBufferBE(proof.t, 384).toString('hex'),
+          v: bigIntToBufferBE(proof.v, 768).toString('hex'),
+          w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+          s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+          s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+          s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+          t1: bigIntToBufferBE(proof.t1, 480).toString('hex'),
+          t2: bigIntToBufferBE(proof.t2, 448).toString('hex'),
+          u: bigIntToBufferBE(proof.u, 33).toString('hex'),
+          x: bigIntToBufferBE(gx, 33).toString('hex'),
+        },
+      });
+      // MtA $k_j, w_i$.
       const nu0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
       shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(nu0)), 32).toString(
         'hex'
       );
-      const mu = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.w)), pk.encrypt(nu0));
-      shareToBeSend.mu = bigIntToBufferBE(mu, 32).toString('hex');
-      if (shareParticipant['alpha']) {
-        delete shareToBeSend['n'];
-        delete shareToBeSend['k'];
+      const w = hexToBigInt(bShareParticipant.w);
+      const rn = rangeProof.randomCoPrimeTo(pka.n);
+      const cn = pka.encrypt(nu0, rn);
+      const mu = pka.addition(pka.multiply(k, w), cn);
+      shareToBeSent.mu = bigIntToBufferBE(mu, 32).toString('hex');
+      // Prove $\w_i \in Z_{N^2}$.
+      const wx = Ecdsa.curve.basePointMult(w);
+      proof = rangeProof.proveWithCheck(
+        Ecdsa.curve,
+        pka,
+        {
+          ntilde: ntildea,
+          h1: h1a,
+          h2: h2a,
+        },
+        k,
+        hexToBigInt(aShareToBeSent.mu),
+        w,
+        nu0,
+        rn,
+        wx
+      );
+      Object.assign(shareToBeSent, {
+        wProof: {
+          z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+          zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
+          t: bigIntToBufferBE(proof.t, 384).toString('hex'),
+          v: bigIntToBufferBE(proof.v, 768).toString('hex'),
+          w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+          s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+          s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+          s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+          t1: bigIntToBufferBE(proof.t1, 480).toString('hex'),
+          t2: bigIntToBufferBE(proof.t2, 448).toString('hex'),
+          u: bigIntToBufferBE(proof.u, 33).toString('hex'),
+          x: bigIntToBufferBE(wx, 33).toString('hex'),
+        },
+      });
+      if ((shareParticipant as GShare).alpha) {
+        const partialShareParticipant = shareParticipant as Partial<BShare>;
+        const partialShareToBeSent = shareToBeSent as Partial<AShare>;
+        delete partialShareParticipant.ntilde;
+        delete partialShareParticipant.h1;
+        delete partialShareParticipant.h2;
+        delete partialShareParticipant.ck;
+        delete partialShareToBeSent.n;
+        delete partialShareToBeSent.ntilde;
+        delete partialShareToBeSent.h1;
+        delete partialShareToBeSent.h2;
+        delete partialShareToBeSent.k;
       } else {
-        pk = getPaillierPublicKey(hexToBigInt(shareParticipant.n));
-        shareToBeSend['n'] = pk.n.toString(16);
-        shareToBeSend['k'] = bigIntToBufferBE(pk.encrypt(hexToBigInt(shareParticipant.k)), 32).toString('hex');
+        Object.assign(shareToBeSent, {
+          n: kShare.n,
+          ntilde: bigIntToBufferBE(ntildeb, 384).toString('hex'),
+          h1: bigIntToBufferBE(h1b, 384).toString('hex'),
+          h2: bigIntToBufferBE(h2b, 384).toString('hex'),
+          k: kShare.k,
+          proof: kShare.proof,
+        });
       }
     }
-    if (!('alpha' in shareToBeSend) && !('k' in shareToBeSend)) {
-      shareToBeSend = {
-        i: shareToBeSend['i'],
-        j: shareToBeSend['j'],
-      };
+    if (!('alpha' in shareToBeSent) && !('k' in shareToBeSent)) {
+      const partialShareParticipant = shareParticipant as Partial<BShare>;
+      delete partialShareParticipant.ntilde;
+      delete partialShareParticipant.h1;
+      delete partialShareParticipant.h2;
+      delete partialShareParticipant.ck;
+      const muShareToBeSent = shareToBeSent as MUShare;
+      shareToBeSent = {
+        i: muShareToBeSent.i,
+        j: muShareToBeSent.j,
+      } as MUShare;
     }
-    [shareToBeSend['i'], shareToBeSend['j']] = [shareToBeSend['j'], shareToBeSend['i']];
+    [shareToBeSent.i, shareToBeSent.j] = [shareToBeSent.j, shareToBeSent.i];
     if (isGammaShare) {
       return {
-        muShare: shareToBeSend as MUShare,
+        muShare: shareToBeSent as MUShare,
         gShare: shareParticipant as GShare,
       };
     }
     return {
-      aShare: shareToBeSend,
+      aShare: shareToBeSent as AShare,
       bShare: shareParticipant as BShare,
     };
   }

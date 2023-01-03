@@ -6081,7 +6081,7 @@ bigint-crypto-utils@^3.0.17:
   dependencies:
     bigint-mod-arith "^3.1.0"
 
-bigint-mod-arith@^3.1.0:
+bigint-mod-arith@3.1.2, bigint-mod-arith@^3.1.0:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bigint-mod-arith/-/bigint-mod-arith-3.1.2.tgz#658e416bc593a463d97b59766226d0a3021a76b1"
   integrity sha512-nx8J8bBeiRR+NlsROFH9jHswW5HO8mgfOSqW0AmjicMMvaONDa8AO+5ViKDUUNytBPWiwfvZP4/Bj4Y3lUfvgQ==
