@@ -40,11 +40,14 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('A and B signing', () => {
-      const B_sign_share = MPC.signShare(B_combine.xShare, B_combine.yShares[1]);
+      const A_sign_challenge = MPC.signChallenge(A_combine.xShare, A_combine.yShares[2]);
+      const B_sign_challenge = MPC.signChallenge(B_combine.xShare, B_combine.yShares[1]);
+
+      const B_sign_share = MPC.signShare(B_sign_challenge.xShare, A_sign_challenge.yShares[2]);
 
       const A_sign_convert = MPC.signConvert({
-        xShare: A_combine.xShare,
-        yShare: A_combine.yShares[2],
+        xShare: A_sign_challenge.xShare,
+        yShare: B_sign_challenge.yShares[1],
         kShare: B_sign_share.kShare,
       });
 
@@ -82,11 +85,14 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('A and C signing', () => {
-      const C_sign_share = MPC.signShare(C_combine.xShare, C_combine.yShares[1]);
+      const A_sign_challenge = MPC.signChallenge(A_combine.xShare, A_combine.yShares[3]);
+      const C_sign_challenge = MPC.signChallenge(C_combine.xShare, C_combine.yShares[1]);
+
+      const C_sign_share = MPC.signShare(C_combine.xShare, A_sign_challenge.yShares[3]);
 
       const A_sign_convert = MPC.signConvert({
-        xShare: A_combine.xShare,
-        yShare: A_combine.yShares[3],
+        xShare: A_sign_challenge.xShare,
+        yShare: C_sign_challenge.yShares[1],
         kShare: C_sign_share.kShare,
       });
 
@@ -124,11 +130,14 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('B and C signing', () => {
-      const C_sign_share = MPC.signShare(C_combine.xShare, C_combine.yShares[2]);
+      const B_sign_challenge = MPC.signChallenge(B_combine.xShare, B_combine.yShares[3]);
+      const C_sign_challenge = MPC.signChallenge(C_combine.xShare, C_combine.yShares[2]);
+
+      const C_sign_share = MPC.signShare(C_sign_challenge.xShare, B_sign_challenge.yShares[3]);
 
       const B_sign_convert = MPC.signConvert({
-        xShare: B_combine.xShare,
-        yShare: B_combine.yShares[3],
+        xShare: B_sign_challenge.xShare,
+        yShare: C_sign_challenge.yShares[2],
         kShare: C_sign_share.kShare,
       });
 
