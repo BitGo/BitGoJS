@@ -20,6 +20,7 @@ export type TxParserArgs = {
   parseSignatureData: boolean;
   hide?: string[];
   maxOutputs?: number;
+  vin?: number[];
 };
 
 export type ChainInfo = {
@@ -44,7 +45,11 @@ export class TxParser extends Parser {
   parseIns(ins: utxolib.TxInput[], tx: utxolib.bitgo.UtxoTransaction, outputInfo: ChainInfo): ParserNode[] {
     const txid = tx.getId();
     const ioParser = new InputOutputParser(this.params);
-    return ins.map((input, i) => ioParser.parseInput(txid, tx, i, tx.ins[i], outputInfo));
+    return ins.flatMap((input, i) =>
+      this.params.vin === undefined || this.params.vin.includes(i)
+        ? [ioParser.parseInput(txid, tx, i, tx.ins[i], outputInfo)]
+        : []
+    );
   }
 
   parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): ParserNode[] {
