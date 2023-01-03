@@ -17,7 +17,11 @@ export type TxParserArgs = {
   parseScriptData: boolean;
   parseScriptAsm: boolean;
   parseOutputScript: boolean;
-  parseSignatureData: boolean;
+  parseSignatureData: {
+    script: boolean;
+    ecdsa: boolean;
+    schnorr: boolean;
+  };
   hide?: string[];
   maxOutputs?: number;
   vin?: number[];
@@ -34,8 +38,12 @@ export class TxParser extends Parser {
   static PARSE_ALL: TxParserArgs = {
     parseScriptData: true,
     parseScriptAsm: true,
-    parseSignatureData: true,
     parseOutputScript: true,
+    parseSignatureData: {
+      script: true,
+      ecdsa: true,
+      schnorr: true,
+    },
   };
 
   constructor(private params: TxParserArgs) {
