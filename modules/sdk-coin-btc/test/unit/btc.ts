@@ -4,6 +4,7 @@ import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 
 import { Tbtc } from '../../src';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import * as utxolib from '@bitgo/utxo-lib';
 
 describe('BTC:', function () {
   let bitgo: TestBitGoAPI;
@@ -34,6 +35,31 @@ describe('BTC:', function () {
       // https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki#Test_vectors_for_Bech32m
       const validBech32mAddress = 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7';
       coin.isValidAddress(validBech32mAddress).should.be.true();
+    });
+  });
+
+  describe('Post Build Validation', () => {
+    let coin: Tbtc;
+    before(() => {
+      coin = bitgo.coin('tbtc') as Tbtc;
+    });
+
+    it('should not modify locktime on postProcessPrebuild', async () => {
+      const txHex =
+        '0100000001a8ec78f09f7acb0d344622ed3082c1a98e51ba1b1ab65406044f6e0a801609020100000000ffffffff02a0860100000000001976a9149f9a7abd600c0caa03983a77c8c3df8e062cb2fa88acfbf2150000000000220020b922cc1e737e679d24ff2d2b18cfa9fff4e35a733b4fba94282eaa1b7cfe56d200000000';
+      const blockHeight = 100;
+      const preBuild = { txHex, blockHeight };
+      const postProcessBuilt = await coin.postProcessPrebuild(preBuild);
+      const transaction = utxolib.bitgo.createTransactionFromHex(
+        postProcessBuilt.txHex as string,
+        utxolib.networks.bitcoin
+      );
+
+      transaction.locktime.should.equal(0);
+      const inputs = transaction.ins;
+      for (const input of inputs) {
+        input.sequence.should.equal(0xffffffff);
+      }
     });
   });
 });
