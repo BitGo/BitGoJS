@@ -97,7 +97,7 @@ export function prove(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, c: bigint
  * @returns {boolean} True if verification succeeds.
  */
 export function verify(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, proof: RangeProof, c: bigint): boolean {
-  const q = curve.order!();
+  const q = curve.order();
   const q3 = q ** BigInt(3);
   if (proof.s1 == q3) {
     return false;

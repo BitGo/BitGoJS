@@ -1006,8 +1006,8 @@ export class Eth extends BaseCoin {
   }
 
   private signRecoveryTSS(
-    userKeyCombined: ECDSA.KeyCombined,
-    backupKeyCombined: ECDSA.KeyCombined,
+    userKeyCombined: ECDSA.KeyCombinedWithNTilde,
+    backupKeyCombined: ECDSA.KeyCombinedWithNTilde,
     txHex: string
   ): ECDSAMethodTypes.Signature {
     const MPC = new Ecdsa();
