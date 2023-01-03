@@ -14,8 +14,8 @@ function changeSignatureToHighS(signatureBuffer: Buffer): Buffer {
   }
   const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
 
-  const r = signature.slice(0, 32);
-  const s = signature.slice(32);
+  const r = signature.subarray(0, 32);
+  const s = signature.subarray(32);
 
   if (r.length !== 32 || s.length !== 32) {
     throw new Error(`invalid scalar length`);
@@ -74,7 +74,7 @@ export function getTransactionWithHighS<TNumber extends number | bigint>(
     cloned.ins[inputIndex].script = changeSignatureScriptToHighS(cloned.ins[inputIndex].script, signature);
     cloned.ins[inputIndex].witness = changeSignatureScriptToHighS(cloned.ins[inputIndex].witness, signature);
     if (parseSignatureScript(cloned.ins[inputIndex]).scriptType !== parsed.scriptType) {
-      throw new Error(`could not parsed modified input`);
+      throw new Error(`could not parse modified input`);
     }
     return [cloned];
   });
