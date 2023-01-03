@@ -78,4 +78,8 @@ export class Ed25519Curve implements BaseCurve {
       return false;
     }
   }
+
+  order(): bigint {
+    return BigInt('0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed') * BigInt('0x08');
+  }
 }

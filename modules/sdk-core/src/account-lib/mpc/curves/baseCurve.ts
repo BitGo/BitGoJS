@@ -32,7 +32,7 @@ interface BaseCurve {
   // Function that verifies a signature.
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean;
   // order of the curve
-  order?: () => bigint;
+  order: () => bigint;
 }
 
 export default BaseCurve;
