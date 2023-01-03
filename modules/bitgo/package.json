@@ -24,7 +24,7 @@
     "compile-dbg": "yarn webpack-dev",
     "compile-test": "yarn webpack-dev",
     "webpack-dev": "cross-env NODE_ENV=development webpack",
-    "webpack-prod": "cross-env NODE_ENV=production webpack",
+    "webpack-prod": "NODE_OPTIONS=--max-old-space-size=4096 cross-env NODE_ENV=production webpack",
     "test": "npm run coverage",
     "unit-test": "mocha",
     "coverage": "nyc -- npm run unit-test",
