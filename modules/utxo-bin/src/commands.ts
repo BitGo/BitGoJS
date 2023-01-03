@@ -35,7 +35,8 @@ type ArgsParseTransaction = {
   fetchStatus: boolean;
   fetchInputs: boolean;
   fetchSpends: boolean;
-} & TxParserArgs;
+  parseSignatureData: boolean;
+} & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
   network?: string;
@@ -85,7 +86,17 @@ function resolveNetwork<T extends { network?: string }>(args: T): T & { network?
 }
 
 export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxParser {
-  return new TxParser(argv.all ? TxParser.PARSE_ALL : argv);
+  if (argv.all) {
+    return new TxParser(TxParser.PARSE_ALL);
+  }
+  return new TxParser({
+    ...argv,
+    parseSignatureData: {
+      script: argv.parseSignatureData,
+      ecdsa: argv.parseSignatureData,
+      schnorr: argv.parseSignatureData,
+    },
+  });
 }
 
 export function getAddressParser(argv: ArgsParseAddress): AddressParser {

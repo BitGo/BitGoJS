@@ -10,14 +10,30 @@ transaction: d2e10356d9400fbb23fe662e43e8b10cd8381da609c4f3d96d53f92bb6735e57
 │ ├─┬ 0: 68673fd8fa7838d3268fb18ccbd8d066266bd840065d30dbe2088d13ef526891:0
 │ │ ├─┬ sigScript: p2tr
 │ │ │ └─┬ signatures: [64byte] [64byte]
-│ │ │   └── signed by: [0, 1]
+│ │ │   ├── signed by: [0, 1]
+│ │ │   ├─┬ 0
+│ │ │   │ ├── bytes: f1c920673114d6bf3d49fb037b59d683993a9e48064a55aa6e155cdac6a5007cd6b9a3edbd8579a39c060a68d72640e4e92da2d70b44407203f643f53fc8395f
+│ │ │   │ ├── valid: true
+│ │ │   │ └── signedBy: backup
+│ │ │   └─┬ 1
+│ │ │     ├── bytes: dc705ce66ca3d19cb2200bb80cdf465a5b68178e96539fcc18ce3d5654f6f2b12ee32338286113198d8cbaf55d30b75b7096ba493726d5f6cad1f78a37640abe
+│ │ │     ├── valid: true
+│ │ │     └── signedBy: user
 │ │ ├── value: 1
 │ │ └─┬ pubScript: 5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8
 │ │   └── address: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
 │ └─┬ 1: 9aee0aac898ba1b375356040e93a638dbaa3b210bc74c361a17a943debe8d2f7:0
 │   ├─┬ sigScript: p2tr
 │   │ └─┬ signatures: [64byte] [64byte]
-│   │   └── signed by: [0, 1]
+│   │   ├── signed by: [0, 1]
+│   │   ├─┬ 0
+│   │   │ ├── bytes: a5d69b851d09c3f35f4598f4156970aca0699b14bdb1296eab4ebe4b8771507cd5a9c1f2482dbaf825858c732a368e5be16ee142232d9b1ffbdb32e2162f31b0
+│   │   │ ├── valid: true
+│   │   │ └── signedBy: backup
+│   │   └─┬ 1
+│   │     ├── bytes: e9457fae67407fb8d59e16605a6782561371bc29cc88185abfaecd34919caa2883cdd3b886ca5116d080e3d707cd05ba1551f7e4716d2686dea926e280adf636
+│   │     ├── valid: true
+│   │     └── signedBy: user
 │   ├── value: 1
 │   └─┬ pubScript: 5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8
 │     └── address: tb1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uq7cz9fh
