@@ -67,7 +67,8 @@
     "parse-path": "^5.0.0",
     "parse-url": "8.1.0",
     "terser": "^5.14.2",
-    "vm2": "^3.9.11"
+    "vm2": "^3.9.11",
+    "json5": "^2.2.2"
   },
   "workspaces": [
     "modules/*"
