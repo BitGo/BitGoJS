@@ -20,6 +20,7 @@ import {
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
+import { dropSignatureForInput } from './drop';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -36,6 +37,7 @@ type ArgsParseTransaction = {
   fetchInputs: boolean;
   fetchSpends: boolean;
   parseSignatureData: boolean;
+  dropBitGoSignature: boolean;
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
@@ -103,6 +105,14 @@ export function getAddressParser(argv: ArgsParseAddress): AddressParser {
   return new AddressParser(resolveNetwork(argv));
 }
 
+function dropBitGoSignature(tx: utxolib.bitgo.UtxoTransaction<number>): utxolib.bitgo.UtxoTransaction<number> {
+  const halfSigned = tx.clone();
+  halfSigned.ins.forEach((input, index) => {
+    dropSignatureForInput(halfSigned, index, 1);
+  });
+  return halfSigned;
+}
+
 export const cmdParseTx = {
   command: 'parseTx [path]',
   aliases: ['parse', 'tx'],
@@ -127,6 +137,10 @@ export const cmdParseTx = {
       .array('vin')
       .option('all', { type: 'boolean', default: false })
       .option('cache', { type: 'boolean', default: false, description: 'use local cache for http responses' })
+      .option('dropBitGoSignature', {
+        type: 'boolean',
+        default: false,
+      })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
   },
 
@@ -163,6 +177,11 @@ export const cmdParseTx = {
     const txid = tx.getId();
     if (argv.txid && txid !== argv.txid) {
       throw new Error(`computed txid does not match txid argument`);
+    }
+
+    if (argv.dropBitGoSignature) {
+      console.log(dropBitGoSignature(tx).toBuffer().toString('hex'));
+      return;
     }
 
     if (argv.fetchAll) {
