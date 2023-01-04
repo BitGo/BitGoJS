@@ -161,6 +161,17 @@ describe('WalletUnspent', function () {
     return txb.build();
   }
 
+  function validateLockTimeAndSequence<TNumber extends number | bigint>(
+    transaction: UtxoTransaction<TNumber> | Transaction<bigint>
+  ) {
+    // locktime should default to 0 and sequence to 0xffffffff for all inputs
+    assert.deepStrictEqual(transaction.locktime, 0);
+    const inputs = transaction.ins;
+    for (const input of inputs) {
+      assert.deepStrictEqual(input.sequence, 0xffffffff);
+    }
+  }
+
   function runTestSignUnspents<TNumber extends number | bigint>({
     inputScriptTypes,
     outputScriptType,
@@ -200,6 +211,7 @@ describe('WalletUnspent', function () {
         amountType,
         outputScriptType
       );
+      validateLockTimeAndSequence(txbTransaction);
       if (amountType === 'bigint') {
         if (inputScriptTypes.includes('p2shP2pk')) {
           // FIMXE(BG-47824): add p2shP2pk support for Psbt
@@ -212,6 +224,7 @@ describe('WalletUnspent', function () {
           outputScriptType
         );
         assert.deepStrictEqual(txbTransaction.toBuffer(), psbtTransaction.toBuffer());
+        validateLockTimeAndSequence(psbtTransaction);
       }
     });
   }
