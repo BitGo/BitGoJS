@@ -1562,7 +1562,7 @@ export function tpolygonErc20(
 /**
  * Factory function for fiat coin instances.
  *
- * @param name unique identifier of the coin, should start with 'fiat' or 'tfiat'
+ * @param name unique identifier of the coin, should start with 'fiat' or 'tfiat' followed by the 3-char ISO-4217 alphabetical code
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
