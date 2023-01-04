@@ -65,6 +65,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
+  toHex(): string {
+    return this.toBuffer().toString('hex');
+  }
+
   /**
    * @return true iff PSBT input is finalized
    */
