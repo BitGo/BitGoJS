@@ -289,6 +289,7 @@ export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3)
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
+    case networks.ecash:
       return Transaction.SIGHASH_ALL | UtxoTransaction.SIGHASH_FORKID;
     default:
       return scriptType === 'p2tr' ? Transaction.SIGHASH_DEFAULT : Transaction.SIGHASH_ALL;

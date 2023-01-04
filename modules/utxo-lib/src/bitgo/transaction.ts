@@ -48,6 +48,7 @@ export function createPsbtFromBuffer(
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin:
       return UtxoPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
     case networks.dash:
@@ -78,6 +79,7 @@ export function createPsbtFromTransaction(
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin:
       return UtxoPsbt.fromTransaction(tx, prevOuts);
     case networks.dash:
@@ -104,6 +106,7 @@ export function getDefaultTransactionVersion(network: Network): number {
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
+    case networks.ecash:
       return 2;
     case networks.zcash:
       return ZcashTransaction.VERSION4_BRANCH_NU5;
@@ -121,6 +124,7 @@ export function setTransactionBuilderDefaults<TNumber extends number | bigint>(
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
+    case networks.ecash:
       if (version !== 2) {
         throw new Error(`invalid version`);
       }
@@ -145,6 +149,7 @@ export function setPsbtDefaults(
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
+    case networks.ecash:
       if (version !== 2) {
         throw new Error(`invalid version`);
       }
@@ -183,6 +188,7 @@ export function createPsbtForNetwork(
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin: {
       psbt = UtxoPsbt.createPsbt(psbtOpts);
       break;

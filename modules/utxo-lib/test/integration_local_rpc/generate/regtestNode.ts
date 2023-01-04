@@ -42,6 +42,8 @@ function getDockerParams(network: Network): DockerImageParams {
       return dockerImage('dashpay/dashd:0.16.1.1', 'dashd');
     case utxolib.networks.dogecoinTest:
       return dockerImage('williamqinbitgo/dogeimage:1.14.5-v3', 'dogecoind');
+    case utxolib.networks.ecashTest:
+      return dockerImage('bitcoinabc/bitcoin-abc:0.26.9', 'bitcoind', ['-ecash=0']);
     case utxolib.networks.litecoinTest:
       return dockerImage('uphold/litecoin-core:0.17.1', 'litecoind');
     case utxolib.networks.zcashTest:
