@@ -30,6 +30,7 @@
     "@bitgo/statics": "^13.1.0",
     "@bitgo/utxo-lib": "^7.3.0",
     "archy": "^1.0.0",
+    "axios": "^1.2.2",
     "bech32": "^2.0.0",
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@types/archy": "^0.0.32",
+    "@types/axios": "^0.14.0",
     "@types/yargs": "^17.0.8",
     "bip32": "^3.1.0"
   },
