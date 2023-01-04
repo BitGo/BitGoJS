@@ -25,6 +25,11 @@ import {
 
 type Signatures = [Buffer] | [Buffer, Buffer] | undefined;
 
+export interface UtxoPsbtInput {
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>;
+  inputIndex: number;
+}
+
 export interface ParsedPsbt2Of3 extends ParsedPubScript2Of3 {
   signatures: Signatures;
 }
@@ -35,6 +40,14 @@ export interface ParsedPsbtP2TR extends ParsedPubScriptTaprootScriptPath {
   leafVersion: number;
   /** Indicates the level inside the taptree. */
   scriptPathLevel: number;
+}
+
+export function isUtxoPsbtInput(v: unknown): v is UtxoPsbtInput {
+  return (v as UtxoPsbtInput).psbt instanceof UtxoPsbt && typeof (v as UtxoPsbtInput).inputIndex === 'number';
+}
+
+export function toUtxoPsbtInputs(psbt: UtxoPsbt<UtxoTransaction<bigint>>): UtxoPsbtInput[] {
+  return psbt.txInputs.map((input, inputIndex) => ({ psbt, inputIndex }));
 }
 
 interface WalletSigner {
