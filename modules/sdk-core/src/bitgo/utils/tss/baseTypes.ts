@@ -224,11 +224,13 @@ export type TxRequest = {
 
 export type CreateKeychainParamsBase = {
   userGpgKey: SerializedKeyPair<string>;
-  bitgoKeychain?: Keychain;
+  bitgoKeychain: Keychain;
   passphrase?: string;
   enterprise?: string;
   originalPasscodeEncryptionCode?: string;
 };
+
+export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;
 
 export enum SignatureShareType {
   USER = 'user',
@@ -286,7 +288,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   ): Promise<BitgoHeldBackupKeyShare>;
   createUserKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
   createBackupKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
-  createBitgoKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
+  createBitgoKeychain(params: CreateBitGoKeychainParamsBase): Promise<Keychain>;
   createKeychains(params: {
     passphrase: string;
     enterprise?: string;

@@ -25,7 +25,7 @@ import {
   TSSParams,
   TxRequest,
 } from '../baseTypes';
-import { CreateEddsaKeychainParams, KeyShare, YShare } from './types';
+import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 
@@ -105,7 +105,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     passphrase,
     originalPasscodeEncryptionCode,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
-    assert(bitgoKeychain);
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -182,7 +181,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     bitgoKeychain,
     passphrase,
   }: CreateEddsaKeychainParams): Promise<Keychain> {
-    assert(bitgoKeychain);
     const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -254,7 +252,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     userKeyShare,
     backupKeyShare,
     enterprise,
-  }: CreateEddsaKeychainParams): Promise<Keychain> {
+  }: CreateEddsaBitGoKeychainParams): Promise<Keychain> {
     // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),

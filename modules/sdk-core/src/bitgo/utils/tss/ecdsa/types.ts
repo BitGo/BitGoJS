@@ -13,3 +13,5 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
   backupProvider?: string;
   bitgoPublicGpgKey: Key;
 };
+
+export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;

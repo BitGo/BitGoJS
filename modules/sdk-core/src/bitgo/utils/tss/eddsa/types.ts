@@ -16,6 +16,8 @@ export type CreateEddsaKeychainParams = CreateKeychainParamsBase & {
   backupKeyShare: EDDSA.KeyShare;
 };
 
+export type CreateEddsaBitGoKeychainParams = Omit<CreateEddsaKeychainParams, 'bitgoKeychain'>;
+
 // For backward compatibility
 export {
   PrebuildTransactionWithIntentOptions,

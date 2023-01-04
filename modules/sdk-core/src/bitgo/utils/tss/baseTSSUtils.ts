@@ -23,6 +23,7 @@ import {
   PopulatedIntentForMessageSigning,
   IntentOptionsForTypedData,
   PopulatedIntentForTypedDataSigning,
+  CreateBitGoKeychainParamsBase,
 } from './baseTypes';
 import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
@@ -78,7 +79,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     throw new Error('Method not implemented.');
   }
 
-  createBitgoKeychain(params: CreateKeychainParamsBase): Promise<Keychain> {
+  createBitgoKeychain(params: CreateBitGoKeychainParamsBase): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
 

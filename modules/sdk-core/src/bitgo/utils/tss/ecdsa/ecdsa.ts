@@ -6,7 +6,7 @@ import { AddKeychainOptions, ApiKeyShare, CreateBackupOptions, Keychain, KeyType
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
-import { CreateEcdsaKeychainParams, DecryptableNShare, KeyShare } from './types';
+import { CreateEcdsaBitGoKeychainParams, CreateEcdsaKeychainParams, DecryptableNShare, KeyShare } from './types';
 import {
   BackupKeyShare,
   BitgoHeldBackupKeyShare,
@@ -201,7 +201,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     originalPasscodeEncryptionCode,
     isThirdPartyBackup = false,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
-    assert(bitgoKeychain);
     if (!passphrase) {
       throw new Error('Please provide a wallet passphrase');
     }
@@ -238,7 +237,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     passphrase,
     backupProvider,
   }: CreateEcdsaKeychainParams): Promise<Keychain> {
-    assert(bitgoKeychain);
     if (this.isValidThirdPartyBackupProvider(backupProvider) && backupKeyShare.bitGoHeldKeyShares?.keyShares) {
       assert(bitgoKeychain.commonKeychain);
       const finalizedBackupKeyShare = await this.finalizeBitgoHeldBackupKeyShare(
@@ -280,9 +278,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     enterprise,
     bitgoPublicGpgKey,
     isThirdPartyBackup = false,
-  }: CreateEcdsaKeychainParams): Promise<Keychain> {
-    assert(bitgoPublicGpgKey);
-    assert(backupKeyShare);
+  }: CreateEcdsaBitGoKeychainParams): Promise<Keychain> {
     const recipientIndex = 3;
     const userToBitgoShare = await encryptNShare(userKeyShare, recipientIndex, bitgoPublicGpgKey.armor());
 
