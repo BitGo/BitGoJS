@@ -10,14 +10,50 @@ transaction: 2fedaa3661f6251d1a4ca23e5d4bb03fab5b75e8e471281f554755c439cd9924
 │ ├─┬ 0: ba5c40fb1f9c00aee45cfc14f9049e6bf4773bae16c6f36e555dfcfa62fb3856:1
 │ │ ├─┬ sigScript: p2wsh
 │ │ │ └─┬ signatures: [72byte] [71byte]
-│ │ │   └── signed by: [0, 2]
+│ │ │   ├── signed by: [0, 2]
+│ │ │   ├─┬ 0
+│ │ │   │ ├── bytes: 3045022100e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982022029a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a676201
+│ │ │   │ ├── valid: true
+│ │ │   │ ├── signedBy: user
+│ │ │   │ ├── isCanonical: true
+│ │ │   │ ├── hashType: 1
+│ │ │   │ ├── r: e665acb4a9237b32d00052b4419ed699db1cd01522cec80d4714d66452efb982
+│ │ │   │ ├── s: 29a3272a95f61e6a7d85b4605f735ffc4062c155d78c0b4bb3e35191997a6762
+│ │ │   │ └── highS: false
+│ │ │   └─┬ 1
+│ │ │     ├── bytes: 3044022011f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b102205c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb37001
+│ │ │     ├── valid: true
+│ │ │     ├── signedBy: bitgo
+│ │ │     ├── isCanonical: true
+│ │ │     ├── hashType: 1
+│ │ │     ├── r: 11f825047fcf6a13c7da282d27be5d5d4d82759b8c7f987f1dcaef88b4b104b1
+│ │ │     ├── s: 5c333b6ac321bf7150823833452e5d3073c77dbab053430a4de5c3398e9cb370
+│ │ │     └── highS: false
 │ │ ├── value: 1
 │ │ └─┬ pubScript: 00201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a
 │ │   └── address: tb1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qw8zyk7
 │ └─┬ 1: 85ed52eddf9ee786cee123208a6135a8c781741df66d2ab025e22a32ae97ace3:0
 │   ├─┬ sigScript: p2wsh
 │   │ └─┬ signatures: [71byte] [71byte]
-│   │   └── signed by: [0, 2]
+│   │   ├── signed by: [0, 2]
+│   │   ├─┬ 0
+│   │   │ ├── bytes: 30440220021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f022026a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc01
+│   │   │ ├── valid: true
+│   │   │ ├── signedBy: user
+│   │   │ ├── isCanonical: true
+│   │   │ ├── hashType: 1
+│   │   │ ├── r: 021aff10c307d538600552a18b7a4187bffd43390d7944164c8054d15645673f
+│   │   │ ├── s: 26a05412302b0c2c98b8805effc4e99e716e4f6f485dbce1a8c92a8440c498dc
+│   │   │ └── highS: false
+│   │   └─┬ 1
+│   │     ├── bytes: 304402203436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a02202c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a101
+│   │     ├── valid: true
+│   │     ├── signedBy: bitgo
+│   │     ├── isCanonical: true
+│   │     ├── hashType: 1
+│   │     ├── r: 3436df8e3ce0c6e16d12a5f50f8c89a206e11cfd515c9e39f6f361f8f22a8b7a
+│   │     ├── s: 2c180bd360669abab214687aa520cb6a0ca4973cc65e58f40f0b7a982489e2a1
+│   │     └── highS: false
 │   ├── value: 1
 │   └─┬ pubScript: 00201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a
 │     └── address: tb1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qw8zyk7

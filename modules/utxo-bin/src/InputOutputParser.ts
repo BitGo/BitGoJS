@@ -1,11 +1,13 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { OutputSpend } from '@bitgo/blockapis';
+import { script, ScriptSignature } from 'bitcoinjs-lib';
 
 import { Parser, ParserNode } from './Parser';
 import { AddressParser } from './AddressParser';
 import { formatSat } from './format';
 import { ChainInfo } from './TxParser';
 import { parseHollowSegwitSpend, HollowSegwitSpend, getHollowSpendMessage } from './hollowSegwitSpend';
+import { isHighS } from './ecdsa';
 
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
@@ -26,7 +28,11 @@ export class InputOutputParser extends Parser {
       parseOutputScript: boolean;
       parseScriptAsm: boolean;
       parseScriptData: boolean;
-      parseSignatureData: boolean;
+      parseSignatureData: {
+        script: boolean;
+        ecdsa: boolean;
+        schnorr: boolean;
+      };
     }
   ) {
     super();
@@ -66,7 +72,7 @@ export class InputOutputParser extends Parser {
   parseInputScript(buffer: Buffer): ParserNode {
     let value;
     let nodes;
-    if (buffer.length && this.params.parseSignatureData) {
+    if (buffer.length && this.params.parseSignatureData.script) {
       const type = utxolib.classify.input(buffer, true) ?? 'unknown';
       const decompiled = utxolib.script.decompile(buffer);
       if (decompiled) {
@@ -96,16 +102,60 @@ export class InputOutputParser extends Parser {
     );
   }
 
+  parseSignatureBuffer(
+    type: utxolib.bitgo.outputScripts.ScriptType2Of3,
+    buf: Buffer | 0,
+    signerIndex: number
+  ): ParserNode[] {
+    if (buf === 0) {
+      return [this.node('type', 'placeholder (0)')];
+    }
+
+    const nodes = [this.node('bytes', buf), this.node('valid', 0 <= signerIndex)];
+    if (0 <= signerIndex) {
+      nodes.push(this.node('signedBy', ['user', 'backup', 'bitgo'][signerIndex]));
+    }
+
+    if (type === 'p2tr') {
+      // TODO
+    } else {
+      const { signature, hashType } = ScriptSignature.decode(buf);
+      const r = signature.subarray(0, 32);
+      const s = signature.subarray(32);
+
+      if (r.length !== 32 || s.length !== 32) {
+        throw new Error(`invalid scalar length`);
+      }
+
+      nodes.push(
+        this.node('isCanonical', script.isCanonicalScriptSignature(buf)),
+        this.node('hashType', hashType),
+        this.node('r', r),
+        this.node('s', s),
+        this.node('highS', isHighS(s))
+      );
+    }
+
+    return nodes;
+  }
+
   parseSignatures(
     parsed: utxolib.bitgo.ParsedSignatureScript2Of3,
     tx: utxolib.bitgo.UtxoTransaction,
     inputIndex: number,
     prevOutputs?: utxolib.TxOutput[]
   ): ParserNode {
-    const nodes = [];
+    const nodes: ParserNode[] = [];
     if (prevOutputs) {
-      const signedBy = utxolib.bitgo.verifySignatureWithPublicKeys(tx, inputIndex, prevOutputs, parsed.publicKeys);
+      const signedBy = utxolib.bitgo.getSignaturesWithPublicKeys(tx, inputIndex, prevOutputs, parsed.publicKeys);
       nodes.push(this.node('signed by', `[${signedBy.flatMap((v, i) => (v ? [i] : [])).join(', ')}]`));
+      if (this.params.parseSignatureData.ecdsa || this.params.parseSignatureData.schnorr) {
+        nodes.push(
+          ...parsed.signatures.map((s: Buffer | 0, i: number) =>
+            this.node(i, undefined, this.parseSignatureBuffer(parsed.scriptType, s, s === 0 ? -1 : signedBy.indexOf(s)))
+          )
+        );
+      }
     }
     return this.node(
       'signatures',

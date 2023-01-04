@@ -17,9 +17,14 @@ export type TxParserArgs = {
   parseScriptData: boolean;
   parseScriptAsm: boolean;
   parseOutputScript: boolean;
-  parseSignatureData: boolean;
+  parseSignatureData: {
+    script: boolean;
+    ecdsa: boolean;
+    schnorr: boolean;
+  };
   hide?: string[];
   maxOutputs?: number;
+  vin?: number[];
 };
 
 export type ChainInfo = {
@@ -33,8 +38,12 @@ export class TxParser extends Parser {
   static PARSE_ALL: TxParserArgs = {
     parseScriptData: true,
     parseScriptAsm: true,
-    parseSignatureData: true,
     parseOutputScript: true,
+    parseSignatureData: {
+      script: true,
+      ecdsa: true,
+      schnorr: true,
+    },
   };
 
   constructor(private params: TxParserArgs) {
@@ -44,7 +53,11 @@ export class TxParser extends Parser {
   parseIns(ins: utxolib.TxInput[], tx: utxolib.bitgo.UtxoTransaction, outputInfo: ChainInfo): ParserNode[] {
     const txid = tx.getId();
     const ioParser = new InputOutputParser(this.params);
-    return ins.map((input, i) => ioParser.parseInput(txid, tx, i, tx.ins[i], outputInfo));
+    return ins.flatMap((input, i) =>
+      this.params.vin === undefined || this.params.vin.includes(i)
+        ? [ioParser.parseInput(txid, tx, i, tx.ins[i], outputInfo)]
+        : []
+    );
   }
 
   parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): ParserNode[] {
