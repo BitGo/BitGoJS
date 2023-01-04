@@ -1,6 +1,6 @@
 import { IRequestTracer } from '../../../api';
-import { SerializedKeyPair } from 'openpgp';
-import { KeychainsTriplet, IBaseCoin } from '../../baseCoin';
+import { Key, readKey, SerializedKeyPair } from 'openpgp';
+import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { Keychain } from '../../keychain';
 import { getTxRequest } from '../../tss';
@@ -8,22 +8,24 @@ import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
 import * as _ from 'lodash';
 import {
+  BitgoGPGPublicKey,
+  BitgoHeldBackupKeyShare,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
   ITssUtils,
   PrebuildTransactionWithIntentOptions,
   SignatureShareRecord,
-  BitgoHeldBackupKeyShare,
   TSSParams,
   TxRequest,
   TxRequestVersion,
-  BackupKeyShare,
+  CreateKeychainParamsBase,
   IntentOptionsForMessage,
   PopulatedIntentForMessageSigning,
   IntentOptionsForTypedData,
   PopulatedIntentForTypedDataSigning,
+  CreateBitGoKeychainParamsBase,
 } from './baseTypes';
-import { SignShare, YShare, GShare } from '../../../account-lib/mpc/tss/eddsa/types';
+import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -63,42 +65,21 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     keyId: string,
     commonKeychain: string,
     userKeyShare: KeyShare,
-    bitgoKeychain: Keychain
+    bitgoKeychain: Keychain,
+    bitgoPublicGpgKey?: Key
   ): Promise<BitgoHeldBackupKeyShare> {
     throw new Error('Method not implemented.');
   }
 
-  createUserKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare | BackupKeyShare,
-    bitgoKeychain: Keychain,
-    passphrase: string,
-    originalPasscodeEncryptionCode: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain> {
+  createUserKeychain(params: CreateKeychainParamsBase): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
 
-  createBackupKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare | BackupKeyShare,
-    bitgoKeychain: Keychain,
-    passphrase?: string,
-    backupXpubProvider?: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain> {
+  createBackupKeychain(params: CreateKeychainParamsBase): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
 
-  createBitgoKeychain(
-    userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare | BackupKeyShare,
-    enterprise: string,
-    isThirdPartyBackup?: boolean
-  ): Promise<Keychain> {
+  createBitgoKeychain(params: CreateBitGoKeychainParamsBase): Promise<Keychain> {
     throw new Error('Method not implemented.');
   }
 
@@ -268,12 +249,10 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       preview,
     };
 
-    const txRequest = (await this.bitgo
+    return this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
       .send(whitelistedParams)
-      .result()) as TxRequest;
-
-    return txRequest;
+      .result();
   }
 
   /**
@@ -337,5 +316,19 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
     // As of now, BitGo is the only supported KRS provider for TSS
     return !!(backupProvider && backupProvider === 'BitGoKRS');
+  }
+
+  /**
+   * It gets the appropriate BitGo GPG public key for key creation based on a
+   * combination of coin and the feature flags on the user and their enterprise if set.
+   * @param enterpriseId - enterprise under which user wants to create the wallet
+   */
+  public async getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId: string | undefined): Promise<Key> {
+    const response: BitgoGPGPublicKey = await this.bitgo
+      .get(this.baseCoin.url('/tss/pubkey'))
+      .query({ enterpriseId })
+      .result();
+    const bitgoPublicKeyStr = response.publicKey as string;
+    return readKey({ armoredKey: bitgoPublicKeyStr });
   }
 }

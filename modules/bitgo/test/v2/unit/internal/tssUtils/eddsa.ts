@@ -177,19 +177,22 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
-      const userKeychain = await tssUtils.createUserKeychain(
+      const bitgoKeychain = await tssUtils.createBitgoKeychain(
+        { userGpgKey, userKeyShare, backupKeyShare });
+      const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
-        'passphrase');
-      const backupKeychain = await tssUtils.createBackupKeychain(
+        passphrase: 'passphrase',
+      });
+      const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
-        'passphrase');
+        passphrase: 'passphrase',
+      });
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       userKeychain.should.deepEqual(nockedUserKeychain);
@@ -221,17 +224,19 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
-      const userKeychain = await tssUtils.createUserKeychain(
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, userKeyShare, backupKeyShare });
+      const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
-        bitgoKeychain);
-      const backupKeychain = await tssUtils.createBackupKeychain(
+        bitgoKeychain,
+      });
+      const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
-        bitgoKeychain);
+        bitgoKeychain,
+      });
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       userKeychain.should.deepEqual(nockedUserKeychain);
@@ -265,20 +270,24 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, enterprise);
-      const userKeychain = await tssUtils.createUserKeychain(
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey, userKeyShare, backupKeyShare, enterprise,
+      });
+      const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
-        'passphrase',
-        'originalPasscodeEncryptionCode');
-      const backupKeychain = await tssUtils.createBackupKeychain(
+        passphrase: 'passphrase',
+        originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      });
+      const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
-        'passphrase');
+        passphrase: 'passphrase',
+      });
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       userKeychain.should.deepEqual(nockedUserKeychain);
@@ -375,19 +384,19 @@ describe('TSS Utils:', async function () {
       bitgoKeychain1.commonKeychain = bitgoKeychain2.commonKeychain;
       bitgoKeychain1.walletHSMGPGPublicKeySigs = bitgoKeychain2.walletHSMGPGPublicKeySigs;
 
-      await tssUtils.createUserKeychain(
+      await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
-        bitgoKeychain1,
-      ).should.be.rejectedWith('bitgo share mismatch');
+        bitgoKeychain: bitgoKeychain1,
+      }).should.be.rejectedWith('bitgo share mismatch');
 
-      await tssUtils.createBackupKeychain(
+      await tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
         backupKeyShare,
-        bitgoKeychain1,
-      ).should.be.rejectedWith('bitgo share mismatch');
+        bitgoKeychain: bitgoKeychain1,
+      }).should.be.rejectedWith('bitgo share mismatch');
     });
 
     it('should fail to generate TSS key chains when common keychains do not match', async function () {
@@ -404,37 +413,45 @@ describe('TSS Utils:', async function () {
         backupGpgKey: userGpgKey,
         bitgoGpgKey,
       });
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare,
+      });
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
 
-      await tssUtils.createUserKeychain(
+      await tssUtils.createUserKeychain({
         userGpgKey,
         userKeyShare,
-        MPC.keyShare(2, 2, 3),
+        backupKeyShare: MPC.keyShare(2, 2, 3),
         bitgoKeychain,
-        'passphrase')
+        passphrase: 'passphrase',
+      })
         .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
-      await tssUtils.createUserKeychain(
+      await tssUtils.createUserKeychain({
         userGpgKey,
-        MPC.keyShare(1, 2, 3),
+        userKeyShare: MPC.keyShare(1, 2, 3),
         backupKeyShare,
         bitgoKeychain,
-        'passphrase')
+        passphrase: 'passphrase',
+      })
         .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
 
-      await tssUtils.createBackupKeychain(
+      await tssUtils.createBackupKeychain({
         userGpgKey,
-        MPC.keyShare(1, 2, 3),
+        userKeyShare: MPC.keyShare(1, 2, 3),
         backupKeyShare,
         bitgoKeychain,
-        'passphrase')
+        passphrase: 'passphrase',
+      })
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
-      await tssUtils.createBackupKeychain(
+      await tssUtils.createBackupKeychain({
         userGpgKey,
         userKeyShare,
-        MPC.keyShare(2, 2, 3),
+        backupKeyShare: MPC.keyShare(2, 2, 3),
         bitgoKeychain,
-        'passphrase')
+        passphrase: 'passphrase',
+      })
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
     });
   });
