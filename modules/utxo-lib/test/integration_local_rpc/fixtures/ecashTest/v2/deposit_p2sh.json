@@ -1,0 +1,98 @@
+{
+  "transaction": {
+    "txid": "30054320cec8e75ce46d9251649e8c20dbb73d7e328f30df9bfb7fc8baace9e6",
+    "hash": "30054320cec8e75ce46d9251649e8c20dbb73d7e328f30df9bfb7fc8baace9e6",
+    "version": 2,
+    "size": 223,
+    "locktime": 1537543,
+    "vin": [
+      {
+        "txid": "07ad994f3cf776c8309a6f7d67bfb78c1ec55da3ee3b4015e676fc72b9e586c8",
+        "vout": 1,
+        "scriptSig": {
+          "asm": "304402202a20aca0f50a082b17a5d7c8baad69964c7d03d11f7360e828b11e89f078ad6f02205b5bf6ce0c61ded2d582aa94779e4302fe2c51d7cc7bb745cac498c41ac10791[ALL|FORKID] 020839b8476e5c75ed8597ebbe87d71b9fb1c74a34d74faaa77091913382ae17c1",
+          "hex": "47304402202a20aca0f50a082b17a5d7c8baad69964c7d03d11f7360e828b11e89f078ad6f02205b5bf6ce0c61ded2d582aa94779e4302fe2c51d7cc7bb745cac498c41ac107914121020839b8476e5c75ed8597ebbe87d71b9fb1c74a34d74faaa77091913382ae17c1"
+        },
+        "sequence": 4294967294
+      }
+    ],
+    "vout": [
+      {
+        "value": 1,
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "OP_HASH160 fe5cc5d87e3348a5f3eaa316898a0f05d520876e OP_EQUAL",
+          "hex": "a914fe5cc5d87e3348a5f3eaa316898a0f05d520876e87",
+          "reqSigs": 1,
+          "type": "scripthash",
+          "addresses": [
+            "bchtest:prl9e3wc0ce53f0na233dzv2puza2gy8dcdwx8mu9w"
+          ]
+        }
+      },
+      {
+        "value": 93.99998656,
+        "n": 1,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 97f997bc21bb9b66b1bbefe9a71b26fb30a41f24 OP_EQUALVERIFY OP_CHECKSIG",
+          "hex": "76a91497f997bc21bb9b66b1bbefe9a71b26fb30a41f2488ac",
+          "reqSigs": 1,
+          "type": "pubkeyhash",
+          "addresses": [
+            "bchtest:qztln9auyxaeke43h0h7nfcmymanpfqlysm33qvvma"
+          ]
+        }
+      }
+    ],
+    "hex": "0200000001c886e5b972fc76e615403beea35dc51e8cb7bf677d6f9a30c876f73c4f99ad07010000006a47304402202a20aca0f50a082b17a5d7c8baad69964c7d03d11f7360e828b11e89f078ad6f02205b5bf6ce0c61ded2d582aa94779e4302fe2c51d7cc7bb745cac498c41ac107914121020839b8476e5c75ed8597ebbe87d71b9fb1c74a34d74faaa77091913382ae17c1feffffff0200e1f5050000000017a914fe5cc5d87e3348a5f3eaa316898a0f05d520876e87c0984830020000001976a91497f997bc21bb9b66b1bbefe9a71b26fb30a41f2488ac07761700"
+  },
+  "inputs": [
+    {
+      "txid": "07ad994f3cf776c8309a6f7d67bfb78c1ec55da3ee3b4015e676fc72b9e586c8",
+      "hash": "07ad994f3cf776c8309a6f7d67bfb78c1ec55da3ee3b4015e676fc72b9e586c8",
+      "version": 2,
+      "size": 225,
+      "locktime": 1537543,
+      "vin": [
+        {
+          "txid": "fc6124aca1a60814c58913055bf8c3a90c8becd7fe119362f999e42c1e91af60",
+          "vout": 1,
+          "scriptSig": {
+            "asm": "304402203d6d63af9a12cf100d17995bb6c92365ce1002a09f940d21f3cf68696b6bcb5a0220758832b812bba6e2d31d8892c8f95c81a9a5ce2b719b8bb2db2a27b5a2979839[ALL|FORKID] 02bddcec2db96d3d0dc3cae1acb75abeb2e525e5c8b87c9c8ef9ff5ec596bbb499",
+            "hex": "47304402203d6d63af9a12cf100d17995bb6c92365ce1002a09f940d21f3cf68696b6bcb5a0220758832b812bba6e2d31d8892c8f95c81a9a5ce2b719b8bb2db2a27b5a2979839412102bddcec2db96d3d0dc3cae1acb75abeb2e525e5c8b87c9c8ef9ff5ec596bbb499"
+          },
+          "sequence": 4294967294
+        }
+      ],
+      "vout": [
+        {
+          "value": 1,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 d2eb140d8b7006e7b862827043f9cddd50da9811 OP_EQUALVERIFY OP_CHECKSIG",
+            "hex": "76a914d2eb140d8b7006e7b862827043f9cddd50da981188ac",
+            "reqSigs": 1,
+            "type": "pubkeyhash",
+            "addresses": [
+              "bchtest:qrfwk9qd3dcqdeacv2p8qsleehw4pk5czyfe6je78q"
+            ]
+          }
+        },
+        {
+          "value": 94.99998879,
+          "n": 1,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 7ee540dacc936075a099730cb979195715f46da5 OP_EQUALVERIFY OP_CHECKSIG",
+            "hex": "76a9147ee540dacc936075a099730cb979195715f46da588ac",
+            "reqSigs": 1,
+            "type": "pubkeyhash",
+            "addresses": [
+              "bchtest:qplw2sx6ejfkqadqn9esewter9t3tard55d99jr9u3"
+            ]
+          }
+        }
+      ],
+      "hex": "020000000160af911e2ce499f9629311fed7ec8b0ca9c3f85b051389c51408a6a1ac2461fc010000006a47304402203d6d63af9a12cf100d17995bb6c92365ce1002a09f940d21f3cf68696b6bcb5a0220758832b812bba6e2d31d8892c8f95c81a9a5ce2b719b8bb2db2a27b5a2979839412102bddcec2db96d3d0dc3cae1acb75abeb2e525e5c8b87c9c8ef9ff5ec596bbb499feffffff0200e1f505000000001976a914d2eb140d8b7006e7b862827043f9cddd50da981188ac9f7a3e36020000001976a9147ee540dacc936075a099730cb979195715f46da588ac07761700"
+    }
+  ]
+}
