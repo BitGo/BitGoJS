@@ -2888,7 +2888,7 @@ export class Wallet implements IWallet {
 
     // ECDSA TSS uses TxRequestFull
     if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full') {
-      return signedTransaction;
+      return getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
     }
 
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
