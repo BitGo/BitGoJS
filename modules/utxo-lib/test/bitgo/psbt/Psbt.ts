@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
-import { networks } from '../../../src';
-import { getExternalChainCode, outputScripts, KeyName } from '../../../src/bitgo';
+import { getNetworkName, networks } from '../../../src';
+import { getExternalChainCode, outputScripts, KeyName, UtxoPsbt, UtxoTransaction, ZcashPsbt } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
 import { defaultTestOutputAmount } from '../../transaction_util';
@@ -9,6 +9,7 @@ import { parsePsbtInput, toWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
 import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
 import { createOutputScript2of3 } from '../../../src/bitgo/outputScripts';
 import { mockUnspents } from '../wallet/util';
+import { Network } from '../../../src/networks';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -288,3 +289,40 @@ describe('Psbt from transaction using wallet unspents', function () {
     });
   });
 });
+
+function testUtxoPsbt(coinNetwork: Network) {
+  describe(`Testing UtxoPsbt for ${getNetworkName(coinNetwork)} network`, function () {
+    let psbt: UtxoPsbt<UtxoTransaction<bigint>>;
+    before(async function () {
+      const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000'), coinNetwork);
+      const txBuilderParams = {
+        signer: 'user',
+        cosigner: 'bitgo',
+        amountType: 'bigint',
+        outputType: 'p2sh',
+        signatureTarget: 'fullsigned',
+        network: coinNetwork,
+        changeIndex: CHANGE_INDEX,
+        fee: FEE,
+      } as const;
+      const tx = constructTransactionUsingTxBuilder(unspents, rootWalletKeys, txBuilderParams);
+      psbt = toWalletPsbt(tx, toBigInt(unspents), rootWalletKeys);
+      if (coinNetwork === networks.zcash) {
+        (psbt as ZcashPsbt).setDefaultsForVersion(network, 450);
+      }
+    });
+
+    it('should be able to clone psbt', async function () {
+      const clone = psbt.clone();
+      assert.deepStrictEqual(clone.toBuffer(), psbt.toBuffer());
+    });
+
+    it('should be able to serialize and deserialize', async function () {
+      const psbtHex = psbt.toHex();
+      const PsbtClass = getNetworkName(coinNetwork) === 'zcash' ? ZcashPsbt : UtxoPsbt;
+      assert.deepStrictEqual(PsbtClass.fromHex(psbtHex, { network: coinNetwork }).toHex(), psbt.toHex());
+    });
+  });
+}
+
+[networks.bitcoin, networks.zcash, networks.dash].forEach((coinNetwork) => testUtxoPsbt(coinNetwork));

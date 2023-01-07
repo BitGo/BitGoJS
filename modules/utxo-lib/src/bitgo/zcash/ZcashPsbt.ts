@@ -77,6 +77,10 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     }
   }
 
+  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+    return ZcashPsbt.fromBuffer(Buffer.from(data, 'hex'), opts);
+  }
+
   /**
    * If it is a version 4 transaction, add the consensus branch id to
    * the global map. If it is a version 5 transaction, just return the
