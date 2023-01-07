@@ -61,6 +61,10 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
         psbt.data.globalMap.unknownKeyVals = psbt.data.globalMap.unknownKeyVals.filter(
           ({ key }) => key !== CONSENSUS_BRANCH_ID_KEY
         );
+
+        // Delete consensusBranchId from globalMap so that if we were to serialize the psbt again
+        // we would not add a duplicate key into the global map
+        psbt.data.globalMap.unknownKeyVals.pop();
         return psbt;
       case 5:
       case ZcashTransaction.VERSION5_BRANCH_NU5:
