@@ -27,12 +27,11 @@ import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
-import { getTxRequest, sendSignatureShare } from '../common';
+import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
-import { PrivateKey, SerializedKeyPair } from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 
@@ -312,7 +311,7 @@ export async function encryptNShare(
   keyShare: KeyShare,
   recipientIndex: number,
   recipientGpgPublicArmor: string,
-  gpgKey: SerializedKeyPair<string>,
+  gpgKey: pgp.SerializedKeyPair<string>,
   isbs58Encoded = true
 ): Promise<EncryptedNShare> {
   const nShare = keyShare.nShares[recipientIndex];
@@ -380,7 +379,7 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
   const priv = (
     await pgp.decrypt({
       message: await pgp.readMessage({ armoredMessage: encryptedNShare.nShare.encryptedPrivateShare }),
-      decryptionKeys: [bitgoPrivateKey as PrivateKey],
+      decryptionKeys: [bitgoPrivateKey as pgp.PrivateKey],
     })
   ).data as string;
 
@@ -736,4 +735,26 @@ export function getParticipantFromIndex(index: number): SignatureShareType {
     default:
       throw new Error(`Unknown participant index ${index}`);
   }
+}
+
+/**
+ * Helper function to verify u-value wallet signatures for the bitgo-user and bitgo-backup shares.
+ * @param params
+ */
+export async function verifyWalletSignature(params: {
+  walletSignature: pgp.Key;
+  bitgoPub: pgp.Key;
+  commonKeychain: string;
+  userKeyId: string;
+  backupKeyId: string;
+  publicShare: string;
+  verifierIndex: 1 | 2;
+}): Promise<void> {
+  const rawNotations = await commonVerifyWalletSignature(params);
+  const publicShareRawNotationIndex = 2 + params.verifierIndex;
+
+  assert(
+    params.publicShare === Buffer.from(rawNotations[publicShareRawNotationIndex].value).toString(),
+    'bitgo share mismatch'
+  );
 }
