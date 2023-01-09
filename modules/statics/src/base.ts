@@ -63,6 +63,10 @@ export enum CoinFamily {
  */
 export enum CoinFeature {
   /*
+   * This coin supports creating wallets on different networks with the same keys. Only works for TSS account-base coins
+   */
+  EVM_WALLET = 'evm-wallet',
+  /*
    * This coin supports creating an EVM transaction using Metamask Institutional (MMI).
    */
   METAMASK_INSTITUTIONAL = 'metamask-institutional',
