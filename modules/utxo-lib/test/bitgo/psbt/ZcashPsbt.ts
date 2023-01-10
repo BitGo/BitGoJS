@@ -4,7 +4,7 @@ import { networks } from '../../../src';
 import * as utxolib from '../../../src';
 import { mockUnspents } from '../wallet/util';
 import { getDefaultWalletKeys } from '../../testutil';
-import { addWalletOutputToPsbt, getInternalChainCode } from '../../../src/bitgo';
+import { addWalletOutputToPsbt, getInternalChainCode, ZcashPsbt } from '../../../src/bitgo';
 
 const network = networks.zcash;
 const rootWalletKeys = getDefaultWalletKeys();
@@ -29,5 +29,15 @@ describe('Zcash PSBT', function () {
       });
     }
     [400, 450, 500].forEach((version) => testToHexForVersion(version));
+
+    function testFromHexForVersion(version: number) {
+      it(`version ${version} should deserialize from toHex`, async function () {
+        psbt.setDefaultsForVersion(network, version);
+        const psbtHex = psbt.toHex();
+        const psbt2Hex = ZcashPsbt.fromHex(psbtHex, { network }).toHex();
+        assert.deepStrictEqual(psbt2Hex, psbtHex);
+      });
+    }
+    [400, 450, 500].forEach((version) => testFromHexForVersion(version));
   });
 });
