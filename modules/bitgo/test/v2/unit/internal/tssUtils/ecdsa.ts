@@ -76,6 +76,7 @@ describe('TSS Ecdsa Utils:', async function () {
           email: 'test@test.com',
         },
       ],
+      curve: 'secp256k1',
     }),
     openpgp.generateKey({
       userIDs: [
@@ -84,6 +85,7 @@ describe('TSS Ecdsa Utils:', async function () {
           email: 'backup@test.com',
         },
       ],
+      curve: 'secp256k1',
     }),
     openpgp.generateKey({
       userIDs: [
@@ -92,6 +94,7 @@ describe('TSS Ecdsa Utils:', async function () {
           email: 'bitgo@test.com',
         },
       ],
+      curve: 'secp256k1',
     })];
     [userGpgKey, backupGpgKey, bitGoGPGKeyPair] = await Promise.all(gpgKeyPromises);
     bitgoPublicKey = await openpgp.readKey({ armoredKey: bitGoGPGKeyPair.publicKey });
@@ -151,7 +154,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(coinName, originalKeyShare, commonKeychain, userKeyShare, bitGoGPGKeyPair, nockedBitGoKeychain);
 
-      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain, bitgoPublicKey);
+      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain, userGpgKey, bitgoPublicKey);
       result.should.eql(expectedFinalKeyShare);
     });
 
@@ -201,7 +204,7 @@ describe('TSS Ecdsa Utils:', async function () {
         (keyShare) => keyShare.from === 'backup' && keyShare.to === 'bitgo'
       );
       const bitgoGpgKeyPubKey = await tssUtils.getBitgoPublicGpgKey();
-      let backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolder, 3, bitgoGpgKeyPubKey.armor(), true);
+      let backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolder, 3, bitgoGpgKeyPubKey.armor(), userGpgKey, true);
       should.exist(backupToBitgoEncryptedNShare);
       should.equal(backupToBitgoEncryptedNShare.encryptedPrivateShare, backupToBitgoShare?.privateShare);
 
@@ -209,8 +212,8 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolderNew: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolderNew, 3, bitgoGpgKeyPubKey.armor(), false);
-      const encryptedNShare = await encryptNShare(backupKeyShare, 3, bitgoGpgKeyPubKey.armor());
+      backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolderNew, 3, bitgoGpgKeyPubKey.armor(), userGpgKey, false);
+      const encryptedNShare = await encryptNShare(backupKeyShare, 3, bitgoGpgKeyPubKey.armor(), userGpgKey);
       // cant verify the encrypted shares, since they will be encrypted with diff. values
       should.equal(backupToBitgoEncryptedNShare.publicShare, encryptedNShare.publicShare);
     });
@@ -656,11 +659,13 @@ describe('TSS Ecdsa Utils:', async function () {
       backupKeyShare,
       1,
       userGpgKey.publicKey,
+      userGpgKey,
       false,
     ), encryptNShare(
       backupKeyShare,
       3,
       bitgoGpgKey.publicKey,
+      userGpgKey,
       false,
     )];
 
@@ -719,6 +724,7 @@ describe('TSS Ecdsa Utils:', async function () {
       userKeyShare,
       2,
       backupGpgKey.publicKey,
+      userGpgKey,
       false,
     );
 
@@ -773,12 +779,14 @@ describe('TSS Ecdsa Utils:', async function () {
       bitgoKeyShare,
       1,
       userGpgKey.publicKey,
+      userGpgKey,
       false,
     ),
     encryptNShare(
       bitgoKeyShare,
       2,
       backupGpgKey.publicKey,
+      userGpgKey,
       false,
     )];
 

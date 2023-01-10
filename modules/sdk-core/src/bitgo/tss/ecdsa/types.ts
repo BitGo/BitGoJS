@@ -40,6 +40,8 @@ export type EncryptedNShare = {
   encryptedPrivateShare: string;
   n: string;
   vssProof?: string;
+  // u value proof
+  privateShareProof?: string;
 };
 
 // NShare with information needed to decrypt and verify a GPG mesasge

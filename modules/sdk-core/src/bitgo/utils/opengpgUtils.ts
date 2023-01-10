@@ -14,6 +14,7 @@ import {
   verify,
 } from 'openpgp';
 import * as _ from 'lodash';
+import * as secp256k1 from 'secp256k1';
 import { BitGoBase } from '../bitgoBase';
 import crypto from 'crypto';
 
@@ -156,34 +157,45 @@ export async function createSharedDataProof(
 }
 
 /**
- * Creates an Eddsa KeyShare Proof by appending an ed25519 subkey to an armored gpg private key.
+ * Creates a KeyShare Proof based on given algo.
+ *
+ * Creates an EdDSA KeyShare Proof by appending an ed25519 subkey (auth) to an armored gpg private key.
+ * Creates an ECDSA KeyShare Proof by Append a secp256k1 subkey (auth) to a PGP keychain.
  *
  * @param privateArmor gpg private key in armor format
  * @param uValue u value from an Eddsa keyshare
+ * @param algo algo to use, eddsa or ecdsa
  * @return {string} keyshare proof
  */
-export async function createShareProof(privateArmor: string, uValue: string): Promise<string> {
+export async function createShareProof(privateArmor: string, uValue: string, algo: string): Promise<string> {
   const privateKey = await readKey({ armoredKey: privateArmor });
   const dateTime = new Date();
-  await sodium.ready;
-  const subKeyVal = Buffer.from(
-    sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'), 'uint8array')
-  );
-
-  // Sub-key (encryption key) packet.
-  const publicSubKey = new Uint8Array([...new Uint8Array([0x40]), ...new Uint8Array(subKeyVal)]);
-  const subOid = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01];
-
-  // @ts-ignore
-  subOid.write = () => new Uint8Array(Buffer.from('092b06010401da470f01', 'hex'));
   // @ts-ignore - type inconsistency, this ctor supports a date param: https://docs.openpgpjs.org/SecretSubkeyPacket.html
   const secretSubkeyPacket = new pgp.SecretSubkeyPacket(dateTime);
-  secretSubkeyPacket.algorithm = pgp.enums.publicKey.eddsa;
+  secretSubkeyPacket.algorithm = pgp.enums.publicKey[algo];
   // @ts-ignore - same as above
   secretSubkeyPacket.isEncrypted = false;
+  let oid;
+  let Q;
+  if (algo === 'eddsa') {
+    await sodium.ready;
+    const subKeyVal = Buffer.from(
+      sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'), 'uint8array')
+    );
+    // Sub-key (encryption key) packet.
+    oid = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01];
+    // @ts-ignore
+    oid.write = () => new Uint8Array(Buffer.from('092b06010401da470f01', 'hex'));
+    Q = new Uint8Array([...new Uint8Array([0x40]), ...new Uint8Array(subKeyVal)]);
+  } else if (algo === 'ecdsa') {
+    oid = [0x2b, 0x81, 0x04, 0x00, 0x0a];
+    // @ts-ignore - same as above
+    oid.write = () => new Uint8Array(Buffer.from('052b8104000a', 'hex'));
+    Q = new Uint8Array(secp256k1.publicKeyCreate(new Uint8Array(Buffer.from(uValue, 'hex')), false));
+  }
   secretSubkeyPacket.publicParams = {
-    oid: subOid,
-    Q: new Uint8Array(publicSubKey),
+    oid,
+    Q,
   };
   // @ts-ignore - same as above
   await secretSubkeyPacket.computeFingerprintAndKeyID();

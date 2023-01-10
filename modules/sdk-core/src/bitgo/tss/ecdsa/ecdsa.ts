@@ -23,7 +23,7 @@ import {
   BShare,
   Signature,
 } from './types';
-import { SignatureShareRecord, SignatureShareType, RequestType } from './../../utils';
+import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from './../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
@@ -32,7 +32,7 @@ import createKeccakHash from 'keccak';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
-import { PrivateKey } from 'openpgp';
+import { PrivateKey, SerializedKeyPair } from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 
@@ -304,13 +304,15 @@ export async function getBitgoToUserLatestShare(
  * @param keyShare - TSS key share of the party preparing exchange materials
  * @param recipientIndex - index of the recipient (1, 2, or 3)
  * @param recipientGpgPublicArmor - recipient's public gpg key in armor format
- * @param senderGpgPrivateArmor - sender's private gpg key in armor format
+ * @param gpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
+ * @param isbs58Encoded - is bs58 encoded or not
  * @returns encrypted N Share
  */
 export async function encryptNShare(
   keyShare: KeyShare,
   recipientIndex: number,
   recipientGpgPublicArmor: string,
+  gpgKey: SerializedKeyPair<string>,
   isbs58Encoded = true
 ): Promise<EncryptedNShare> {
   const nShare = keyShare.nShares[recipientIndex];
@@ -345,6 +347,7 @@ export async function encryptNShare(
     encryptedPrivateShare,
     n: nShare.n,
     vssProof: nShare.v,
+    privateShareProof: await createShareProof(gpgKey.privateKey, nShare.u, 'ecdsa'),
   };
 }
 
@@ -362,6 +365,8 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
     publicShare: keyShare.publicShare,
     encryptedPrivateShare: keyShare.privateShare,
     n: keyShare.n ?? '', // this is not currently needed for key creation
+    // TODO (BG-65434) : make it as mandatory
+    privateShareProof: keyShare.privateShareProof ?? '',
   };
 }
 
