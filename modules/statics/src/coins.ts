@@ -150,6 +150,7 @@ export const coins = CoinMap.fromCoins([
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]), // we should probably refactor this into a eth() method
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES,
@@ -158,6 +159,7 @@ export const coins = CoinMap.fromCoins([
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]),
   account(
     'eth2',
@@ -276,18 +278,22 @@ export const coins = CoinMap.fromCoins([
   account('bsc', 'Binance Smart Chain', Networks.main.bsc, 18, UnderlyingAsset.BSC, BaseUnit.BSC, [
     ...ETH_FEATURES_WITH_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]),
   account('tbsc', 'Testnet Binance Smart Chain', Networks.test.bsc, 18, UnderlyingAsset.BSC, BaseUnit.BSC, [
     ...ETH_FEATURES_WITH_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]),
   account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]),
   account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
+    CoinFeature.EVM_WALLET,
   ]),
   erc20CompatibleAccountCoin(
     'celo',
