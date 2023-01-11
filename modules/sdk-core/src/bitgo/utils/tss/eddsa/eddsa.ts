@@ -323,7 +323,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      enterprise: params.passphrase,
+      passphrase: params.passphrase,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
     });
     const backupKeychainPromise = this.createBackupKeychain({
