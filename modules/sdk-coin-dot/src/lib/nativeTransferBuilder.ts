@@ -191,6 +191,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
     } else if (this._method?.name === MethodNames.TransferAll) {
       this._sweepFreeBalance = true;
       const txMethod = this._method.args as TransferAllArgs;
+      this.sweep(txMethod.keepAlive);
       this.to({
         address: utils.decodeDotAddress(
           txMethod.dest.id,

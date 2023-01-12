@@ -206,6 +206,7 @@ export class Transaction extends BaseTransaction {
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
         result.to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
+        result.keepAlive = txMethod.keepAlive;
       } else {
         throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
       }
