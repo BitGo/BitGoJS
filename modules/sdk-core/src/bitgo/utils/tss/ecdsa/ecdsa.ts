@@ -253,7 +253,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         source: 'backup',
         keyType: 'tss',
         commonKeychain: finalizedBackupKeyShare.commonKeychain,
-        provider: backupProvider ?? 'BitGoKRS',
+        provider: backupProvider ?? 'BitGoTrustAsKrs',
       };
       return await this.baseCoin.keychains().createBackup(backupKeyParams);
     }

@@ -393,7 +393,7 @@ describe('V2 Wallets:', function () {
       sandbox.verifyAndRestore();
     });
 
-    it('should create a new ECDSA TSS wallet with BitGoKRS as backup provider', async function () {
+    it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
       const tpolygon = bitgo.coin('tpolygon');
       const sandbox = sinon.createSandbox();
       const stubbedKeychainsTriplet = {
@@ -424,7 +424,7 @@ describe('V2 Wallets:', function () {
         multisigType: 'tss',
         enterprise: 'enterprise',
         passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
-        backupProvider: 'BitGoKRS',
+        backupProvider: 'BitGoTrustAsKrs',
         walletVersion: 3,
       });
 
