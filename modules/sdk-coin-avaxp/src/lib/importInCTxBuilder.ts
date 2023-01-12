@@ -1,138 +1,67 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import {
-  EVMConstants,
-  Tx as EVMTx,
   ImportTx,
   UnsignedTx,
   SECPTransferInput,
   SelectCredentialClass,
   TransferableInput,
   EVMOutput,
-  AmountInput,
+  Tx,
 } from 'avalanche/dist/apis/evm';
 import { costImportTx } from 'avalanche/dist/utils';
 import { BN } from 'avalanche';
-import { Credential } from 'avalanche/dist/common';
-import { recoverUtxos, utxoToInput } from './utxoEngine';
-import { BaseTx, Tx } from './iface';
-import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
+import { createInputs } from './utxoEngine';
 import utils from './utils';
+import { TransactionBuilder } from './transactionBuilder';
+import { Utxos, FeeRate, ExternalChainId, To, Threshold, Locktime } from './mixins';
+import { BaseTransaction } from '@bitgo/sdk-core';
 
-export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
-  constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig);
-  }
-
-  /**
-   * C-chain address who is target of the import.
-   * Address format is eth like
-   * @param {string} cAddress
-   */
-  to(cAddress: string): this {
-    this.transaction._to = [utils.parseAddress(cAddress)];
-    return this;
-  }
-
-  protected get transactionType(): TransactionType {
-    return TransactionType.Import;
-  }
-
-  /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
-    if (
-      baseTx.getNetworkID() !== this.transaction._networkID ||
-      !baseTx.getBlockchainID().equals(this.transaction._blockchainID)
-    ) {
-      throw new Error('Network or blockchain is not equals');
-    }
-
-    if (!this.verifyTxType(baseTx)) {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
-    }
-
-    // The outputs is a signler C-Chain address result.
-    // It's expected to have only one outputs to the destination C-Chain address.
-    const outputs = baseTx.getOuts();
-    if (outputs.length !== 1) {
-      throw new BuildTransactionError('Transaction can have one output');
-    }
-    const output = outputs[0];
-
-    if (!output.getAssetID().equals(this.transaction._assetId)) {
-      throw new Error('AssetID are not equals');
-    }
-    this.transaction._to = [output.getAddress()];
-
-    const input = baseTx.getImportInputs();
-
-    this.transaction._utxos = recoverUtxos(input);
-
-    const totalInputAmount = input.reduce((t, i) => t.add((i.getInput() as AmountInput).getAmount()), new BN(0));
-    // it should be (output as AmountOutput).getAmount(), but it's not working.
-    const totalOutputAmount = new BN((output as any).amount);
-    const feeSize = costImportTx(tx.getUnsignedTx() as UnsignedTx);
-    const fee = totalInputAmount.sub(totalOutputAmount);
-    const feeRate = fee.divn(feeSize);
-    this.transaction._fee = {
-      fee: fee.toString(),
-      feeRate: feeRate.toNumber(),
-      size: feeSize,
-    };
-    this.transaction.setTransaction(tx);
-    return this;
-  }
-
-  static verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
-    return baseTx.getTypeID() === EVMConstants.IMPORTTX;
-  }
-
-  verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
-    return ImportInCTxBuilder.verifyTxType(baseTx);
-  }
-
+export class ImportInCTxBuilder extends Utxos(FeeRate(ExternalChainId(To(Threshold(Locktime(TransactionBuilder)))))) {
   /**
    * Build the import in C-chain transaction
    * @protected
    */
   protected buildAvaxTransaction(): void {
-    // if tx has credentials, tx shouldn't change
-    if (this.transaction.hasCredentials) return;
-    if (this.transaction._to.length !== 1) {
-      throw new Error('to is required');
+    if (!this._externalChainId) {
+      // default external chain is P.
+      this._externalChainId = utils.binTools.cb58Decode(this._coinConfig.network.blockchainID);
     }
-    if (!this.transaction._fee.feeRate) {
-      throw new Error('fee rate is required');
-    }
-    const { inputs, amount, credentials } = this.createInputs();
+    const { inputs, amount, credentials } = this.createInputs(this.assetID, this._utxos, this.sender, this._threshold);
 
-    const feeRate = new BN(this.transaction._fee.feeRate);
+    const feeRate = new BN(this._feeRate);
+    const cChainBlockchainID = utils.binTools.cb58Decode(this._coinConfig.network.cChainBlockchainID);
     const feeSize = costImportTx(
       new UnsignedTx(
-        new ImportTx(this.transaction._networkID, this.transaction._blockchainID, this._externalChainId, inputs, [
-          new EVMOutput(this.transaction._to[0], amount, this.transaction._assetId),
+        new ImportTx(this._coinConfig.network.networkID, cChainBlockchainID, this._externalChainId, inputs, [
+          new EVMOutput(this._to[0], amount, this.assetID),
         ])
       )
     );
     const fee = feeRate.muln(feeSize);
-    this.transaction._fee.fee = fee.toString();
-    this.transaction._fee.size = feeSize;
-    this.transaction.setTransaction(
-      new EVMTx(
-        new UnsignedTx(
-          new ImportTx(
-            this.transaction._networkID,
-            this.transaction._blockchainID,
-            this._externalChainId,
-            inputs,
-            [new EVMOutput(this.transaction._to[0], amount.sub(fee), this.transaction._assetId)],
-            fee
-          )
-        ),
-        credentials
-      )
+    this.transaction.tx = new Tx(
+      new UnsignedTx(
+        new ImportTx(
+          this._coinConfig.network.networkID,
+          cChainBlockchainID,
+          this._externalChainId,
+          inputs,
+          [new EVMOutput(this._to[0], amount.sub(fee), this.assetID)],
+          fee
+        )
+      ),
+      credentials
     );
+  }
+
+  validateTransaction(_?: BaseTransaction): void {
+    if (this._fromAddresses.length <= this._threshold) {
+      throw new Error('fromPubKey length should be greater than threshold');
+    }
+    if (this._to.length !== 1) {
+      throw new Error('to is required');
+    }
+    if (!this._feeRate) {
+      throw new Error('fee rate is required');
+    }
   }
 
   /**
@@ -147,38 +76,5 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @protected
    *
    */
-  protected createInputs(): {
-    inputs: TransferableInput[];
-    credentials: Credential[];
-    amount: BN;
-  } {
-    const sender = this.transaction._fromAddresses.slice();
-    if (this.recoverSigner) {
-      // switch first and last signer.
-      const tmp = sender.pop();
-      sender.push(sender[0]);
-      if (tmp) {
-        sender[0] = tmp;
-      }
-    }
-    const { inputs, amount } = utxoToInput(this.transaction._utxos, sender);
-    const result: {
-      inputs: TransferableInput[];
-      credentials: Credential[];
-    } = { inputs: [], credentials: [] };
-
-    inputs.forEach((input) => {
-      const secpTransferInput = new SECPTransferInput(input.amount);
-      input.signaturesIdx.forEach((signatureIdx, arrayIndex) =>
-        secpTransferInput.addSignatureIdx(signatureIdx, sender[arrayIndex])
-      );
-      result.inputs.push(
-        new TransferableInput(input.txidBuf, input.outputIdx, this.transaction._assetId, secpTransferInput)
-      );
-
-      result.credentials.push(SelectCredentialClass(secpTransferInput.getCredentialID(), input.signatures));
-    });
-
-    return { ...result, amount };
-  }
+  protected createInputs = createInputs(TransferableInput, SECPTransferInput, SelectCredentialClass);
 }

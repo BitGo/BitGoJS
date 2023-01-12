@@ -18,4 +18,5 @@ export {
   HederaToken,
   TronErc20Coin,
 } from './account';
+export { AVAXPCoin } from './avaxp';
 export { CoinMap } from './map';

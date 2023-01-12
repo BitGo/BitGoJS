@@ -135,7 +135,8 @@ describe('Avaxp', function () {
         .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
         .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
         .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
-        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
+        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos)
+        .broadcastDate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.broadcastDate);
       const tx = await txBuilder.build();
 
       let txHex = tx.toBroadcastFormat();
@@ -170,7 +171,8 @@ describe('Avaxp', function () {
         .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
         .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
         .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
-        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
+        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos)
+        .broadcastDate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.broadcastDate);
       const tx = await txBuilder.build();
 
       let txHex = tx.toBroadcastFormat();
@@ -211,11 +213,11 @@ describe('Avaxp', function () {
       const xprv = testData.SEED_ACCOUNT.xPrivateKey;
       const kp1 = new KeyPair({ prv: xprv });
       const addressBuffer1 = kp1.getAddressBuffer();
-      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+      const address1 = utils.binTools.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
 
       const kp2 = new KeyPair({ prv: xprv });
       const addressBuffer2 = kp2.getAddressSafeBuffer();
-      const address2 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
+      const address2 = utils.binTools.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
 
       const kp3 = new KeyPair({ prv: xprv });
       const address3 = kp3.getAvaxPAddress('avax');
@@ -228,11 +230,11 @@ describe('Avaxp', function () {
       const xprv = testData.SEED_ACCOUNT.xPrivateKey;
       const kp1 = new KeyPair({ prv: xprv });
       const addressBuffer1 = kp1.getAddressBuffer();
-      const address1 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer1));
+      const address1 = utils.binTools.addressToString('fuji', 'P', BufferAvax.from(addressBuffer1));
 
       const kp2 = new KeyPair({ prv: xprv });
       const addressBuffer2 = kp2.getAddressSafeBuffer();
-      const address2 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
+      const address2 = utils.binTools.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
 
       const kp3 = new KeyPair({ prv: xprv });
       const address3 = kp3.getAvaxPAddress('fuji');
@@ -244,11 +246,11 @@ describe('Avaxp', function () {
       const utils = new KeyPairUtils();
       const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
       const addressBuffer1 = kp1.getAddressBuffer();
-      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+      const address1 = utils.binTools.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
 
       const kp2 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
       const addressBuffer2 = kp2.getAddressSafeBuffer();
-      const address2 = utils.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
+      const address2 = utils.binTools.addressToString('fuji', 'P', BufferAvax.from(addressBuffer2));
 
       address1.should.not.equal(address2);
     });
@@ -256,11 +258,11 @@ describe('Avaxp', function () {
       const utils = new KeyPairUtils();
       const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
       const addressBuffer1 = kp1.getAddressBuffer();
-      const address1 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
+      const address1 = utils.binTools.addressToString('avax', 'P', BufferAvax.from(addressBuffer1));
 
       const kp2 = new KeyPair({ prv: testData.ACCOUNT_3.privkey });
       const addressBuffer2 = kp2.getAddressSafeBuffer();
-      const address2 = utils.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
+      const address2 = utils.binTools.addressToString('avax', 'P', BufferAvax.from(addressBuffer2));
 
       address1.should.not.equal(address2);
     });
@@ -270,11 +272,12 @@ describe('Avaxp', function () {
     it('should be performed', async () => {
       const keyPairToSign = new AvaxpLib.KeyPair();
       const prvKey = keyPairToSign.getPrivateKey();
+      assert(prvKey);
       const keyPair = keyPairToSign.getKeys();
       const messageToSign = Buffer.from(randomBytes(32));
       const signature = await basecoin.signMessage(keyPair, messageToSign.toString('hex'));
 
-      const verify = AvaxpLib.Utils.verifySignature(basecoin._staticsCoin.network, messageToSign, signature, prvKey!);
+      const verify = AvaxpLib.Utils.verifySignature(basecoin._staticsCoin.network, messageToSign, signature, prvKey);
       verify.should.be.true();
     });
 

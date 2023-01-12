@@ -55,7 +55,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   recordKeysFromPrivateKey(prv: string): void {
     if (prv.startsWith('PrivateKey-')) {
-      this.keyPair = ECPair.fromPrivateKey(Buffer.from(utils.cb58Decode(prv.split('-')[1])));
+      this.keyPair = ECPair.fromPrivateKey(Buffer.from(utils.binTools.cb58Decode(prv.split('-')[1])));
       return;
     }
     if (!utils.isValidPrivateKey(prv)) {
@@ -83,7 +83,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       return;
     } catch (e) {
       try {
-        this.keyPair = ECPair.fromPublicKey(Buffer.from(utils.cb58Decode(pub)));
+        this.keyPair = ECPair.fromPublicKey(Buffer.from(utils.binTools.cb58Decode(pub)));
         return;
       } catch (e) {
         throw new Error('Unsupported public key');
@@ -120,7 +120,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   getAvaxPAddress(hrp: string): string {
     const addressBuffer: BufferAvax = BufferAvax.from(this.getAddressBuffer());
-    return utils.addressToString(hrp, 'P', addressBuffer);
+    return utils.binTools.addressToString(hrp, 'P', addressBuffer);
   }
 
   /**

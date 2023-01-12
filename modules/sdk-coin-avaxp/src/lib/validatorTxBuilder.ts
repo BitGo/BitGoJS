@@ -1,27 +1,11 @@
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
-import { BaseCoin } from '@bitgo/statics';
-import { AddValidatorTx, PlatformVMConstants, UnsignedTx, Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { Tx, BaseTx } from './iface';
+import { AddValidatorTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { BaseTransaction, BuildTransactionError } from '@bitgo/sdk-core';
 import utils from './utils';
+import { BN } from 'avalanche';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
   protected _delegationFeeRate: number;
-
-  /**
-   * @param coinConfig
-   */
-  constructor(coinConfig: Readonly<BaseCoin>) {
-    super(coinConfig);
-  }
-
-  /**
-   * get transaction type
-   * @protected
-   */
-  protected get transactionType(): TransactionType {
-    return TransactionType.AddValidator;
-  }
 
   /**
    * set the delegationFeeRate
@@ -38,30 +22,11 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @param delegationFeeRate number
    */
   validateDelegationFeeRate(delegationFeeRate: number): void {
-    if (delegationFeeRate < Number(this.transaction._network.minDelegationFee)) {
+    if (delegationFeeRate < Number(this._coinConfig.network.minDelegationFee)) {
       throw new BuildTransactionError(
-        `Delegation fee cannot be less than ${this.transaction._network.minDelegationFee}`
+        `Delegation fee cannot be less than ${this._coinConfig.network.minDelegationFee}`
       );
     }
-  }
-
-  /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
-    if (!this.verifyTxType(baseTx)) {
-      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
-    }
-    this._delegationFeeRate = baseTx.getDelegationFee();
-    return this;
-  }
-
-  static verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
-  }
-
-  verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
-    return ValidatorTxBuilder.verifyTxType(baseTx);
   }
 
   /**
@@ -69,27 +34,44 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @protected
    */
   protected buildAvaxTransaction(): void {
-    const { inputs, outputs, credentials } = this.createInputOutput();
-    this.transaction.setTransaction(
-      new PVMTx(
-        new UnsignedTx(
-          new AddValidatorTx(
-            this.transaction._networkID,
-            this.transaction._blockchainID,
-            outputs,
-            inputs,
-            this.transaction._memo,
-            utils.NodeIDStringToBuffer(this._nodeID),
-            this._startTime,
-            this._endTime,
-            this._stakeAmount,
-            [this.stakeTransferOut()],
-            this.rewardOwnersOutput(),
-            this._delegationFeeRate
-          )
-        ),
-        credentials
-      )
+    const { inputs, amount, credentials } = this.createInput();
+    const outputs = this.createChangeOutputs(amount.sub(this._stakeAmount));
+    this.transaction.tx = new Tx(
+      new UnsignedTx(
+        new AddValidatorTx(
+          this._coinConfig.network.networkID,
+          utils.binTools.cb58Decode(this._coinConfig.network.blockchainID),
+          outputs,
+          inputs,
+          this._memo,
+          utils.NodeIDStringToBuffer(this._nodeID),
+          this._startTime,
+          this._endTime,
+          this._stakeAmount,
+          [this.stakeTransferOut()],
+          this.rewardOwnersOutput(),
+          this._delegationFeeRate
+        )
+      ),
+      credentials
     );
+  }
+
+  /**
+   *
+   * @param amount
+   */
+  validateStakeAmount(amount: BN): void {
+    const minStake = new BN(this._coinConfig.network.minStake);
+    if (amount.lt(minStake)) {
+      throw new BuildTransactionError('Minimum staking amount is ' + Number(minStake) / 1000000000 + ' AVAX.');
+    }
+  }
+
+  validateTransaction(_?: BaseTransaction): void {
+    super.validateTransaction(_);
+    if (!this._delegationFeeRate) {
+      throw new Error('delegationFeeRate is required');
+    }
   }
 }

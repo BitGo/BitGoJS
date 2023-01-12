@@ -10,17 +10,17 @@ import {
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
-import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
+import { AmountInput, AmountOutput, SelectCredentialClass, BaseTx as PVMBaseTx } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common/credentials';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
-import { Signature } from 'avalanche/dist/common';
+import { Signature, StandardTransferableInput, StandardTransferableOutput } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { ADDRESS_SEPARATOR, Output, Tx } from './iface';
+import { ADDRESS_SEPARATOR, INPUT_SEPARATOR, Tx } from './iface';
 
 export class Utils implements BaseUtils {
-  private binTools = BinTools.getInstance();
+  public binTools = BinTools.getInstance();
   public cb58Decode = this.binTools.cb58Decode;
   public cb58Encode = this.binTools.cb58Encode;
   public stringToBuffer = this.binTools.stringToBuffer;
@@ -79,7 +79,7 @@ export class Utils implements BaseUtils {
     let pubBuf;
     if (pub.length === 50) {
       try {
-        pubBuf = utils.cb58Decode(pub);
+        pubBuf = utils.binTools.cb58Decode(pub);
       } catch {
         return false;
       }
@@ -152,7 +152,7 @@ export class Utils implements BaseUtils {
     throw new NotImplementedError('isValidTransactionId not implemented');
   }
 
-  getCredentials(tx: BaseTx): Credential[] {
+  getCredentials(tx: PVMBaseTx): Credential[] {
     return tx.getIns().map((ins) => SelectCredentialClass(ins.getInput().getCredentialID()));
   }
 
@@ -276,13 +276,12 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Check if Output is from PVM.
-   * Output could be EVM or PVM output.
-   * @param {Output} output
-   * @returns {boolean} output is TransferableOutput
+   * Return a mapper function to that network address representation.
+   * @param network required to stringify addresses
+   * @return mapper function
    */
-  isTransferableOutput(output: Output): output is TransferableOutput {
-    return 'getOutput' in output;
+  mapOutputToEntry(network: AvalancheNetwork): (o: StandardTransferableOutput) => Entry {
+    return this.mapTransferableOutputToEntry(network.hrp, network.alias);
   }
 
   /**
@@ -290,31 +289,55 @@ export class Utils implements BaseUtils {
    * @param network required to stringify addresses
    * @return mapper function
    */
-  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
-    return (output: Output) => {
-      if (this.isTransferableOutput(output)) {
-        const amountOutput = output.getOutput() as AmountOutput;
-        const address = amountOutput
-          .getAddresses()
-          .map((a) => this.addressToString(network.hrp, network.alias, a))
-          .sort()
-          .join(ADDRESS_SEPARATOR);
-        return {
-          value: amountOutput.getAmount().toString(),
-          address,
-        };
-      } else {
-        const evmOutput = output as EVMOutput;
-        return {
-          // it should be evmOuput.getAmount(), but it returns a 0.
-          value: new BN((evmOutput as any).amount).toString(),
-          // C-Chain address.
-          address: '0x' + evmOutput.getAddressString(),
-        };
-      }
+  mapTransferableOutputToEntry(hrp: string, alias: string): (o: StandardTransferableOutput) => Entry {
+    return (output) => {
+      const amountOutput = output.getOutput() as AmountOutput;
+      const address = amountOutput
+        .getAddresses()
+        .map((a) => this.binTools.addressToString(hrp, alias, a))
+        .sort()
+        .join(ADDRESS_SEPARATOR);
+      return {
+        value: amountOutput.getAmount().toString(),
+        address,
+      };
+    };
+  }
+  /**
+   * Return a mapper function to that network address representation.
+   * @param network required to stringify addresses
+   * @return mapper function
+   */
+  mapEVMOutputToEntry(output: EVMOutput): Entry {
+    return {
+      // it should be evmOuput.getAmount(), but it returns a 0.
+      value: new BN((output as any).amount).toString(),
+      // C-Chain address.
+      address: '0x' + output.getAddressString(),
     };
   }
 
+  /**
+   * Map Input to Entry.
+   * @param {TransferableInput} input
+   * @return {Entry} converted input
+   */
+  mapInputToEntry(address: string): (StandardTransferableInput) => Entry {
+    return (input) => {
+      const amountInput = input.getInput() as any as AmountInput;
+      return {
+        id: this.inputToId(input),
+        address,
+        value: amountInput.getAmount().toString(),
+      } as Entry;
+    };
+  }
+
+  inputToId(input: StandardTransferableInput): string {
+    return (
+      utils.binTools.cb58Encode(input.getTxID()) + INPUT_SEPARATOR + utils.outputidxBufferToNumber(input.getOutputIdx())
+    );
+  }
   /**
    * remove hex prefix (0x)
    * @param hex string

@@ -1,9 +1,8 @@
 import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { Signature } from 'avalanche/dist/common';
+import { Signature, Input } from 'avalanche/dist/common';
 import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
-import { StandardAmountInput, StandardTransferableInput } from 'avalanche/dist/common/input';
 
 export interface InputData {
   amount: BN;
@@ -11,32 +10,6 @@ export interface InputData {
   outputIdx: BufferAvax;
   signaturesIdx: number[];
   signatures: Signature[];
-}
-
-/**
- * Inputs can be controlled but outputs get reordered in transactions
- * In order to make sure that the mapping is always correct we create an addressIndex which matches to the appropriate
- * signatureIdx
- * @param {StandardTransferableInput[]} utxos as transaction ins.
- * @returns the list of UTXOs
- */
-export function recoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj[] {
-  return utxos.map((utxo) => {
-    const secpInput = utxo.getInput() as StandardAmountInput;
-
-    // use the same addressesIndex as existing ones in the inputs
-    const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-
-    return {
-      outputID: SECP256K1_Transfer_Output,
-      outputidx: utils.outputidxBufferToNumber(utxo.getOutputIdx()),
-      txid: utils.cb58Encode(utxo.getTxID()),
-      amount: secpInput.getAmount().toString(),
-      threshold: addressesIndex.length,
-      addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
-      addressesIndex,
-    };
-  });
 }
 
 /**
@@ -84,7 +57,7 @@ export function utxoToInput(
         throw new BuildTransactionError('Threshold is inconsistent');
       }
 
-      const txidBuf: BufferAvax = utils.cb58Decode(utxo.txid);
+      const txidBuf: BufferAvax = utils.binTools.cb58Decode(utxo.txid);
       const amount: BN = new BN(utxo.amount);
       const outputIdx: BufferAvax = utils.outputidxNumberToBuffer(utxo.outputidx);
 
@@ -97,7 +70,7 @@ export function utxoToInput(
       const signatures = signers.map(({ senderIndex }) =>
         // TODO(BG-56700):  Improve canSign by check in addresses in empty credentials match signer
         // HSM require empty signature.
-        utils.createSig(senderIndex == 1 ? '' : sender[senderIndex].toString('hex'))
+        utils.createSig(senderIndex === 1 ? '' : sender[senderIndex].toString('hex'))
       );
       const signaturesIdx = signers.map(({ utxoIndex }) => utxoIndex);
 
@@ -105,4 +78,52 @@ export function utxoToInput(
     });
 
   return { inputs, amount: currentTotal };
+}
+
+/**
+ * Create inputs by mapping {@see utxoEngine.utxoToInput} result.
+ * Reorder sender to handle recover signer.
+ * TransferableInput is a EVM Tx.
+ * @return {
+ *     inputs: TransferableInput[];
+ *     credentials: Credential[];
+ *     amount: BN;
+ *   } where amount is the sum of inputs amount and credentials has signer address to be replaced with correct signature.
+ * @protected
+ *
+ */
+export function createInputs<T, I extends Input, C>(
+  TransferableClass: new (txid?: BufferAvax, outputidx?: BufferAvax, assetID?: BufferAvax, input?: I) => T,
+  InputClase: new (amount: BN) => I,
+  CredentialClass: (credid: number, ...args: any[]) => C
+): (
+  assetID: BufferAvax,
+  utxos: DecodedUtxoObj[],
+  sender: BufferAvax[],
+  threshold?: number
+) => { amount: BN; inputs: T[]; credentials: C[] } {
+  return (
+    assetID: BufferAvax,
+    utxos: DecodedUtxoObj[],
+    sender: BufferAvax[],
+    threshold = 2
+  ): { amount: BN; inputs: T[]; credentials: C[] } => {
+    const { inputs, amount } = utxoToInput(utxos, sender, threshold);
+    const result: {
+      inputs: T[];
+      credentials: C[];
+    } = { inputs: [], credentials: [] };
+
+    inputs.forEach((input) => {
+      const secpTransferInput = new InputClase(input.amount);
+      input.signaturesIdx.forEach((signatureIdx, arrayIndex) =>
+        secpTransferInput.addSignatureIdx(signatureIdx, sender[arrayIndex])
+      );
+      result.inputs.push(new TransferableClass(input.txidBuf, input.outputIdx, assetID, secpTransferInput));
+
+      result.credentials.push(CredentialClass(secpTransferInput.getCredentialID(), input.signatures));
+    });
+
+    return { ...result, amount };
+  };
 }

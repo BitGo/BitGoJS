@@ -122,7 +122,8 @@ describe('AvaxP Validate Tx Builder', () => {
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
+        .broadcastDate(testData.ADDVALIDATOR_SAMPLES.broadcastDate);
 
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
@@ -141,7 +142,8 @@ describe('AvaxP Validate Tx Builder', () => {
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
+        .broadcastDate(testData.ADDVALIDATOR_SAMPLES.broadcastDate);
 
       await txBuilder.build().should.not.throw();
     });
@@ -167,7 +169,8 @@ describe('AvaxP Validate Tx Builder', () => {
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
+        .broadcastDate(testData.ADDVALIDATOR_SAMPLES.broadcastDate);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
       const tx = await txBuilder.build();
@@ -224,7 +227,8 @@ describe('AvaxP Validate Tx Builder', () => {
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
+        .broadcastDate(testData.ADDVALIDATOR_SAMPLES.broadcastDate);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
@@ -259,7 +263,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .getValidatorBuilder()
         .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
         .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
-        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
         .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
         .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
         .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
@@ -267,7 +270,9 @@ describe('AvaxP Validate Tx Builder', () => {
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
-        .recoverMode();
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .recoverMode()
+        .broadcastDate(testData.ADDVALIDATOR_SAMPLES.broadcastDate);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });

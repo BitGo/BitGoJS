@@ -1,13 +1,19 @@
 import { Entry, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
-import { BaseTx as PMVBaseTx, TransferableOutput, Tx as PMVTx } from 'avalanche/dist/apis/platformvm';
-import { EVMBaseTx, EVMOutput, Tx as EMVTx } from 'avalanche/dist/apis/evm';
+import {
+  BaseTx as PMVBaseTx,
+  TransferableOutput,
+  Tx as PMVTx,
+  UnsignedTx as PMVUnsignedTx,
+} from 'avalanche/dist/apis/platformvm';
+import { EVMBaseTx, EVMOutput, Tx as EMVTx, UnsignedTx as EMVUnsignedTx } from 'avalanche/dist/apis/evm';
+import { AVAXPCoin } from '@bitgo/statics';
 
 export interface AvaxpEntry extends Entry {
   id: string;
 }
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
-  rewardAddresses: string[];
+  rewardAddresses?: string[];
   inputs: Entry[];
   memo?: string;
 }
@@ -28,8 +34,8 @@ export interface TxData {
   inputs: Entry[];
   type: TransactionType;
   fromAddresses: string[];
-  threshold: number;
-  locktime: string;
+  threshold?: number;
+  locktime?: string;
   memo?: string;
   signatures: string[];
   outputs: Entry[];
@@ -53,7 +59,6 @@ export type DecodedUtxoObj = {
   outputidx: string;
   threshold: number;
   addresses: string[];
-  addressesIndex?: number[];
 };
 
 /**
@@ -66,5 +71,8 @@ export const SECP256K1_Transfer_Output = 7;
 export const ADDRESS_SEPARATOR = '~';
 export const INPUT_SEPARATOR = ':';
 export type Tx = PMVTx | EMVTx;
+export type UnsignedTx = PMVUnsignedTx | EMVUnsignedTx;
 export type BaseTx = PMVBaseTx | EVMBaseTx;
 export type Output = TransferableOutput | EVMOutput;
+export type CoinConfig = Readonly<AVAXPCoin>;
+export type Constructor<T = any> = new (...args: any[]) => T;

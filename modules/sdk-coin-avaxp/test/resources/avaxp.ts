@@ -456,6 +456,7 @@ export const ADDVALIDATOR_SAMPLES = {
   ],
   memo: 'Manually add a delegator to the primary subnet with multisig',
   nodeID: 'NodeID-EZ38CcWHoSyoEfAkDN9zaieJ5Yq64YePY',
+  broadcastDate: 1661179967,
   startTime: '1661279967',
   endTime: '1663909967',
   minValidatorStake: '1000000000',
@@ -476,6 +477,7 @@ export const BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE = {
     'P-fuji1gtse4kdxzlaeth8cssaduehqdetc74y6pdrkk5', // bitgo
     'P-fuji130j57qt2kaypy7435xzxym96gnr53g0wqkxv92', // backup
   ],
+  broadcastDate: 1646423398,
   startTime: '1656423398',
   endTime: '1659053398',
   stakeAmount: '1000000000',

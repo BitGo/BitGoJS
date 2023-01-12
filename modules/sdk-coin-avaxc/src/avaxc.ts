@@ -37,7 +37,7 @@ import {
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
-import { bufferToHex, pubToAddress } from 'ethereumjs-util';
+import { bufferToHex } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
   AvaxSignTransactionOptions,
@@ -746,12 +746,7 @@ export class AvaxC extends BaseCoin {
   private async verifySignatureForAtomicTransaction(txHex: string): Promise<boolean> {
     const txBuilder = this.getAtomicBuilder().from(txHex);
     const tx = await txBuilder.build();
-    const payload = tx.signablePayload;
-    const signatures = tx.signature.map((s) => Buffer.from(s, 'hex'));
-    const recoverPubky = signatures.map((s) => AvaxpLib.Utils.recoverySignature(_.get(tx, '_network'), payload, s));
-    const expectedSenders = recoverPubky.map((r) => pubToAddress(r, true));
-    const senders = tx.inputs.map((i) => AvaxpLib.Utils.parseAddress(i.address));
-    return expectedSenders.every((e) => senders.some((sender) => e.equals(sender)));
+    return (tx as AvaxpLib.Transaction).verifySignature();
   }
 
   /**
