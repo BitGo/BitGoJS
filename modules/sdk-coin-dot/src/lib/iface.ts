@@ -139,6 +139,7 @@ export interface TxData {
   numSlashingSpans?: number;
   validatorStash?: string;
   claimEra?: string;
+  keepAlive?: boolean;
 }
 
 /**

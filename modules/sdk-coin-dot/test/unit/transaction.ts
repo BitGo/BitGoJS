@@ -86,6 +86,27 @@ describe('Dot Transaction', () => {
       const tx = (await builder.build()) as Transaction;
       should.deepEqual(tx.transactionSize(), rawTx.transfer.unsigned.length / 2);
     });
+
+    it('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
+      const keepAliveFalseBuilder = new TransferBuilder(config).material(material);
+      keepAliveFalseBuilder.from(rawTx.transferAll.unsignedKeepAliveFalse);
+      keepAliveFalseBuilder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sender({ address: accounts.account1.address });
+      const keepAliveFalseTx = (await keepAliveFalseBuilder.build()).toJson();
+
+      const keepAliveTrueBuilder = new TransferBuilder(config).material(material);
+      keepAliveTrueBuilder.from(rawTx.transferAll.unsignedKeepAliveTrue);
+      keepAliveTrueBuilder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sender({ address: accounts.account1.address });
+      const keepAliveTrueTx = (await keepAliveTrueBuilder.build()).toJson();
+
+      should.notEqual(keepAliveFalseTx.id, keepAliveTrueTx.id);
+      should.notEqual(keepAliveFalseTx.keepAlive, keepAliveTrueTx.keepAlive);
+    });
   });
 
   describe('Dot Explain Transaction', () => {
