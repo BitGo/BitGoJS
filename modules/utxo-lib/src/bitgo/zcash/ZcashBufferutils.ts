@@ -1,6 +1,8 @@
 /**
  * Transaction (de)serialization helpers.
- * Only supports full transparent transactions without shielded inputs or outputs.
+ * Only supports full transparent transactions
+ * Shielded inputs and outputs are supported in that we can (de)serialize
+ * the transaction, but we don't fully read them.
  *
  * References:
  * - https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L771
@@ -9,6 +11,7 @@ import { TxInput, TxOutput } from 'bitcoinjs-lib';
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 
 import { UnsupportedTransactionError, ZcashTransaction } from './ZcashTransaction';
+import { readOutputDescriptionV5, readSpendDescriptionsV5 } from './ZcashShieldedBufferutils';
 
 export const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
 
@@ -64,13 +67,23 @@ export function writeEmptyOrchardBundle(bufferWriter: BufferWriter): void {
   bufferWriter.writeUInt8(0);
 }
 
-export function readEmptySaplingBundle(bufferReader: BufferReader): void {
+export function readSaplingBundle(bufferReader: BufferReader): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L283
-  readEmptyVector(bufferReader) /* vSpendsSapling */;
-  readEmptyVector(bufferReader) /* vOutputsSapling */;
+  const vSpendsSapling = readSpendDescriptionsV5(bufferReader); /* vSpendsSapling */
+  const vOutputsSapling = readOutputDescriptionV5(bufferReader); /* vOutputsSapling */
+
+  const hasSapling = !(vSpendsSapling.length === 0 && vOutputsSapling.length === 0);
+  if (hasSapling) {
+    // https://github.com/zcash/zcash/blob/3f09cfa00a3c90336580a127e0096d99e25a38d6/src/amount.h#L15
+    bufferReader.readUInt8();
+  }
+
+  if (vSpendsSapling.length > 0) {
+    bufferReader.readInt32();
+  }
 }
 
-export function writeEmptySamplingBundle(bufferWriter: BufferWriter): void {
+export function writeSaplingBundle(bufferWriter: BufferWriter): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L283
   bufferWriter.writeVarInt(0) /* vSpendsSapling */;
   bufferWriter.writeVarInt(0) /* vOutputsSapling */;
@@ -98,7 +111,7 @@ export function fromBufferV4<TNumber extends number | bigint>(
     }
 
     // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L863
-    readEmptySaplingBundle(bufferReader);
+    readSaplingBundle(bufferReader);
   }
 
   if (tx.supportsJoinSplits()) {
@@ -122,7 +135,7 @@ export function fromBufferV5<TNumber extends number | bigint>(
   tx.outs = readOutputs<TNumber>(bufferReader, amountType);
 
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L835
-  readEmptySaplingBundle(bufferReader);
+  readSaplingBundle(bufferReader);
   readEmptyOrchardBundle(bufferReader);
 }
 
@@ -189,7 +202,7 @@ export function toBufferV5<TNumber extends number | bigint>(
   writeOutputs<TNumber>(bufferWriter, tx.outs);
 
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L1063
-  writeEmptySamplingBundle(bufferWriter);
+  writeSaplingBundle(bufferWriter);
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L1081
   writeEmptyOrchardBundle(bufferWriter);
 }
