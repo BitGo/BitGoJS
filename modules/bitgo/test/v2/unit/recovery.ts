@@ -7,9 +7,10 @@ import * as nock from 'nock';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import { ECDSAMethodTypes, krsProviders } from '@bitgo/sdk-core';
-import { keyShares } from '../fixtures/tss/ecdsaFixtures';
+import { ECDSAMethodTypes, krsProviders, Ecdsa } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
+import { TransactionFactory } from '@ethereumjs/tx';
+import { KeyPair } from '@bitgo/sdk-coin-eth';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -663,6 +664,10 @@ describe('Recovery:', function () {
         recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
         gasPrice: '20000000000',
         gasLimit: '500000',
+        eip1559: {
+          maxPriorityFeePerGas: 3,
+          maxFeePerGas: 20,
+        },
       });
       should.exist(transaction);
       transaction.should.have.property('tx');
@@ -686,21 +691,60 @@ describe('Recovery:', function () {
 
       const basecoin = bitgo.coin('teth');
 
-      const userKey = keyShares.userKeyShare;
-      const backupKey = keyShares.backupKeyShare;
-      const bitgoKey = keyShares.bitgoKeyShare;
+      const mpc = new Ecdsa();
+      const [userIndex, backupIndex, bitgoIndex] = [1, 2, 3];
+      const m = 2;
+      const n = 3;
+      const userKeyShare = await mpc.keyShare(userIndex, m, n);
+      const backupKeyShare = await mpc.keyShare(backupIndex, m, n);
+      const bitgoKeyShare = await mpc.keyShare(bitgoIndex, m, n);
+
 
       const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
-        pShare: userKey.pShare,
-        backupNShare: backupKey.nShares[1],
-        bitgoNShare: bitgoKey.nShares[1],
+        pShare: userKeyShare.pShare,
+        backupNShare: backupKeyShare.nShares[1],
+        bitgoNShare: bitgoKeyShare.nShares[1],
       };
 
       const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
-        pShare: backupKey.pShare,
-        userNShare: userKey.nShares[2],
-        bitgoNShare: bitgoKey.nShares[2],
+        pShare: backupKeyShare.pShare,
+        userNShare: userKeyShare.nShares[2],
+        bitgoNShare: bitgoKeyShare.nShares[2],
       };
+
+
+      const userKeyCombined = mpc.keyCombine(userSigningMaterial.pShare, [
+        userSigningMaterial.backupNShare!,
+        userSigningMaterial.bitgoNShare!,
+      ]);
+
+      const backupKeyCombined = mpc.keyCombine(backupKeyShare.pShare, [
+        userKeyShare.nShares[backupIndex],
+        bitgoKeyShare.nShares[backupIndex],
+      ]);
+      if (
+        userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode ||
+          userKeyCombined.xShare.y !== backupKeyCombined.xShare.y
+      ) {
+        throw new Error('user and backup key combined are inconsistent');
+      }
+
+      const baseAddress = new KeyPair({
+        pub: userKeyCombined.xShare.y,
+      }).getAddress();
+
+      const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
+        return {
+          ...data,
+          params: {
+            ...data.params, address: baseAddress,
+          },
+        };
+      });
+
+      recoveryNocks.nockEthRecovery(bitgo, nockTSSDataWithBaseAddress);
+
+      // const { userKeyShare, backupKeyShare, bitgoKeyShare } = keyShares;
 
       const encryptedBackupSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, JSON.stringify(backupSigningMaterial));
       const encryptedUserSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, JSON.stringify(userSigningMaterial));
@@ -711,14 +755,33 @@ describe('Recovery:', function () {
         walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        eip1559: {
+          maxPriorityFeePerGas: 3,
+          maxFeePerGas: 20,
+        },
         isTss: true,
       };
 
       const recovery = await basecoin.recover(recoveryParams);
-      // id and tx will always be different because of expireTime
+
       should.exist(recovery);
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
+
+      // verify data after signing is correct
+      const finalTx = TransactionFactory.fromSerializedData(
+        Buffer.from(
+          recovery.tx.substr(2),
+          'hex'
+        )
+      );
+
+
+      const senderAddress = finalTx.getSenderAddress().toString();
+
+      baseAddress.should.equal(senderAddress);
+      recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
+      Number(finalTx.value).should.equal(999999999990000000);
     });
 
     it('should construct an unsigned sweep tx with TSS', async function () {
