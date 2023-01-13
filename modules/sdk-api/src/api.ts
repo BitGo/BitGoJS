@@ -68,7 +68,7 @@ function errFromResponse<ResponseBodyType>(res: superagent.Response): ApiRespons
   const status = res.status;
   const result = res.body as ResponseBodyType;
   const invalidToken = _.has(res.header, 'x-auth-required') && res.header['x-auth-required'] === 'true';
-  const needsOtp = res.body.needsOTP !== undefined;
+  const needsOtp = res.body?.needsOTP !== undefined;
   return new ApiResponseError(message, status, result, invalidToken, needsOtp);
 }
 
