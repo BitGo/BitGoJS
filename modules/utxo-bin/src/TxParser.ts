@@ -18,6 +18,7 @@ export type TxParserArgs = {
   parseScriptAsm: boolean;
   parseOutputScript: boolean;
   parseSignatureData: {
+    msg: boolean;
     script: boolean;
     ecdsa: boolean;
     schnorr: boolean;
@@ -40,6 +41,7 @@ export class TxParser extends Parser {
     parseScriptAsm: true,
     parseOutputScript: true,
     parseSignatureData: {
+      msg: true,
       script: true,
       ecdsa: true,
       schnorr: true,

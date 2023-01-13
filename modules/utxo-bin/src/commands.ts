@@ -36,6 +36,7 @@ type ArgsParseTransaction = {
   fetchInputs: boolean;
   fetchSpends: boolean;
   parseSignatureData: boolean;
+  printSignatureMsg: boolean;
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
@@ -92,6 +93,7 @@ export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxPars
   return new TxParser({
     ...argv,
     parseSignatureData: {
+      msg: argv.printSignatureMsg,
       script: argv.parseSignatureData,
       ecdsa: argv.parseSignatureData,
       schnorr: argv.parseSignatureData,
@@ -121,6 +123,7 @@ export const cmdParseTx = {
       .option('parseScriptAsm', { alias: 'scriptasm', type: 'boolean', default: false })
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
+      .option('printSignatureMsg', { alias: 'msg', type: 'boolean', default: false })
       .option('parseOutputScript', { type: 'boolean', default: false })
       .option('maxOutputs', { type: 'number' })
       .option('vin', { type: 'number' })

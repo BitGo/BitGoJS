@@ -139,6 +139,7 @@ export class InputOutputParser extends Parser {
     return nodes;
   }
 
+  // TODO: Support ParsedSignatureScriptTaprootScriptPath
   parseSignatures(
     parsed: utxolib.bitgo.ParsedSignatureScript2Of3,
     tx: utxolib.bitgo.UtxoTransaction,
@@ -147,12 +148,22 @@ export class InputOutputParser extends Parser {
   ): ParserNode {
     const nodes: ParserNode[] = [];
     if (prevOutputs) {
-      const signedBy = utxolib.bitgo.getSignaturesWithPublicKeys(tx, inputIndex, prevOutputs, parsed.publicKeys);
-      nodes.push(this.node('signed by', `[${signedBy.flatMap((v, i) => (v ? [i] : [])).join(', ')}]`));
+      const verifications = utxolib.bitgo.getSignatureVerifications(
+        tx,
+        inputIndex,
+        prevOutputs[inputIndex].value,
+        {},
+        prevOutputs
+      );
+      const signedBy = parsed.publicKeys.map((v, i) =>
+        verifications.some(({ signedBy }) => v.equals(signedBy || Buffer.from([]))) ? i : -1
+      );
+      nodes.push(this.node('signed by', `[${signedBy.filter((i) => i != -1).join(', ')}]`));
+      nodes.push(this.node('msgs', `[${verifications.map(({ msg }) => msg?.toString('hex')).join(', ')}]`));
       if (this.params.parseSignatureData.ecdsa || this.params.parseSignatureData.schnorr) {
         nodes.push(
           ...parsed.signatures.map((s: Buffer | 0, i: number) =>
-            this.node(i, undefined, this.parseSignatureBuffer(parsed.scriptType, s, s === 0 ? -1 : signedBy.indexOf(s)))
+            this.node(i, undefined, this.parseSignatureBuffer(parsed.scriptType, s, signedBy[i]))
           )
         );
       }

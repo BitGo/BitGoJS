@@ -41,8 +41,10 @@ export type SignatureVerification =
       signedBy: Buffer;
       /** Set to the signature buffer */
       signature: Buffer;
+      /** Set to the transaction hash against which signatures are checked */
+      msg: Buffer;
     }
-  | { signedBy: undefined; signature: undefined };
+  | { signedBy: undefined; signature: undefined; msg?: Buffer };
 
 /**
  * @deprecated - use {@see verifySignaturesWithPublicKeys} instead
@@ -92,7 +94,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
 
   return signatures.map((signatureBuffer): SignatureVerification => {
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
-      return { signedBy: undefined, signature: undefined };
+      return { signedBy: undefined, signature: undefined, msg: undefined };
     }
 
     let hashType = Transaction.SIGHASH_DEFAULT;
@@ -133,10 +135,10 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       );
 
       if (signedBy.length === 0) {
-        return { signedBy: undefined, signature: undefined };
+        return { signedBy: undefined, signature: undefined, msg: signatureHash };
       }
       if (signedBy.length === 1) {
-        return { signedBy: signedBy[0], signature: signatureBuffer };
+        return { signedBy: signedBy[0], signature: signatureBuffer, msg: signatureHash };
       }
       throw new Error(`illegal state: signed by multiple public keys`);
     } else {
@@ -162,10 +164,10 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       );
 
       if (signedBy.length === 0) {
-        return { signedBy: undefined, signature: undefined };
+        return { signedBy: undefined, signature: undefined, msg: transactionHash };
       }
       if (signedBy.length === 1) {
-        return { signedBy: signedBy[0], signature: signatureBuffer };
+        return { signedBy: signedBy[0], signature: signatureBuffer, msg: transactionHash };
       }
       throw new Error(`illegal state: signed by multiple public keys`);
     }
