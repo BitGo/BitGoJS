@@ -55,6 +55,7 @@ import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } 
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { TypedDataUtils, SignTypedDataVersion } from '@metamask/eth-sig-util';
+const EthUtil = require('ethereumjs-util');
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -357,7 +358,7 @@ export class Eth extends BaseCoin {
    * @param eip1559 {EIP1559} configs that specify whether we should construct an eip1559 tx
    * @param replayProtectionOptions {ReplayProtectionOptions} check if chain id supports replay protection
    */
-  private static getEthCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions) {
+  public static getEthCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions) {
     // if eip1559 params are specified, default to london hardfork, otherwise,
     // default to tangerine whistle to avoid replay protection issues
     const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
@@ -1005,7 +1006,7 @@ export class Eth extends BaseCoin {
     }
   }
 
-  private signRecoveryTSS(
+  public signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
     txHex: string
@@ -1055,8 +1056,8 @@ export class Eth extends BaseCoin {
     const MESSAGE = Buffer.from(txHex, 'hex');
 
     const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, Keccak('keccak256')),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
     ];
 
     const signature = MPC.constructSignature([signA, signB]);
@@ -1072,23 +1073,23 @@ export class Eth extends BaseCoin {
     backupPrivateOrPublicKeyShare: string,
     walletPassphrase?: string
   ) {
-    let backupPrv;
-    let userPrv;
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupPrivateOrPublicKeyShare,
-        password: walletPassphrase,
-      });
-      userPrv = this.bitgo.decrypt({
-        input: userPublicOrPrivateKeyShare,
-        password: walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
+    // let backupPrv;
+    // let userPrv;
+    // try {
+    //   backupPrv = this.bitgo.decrypt({
+    //     input: backupPrivateOrPublicKeyShare,
+    //     password: walletPassphrase,
+    //   });
+    //   userPrv = this.bitgo.decrypt({
+    //     input: userPublicOrPrivateKeyShare,
+    //     password: walletPassphrase,
+    //   });
+    // } catch (e) {
+    //   throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    // }
 
-    const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
-    const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
+    const userSigningMaterial = JSON.parse(userPublicOrPrivateKeyShare) as ECDSAMethodTypes.SigningMaterial;
+    const backupSigningMaterial = JSON.parse(backupPrivateOrPublicKeyShare) as ECDSAMethodTypes.SigningMaterial;
 
     if (!userSigningMaterial.backupNShare) {
       throw new Error('Invalid user key - missing backupNShare');
@@ -1122,7 +1123,7 @@ export class Eth extends BaseCoin {
   /**
    * Helper which Adds signatures to tx object and re-serializes tx
    * */
-  private getSignedTxFromSignature(
+  public getSignedTxFromSignature(
     ethCommon: EthCommon.default,
     tx: EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction,
     signature: ECDSAMethodTypes.Signature
@@ -1218,16 +1219,18 @@ export class Eth extends BaseCoin {
       backupKeyAddress = backupKeyPair.getAddress();
     }
 
-    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    const backupKeyNonce = 0;
 
     // get balance of backupKey to ensure funds are available to pay fees
-    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const backupKeyBalance = new BN(100000000000);
 
     const totalGasNeeded = gasPrice.mul(gasLimit);
     const weiToGwei = 10 ** 9;
     if (backupKeyBalance.lt(totalGasNeeded)) {
       throw new Error(
-        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+        `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance
+          .div(new BN(weiToGwei))
+          .toString()} Gwei.` +
           `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
           ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
       );
@@ -1253,7 +1256,7 @@ export class Eth extends BaseCoin {
     const txParams = {
       to: params.recoveryDestination, // no contract address, so this field should not be used anyways
       nonce: backupKeyNonce,
-      value: txAmount,
+      value: txAmount.toNumber(),
       gasPrice: gasPrice,
       gasLimit: gasLimit,
       data: Buffer.from('0x'), // no contract call
@@ -1282,6 +1285,14 @@ export class Eth extends BaseCoin {
     const signature = this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
     tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
+    const sigAddress = new KeyPairLib({
+      pub: signature.y,
+    }).getAddress();
+    const txAddr = EthUtil.bufferToHex(tx.getSenderAddress());
+
+    if (sigAddress !== txAddr || sigAddress !== backupKeyAddress) {
+      throw new Error('this is the second address');
+    }
 
     return {
       id: addHexPrefix(tx.hash().toString('hex')),

@@ -5,15 +5,19 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as secp256k1 from 'secp256k1';
 import {
   common,
+  ECDSA,
+  Ecdsa,
+  ECDSAMethodTypes,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError,
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Erc20Token, Teth } from '../../src';
+import { Erc20Token, Eth, KeyPair, Teth } from '../../src';
 import { EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
+const EthUtil = require('ethereumjs-util');
 
 nock.enableNetConnect();
 
@@ -757,4 +761,112 @@ describe('ETH:', function () {
       assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
     });
   });
+
+  describe('TSS Recovery', function () {
+    let baseAddress: string;
+    let userKeyCombined: ECDSA.KeyCombined;
+    let backupKeyCombined: ECDSA.KeyCombined;
+    let userKeySigningMaterial: ECDSAMethodTypes.SigningMaterial;
+    let backupKeySigningMaterial: ECDSAMethodTypes.SigningMaterial;
+    let eth: Eth;
+
+    before(async function () {
+      const mpc = new Ecdsa();
+      const [userIndex, backupIndex, bitgoIndex] = [1, 2, 3];
+      const m = 2;
+      const n = 3;
+      const userKeyShares = await mpc.keyShare(userIndex, m, n);
+      const backupKeyShares = await mpc.keyShare(backupIndex, m, n);
+      const bitgoKeyShares = await mpc.keyShare(bitgoIndex, m, n);
+      eth = Eth.createInstance(bitgo) as Eth;
+
+      userKeySigningMaterial = {
+        pShare: userKeyShares.pShare,
+        bitgoNShare: bitgoKeyShares.nShares[userIndex],
+        backupNShare: backupKeyShares.nShares[userIndex],
+      };
+
+      userKeyCombined = mpc.keyCombine(userKeySigningMaterial.pShare, [
+        userKeySigningMaterial.backupNShare!,
+        userKeySigningMaterial.bitgoNShare!,
+      ]);
+
+      backupKeySigningMaterial = {
+        pShare: backupKeyShares.pShare,
+        bitgoNShare: bitgoKeyShares.nShares[backupIndex],
+        userNShare: userKeyShares.nShares[backupIndex],
+      };
+
+      backupKeyCombined = mpc.keyCombine(backupKeyShares.pShare, [
+        userKeyShares.nShares[backupIndex],
+        bitgoKeyShares.nShares[backupIndex],
+      ]);
+      if (
+        userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode ||
+        userKeyCombined.xShare.y !== backupKeyCombined.xShare.y
+      ) {
+        throw new Error('user and backup key combined are inconsistent');
+      }
+
+      baseAddress = new KeyPair({
+        pub: userKeyCombined.xShare.y,
+      }).getAddress();
+    });
+
+    it('should sign tss recovery', async function () {
+      const txParams = {
+        to: '0x0c59a90b4cb9eeb28615f801De00777CF5f185C5',
+        nonce: 0,
+        value: 1,
+        gasPrice: 11,
+        gasLimit: 10,
+        data: Buffer.from('0x'), // no contract call
+        eip1559: {
+          maxPriorityFeePerGas: 3,
+          maxFeePerGas: 20,
+        },
+      };
+      let tx = Eth.buildTransaction(txParams);
+      const signableHex = tx.getMessageToSign(false).toString('hex');
+
+      const signature = eth.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+      const ethCommmon = Eth.getEthCommon(txParams.eip1559);
+      tx = eth.getSignedTxFromSignature(ethCommmon, tx, signature);
+
+      const txAddr = EthUtil.bufferToHex(tx.getSenderAddress());
+
+      baseAddress.should.equal(txAddr);
+    });
+
+    it('should recover funds', async function () {
+      const walletPassphrase = TestBitGo.TEST_WALLET1_PASSCODE;
+      const userKey = JSON.stringify(userKeySigningMaterial);
+      const backupKey = JSON.stringify(backupKeySigningMaterial);
+
+      eth.recover({
+        userKey,
+        backupKey,
+        walletPassphrase,
+        walletContractAddress: baseAddress,
+        recoveryDestination: '0x0c59a90b4cb9eeb28615f801De00777CF5f185C5',
+        eip1559: {
+          maxPriorityFeePerGas: 3,
+          maxFeePerGas: 20,
+        },
+        isTss: true,
+      });
+    });
+  });
 });
+
+// userKey: string;
+// backupKey: string;
+// walletPassphrase?: string;
+// walletContractAddress: string; // use this as walletBaseAddress for TSS
+// recoveryDestination: string;
+// krsProvider?: string;
+// gasPrice?: number;
+// gasLimit?: number;
+// eip1559?: EIP1559;
+// replayProtectionOptions?: ReplayProtectionOptions;
+// isTss?: boolean;
