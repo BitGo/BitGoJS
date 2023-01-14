@@ -664,10 +664,6 @@ describe('Recovery:', function () {
         recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
         gasPrice: '20000000000',
         gasLimit: '500000',
-        eip1559: {
-          maxPriorityFeePerGas: 3,
-          maxFeePerGas: 20,
-        },
       });
       should.exist(transaction);
       transaction.should.have.property('tx');
