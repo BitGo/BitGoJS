@@ -1055,8 +1055,8 @@ export class Eth extends BaseCoin {
     const MESSAGE = Buffer.from(txHex, 'hex');
 
     const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, Keccak('keccak256')),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
     ];
 
     const signature = MPC.constructSignature([signA, signB]);
