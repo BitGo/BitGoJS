@@ -254,7 +254,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     it('should generate TSS key chains when backup provider is BitGo', async function () {
-      const backupProvider = 'BitGoKRS';
+      const backupProvider = 'BitGoTrustAsKrs';
 
       const nitroGPGKeypair = await openpgp.generateKey({
         userIDs: [
@@ -268,7 +268,7 @@ describe('TSS Ecdsa Utils:', async function () {
       await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, 'enterprise_id', nitroGPGKeypair);
       const bitgoGpgPublicKey = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags('enterprise_id');
 
-      const isThirdPartyBackup = tssUtils.isValidThirdPartyBackupProvider('BitGoKRS');
+      const isThirdPartyBackup = tssUtils.isValidThirdPartyBackupProvider('BitGoTrustAsKrs');
       const bitgoHeldBackupShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, nitroGPGKeypair);
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupShares,

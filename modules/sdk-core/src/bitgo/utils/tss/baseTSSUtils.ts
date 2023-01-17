@@ -315,7 +315,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   isValidThirdPartyBackupProvider(backupProvider: string | undefined): boolean {
     // As of now, BitGo is the only supported KRS provider for TSS
-    return !!(backupProvider && backupProvider === 'BitGoKRS');
+    return !!(backupProvider && backupProvider === 'BitGoTrustAsKrs');
   }
 
   /**
