@@ -14,7 +14,7 @@ import {
   verify,
 } from 'openpgp';
 import * as _ from 'lodash';
-import * as secp256k1 from 'secp256k1';
+import { ecc as secp256k1 } from '@bitgo/utxo-lib';
 import { BitGoBase } from '../bitgoBase';
 import crypto from 'crypto';
 
@@ -186,12 +186,12 @@ export async function createShareProof(privateArmor: string, uValue: string, alg
     oid = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01];
     // @ts-ignore
     oid.write = () => new Uint8Array(Buffer.from('092b06010401da470f01', 'hex'));
-    Q = new Uint8Array([...new Uint8Array([0x40]), ...new Uint8Array(subKeyVal)]);
+    Q = new Uint8Array([0x40, ...subKeyVal]);
   } else if (algo === 'ecdsa') {
     oid = [0x2b, 0x81, 0x04, 0x00, 0x0a];
     // @ts-ignore - same as above
     oid.write = () => new Uint8Array(Buffer.from('052b8104000a', 'hex'));
-    Q = new Uint8Array(secp256k1.publicKeyCreate(new Uint8Array(Buffer.from(uValue, 'hex')), false));
+    Q = secp256k1.pointFromScalar(new Uint8Array(Buffer.from(uValue, 'hex')), false);
   }
   secretSubkeyPacket.publicParams = {
     oid,

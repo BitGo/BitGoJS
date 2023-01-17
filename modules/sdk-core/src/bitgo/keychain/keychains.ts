@@ -221,6 +221,7 @@ export class Keychains implements IKeychains {
         keyShares: params.keyShares,
         userGPGPublicKey: params.userGPGPublicKey,
         backupGPGPublicKey: params.backupGPGPublicKey,
+        algoUsed: params.algoUsed,
       })
       .result();
   }

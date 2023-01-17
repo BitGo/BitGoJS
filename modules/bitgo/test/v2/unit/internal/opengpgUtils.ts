@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 import * as assert from 'assert';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
-import * as secp256k1 from 'secp256k1';
+import { ecc as secp256k1 } from '@bitgo/utxo-lib';
 
 const sodium = require('libsodium-wrappers-sumo');
 
@@ -73,10 +73,10 @@ describe('OpenGPG Utils Tests', function () {
 
       const proofSubkeys = decodedProof.getSubkeys()[1];
 
-      const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams.Q).toString('hex');
-      const rawUValueProof = Buffer.from(secp256k1.publicKeyCreate(Buffer.from(uValue, 'hex'), false)).toString('hex');
+      const decodedUValueProof = proofSubkeys.keyPacket.publicParams.Q;
+      const rawUValueProof = secp256k1.pointFromScalar(Buffer.from(uValue, 'hex'), false);
 
-      decodedUValueProof.should.equal(rawUValueProof);
+      equal(decodedUValueProof, rawUValueProof).should.be.true();
     });
   });
 
@@ -99,6 +99,7 @@ describe('OpenGPG Utils Tests', function () {
       isValid.should.be.false();
     });
   });
+
 
   describe('verifyShareProof attack u value', function () {
     it('should be able to detect u value is corrupted', async function () {
@@ -232,4 +233,13 @@ describe('OpenGPG Utils Tests', function () {
     });
   });
 
+  function equal (buf1, buf2) {
+    if (buf1.byteLength != buf2.byteLength) return false;
+    const dv1 = new Int8Array(buf1);
+    const dv2 = new Int8Array(buf2);
+    for (let i = 0 ; i != buf1.byteLength ; i++) {
+      if (dv1[i] != dv2[i]) return false;
+    }
+    return true;
+  }
 });
