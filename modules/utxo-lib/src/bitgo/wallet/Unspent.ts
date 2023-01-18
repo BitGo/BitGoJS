@@ -1,4 +1,4 @@
-import { Network } from '../..';
+import { getMainnet, Network, networks } from '../..';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { createOutputScript2of3, createSpendScriptP2tr, scriptTypeForChain } from '../outputScripts';
 import { toOutputScript } from '../../address';
@@ -96,15 +96,22 @@ export function addReplayProtectionUnspentToPsbt(
   network: Network
 ): void {
   const { txid, vout } = toPrevOutput(u, network);
-  if (!isUnspentWithPrevTx(u)) {
+  const isZcash = getMainnet(network) !== networks.zcash;
+
+  // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
+  // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
+  // segwit transactions
+  if (!isUnspentWithPrevTx(u) && !isZcash) {
     throw new Error('Error, require previous tx to add to PSBT');
   }
   psbt.addInput({
     hash: txid,
     index: vout,
-    nonWitnessUtxo: u.prevTx,
     redeemScript,
   });
+  if (!isZcash) {
+    psbt.updateInput(vout, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
+  }
 }
 
 export function addWalletUnspentToPsbt(
@@ -127,7 +134,10 @@ export function addWalletUnspentToPsbt(
     },
   });
   const inputIndex = psbt.inputCount - 1;
-  if (!isSegwit(u.chain)) {
+  // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
+  // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
+  // segwit transactions
+  if (!isSegwit(u.chain) && getMainnet(network) !== networks.zcash) {
     if (!isUnspentWithPrevTx(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }

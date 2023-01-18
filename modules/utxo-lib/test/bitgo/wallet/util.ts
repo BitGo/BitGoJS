@@ -1,4 +1,4 @@
-import { Network } from '../../../src';
+import { getMainnet, Network, networks } from '../../../src';
 import {
   formatOutputId,
   WalletUnspent,
@@ -118,7 +118,10 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
       BigInt(value),
       network
     );
-    const unspent = isSegwit(chain) ? fromOutput(prevTransaction, vout) : fromOutputWithPrevTx(prevTransaction, vout);
+    const unspent =
+      isSegwit(chain) || getMainnet(network) === networks.zcash
+        ? fromOutput(prevTransaction, vout)
+        : fromOutputWithPrevTx(prevTransaction, vout);
     return {
       ...unspent,
       chain,
