@@ -101,6 +101,7 @@ export async function createCombinedKey(
 }
 
 /**
+ * test
  * Creates the SignShare with User XShare and YShare Corresponding to BitGo
  * @param {XShare} xShare User secret xShare
  * @param {YShare} yShare YShare from Bitgo
