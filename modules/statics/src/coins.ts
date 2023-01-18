@@ -36,7 +36,7 @@ import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
-import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
+import { ofc, ofcerc20, ofcStellarToken, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
@@ -1516,6 +1516,13 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcreth-h', 'Reward ETH Harbour', 18, UnderlyingAsset['RETH-H']),
   ofcerc20('ofccho', 'Choise.com', 18, UnderlyingAsset.CHO),
   ofcerc20('ofcdia', 'DIA Token', 18, UnderlyingAsset.DIA),
+
+  ofcStellarToken(
+    'ofcxlm:usdc',
+    'Stellar USDC',
+    7,
+    UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN']
+  ),
 
   stellarToken(
     'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',

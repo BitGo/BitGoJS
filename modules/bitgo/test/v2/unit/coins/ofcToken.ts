@@ -4,6 +4,7 @@ import { BitGo } from '../../../../src/bitgo';
 
 const PRECISION_2 = '100';
 const PRECISION_6 = '1000000';
+const PRECISION_7 = '10000000';
 const PRECISION_8 = '100000000';
 const PRECISION_9 = '1000000000';
 const PRECISION_18 = '1000000000000000000';
@@ -219,6 +220,18 @@ describe('OFC:', function () {
           ofcCoin.isValidAddress(notValidAddress02).should.be.false;
         });
       }
+    });
+  });
+
+  describe('check ofc tokens for Stellar USDC', function () {
+    const tokenMain = 'ofcxlm:usdc';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Stellar USDC');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_7);
+      });
     });
   });
 
