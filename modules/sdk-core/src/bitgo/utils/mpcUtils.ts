@@ -43,6 +43,7 @@ export abstract class MpcUtils {
 
   protected async createBitgoKeychainInWP(
     userGpgKey: SerializedKeyPair<string>,
+    backupGpgKey: SerializedKeyPair<string>,
     userKeyShare: MpcKeyShare,
     backupKeyShare: MpcKeyShare,
     keyType: KeyType,
@@ -72,7 +73,7 @@ export abstract class MpcUtils {
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
-      backupGPGPublicKey: userGpgKey.publicKey,
+      backupGPGPublicKey: backupGpgKey.publicKey,
       enterprise: enterprise,
     };
 

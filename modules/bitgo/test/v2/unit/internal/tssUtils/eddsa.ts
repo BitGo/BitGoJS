@@ -170,17 +170,17 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeyShare,
         userGpgKey,
-        // reusing the user gpg key as the backup gpg key, i.e. the user is their own the backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
       const bitgoKeychain = await tssUtils.createBitgoKeychain(
-        { userGpgKey, userKeyShare, backupKeyShare });
+        { userGpgKey, backupGpgKey, userKeyShare, backupKeyShare });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
@@ -188,6 +188,7 @@ describe('TSS Utils:', async function () {
       });
       const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
@@ -218,21 +219,23 @@ describe('TSS Utils:', async function () {
         bitgoKeyShare,
         userGpgKey,
         // reusing the user gpg key as the backup gpg key, i.e. the user is their own the backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, userKeyShare, backupKeyShare });
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, backupGpgKey, userKeyShare, backupKeyShare });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
       });
       const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
@@ -263,18 +266,18 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeyShare,
         userGpgKey,
-        // reusing the user gpg key as the backup gpg key, i.e. the user is their own the backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
-        userGpgKey, userKeyShare, backupKeyShare, enterprise,
+        userGpgKey, backupGpgKey, userKeyShare, backupKeyShare, enterprise,
       });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
@@ -283,6 +286,7 @@ describe('TSS Utils:', async function () {
       });
       const backupKeychain = await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain,
@@ -364,8 +368,7 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeyShare,
         userGpgKey,
-        // reusing the user gpg key as the backup gpg key, i.e. the user is their own backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
       const bitgoKeychain2 = await generateBitgoKeychain({
@@ -374,8 +377,7 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeyShare: customBitgoKeyShare,
         userGpgKey,
-        // reusing the user gpg key as the backup gpg key, i.e. the user is their own backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
 
@@ -386,6 +388,7 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain: bitgoKeychain1,
@@ -393,6 +396,7 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
         bitgoKeychain: bitgoKeychain1,
@@ -409,12 +413,12 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeyShare,
         userGpgKey,
-        // reusing the user gpg key as the backup gpg key, i.e. the user is their own the backup provider
-        backupGpgKey: userGpgKey,
+        backupGpgKey,
         bitgoGpgKey,
       });
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare,
       });
@@ -422,6 +426,7 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: MPC.keyShare(2, 2, 3),
         bitgoKeychain,
@@ -430,6 +435,7 @@ describe('TSS Utils:', async function () {
         .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
       await tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare: MPC.keyShare(1, 2, 3),
         backupKeyShare,
         bitgoKeychain,
@@ -439,6 +445,7 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare: MPC.keyShare(1, 2, 3),
         backupKeyShare,
         bitgoKeychain,
@@ -447,6 +454,7 @@ describe('TSS Utils:', async function () {
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
       await tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: MPC.keyShare(2, 2, 3),
         bitgoKeychain,

@@ -224,6 +224,7 @@ describe('TSS Ecdsa Utils:', async function () {
       };
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         bitgoPublicGpgKey: bitgoPublicKey,
@@ -278,6 +279,7 @@ describe('TSS Ecdsa Utils:', async function () {
       };
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         enterprise: undefined,
@@ -290,6 +292,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
       const userBackupKeyChainPromises = [tssUtils.createUserKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         bitgoKeychain,
@@ -299,6 +302,7 @@ describe('TSS Ecdsa Utils:', async function () {
         bitgoPublicGpgKey: bitgoGpgPublicKey,
       }), tssUtils.createBackupKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         bitgoKeychain,
@@ -321,6 +325,7 @@ describe('TSS Ecdsa Utils:', async function () {
       };
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         enterprise,
@@ -361,6 +366,7 @@ describe('TSS Ecdsa Utils:', async function () {
       };
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
+        backupGpgKey,
         userKeyShare,
         backupKeyShare: backupShareHolder,
         bitgoPublicGpgKey: bitgoPublicKey,
