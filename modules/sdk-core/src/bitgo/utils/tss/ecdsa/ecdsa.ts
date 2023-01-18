@@ -613,9 +613,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           : txRequestResolved.unsignedTxs[0];
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
-      const finalMessage = (params as TSSParamsForMessage).messageEncoded;
-      assert(finalMessage, 'finalMessage is required');
-      signablePayload = Buffer.from(finalMessage);
+      signablePayload = (params as TSSParamsForMessage).bufferToSign;
     }
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,

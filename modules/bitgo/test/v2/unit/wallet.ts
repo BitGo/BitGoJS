@@ -2242,10 +2242,6 @@ describe('V2 Wallet:', function () {
           {
             name: 'verifyingContract',
             type: 'address',
-          },
-          {
-            name: 'salt',
-            type: 'bytes32',
           }],
         Message: [{ name: 'data', type: 'string' }] };
       const typedMessage: TypedMessage<MessageTypes> = {
@@ -2254,12 +2250,11 @@ describe('V2 Wallet:', function () {
           version: '1',
           chainId: 1,
           verifyingContract: '0x0000000000000000000000000000000000000000',
-          salt: Buffer.from(new Int32Array([1, 2, 3])),
         }, primaryType: 'Message', types,
         message: { data: 'bitgo says hello!' },
       };
-      const typedDataBase:TypedData<any> = {
-        typedDataRaw: typedMessage,
+      const typedDataBase:TypedData = {
+        typedDataRaw: JSON.stringify(typedMessage),
         version: SignTypedDataVersion.V3,
       };
 
@@ -2321,7 +2316,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
 
@@ -2340,7 +2335,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
 
@@ -2366,7 +2361,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
         });
@@ -2388,7 +2383,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
 
@@ -2407,7 +2402,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
 
@@ -2433,7 +2428,7 @@ describe('V2 Wallet:', function () {
             });
             signedTypedData.should.deepEqual(txHash);
             const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901302ff7e76d07f29bb048dda921b18a0329ebc43fb4c76147a494ea8e9b9cc34e883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
           });
         });

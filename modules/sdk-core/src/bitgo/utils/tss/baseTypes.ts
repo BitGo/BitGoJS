@@ -1,6 +1,6 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
-import { KeychainsTriplet, TypedMessage, MessageTypes } from '../../baseCoin';
+import { KeychainsTriplet } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
@@ -73,7 +73,7 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
 }
 
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
-  typedDataRaw: TypedMessage<any>;
+  typedDataRaw: string;
   typedDataEncoded?: string;
 }
 
@@ -119,8 +119,8 @@ export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
   custodianMessageId?: string;
 }
 
-export interface PopulatedIntentForTypedDataSigning<T extends MessageTypes> extends PopulatedIntentBase {
-  messageRaw: TypedMessage<T>;
+export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase {
+  messageRaw: string;
   messageEncoded: string;
   custodianMessageId?: string;
 }
@@ -252,8 +252,9 @@ export type TSSParams = {
 };
 
 export type TSSParamsForMessage = TSSParams & {
-  messageRaw: string | TypedMessage<any>;
+  messageRaw: string;
   messageEncoded?: string;
+  bufferToSign: Buffer;
 };
 
 export interface BitgoHeldBackupKeyShare {
