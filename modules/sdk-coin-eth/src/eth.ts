@@ -54,7 +54,7 @@ import type * as EthCommon from '@ethereumjs/common';
 import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } from './lib';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
-import { TypedDataUtils, SignTypedDataVersion } from '@metamask/eth-sig-util';
+import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -2096,13 +2096,13 @@ export class Eth extends BaseCoin {
    * @param typedData the typed data to prepare
    * @return a buffer of the result
    */
-  encodeTypedData(typedData: TypedData<never>): Buffer {
+  encodeTypedData(typedData: TypedData): Buffer {
     const version = typedData.version;
     if (version === SignTypedDataVersion.V1) {
       throw new Error('SignTypedData v1 is not supported due to security concerns');
     }
-
-    const sanitizedData = TypedDataUtils.sanitizeData(typedData.typedDataRaw);
+    const typedDataRaw = JSON.parse(typedData.typedDataRaw);
+    const sanitizedData = TypedDataUtils.sanitizeData(typedDataRaw as unknown as TypedMessage<any>);
     const parts = [Buffer.from('1901', 'hex')];
     const eip712Domain = 'EIP712Domain';
     parts.push(TypedDataUtils.hashStruct(eip712Domain, sanitizedData.domain, sanitizedData.types, version));
