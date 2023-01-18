@@ -320,7 +320,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       // backup GPG key is the same as bitgo GPG key. Else user holds backup.
       backupGPGPublicKey: isThirdPartyBackup ? bitgoPublicGpgKey.armor() : userGpgKey.publicKey,
       enterprise: enterprise,
-      algoUsed: 'ecdsa',
     };
 
     return await this.baseCoin.keychains().add(createBitGoMPCParams);

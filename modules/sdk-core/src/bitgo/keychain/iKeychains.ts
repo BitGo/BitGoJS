@@ -68,7 +68,6 @@ export interface AddKeychainOptions {
   keyShares?: ApiKeyShare[];
   userGPGPublicKey?: string;
   backupGPGPublicKey?: string;
-  algoUsed?: string;
 }
 
 export interface ApiKeyShare {

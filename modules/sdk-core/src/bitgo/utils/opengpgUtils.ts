@@ -186,7 +186,7 @@ export async function createShareProof(privateArmor: string, uValue: string, alg
     oid = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01];
     // @ts-ignore
     oid.write = () => new Uint8Array(Buffer.from('092b06010401da470f01', 'hex'));
-    Q = new Uint8Array([0x40, ...subKeyVal]);
+    Q = new Uint8Array([...new Uint8Array([0x40]), ...new Uint8Array(subKeyVal)]);
   } else if (algo === 'ecdsa') {
     oid = [0x2b, 0x81, 0x04, 0x00, 0x0a];
     // @ts-ignore - same as above
