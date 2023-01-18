@@ -1,0 +1,39 @@
+{
+  "name": "@bitgo/sdk-evm",
+  "version": "1.0.0",
+  "description": "Bitgo SDK library for EVM Wallets",
+  "main": "./dist/src/index.js",
+  "type": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-evm"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  }
+}
