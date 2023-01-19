@@ -65,6 +65,7 @@ const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFea
 
 const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -263,6 +264,16 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.SUI,
     SUI_FEATURES,
     KeyCurve.Ed25519
+  ),
+  account('atom', 'Cosmos Hub ATOM', Networks.main.atom, 6, UnderlyingAsset.ATOM, BaseUnit.ATOM, ATOM_FEATURES),
+  account(
+    'tatom',
+    'Testnet Cosmos Hub ATOM',
+    Networks.test.atom,
+    6,
+    UnderlyingAsset.ATOM,
+    BaseUnit.ATOM,
+    ATOM_FEATURES
   ),
   account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, BaseUnit.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   account(

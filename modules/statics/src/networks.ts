@@ -561,6 +561,18 @@ class SuiTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.devnet.sui.io/transactions/';
 }
 
+class Atom extends Mainnet implements AccountNetwork {
+  name = 'Cosmos Hub ATOM';
+  family = CoinFamily.ATOM;
+  explorerUrl = 'https://atomscan.com/transactions/';
+}
+
+class AtomTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Cosmos Hub ATOM';
+  family = CoinFamily.ATOM;
+  explorerUrl = 'https://explorer.theta-testnet.polypore.xyz/transactions/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -701,6 +713,7 @@ export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
+    atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
     avalancheP: Object.freeze(new AvalancheP()),
     bitcoin: Object.freeze(new Bitcoin()),
@@ -739,6 +752,7 @@ export const Networks = {
   test: {
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
+    atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     avalancheP: Object.freeze(new AvalanchePTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
