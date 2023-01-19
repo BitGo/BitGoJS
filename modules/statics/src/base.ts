@@ -17,6 +17,7 @@ export enum CoinKind {
 export enum CoinFamily {
   ADA = 'ada',
   ALGO = 'algo',
+  ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
   BCH = 'bch',
@@ -169,6 +170,7 @@ export enum UnderlyingAsset {
   ALGO = 'algo',
   APE = 'ape',
   API3 = 'api3',
+  ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
   AXL = 'AXL',
@@ -1169,6 +1171,7 @@ export enum KeyCurve {
  * This enum contains the base units for the coins that BitGo supports
  */
 export enum BaseUnit {
+  ATOM = 'uATOM',
   ETH = 'wei',
   BTC = 'satoshi',
   BSC = 'jager',
