@@ -38,7 +38,7 @@ describe('ADA Staking Activate Transaction Builder', async () => {
     should.equal(tx.id, testData.rawTx.unsignedStakingActiveTxHash);
   });
 
-  it('should explain a tx', async () => {
+  it('should toJson a tx', async () => {
     const keyPairStake = new KeyPair({ prv: testData.privateKeys.prvKey2 });
     const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.input({
@@ -54,7 +54,7 @@ describe('ADA Staking Activate Transaction Builder', async () => {
     txBuilder.ttl(800000000);
     const tx = (await txBuilder.build()) as Transaction;
     should.equal(tx.type, TransactionType.StakingActivate);
-    tx.explainTransaction();
+    tx.toJson();
   });
 
   // it('build a stakingActivate from rawTx', async () => {

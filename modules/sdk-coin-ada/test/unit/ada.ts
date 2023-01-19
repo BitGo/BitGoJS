@@ -344,7 +344,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.outputs[0].address, destAddr);
@@ -363,7 +363,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.outputs[0].address, destAddr);
@@ -404,7 +404,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
@@ -425,7 +425,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.inputs[1].transaction_id, testnetUTXO.UTXO_2.tx_hash);
@@ -475,7 +475,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.outputs[0].address, destAddr);
@@ -500,7 +500,7 @@ describe('ADA', function () {
       const tx = new Transaction(basecoin);
       tx.fromRawTransaction(res.serializedTx);
       const txJson = tx.toJson();
-      const fee = Number(tx.explainTransaction().fee.fee);
+      const fee = Number(tx.getFee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
       should.deepEqual(txJson.inputs[0].transaction_index, testnetUTXO.UTXO_1.tx_index);
       should.deepEqual(txJson.outputs[0].address, destAddr);

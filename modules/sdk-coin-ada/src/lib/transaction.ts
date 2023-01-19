@@ -4,6 +4,7 @@ import {
   Entry,
   InvalidTransactionError,
   NodeEnvironmentError,
+  TransactionFee,
   TransactionType,
 } from '@bitgo/sdk-core';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
@@ -49,6 +50,7 @@ export interface TxData {
   inputs: TransactionInput[];
   outputs: TransactionOutput[];
   witnesses: Witness[];
+  fee: TransactionFee;
   certs: Cert[];
   withdrawals: Withdrawal[];
 }
@@ -99,6 +101,7 @@ export class Transaction extends BaseTransaction {
       inputs: [],
       outputs: [],
       witnesses: [],
+      fee: { fee: this._fee },
       certs: [],
       withdrawals: [],
     };
@@ -245,45 +248,6 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionType(transactionType: TransactionType): void {
     this._type = transactionType;
-  }
-
-  /** @inheritdoc */
-  explainTransaction(): {
-    outputs: { amount: string; address: string }[];
-    certificates: Cert[];
-    changeOutputs: string[];
-    outputAmount: string;
-    fee: { fee: string };
-    displayOrder: string[];
-    id: string;
-    changeAmount: string;
-    type: string;
-    withdrawals: Withdrawal[];
-  } {
-    const txJson = this.toJson();
-    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
-    const amount = txJson.outputs.map((o) => ({ amount: BigInt(o.amount) }));
-    const outputAmount = amount.reduce((p, n) => p + BigInt(n.amount), BigInt('0')).toString();
-    const type =
-      this._type === TransactionType.Send
-        ? 'Transfer'
-        : this._type === TransactionType.StakingActivate
-        ? 'StakingActivate'
-        : this._type === TransactionType.StakingWithdraw
-        ? 'StakingWithdraw'
-        : 'StakingDeactivate';
-    return {
-      displayOrder,
-      id: txJson.id,
-      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.amount })),
-      outputAmount: outputAmount,
-      changeOutputs: [],
-      changeAmount: '0',
-      fee: { fee: this._fee },
-      type,
-      certificates: txJson.certs,
-      withdrawals: txJson.withdrawals,
-    };
   }
 
   /**

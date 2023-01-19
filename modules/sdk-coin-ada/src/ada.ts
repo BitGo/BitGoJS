@@ -18,11 +18,13 @@ import {
   EDDSAMethodTypes,
   AddressFormat,
   Environments,
+  TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
+import { Cert, Withdrawal } from './lib/transaction';
 
 export interface TransactionPrebuild {
   txHex: string;
@@ -57,7 +59,11 @@ interface AdaTx {
   scanIndex: number;
 }
 
-export type AdaTransactionExplanation = TransactionExplanation;
+export type AdaTransactionExplanation = TransactionExplanation & {
+  type: string;
+  certificates?: Cert[];
+  withdrawals?: Withdrawal[];
+};
 
 export class Ada extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -115,7 +121,7 @@ export class Ada extends BaseCoin {
       const rawTx = txPrebuild.txHex;
 
       transaction.fromRawTransaction(rawTx);
-      const explainedTx = transaction.explainTransaction();
+      const explainedTx = transaction.toJson();
 
       if (txParams.recipients !== undefined) {
         for (const recipient of txParams.recipients) {
@@ -172,7 +178,30 @@ export class Ada extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
-    return rebuiltTransaction.explainTransaction();
+    const txJson = rebuiltTransaction.toJson();
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    const amount = txJson.outputs.map((o) => ({ amount: BigInt(o.amount) }));
+    const outputAmount = amount.reduce((p, n) => p + BigInt(n.amount), BigInt('0')).toString();
+    const type =
+      txJson.type === TransactionType.Send
+        ? 'Transfer'
+        : txJson.type === TransactionType.StakingActivate
+        ? 'StakingActivate'
+        : txJson.type === TransactionType.StakingWithdraw
+        ? 'StakingWithdraw'
+        : 'StakingDeactivate';
+    return {
+      displayOrder,
+      id: txJson.id,
+      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.amount })),
+      outputAmount: outputAmount,
+      changeOutputs: [],
+      changeAmount: '0',
+      fee: { fee: rebuiltTransaction['getFee'] },
+      type,
+      certificates: txJson.certs,
+      withdrawals: txJson.withdrawals,
+    };
   }
 
   async parseTransaction(params: AdaParseTransactionOptions): Promise<ParsedTransaction> {
