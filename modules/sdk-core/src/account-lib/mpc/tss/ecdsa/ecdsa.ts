@@ -47,10 +47,11 @@ export default class Ecdsa {
    * @param {number} threshold Signing threshold
    * @param {number} numShares  Number of shares
    * @param {Buffer} seed optional seed to use for key generation
+   * @param {Boolean} sync optional sync flag, if true then a synchronous version of Paillier key generation is used that does not spawn Worker threads.
    * @returns {Promise<KeyShare>} Returns the private p-share
    * and n-shares to be distributed to participants at their corresponding index.
    */
-  async keyShare(index: number, threshold: number, numShares: number, seed?: Buffer): Promise<KeyShare> {
+  async keyShare(index: number, threshold: number, numShares: number, seed?: Buffer, sync = false): Promise<KeyShare> {
     if (!(index > 0 && index <= numShares && threshold <= numShares && threshold === 2)) {
       throw 'Invalid KeyShare Config';
     }
@@ -59,7 +60,13 @@ export default class Ecdsa {
       throw new Error('Seed must have length 72');
     }
     // Generate additively homomorphic encryption key.
-    const { publicKey, privateKey } = await paillierBigint.generateRandomKeys(3072, true);
+    let paillierKeyPair: paillierBigint.KeyPair;
+    if (!sync) {
+      paillierKeyPair = await paillierBigint.generateRandomKeys(3072, true);
+    } else {
+      paillierKeyPair = paillierBigint.generateRandomKeysSync(3072, true);
+    }
+    const { publicKey, privateKey } = paillierKeyPair;
     const u = (seed && bigIntFromU8ABE(secp.utils.hashToPrivateKey(seed.slice(0, 40)))) ?? Ecdsa.curve.scalarRandom();
     const y = Ecdsa.curve.basePointMult(u);
     const chaincode = seed?.slice(40) ?? randomBytes(32);
