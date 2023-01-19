@@ -1,7 +1,4 @@
-import { AddressInfo, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
-import { bitgo } from '@bitgo/utxo-lib';
-type Unspent = bitgo.Unspent;
-
+import { AddressApi, UtxoApi, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
 import { ApiNotImplementedError } from './baseApi';
 
 /**
@@ -15,11 +12,7 @@ export interface RecoveryAccountData {
 /**
  * Factory for AddressApi & UtxoApi
  */
-export interface RecoveryProvider {
-  getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]>;
-  getAddressInfo(address: string): Promise<AddressInfo>;
-  getTransactionHex(txid: string): Promise<string>;
-}
+export type RecoveryProvider = AddressApi & UtxoApi;
 
 export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
   switch (coinName) {
