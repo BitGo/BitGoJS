@@ -66,6 +66,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     commonKeychain: string,
     userKeyShare: KeyShare,
     bitgoKeychain: Keychain,
+    gpgKey: SerializedKeyPair<string>,
     bitgoPublicGpgKey?: Key
   ): Promise<BitgoHeldBackupKeyShare> {
     throw new Error('Method not implemented.');

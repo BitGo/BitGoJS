@@ -265,7 +265,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userToBitgoKeyShare = {
       publicShare: userToBitgoPublicShare,
       privateShare: userToBitgoPrivateShare,
-      privateShareProof: await createShareProof(userGpgKey.privateKey, userToBitgoPrivateShare.slice(0, 64)),
+      privateShareProof: await createShareProof(userGpgKey.privateKey, userToBitgoPrivateShare.slice(0, 64), 'eddsa'),
       v: userKeyShare.yShares[3].v,
     };
 
@@ -280,7 +280,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const backupToBitgoKeyShare = {
       publicShare: backupToBitgoPublicShare,
       privateShare: backupToBitgoPrivateShare,
-      privateShareProof: await createShareProof(userGpgKey.privateKey, backupToBitgoPrivateShare.slice(0, 64)),
+      privateShareProof: await createShareProof(userGpgKey.privateKey, backupToBitgoPrivateShare.slice(0, 64), 'eddsa'),
       v: backupKeyShare.yShares[3].v,
     };
 

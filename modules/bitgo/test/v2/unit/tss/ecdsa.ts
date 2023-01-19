@@ -66,6 +66,7 @@ describe('Ecdsa tss helper functions tests', function () {
             email: user.email,
           },
         ],
+        curve: 'secp256k1',
       });
     });
 
@@ -86,7 +87,7 @@ describe('Ecdsa tss helper functions tests', function () {
 
     it('should encrypt n shares foreach user', async function () {
       for (let i = 2; i <= 3; i++) {
-        const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey);
+        const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey, userGpgKeypair);
         const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, senderPublicArmor: userGpgKeypair.publicKey, recipientPrivateArmor: bitgoGpgKeypair.privateKey });
         decryptedNShare.u.should.equal(userKeyShare.nShares[i].u);
         const publicKey = userKeyShare.pShare.y + userKeyShare.pShare.chaincode;
@@ -98,13 +99,13 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should error for invalid recipient', async function () {
-      await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
     });
 
     it('should decrypt n share', async function() {
-      const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, 3, bitgoGpgKeypair.publicKey);
+      const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, 3, bitgoGpgKeypair.publicKey, userGpgKeypair);
       const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, recipientPrivateArmor: bitgoGpgKeypair.privateKey, senderPublicArmor: userGpgKeypair.publicKey });
       decryptedNShare.i.should.equal(userKeyShare.nShares[3].i);
       decryptedNShare.j.should.equal(userKeyShare.nShares[3].j);
@@ -120,8 +121,8 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should create combined user key', async function () {
-      const bitgoToUserShare = await ECDSAMethods.encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, false);
-      const backupToUserShare = await ECDSAMethods.encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, false);
+      const bitgoToUserShare = await ECDSAMethods.encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair, false);
+      const backupToUserShare = await ECDSAMethods.encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair, false);
       const combinedUserKey = await createCombinedKey(
         userKeyShare,
         [{
@@ -150,13 +151,15 @@ describe('Ecdsa tss helper functions tests', function () {
       const bitgoToBackupShare = await encryptNShare(
         bitgoKeyShare,
         2,
-        backupGpgKeypair.publicKey
+        backupGpgKeypair.publicKey,
+        userGpgKeypair
       );
 
       const userToBackupShare = await encryptNShare(
         userKeyShare,
         2,
-        backupGpgKeypair.publicKey
+        backupGpgKeypair.publicKey,
+        userGpgKeypair
       );
 
       const combinedBackupKey = await createCombinedKey(
@@ -186,11 +189,13 @@ describe('Ecdsa tss helper functions tests', function () {
         bitgoKeyShare,
         1,
         userGpgKeypair.publicKey,
+        userGpgKeypair
       );
       const backupToUserShare = await encryptNShare(
         backupKeyShare,
         1,
         userGpgKeypair.publicKey,
+        userGpgKeypair
       );
 
       // this should fail to combine the keys because we pass in invalid common key chain
@@ -214,11 +219,13 @@ describe('Ecdsa tss helper functions tests', function () {
         bitgoKeyShare,
         1,
         userGpgKeypair.publicKey,
+        userGpgKeypair
       );
       const backupToUserShare = await encryptNShare(
         backupKeyShare,
         1,
         userGpgKeypair.publicKey,
+        userGpgKeypair
       );
 
       await createCombinedKey(

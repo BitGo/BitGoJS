@@ -284,6 +284,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     commonKeychain: string,
     userKeyShare: KeyShare,
     bitgoKeychain: Keychain,
+    gpgKey: SerializedKeyPair<string>,
     bitgoPublicGpgKey?: Key
   ): Promise<BitgoHeldBackupKeyShare>;
   createUserKeychain(params: CreateKeychainParamsBase): Promise<Keychain>;
