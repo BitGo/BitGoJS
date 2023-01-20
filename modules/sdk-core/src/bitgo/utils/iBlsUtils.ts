@@ -12,7 +12,7 @@ export interface IBlsUtils {
     originalPasscodeEncryptionCode: string
   ): Promise<Keychain>;
   createBackupKeychain(
-    userGpgKey: SerializedKeyPair<string>,
+    backupGpgKey: SerializedKeyPair<string>,
     userKeyShare: IBlsKeyPair,
     backupKeyShare: IBlsKeyPair,
     bitgoKeychain: Keychain,
@@ -20,6 +20,7 @@ export interface IBlsUtils {
   ): Promise<Keychain>;
   createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
+    backupGpgKey: SerializedKeyPair<string>,
     userKeyShare: IBlsKeyPair,
     backupKeyShare: IBlsKeyPair,
     enterprise: string

@@ -99,6 +99,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    */
   async createUserKeychain({
     userGpgKey,
+    backupGpgKey,
     userKeyShare,
     backupKeyShare,
     bitgoKeychain,
@@ -120,7 +121,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     await this.verifyWalletSignatures(
       userGpgKey.publicKey,
-      userGpgKey.publicKey,
+      backupGpgKey.publicKey,
       bitgoKeychain,
       bitGoToUserPrivateShare,
       1
@@ -170,12 +171,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    *
    * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - User's TSS Keyshare
+   * @param backupGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between backup and server
    * @param backupKeyShare - Backup's TSS Keyshare
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param [passphrase] - optional wallet passphrase used to encrypt user's signing materials
    */
   async createBackupKeychain({
     userGpgKey,
+    backupGpgKey,
     userKeyShare,
     backupKeyShare,
     bitgoKeychain,
@@ -192,11 +195,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Missing BitGo to User key share');
     }
 
-    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
+    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, backupGpgKey);
 
     await this.verifyWalletSignatures(
       userGpgKey.publicKey,
-      userGpgKey.publicKey,
+      backupGpgKey.publicKey,
       bitgoKeychain,
       bitGoToBackupPrivateShare,
       2
@@ -249,6 +252,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    */
   async createBitgoKeychain({
     userGpgKey,
+    backupGpgKey,
     userKeyShare,
     backupKeyShare,
     enterprise,
@@ -280,12 +284,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const backupToBitgoKeyShare = {
       publicShare: backupToBitgoPublicShare,
       privateShare: backupToBitgoPrivateShare,
-      privateShareProof: await createShareProof(userGpgKey.privateKey, backupToBitgoPrivateShare.slice(0, 64), 'eddsa'),
+      privateShareProof: await createShareProof(
+        backupGpgKey.privateKey,
+        backupToBitgoPrivateShare.slice(0, 64),
+        'eddsa'
+      ),
       v: backupKeyShare.yShares[3].v,
     };
 
     return await this.createBitgoKeychainInWP(
       userGpgKey,
+      backupGpgKey,
       userToBitgoKeyShare,
       backupToBitgoKeyShare,
       'tss',
@@ -311,16 +320,19 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const backupKeyShare = MPC.keyShare(2, m, n);
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const backupGpgKey = await generateGPGKeyPair('secp256k1');
 
     const bitgoKeychain = await this.createBitgoKeychain({
       userGpgKey,
       userKeyShare,
+      backupGpgKey,
       backupKeyShare,
       enterprise: params.enterprise,
     });
     const userKeychainPromise = this.createUserKeychain({
       userGpgKey,
       userKeyShare,
+      backupGpgKey,
       backupKeyShare,
       bitgoKeychain,
       passphrase: params.passphrase,
@@ -329,6 +341,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
       userKeyShare,
+      backupGpgKey,
       backupKeyShare,
       bitgoKeychain,
       passphrase: params.passphrase,

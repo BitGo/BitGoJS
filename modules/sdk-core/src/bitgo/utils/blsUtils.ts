@@ -7,6 +7,7 @@ import { BlsKeyPair as BlsKeyPairClass } from '../../account-lib/baseCoin';
 import { IBaseCoin, IBlsKeyPair, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
+import { AddKeychainOptions } from '../keychain/iKeychains';
 import { IBlsUtils } from './iBlsUtils';
 import { MpcUtils } from './mpcUtils';
 
@@ -101,7 +102,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       },
     };
 
-    const userKeychainParams: any = {
+    const userKeychainParams: AddKeychainOptions = {
       source: 'user',
       keyType: 'blsdkg',
       commonKeychain: commonKeychain,
@@ -115,14 +116,14 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
   /**
    * Creates a Keychain containing the Backup party's BLS-DKG signing materials.
    *
-   * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
+   * @param backupGpgKey - ephemeral GPG key to encrypt / decrypt sensitive data exchanged between backup and server
    * @param userKeyShare - User's BLS-DKG Keyshare
    * @param backupKeyShare - Backup's BLS-DKG Keyshare
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param passphrase - wallet passphrase used to encrypt user's signing materials
    */
   async createBackupKeychain(
-    userGpgKey: SerializedKeyPair<string>,
+    backupGpgKey: SerializedKeyPair<string>,
     userKeyShare: IBlsKeyPair,
     backupKeyShare: IBlsKeyPair,
     bitgoKeychain: Keychain,
@@ -135,7 +136,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
 
     const bitGoToBackupShare = bitgoKeyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
     if (!bitGoToBackupShare) {
-      throw new Error('Missing BitGo to User key share');
+      throw new Error('Missing BitGo to backup key share');
     }
 
     if (!userKeyShare.secretShares || !userKeyShare.pub) {
@@ -162,7 +163,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       throw new Error('Failed to create backup keychain - commonKeychains do not match.');
     }
 
-    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
+    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, backupGpgKey);
     if (bitGoToBackupPrivateShare.slice(64) !== bitGoToBackupChaincode) {
       throw new Error('Failed to create user keychain - bitgo to user chaincode do not match.');
     }
@@ -199,11 +200,13 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
    * Creates a Keychain containing BitGo's BLS-DKG signing materials.
    *
    * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
+   * @param backupGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between backup and server
    * @param userKeyShare - user's BLS-DKG key share
    * @param backupKeyShare - backup's BLS-DKG key share
    */
   async createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
+    backupGpgKey: SerializedKeyPair<string>,
     userKeyShare: IBlsKeyPair,
     backupKeyShare: IBlsKeyPair,
     enterprise?: string
@@ -244,6 +247,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
 
     return await this.createBitgoKeychainInWP(
       userGpgKey,
+      backupGpgKey,
       userToBitgoKeyShare,
       backupToBitgoKeyShare,
       'blsdkg',
@@ -265,6 +269,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
     const backupKeyShare = this.baseCoin.generateKeyPair() as IBlsKeyPair;
 
     const randomHexString = randomBytes(12).toString('hex');
+    const randomHexString2 = randomBytes(12).toString('hex');
 
     const userGpgKey = await generateKey({
       userIDs: [
@@ -275,7 +280,22 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       ],
     });
 
-    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
+    const backupGpgKey = await generateKey({
+      userIDs: [
+        {
+          name: randomHexString2,
+          email: `${randomHexString2}@${randomHexString2}.com`,
+        },
+      ],
+    });
+
+    const bitgoKeychain = await this.createBitgoKeychain(
+      userGpgKey,
+      backupGpgKey,
+      userKeyShare,
+      backupKeyShare,
+      params.enterprise
+    );
     const userKeychainPromise = this.createUserKeychain(
       userGpgKey,
       userKeyShare,
@@ -285,7 +305,7 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
       params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.createBackupKeychain(
-      userGpgKey,
+      backupGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,

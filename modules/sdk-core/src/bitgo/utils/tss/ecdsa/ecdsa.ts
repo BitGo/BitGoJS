@@ -121,6 +121,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     const userKeyShare = await MPC.keyShare(1, m, n);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const backupGpgKey = await generateGPGKeyPair('secp256k1');
 
     const isThirdPartyBackup = this.isValidThirdPartyBackupProvider(params.backupProvider);
     const backupKeyShare = await this.createBackupKeyShares(isThirdPartyBackup, userGpgKey);
@@ -132,6 +133,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     const bitgoKeychain = await this.createBitgoKeychain({
       userGpgKey,
+      backupGpgKey,
       bitgoPublicGpgKey,
       userKeyShare,
       backupKeyShare,
@@ -140,6 +142,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     });
     const userKeychainPromise = this.createUserKeychain({
       userGpgKey,
+      backupGpgKey,
       bitgoPublicGpgKey,
       userKeyShare,
       backupKeyShare,
@@ -150,6 +153,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     });
     const backupKeychainPromise = this.createBackupKeychain({
       userGpgKey,
+      backupGpgKey,
       bitgoPublicGpgKey,
       userKeyShare,
       backupKeyShare,
@@ -232,6 +236,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   async createBackupKeychain({
     userGpgKey,
     userKeyShare,
+    backupGpgKey,
     backupKeyShare,
     bitgoKeychain,
     bitgoPublicGpgKey,
@@ -262,7 +267,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     assert(backupKeyShare.userHeldKeyShare);
     assert(passphrase);
     return this.createParticipantKeychain(
-      userGpgKey,
+      backupGpgKey,
       bitgoPublicGpgKey,
       2,
       userKeyShare,
@@ -275,6 +280,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   /** @inheritdoc */
   async createBitgoKeychain({
     userGpgKey,
+    backupGpgKey,
     userKeyShare,
     backupKeyShare,
     enterprise,
@@ -317,8 +323,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       ],
       userGPGPublicKey: userGpgKey.publicKey,
       // BitGo is the only supported third party backup as of now, so the
-      // backup GPG key is the same as bitgo GPG key. Else user holds backup.
-      backupGPGPublicKey: isThirdPartyBackup ? bitgoPublicGpgKey.armor() : userGpgKey.publicKey,
+      // backup GPG key is the same as bitgo GPG key. Else use the provided backupGpgKey.
+      backupGPGPublicKey: isThirdPartyBackup ? bitgoPublicGpgKey.armor() : backupGpgKey.publicKey,
       enterprise: enterprise,
       algoUsed: 'ecdsa',
     };
