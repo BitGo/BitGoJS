@@ -1073,8 +1073,8 @@ export class Wallet implements IWallet {
     }
 
     if (!_.isUndefined(forwarderVersion)) {
-      if (!_.isInteger(forwarderVersion) || forwarderVersion < 0 || forwarderVersion > 2) {
-        throw new Error('forwarderVersion has to be an integer 0, 1 or 2');
+      if (!_.isInteger(forwarderVersion) || forwarderVersion < 0 || forwarderVersion > 3) {
+        throw new Error('forwarderVersion has to be an integer 0, 1, 2 or 3');
       }
       addressParams.forwarderVersion = forwarderVersion;
     }

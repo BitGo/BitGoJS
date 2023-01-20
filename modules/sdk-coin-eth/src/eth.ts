@@ -1924,7 +1924,7 @@ export class Eth extends BaseCoin {
       );
     }
 
-    if (impliedForwarderVersion === 0) {
+    if (impliedForwarderVersion === 0 || impliedForwarderVersion === 3) {
       return true;
     } else {
       const ethNetwork = this.getNetwork();
