@@ -211,7 +211,16 @@ export class Wallet implements IWallet {
    * This is a strict sub-set of prebuildWhitelistedParams
    */
   prebuildConsolidateAccountParams(): string[] {
-    return ['consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock', 'preview'];
+    return [
+      'consolidateAddresses',
+      'feeRate',
+      'maxFeeRate',
+      'memo',
+      'validFromBlock',
+      'validToBlock',
+      'preview',
+      'keepAlive',
+    ];
   }
 
   /**
@@ -1476,6 +1485,7 @@ export class Wallet implements IWallet {
    * @param {Number} params.validFromBlock - (Algorand) The minimum round this will run on
    * @param {Number} params.validToBlock - (Algorand) The maximum round this will run on
    * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
+   * @param {Boolean} params.keepAlive - (Polkadot) keep address alive by sending the address minimum funding amount, used during wallet consolidation, true by default
    * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
    * @param {String} param.transferId - transfer Id to use in transaction (supported by casper)
    * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
