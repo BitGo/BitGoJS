@@ -2798,7 +2798,7 @@ export class Wallet implements IWallet {
           intentType: 'signMessage',
           isTss: true,
           messageRaw: params.message.messageRaw,
-          messageEncoded: params.message?.messageEncoded ?? '',
+          messageEncoded: Buffer.from(params.message?.messageEncoded ?? '').toString('hex'),
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
@@ -2812,6 +2812,7 @@ export class Wallet implements IWallet {
         reqId: params.reqId || new RequestTracer(),
         messageRaw: params.message.messageRaw,
         messageEncoded: params.message.messageEncoded,
+        bufferToSign: Buffer.from(params.message.messageEncoded ?? ''),
       });
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
       assert(
@@ -2845,8 +2846,8 @@ export class Wallet implements IWallet {
           reqId: params.reqId,
           intentType: 'signTypedStructuredData',
           isTss: true,
-          typedDataRaw: params.typedData.typedDataRaw,
-          typedDataEncoded: params.typedData.typedDataEncoded!.toString(),
+          typedDataRaw: JSON.stringify(params.typedData.typedDataRaw),
+          typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
         params.typedData.txRequestId = txRequest.txRequestId;
@@ -2858,8 +2859,9 @@ export class Wallet implements IWallet {
         txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
-        messageRaw: params.typedData.typedDataRaw,
-        messageEncoded: params.message?.messageEncoded,
+        messageRaw: JSON.stringify(params.typedData.typedDataRaw),
+        messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
+        bufferToSign: params.typedData.typedDataEncoded!,
       });
       assert(signedTypedDataRequest.messages, 'Unable to find messages in signedTypedDataRequest');
       assert(

@@ -218,7 +218,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     apiVersion: TxRequestVersion = 'full',
     preview?: boolean
   ): Promise<TxRequest> {
-    const intentOptions: PopulatedIntentForTypedDataSigning<any> = {
+    const intentOptions: PopulatedIntentForTypedDataSigning = {
       custodianMessageId: params.custodianMessageId,
       intentType: params.intentType,
       sequenceId: params.sequenceId,
@@ -238,7 +238,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @private
    */
   private async createTxRequestBase(
-    intentOptions: PopulatedIntentForTypedDataSigning<any> | PopulatedIntentForMessageSigning,
+    intentOptions: PopulatedIntentForTypedDataSigning | PopulatedIntentForMessageSigning,
     apiVersion: TxRequestVersion,
     preview?: boolean
   ): Promise<TxRequest> {

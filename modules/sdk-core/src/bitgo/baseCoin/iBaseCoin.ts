@@ -303,8 +303,8 @@ export interface TypedMessage<T extends MessageTypes> {
   message: Record<string, unknown>;
 }
 
-export interface TypedData<T extends MessageTypes> extends BaseSignable {
-  typedDataRaw: TypedMessage<T>;
+export interface TypedData extends BaseSignable {
+  typedDataRaw: string;
   version: SignTypedDataVersion;
   typedDataEncoded?: Buffer;
 }
