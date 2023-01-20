@@ -7,6 +7,7 @@ import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import {
   Ada,
   Algo,
+  Atom,
   AvaxC,
   AvaxCToken,
   AvaxP,
@@ -48,6 +49,7 @@ import {
   Talgo,
   TavaxC,
   Tada,
+  Tatom,
   TavaxP,
   Tbch,
   Tbsc,
@@ -94,6 +96,7 @@ import { AdaToken } from '@bitgo/sdk-coin-ada';
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
   globalCoinFactory.register('algo', Algo.createInstance);
+  globalCoinFactory.register('atom', Atom.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
   globalCoinFactory.register('bch', Bch.createInstance);
@@ -128,6 +131,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('susd', Susd.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
   globalCoinFactory.register('tada', Tada.createInstance);
+  globalCoinFactory.register('tatom', Tatom.createInstance);
   globalCoinFactory.register('tavaxc', TavaxC.createInstance);
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);
   globalCoinFactory.register('tbch', Tbch.createInstance);

@@ -39,6 +39,7 @@ modules/bitgo/test/v2/unit/coins/token.ts @BitGo/eth-team
 # All other coins
 modules/sdk-coin-ada/ @BitGo/altcoins
 modules/sdk-coin-algo/ @BitGo/altcoins
+modules/sdk-coin-atom/ @BitGo/altcoins
 modules/sdk-coin-avaxc/ @BitGo/altcoins
 modules/sdk-coin-avaxp/ @BitGo/altcoins
 modules/sdk-coin-bsc/ @BitGo/eth-team
