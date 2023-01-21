@@ -322,9 +322,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,
-      // BitGo is the only supported third party backup as of now, so the
-      // backup GPG key is the same as bitgo GPG key. Else use the provided backupGpgKey.
-      backupGPGPublicKey: isThirdPartyBackup ? bitgoPublicGpgKey.armor() : backupGpgKey.publicKey,
+      backupGPGPublicKey: backupGpgKey.publicKey,
       enterprise: enterprise,
       algoUsed: 'ecdsa',
     };
