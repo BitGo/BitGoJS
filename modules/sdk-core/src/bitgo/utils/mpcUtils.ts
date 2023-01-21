@@ -13,6 +13,7 @@ export interface MpcKeyShare {
   publicShare: string;
   privateShare: string;
   privateShareProof?: string;
+  vssProof?: string;
 }
 
 export abstract class MpcUtils {
@@ -63,6 +64,7 @@ export abstract class MpcUtils {
           publicShare: userKeyShare.publicShare,
           privateShare: encUserToBitGoMessage,
           privateShareProof: userKeyShare.privateShareProof,
+          vssProof: userKeyShare.vssProof,
         },
         {
           from: 'backup',
@@ -70,6 +72,7 @@ export abstract class MpcUtils {
           publicShare: backupKeyShare.publicShare,
           privateShare: encBackupToBitGoMessage,
           privateShareProof: backupKeyShare.privateShareProof,
+          vssProof: backupKeyShare.vssProof,
         },
       ],
       userGPGPublicKey: userGpgKey.publicKey,

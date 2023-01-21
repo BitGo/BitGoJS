@@ -331,13 +331,13 @@ export async function encryptNShare(
   } else {
     privateShare = Buffer.concat([Buffer.from(nShare.u, 'hex'), Buffer.from(nShare.chaincode, 'hex')]).toString('hex');
   }
-  const bitgoPublicKey = await pgp.readKey({ armoredKey: recipientGpgPublicArmor });
+  const recipientPublicKey = await pgp.readKey({ armoredKey: recipientGpgPublicArmor });
 
   const encryptedPrivateShare = (await pgp.encrypt({
     message: await pgp.createMessage({
       text: privateShare,
     }),
-    encryptionKeys: [bitgoPublicKey],
+    encryptionKeys: [recipientPublicKey],
   })) as string;
 
   return {
@@ -367,6 +367,7 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
     n: keyShare.n ?? '', // this is not currently needed for key creation
     // TODO (BG-65434) : make it as mandatory
     privateShareProof: keyShare.privateShareProof ?? '',
+    vssProof: keyShare.vssProof,
   };
 }
 
