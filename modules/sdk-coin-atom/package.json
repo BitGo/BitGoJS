@@ -41,7 +41,10 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^5.0.0",
-    "@bitgo/statics": "^13.1.0"
+    "@bitgo/statics": "^13.1.0",
+    "@bitgo/utxo-lib": "^7.3.0",
+    "@cosmjs/amino": "^0.29.5",
+    "@cosmjs/encoding": "^0.29.5"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.5",

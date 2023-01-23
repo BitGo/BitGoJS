@@ -1,0 +1,11 @@
+export const TEST_ACCOUNT = {
+  pubAddress: 'cosmos1988uvdmz2kncg50wkjcjnmvw4nl69lh0jfl8v6',
+  compressedPublicKey: '02001fda4568760a99e58ee295b4a51edcc6a689297a71f7d1571cf4e1253baf30',
+  uncompressedPublicKey:
+    '04001fda4568760a99e58ee295b4a51edcc6a689297a71f7d1571cf4e1253baf3036cc7d5af7ade45e189834f19730438f8ca10f3d2a7520f7405ebd29d66c4588',
+  privateKey: '2904281770077a37148834686b5931376b8c78842c9fd25c90d7f012f459a5ea',
+  extendedPrv:
+    'xprv9s21ZrQH143K2R8si3vCFBf2mW2veQPp19YByJvAGviH4fxy47Yy8vzF1qvjgCfrAbvfwdeRqb7X9Jj48yZNaMDjDTZPRyoJ47ALvnZBpmr',
+  extendedPub:
+    'xpub661MyMwAqRbcEuDLp5TCcKbmKXsR3s7fNNTnmhKmqGFFwUJ7besDgjJis6eVbJgcTv9nuUuy71kKq7UrFvhTQCv8ng2ppt5yCQYMZ1y1C9s',
+};
