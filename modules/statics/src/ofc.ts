@@ -25,6 +25,7 @@ export class OfcCoin extends BaseCoin {
     CoinFeature.ACCOUNT_MODEL,
     CoinFeature.REQUIRES_BIG_NUMBER,
     CoinFeature.CUSTODY,
+    CoinFeature.CUSTODY_BITGO_TRUST,
   ];
 
   // If set, this coin is the native address format for this token.

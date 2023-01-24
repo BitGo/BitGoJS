@@ -136,8 +136,12 @@ export enum CoinFeature {
    * This coin requires that accounts keep a minimum balance as reserve
    */
   REQUIRES_RESERVE = 'requires-reserve',
-  /*
-   * This coin supports custodial wallet types
+  /**
+   * @deprecated This property is no longer valid. Please select the following custody option based on the BitGo org:
+   * * CUSTODY_BITGO_TRUST
+   * * CUSTODY_BITGO_NEW_YORK
+   * * CUSTODY_BITGO_GERMANY
+   * * CUSTODY_BITGO_SWITZERLAND
    */
   CUSTODY = 'custody',
   /*
@@ -156,6 +160,22 @@ export enum CoinFeature {
    * This coin is a dummy object meant to be a placeholder for an unsupported token
    */
   GENERIC_TOKEN = 'genericToken',
+  /*
+   * This coin supports custody in BitGo Trust SD entities
+   */
+  CUSTODY_BITGO_TRUST = 'custody-bitgo-trust',
+  /*
+   * This coin supports custody in BitGo New York entities
+   */
+  CUSTODY_BITGO_NEW_YORK = 'custody-bitgo-new-york',
+  /*
+   * This coin supports custody in BitGo Germany entities
+   */
+  CUSTODY_BITGO_GERMANY = 'custody-bitgo-germany',
+  /*
+   * This coin supports custody in BitGo Switzerland entities
+   */
+  CUSTODY_BITGO_SWITZERLAND = 'custody-bitgo-switzerland',
 }
 
 /**

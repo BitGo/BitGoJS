@@ -37,35 +37,84 @@ import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './ba
 import { CoinMap } from './map';
 import { Networks } from './networks';
 import { ofc, ofcerc20, ofcStellarToken, tofc, tofcerc20 } from './ofc';
-import { utxo } from './utxo';
+import { utxo, UtxoCoin } from './utxo';
 
+const BCH_FEATURES = [
+  ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+];
+const BTC_FEATURES = [
+  ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+];
+const BTG_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
 const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
 const ETH_FEATURES_WITH_STAKING_AND_MMI = [...ETH_FEATURES_WITH_STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
+const ETC_FEATURES = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK];
 
+const AVAXC_FEATURES = [...ETH_FEATURES_WITH_MMI, CoinFeature.CUSTODY_BITGO_GERMANY];
+const CELO_FEATURES = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const LTC_FEATURES = [
+  ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+];
+const RBTC_FEATURES = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
+const XLM_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
-  (feature) => feature !== CoinFeature.CUSTODY
+  (feature) => feature !== CoinFeature.CUSTODY && feature !== CoinFeature.CUSTODY_BITGO_TRUST
 );
-const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
-const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const XRP_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+];
+const CSPR_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.REQUIRES_RESERVE,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+];
+const ALGO_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+];
 const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const HBAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const DOGE_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
+const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
+const HBAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
+const POLYGON_FEATURES = [
+  ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+  CoinFeature.TSS,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.STAKING,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
 ];
+const STX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-
 const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -75,24 +124,24 @@ const GENERIC_TOKEN_FEATURES = [
 ];
 
 export const coins = CoinMap.fromCoins([
-  utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC),
-  utxo('tbch', 'Testnet Bitcoin Cash', Networks.test.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC),
+  utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC, BCH_FEATURES),
+  utxo('tbch', 'Testnet Bitcoin Cash', Networks.test.bitcoinCash, UnderlyingAsset.BCH, BaseUnit.BTC, BCH_FEATURES),
   utxo('bcha', 'ECash', Networks.main.eCash, UnderlyingAsset.BCHA, BaseUnit.BTC),
   utxo('tbcha', 'Testnet ECash', Networks.test.eCash, UnderlyingAsset.BCHA, BaseUnit.BTC),
   utxo('bsv', 'Bitcoin SV', Networks.main.bitcoinSV, UnderlyingAsset.BSV, BaseUnit.BTC),
   utxo('tbsv', 'Testnet Bitcoin SV', Networks.test.bitcoinSV, UnderlyingAsset.BSV, BaseUnit.BTC),
-  utxo('btc', 'Bitcoin', Networks.main.bitcoin, UnderlyingAsset.BTC, BaseUnit.BTC),
-  utxo('tbtc', 'Testnet Bitcoin', Networks.test.bitcoin, UnderlyingAsset.BTC, BaseUnit.BTC),
-  utxo('btg', 'Bitcoin Gold', Networks.main.bitcoinGold, UnderlyingAsset.BTG, BaseUnit.BTC),
-  utxo('tbtg', 'Testnet Bitcoin Gold', Networks.test.bitcoinGold, UnderlyingAsset.BTG, BaseUnit.BTC),
-  utxo('ltc', 'Litecoin', Networks.main.litecoin, UnderlyingAsset.LTC, BaseUnit.LTC),
-  utxo('tltc', 'Testnet Litecoin', Networks.test.litecoin, UnderlyingAsset.LTC, BaseUnit.LTC),
+  utxo('btc', 'Bitcoin', Networks.main.bitcoin, UnderlyingAsset.BTC, BaseUnit.BTC, BTC_FEATURES),
+  utxo('tbtc', 'Testnet Bitcoin', Networks.test.bitcoin, UnderlyingAsset.BTC, BaseUnit.BTC, BTC_FEATURES),
+  utxo('btg', 'Bitcoin Gold', Networks.main.bitcoinGold, UnderlyingAsset.BTG, BaseUnit.BTC, BTG_FEATURES),
+  utxo('tbtg', 'Testnet Bitcoin Gold', Networks.test.bitcoinGold, UnderlyingAsset.BTG, BaseUnit.BTC, BTG_FEATURES),
+  utxo('ltc', 'Litecoin', Networks.main.litecoin, UnderlyingAsset.LTC, BaseUnit.LTC, LTC_FEATURES),
+  utxo('tltc', 'Testnet Litecoin', Networks.test.litecoin, UnderlyingAsset.LTC, BaseUnit.LTC, LTC_FEATURES),
   utxo('dash', 'Dash', Networks.main.dash, UnderlyingAsset.DASH, BaseUnit.DASH),
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH, BaseUnit.DASH),
   utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC, BaseUnit.ZEC),
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC, BaseUnit.ZEC),
-  utxo('doge', 'Dogecoin', Networks.main.dogecoin, UnderlyingAsset.DOGE, BaseUnit.BTC),
-  utxo('tdoge', 'Testnet Dogecoin', Networks.test.dogecoin, UnderlyingAsset.DOGE, BaseUnit.BTC),
+  utxo('doge', 'Dogecoin', Networks.main.dogecoin, UnderlyingAsset.DOGE, BaseUnit.BTC, DOGE_FEATURES),
+  utxo('tdoge', 'Testnet Dogecoin', Networks.test.dogecoin, UnderlyingAsset.DOGE, BaseUnit.BTC, DOGE_FEATURES),
   avaxp('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, UnderlyingAsset.AVAXP),
   avaxp('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, UnderlyingAsset.AVAXP),
   ada('ada', 'Cardano ADA', Networks.main.ada, UnderlyingAsset.ADA),
@@ -124,7 +173,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.AVAXC,
     BaseUnit.ETH,
-    ETH_FEATURES_WITH_MMI
+    AVAXC_FEATURES
   ),
   account(
     'tavaxc',
@@ -133,7 +182,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.AVAXC,
     BaseUnit.ETH,
-    ETH_FEATURES_WITH_MMI
+    AVAXC_FEATURES
   ),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, BaseUnit.CSPR, CSPR_FEATURES),
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, BaseUnit.CSPR, CSPR_FEATURES),
@@ -152,6 +201,8 @@ export const coins = CoinMap.fromCoins([
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
     CoinFeature.EVM_WALLET,
+    CoinFeature.CUSTODY_BITGO_GERMANY,
+    CoinFeature.CUSTODY_BITGO_NEW_YORK,
   ]), // we should probably refactor this into a eth() method
   account('teth', 'Kovan Testnet Ethereum (Deprecated)', Networks.test.kovan, 18, UnderlyingAsset.ETH, BaseUnit.ETH, [
     ...ETH_FEATURES,
@@ -161,6 +212,8 @@ export const coins = CoinMap.fromCoins([
     ...ETH_FEATURES_WITH_STAKING_AND_MMI,
     CoinFeature.TSS,
     CoinFeature.EVM_WALLET,
+    CoinFeature.CUSTODY_BITGO_GERMANY,
+    CoinFeature.CUSTODY_BITGO_NEW_YORK,
   ]),
   account(
     'eth2',
@@ -198,7 +251,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETC,
     BaseUnit.ETH,
-    ETH_FEATURES
+    ETC_FEATURES
   ),
   account(
     'tetc',
@@ -207,16 +260,16 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETC,
     BaseUnit.ETH,
-    ETH_FEATURES
+    ETC_FEATURES
   ),
   account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS, BaseUnit.EOS, EOS_FEATURES),
   account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS, BaseUnit.EOS, EOS_FEATURES),
-  account('rbtc', 'Rootstock RSK', Networks.main.rbtc, 18, UnderlyingAsset.RBTC, BaseUnit.ETH, ETH_FEATURES),
-  account('trbtc', 'Testnet Rootstock RSK', Networks.test.rbtc, 18, UnderlyingAsset.RBTC, BaseUnit.ETH, ETH_FEATURES),
-  account('trx', 'Tron', Networks.main.trx, 6, UnderlyingAsset.TRX, BaseUnit.TRX),
-  account('ttrx', 'Testnet Tron', Networks.test.trx, 6, UnderlyingAsset.TRX, BaseUnit.TRX),
-  account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP, BaseUnit.XRP),
-  account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP, BaseUnit.XRP),
+  account('rbtc', 'Rootstock RSK', Networks.main.rbtc, 18, UnderlyingAsset.RBTC, BaseUnit.ETH, RBTC_FEATURES),
+  account('trbtc', 'Testnet Rootstock RSK', Networks.test.rbtc, 18, UnderlyingAsset.RBTC, BaseUnit.ETH, RBTC_FEATURES),
+  account('trx', 'Tron', Networks.main.trx, 6, UnderlyingAsset.TRX, BaseUnit.TRX, TRX_FEATURES),
+  account('ttrx', 'Testnet Tron', Networks.test.trx, 6, UnderlyingAsset.TRX, BaseUnit.TRX, TRX_FEATURES),
+  account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP, BaseUnit.XRP, XRP_FEATURES),
+  account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP, BaseUnit.XRP, XRP_FEATURES),
   account(
     'xlm',
     'Stellar',
@@ -241,8 +294,8 @@ export const coins = CoinMap.fromCoins([
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, BaseUnit.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD, BaseUnit.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD, BaseUnit.USD),
-  account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX, BaseUnit.STX),
-  account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX, BaseUnit.STX),
+  account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX, BaseUnit.STX, STX_FEATURES),
+  account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX, BaseUnit.STX, STX_FEATURES),
   account('sol', 'Solana', Networks.main.sol, 9, UnderlyingAsset.SOL, BaseUnit.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account(
     'tsol',
@@ -296,16 +349,16 @@ export const coins = CoinMap.fromCoins([
     CoinFeature.TSS,
     CoinFeature.EVM_WALLET,
   ]),
-  account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
-    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
-    CoinFeature.TSS,
-    CoinFeature.EVM_WALLET,
-  ]),
-  account('tpolygon', 'Testnet Polygon', Networks.test.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, [
-    ...ETH_FEATURES_WITH_STAKING_AND_MMI,
-    CoinFeature.TSS,
-    CoinFeature.EVM_WALLET,
-  ]),
+  account('polygon', 'Polygon', Networks.main.polygon, 18, UnderlyingAsset.POLYGON, BaseUnit.ETH, POLYGON_FEATURES),
+  account(
+    'tpolygon',
+    'Testnet Polygon',
+    Networks.test.polygon,
+    18,
+    UnderlyingAsset.POLYGON,
+    BaseUnit.ETH,
+    POLYGON_FEATURES
+  ),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
@@ -314,7 +367,7 @@ export const coins = CoinMap.fromCoins([
     '0x471ece3750da237f93b8e339c536989b8978a438',
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
-    ETH_FEATURES
+    CELO_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'tcelo',
@@ -324,7 +377,7 @@ export const coins = CoinMap.fromCoins([
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
-    ETH_FEATURES
+    CELO_FEATURES
   ),
   hederaCoin('hbar', 'Mainnet Hedera HBAR', Networks.main.hedera, 8, UnderlyingAsset.HBAR, '0.0.3', HBAR_FEATURES),
   hederaCoin('thbar', 'Testnet Hedera HBAR', Networks.test.hedera, 8, UnderlyingAsset.HBAR, '0.0.3', HBAR_FEATURES),
