@@ -16,3 +16,7 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
 };
 
 export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;
+
+export type TrustBackupConstants = {
+  trustBackupGPGPubKey: string;
+};

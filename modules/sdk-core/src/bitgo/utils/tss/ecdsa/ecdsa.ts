@@ -6,7 +6,13 @@ import { AddKeychainOptions, ApiKeyShare, CreateBackupOptions, Keychain, KeyType
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
-import { CreateEcdsaBitGoKeychainParams, CreateEcdsaKeychainParams, DecryptableNShare, KeyShare } from './types';
+import {
+  CreateEcdsaBitGoKeychainParams,
+  CreateEcdsaKeychainParams,
+  DecryptableNShare,
+  KeyShare,
+  TrustBackupConstants,
+} from './types';
 import {
   BackupKeyShare,
   BitgoHeldBackupKeyShare,
@@ -675,5 +681,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Raw message required to sign message');
     }
     return this.signRequestBase(params, RequestType.message);
+  }
+
+  async getTrustBackupConstants(): Promise<TrustBackupConstants> {
+    return await this.bitgo.get(this.bitgo.url('/krs/constants', 2)).result();
   }
 }
