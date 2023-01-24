@@ -111,7 +111,7 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   amountType: 'number' | 'bigint' = 'number'
 ): Promise<Unspent<TNumber>[]> {
   const api = coin.getRecoveryProvider();
-  const tx = await api.getTransactionInfo(txid);
+  const tx = await api.getTransactionIO(txid);
   const addresses = tx.outputs.map((output) => output.address);
   const unspents = await api.getUnspentsForAddresses(addresses);
   return unspents.map((recoveryOutput) => {

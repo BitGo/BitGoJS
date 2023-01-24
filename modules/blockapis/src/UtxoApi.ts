@@ -9,7 +9,7 @@ export type OutputSpend =
     }
   | { txid: undefined; vin: undefined };
 
-export type TransactionInfo = {
+export type TransactionIO = {
   inputs: { address: string }[];
   outputs: { address: string }[];
 };
@@ -28,7 +28,7 @@ export interface UtxoApi extends TransactionApi {
    * @param txid
    * @return transaction input and output addresses
    */
-  getTransactionInfo(txid: string): Promise<TransactionInfo>;
+  getTransactionIO(txid: string): Promise<TransactionIO>;
 
   /**
    * @param txid

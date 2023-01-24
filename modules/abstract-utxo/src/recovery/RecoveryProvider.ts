@@ -1,4 +1,4 @@
-import { BlockchairApi, BlockstreamApi, AddressInfo, TransactionInfo } from '@bitgo/blockapis';
+import { BlockchairApi, BlockstreamApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
 import { ApiNotImplementedError } from './baseApi';
 import { bitgo } from '@bitgo/utxo-lib';
 
@@ -19,7 +19,7 @@ export interface RecoveryProvider<TNumber extends number | bigint = number> {
   getUnspentsForAddresses(addresses: string[]): Promise<Unspent<TNumber>[]>;
   getAddressInfo(address: string): Promise<AddressInfo>;
   getTransactionHex(txid: string): Promise<string>;
-  getTransactionInfo(txid: string): Promise<TransactionInfo>;
+  getTransactionIO(txid: string): Promise<TransactionIO>;
 }
 
 export function forCoin(coinName: string, apiToken?: string): RecoveryProvider<number> {

@@ -1,6 +1,6 @@
 import { bitgo } from '@bitgo/utxo-lib';
 import { AddressApi, AddressInfo } from '../AddressApi';
-import { OutputSpend, TransactionInfo, UtxoApi } from '../UtxoApi';
+import { OutputSpend, TransactionIO, UtxoApi } from '../UtxoApi';
 import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { TransactionStatus } from '../TransactionApi';
@@ -136,7 +136,7 @@ export class BlockstreamApi implements AddressApi, UtxoApi {
     );
   }
 
-  async getTransactionInfo(txid: string): Promise<TransactionInfo> {
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
     const tx = await this.client.get<EsploraTransaction>(`/tx/${txid}`);
     const inputs = tx.map((body) =>
       body.vin.map((u) => {

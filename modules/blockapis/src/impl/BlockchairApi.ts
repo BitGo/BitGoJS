@@ -2,7 +2,7 @@ import { bitgo } from '@bitgo/utxo-lib';
 import { BaseHttpClient, HttpClient, Response } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { AddressApi, AddressInfo } from '../AddressApi';
-import { OutputSpend, TransactionInfo, UtxoApi } from '../UtxoApi';
+import { OutputSpend, TransactionIO, UtxoApi } from '../UtxoApi';
 import { TransactionStatus } from '../TransactionApi';
 
 type Unspent = bitgo.Unspent;
@@ -200,7 +200,7 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     });
   }
 
-  async getTransactionInfo(txid: string): Promise<TransactionInfo> {
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
     const tx = await this.getTransaction(txid);
     const inputs = tx.inputs.map((input) => {
       return {

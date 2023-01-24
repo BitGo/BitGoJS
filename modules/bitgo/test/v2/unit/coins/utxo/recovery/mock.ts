@@ -2,7 +2,7 @@
  * @prettier
  */
 import { bitgo } from '@bitgo/utxo-lib';
-import { AddressInfo, TransactionInfo } from '@bitgo/blockapis';
+import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
 import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
@@ -62,8 +62,8 @@ export class MockRecoveryProvider<TNumber extends number | bigint> implements Re
     throw new Error(`not implemented`);
   }
 
-  async getTransactionInfo(txid: string): Promise<TransactionInfo> {
-    const payload: TransactionInfo = {
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
+    const payload: TransactionIO = {
       inputs: this.unspents.map((u) => ({ address: u.address })),
       outputs:
         this.tx?.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
