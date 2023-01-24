@@ -106,6 +106,7 @@ function getTestCases(coinName: string): TestCase<unknown>[] {
     switch (methodName) {
       case 'getTransactionHex':
       case 'getTransactionInputs':
+      case 'getTransactionIO':
       case 'getTransactionSpends':
       case 'getTransactionStatus':
         return getTestTransactionIds(coinName).map((v) => [v]);
@@ -118,6 +119,7 @@ function getTestCases(coinName: string): TestCase<unknown>[] {
   const methods: (keyof UtxoApi)[] = [
     'getTransactionHex',
     'getTransactionInputs',
+    'getTransactionIO',
     'getTransactionStatus',
     'getTransactionSpends',
     'getUnspentsForAddresses',

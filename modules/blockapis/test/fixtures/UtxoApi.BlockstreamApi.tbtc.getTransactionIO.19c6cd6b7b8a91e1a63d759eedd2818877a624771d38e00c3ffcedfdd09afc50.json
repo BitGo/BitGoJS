@@ -1,0 +1,15 @@
+{
+  "inputs": [
+    {
+      "address": "tb1q2ajf7llsxvff7r0fpm42tmd5nz43cr8mg85f3788rm4cy7uwajdsusr2mg"
+    }
+  ],
+  "outputs": [
+    {
+      "address": "2NEhVzd2Lom5g7ZF5K1qYrgZLpXecniqHcE"
+    },
+    {
+      "address": "tb1q2wqmwu89mh5ztajnvasj8nr32szq6mfwxzvgvqyydzv8xpnvdpvq34wgpv"
+    }
+  ]
+}
