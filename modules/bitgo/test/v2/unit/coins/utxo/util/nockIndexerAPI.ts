@@ -3,7 +3,7 @@
  */
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
-import { AbstractUtxoCoin, ExplorerTxInfo } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { nockBitGo } from './nockBitGo';
 
 interface ImsUnspent {
@@ -18,7 +18,7 @@ export function nockBitGoPublicTransaction<TNumber extends number | bigint = num
   tx: utxolib.bitgo.UtxoTransaction<TNumber>,
   unspents: { address: string }[]
 ): nock.Scope {
-  const payload: ExplorerTxInfo = {
+  const payload = {
     input: unspents.map((u) => ({ address: u.address })),
     outputs: tx.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, coin.network) })),
   };

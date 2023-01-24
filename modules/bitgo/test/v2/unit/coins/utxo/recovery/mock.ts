@@ -2,15 +2,21 @@
  * @prettier
  */
 import { bitgo } from '@bitgo/utxo-lib';
-import { AddressInfo } from '@bitgo/blockapis';
-import { RecoveryProvider } from '@bitgo/abstract-utxo';
+import { AddressInfo, TransactionInfo } from '@bitgo/blockapis';
+import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
-type Unspent = bitgo.Unspent;
-export class MockRecoveryProvider implements RecoveryProvider {
+type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+
+export class MockRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
   private mockTxHexes: Record<string, string> = {};
-  constructor(public unspents: Unspent[]) {
-    const maxVout: number = unspents.reduce((current: number, u: Unspent) => {
+
+  constructor(
+    public coin: AbstractUtxoCoin,
+    public unspents: Unspent<TNumber>[],
+    public tx?: utxolib.bitgo.UtxoTransaction<TNumber>
+  ) {
+    const maxVout: number = unspents.reduce((current: number, u: Unspent<TNumber>) => {
       const vout = bitgo.parseOutputId(u.id).vout;
       return vout > current ? vout : current;
     }, 0);
@@ -34,7 +40,7 @@ export class MockRecoveryProvider implements RecoveryProvider {
     const u = this.unspents.find((u) => u.address === address);
     return {
       txCount: u ? 1 : 0,
-      balance: u ? u.value : 0,
+      balance: (u ? u.value : 0) as number,
     };
   }
 
@@ -44,7 +50,7 @@ export class MockRecoveryProvider implements RecoveryProvider {
       .map((u) => ({
         id: u.id,
         address: u.address,
-        value: u.value,
+        value: utxolib.bitgo.toTNumber<number>(BigInt(u.value), this.coin.amountType),
       }));
   }
 
@@ -52,7 +58,16 @@ export class MockRecoveryProvider implements RecoveryProvider {
     return this.mockTxHexes[txid];
   }
 
-  getTransactionInputs(txid: string): Promise<Unspent[]> {
+  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
     throw new Error(`not implemented`);
+  }
+
+  async getTransactionInfo(txid: string): Promise<TransactionInfo> {
+    const payload: TransactionInfo = {
+      inputs: this.unspents.map((u) => ({ address: u.address })),
+      outputs:
+        this.tx?.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
+    };
+    return payload;
   }
 }

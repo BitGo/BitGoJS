@@ -18,7 +18,6 @@ import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 
 import { decrypt } from '@bitgo/sdk-api';
 import { signAndVerifyWalletTransaction } from '../sign';
-import { forCoin } from './RecoveryProvider';
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
   faultyTxId: string;
@@ -54,7 +53,7 @@ export interface CrossChainRecoverySigned<TNumber extends number | bigint = numb
 
 type WalletV1 = {
   keychains: { xpub: string }[];
-  address({ address: string }): Promise<{ chain: number; index: number }>;
+  address({ address }: { address: string }): Promise<{ chain: number; index: number }>;
   getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
 };
 
@@ -111,7 +110,7 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   txid: string,
   amountType: 'number' | 'bigint' = 'number'
 ): Promise<Unspent<TNumber>[]> {
-  const api = forCoin(coin.getChain());
+  const api = coin.getRecoveryProvider();
   const tx = await api.getTransactionInfo(txid);
   const addresses = tx.outputs.map((output) => output.address);
   const unspents = await api.getUnspentsForAddresses(addresses);

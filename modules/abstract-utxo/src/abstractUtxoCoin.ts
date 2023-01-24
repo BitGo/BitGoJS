@@ -10,7 +10,13 @@ import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
 import { backupKeyRecovery, RecoverParams } from './recovery/backupKeyRecovery';
-import { CrossChainRecoverySigned, CrossChainRecoveryUnsigned, recoverCrossChain } from './recovery';
+import {
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+  forCoin,
+  recoverCrossChain,
+  RecoveryProvider,
+} from './recovery';
 
 import {
   AddressCoinSpecific,
@@ -1342,5 +1348,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   valuelessTransferAllowed(): boolean {
     return false;
+  }
+
+  getRecoveryProvider(apiToken?: string): RecoveryProvider {
+    return forCoin(this.getChain(), apiToken);
   }
 }

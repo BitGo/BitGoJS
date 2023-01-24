@@ -1,5 +1,8 @@
-import { AddressApi, UtxoApi, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
+import { BlockchairApi, BlockstreamApi, AddressInfo, TransactionInfo } from '@bitgo/blockapis';
 import { ApiNotImplementedError } from './baseApi';
+import { bitgo } from '@bitgo/utxo-lib';
+
+type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 /**
  * An account with bear minimum information required for recoveries.
@@ -12,9 +15,14 @@ export interface RecoveryAccountData {
 /**
  * Factory for AddressApi & UtxoApi
  */
-export type RecoveryProvider = AddressApi & UtxoApi;
+export interface RecoveryProvider<TNumber extends number | bigint = number> {
+  getUnspentsForAddresses(addresses: string[]): Promise<Unspent<TNumber>[]>;
+  getAddressInfo(address: string): Promise<AddressInfo>;
+  getTransactionHex(txid: string): Promise<string>;
+  getTransactionInfo(txid: string): Promise<TransactionInfo>;
+}
 
-export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
+export function forCoin(coinName: string, apiToken?: string): RecoveryProvider<number> {
   switch (coinName) {
     case 'btc':
     case 'tbtc':
