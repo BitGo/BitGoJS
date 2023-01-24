@@ -270,7 +270,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       publicShare: userToBitgoPublicShare,
       privateShare: userToBitgoPrivateShare,
       privateShareProof: await createShareProof(userGpgKey.privateKey, userToBitgoPrivateShare.slice(0, 64), 'eddsa'),
-      v: userKeyShare.yShares[3].v,
+      vssProof: userKeyShare.yShares[3].v,
     };
 
     const backupToBitgoPublicShare = Buffer.concat([
@@ -289,7 +289,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         backupToBitgoPrivateShare.slice(0, 64),
         'eddsa'
       ),
-      v: backupKeyShare.yShares[3].v,
+      vssProof: backupKeyShare.yShares[3].v,
     };
 
     return await this.createBitgoKeychainInWP(
