@@ -68,7 +68,8 @@
     "parse-url": "8.1.0",
     "terser": "^5.14.2",
     "vm2": "^3.9.11",
-    "json5": "^2.2.2"
+    "json5": "^2.2.2",
+    "ua-parser-js": ">0.7.30 <0.8.0"
   },
   "workspaces": [
     "modules/*"
