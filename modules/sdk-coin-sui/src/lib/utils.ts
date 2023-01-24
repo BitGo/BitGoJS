@@ -1,7 +1,8 @@
 import { BaseUtils, BuildTransactionError, ParseTransactionError, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import { SUI_ADDRESS_LENGTH, TYPE_TAG } from './constants';
+import { SUI_ADDRESS_LENGTH } from './constants';
 import { bcs } from './bcs';
+import { fromB64 } from '@mysten/bcs';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -37,9 +38,8 @@ export class Utils implements BaseUtils {
    */
   isValidRawTransaction(rawTransaction: string): boolean {
     try {
-      const data = Buffer.from(rawTransaction, 'base64');
-      const trimmedData = new Uint8Array(data.subarray(TYPE_TAG.length));
-      const deserialized = bcs.de('TransactionData', trimmedData);
+      const data = fromB64(rawTransaction);
+      const deserialized = bcs.de('TransactionData', data);
       bcs.ser('TransactionData', deserialized);
       return true;
     } catch (e) {

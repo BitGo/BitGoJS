@@ -12,10 +12,10 @@ import { SuiObjectRef, SuiTransaction, TransactionExplanation, TxData, TxDetails
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { bcs } from './bcs';
-import { SUI_GAS_PRICE, SuiTransactionType, TYPE_TAG, UNAVAILABLE_TEXT } from './constants';
+import { SUI_GAS_PRICE, SuiTransactionType, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
-import { fromHEX } from '@mysten/bcs';
+import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
 
 export class Transaction extends BaseTransaction {
@@ -250,17 +250,15 @@ export class Transaction extends BaseTransaction {
 
   serialize(): string {
     const txData = this.getTxData();
+    const bufferSize = 8192;
 
-    const dataBytes = bcs.ser('TransactionData', txData, 8192).toBytes();
-    const serialized = new Uint8Array(TYPE_TAG.length + dataBytes.length);
-    serialized.set(TYPE_TAG);
-    serialized.set(dataBytes, TYPE_TAG.length);
+    const dataBytes = bcs.ser('TransactionData', txData, bufferSize).toBytes();
     if (this._signature !== undefined) {
       const txBytes = bcs.ser('TransactionData', txData).toBytes();
       const hash = this.getSha256Hash('TransactionData', txBytes);
       this._id = bs58.encode(hash);
     }
-    return Buffer.from(serialized).toString('base64');
+    return Buffer.from(dataBytes).toString('base64');
   }
 
   private getSha256Hash(typeTag: string, data: Uint8Array): Uint8Array {
@@ -278,9 +276,8 @@ export class Transaction extends BaseTransaction {
   }
 
   static deserializeSuiTransaction(serializedTx: string): SuiTransaction {
-    const data = Buffer.from(serializedTx, 'base64');
-    const trimmedData = new Uint8Array(data.subarray(TYPE_TAG.length));
-    const k = bcs.de('TransactionData', trimmedData);
+    const data = fromB64(serializedTx);
+    const k = bcs.de('TransactionData', data);
 
     let type: SuiTransactionType;
     const txDetails: TxDetails = k.kind.Single;

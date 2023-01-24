@@ -1,5 +1,4 @@
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
-export const TYPE_TAG = Array.from('TransactionData::').map((e) => e.charCodeAt(0));
 
 // Need to keep in sync with
 // https://github.com/MystenLabs/sui/blob/f32877f2e40d35a008710c232e49b57aab886462/crates/sui-types/src/messages.rs#L338
