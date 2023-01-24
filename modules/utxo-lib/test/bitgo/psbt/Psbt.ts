@@ -1,7 +1,15 @@
 import * as assert from 'assert';
 
 import { getNetworkName, networks } from '../../../src';
-import { getExternalChainCode, outputScripts, KeyName, UtxoPsbt, UtxoTransaction, ZcashPsbt } from '../../../src/bitgo';
+import {
+  getExternalChainCode,
+  outputScripts,
+  KeyName,
+  UtxoPsbt,
+  UtxoTransaction,
+  ZcashPsbt,
+  createPsbtFromHex,
+} from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
 import { defaultTestOutputAmount } from '../../transaction_util';
@@ -291,8 +299,9 @@ describe('Psbt from transaction using wallet unspents', function () {
 });
 
 function testUtxoPsbt(coinNetwork: Network) {
-  describe(`Testing UtxoPsbt for ${getNetworkName(coinNetwork)} network`, function () {
+  describe(`Testing UtxoPsbt (de)serialization for ${getNetworkName(coinNetwork)} network`, function () {
     let psbt: UtxoPsbt<UtxoTransaction<bigint>>;
+    let psbtHex: string;
     before(async function () {
       const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000'), coinNetwork);
       const txBuilderParams = {
@@ -310,6 +319,7 @@ function testUtxoPsbt(coinNetwork: Network) {
       if (coinNetwork === networks.zcash) {
         (psbt as ZcashPsbt).setDefaultsForVersion(network, 450);
       }
+      psbtHex = psbt.toHex();
     });
 
     it('should be able to clone psbt', async function () {
@@ -317,12 +327,32 @@ function testUtxoPsbt(coinNetwork: Network) {
       assert.deepStrictEqual(clone.toBuffer(), psbt.toBuffer());
     });
 
-    it('should be able to serialize and deserialize', async function () {
-      const psbtHex = psbt.toHex();
-      const PsbtClass = getNetworkName(coinNetwork) === 'zcash' ? ZcashPsbt : UtxoPsbt;
-      assert.deepStrictEqual(PsbtClass.fromHex(psbtHex, { network: coinNetwork }).toHex(), psbt.toHex());
+    it('should be able to round-trip', async function () {
+      assert.deepStrictEqual(createPsbtFromHex(psbtHex, coinNetwork, false).toBuffer(), psbt.toBuffer());
     });
+
+    function deserializeBip32PathsCorrectly(bip32PathsAbsolute: boolean): void {
+      function checkDerivationPrefix(bip32Derivation: { path: string }): void {
+        const path = bip32Derivation.path.split('/');
+        const prefix = bip32PathsAbsolute ? 'm' : '0';
+        assert(path[0] === prefix);
+      }
+      it(`should deserialize PSBT bip32Derivations with paths ${
+        bip32PathsAbsolute ? '' : 'not '
+      } absolute`, async function () {
+        const deserializedPsbt = createPsbtFromHex(psbtHex, coinNetwork, bip32PathsAbsolute);
+        assert(deserializedPsbt);
+        deserializedPsbt.data.inputs.forEach((input) => {
+          input?.bip32Derivation?.forEach((derivation) => checkDerivationPrefix(derivation));
+          input?.tapBip32Derivation?.forEach((derivation) => checkDerivationPrefix(derivation));
+        });
+      });
+    }
+
+    [true, false].forEach((bip32PathsAbsolute) => deserializeBip32PathsCorrectly(bip32PathsAbsolute));
   });
 }
 
-[networks.bitcoin, networks.zcash, networks.dash].forEach((coinNetwork) => testUtxoPsbt(coinNetwork));
+[networks.bitcoin, networks.zcash, networks.dash, networks.dogecoin, networks.litecoin].forEach((coinNetwork) =>
+  testUtxoPsbt(coinNetwork)
+);

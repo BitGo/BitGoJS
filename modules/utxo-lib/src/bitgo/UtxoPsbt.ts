@@ -37,6 +37,7 @@ export interface TaprootSigner {
 export interface PsbtOpts {
   network: Network;
   maximumFeeRate?: number; // [sat/byte]
+  bip32PathsAbsolute?: boolean;
 }
 
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
@@ -59,14 +60,16 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
       const tx = this.transactionFromBuffer(buffer, opts.network);
       return new PsbtTransaction({ tx });
     };
-    const psbtBase = PsbtBase.fromBuffer(buffer, transactionFromBuffer);
+    const psbtBase = PsbtBase.fromBuffer(buffer, transactionFromBuffer, {
+      bip32PathsAbsolute: opts.bip32PathsAbsolute,
+    });
     const psbt = this.createPsbt(opts, psbtBase);
     // Upstream checks for duplicate inputs here, but it seems to be of dubious value.
     return psbt;
   }
 
   static fromHex(data: string, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
-    return UtxoPsbt.fromBuffer(Buffer.from(data, 'hex'), opts);
+    return this.fromBuffer(Buffer.from(data, 'hex'), opts);
   }
 
   toHex(): string {
@@ -145,7 +148,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
 
     updates.forEach((update, index) => {
       psbt.updateInput(index, update);
-      psbt.updateInput(index, { witnessUtxo: prevOutputs[index] });
+      psbt.updateInput(index, { witnessUtxo: { script: prevOutputs[index].script, value: prevOutputs[index].value } });
     });
 
     return psbt;
