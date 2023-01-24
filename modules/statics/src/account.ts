@@ -31,6 +31,7 @@ export class AccountCoin extends BaseCoin {
     CoinFeature.VALUELESS_TRANSFER,
     CoinFeature.TRANSACTION_DATA,
     CoinFeature.CUSTODY,
+    CoinFeature.CUSTODY_BITGO_TRUST,
   ];
 
   public readonly network: AccountNetwork;
