@@ -12,6 +12,9 @@ export const TOKEN_TRANSFER_DATA =
   'a9059cbb0000000000000000000000004887974f42a789ef6d4dfc7ba28b1583219434b3000000000000000000000000000000000000000000000000000000003b9aca00';
 export const USDT_CONTRACT_ADDRESS = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 export const TOKEN_TRANSFER_RECIPIENT = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
+export const TOKEN_TRANSFER_DATA_2 =
+  'a9059cbb0000000000000000000000008483618ca85c35a9b923d98bebca718f5a1db2790000000000000000000000000000000000000000000000000000000005f5e100';
+export const TOKEN_TXID = 'fe21c49f4febd9089125e3a006943c145721d8fcb7ab84136f8c6663ff92f8ed';
 
 export const PARTICIPANTS = {
   from: {
@@ -61,6 +64,20 @@ export const TOKEN_TX_CONTRACT = [
       value: {
         data: TOKEN_TRANSFER_DATA,
         owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+        contract_address: '4142a1e39aefa49290f2b3f9ed688d7cecf86cd6e0',
+      },
+      type_url: 'type.googleapis.com/protocol.TriggerSmartContract',
+    },
+    type: 'TriggerSmartContract',
+  },
+];
+
+export const TOKEN_TX_CONTRACT_2 = [
+  {
+    parameter: {
+      value: {
+        data: TOKEN_TRANSFER_DATA_2,
+        owner_address: '41c51fbeea78910b15b1d3e8a9b62914ca94d1a4ac',
         contract_address: '4142a1e39aefa49290f2b3f9ed688d7cecf86cd6e0',
       },
       type_url: 'type.googleapis.com/protocol.TriggerSmartContract',
