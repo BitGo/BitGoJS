@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.6.4...@bitgo/utxo-bin@2.7.0) (2023-01-25)
+
+### Bug Fixes
+
+- **utxo-bin:** exclude bad @types/yargs@17.0.20 ([2a3d353](https://github.com/BitGo/BitGoJS/commit/2a3d353d93b2e5a558996bdb99f395a79e9890fd))
+
+### Features
+
+- **utxo-bin:** add ecdsa util file ([a485441](https://github.com/BitGo/BitGoJS/commit/a48544166c118673da0152b71fba0d646f21933a))
+- **utxo-bin:** add more detailed signature buffer parsing ([efd5a1c](https://github.com/BitGo/BitGoJS/commit/efd5a1c5eefa0ce05eb9da84911b74ad9ee90df7))
+- **utxo-bin:** add parameter --vin ([f2bcd3c](https://github.com/BitGo/BitGoJS/commit/f2bcd3c45fd1a42d67723de11a77d2a7f0e6891e))
+
 ## [2.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.6.3...@bitgo/utxo-bin@2.6.4) (2022-12-23)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

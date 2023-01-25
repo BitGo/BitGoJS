@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.3.0...@bitgo/utxo-lib@7.4.0) (2023-01-25)
+
+### Bug Fixes
+
+- **utxo-lib:** fix zcash psbt from buffer ([8cc3573](https://github.com/BitGo/BitGoJS/commit/8cc35737e5a3bf224c2bcfa502c0fc11d6e09873))
+- **utxo-lib:** implement toHex for ZcashPsbt ([bd90435](https://github.com/BitGo/BitGoJS/commit/bd90435c27a82cd689db093d6c7d7359f3c646b5))
+- **utxo-lib:** small fixes in signatureModify test ([90316d6](https://github.com/BitGo/BitGoJS/commit/90316d6dd6ea6d7490323ba3253c1fc6a67df069))
+
+### Features
+
+- **utxo-lib:** add replay protection unspent to psbt ([a328797](https://github.com/BitGo/BitGoJS/commit/a32879785a60eab4511a5f073d0dc9e1eccb26e3))
+- **utxo-lib:** do not require previous transactions for zcash ([5253f39](https://github.com/BitGo/BitGoJS/commit/5253f39a69ccf2ad4a8dbe40c0da6cf8e6852879))
+
 # [7.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.2.0...@bitgo/utxo-lib@7.3.0) (2022-12-23)
 
 ### Features

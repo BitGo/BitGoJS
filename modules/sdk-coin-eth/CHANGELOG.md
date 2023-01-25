@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@3.0.0...@bitgo/sdk-coin-eth@4.0.0) (2023-01-25)
+
+### Bug Fixes
+
+- **sdk-coin-eth:** fix recovery flow, add unit test ([49fc287](https://github.com/BitGo/BitGoJS/commit/49fc287403345a710244a5efa53ade30a829a13b))
+- **sdk-coin-eth:** remove generic typing from encodedtypeddata input ([f95fb60](https://github.com/BitGo/BitGoJS/commit/f95fb609806f814f60fc9a1ed5ff932943d45274))
+
+### Features
+
+- **sdk-core:** forwarder version 3 ([82e6deb](https://github.com/BitGo/BitGoJS/commit/82e6debac071486435c51ce3f52f8352bdb8a8fb))
+
+### BREAKING CHANGES
+
+- **sdk-coin-eth:** remove generic typing from encodedtypeddata input
+
+Ticket: BG-63009
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@2.10.0...@bitgo/sdk-coin-eth@3.0.0) (2022-12-23)
 
 ### Bug Fixes

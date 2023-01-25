@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.2.1...bitgo@16.3.0) (2023-01-25)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix recovery flow, add unit test ([49fc287](https://github.com/BitGo/BitGoJS/commit/49fc287403345a710244a5efa53ade30a829a13b))
+* **sdk-coin-eth:** fix unit test ([c26015c](https://github.com/BitGo/BitGoJS/commit/c26015c7819b061a4bd8f7acfc5175af30d06b17))
+* **sdk-core:** remove generic typing from typeddata associated with eip712 ([ac1047e](https://github.com/BitGo/BitGoJS/commit/ac1047ea482f7751dd145d538de3412e738e30e9))
+
+
+### Features
+
+* **sdk-coin-atom:** create atom module ([88d9971](https://github.com/BitGo/BitGoJS/commit/88d99714275e98c3997451776c9eec3b21645ffa))
+* **sdk-core:** add extra params for addKey ([43e095e](https://github.com/BitGo/BitGoJS/commit/43e095efa52fefd25dd977ed8cd271fb146780ca))
+* **sdk-core:** add u value proof for ecdsa ([1ae0107](https://github.com/BitGo/BitGoJS/commit/1ae01076e503d57729a528a21044940526bfe917))
+* **sdk-core:** forwarder version 3 ([82e6deb](https://github.com/BitGo/BitGoJS/commit/82e6debac071486435c51ce3f52f8352bdb8a8fb))
+* **sdk-core:** get bitgo public key based on coin and feature flags ([c5cee95](https://github.com/BitGo/BitGoJS/commit/c5cee95fa8005a8a83cf5c5afc01f35e3235d970))
+* **statics:** add ofc stellar usdc token ([2c2735d](https://github.com/BitGo/BitGoJS/commit/2c2735d602c09cbbbeda78ef27a050ca08d3dc42))
+* **statics:** fix the keycurve testcase ([b1bc356](https://github.com/BitGo/BitGoJS/commit/b1bc35642f58469e153782932586b79ad4ef0cf8))
+
+
+
+
+
 ## [16.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@16.2.0...bitgo@16.2.1) (2022-12-23)
 
 **Note:** Version bump only for package bitgo

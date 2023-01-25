@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.21.5...@bitgo/express@9.22.0) (2023-01-25)
+
+
+### Features
+
+* **express:** support TSS EdDSA in sendMany express endpoint ([fa22c94](https://github.com/BitGo/BitGoJS/commit/fa22c9496e9af36ca424440182bc53c7688ae24b))
+
+
+
+
+
 ## [9.21.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.21.4...@bitgo/express@9.21.5) (2022-12-23)
 
 **Note:** Version bump only for package @bitgo/express

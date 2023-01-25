@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.5...@bitgo/sdk-api@1.9.6) (2023-01-25)
+
+### Bug Fixes
+
+- **sdk-api:** don't throw a TypeError for errors without request body ([bbdc642](https://github.com/BitGo/BitGoJS/commit/bbdc642419a092d9373e3ed0f1112722954dd827))
+
 ## [1.9.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.4...@bitgo/sdk-api@1.9.5) (2022-12-23)
 
 **Note:** Version bump only for package @bitgo/sdk-api
