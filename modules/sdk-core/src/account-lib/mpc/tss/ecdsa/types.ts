@@ -194,8 +194,8 @@ export interface MUShare {
 // Gamma Share
 export interface GShare {
   i: number;
-  l: string;
-  m: string;
+  l?: string;
+  m?: string;
   n: string;
   y: string; // combined public key
   k: string;
