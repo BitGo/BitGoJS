@@ -31,7 +31,7 @@
     "@bitgo/utxo-lib": "^7.3.0",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@7.0.0-rc.5",
+    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.2",
     "bn.js": "^5.2.1",
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
