@@ -20,6 +20,9 @@
       "path": "./modules/express"
     },
     {
+      "path": "./modules/key-card"
+    },
+    {
       "path": "./modules/sdk-api"
     },
     {
@@ -129,9 +132,6 @@
     },
     {
       "path": "./modules/sdk-evm"
-    },
-    {
-      "path": "./modules/sdk-lib-key-card-generator"
     },
     {
       "path": "./modules/sdk-test"

@@ -1,5 +1,5 @@
 {
-  "name": "@bitgo/sdk-lib-key-card-generator",
+  "name": "@bitgo/key-card",
   "version": "0.0.0",
   "description": "key card generator for BitGo wallets",
   "main": "./dist/src/index.js",
@@ -14,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-lib-key-card-generator"
+    "directory": "modules/key-card"
   },
   "lint-staged": {
     "*.{js,ts}": [
