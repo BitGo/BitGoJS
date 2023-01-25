@@ -150,21 +150,19 @@ export async function createUserToBitGoGShare(
     throw new Error('Invalid YShare, is not backup key');
   }
 
-  let v, r, R;
+  const r = bitgoToUserRShare.share.substring(0, 64);
+  const R = bitgoToUserRShare.share.substring(64, 128);
+
+  let vssProof;
   if (bitgoToUserRShare.share.length > 128) {
-    v = bitgoToUserRShare.share.substring(0, 64);
-    r = bitgoToUserRShare.share.substring(64, 128);
-    R = bitgoToUserRShare.share.substring(128, 192);
-  } else {
-    r = bitgoToUserRShare.share.substring(0, 64);
-    R = bitgoToUserRShare.share.substring(64, 128);
+    vssProof = bitgoToUserRShare.share.substring(128, 192);
   }
 
   const RShare: RShare = {
     i: ShareKeyPosition.USER,
     j: ShareKeyPosition.BITGO,
     u: bitgoToUserYShare.u,
-    v,
+    v: vssProof,
     r,
     R,
   };
@@ -200,8 +198,7 @@ export async function offerUserToBitgoRShare(
   const signatureShare: SignatureShareRecord = {
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,
-    // TODO(BG-61037): Fix signing with VSS
-    share: /* rShare.v + */ rShare.r + rShare.R,
+    share: rShare.r + rShare.R + rShare.v,
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
