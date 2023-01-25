@@ -7,16 +7,10 @@ import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
-
-export class MockRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+export class MockRecoveryProvider implements RecoveryProvider {
   private mockTxHexes: Record<string, string> = {};
-
-  constructor(
-    public coin: AbstractUtxoCoin,
-    public unspents: Unspent<TNumber>[],
-    public tx?: utxolib.bitgo.UtxoTransaction<TNumber>
-  ) {
-    const maxVout: number = unspents.reduce((current: number, u: Unspent<TNumber>) => {
+  constructor(public unspents: Unspent[]) {
+    const maxVout: number = unspents.reduce((current: number, u: Unspent) => {
       const vout = bitgo.parseOutputId(u.id).vout;
       return vout > current ? vout : current;
     }, 0);
@@ -40,7 +34,7 @@ export class MockRecoveryProvider<TNumber extends number | bigint> implements Re
     const u = this.unspents.find((u) => u.address === address);
     return {
       txCount: u ? 1 : 0,
-      balance: (u ? u.value : 0) as number,
+      balance: u ? u.value : 0,
     };
   }
 
@@ -50,7 +44,7 @@ export class MockRecoveryProvider<TNumber extends number | bigint> implements Re
       .map((u) => ({
         id: u.id,
         address: u.address,
-        value: utxolib.bitgo.toTNumber<number>(BigInt(u.value), this.coin.amountType),
+        value: u.value,
       }));
   }
 
@@ -58,16 +52,48 @@ export class MockRecoveryProvider<TNumber extends number | bigint> implements Re
     return this.mockTxHexes[txid];
   }
 
-  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
+  getTransactionInputs(txid: string): Promise<Unspent[]> {
     throw new Error(`not implemented`);
+  }
+
+  getTransactionIO(txid: string): Promise<TransactionIO> {
+    throw new Error(`not implemented`);
+  }
+}
+export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+  constructor(
+    public coin: AbstractUtxoCoin,
+    public unspents: Unspent<TNumber>[],
+    public tx: utxolib.bitgo.UtxoTransaction<TNumber>
+  ) {}
+
+  async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
+    return this.tx.outs.map((o, vout: number) => ({
+      id: `${this.tx?.getId()}:${vout}`,
+      address: utxolib.address.fromOutputScript(o.script, this.coin.network),
+      value: Number(o.value),
+      valueString: this.coin.amountType === 'bigint' ? o.value.toString() : undefined,
+    }));
   }
 
   async getTransactionIO(txid: string): Promise<TransactionIO> {
     const payload: TransactionIO = {
       inputs: this.unspents.map((u) => ({ address: u.address })),
       outputs:
-        this.tx?.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
+        this.tx.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
     };
     return payload;
+  }
+
+  async getAddressInfo(address: string): Promise<AddressInfo> {
+    throw new Error(`not implemented`);
+  }
+
+  async getTransactionHex(txid: string): Promise<string> {
+    throw new Error(`not implemented`);
+  }
+
+  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
+    throw new Error(`not implemented`);
   }
 }

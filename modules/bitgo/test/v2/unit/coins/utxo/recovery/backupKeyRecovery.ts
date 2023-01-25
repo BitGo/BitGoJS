@@ -159,7 +159,7 @@ function run(
         userKeyPath: params.userKeyPath,
         krsProvider: params.krsProvider,
         ...params.keys,
-        recoveryProvider: new MockRecoveryProvider(coin, recoverUnspents),
+        recoveryProvider: new MockRecoveryProvider(recoverUnspents),
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;

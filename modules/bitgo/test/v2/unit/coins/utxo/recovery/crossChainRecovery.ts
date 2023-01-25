@@ -22,7 +22,7 @@ import { getSeed } from '@bitgo/sdk-test';
 import { nockBitGo } from '../util/nockBitGo';
 import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
-import { MockRecoveryProvider } from './mock';
+import { MockCrossChainRecoveryProvider } from './mock';
 import {
   AbstractUtxoCoin,
   CrossChainRecoverySigned,
@@ -58,6 +58,27 @@ function nockWallet(coin: AbstractUtxoCoin, walletId: string, walletKeys: Triple
   ];
 }
 
+type Address = {
+  address: string;
+  chain: number;
+  index: number;
+  coinSpecific: unknown;
+};
+
+function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Address): nock.Scope {
+  return nockBitGo()
+    .get(`/api/v2/${coin.getChain()}/wallet/${walletId}/address/${address.address}`)
+    .reply(200, {
+      address: address.address,
+      chain: address.chain,
+      index: address.index,
+      coin: coin.getChain(),
+      wallet: walletId,
+      coinSpecific: address.coinSpecific,
+    })
+    .persist();
+}
+
 /**
  * Setup test for cross-chain recovery.
  *
@@ -78,7 +99,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     const walletKeys = getDefaultWalletKeys();
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
-    const [depositAddressSourceCoin] = [sourceCoin, recoveryCoin].map((coin) =>
+    const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) =>
       coin.generateAddress({ keychains: keychainsBase58, index: 0 })
     );
     // the address where we want to recover our funds to
@@ -126,6 +147,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
 
     before('setup nocks', function () {
       nocks.push(...nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
+      nocks.push(nockWalletAddress(recoveryCoin, recoveryWalletId, depositAddressRecoveryCoin));
     });
 
     after(function () {
@@ -190,7 +212,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     it('should test signed cross chain recovery', async () => {
       const getRecoveryProviderStub = sinon
         .stub(AbstractUtxoCoin.prototype, 'getRecoveryProvider')
-        .returns(new MockRecoveryProvider<TNumber>(recoveryCoin, getDepositUnspents(), depositTx));
+        .returns(new MockCrossChainRecoveryProvider<TNumber>(sourceCoin, getDepositUnspents(), depositTx));
       const params = {
         recoveryCoin,
         txid: depositTx.getId(),
@@ -213,7 +235,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     it('should test unsigned cross chain recovery', async () => {
       const getRecoveryProviderStub = sinon
         .stub(AbstractUtxoCoin.prototype, 'getRecoveryProvider')
-        .returns(new MockRecoveryProvider(recoveryCoin, getDepositUnspents(), depositTx));
+        .returns(new MockCrossChainRecoveryProvider<TNumber>(sourceCoin, getDepositUnspents(), depositTx));
       const params = {
         recoveryCoin,
         txid: depositTx.getId(),
