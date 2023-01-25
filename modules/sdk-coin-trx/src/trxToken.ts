@@ -1,8 +1,17 @@
 import { Trx } from './trx';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
 import { TrxTokenConfig, coins, tokens } from '@bitgo/statics';
+import { getBuilder } from './lib/builder';
+import { Recipient } from '../../sdk-core/src/bitgo/baseCoin/iBaseCoin';
+import assert from 'assert';
 
 export { TrxTokenConfig };
+
+export type TronTxInfo = {
+  recipients?: Recipient[];
+  from?: string;
+  txid?: string;
+};
 
 export class TrxToken extends Trx {
   public readonly tokenConfig: TrxTokenConfig;
@@ -80,5 +89,25 @@ export class TrxToken extends Trx {
    */
   transactionDataAllowed() {
     return false;
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
+    const rawTx = txPrebuild.txHex;
+
+    const txBuilder = getBuilder(this.getChain()).from(rawTx);
+    const tx = await txBuilder.build();
+
+    const recipients = txParams.recipients || (txPrebuild.txInfo as TronTxInfo).recipients;
+    if (!recipients) {
+      throw new Error('missing required property recipients');
+    }
+
+    if (recipients[0].address === tx.outputs[0].address && recipients[0].amount === tx.outputs[0].value) {
+      return true;
+    } else {
+      throw new Error('Tx outputs does not match with expected txParams recipients');
+    }
   }
 }
