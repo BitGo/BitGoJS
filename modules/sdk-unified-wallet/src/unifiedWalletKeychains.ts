@@ -17,7 +17,7 @@ import {
   BitGoBase,
 } from '@bitgo/sdk-core';
 
-export class EvmWalletKeychains implements IKeychains {
+export class UnifiedWalletKeychains implements IKeychains {
   private readonly bitgo: BitGoBase;
 
   constructor(bitgo: BitGoBase) {

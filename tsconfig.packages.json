@@ -128,7 +128,7 @@
       "path": "./modules/sdk-core"
     },
     {
-      "path": "./modules/sdk-evm"
+      "path": "./modules/sdk-unified-wallet"
     },
     {
       "path": "./modules/sdk-lib-key-card-generator"
