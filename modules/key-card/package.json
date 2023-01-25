@@ -7,7 +7,9 @@
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "clean": "rm -r ./dist",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "Apache-2.0",
