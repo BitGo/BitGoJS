@@ -46,6 +46,8 @@ import {
   FanoutUnspentsOptions,
   FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
+  ForwarderBalance,
+  ForwarderBalanceOptions,
   FreezeOptions,
   FundForwardersOptions,
   GetAddressOptions,
@@ -2921,5 +2923,26 @@ export class Wallet implements IWallet {
     const url = this.url('/fundForwarder');
     this._wallet = await this.bitgo.post(url).send(params).result();
     return this._wallet;
+  }
+
+  /**
+   * Gets forwarder's balance
+   * @param params - optional query parameters
+   * @returns List of forwarder address and balance
+   * if params is not set then returns low balance forwarders
+   */
+  public async getForwarderBalance(params?: ForwarderBalanceOptions): Promise<ForwarderBalance[]> {
+    const query: ForwarderBalanceOptions = {};
+    if (params?.maximumBalance) {
+      query.maximumBalance = params?.maximumBalance;
+    }
+
+    if (params?.minimumBalance) {
+      query.minimumBalance = params?.minimumBalance;
+    }
+
+    const url = this.url(`/forwarders/balances`);
+    const response = await this.bitgo.get(url).query(query).result();
+    return response as ForwarderBalance[];
   }
 }

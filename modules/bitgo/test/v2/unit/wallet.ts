@@ -241,6 +241,29 @@ describe('V2 Wallet:', function () {
 
       await ethWallet.addresses({ includeTotalAddressCount: 1 }).should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
     });
+
+    it('get forwarder balance', async function() {
+      const forwarders = [{
+        address: '0xbfbcc0fe2b865de877134246af09378e9bc3c91d',
+        balance: '200000',
+      },
+      {
+        address: '0xe59524ed8b47165f4cb0850c9428069a6002e5eb',
+        balance: '10000000000000000',
+      }];
+
+      nock(bgUrl)
+        .get(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/forwarders/balances`)
+        .reply(200, {
+          forwarders,
+        });
+
+      const forwarderBalance = await ethWallet.getForwarderBalance();
+      forwarderBalance.forwarders[0].address.should.eql(forwarders[0].address);
+      forwarderBalance.forwarders[0].balance.should.eql(forwarders[0].balance);
+      forwarderBalance.forwarders[1].address.should.eql(forwarders[1].address);
+      forwarderBalance.forwarders[1].balance.should.eql(forwarders[1].balance);
+    });
   });
 
   describe('Get User Prv', () => {
