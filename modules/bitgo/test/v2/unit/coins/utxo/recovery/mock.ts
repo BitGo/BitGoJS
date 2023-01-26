@@ -2,11 +2,11 @@
  * @prettier
  */
 import { bitgo } from '@bitgo/utxo-lib';
-import { AddressInfo } from '@bitgo/blockapis';
-import { RecoveryProvider } from '@bitgo/abstract-utxo';
+import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
+import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
-type Unspent = bitgo.Unspent;
+type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 export class MockRecoveryProvider implements RecoveryProvider {
   private mockTxHexes: Record<string, string> = {};
   constructor(public unspents: Unspent[]) {
@@ -53,6 +53,47 @@ export class MockRecoveryProvider implements RecoveryProvider {
   }
 
   getTransactionInputs(txid: string): Promise<Unspent[]> {
+    throw new Error(`not implemented`);
+  }
+
+  getTransactionIO(txid: string): Promise<TransactionIO> {
+    throw new Error(`not implemented`);
+  }
+}
+export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+  constructor(
+    public coin: AbstractUtxoCoin,
+    public unspents: Unspent<TNumber>[],
+    public tx: utxolib.bitgo.UtxoTransaction<TNumber>
+  ) {}
+
+  async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
+    return this.tx.outs.map((o, vout: number) => ({
+      id: `${this.tx?.getId()}:${vout}`,
+      address: utxolib.address.fromOutputScript(o.script, this.coin.network),
+      value: Number(o.value),
+      valueString: this.coin.amountType === 'bigint' ? o.value.toString() : undefined,
+    }));
+  }
+
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
+    const payload: TransactionIO = {
+      inputs: this.unspents.map((u) => ({ address: u.address })),
+      outputs:
+        this.tx.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
+    };
+    return payload;
+  }
+
+  async getAddressInfo(address: string): Promise<AddressInfo> {
+    throw new Error(`not implemented`);
+  }
+
+  async getTransactionHex(txid: string): Promise<string> {
+    throw new Error(`not implemented`);
+  }
+
+  getTransactionInputs(txid: string): Promise<Unspent<TNumber>[]> {
     throw new Error(`not implemented`);
   }
 }

@@ -1,6 +1,6 @@
 import { bitgo } from '@bitgo/utxo-lib';
 import { AddressApi, AddressInfo } from '../AddressApi';
-import { OutputSpend, UtxoApi } from '../UtxoApi';
+import { OutputSpend, TransactionIO, UtxoApi } from '../UtxoApi';
 import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { TransactionStatus } from '../TransactionApi';
@@ -67,6 +67,7 @@ type EsploraStatus =
 type EsploraTransaction = {
   txid: string;
   vin: EsploraVin[];
+  vout: EsploraVout[];
   status: EsploraStatus;
 };
 
@@ -133,6 +134,28 @@ export class BlockstreamApi implements AddressApi, UtxoApi {
     return (await this.client.get<EsploraTransaction>(`/tx/${txid}`)).map((body) =>
       body.vin.map((u) => toBitGoUnspent(u, u.prevout.scriptpubkey_address, u.prevout.value))
     );
+  }
+
+  async getTransactionIO(txid: string): Promise<TransactionIO> {
+    const tx = await this.client.get<EsploraTransaction>(`/tx/${txid}`);
+    const inputs = tx.map((body) =>
+      body.vin.map((u) => {
+        return {
+          address: u.prevout.scriptpubkey_address,
+        };
+      })
+    );
+    const outputs = tx.map((body) =>
+      body.vout.map((u) => {
+        return {
+          address: u.scriptpubkey_address,
+        };
+      })
+    );
+    return {
+      inputs,
+      outputs,
+    };
   }
 
   async getTransactionSpends(txid: string): Promise<OutputSpend[]> {

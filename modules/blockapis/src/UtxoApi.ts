@@ -9,6 +9,11 @@ export type OutputSpend =
     }
   | { txid: undefined; vin: undefined };
 
+export type TransactionIO = {
+  inputs: { address: string }[];
+  outputs: { address: string }[];
+};
+
 /**
  * Methods specific to UTXO-based blockchains
  */
@@ -18,6 +23,12 @@ export interface UtxoApi extends TransactionApi {
    * @return transaction inputs
    */
   getTransactionInputs(txid: string): Promise<utxolib.bitgo.Unspent[]>;
+
+  /**
+   * @param txid
+   * @return transaction input and output addresses
+   */
+  getTransactionIO(txid: string): Promise<TransactionIO>;
 
   /**
    * @param txid

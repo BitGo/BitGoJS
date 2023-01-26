@@ -1,8 +1,6 @@
 /**
  * @prettier
  */
-import * as _ from 'lodash';
-import * as request from 'superagent';
 import * as Bluebird from 'bluebird';
 
 import * as utxolib from '@bitgo/utxo-lib';
@@ -20,72 +18,6 @@ import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 
 import { decrypt } from '@bitgo/sdk-api';
 import { signAndVerifyWalletTransaction } from '../sign';
-
-export interface ExplorerTxInfo {
-  input: { address: string }[];
-  outputs: { address: string }[];
-}
-
-export class BitgoPublicApi {
-  constructor(public coin: AbstractUtxoCoin) {}
-
-  async getTransactionInfo(txid: string): Promise<ExplorerTxInfo> {
-    const url = this.coin.url(`/public/tx/${txid}`);
-    return ((await request.get(url)) as { body: ExplorerTxInfo }).body;
-  }
-
-  /**
-   * Fetch unspent transaction outputs using IMS unspents API
-   * @param addresses
-   * @param amountType
-   * @returns {*}
-   */
-  async getUnspentInfo<TNumber extends number | bigint = number>(
-    addresses: string[],
-    amountType: 'number' | 'bigint' = 'number'
-  ): Promise<Unspent<TNumber>[]> {
-    const uniqueAddresses = _.uniq(addresses);
-    try {
-      const url = this.coin.url(`/public/addressUnspents/${uniqueAddresses.join(',')}`);
-      const unspents = (await request.get(url)).body;
-      if (amountType === 'bigint') {
-        unspents.forEach((u) => {
-          u.value = BigInt(u.valueString);
-        });
-      }
-      return unspents as Unspent<TNumber>[];
-    } catch (e) {
-      if (e.status !== 404) {
-        throw e;
-      }
-    }
-    const res = await Bluebird.map(
-      uniqueAddresses,
-      async (address): Promise<Unspent<TNumber>[]> => {
-        try {
-          const res = await request.get(this.coin.url(`/public/addressUnspents/${address}`));
-          const unspents = res.body;
-          if (amountType === 'bigint') {
-            unspents.forEach((u) => {
-              u.value = BigInt(u.valueString);
-            });
-          }
-          return unspents;
-        } catch (e) {
-          console.log(`error getting unspent for ${address}:`, e);
-          return [];
-        }
-      },
-      { concurrency: 4 }
-    );
-    const unspents = res.flat() as Unspent<TNumber>[];
-    if (unspents.length < 1) {
-      throw new Error(`no unspents found for addresses: ${addresses}`);
-    }
-    return unspents;
-  }
-}
-
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
   faultyTxId: string;
@@ -121,7 +53,7 @@ export interface CrossChainRecoverySigned<TNumber extends number | bigint = numb
 
 type WalletV1 = {
   keychains: { xpub: string }[];
-  address({ address: string }): Promise<{ chain: number; index: number }>;
+  address({ address }: { address: string }): Promise<{ chain: number; index: number }>;
   getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
 };
 
@@ -175,12 +107,19 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | W
  */
 async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
-  txid: string
+  txid: string,
+  amountType: 'number' | 'bigint' = 'number'
 ): Promise<Unspent<TNumber>[]> {
-  const api = new BitgoPublicApi(coin);
-  const info = await api.getTransactionInfo(txid);
-  const addresses = new Set(info.outputs.map((o) => o.address));
-  return await api.getUnspentInfo<TNumber>([...addresses], coin.amountType);
+  const api = coin.getRecoveryProvider();
+  const tx = await api.getTransactionIO(txid);
+  const addresses = tx.outputs.map((output) => output.address);
+  const unspents = await api.getUnspentsForAddresses(addresses);
+  return unspents.map((recoveryOutput) => {
+    return {
+      ...recoveryOutput,
+      value: utxolib.bitgo.toTNumber<TNumber>(BigInt(recoveryOutput.value), amountType),
+    };
+  });
 }
 
 /**
@@ -437,7 +376,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   params: RecoverParams
 ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
   const wallet = await getWallet(bitgo, params.recoveryCoin, params.walletId);
-  const unspents = await getAllRecoveryOutputs<TNumber>(params.sourceCoin, params.txid);
+  const unspents = await getAllRecoveryOutputs<TNumber>(params.sourceCoin, params.txid, params.sourceCoin.amountType);
   const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
   const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
   const prv =
