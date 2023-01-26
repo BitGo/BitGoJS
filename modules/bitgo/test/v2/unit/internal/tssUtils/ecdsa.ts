@@ -6,7 +6,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src';
+import { BitGo, createSharedDataProof } from '../../../../../src';
 import {
   common,
   Keychain,
@@ -24,7 +24,7 @@ import {
 } from '@bitgo/sdk-core';
 import { keyShares, mockAShare, mockDShare, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
-import { nockGetTxRequest } from '../../tss/helpers';
+import { createWalletSignatures, nockGetTxRequest } from '../../tss/helpers';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
@@ -121,8 +121,10 @@ describe('TSS Ecdsa Utils:', async function () {
         coin: coinName,
         userKeyShare,
         backupKeyShare,
+        bitgoKeyShare,
         userGpgKey,
         backupGpgKey,
+        bitgoGpgKey: bitGoGPGKeyPair,
       }),
       nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '' }, source: 'user' }),
       nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '' }, source: 'backup' }),
@@ -229,21 +231,28 @@ describe('TSS Ecdsa Utils:', async function () {
         backupKeyShare: backupShareHolder,
         bitgoPublicGpgKey: bitgoPublicKey,
       });
-      const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
-        userGpgKey,
-        bitgoPublicKey,
-        1,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain,
-        'passphrase'), tssUtils.createParticipantKeychain(
-        backupGpgKey,
-        bitgoPublicKey,
-        2,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain,
-        'passphrase')];
+      const usersKeyChainPromises = [
+        tssUtils.createParticipantKeychain(
+          userGpgKey,
+          backupGpgKey,
+          bitgoPublicKey,
+          1,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain,
+          'passphrase'
+        ),
+        tssUtils.createParticipantKeychain(
+          userGpgKey,
+          backupGpgKey,
+          bitgoPublicKey,
+          2,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain,
+          'passphrase'
+        ),
+      ];
       const [userKeychain, backupKeychain] = await Promise.all(usersKeyChainPromises);
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
@@ -331,22 +340,28 @@ describe('TSS Ecdsa Utils:', async function () {
         enterprise,
         bitgoPublicGpgKey: bitgoPublicKey,
       });
-      const usersKeyChainPromises = [tssUtils.createParticipantKeychain(
-        userGpgKey,
-        bitgoPublicKey,
-        1,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain,
-        'passphrase',
-        'originalPasscodeEncryptionCode'), tssUtils.createParticipantKeychain(
-        backupGpgKey,
-        bitgoPublicKey,
-        2,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain,
-        'passphrase')];
+      const usersKeyChainPromises = [
+        tssUtils.createParticipantKeychain(
+          userGpgKey,
+          backupGpgKey,
+          bitgoPublicKey,
+          1,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain,
+          'passphrase',
+          'originalPasscodeEncryptionCode'
+        ),
+        tssUtils.createParticipantKeychain(
+          userGpgKey,
+          backupGpgKey,
+          bitgoPublicKey,
+          2,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain,
+          'passphrase'),
+      ];
 
       const [userKeychain, backupKeychain] = await Promise.all(usersKeyChainPromises);
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
@@ -376,6 +391,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const testCasesPromises = [
         tssUtils.createParticipantKeychain(
           userGpgKey,
+          backupGpgKey,
           bitgoPublicKey,
           1,
           userKeyShare,
@@ -384,6 +400,7 @@ describe('TSS Ecdsa Utils:', async function () {
           'passphrase').should.be.rejectedWith('Common keychains do not match'),
         tssUtils.createParticipantKeychain(
           userGpgKey,
+          backupGpgKey,
           bitgoPublicKey,
           1,
           testKeyShares[1],
@@ -392,6 +409,7 @@ describe('TSS Ecdsa Utils:', async function () {
           'passphrase')
           .should.be.rejectedWith('Common keychains do not match'),
         tssUtils.createParticipantKeychain(
+          userGpgKey,
           backupGpgKey,
           bitgoPublicKey,
           2,
@@ -401,6 +419,7 @@ describe('TSS Ecdsa Utils:', async function () {
           'passphrase')
           .should.be.rejectedWith('Common keychains do not match'),
         tssUtils.createParticipantKeychain(
+          userGpgKey,
           backupGpgKey,
           bitgoPublicKey,
           2,
@@ -410,6 +429,53 @@ describe('TSS Ecdsa Utils:', async function () {
           'passphrase').should.be.rejectedWith('Common keychains do not match'),
       ];
       await Promise.all(testCasesPromises);
+    });
+
+    it('should fail to generate TSS keychains when received invalid number of wallet signatures', async function () {
+      const bitgoKeychain = await generateBitgoKeychain({
+        coin: coinName,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeyShare,
+        userGpgKey,
+        backupGpgKey,
+        bitgoGpgKey: bitGoGPGKeyPair,
+      });
+
+      const certsString = await createSharedDataProof(bitGoGPGKeyPair.privateKey, userGpgKey.publicKey, []);
+      const certsKey = await openpgp.readKey({ armoredKey: certsString });
+      const finalKey = new openpgp.PacketList();
+      certsKey.toPacketList().forEach((packet) => finalKey.push(packet));
+      // Once the following PR has been merged and released we no longer need the ts-ignore:
+      // https://github.com/openpgpjs/openpgpjs/pull/1576
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      bitgoKeychain.walletHSMGPGPublicKeySigs = openpgp.armor(openpgp.enums.armor.publicKey, finalKey.write());
+      await tssUtils.verifyWalletSignatures(backupGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`Invalid wallet signatures`);
+    });
+
+    it('should fail to generate TSS keychains when wallet signature fingerprints do not match passed user/backup fingerprints', async function () {
+      const customUserKeyShare = await MPC.keyShare(1, 2, 3);
+      const customBackupKeyShare = await MPC.keyShare(2, 2, 3);
+      const backupShareHolder: BackupKeyShare = {
+        userHeldKeyShare: customBackupKeyShare,
+      };
+
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare: customUserKeyShare,
+        backupKeyShare: backupShareHolder,
+        bitgoPublicGpgKey: bitgoPublicKey,
+      });
+
+      // using the backup gpg here instead of the user gpg key to simulate that the first signature has a different
+      // fingerprint from the passed in first gpg key
+      await tssUtils.verifyWalletSignatures(backupGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`first wallet signature's fingerprint does not match passed user gpg key's fingerprint`);
+
+      // using the user gpg here instead of the backup gpg key to simulate that the second signature has a different
+      // fingerprint from the passed in second gpg key
+      await tssUtils.verifyWalletSignatures(userGpgKey.publicKey, userGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`);
     });
   });
 
@@ -773,29 +839,40 @@ describe('TSS Ecdsa Utils:', async function () {
     return updatedKeyShare;
   }
 
-  async function nockBitgoKeychain(params: {
+  /**
+   * Helper function to generate a bitgo keychain given the full set of keyshares and GPG keys.
+   * Also mocks the wallet signatures added by the HSM.
+   * @param params
+   */
+  async function generateBitgoKeychain(params: {
     coin: string,
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
+    bitgoKeyShare: KeyShare,
     userGpgKey: openpgp.SerializedKeyPair<string>,
     backupGpgKey: openpgp.SerializedKeyPair<string>,
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>,
   }): Promise<Keychain> {
-    const bitgoCombined = MPC.keyCombine(bitgoKeyShare.pShare, [params.userKeyShare.nShares[3], params.backupKeyShare.nShares[3]]);
-    const nSharePromises = [encryptNShare(
-      bitgoKeyShare,
-      1,
-      userGpgKey.publicKey,
-      userGpgKey,
-      false,
-    ),
-    encryptNShare(
-      bitgoKeyShare,
-      2,
-      backupGpgKey.publicKey,
-      userGpgKey,
-      false,
-    )];
+    const bitgoCombined = MPC.keyCombine(params.bitgoKeyShare.pShare, [params.userKeyShare.nShares[3], params.backupKeyShare.nShares[3]]);
+    const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
+    const backupGpgKeyActual = await openpgp.readKey({ armoredKey: params.backupGpgKey.publicKey });
 
+    const nSharePromises = [
+      encryptNShare(
+        params.bitgoKeyShare,
+        1,
+        params.userGpgKey.publicKey,
+        params.userGpgKey,
+        false,
+      ),
+      encryptNShare(
+        params.bitgoKeyShare,
+        2,
+        params.backupGpgKey.publicKey,
+        params.backupGpgKey,
+        false,
+      ),
+    ];
     const [userToBitgoShare, backupToBitgoShare] = await Promise.all(nSharePromises);
     const bitgoKeychain: Keychain = {
       id: '3',
@@ -820,6 +897,36 @@ describe('TSS Ecdsa Utils:', async function () {
         },
       ],
     };
+
+    const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
+    const backupKeyId = backupGpgKeyActual.keyPacket.getFingerprint();
+
+    bitgoKeychain.walletHSMGPGPublicKeySigs = await createWalletSignatures(
+      params.bitgoGpgKey.privateKey,
+      params.userGpgKey.publicKey,
+      params.backupGpgKey.publicKey,
+      [
+        { name: 'commonKeychain', value: bitgoCombined.xShare.y + bitgoCombined.xShare.chaincode },
+        { name: 'userKeyId', value: userKeyId },
+        { name: 'backupKeyId', value: backupKeyId },
+        { name: 'bitgoToUserPublicShare', value: userToBitgoShare.publicShare },
+        { name: 'bitgoToBackupPublicShare', value: backupToBitgoShare.publicShare },
+      ]
+    );
+
+    return bitgoKeychain;
+  }
+
+  async function nockBitgoKeychain(params: {
+    coin: string,
+    userKeyShare: KeyShare,
+    backupKeyShare: KeyShare,
+    bitgoKeyShare: KeyShare,
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    backupGpgKey: openpgp.SerializedKeyPair<string>,
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>
+  }): Promise<Keychain> {
+    const bitgoKeychain = await generateBitgoKeychain(params);
 
     nock(bgUrl)
       .persist()

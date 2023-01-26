@@ -22,7 +22,7 @@ import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
-import { buildNShareFromAPIKeyShare, getParticipantFromIndex } from '../../../tss/ecdsa/ecdsa';
+import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -201,6 +201,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   createUserKeychain({
     userGpgKey,
     userKeyShare,
+    backupGpgKey,
     backupKeyShare,
     bitgoKeychain,
     passphrase,
@@ -225,6 +226,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     assert(backupKeyShare.userHeldKeyShare);
     return this.createParticipantKeychain(
       userGpgKey,
+      backupGpgKey,
       bitgoPublicGpgKey,
       1,
       userKeyShare,
@@ -269,6 +271,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     assert(backupKeyShare.userHeldKeyShare);
     assert(passphrase);
     return this.createParticipantKeychain(
+      userGpgKey,
       backupGpgKey,
       bitgoPublicGpgKey,
       2,
@@ -450,6 +453,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   /** @inheritdoc */
   async createParticipantKeychain(
     userGpgKey: openpgp.SerializedKeyPair<string>,
+    backupGpgKey: openpgp.SerializedKeyPair<string>,
     bitgoPublicGpgKey: Key,
     recipientIndex: number,
     userKeyShare: KeyShare,
@@ -469,14 +473,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let recipient: string;
     let keyShare: KeyShare;
     let otherShare: KeyShare;
+    let recipientGpgKey: openpgp.SerializedKeyPair<string>;
+    let senderGpgKey: openpgp.SerializedKeyPair<string>;
     if (recipientIndex === 1) {
       keyShare = userKeyShare;
       otherShare = backupKeyShare;
       recipient = 'user';
+      recipientGpgKey = userGpgKey;
+      senderGpgKey = backupGpgKey;
     } else if (recipientIndex === 2) {
       keyShare = backupKeyShare;
       otherShare = userKeyShare;
       recipient = 'backup';
+      recipientGpgKey = backupGpgKey;
+      senderGpgKey = userGpgKey;
     } else {
       throw new Error('Invalid user index');
     }
@@ -485,15 +495,23 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       (keyShare) => keyShare.from === 'bitgo' && keyShare.to === recipient
     );
     if (!bitGoToRecipientShare) {
-      throw new Error('Missing BitGo to User key share');
+      throw new Error(`Missing BitGo to ${recipient} key share`);
     }
 
-    const backupToUserShare = await encryptNShare(otherShare, recipientIndex, userGpgKey.publicKey, userGpgKey);
+    await this.verifyWalletSignatures(
+      userGpgKey.publicKey,
+      backupGpgKey.publicKey,
+      bitgoKeychain,
+      bitGoToRecipientShare.publicShare,
+      recipientIndex
+    );
+
+    const backupToUserShare = await encryptNShare(otherShare, recipientIndex, recipientGpgKey.publicKey, senderGpgKey);
     const encryptedNShares: DecryptableNShare[] = [
       {
         nShare: backupToUserShare,
-        recipientPrivateArmor: userGpgKey.privateKey,
-        senderPublicArmor: userGpgKey.publicKey,
+        recipientPrivateArmor: recipientGpgKey.privateKey,
+        senderPublicArmor: senderGpgKey.publicKey,
       },
       {
         nShare: {
@@ -505,7 +523,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
           vssProof: bitGoToRecipientShare.vssProof,
           privateShareProof: bitGoToRecipientShare.privateShareProof,
         },
-        recipientPrivateArmor: userGpgKey.privateKey,
+        recipientPrivateArmor: recipientGpgKey.privateKey,
         senderPublicArmor: bitgoPublicGpgKey.armor(),
         isbs58Encoded: false,
       },
@@ -675,5 +693,61 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Raw message required to sign message');
     }
     return this.signRequestBase(params, RequestType.message);
+  }
+
+  /**
+   * Verifies the u-value proofs and GPG keys used in generating a TSS ECDSA wallet.
+   * @param userGpgPub The user's public GPG key for encryption between user/server
+   * @param backupGpgPub The user's public GPG key for encryption between backup/server
+   * @param bitgoKeychain previously created BitGo keychain; must be compatible with user and backup key shares
+   * @param publicShare The bitgo-to-user/backup public share retrieved from the keychain
+   * @param verifierIndex The index of the party to verify: 1 = user, 2 = backup
+   */
+  async verifyWalletSignatures(
+    userGpgPub: string,
+    backupGpgPub: string,
+    bitgoKeychain: Keychain,
+    publicShare: string,
+    verifierIndex: 1 | 2
+  ): Promise<void> {
+    assert(bitgoKeychain.commonKeychain);
+    assert(bitgoKeychain.walletHSMGPGPublicKeySigs);
+
+    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const userKeyPub = await openpgp.readKey({ armoredKey: userGpgPub });
+    const userKeyId = userKeyPub.keyPacket.getFingerprint();
+    const backupKeyPub = await openpgp.readKey({ armoredKey: backupGpgPub });
+    const backupKeyId = backupKeyPub.keyPacket.getFingerprint();
+
+    const walletSignatures = await openpgp.readKeys({ armoredKeys: bitgoKeychain.walletHSMGPGPublicKeySigs });
+    if (walletSignatures.length !== 2) {
+      throw new Error('Invalid wallet signatures');
+    }
+    if (userKeyId !== walletSignatures[0].keyPacket.getFingerprint()) {
+      throw new Error(`first wallet signature's fingerprint does not match passed user gpg key's fingerprint`);
+    }
+    if (backupKeyId !== walletSignatures[1].keyPacket.getFingerprint()) {
+      throw new Error(`second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`);
+    }
+
+    await verifyWalletSignature({
+      walletSignature: walletSignatures[0],
+      commonKeychain: bitgoKeychain.commonKeychain,
+      userKeyId,
+      backupKeyId,
+      bitgoPub: bitgoGpgKey,
+      publicShare,
+      verifierIndex,
+    });
+
+    await verifyWalletSignature({
+      walletSignature: walletSignatures[1],
+      commonKeychain: bitgoKeychain.commonKeychain,
+      userKeyId,
+      backupKeyId,
+      bitgoPub: bitgoGpgKey,
+      publicShare,
+      verifierIndex,
+    });
   }
 }
