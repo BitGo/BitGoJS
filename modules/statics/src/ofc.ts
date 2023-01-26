@@ -287,7 +287,7 @@ export function ofcStellarToken(
   );
 }
 /**
- * Factory function for testnet ofc erc20 coin instances.
+ * Factory function for testnet ofc stellar token instances.
  *
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
@@ -330,6 +330,101 @@ export function tofcStellarToken(
       addressCoin,
       primaryKeyCurve,
       baseUnit: BaseUnit.XLM,
+    })
+  );
+}
+
+/**
+ * Factory function for ofc algo token instances.
+ *
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function ofcAlgoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  isToken = true,
+  addressCoin = 'algo',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new OfcCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ALGO,
+    })
+  );
+}
+/**
+ * Factory function for testnet ofc algo token instances.
+ *
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tofcAlgoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: OfcNetwork = Networks.test.ofc,
+  isToken = true,
+  addressCoin = 'talgo',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new OfcCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ALGO,
     })
   );
 }
