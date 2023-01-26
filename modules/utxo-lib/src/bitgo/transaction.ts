@@ -37,7 +37,11 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
   throw new Error(`invalid network`);
 }
 
-export function createPsbtFromBuffer(buf: Buffer, network: Network): UtxoPsbt<UtxoTransaction<bigint>> {
+export function createPsbtFromBuffer(
+  buf: Buffer,
+  network: Network,
+  bip32PathsAbsolute = false
+): UtxoPsbt<UtxoTransaction<bigint>> {
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -45,15 +49,23 @@ export function createPsbtFromBuffer(buf: Buffer, network: Network): UtxoPsbt<Ut
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.litecoin:
-      return UtxoPsbt.fromBuffer(buf, { network });
+      return UtxoPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
     case networks.dash:
-      return DashPsbt.fromBuffer(buf, { network });
+      return DashPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
     case networks.zcash:
-      return ZcashPsbt.fromBuffer(buf, { network });
+      return ZcashPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
   }
 
   /* istanbul ignore next */
   throw new Error(`invalid network`);
+}
+
+export function createPsbtFromHex(
+  hex: string,
+  network: Network,
+  bip32PathsAbsolute = false
+): UtxoPsbt<UtxoTransaction<bigint>> {
+  return createPsbtFromBuffer(Buffer.from(hex, 'hex'), network, bip32PathsAbsolute);
 }
 
 export function createPsbtFromTransaction(

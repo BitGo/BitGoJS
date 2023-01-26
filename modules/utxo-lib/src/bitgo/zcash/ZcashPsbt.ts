@@ -77,10 +77,6 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     }
   }
 
-  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
-    return ZcashPsbt.fromBuffer(Buffer.from(data, 'hex'), opts);
-  }
-
   /**
    * If it is a version 4 transaction, add the consensus branch id to
    * the global map. If it is a version 5 transaction, just return the
@@ -128,6 +124,9 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
   }
 
+  // For Zcash transactions, we do not have to have non-witness UTXO data for non-segwit
+  // transactions because zcash hashes the value directly. Thus, it is unnecessary to have
+  // the previous transaction hash on the unspent.
   signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
     (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
     try {
