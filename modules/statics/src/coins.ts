@@ -36,7 +36,7 @@ import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
-import { ofc, ofcerc20, ofcStellarToken, tofc, tofcerc20 } from './ofc';
+import { ofc, ofcAlgoToken, ofcerc20, ofcStellarToken, tofc, tofcAlgoToken, tofcerc20, tofcStellarToken } from './ofc';
 import { utxo, UtxoCoin } from './utxo';
 
 const BCH_FEATURES = [
@@ -1584,11 +1584,22 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofccho', 'Choise.com', 18, UnderlyingAsset.CHO),
   ofcerc20('ofcdia', 'DIA Token', 18, UnderlyingAsset.DIA),
 
+  ofcAlgoToken('ofcalgo:usdc', 'Algorand USDC', 6, UnderlyingAsset['algo:USDC-31566704']),
+
+  tofcAlgoToken('ofctalgo:usdc', 'Test Algorand USDC', 6, UnderlyingAsset['talgo:USDC-10458941']),
+
   ofcStellarToken(
     'ofcxlm:usdc',
     'Stellar USDC',
     7,
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN']
+  ),
+
+  tofcStellarToken(
+    'ofctxlm:tst',
+    'Test Stellar BitGo Test Token',
+    7,
+    UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L']
   ),
 
   stellarToken(
