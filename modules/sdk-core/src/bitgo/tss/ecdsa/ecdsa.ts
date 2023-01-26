@@ -303,7 +303,7 @@ export async function getBitgoToUserLatestShare(
  * @param keyShare - TSS key share of the party preparing exchange materials
  * @param recipientIndex - index of the recipient (1, 2, or 3)
  * @param recipientGpgPublicArmor - recipient's public gpg key in armor format
- * @param gpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
+ * @param senderGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
  * @param isbs58Encoded - is bs58 encoded or not
  * @returns encrypted N Share
  */
@@ -311,7 +311,7 @@ export async function encryptNShare(
   keyShare: KeyShare,
   recipientIndex: number,
   recipientGpgPublicArmor: string,
-  gpgKey: pgp.SerializedKeyPair<string>,
+  senderGpgKey: pgp.SerializedKeyPair<string>,
   isbs58Encoded = true
 ): Promise<EncryptedNShare> {
   const nShare = keyShare.nShares[recipientIndex];
@@ -346,7 +346,7 @@ export async function encryptNShare(
     encryptedPrivateShare,
     n: nShare.n,
     vssProof: nShare.v,
-    privateShareProof: await createShareProof(gpgKey.privateKey, nShare.u, 'ecdsa'),
+    privateShareProof: await createShareProof(senderGpgKey.privateKey, nShare.u, 'ecdsa'),
   };
 }
 
@@ -376,20 +376,20 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
  * @returns N share
  */
 export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58Encoded = true): Promise<NShare> {
-  const bitgoPrivateKey = await pgp.readKey({ armoredKey: encryptedNShare.recipientPrivateArmor });
-  const priv = (
+  const recipientPrivateKey = await pgp.readKey({ armoredKey: encryptedNShare.recipientPrivateArmor });
+  const prv = (
     await pgp.decrypt({
       message: await pgp.readMessage({ armoredMessage: encryptedNShare.nShare.encryptedPrivateShare }),
-      decryptionKeys: [bitgoPrivateKey as pgp.PrivateKey],
+      decryptionKeys: [recipientPrivateKey as pgp.PrivateKey],
     })
   ).data as string;
 
   let u: string;
   if (isbs58Encoded) {
-    const privateShare = bs58.decode(priv).toString('hex');
+    const privateShare = bs58.decode(prv).toString('hex');
     u = privateShare.slice(92, 156);
   } else {
-    u = priv.slice(0, 64);
+    u = prv.slice(0, 64);
   }
 
   const nShare: NShare = {
