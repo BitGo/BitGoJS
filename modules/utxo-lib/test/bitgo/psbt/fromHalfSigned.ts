@@ -45,7 +45,7 @@ function runTest(
     before('create transaction', function () {
       prevOutputs = getPrevOutputs(scriptType, BigInt(1e8), network, {
         keys: walletKeys.triple,
-        prevTx: scriptType === 'p2sh' || scriptType === 'p2shP2pk',
+        prevTx: (scriptType === 'p2sh' || scriptType === 'p2shP2pk') && getNetworkName(network) !== 'zcash',
       });
       ({ unsigned, halfSigned, fullSigned } = getTransactionStages(
         walletKeys.triple,

@@ -4,7 +4,7 @@ import {
   getDefaultVersionGroupIdForVersion,
   ZcashTransaction,
 } from './ZcashTransaction';
-import { Network, PsbtTransaction } from '../../';
+import { Network, PsbtTransaction, Signer } from '../../';
 import { Psbt as PsbtBase } from 'bip174';
 import * as types from 'bitcoinjs-lib/src/types';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -126,6 +126,15 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
 
     this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
     this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
+  }
+
+  signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
+    (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
+    try {
+      return super.signInput(inputIndex, keyPair, sighashTypes);
+    } finally {
+      (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+    }
   }
 
   private setPropertyCheckSignatures(propName: keyof ZcashTransaction<bigint>, value: unknown) {
