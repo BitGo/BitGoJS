@@ -284,8 +284,8 @@ export default class Ecdsa {
       xShare: { ...xShare, ntilde, h1, h2 },
       yShares: {
         [yShare.j]: {
-          i: yShare.j,
-          j: yShare.i,
+          i: yShare.i,
+          j: yShare.j,
           n: xShare.n,
           ntilde,
           h1,

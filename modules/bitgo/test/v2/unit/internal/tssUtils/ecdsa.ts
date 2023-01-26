@@ -454,16 +454,19 @@ describe('TSS Ecdsa Utils:', async function () {
        *  and KShare from user and responds back with aShare and saves bShare for later use
        */
       const userSignShare = await ECDSAMethods.createUserSignShare(userSigningKey.xShare, userSigningKey.yShares[3]);
+      console.log(`***userSignShare:\n${JSON.stringify(userSignShare)}`);
       const signatureShareOneFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
         share: userSignShare.kShare.k + userSignShare.kShare.n,
       };
+      console.log(`***kShare:\n${JSON.stringify(userSignShare.kShare)}`);
       const getBitgoAandBShare = MPC.signConvert({
         kShare: userSignShare.kShare,
         xShare: bitgoSigningKey.xShare,
         yShare: bitgoSigningKey.yShares['1'], // corresponds to the user
       });
+      console.log(`***getBitgoAandBShare:\n${JSON.stringify(getBitgoAandBShare)}`);
       const bitgoAshare = getBitgoAandBShare.aShare as ECDSA.AShare;
       const aShareBitgoResponse = (bitgoAshare.k as string) + (bitgoAshare.alpha as string) + (bitgoAshare.mu as string) + (bitgoAshare.n as string);
       const signatureShareOneFromBitgo: SignatureShareRecord = {
@@ -490,6 +493,7 @@ describe('TSS Ecdsa Utils:', async function () {
        * which it saves and dShare which is send back to the user.
        */
       const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoAshare);
+      console.log(`***userGammaAndMuShares:\n${JSON.stringify(userGammaAndMuShares)}`);
       const signatureShareTwoFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
@@ -499,6 +503,7 @@ describe('TSS Ecdsa Utils:', async function () {
         bShare: getBitgoAandBShare.bShare,
         muShare: userGammaAndMuShares.muShare,
       });
+      console.log(`***getBitGoGShareAndSignerIndexes:\n${JSON.stringify(getBitGoGShareAndSignerIndexes)}`);
 
       const getBitgoOShareAndDShares = MPC.signCombine(
         {
@@ -509,6 +514,7 @@ describe('TSS Ecdsa Utils:', async function () {
           },
         }
       );
+      console.log(`***getBitgoOShareAndDShares:\n${JSON.stringify(getBitgoOShareAndDShares)}`);
       const bitgoDshare = getBitgoOShareAndDShares.dShare as ECDSA.DShare;
       const dShareBitgoResponse = (bitgoDshare.delta as string) + (bitgoDshare.Gamma as string);
       const signatureShareTwoFromBitgo: SignatureShareRecord = {
@@ -538,15 +544,19 @@ describe('TSS Ecdsa Utils:', async function () {
        * step, bitgo constructs the final signature and is returned to the user
        */
       const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(userGammaAndMuShares.gShare as ECDSA.GShare);
+      console.log(`***userOmicronAndDeltaShare:\n${JSON.stringify(userOmicronAndDeltaShare)}`);
       const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
       const userSShare = await ECDSAMethods.createUserSignatureShare(userOmicronAndDeltaShare.oShare, bitgoDshare, signablePayload);
+      console.log(`***userSShare:\n${JSON.stringify(userSShare)}`);
       const signatureShareThreeFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
         share: userSShare.R + userSShare.s + userSShare.y + userOmicronAndDeltaShare.dShare.delta + userOmicronAndDeltaShare.dShare.Gamma,
       };
       const getBitGoSShare = MPC.sign(signablePayload, getBitgoOShareAndDShares.oShare, userOmicronAndDeltaShare.dShare);
+      console.log(`***getBitGoSShare:\n${JSON.stringify(getBitGoSShare)}`);
       const getBitGoFinalSignature = MPC.constructSignature([getBitGoSShare, userSShare]);
+      console.log(`***getBitGoFinalSignature:\n${JSON.stringify(getBitGoFinalSignature)}`);
       const finalSigantureBitgoResponse = getBitGoFinalSignature.r + getBitGoFinalSignature.s + getBitGoFinalSignature.y;
       const signatureShareThreeFromBitgo: SignatureShareRecord = {
         from: SignatureShareType.BITGO,

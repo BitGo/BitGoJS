@@ -278,10 +278,22 @@ describe('Ecdsa tss helper functions tests', function () {
         wShare.should.have.property('gamma').and.be.a.String();
         wShare.should.have.property('w').and.be.a.String();
         wShare.should.have.property('k').and.be.a.String();
+        wShare.should.have.property('ck').and.be.a.String();
+        wShare.should.have.property('h2').and.be.a.String();
+        wShare.should.have.property('h1').and.be.a.String();
+        wShare.should.have.property('ntilde').and.be.a.String();
+        wShare.should.have.property('y').and.be.a.String();
+        wShare.should.have.property('n').and.be.a.String();
+        wShare.should.have.property('m').and.be.a.String();
+        wShare.should.have.property('l').and.be.a.String();
+        wShare.should.have.property('i').and.be.a.Number();
         kShare['i'].should.equal(3);
         kShare['j'].should.equal(1);
         kShare.should.have.property('n').and.be.a.String();
         kShare.should.have.property('k').and.be.a.String();
+        kShare.should.have.property('ntilde').and.be.a.String();
+        kShare.should.have.property('h1').and.be.a.String();
+        kShare.should.have.property('h2').and.be.a.String();
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
@@ -357,13 +369,13 @@ describe('Ecdsa tss helper functions tests', function () {
         nock.cleanAll();
       });
 
-      const mockAShareString = `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}`;
+      const mockAShareString = `${ECDSAMethods.convertAShare(mockAShare).share}`;
       const mockDShareString = `${mockDShare.delta}${ECDSAMethods.delimeter}${mockDShare.Gamma}`;
       const config = [
         {
           shareToSend: 'KShare',
           mockShareToSend: mockSignRT.kShare,
-          mockShareToSendString: `${mockSignRT.kShare.k}${ECDSAMethods.delimeter}${mockSignRT.kShare.n}`,
+          mockShareToSendString: `${ECDSAMethods.convertKShare(mockSignRT.kShare).share}`,
           sendType: ECDSAMethodTypes.SendShareType.KShare,
           mockShareAsResponse: mockAShare,
           mockShareAsResponseString: mockAShareString,
@@ -441,7 +453,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${bitgoKShare.k}${ECDSAMethods.delimeter}${bitgoKShare.n}`,
+          share: `${bitgoKShare.k}${ECDSAMethods.delimeter}${bitgoKShare.n}${ECDSAMethods.delimeter}${bitgoKShare.ntilde}${ECDSAMethods.delimeter}${bitgoKShare.h1}${ECDSAMethods.delimeter}${bitgoKShare.h2}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
         const kShare = ECDSAMethods.parseKShare(share);
         kShare.i.should.equal(bitgoKShare.i);
@@ -455,7 +467,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${bitgoKShare.k}${ECDSAMethods.delimeter}${bitgoKShare.n}`,
+          share: `${bitgoKShare.k}${ECDSAMethods.delimeter}${bitgoKShare.n}${ECDSAMethods.delimeter}${bitgoKShare.ntilde}${ECDSAMethods.delimeter}${bitgoKShare.h1}${ECDSAMethods.delimeter}${bitgoKShare.h2}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
 
         const kshare = ECDSAMethods.convertKShare(bitgoKShare);
@@ -468,7 +480,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
-          share: `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}`,
+          share: `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}${ECDSAMethods.delimeter}${mockAShare.ntilde}${ECDSAMethods.delimeter}${mockAShare.h1}${ECDSAMethods.delimeter}${mockAShare.h2}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
         const aShare = ECDSAMethods.parseAShare(share);
         should.exist(aShare);
@@ -484,7 +496,29 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
-          share: `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}`,
+          share: `${mockAShare.k}${ECDSAMethods.delimeter}${mockAShare.alpha}${ECDSAMethods.delimeter}${mockAShare.mu}${ECDSAMethods.delimeter}${mockAShare.n}${ECDSAMethods.delimeter}${
+            mockAShare.ntilde
+          }${ECDSAMethods.delimeter}${mockAShare.h1}${ECDSAMethods.delimeter}${mockAShare.h2}${ECDSAMethods.delimeter}${mockAShare.proof?.z || ''}${ECDSAMethods.delimeter}${
+            mockAShare.proof?.u || ''
+          }${ECDSAMethods.delimeter}${mockAShare.proof?.w || ''}${ECDSAMethods.delimeter}${mockAShare.proof?.s || ''}${ECDSAMethods.delimeter}${
+            mockAShare.proof?.s1 || ''
+          }${ECDSAMethods.delimeter}${mockAShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockAShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockAShare.gammaProof?.z || ''
+          }${ECDSAMethods.delimeter}${mockAShare.gammaProof?.zprm || ''}${ECDSAMethods.delimeter}${mockAShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${
+            mockAShare.gammaProof?.v || ''
+          }${ECDSAMethods.delimeter}${mockAShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${mockAShare.gammaProof?.w || ''}${ECDSAMethods.delimeter}${
+            mockAShare.gammaProof?.s || ''
+          }${ECDSAMethods.delimeter}${mockAShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${mockAShare.gammaProof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockAShare.gammaProof?.t1 || ''
+          }${ECDSAMethods.delimeter}${mockAShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${mockAShare.gammaProof?.u || ''}${ECDSAMethods.delimeter}${
+            mockAShare.gammaProof?.x || ''
+          }${ECDSAMethods.delimeter}${mockAShare.wProof?.z || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.zprm || ''}${ECDSAMethods.delimeter}${
+            mockAShare.wProof?.t || ''
+          }${ECDSAMethods.delimeter}${mockAShare.wProof?.v || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.w || ''}${ECDSAMethods.delimeter}${
+            mockAShare.wProof?.s || ''
+          }${ECDSAMethods.delimeter}${mockAShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockAShare.wProof?.t1 || ''
+          }${ECDSAMethods.delimeter}${mockAShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.u || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.x || ''}`,
         } as SignatureShareRecord;
 
         const aShare = ECDSAMethods.convertAShare(mockAShare);
@@ -497,7 +531,23 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}`,
+          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.x || ''}`,
         } as SignatureShareRecord;
         const muShare = ECDSAMethods.parseMuShare(share);
         muShare.i.should.equal(mockMuShare.i);
@@ -510,7 +560,23 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}`,
+          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.x || ''}`,
         } as SignatureShareRecord;
         const muShare = ECDSAMethods.convertMuShare(mockMuShare);
         muShare.from.should.equal(share.from);
@@ -617,7 +683,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.BITGO,
-          share: `${bShare.beta}${delimeter}${bShare.gamma}${delimeter}${bShare.k}${delimeter}${bShare.nu}${delimeter}${bShare.w}${delimeter}${bShare.y}${delimeter}${bShare.l}${delimeter}${bShare.m}${delimeter}${bShare.n}`,
+          share: `${bShare.beta}${delimeter}${bShare.gamma}${delimeter}${bShare.k}${delimeter}${bShare.nu}${delimeter}${bShare.w}${delimeter}${bShare.y}${delimeter}${bShare.l}${delimeter}${bShare.m}${delimeter}${bShare.n}${delimeter}${bShare.ntilde}${delimeter}${bShare.h1}${delimeter}${bShare.h2}${delimeter}${bShare.ck}`,
         } as SignatureShareRecord;
         const signatureShare = ECDSAMethods.convertBShare(bShare);
         signatureShare.from.should.equal(share.from);
@@ -631,7 +697,7 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.BITGO,
-          share: `${bShare.beta}${delimeter}${bShare.gamma}${delimeter}${bShare.k}${delimeter}${bShare.nu}${delimeter}${bShare.w}${delimeter}${bShare.y}${delimeter}${bShare.l}${delimeter}${bShare.m}${delimeter}${bShare.n}`,
+          share: `${bShare.beta}${delimeter}${bShare.gamma}${delimeter}${bShare.k}${delimeter}${bShare.nu}${delimeter}${bShare.w}${delimeter}${bShare.y}${delimeter}${bShare.l}${delimeter}${bShare.m}${delimeter}${bShare.n}${delimeter}${bShare.ntilde}${delimeter}${bShare.h1}${delimeter}${bShare.h2}${delimeter}${bShare.ck}`,
         } as SignatureShareRecord;
         const parsedBShare = ECDSAMethods.parseBShare(share);
         parsedBShare.i.should.equal(bShare.i);
