@@ -21,16 +21,17 @@ export interface GenerateMpcWalletOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   walletVersion?: number;
-  backupProvider?: string;
+  backupProvider?: BackupProvider;
 }
-
+export const backupProviders = ['BitGoTrustAsKrs'] as const;
+export type BackupProvider = typeof backupProviders[number];
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;
   userKey?: string;
   backupXpub?: string;
   backupXpubProvider?: string;
-  backupProvider?: string;
+  backupProvider?: BackupProvider;
   passcodeEncryptionCode?: string;
   enterprise?: string;
   disableTransactionNotifications?: string;
