@@ -730,18 +730,19 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     async function setupSignTxRequestNocks(isTxRequest = true) {
-      let response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex } }] }] };
+      const derivationPath = '';
+      let response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
       if (isTxRequest) {
         await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       }
       const aRecord = ECDSAMethods.convertAShare(mockAShare);
       const signatureShares = [aRecord];
       txRequest.signatureShares = signatureShares;
-      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex } }] }] };
+      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       const dRecord = ECDSAMethods.convertDShare(mockDShare);
       signatureShares.push(dRecord);
-      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex } }] }] };
+      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
     }
