@@ -324,6 +324,16 @@ export interface FlushForwarderTokenOptions {
   };
 }
 
+export interface ForwarderBalance {
+  address: string;
+  balance: string;
+}
+
+export interface ForwarderBalanceOptions {
+  minimumBalance?: number;
+  maximumBalance?: number;
+}
+
 export interface CreateAddressOptions {
   chain?: number;
   gasPrice?: number | string;
@@ -599,6 +609,7 @@ export interface IWallet {
   updateForwarders(forwarderFlags?: any): Promise<any>;
   deployForwarders(params: DeployForwardersOptions): Promise<any>;
   flushForwarderToken(params: FlushForwarderTokenOptions): Promise<any>;
+  getForwarderBalance(params?: ForwarderBalanceOptions): Promise<ForwarderBalance[]>;
   sweep(params?: SweepOptions): Promise<any>;
   freeze(params?: FreezeOptions): Promise<any>;
   transferComment(params?: TransferCommentOptions): Promise<any>;
