@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@13.1.0...@bitgo/statics@14.0.0) (2023-01-25)
+
+### Bug Fixes
+
+- **statics:** fix mismatched erc20 token config ([8875873](https://github.com/BitGo/BitGoJS/commit/8875873aaf5a7dbc8b2117c5ea29ac0141c9310b))
+
+- Revert "fix(statics)!: Fix mismatched erc20 token config" ([b84b273](https://github.com/BitGo/BitGoJS/commit/b84b273a1d9cdd5140c05299bb2416d46806454c))
+
+### Features
+
+- **statics:** add ATOM coin config ([c3a5282](https://github.com/BitGo/BitGoJS/commit/c3a52823f7a2750ebf3e5c2e0f35925d09704087))
+- **statics:** add EVM_WALLET coin feature ([c31332c](https://github.com/BitGo/BitGoJS/commit/c31332c5ee085fafca47dcd47b0c10c108cb9686))
+- **statics:** add new batch of tokens ([19b584d](https://github.com/BitGo/BitGoJS/commit/19b584ddf90d38aad5ff30e867f1c83ea462d930))
+- **statics:** add new coin features for custody ([59a7fde](https://github.com/BitGo/BitGoJS/commit/59a7fde734af0fdb863f6b730cd0702e7c863615))
+- **statics:** add ofc stellar usdc token ([2c2735d](https://github.com/BitGo/BitGoJS/commit/2c2735d602c09cbbbeda78ef27a050ca08d3dc42))
+
+### BREAKING CHANGES
+
+- changes existing config for TUSD and REEF
+- **statics:** changes existing config for TUSD and REEF
+
 # [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@13.0.0...@bitgo/statics@13.1.0) (2022-12-23)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.5.0...@bitgo/sdk-coin-trx@1.6.0) (2023-01-25)
+
+### Features
+
+- **sdk-coin-trx:** fix verifyTransaction method for trx tokens ([ef3d641](https://github.com/BitGo/BitGoJS/commit/ef3d641987285b3bfc7ff5a3765479de980bad2f))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.4.0...@bitgo/sdk-coin-trx@1.5.0) (2022-12-23)
 
 ### Bug Fixes

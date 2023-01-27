@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.5...@bitgo/sdk-coin-sui@1.7.0) (2023-01-25)
+
+### Features
+
+- **sdk-coin-sui:** update sui serialize and deserialize tx to version greater than 0.19 ([e228ba2](https://github.com/BitGo/BitGoJS/commit/e228ba2670a75025b879df3e6df7fee3e460a557))
+
 ## [1.6.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.6.4...@bitgo/sdk-coin-sui@1.6.5) (2022-12-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.0.0...@bitgo/sdk-core@5.1.0) (2023-01-25)
+
+### Bug Fixes
+
+- **sdk-core:** allow sync pallier key generation for ovc ([3a91129](https://github.com/BitGo/BitGoJS/commit/3a9112963c89a960fc81ea12207ae7ca67faf378))
+- **sdk-core:** remove generic typing from typeddata associated with eip712 ([ac1047e](https://github.com/BitGo/BitGoJS/commit/ac1047ea482f7751dd145d538de3412e738e30e9))
+- **sdk-core:** send the passphrase as correct field for eddsa ([1aea3c2](https://github.com/BitGo/BitGoJS/commit/1aea3c285001e409cdcf4c5eacfb83426d46b14f))
+
+### Features
+
+- **sdk-core:** add extra params for addKey ([43e095e](https://github.com/BitGo/BitGoJS/commit/43e095efa52fefd25dd977ed8cd271fb146780ca))
+- **sdk-core:** add keepAlive as a whitelisted consolidate param ([f503969](https://github.com/BitGo/BitGoJS/commit/f5039697f04941ed04e4e96e42d794fc09aaf429))
+- **sdk-core:** add u value proof for ecdsa ([1ae0107](https://github.com/BitGo/BitGoJS/commit/1ae01076e503d57729a528a21044940526bfe917))
+- **sdk-core:** change third party to backupGpgKey ([817fd86](https://github.com/BitGo/BitGoJS/commit/817fd86f7269bd3a62ddf3aad14b4bc1f6beb2d7))
+- **sdk-core:** ecdsa tss return tx request detail ([90a6b6d](https://github.com/BitGo/BitGoJS/commit/90a6b6de6112e61b5d2cca142d12c9e7bac9c072))
+- **sdk-core:** forwarder version 3 ([82e6deb](https://github.com/BitGo/BitGoJS/commit/82e6debac071486435c51ce3f52f8352bdb8a8fb))
+- **sdk-core:** get bitgo public key based on coin and feature flags ([c5cee95](https://github.com/BitGo/BitGoJS/commit/c5cee95fa8005a8a83cf5c5afc01f35e3235d970))
+- send vss proof and privateShareProof to bitgo as backup ([dd348e7](https://github.com/BitGo/BitGoJS/commit/dd348e7a02600965d96460010ef7dd37cf672f82))
+
 # [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@4.3.0...@bitgo/sdk-core@5.0.0) (2022-12-23)
 
 ### Bug Fixes
