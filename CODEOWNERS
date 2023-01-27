@@ -65,6 +65,7 @@ modules/bitgo/ @BitGo/developer-relations-team
 modules/blake2b-wasm/ @BitGo/developer-relations-team
 modules/blake2b/ @BitGo/developer-relations-team
 modules/express/ @BitGo/developer-relations-team
+modules/key-card/ @BitGo/wallets
 modules/sdk-api/ @BitGo/developer-relations-team
 modules/sdk-core/ @BitGo/developer-relations-team
 modules/sdk-test/ @BitGo/developer-relations-team
