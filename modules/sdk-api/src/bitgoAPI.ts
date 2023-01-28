@@ -256,7 +256,7 @@ export class BitGoAPI implements BitGoBase {
     this._validate = params.validate === undefined ? true : params.validate;
 
     if (!params.hmacVerification && params.hmacVerification !== undefined) {
-      if (common.Environments[env].hmacVerificationEnforced) {
+      if ((env == 'prod' || env == 'adminProd') && common.Environments[env].hmacVerificationEnforced) {
         throw new Error(`Cannot disable request HMAC verification in environment ${this.getEnv()}`);
       }
       debug('HMAC verification explicitly disabled by constructor option');

@@ -78,17 +78,17 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('HMAC request verification', () => {
-    it('throws if HMAC request verification is disabled for non-dev environments', function () {
+    it('throws if HMAC request verification is disabled for non-prod environments', function () {
       (() => TestBitGo.decorate(BitGo, { env: 'prod', hmacVerification: false }))
         .should.throw(/Cannot disable request HMAC verification in environment/);
       (() => TestBitGo.decorate(BitGo, { env: 'test', hmacVerification: false }))
-        .should.throw(/Cannot disable request HMAC verification in environment/);
+        .should.not.throw(/Cannot disable request HMAC verification in environment/);
       (() => TestBitGo.decorate(BitGo, { env: 'adminProd', hmacVerification: false }))
         .should.throw(/Cannot disable request HMAC verification in environment/);
       (() => TestBitGo.decorate(BitGo, { env: 'adminTest', hmacVerification: false }))
-        .should.throw(/Cannot disable request HMAC verification in environment/);
+        .should.not.throw(/Cannot disable request HMAC verification in environment/);
       (() => TestBitGo.decorate(BitGo, { env: 'dev', customRootURI: 'http://rooturi.example', hmacVerification: false }))
-        .should.throw(/Cannot disable request HMAC verification in environment/);
+        .should.not.throw(/Cannot disable request HMAC verification in environment/);
     });
 
     it('allows disabling of HMAC request verification only for dev environments', function () {

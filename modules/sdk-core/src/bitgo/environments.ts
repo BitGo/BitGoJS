@@ -129,7 +129,7 @@ const testnetBase: EnvironmentTemplate = {
     full: 'http://47.252.81.135:8090',
     solidity: 'http://47.252.81.135:8091',
   },
-  hmacVerificationEnforced: true,
+  hmacVerificationEnforced: false,
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
