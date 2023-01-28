@@ -6,31 +6,19 @@ import {
   GenerateWalletOptions,
   KeychainsTriplet,
   WalletData,
+  IBaseCoin,
 } from '@bitgo/sdk-core';
+import { CoinFamily } from '@bitgo/statics';
+import assert from 'assert';
 
 export abstract class UnifiedWallets implements IUnifiedWallets {
   protected readonly bitgo: BitGoBase;
+  protected readonly coin: IBaseCoin;
+  protected urlPath: string;
 
-  protected constructor(bitgo: BitGoBase) {
+  protected constructor(bitgo: BitGoBase, coinName: string) {
     this.bitgo = bitgo;
-  }
-
-  /**
-   * Generate Keychain triplet to be used in creating all EVM coin wallets
-   * @param params
-   * @returns KeychainsTriplet
-   * @private
-   */
-  abstract generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet>;
-
-  /**
-   * Calls Bitgo API to create an EVM wallet.
-   * @param params
-   * @private
-   */
-  async createUnifiedWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
-    const urlPath = 'api/v2/wallets/evm';
-    return this.bitgo.post(this.bitgo.url(urlPath, 2)).send(params).result();
+    this.coin = this.bitgo.coin(coinName);
   }
 
   /**
@@ -40,6 +28,28 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
   abstract generateUnifiedWallet(params: GenerateUnifiedWalletOptions): Promise<UnifiedWallet>;
 
   /**
+   * Generate Keychain triplet to be used in creating all EVM coin wallets
+   * @param params
+   * @param coins
+   * @returns KeychainsTriplet
+   * @private
+   */
+  protected abstract generateKeychainsTriplet(
+    params: GenerateWalletOptions,
+    coins?: CoinFamily[]
+  ): Promise<KeychainsTriplet>;
+
+  /**
+   * Calls Bitgo API to create an EVM wallet.
+   * @param params
+   * @private
+   */
+  protected async createSingleCoinWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
+    assert(this.urlPath, 'urlPath must be initialized');
+    return this.bitgo.post(this.bitgo.url(this.urlPath, 2)).send(params).result();
+  }
+
+  /**
    * Generate the walletData for a given EVM coin using the common keychain triplet
    * @param coinName
    * @param walletParams
@@ -47,7 +57,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @returns WalletData
    * @private
    */
-  async generateCoinWalletData(
+  protected async generateCoinWalletData(
     coinName: string,
     walletParams: SupplementGenerateWalletOptions,
     keychainsTriplet: KeychainsTriplet

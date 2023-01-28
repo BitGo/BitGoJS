@@ -1,14 +1,15 @@
 import { GenerateWalletOptions } from '@bitgo/sdk-core';
 
 export interface UnifiedWalletID {
-  coinName: string;
+  coin: string;
   walletId: string;
   address: string;
 }
 
 export interface UnifiedWalletParams {
   wallets: UnifiedWalletID[];
-  curve: CurveType;
+  curve: string;
+  keys: string[];
 }
 
 export interface UnifiedWallet extends UnifiedWalletParams {

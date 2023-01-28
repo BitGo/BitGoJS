@@ -14,14 +14,13 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^5.2.0",
-    "@bitgo/statics": "^14.1.0",
-    "bitgo": "^16.3.0",
-    "lodash": "^4.17.21",
     "openpgp": "5.1.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.7",
-    "@bitgo/sdk-test": "^1.2.12"
+    "@bitgo/sdk-coin-eth": "^4.0.1",
+    "@bitgo/sdk-test": "^1.2.12",
+    "@bitgo/statics": "^14.1.0"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

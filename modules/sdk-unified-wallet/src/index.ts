@@ -1,4 +1,3 @@
-export * from './unifiedWalletKeychains';
 export * from './ecdsa-unified-wallet/ecdsaUnifiedWallets';
 export * from './types';
 export { EvmWalletCoins } from './ecdsa-unified-wallet/types';
