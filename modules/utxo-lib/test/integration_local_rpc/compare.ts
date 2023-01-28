@@ -129,6 +129,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
+    case networks.ecash:
     case networks.litecoin:
       // this is the normalized hash which is not implemented in utxolib
       delete normalizedTx.hash;
