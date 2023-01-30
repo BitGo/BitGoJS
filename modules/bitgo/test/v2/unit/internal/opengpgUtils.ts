@@ -51,7 +51,8 @@ describe('OpenGPG Utils Tests', function () {
 
       // verify proof
       const decodedProof = await openpgp.readKey({ armoredKey: proof }).should.be.fulfilled();
-      const isValid = (await decodedProof.verifyPrimaryUser())[0].valid;
+      const decodedPubKey = await openpgp.readKey({ armoredKey: senderKey.publicKey }).should.be.fulfilled();
+      const isValid = (await decodedProof.verifyPrimaryUser([decodedPubKey]))[0].valid;
       isValid.should.be.true();
 
       const proofSubkeys = decodedProof.getSubkeys()[1];
@@ -68,46 +69,62 @@ describe('OpenGPG Utils Tests', function () {
 
       // verify proof
       const decodedProof = await openpgp.readKey({ armoredKey: proof }).should.be.fulfilled();
-      const isValid = (await decodedProof.verifyPrimaryUser())[0].valid;
+      const decodedPubKey = await openpgp.readKey({ armoredKey: senderKey.publicKey }).should.be.fulfilled();
+      const isValid = (await decodedProof.verifyPrimaryUser([decodedPubKey]))[0].valid;
       isValid.should.be.true();
 
       const proofSubkeys = decodedProof.getSubkeys()[1];
 
       const decodedUValueProof = proofSubkeys.keyPacket.publicParams.Q;
       const rawUValueProof = secp256k1.pointFromScalar(Buffer.from(uValue, 'hex'), false);
-
       equal(decodedUValueProof, rawUValueProof).should.be.true();
     });
   });
 
-  describe('verifyShareProof positive case', function () {
+  describe('verifyShareProof EdDSA', function () {
     it('should be able to verify a valid proof', async function () {
       const uValue = crypto.randomBytes(32).toString('hex');
       const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'eddsa');
-      // verify proof
-      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValue);
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValue, 'eddsa');
       isValid.should.be.true();
     });
-  });
 
-  describe('verifyShareProof attack proof', function () {
     it('should be able to detect sender is an attacker', async function () {
       const uValue = crypto.randomBytes(32).toString('hex');
       const proof = await openpgpUtils.createShareProof(otherKey.privateKey, uValue, 'eddsa');
-      // verify proof
-      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValue);
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValue, 'eddsa');
       isValid.should.be.false();
     });
-  });
 
-
-  describe('verifyShareProof attack u value', function () {
     it('should be able to detect u value is corrupted', async function () {
       const uValue = crypto.randomBytes(32).toString('hex');
       const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'eddsa');
       const uValueCorrupted = crypto.randomBytes(32).toString('hex');
-      // verify proof
-      const isValid = await openpgpUtils.verifyEdShareProof(senderKey.publicKey, proof, uValueCorrupted);
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValueCorrupted, 'eddsa');
+      isValid.should.be.false();
+    });
+  });
+
+  describe('verifyShareProof ECDSA', function () {
+    it('should be able to verify a valid proof', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'ecdsa');
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValue, 'ecdsa');
+      isValid.should.be.true();
+    });
+
+    it('should be able to detect sender is an attacker', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(otherKey.privateKey, uValue, 'ecdsa');
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValue, 'ecdsa');
+      isValid.should.be.false();
+    });
+
+    it('should be able to detect u value is corrupted', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'ecdsa');
+      const uValueCorrupted = crypto.randomBytes(32).toString('hex');
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, proof, uValueCorrupted, 'ecdsa');
       isValid.should.be.false();
     });
   });

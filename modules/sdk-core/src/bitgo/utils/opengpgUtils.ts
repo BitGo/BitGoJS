@@ -48,17 +48,19 @@ export async function getTrustGpgPubKey(bitgo: BitGoBase): Promise<Key> {
 }
 
 /**
- * Verify an Eddsa KeyShare Proof.
+ * Verify an Eddsa or Ecdsa KeyShare Proof.
  *
  * @param senderPubKey public key of the sender of the privateShareProof
  * @param privateShareProof u value proof
  * @param uValue u value from an Eddsa keyshare
+ * @param algo
  * @return {boolean} whether uValue proof actually was signed by sender as part of their subkeys
  */
-export async function verifyEdShareProof(
+export async function verifyShareProof(
   senderPubKey: string,
   privateShareProof: string,
-  uValue: string
+  uValue: string,
+  algo: 'eddsa' | 'ecdsa'
 ): Promise<boolean> {
   const decodedProof = await pgp.readKey({ armoredKey: privateShareProof });
   const senderGpgKey = await pgp.readKey({ armoredKey: senderPubKey });
@@ -66,11 +68,19 @@ export async function verifyEdShareProof(
     return false;
   }
   const proofSubkeys = decodedProof.getSubkeys()[1];
-  const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams['Q'].slice(1)).toString('hex');
-  const rawUValueProof = Buffer.from(
-    sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))
-  ).toString('hex');
-  return decodedUValueProof === rawUValueProof;
+  if (algo === 'eddsa') {
+    const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams['Q'].slice(1)).toString('hex');
+    const rawUValueProof = Buffer.from(
+      sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))
+    ).toString('hex');
+    return decodedUValueProof === rawUValueProof;
+  } else if (algo === 'ecdsa') {
+    const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams['Q']).toString('hex');
+    const rawUValueProof = secp256k1.pointFromScalar(Buffer.from(uValue, 'hex'), false);
+    return rawUValueProof !== null && decodedUValueProof === Buffer.from(rawUValueProof).toString('hex');
+  } else {
+    throw new Error('Invalid algorithm provided');
+  }
 }
 
 /**
