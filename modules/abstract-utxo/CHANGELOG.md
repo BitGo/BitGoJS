@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.10.5...@bitgo/abstract-utxo@1.11.0) (2023-01-30)
+
+### Features
+
+- update tests for crossChainRecovery ([6cdd3a9](https://github.com/BitGo/BitGoJS/commit/6cdd3a94baa4427412d06e3e151096feea5e26ff))
+- use UtxoApi to facilitate cross chain recoveries ([61151aa](https://github.com/BitGo/BitGoJS/commit/61151aa2634b7fa89f995a85940fd680f87cf854))
+
 ## [1.10.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.10.4...@bitgo/abstract-utxo@1.10.5) (2023-01-25)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
