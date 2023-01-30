@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.4.0...@bitgo/utxo-lib@7.5.0) (2023-01-30)
+
+### Bug Fixes
+
+- **utxo-lib:** fix UtxoPsbt (de)serialization ([f49c443](https://github.com/BitGo/BitGoJS/commit/f49c4436f193d1bbd75dddbe6f28e5e9dd872ee3))
+
+### Features
+
+- **utxo-lib:** zcash non-segwit unspents can be signed ([5050546](https://github.com/BitGo/BitGoJS/commit/5050546cd7eaccb09c7fe0a5d70457a32148dcce))
+
 # [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.3.0...@bitgo/utxo-lib@7.4.0) (2023-01-25)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.9...@bitgo/blockapis@1.4.0) (2023-01-30)
+
+### Features
+
+- add tests for blockapis getTransactionIO ([1e4d76a](https://github.com/BitGo/BitGoJS/commit/1e4d76a9dac9a53a6f6baee4cb787415154f37d0))
+- use UtxoApi to facilitate cross chain recoveries ([61151aa](https://github.com/BitGo/BitGoJS/commit/61151aa2634b7fa89f995a85940fd680f87cf854))
+
 ## [1.3.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.3.8...@bitgo/blockapis@1.3.9) (2023-01-25)
 
 **Note:** Version bump only for package @bitgo/blockapis

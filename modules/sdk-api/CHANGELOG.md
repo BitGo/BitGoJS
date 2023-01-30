@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.6...@bitgo/sdk-api@1.9.7) (2023-01-30)
+
+### Bug Fixes
+
+- **bitgo:** remove enforcement of HMAC verification on all non-prod environments ([118722c](https://github.com/BitGo/BitGoJS/commit/118722c80bfcf8cfc850e07d575ecf10aacb3fd2))
+
 ## [1.9.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.9.5...@bitgo/sdk-api@1.9.6) (2023-01-25)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.1.0...@bitgo/sdk-core@5.2.0) (2023-01-30)
+
+### Bug Fixes
+
+- **bitgo:** remove enforcement of HMAC verification on all non-prod environments ([118722c](https://github.com/BitGo/BitGoJS/commit/118722c80bfcf8cfc850e07d575ecf10aacb3fd2))
+- **sdk-core:** get low balance forwarder ([6b8205c](https://github.com/BitGo/BitGoJS/commit/6b8205c449e2f5fe3dca0247d92dfdf2fdb6ef58))
+
+### Features
+
+- **sdk-core:** add ecdsa wallet sig verification ([375be2d](https://github.com/BitGo/BitGoJS/commit/375be2d86002258ba11012888fea41094dabc39b))
+
 # [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.0.0...@bitgo/sdk-core@5.1.0) (2023-01-25)
 
 ### Bug Fixes
