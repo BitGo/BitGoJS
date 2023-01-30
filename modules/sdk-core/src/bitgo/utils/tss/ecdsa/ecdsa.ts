@@ -19,7 +19,7 @@ import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, SendShareType } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
-import { IWallet } from '../../../wallet';
+import { BackupProvider, IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
@@ -115,7 +115,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     passphrase: string;
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
-    backupProvider?: string;
+    backupProvider?: BackupProvider;
   }): Promise<KeychainsTriplet> {
     const MPC = new Ecdsa();
     const m = 2;

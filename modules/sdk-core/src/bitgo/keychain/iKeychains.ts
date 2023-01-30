@@ -1,6 +1,6 @@
 import { IRequestTracer } from '../../api';
 import { KeyPair, KeychainsTriplet } from '../baseCoin';
-import { IWallet } from '../wallet';
+import { BackupProvider, IWallet } from '../wallet';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 
@@ -107,7 +107,7 @@ export interface CreateMpcOptions {
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
-  backupProvider?: string;
+  backupProvider?: BackupProvider;
 }
 
 export interface GetKeysForSigningOptions {
