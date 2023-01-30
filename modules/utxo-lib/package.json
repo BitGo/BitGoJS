@@ -47,7 +47,7 @@
   ],
   "dependencies": {
     "@bitgo/blake2b": "^3.2.1",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/secp256k1": "1.7.1",
     "bip174": "npm:@bitgo-forks/bip174@3.0.0-rc.1",
     "bip32": "^3.0.1",
     "bitcoin-ops": "^1.3.0",
