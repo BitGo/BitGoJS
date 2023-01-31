@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@types/archy": "^0.0.32",
-    "@types/yargs": "^17.0.8 <17.0.20 || ^17.0.21",
+    "@types/yargs": "17.0.19",
     "bip32": "^3.1.0"
   },
   "lint-staged": {
