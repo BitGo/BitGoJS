@@ -60,7 +60,7 @@ export function prove(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, c: bigint
   const qntilde = q * ntilde.ntilde;
   const q3ntilde = q3 * ntilde.ntilde;
   const alpha = randBetween(q3);
-  const beta = randBetween(pk.n);
+  const beta = randomCoPrimeTo(pk.n);
   const gamma = randBetween(q3ntilde);
   const rho = randBetween(qntilde);
   const z = (modPow(ntilde.h1, m, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;
