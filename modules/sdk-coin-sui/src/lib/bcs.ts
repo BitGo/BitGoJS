@@ -33,6 +33,9 @@ bcs.registerStructType('SuiObjectRef', {
   digest: 'ObjectDigest',
 });
 
+/**
+ * Transaction type used for Pay transaction.
+ */
 bcs.registerStructType('PayTx', {
   coins: 'vector<SuiObjectRef>',
   recipients: 'vector<address>',
@@ -48,6 +51,14 @@ bcs.registerStructType('PaySuiTx', {
 bcs.registerStructType('PayAllSuiTx', {
   coins: 'vector<SuiObjectRef>',
   recipient: 'address',
+});
+
+bcs.registerStructType('MoveCallTx', {
+  package: 'SuiObjectRef',
+  module: 'string',
+  function: 'string',
+  typeArguments: 'vector<TypeTag>',
+  arguments: 'vector<CallArg>',
 });
 
 bcs
@@ -69,6 +80,21 @@ bcs
     module: 'string',
     name: 'string',
     typeParams: 'vector<TypeTag>',
+  });
+
+bcs
+  .registerStructType('SharedObjectRef', {
+    objectId: 'address',
+    initialSharedVersion: 'u64',
+  })
+  .registerEnumType('ObjectArg', {
+    ImmOrOwned: 'SuiObjectRef',
+    Shared: 'SharedObjectRef',
+  })
+  .registerEnumType('CallArg', {
+    Pure: 'vector<u8>',
+    Object: 'ObjectArg',
+    ObjVec: 'vector<ObjectArg>',
   });
 
 bcs.registerEnumType('Transaction', {

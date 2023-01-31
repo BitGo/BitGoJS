@@ -16,10 +16,11 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { Transaction, TransactionBuilderFactory } from './lib';
+import { TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import * as sha3 from 'js-sha3';
+import { TransferTransaction } from './lib/transferTransaction';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -98,7 +99,7 @@ export class Sui extends BaseCoin {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const transaction = new Transaction(coinConfig);
+    const transaction = new TransferTransaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');

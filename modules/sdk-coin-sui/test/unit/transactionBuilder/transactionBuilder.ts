@@ -2,10 +2,10 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SUI_GAS_PRICE, SuiTransactionType } from '../../../src/lib/constants';
+import { SUI_GAS_PRICE, SUI_PACKAGE, SUI_SYSTEM_STATE_OBJECT } from '../../../src/lib/constants';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { KeyPair } from '../../../src';
-import { PayTx } from '../../../src/lib/iface';
+import { MethodNames, ModulesNames, PayTx, SuiTransactionType } from '../../../src/lib/iface';
 
 describe('Sui Transaction Builder', async () => {
   let builders;
@@ -41,7 +41,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.gasBudget(testData.GAS_BUDGET);
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
-    (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithGasPayment.coins[0]);
+    (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithGasPayment.coins[0]);
 
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX_WITHOUT_GAS_PAYMENT_AND_IN_PAYTX);
@@ -72,7 +72,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.gasPayment(testData.gasPayment);
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
-    (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
+    (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
 
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX_WITH_GAS_PAYMENT_AND_IN_PAYTX);
@@ -130,7 +130,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.gasBudget(testData.GAS_BUDGET);
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
-    (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithoutGasPayment.coins[0]);
+    (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithoutGasPayment.coins[0]);
 
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX_WITHOUT_GAS_PAYMENT_AND_NOT_IN_PAYTX);
@@ -253,6 +253,74 @@ describe('Sui Transaction Builder', async () => {
     jsonTx.sender.should.equal(testData.sender.address);
     jsonTx.gasPayment.should.deepEqual(testData.gasPayment);
     builtTx.toBroadcastFormat().should.equal(testData.TRANSFER_PAY_TX);
+  });
+
+  describe('staking transaction', async () => {
+    it('should build and sign a staking requestAddDelegation tx ', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
+      txBuilder.requestAddDelegation(testData.requestAddDelegationTxMultipleCoins);
+      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
+      txBuilder.gasPayment(testData.stakingGasPayment);
+      const tx = await txBuilder.build();
+      should.equal(tx.id, 'UNAVAILABLE');
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(rawTx, testData.ADD_DELEGATION_TX_MUL_COIN);
+
+      const txBuilder2 = await factory.from(rawTx);
+      await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const signedTx = await txBuilder2.build();
+      should.equal(signedTx.type, TransactionType.AddDelegator);
+      should.equal(signedTx.id, 'G1QrBfJupfv8xwzTGVUEoFFYsYyBxM3gU7y27igFa3Y4');
+
+      const rawSignedTx = signedTx.toBroadcastFormat();
+      should.equal(rawSignedTx, testData.ADD_DELEGATION_TX_MUL_COIN);
+      const reserializedTxBuilder = factory.from(rawSignedTx);
+      reserializedTxBuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      const reserialized = await reserializedTxBuilder.build();
+
+      reserialized.should.be.deepEqual(signedTx);
+      reserialized.toBroadcastFormat().should.equal(rawSignedTx);
+    });
+    it('should build a send from rawTx', async function () {
+      const txBuilder = factory.from(testData.ADD_DELEGATION_TX_MUL_COIN);
+      const builtTx = await txBuilder.build();
+      should.equal(builtTx.type, TransactionType.AddDelegator);
+      should.equal(builtTx.id, 'UNAVAILABLE');
+      builtTx.inputs.length.should.equal(1);
+      builtTx.inputs[0].should.deepEqual({
+        address: testData.STAKING_SENDER_ADDRESS,
+        value: testData.STAKING_AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      builtTx.outputs.length.should.equal(1);
+      builtTx.outputs[0].should.deepEqual({
+        address: testData.VALIDATOR_ADDRESS,
+        value: testData.STAKING_AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      const jsonTx = builtTx.toJson();
+      jsonTx.gasBudget.should.equal(testData.STAKING_GAS_BUDGET);
+      jsonTx.gasPrice.should.equal(SUI_GAS_PRICE);
+      jsonTx.kind.Single.should.deepEqual({
+        Call: {
+          package: SUI_PACKAGE,
+          module: ModulesNames.SuiSystem,
+          function: MethodNames.RequestAddDelegationMulCoin,
+          typeArguments: [],
+          arguments: [
+            SUI_SYSTEM_STATE_OBJECT,
+            [testData.coinToStakeOne, testData.coinToStakeTwo],
+            testData.STAKING_AMOUNT,
+            testData.VALIDATOR_ADDRESS,
+          ],
+        },
+      });
+      jsonTx.sender.should.equal(testData.STAKING_SENDER_ADDRESS);
+      jsonTx.gasPayment.should.deepEqual(testData.stakingGasPayment);
+      builtTx.toBroadcastFormat().should.equal(testData.ADD_DELEGATION_TX_MUL_COIN);
+    });
   });
 
   describe('sender tests', async () => {
@@ -397,7 +465,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder.sign({ key: keyPair.getKeys().prv });
     const signedTransaction = await txBuilder.build();
     const serializedTransaction = signedTransaction.toBroadcastFormat();
-    const finalSig = (signedTransaction as SuiTransaction).serializedSig;
+    const finalSig = (signedTransaction as SuiTransaction<PayTx>).serializedSig;
     const finalSigString = Buffer.from(finalSig).toString('base64');
 
     const txBuilder2 = factory.from(serializedTx);
@@ -410,7 +478,7 @@ describe('Sui Transaction Builder', async () => {
     txBuilder2.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signaturePayment));
     const signedTransaction2 = await txBuilder2.build();
     signedTransaction.id.should.equal(tx.id);
-    const finalSig2 = (signedTransaction2 as SuiTransaction).serializedSig;
+    const finalSig2 = (signedTransaction2 as SuiTransaction<PayTx>).serializedSig;
     const finalSigString2 = Buffer.from(finalSig2).toString('base64');
     finalSigString.should.equal(finalSigString2);
     const serializedTransaction2 = signedTransaction2.toBroadcastFormat();

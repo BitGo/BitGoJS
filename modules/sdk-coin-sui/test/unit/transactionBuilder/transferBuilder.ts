@@ -3,8 +3,8 @@ import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
-import { SuiTransactionType } from '../../../src/lib/constants';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
+import { PayTx, SuiTransactionType } from '../../../src/lib/iface';
 
 describe('Sui Transfer Builder', () => {
   const factory = getBuilderFactory('tsui');
@@ -19,7 +19,7 @@ describe('Sui Transfer Builder', () => {
       txBuilder.gasPayment(testData.gasPayment);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -47,7 +47,7 @@ describe('Sui Transfer Builder', () => {
       txBuilder.gasPayment(testData.gasPayment);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -74,7 +74,9 @@ describe('Sui Transfer Builder', () => {
       txBuilder.gasBudget(testData.GAS_BUDGET);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithoutGasPayment.coins[0]);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(
+        testData.payTxWithoutGasPayment.coins[0]
+      );
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -102,7 +104,7 @@ describe('Sui Transfer Builder', () => {
       txBuilder.gasPayment(testData.gasPayment);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(testData.gasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -129,7 +131,9 @@ describe('Sui Transfer Builder', () => {
       txBuilder.gasBudget(testData.GAS_BUDGET);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction).suiTransaction.gasPayment.should.deepEqual(testData.payTxWithoutGasPayment.coins[0]);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasPayment.should.deepEqual(
+        testData.payTxWithoutGasPayment.coins[0]
+      );
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({

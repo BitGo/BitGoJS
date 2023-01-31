@@ -2,13 +2,15 @@ import { coins } from '@bitgo/statics';
 import should from 'should';
 import { Transaction } from '../../src';
 import * as testData from '../resources/sui';
+import { PayTx } from '../../src/lib/iface';
+import { TransferTransaction } from '../../src/lib/transferTransaction';
 
-describe('Sui Transaction', () => {
-  let tx: Transaction;
+describe('Sui Pay Transaction', () => {
+  let tx: Transaction<PayTx>;
   const config = coins.get('tsui');
 
   beforeEach(() => {
-    tx = new Transaction(config);
+    tx = new TransferTransaction(config);
   });
 
   describe('Empty transaction', () => {

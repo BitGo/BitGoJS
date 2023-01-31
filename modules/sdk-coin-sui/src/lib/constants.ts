@@ -10,8 +10,18 @@ export const SUI_INTENT_BYTES = Buffer.from([0, 0, 0]);
 
 export const SIGNATURE_SCHEME_BYTES = [0x00];
 
-export enum SuiTransactionType {
-  Pay = 'Pay',
-  PaySui = 'PaySui',
-  PayAllSui = 'PayAllSui',
-}
+// SUI staking related constants
+export const SUI_FRAMEWORK_ADDRESS = '0x0000000000000000000000000000000000000002';
+export const SUI_FRAMEWORK_ADDRESS_DIGEST = 'S3+nqtdJON0o/rAk5fLHRzbGyAngwm1/F7uocLfi7hQ=';
+export const SUI_SYSTEM_STATE_OBJECT_ID = '0x0000000000000000000000000000000000000005';
+
+export const SUI_SYSTEM_STATE_OBJECT = {
+  objectId: SUI_SYSTEM_STATE_OBJECT_ID,
+  initialSharedVersion: 1,
+};
+
+export const SUI_PACKAGE = {
+  objectId: SUI_FRAMEWORK_ADDRESS,
+  version: 1,
+  digest: SUI_FRAMEWORK_ADDRESS_DIGEST,
+};
