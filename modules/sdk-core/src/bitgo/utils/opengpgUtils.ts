@@ -36,6 +36,18 @@ export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
 }
 
 /**
+ * Fetches Trust pub key string
+ * @param bitgo
+ */
+export async function getTrustGpgPubKey(bitgo: BitGoBase): Promise<Key> {
+  const constants = await bitgo.fetchConstants();
+  if (!constants.trustPubKey) {
+    throw new Error('Unable to get trustPubKey');
+  }
+  return readKey({ armoredKey: constants.trustPubKey });
+}
+
+/**
  * Verify an Eddsa KeyShare Proof.
  *
  * @param senderPubKey public key of the sender of the privateShareProof

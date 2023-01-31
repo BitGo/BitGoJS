@@ -280,6 +280,8 @@ export type Challenge = {
   h2: string;
 };
 
+export type backupGpgKey = SerializedKeyPair<string> | Key;
+
 /**
  * Common Interface for implementing signature scheme specific
  * util functions
