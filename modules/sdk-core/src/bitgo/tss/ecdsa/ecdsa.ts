@@ -583,23 +583,23 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.proof?.u || ''
     }${delimeter}${share.proof?.w || ''}${delimeter}${share.proof?.s || ''}${delimeter}${
       share.proof?.s1 || ''
-    }${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}${delimeter}${
-      share.gammaProof?.z || ''
-    }${delimeter}${share.gammaProof?.zprm || ''}${delimeter}${share.gammaProof?.t || ''}${delimeter}${
-      share.gammaProof?.v || ''
-    }${delimeter}${share.gammaProof?.v || ''}${delimeter}${share.gammaProof?.w || ''}${delimeter}${
-      share.gammaProof?.s || ''
-    }${delimeter}${share.gammaProof?.s1 || ''}${delimeter}${share.gammaProof?.s2 || ''}${delimeter}${
-      share.gammaProof?.t1 || ''
-    }${delimeter}${share.gammaProof?.t2 || ''}${delimeter}${share.gammaProof?.u || ''}${delimeter}${
-      share.gammaProof?.x || ''
-    }${delimeter}${share.wProof?.z || ''}${delimeter}${share.wProof?.zprm || ''}${delimeter}${
-      share.wProof?.t || ''
-    }${delimeter}${share.wProof?.v || ''}${delimeter}${share.wProof?.w || ''}${delimeter}${
-      share.wProof?.s || ''
-    }${delimeter}${share.wProof?.s1 || ''}${delimeter}${share.wProof?.s2 || ''}${delimeter}${
-      share.wProof?.t1 || ''
-    }${delimeter}${share.wProof?.t2 || ''}${delimeter}${share.wProof?.u || ''}${delimeter}${share.wProof?.x || ''}`,
+    }${delimeter}${share.proof?.s2 || ''}${delimeter}${share.gammaProof?.z || ''}${delimeter}${
+      share.gammaProof?.zprm || ''
+    }${delimeter}${share.gammaProof?.t || ''}${delimeter}${share.gammaProof?.v || ''}${delimeter}${
+      share.gammaProof?.w || ''
+    }${delimeter}${share.gammaProof?.s || ''}${delimeter}${share.gammaProof?.s1 || ''}${delimeter}${
+      share.gammaProof?.s2 || ''
+    }${delimeter}${share.gammaProof?.t1 || ''}${delimeter}${share.gammaProof?.t2 || ''}${delimeter}${
+      share.gammaProof?.u || ''
+    }${delimeter}${share.gammaProof?.x || ''}${delimeter}${share.wProof?.z || ''}${delimeter}${
+      share.wProof?.zprm || ''
+    }${delimeter}${share.wProof?.t || ''}${delimeter}${share.wProof?.v || ''}${delimeter}${
+      share.wProof?.w || ''
+    }${delimeter}${share.wProof?.s || ''}${delimeter}${share.wProof?.s1 || ''}${delimeter}${
+      share.wProof?.s2 || ''
+    }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
+      share.wProof?.u || ''
+    }${delimeter}${share.wProof?.x || ''}`,
   };
 }
 
