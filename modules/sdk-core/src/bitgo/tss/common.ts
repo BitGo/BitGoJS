@@ -1,7 +1,7 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 import { BitGoBase } from '../bitgoBase';
-import { RequestType, TxRequest } from '../utils';
+import { Challenge, RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 
 /**
@@ -69,6 +69,41 @@ export async function sendSignatureShare(
       signerShare,
     })
     .result();
+}
+
+/**
+ * Gets challenge for a tx request from BitGo
+ * supports Message and regular Transaction
+ * @param bitgo
+ * @param walletId
+ * @param txRequestId
+ * @param index
+ * @param requestType
+ * @param mpcAlgorithm
+ */
+export async function getTxRequestChallenge(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  index: string,
+  requestType: RequestType,
+  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
+): Promise<Challenge> {
+  let addendum = '';
+  switch (requestType) {
+    case RequestType.tx:
+      if (mpcAlgorithm === 'ecdsa') {
+        addendum = '/transactions/' + index;
+      }
+      break;
+    case RequestType.message:
+      if (mpcAlgorithm === 'ecdsa') {
+        addendum = '/messages/' + index;
+      }
+      break;
+  }
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
+  return await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
 }
 
 /**

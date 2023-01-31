@@ -23,6 +23,7 @@ import { IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex } from '../../../tss/ecdsa/ecdsa';
+import { getTxRequestChallenge } from '../../../tss/common';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -551,14 +552,27 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userSigningMaterial.backupNShare,
     ]);
     const signingKeyWithChallenge = MPC.signChallenge(signingKey.xShare, signingKey.yShares[3]);
+    const bitgoChallenge = await getTxRequestChallenge(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      '0',
+      requestType,
+      'ecdsa'
+    );
 
     const threshold = 2;
     const numShares = 3;
     const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
-    const userSignShare = await ECDSAMethods.createUserSignShare(
-      signingKeyWithChallenge.xShare,
-      signingKeyWithChallenge.yShares[3]
-    );
+
+    const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
+      i: 1,
+      j: 3,
+      n: userSigningMaterial.bitgoNShare.n,
+      ntilde: bitgoChallenge.ntilde,
+      h1: bitgoChallenge.h1,
+      h2: bitgoChallenge.h2,
+    });
 
     const u = bigIntToBufferBE(uShares.shares[3], 32).toString('hex');
 
