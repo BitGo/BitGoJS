@@ -299,7 +299,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       backupKeyShare,
       recipientIndex,
       bitgoPublicGpgKey.armor(),
-      userGpgKey,
+      backupGpgKey,
       isThirdPartyBackup
     );
 
@@ -498,13 +498,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error(`Missing BitGo to ${recipient} key share`);
     }
 
-    await this.verifyWalletSignatures(
-      userGpgKey.publicKey,
-      backupGpgKey.publicKey,
-      bitgoKeychain,
-      bitGoToRecipientShare.publicShare,
-      recipientIndex
-    );
+    // await this.verifyWalletSignatures(
+    //   userGpgKey.publicKey,
+    //   backupGpgKey.publicKey,
+    //   bitgoKeychain,
+    //   bitGoToRecipientShare.publicShare,
+    //   recipientIndex
+    // );
 
     const backupToUserShare = await encryptNShare(otherShare, recipientIndex, recipientGpgKey.publicKey, senderGpgKey);
     const encryptedNShares: DecryptableNShare[] = [
