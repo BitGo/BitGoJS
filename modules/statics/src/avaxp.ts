@@ -13,7 +13,7 @@ export interface AVAXPConstructorOptions {
 }
 
 export class AVAXPCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [CoinFeature.UNSPENT_MODEL];
+  public static readonly DEFAULT_FEATURES = [CoinFeature.UNSPENT_MODEL, CoinFeature.CUSTODY_BITGO_TRUST];
 
   /**
    * Additional fields for utxo coins
