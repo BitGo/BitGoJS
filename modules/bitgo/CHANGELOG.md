@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.3.0...bitgo@16.4.0) (2023-01-30)
+
+
+### Bug Fixes
+
+* **bitgo:** remove enforcement of HMAC verification on all non-prod environments ([118722c](https://github.com/BitGo/BitGoJS/commit/118722c80bfcf8cfc850e07d575ecf10aacb3fd2))
+* **sdk-core:** get low balance forwarder ([6b8205c](https://github.com/BitGo/BitGoJS/commit/6b8205c449e2f5fe3dca0247d92dfdf2fdb6ef58))
+* use new mock for cross chain recovery test ([d54db09](https://github.com/BitGo/BitGoJS/commit/d54db099d1a3fbdeb0dcc1526858e6f195946a78))
+
+
+### Features
+
+* **sdk-core:** add ecdsa wallet sig verification ([375be2d](https://github.com/BitGo/BitGoJS/commit/375be2d86002258ba11012888fea41094dabc39b))
+* **statics:** add ofc algorand usdc token ([9450360](https://github.com/BitGo/BitGoJS/commit/9450360e828253ee633acaae8cc0ec57d386a7dc))
+* update tests for crossChainRecovery ([6cdd3a9](https://github.com/BitGo/BitGoJS/commit/6cdd3a94baa4427412d06e3e151096feea5e26ff))
+
+
+
+
+
 # [16.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.2.1...bitgo@16.3.0) (2023-01-25)
 
 

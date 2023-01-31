@@ -13,12 +13,12 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^5.1.0",
-    "@bitgo/statics": "^14.0.0"
+    "@bitgo/sdk-core": "^5.2.0",
+    "@bitgo/statics": "^14.1.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.9.6",
-    "@bitgo/sdk-test": "^1.2.11"
+    "@bitgo/sdk-api": "^1.9.7",
+    "@bitgo/sdk-test": "^1.2.12"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

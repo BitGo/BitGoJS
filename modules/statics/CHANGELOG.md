@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.1.0) (2023-01-30)
+
+### Features
+
+- **statics:** add ofc algorand usdc token ([9450360](https://github.com/BitGo/BitGoJS/commit/9450360e828253ee633acaae8cc0ec57d386a7dc))
+
 # [14.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@13.1.0...@bitgo/statics@14.0.0) (2023-01-25)
 
 ### Bug Fixes
