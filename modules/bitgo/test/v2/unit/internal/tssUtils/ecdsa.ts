@@ -26,6 +26,7 @@ import {
 import { keyShares, mockAShare, mockDShare, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
 import { createWalletSignatures, nockGetTxRequest } from '../../tss/helpers';
+import { ecc } from '@bitgo/utxo-lib';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
@@ -909,6 +910,7 @@ describe('TSS Ecdsa Utils:', async function () {
           privateShare: userToBitgoShare.encryptedPrivateShare,
           n: userToBitgoShare.n,
           vssProof: userToBitgoShare.vssProof,
+          privateShareProof: userToBitgoShare.privateShareProof,
         },
         {
           from: 'bitgo',
@@ -917,12 +919,17 @@ describe('TSS Ecdsa Utils:', async function () {
           privateShare: backupToBitgoShare.encryptedPrivateShare,
           n: backupToBitgoShare.n,
           vssProof: backupToBitgoShare.vssProof,
+          privateShareProof: backupToBitgoShare.privateShareProof,
         },
       ],
     };
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
     const backupKeyId = backupGpgKeyActual.keyPacket.getFingerprint();
+    const bitgoToUserPublicU = (ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[1].u, 'hex'), false) as Uint8Array).toString()
+      + params.bitgoKeyShare.nShares[1].chaincode;
+    const bitgoToBackupPublicU = (ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[2].u, 'hex'), false) as Uint8Array).toString()
+      + params.bitgoKeyShare.nShares[2].chaincode;
 
     bitgoKeychain.walletHSMGPGPublicKeySigs = await createWalletSignatures(
       params.bitgoGpgKey.privateKey,
@@ -932,8 +939,8 @@ describe('TSS Ecdsa Utils:', async function () {
         { name: 'commonKeychain', value: bitgoCombined.xShare.y + bitgoCombined.xShare.chaincode },
         { name: 'userKeyId', value: userKeyId },
         { name: 'backupKeyId', value: backupKeyId },
-        { name: 'bitgoToUserPublicShare', value: userToBitgoShare.publicShare },
-        { name: 'bitgoToBackupPublicShare', value: backupToBitgoShare.publicShare },
+        { name: 'bitgoToUserPublicShare', value: bitgoToUserPublicU },
+        { name: 'bitgoToBackupPublicShare', value: bitgoToBackupPublicU },
       ]
     );
 
