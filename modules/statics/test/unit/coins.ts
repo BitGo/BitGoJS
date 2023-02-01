@@ -11,6 +11,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   avaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  avaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   btc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
@@ -48,6 +49,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   tavaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  tavaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   tbtc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
@@ -126,11 +128,7 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_TRUST ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
       });
-    } else if (
-      coin.family === CoinFamily.XTZ ||
-      coin.family === CoinFamily.AVAXP ||
-      coin.features.includes(CoinFeature.GENERIC_TOKEN)
-    ) {
+    } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
