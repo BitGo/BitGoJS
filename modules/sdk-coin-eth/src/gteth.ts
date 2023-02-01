@@ -21,4 +21,8 @@ export class Gteth extends Eth {
   getFullName() {
     return 'Goerli Testnet Ethereum';
   }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
 }
