@@ -654,6 +654,7 @@ export default class Ecdsa {
         delete partialShareToBeSent.h1;
         delete partialShareToBeSent.h2;
         delete partialShareToBeSent.k;
+        delete partialShareToBeSent.proof;
       } else {
         Object.assign(shareToBeSent, {
           n: kShare.n,
