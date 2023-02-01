@@ -24,6 +24,11 @@ In this directory, you can find examples on how to use the BitGoJS SDK with Type
 * [Share Wallet](./ts/share-wallet.ts)
 * [Update Wallet Forwarders](./ts/update-wallet-forwarders.ts)
 
+### PSBTs (Partially Signed Bitcoin Transactions)
+* [Build a PSBT](./ts/psbts/build-psbt.ts)
+* [Create a PSBT from an unsigned transaction](./ts/psbts/create-psbt-from-tx.ts)
+* [Sign and extract a transaction using a PSBT](./ts/psbts/sign-and-extract-transaction.ts)
+
 ### Webhooks
 
 * [Webhooks - Add (Block)](./ts/webhooks-block-add.ts)
