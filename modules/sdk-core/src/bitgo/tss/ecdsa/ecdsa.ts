@@ -30,7 +30,7 @@ import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/type
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32, ecc } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
@@ -748,14 +748,19 @@ export async function verifyWalletSignature(params: {
   commonKeychain: string;
   userKeyId: string;
   backupKeyId: string;
-  publicShare: string;
+  decryptedShare: string;
   verifierIndex: 1 | 2;
 }): Promise<void> {
   const rawNotations = await commonVerifyWalletSignature(params);
-  const publicShareRawNotationIndex = 2 + params.verifierIndex;
+  const publicUValueRawNotationIndex = 2 + params.verifierIndex;
 
+  // Derive public form of u-value
+  const publicUValue = ecc.pointFromScalar(Buffer.from(params.decryptedShare.slice(0, 64), 'hex'), false);
+  // Verify that the u value + chaincode is equal to the proof retrieved from the raw notations
   assert(
-    params.publicShare === Buffer.from(rawNotations[publicShareRawNotationIndex].value).toString(),
+    publicUValue !== null &&
+      publicUValue.toString() + params.decryptedShare.slice(64) ===
+        Buffer.from(rawNotations[publicUValueRawNotationIndex].value).toString(),
     'bitgo share mismatch'
   );
 }

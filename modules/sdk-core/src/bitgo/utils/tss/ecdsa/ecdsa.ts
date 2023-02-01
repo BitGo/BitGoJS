@@ -518,15 +518,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error(`Missing BitGo to ${recipient} key share`);
     }
 
-    // TODO (BG-67087) : fix verifyWalletSignatures
-    // await this.verifyWalletSignatures(
-    //   userGpgKey.publicKey,
-    //   backupGpgKey.publicKey,
-    //   userLocalBackupGpgKey.publicKey,
-    //   bitgoKeychain,
-    //   bitGoToRecipientShare.publicShare,
-    //   recipientIndex
-    // );
+    const decryptedShare = await this.decryptPrivateShare(bitGoToRecipientShare.privateShare, recipientGpgKey);
+
+    await this.verifyWalletSignatures(
+      userGpgKey.publicKey,
+      userLocalBackupGpgKey.publicKey,
+      bitgoKeychain,
+      decryptedShare,
+      recipientIndex
+    );
 
     const senderToRecipientShare = await encryptNShare(
       otherShare,
@@ -727,16 +727,16 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   /**
    * Verifies the u-value proofs and GPG keys used in generating a TSS ECDSA wallet.
    * @param userGpgPub The user's public GPG key for encryption between user/server
-   * @param backupGpgPub The user's public GPG key for encryption between backup/server
+   * @param backupGpgPub The backup's public GPG key for encryption between backup/server
    * @param bitgoKeychain previously created BitGo keychain; must be compatible with user and backup key shares
-   * @param publicShare The bitgo-to-user/backup public share retrieved from the keychain
+   * @param decryptedShare The decrypted bitgo-to-user/backup private share retrieved from the keychain
    * @param verifierIndex The index of the party to verify: 1 = user, 2 = backup
    */
   async verifyWalletSignatures(
     userGpgPub: string,
     backupGpgPub: string,
     bitgoKeychain: Keychain,
-    publicShare: string,
+    decryptedShare: string,
     verifierIndex: 1 | 2
   ): Promise<void> {
     assert(bitgoKeychain.commonKeychain);
@@ -765,7 +765,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userKeyId,
       backupKeyId,
       bitgoPub: bitgoGpgKey,
-      publicShare,
+      decryptedShare,
       verifierIndex,
     });
 
@@ -775,7 +775,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userKeyId,
       backupKeyId,
       bitgoPub: bitgoGpgKey,
-      publicShare,
+      decryptedShare,
       verifierIndex,
     });
   }
