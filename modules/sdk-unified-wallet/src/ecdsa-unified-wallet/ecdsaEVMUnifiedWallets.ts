@@ -16,7 +16,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
   }
 
   /** @inheritDoc */
-  async generateUnifiedWallet(params: GenerateUnifiedWalletOptions, coins = supportedCoins): Promise<UnifiedWallet> {
+  async generateUnifiedWallet(params: GenerateUnifiedWalletOptions): Promise<UnifiedWallet> {
     if (typeof params.label !== 'string') {
       throw new Error('missing required string parameter label');
     }
@@ -43,7 +43,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     const walletIDs: UnifiedWalletID[] = [];
     let walletData;
 
-    for (const coin of coins) {
+    for (const coin of supportedCoins) {
       walletData = await this.generateCoinWalletData(coin, walletParams, keychainsTriplet);
       const evmID: UnifiedWalletID = {
         coin,

@@ -6,7 +6,8 @@ import { bitgoKeyChain, backupKeychain, userKeyChain } from '../fixtures/ecdsaUn
 import * as sinon from 'sinon';
 import nock = require('nock');
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Teth } from '@bitgo/sdk-coin-eth';
+import { Eth } from '@bitgo/sdk-coin-eth';
+import { Polygon } from '@bitgo/sdk-coin-polygon';
 
 describe('EVM Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -15,9 +16,10 @@ describe('EVM Wallets:', function () {
   let sandbox: sinon.SinonSandbox;
 
   before(function () {
-    bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('eth', Eth.createInstance);
+    bitgo.safeRegister('polygon', Polygon.createInstance);
     bitgo.initializeTestVars();
-    evmWallets = new EcdsaEVMUnifiedWallets(bitgo, 'teth');
+    evmWallets = new EcdsaEVMUnifiedWallets(bitgo, 'eth');
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     nock.cleanAll();
   });
@@ -69,9 +71,11 @@ describe('EVM Wallets:', function () {
           },
         ],
       });
-      const tethWalletId = '123-teth';
-      const tethAddress = 'bitgo, california';
-      const tethWalletData = { id: tethWalletId, receiveAddress: { address: tethAddress } };
+      const ethWalletId = '123-eth';
+      const polygonWalletId = '456-polygon';
+      const ethAddress = 'bitgo, california';
+      const ethWalletData = { id: ethWalletId, receiveAddress: { address: ethAddress } };
+      const polygonWalletData = { id: polygonWalletId, receiveAddress: { address: ethAddress } };
       const bitgoGPGPublicKeyResponse: BitgoGPGPublicKey = {
         name: 'irrelevant',
         publicKey: bitgoGpgKeyPair.publicKey,
@@ -79,14 +83,19 @@ describe('EVM Wallets:', function () {
       };
       const expected: UnifiedWallet = {
         id: 'great unified wallet',
-        wallets: [{ coinName: 'teth', walletId: tethWalletId, address: tethAddress }],
-        curve: 'Ecdsa',
+        wallets: [
+          { coin: 'eth', walletId: ethWalletId, address: ethAddress },
+          { coin: 'polygon', walletId: polygonWalletId, address: ethAddress },
+        ],
+        curve: 'ecdsa',
+        keys: [],
       };
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBitgoKeychain').resolves(bitgoKeyChain);
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBackupKeychain').resolves(backupKeychain);
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createUserKeychain').resolves(userKeyChain);
-      nock(bgUrl).get(`/api/v2/teth/tss/pubkey`).reply(200, bitgoGPGPublicKeyResponse);
-      nock(bgUrl).post('/api/v2/teth/wallet').reply(200, tethWalletData);
+      nock(bgUrl).get(`/api/v2/eth/tss/pubkey`).reply(200, bitgoGPGPublicKeyResponse);
+      nock(bgUrl).post('/api/v2/eth/wallet').reply(200, ethWalletData);
+      nock(bgUrl).post('/api/v2/polygon/wallet').reply(200, polygonWalletData);
       nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
       params = {
         label: 'test123',
@@ -94,7 +103,7 @@ describe('EVM Wallets:', function () {
         walletVersion: 3,
         passphrase: 'test123',
       };
-      const result = await evmWallets.generateUnifiedWallet(params as GenerateUnifiedWalletOptions, ['teth']);
+      const result = await evmWallets.generateUnifiedWallet(params as GenerateUnifiedWalletOptions);
       result.should.deepEqual(expected);
     });
   });
