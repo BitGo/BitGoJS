@@ -711,6 +711,7 @@ describe('TSS Utils:', async function () {
           vssProof: params.bitgoKeyShare.yShares[2].v,
         },
       ],
+      type: 'tss',
     };
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
@@ -762,6 +763,7 @@ describe('TSS Utils:', async function () {
     const userKeychain: Keychain = {
       id: '1',
       pub: '',
+      type: 'tss',
     };
 
     nock('https://bitgo.fakeurl')
@@ -777,6 +779,7 @@ describe('TSS Utils:', async function () {
     const backupKeychain: Keychain = {
       id: '2',
       pub: '',
+      type: 'tss',
     };
 
     nock('https://bitgo.fakeurl')

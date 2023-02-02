@@ -6,6 +6,7 @@ import fixtures from '../../fixtures/staking/stakingWallet';
 import {
   Enterprise,
   Environments,
+  Keychain,
   Keychains,
   StakingWallet,
   TssUtils,
@@ -78,9 +79,10 @@ describe('TSS Staking Wallet', function () {
       deleteSignatureShares.calledOnceWithExactly(transaction.id);
 
       const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
-      const keyChain = {
+      const keyChain: Keychain = {
         id: 'id',
         pub: 'pub',
+        type: 'tss',
       };
       getKeysForSigning.resolves([keyChain]);
       getKeysForSigning.calledOnce;
@@ -116,9 +118,10 @@ describe('TSS Staking Wallet', function () {
       deleteSignatureShares.calledOnceWithExactly(transaction.id);
 
       const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
-      const keyChain = {
+      const keyChain: Keychain = {
         id: 'id',
         pub: 'pub',
+        type: 'tss',
       };
       getKeysForSigning.resolves([keyChain]);
       getKeysForSigning.calledOnce;

@@ -4,7 +4,7 @@
 
 import 'should';
 import * as nock from 'nock';
-import { BlsUtils, common, TssUtils, Wallets, ECDSAUtils } from '@bitgo/sdk-core';
+import { BlsUtils, common, TssUtils, Wallets, ECDSAUtils, KeychainsTriplet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
@@ -359,18 +359,21 @@ describe('V2 Wallets:', function () {
 
     it('should create a new TSS wallet', async function () {
       const sandbox = sinon.createSandbox();
-      const stubbedKeychainsTriplet = {
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
           id: '1',
           pub: 'userPub',
+          type: 'independent',
         },
         backupKeychain: {
           id: '2',
           pub: 'userPub',
+          type: 'independent',
         },
         bitgoKeychain: {
           id: '3',
           pub: 'userPub',
+          type: 'independent',
         },
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
@@ -396,18 +399,21 @@ describe('V2 Wallets:', function () {
     it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
       const tpolygon = bitgo.coin('tpolygon');
       const sandbox = sinon.createSandbox();
-      const stubbedKeychainsTriplet = {
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
           id: '1',
           pub: 'userPub',
+          type: 'independent',
         },
         backupKeychain: {
           id: '2',
           pub: 'userPub',
+          type: 'independent',
         },
         bitgoKeychain: {
           id: '3',
           pub: 'userPub',
+          type: 'independent',
         },
       };
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
@@ -469,18 +475,21 @@ describe('V2 Wallets:', function () {
     const eth2 = bitgo.coin('eth2');
 
     it('should create a new BLS-DKG wallet', async function () {
-      const stubbedKeychainsTriplet = {
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
           id: '1',
           pub: 'userPub',
+          type: 'independent',
         },
         backupKeychain: {
           id: '2',
           pub: 'userPub',
+          type: 'independent',
         },
         bitgoKeychain: {
           id: '3',
           pub: 'userPub',
+          type: 'independent',
         },
       };
       sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);

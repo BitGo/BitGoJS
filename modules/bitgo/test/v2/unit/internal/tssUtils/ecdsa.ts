@@ -142,8 +142,8 @@ describe('TSS Ecdsa Utils:', async function () {
         userLocalBackupGpgKey,
         bitgoGpgKey: bitGoGPGKeyPair,
       }),
-      nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '' }, source: 'user' }),
-      nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '' }, source: 'backup' }),
+      nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '', type: 'tss' }, source: 'user' }),
+      nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '', type: 'tss' }, source: 'backup' }),
     ];
     [nockedBitGoKeychain, nockedUserKeychain] = await Promise.all(nockPromises);
 
@@ -919,6 +919,7 @@ describe('TSS Ecdsa Utils:', async function () {
           vssProof: backupToBitgoShare.vssProof,
         },
       ],
+      type: 'tss',
     };
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
