@@ -287,7 +287,10 @@ export type backupGpgKey = SerializedKeyPair<string> | Key;
  * util functions
  */
 export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
-  createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare>;
+  createBitgoHeldBackupKeyShare(
+    userGpgKey: SerializedKeyPair<string>,
+    enterprise: string | undefined
+  ): Promise<BitgoHeldBackupKeyShare>;
   finalizeBitgoHeldBackupKeyShare(
     keyId: string,
     commonKeychain: string,

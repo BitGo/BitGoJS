@@ -130,7 +130,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userKeyShare = await MPC.keyShare(1, m, n);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const isThirdPartyBackup = this.isValidThirdPartyBackupProvider(params.backupProvider);
-    const backupKeyShare = await this.createBackupKeyShares(isThirdPartyBackup, userGpgKey);
+    const backupKeyShare = await this.createBackupKeyShares(isThirdPartyBackup, userGpgKey, params.enterprise);
     const backupGpgKey = await this.getBackupGpgPubKey(isThirdPartyBackup);
 
     // Get the BitGo public key based on user/enterprise feature flags
@@ -184,11 +184,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    */
   async createBackupKeyShares(
     isThirdPartyBackup = false,
-    userGpgPubKey: SerializedKeyPair<string>
+    userGpgPubKey: SerializedKeyPair<string>,
+    enterprise: string | undefined
   ): Promise<BackupKeyShare> {
     let backupKeyShare: BackupKeyShare;
     if (isThirdPartyBackup) {
-      const bitgoHeldBackupKeyShares = await this.createBitgoHeldBackupKeyShare(userGpgPubKey);
+      const bitgoHeldBackupKeyShares = await this.createBitgoHeldBackupKeyShare(userGpgPubKey, enterprise);
       backupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupKeyShares,
       };
