@@ -160,7 +160,7 @@ export interface WalletSignMessageOptions extends WalletSignBaseOptions {
   custodianMessageId?: string;
 }
 
-export interface WalletSignTypedDataOptions extends WalletSignMessageOptions {
+export interface WalletSignTypedDataOptions extends WalletSignBaseOptions {
   typedData: TypedData;
   custodianMessageId?: string;
 }

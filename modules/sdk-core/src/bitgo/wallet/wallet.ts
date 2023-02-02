@@ -1609,6 +1609,9 @@ export class Wallet implements IWallet {
     if (this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
     }
+    if (_.isFunction(params.typedData.typedDataRaw)) {
+      throw new Error('typedData.typedDataRaw must be JSON string');
+    }
     if (_.isFunction((this.baseCoin as any).encodeTypedData)) {
       params.typedData.typedDataEncoded = (this.baseCoin as any).encodeTypedData(params.typedData);
     }
@@ -2848,7 +2851,7 @@ export class Wallet implements IWallet {
           reqId: params.reqId,
           intentType: 'signTypedStructuredData',
           isTss: true,
-          typedDataRaw: JSON.stringify(params.typedData.typedDataRaw),
+          typedDataRaw: params.typedData.typedDataRaw,
           typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
