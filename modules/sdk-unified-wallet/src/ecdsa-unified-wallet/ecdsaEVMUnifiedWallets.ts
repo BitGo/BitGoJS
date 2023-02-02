@@ -9,7 +9,7 @@ import { UnifiedWalletID, UnifiedWallet, GenerateUnifiedWalletOptions } from '..
 import { supportedCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
-export class EcdsaUnifiedWallets extends UnifiedWallets {
+export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
   constructor(bitgo: BitGoBase, coinName = 'eth') {
     super(bitgo, coinName);
     this.urlPath = '/wallet/evm';

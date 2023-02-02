@@ -1,5 +1,5 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { EcdsaUnifiedWallets, GenerateUnifiedWalletOptions, UnifiedWallet } from '../../src';
+import { EcdsaEVMUnifiedWallets, GenerateUnifiedWalletOptions, UnifiedWallet } from '../../src';
 import { BitgoGPGPublicKey, common, ECDSAUtils } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import { bitgoKeyChain, backupKeychain, userKeyChain } from '../fixtures/ecdsaUnifiedWalletFixtures';
@@ -10,14 +10,14 @@ import { Teth } from '@bitgo/sdk-coin-eth';
 
 describe('EVM Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-  let evmWallets: EcdsaUnifiedWallets;
+  let evmWallets: EcdsaEVMUnifiedWallets;
   let bgUrl: string;
   let sandbox: sinon.SinonSandbox;
 
   before(function () {
     bitgo.safeRegister('teth', Teth.createInstance);
     bitgo.initializeTestVars();
-    evmWallets = new EcdsaUnifiedWallets(bitgo, 'teth');
+    evmWallets = new EcdsaEVMUnifiedWallets(bitgo, 'teth');
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     nock.cleanAll();
   });
