@@ -236,7 +236,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this.forwarderVersion(1);
           this.baseAddress(baseAddress);
           this.salt(addressCreationSalt);
-          this.initCode((this._coinConfig.network as EthereumNetwork).forwarderImplementationAddress as string);
+          const forwarderImplementationAddress = (this._coinConfig.network as EthereumNetwork)
+            .forwarderImplementationAddress as string;
+          if (forwarderImplementationAddress) {
+            this.initCode(forwarderImplementationAddress);
+          }
         }
         break;
       case TransactionType.SingleSigSend:
