@@ -204,6 +204,11 @@ export class Wallets implements IWallets {
         throw new Error('invalid enterprise argument, expecting string');
       }
       walletParams.enterprise = params.enterprise;
+    } else {
+      // enterprise not defined
+      if (params.multisigType === 'tss' && params.backupProvider === 'BitGoTrustAsKrs') {
+        throw new Error('The enterprise id is required when creating TSS wallet with BitGo Trust as KRS.');
+      }
     }
 
     // EVM TSS wallets must use wallet version 3

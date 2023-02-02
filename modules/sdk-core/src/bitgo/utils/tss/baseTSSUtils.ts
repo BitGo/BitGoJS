@@ -45,10 +45,14 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     return this._wallet;
   }
 
-  async createBitgoHeldBackupKeyShare(userGpgKey: SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
+  async createBitgoHeldBackupKeyShare(
+    userGpgKey: SerializedKeyPair<string>,
+    enterprise: string | undefined
+  ): Promise<BitgoHeldBackupKeyShare> {
     const keyResponse = await this.bitgo
       .post(this.baseCoin.url('/krs/backupkeys'))
       .send({
+        enterprise,
         userGPGPublicKey: userGpgKey.publicKey,
       })
       .result();
