@@ -26,9 +26,9 @@ describe('Abstract UTXO Coin:', () => {
     const verification: VerificationOptions = {
       disableNetworking: true,
       keychains: {
-        user: { id: '0', pub: 'aaa' },
-        backup: { id: '1', pub: 'bbb' },
-        bitgo: { id: '2', pub: 'ccc' },
+        user: { id: '0', pub: 'aaa', type: 'independent' },
+        backup: { id: '1', pub: 'bbb', type: 'independent' },
+        bitgo: { id: '2', pub: 'ccc', type: 'independent' },
       },
     };
 

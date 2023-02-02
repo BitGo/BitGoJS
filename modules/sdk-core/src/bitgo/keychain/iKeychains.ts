@@ -16,6 +16,7 @@ export interface Keychain {
   commonKeychain?: string;
   keyShares?: ApiKeyShare[];
   walletHSMGPGPublicKeySigs?: string;
+  type: KeyType;
 }
 
 export interface ChangedKeychains {

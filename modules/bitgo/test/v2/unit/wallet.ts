@@ -24,6 +24,7 @@ import {
   TypedMessage,
   MessageTypes,
   SignTypedDataVersion,
+  GetUserPrvOptions,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -278,25 +279,27 @@ describe('V2 Wallet:', function () {
     });
 
     it('should use the user keychain derivedFromParentWithSeed as the cold derivation seed if none is provided', async () => {
-      const userPrvOptions = {
+      const userPrvOptions: GetUserPrvOptions = {
         prv,
         keychain: {
           derivedFromParentWithSeed: '123',
           id: '456',
           pub: '789',
+          type: 'independent',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
     });
 
     it('should prefer the explicit cold derivation seed to the user keychain derivedFromParentWithSeed', async () => {
-      const userPrvOptions = {
+      const userPrvOptions: GetUserPrvOptions = {
         prv,
         coldDerivationSeed: '123',
         keychain: {
           derivedFromParentWithSeed: '456',
           id: '789',
           pub: '012',
+          type: 'independent',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
@@ -2194,7 +2197,7 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
-        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '' }]);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
         sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 
@@ -2339,7 +2342,7 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForTypedDataSigning);
-        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '' }]);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
         sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 

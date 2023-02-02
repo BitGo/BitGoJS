@@ -306,6 +306,7 @@ describe('BLS Utils:', async function () {
           privateShare: encryptedBitgoToBackupMessage.toString(),
         },
       ],
+      type: 'blsdkg',
     };
 
     nock(bgUrl)
@@ -321,6 +322,7 @@ describe('BLS Utils:', async function () {
     const userKeychain: Keychain = {
       id: '1',
       pub: '',
+      type: 'blsdkg',
     };
 
     nock('https://bitgo.fakeurl')
@@ -336,6 +338,7 @@ describe('BLS Utils:', async function () {
     const backupKeychain: Keychain = {
       id: '2',
       pub: '',
+      type: 'blsdkg',
     };
 
     nock('https://bitgo.fakeurl')

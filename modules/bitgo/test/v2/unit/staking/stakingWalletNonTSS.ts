@@ -6,6 +6,7 @@ import fixtures from '../../fixtures/staking/stakingWallet';
 import {
   Enterprise,
   Environments,
+  Keychain,
   Keychains,
   StakingWallet,
   Wallet,
@@ -81,9 +82,10 @@ describe('non-TSS Staking Wallet', function () {
 
       // SIGN
       const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
-      const keyChain = {
+      const keyChain: Keychain = {
         id: 'id',
         pub: 'pub',
+        type: 'independent',
       };
       getKeysForSigning.resolves([keyChain]);
       getKeysForSigning.calledOnce;
@@ -160,9 +162,10 @@ describe('non-TSS Staking Wallet', function () {
 
       // SIGN
       const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
-      const keyChain = {
+      const keyChain: Keychain = {
         id: 'id',
         pub: 'pub',
+        type: 'independent',
       };
       getKeysForSigning.resolves([keyChain]);
       getKeysForSigning.calledOnce;

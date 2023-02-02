@@ -8,7 +8,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { BlsUtils, common, ECDSAUtils, EDDSAUtils } from '@bitgo/sdk-core';
+import { BlsUtils, common, ECDSAUtils, EDDSAUtils, KeychainsTriplet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
@@ -298,18 +298,21 @@ describe('V2 Keychains', function () {
 
     describe('Create BLS-DKG Keychains', function() {
       it('should create BLS-DKG Keychains', async function () {
-        const stubbedKeychainsTriplet = {
+        const stubbedKeychainsTriplet: KeychainsTriplet = {
           userKeychain: {
             id: '1',
             pub: 'userPub',
+            type: 'independent',
           },
           backupKeychain: {
             id: '2',
             pub: 'userPub',
+            type: 'independent',
           },
           bitgoKeychain: {
             id: '3',
             pub: 'userPub',
+            type: 'independent',
           },
         };
         sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
