@@ -21,7 +21,8 @@ import {
   RequestTracer,
   BitgoHeldBackupKeyShare,
   BackupKeyShare,
-  BitgoGPGPublicKey, backupGpgKey,
+  BitgoGPGPublicKey,
+  BackupGpgKey,
 } from '@bitgo/sdk-core';
 import { keyShares, mockAShare, mockDShare, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
@@ -243,7 +244,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const backupGpgKey: backupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
+      const backupGpgKey: BackupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
         backupGpgKey,
@@ -307,7 +308,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupShares,
       };
-      const backupGpgKey: backupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
+      const backupGpgKey: BackupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
 
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
@@ -355,7 +356,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const backupGpgKey: backupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
+      const backupGpgKey: BackupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
         backupGpgKey,
@@ -403,7 +404,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      const backupGpgKey: backupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
+      const backupGpgKey: BackupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,
         backupGpgKey,
@@ -485,7 +486,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolder: BackupKeyShare = {
         userHeldKeyShare: customBackupKeyShare,
       };
-      const backupGpgKey: backupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
+      const backupGpgKey: BackupGpgKey = isThirdPartyBackup ? thirdPartyBackupPublicGpgKey : userLocalBackupGpgKey;
 
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
         userGpgKey,

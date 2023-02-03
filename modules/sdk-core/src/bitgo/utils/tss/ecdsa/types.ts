@@ -1,6 +1,6 @@
 import { ECDSA } from '../../../../account-lib/mpc/tss';
 import { ECDSAMethodTypes } from '../../../tss/ecdsa';
-import { BackupKeyShare, CreateKeychainParamsBase, backupGpgKey } from '../baseTypes';
+import { BackupKeyShare, CreateKeychainParamsBase, BackupGpgKey } from '../baseTypes';
 import { Key } from 'openpgp';
 import { BackupProvider } from '../../../wallet';
 
@@ -13,7 +13,7 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
   isThirdPartyBackup?: boolean;
   backupProvider?: BackupProvider;
   bitgoPublicGpgKey: Key;
-  backupGpgKey: backupGpgKey;
+  backupGpgKey: BackupGpgKey;
 };
 
 export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;
