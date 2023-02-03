@@ -755,12 +755,12 @@ export async function verifyWalletSignature(params: {
   const publicUValueRawNotationIndex = 2 + params.verifierIndex;
 
   // Derive public form of u-value
-  const publicUValue = ecc.pointFromScalar(Buffer.from(params.decryptedShare.slice(0, 64), 'hex'), false);
+  const publicUValue = ecc.pointFromScalar(Buffer.from(params.decryptedShare.slice(0, 64), 'hex'), true);
+  assert(publicUValue !== null, 'null public u-value');
   // Verify that the u value + chaincode is equal to the proof retrieved from the raw notations
   assert(
-    publicUValue !== null &&
-      publicUValue.toString() + params.decryptedShare.slice(64) ===
-        Buffer.from(rawNotations[publicUValueRawNotationIndex].value).toString(),
+    Buffer.from(publicUValue).toString('hex') + params.decryptedShare.slice(64) ===
+      Buffer.from(rawNotations[publicUValueRawNotationIndex].value).toString(),
     'bitgo share mismatch'
   );
 }
