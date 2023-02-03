@@ -52,7 +52,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
       };
       walletIDs.push(evmID);
     }
-    return await this.createSingleCoinWallet({
+    return await this.createUnifiedWallet({
       wallets: walletIDs,
       curve: 'ecdsa',
       keys: [keychainsTriplet.userKeychain.id, keychainsTriplet.bitgoKeychain.id, keychainsTriplet.backupKeychain.id],

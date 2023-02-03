@@ -44,7 +44,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @param params
    * @private
    */
-  protected async createSingleCoinWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
+  protected async createUnifiedWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
     assert(this.urlPath, 'urlPath must be initialized');
     return this.bitgo.post(this.bitgo.url(this.urlPath, 2)).send(params).result();
   }
