@@ -62,6 +62,9 @@ export { Stx };
 import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
 export { Algo };
 
+import * as Atom from '@bitgo/sdk-coin-atom';
+export { Atom };
+
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
 
@@ -120,6 +123,8 @@ const coinBuilderMap = {
   tpolygon: Polygon.TransactionBuilder,
   sui: Sui.TransactionBuilderFactory,
   tsui: Sui.TransactionBuilderFactory,
+  atom: Atom.TransactionBuilderFactory,
+  tatom: Atom.TransactionBuilderFactory,
 };
 
 /**
