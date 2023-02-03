@@ -518,6 +518,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
   /**
    * Gets signing key, txRequestResolved and txRequestId
+   * RangeProof and uSig enforced
    * @param {string | TxRequest} params.txRequest - transaction request object or id
    * @param {string} params.prv - decrypted private key
    * @param { string} params.reqId - request id
@@ -578,6 +579,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       encryptionKeys: [bitgoGpgKey],
     })) as string;
 
+    // signing stage one with K share send to bitgo and receives A share
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
@@ -595,6 +597,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     const muShare = userGammaAndMuShares.muShare!;
     const dShare = userOmicronAndDeltaShare.dShare;
+    // signing stage two with muShare and dShare send to bitgo and receives D share
     const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
@@ -627,6 +630,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload
     );
 
+    // signing stage three with SShare send to bitgo and receives SShare
     await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),

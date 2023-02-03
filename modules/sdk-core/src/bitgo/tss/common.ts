@@ -62,13 +62,17 @@ export async function sendSignatureShare(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
-  return bitgo
-    .post(bitgo.url(urlPath, 2))
-    .send({
-      signatureShare,
-      signerShare,
-    })
-    .result();
+  try {
+    return bitgo
+      .post(bitgo.url(urlPath, 2))
+      .send({
+        signatureShare,
+        signerShare,
+      })
+      .result();
+  } catch (e) {
+    throw new Error('Invalid request. ' + e);
+  }
 }
 
 /**
