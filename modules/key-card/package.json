@@ -31,5 +31,10 @@
     "extension": [
       ".ts"
     ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-api": "^1.9.7",
+    "@bitgo/sdk-core": "^5.2.0",
+    "@bitgo/statics": "^14.1.0"
   }
 }

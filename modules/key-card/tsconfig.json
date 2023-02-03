@@ -5,5 +5,16 @@
     "rootDir": "./"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    }
+  ]
 }
