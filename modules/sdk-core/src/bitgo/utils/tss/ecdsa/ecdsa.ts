@@ -8,7 +8,7 @@ import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { CreateEcdsaBitGoKeychainParams, CreateEcdsaKeychainParams, DecryptableNShare, KeyShare } from './types';
 import {
-  backupGpgKey,
+  BackupGpgKey,
   BackupKeyShare,
   BitgoHeldBackupKeyShare,
   RequestType,
@@ -209,7 +209,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * if a third party provided then get from trust
    * @param isThirdPartyBackup
    */
-  async getBackupGpgPubKey(isThirdPartyBackup = false): Promise<backupGpgKey> {
+  async getBackupGpgPubKey(isThirdPartyBackup = false): Promise<BackupGpgKey> {
     return isThirdPartyBackup ? getTrustGpgPubKey(this.bitgo) : generateGPGKeyPair('secp256k1');
   }
 
