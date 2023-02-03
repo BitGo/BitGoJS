@@ -44,7 +44,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @param params
    * @private
    */
-  protected async createSingleCoinWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
+  protected async createUnifiedWallet(params: UnifiedWalletParams): Promise<UnifiedWallet> {
     assert(this.urlPath, 'urlPath must be initialized');
     return this.bitgo.post(this.bitgo.url(this.urlPath, 2)).send(params).result();
   }
@@ -66,5 +66,18 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     const finalWalletParams = await coin.supplementGenerateWallet(walletParams, keychainsTriplet);
     const newWallet = await this.bitgo.post(coin.url('/wallet')).send(finalWalletParams).result();
     return newWallet;
+  }
+
+  async getUnifiedWalletById(id: string): Promise<UnifiedWallet> {
+    const newWallet = await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).query({ id }).result();
+    return newWallet;
+  }
+
+  async getUnifiedWalletByAddress(address: string): Promise<UnifiedWallet> {
+    return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).query({ address }).result();
+  }
+
+  async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
+    return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).result();
   }
 }

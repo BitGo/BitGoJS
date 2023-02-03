@@ -14,6 +14,18 @@ describe('EVM Wallets:', function () {
   let evmWallets: EcdsaEVMUnifiedWallets;
   let bgUrl: string;
   let sandbox: sinon.SinonSandbox;
+  const ethWalletId = '123-eth';
+  const polygonWalletId = '456-polygon';
+  const ethAddress = 'bitgo, california';
+  const expected: UnifiedWallet = {
+    id: 'great unified wallet',
+    wallets: [
+      { coin: 'eth', walletId: ethWalletId, address: ethAddress },
+      { coin: 'polygon', walletId: polygonWalletId, address: ethAddress },
+    ],
+    curve: 'ecdsa',
+    keys: [],
+  };
 
   before(function () {
     bitgo.safeRegister('eth', Eth.createInstance);
@@ -71,24 +83,12 @@ describe('EVM Wallets:', function () {
           },
         ],
       });
-      const ethWalletId = '123-eth';
-      const polygonWalletId = '456-polygon';
-      const ethAddress = 'bitgo, california';
       const ethWalletData = { id: ethWalletId, receiveAddress: { address: ethAddress } };
       const polygonWalletData = { id: polygonWalletId, receiveAddress: { address: ethAddress } };
       const bitgoGPGPublicKeyResponse: BitgoGPGPublicKey = {
         name: 'irrelevant',
         publicKey: bitgoGpgKeyPair.publicKey,
         enterpriseId,
-      };
-      const expected: UnifiedWallet = {
-        id: 'great unified wallet',
-        wallets: [
-          { coin: 'eth', walletId: ethWalletId, address: ethAddress },
-          { coin: 'polygon', walletId: polygonWalletId, address: ethAddress },
-        ],
-        curve: 'ecdsa',
-        keys: [],
       };
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBitgoKeychain').resolves(bitgoKeyChain);
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBackupKeychain').resolves(backupKeychain);
@@ -105,6 +105,28 @@ describe('EVM Wallets:', function () {
       };
       const result = await evmWallets.generateUnifiedWallet(params as GenerateUnifiedWalletOptions);
       result.should.deepEqual(expected);
+    });
+  });
+
+  describe('Unified Wallet functions', function () {
+    it('should get unified wallet by id', async function () {
+      const id = '123';
+      nock(bgUrl).get('/api/v2/wallet/evm').query({ id }).reply(200, expected);
+      const result = await evmWallets.getUnifiedWalletById(id);
+      result.should.deepEqual(expected);
+    });
+
+    it('should get unified wallet by address', async function () {
+      const address = '0x0';
+      nock(bgUrl).get('/api/v2/wallet/evm').query({ address }).reply(200, expected);
+      const result = await evmWallets.getUnifiedWalletByAddress(address);
+      result.should.deepEqual(expected);
+    });
+
+    it('should get all unified wallets', async function () {
+      nock(bgUrl).get('/api/v2/wallet/evm').reply(200, [expected]);
+      const result = await evmWallets.getAllUnifiedWallets();
+      result.should.deepEqual([expected]);
     });
   });
 });
