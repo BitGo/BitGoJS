@@ -37,6 +37,9 @@
       "path": "../bitgo"
     },
     {
+      "path": "../key-card"
+    },
+    {
       "path": "../sdk-api"
     },
     {

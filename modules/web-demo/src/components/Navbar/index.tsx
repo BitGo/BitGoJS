@@ -32,6 +32,12 @@ const Navbar = () => {
       >
         Coins
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/keycard'}
+        onClick={() => navigate('/keycard')}
+      >
+        Key Card
+      </NavItem>
     </NavbarContainer>
   );
 };
