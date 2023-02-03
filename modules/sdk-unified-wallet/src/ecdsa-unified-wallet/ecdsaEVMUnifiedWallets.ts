@@ -1,12 +1,18 @@
-import { GenerateWalletOptions, BitGoBase, KeychainsTriplet, SupplementGenerateWalletOptions } from '@bitgo/sdk-core';
-import { UnifiedWalletKeychains } from '../unifiedWalletKeychains';
+import {
+  GenerateWalletOptions,
+  BitGoBase,
+  KeychainsTriplet,
+  SupplementGenerateWalletOptions,
+  Keychains,
+} from '@bitgo/sdk-core';
 import { UnifiedWalletID, UnifiedWallet, GenerateUnifiedWalletOptions } from '../types';
 import { supportedCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
-export class EcdsaUnifiedWallets extends UnifiedWallets {
-  constructor(bitgo: BitGoBase) {
-    super(bitgo);
+export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
+  constructor(bitgo: BitGoBase, coinName = 'eth') {
+    super(bitgo, coinName);
+    this.urlPath = '/wallet/evm';
   }
 
   /** @inheritDoc */
@@ -40,19 +46,23 @@ export class EcdsaUnifiedWallets extends UnifiedWallets {
     for (const coin of supportedCoins) {
       walletData = await this.generateCoinWalletData(coin, walletParams, keychainsTriplet);
       const evmID: UnifiedWalletID = {
-        coinName: coin,
+        coin,
         walletId: walletData.id,
         address: walletData.receiveAddress.address,
       };
       walletIDs.push(evmID);
     }
-    return await this.createUnifiedWallet({ wallets: walletIDs, curve: params.curve });
+    return await this.createSingleCoinWallet({
+      wallets: walletIDs,
+      curve: 'ecdsa',
+      keys: [keychainsTriplet.userKeychain.id, keychainsTriplet.bitgoKeychain.id, keychainsTriplet.backupKeychain.id],
+    });
   }
 
   /** @inheritDoc */
   async generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet> {
     // Create MPC Keychains
-    const evmWalletKeychains = new UnifiedWalletKeychains(this.bitgo);
+    const evmWalletKeychains = new Keychains(this.bitgo, this.coin);
     const keychainsTriplet = await evmWalletKeychains.createMpc({
       multisigType: 'tss',
       passphrase: params.passphrase,

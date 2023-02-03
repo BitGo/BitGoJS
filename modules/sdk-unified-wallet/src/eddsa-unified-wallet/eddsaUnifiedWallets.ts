@@ -3,8 +3,8 @@ import { BitGoBase, GenerateWalletOptions, KeychainsTriplet } from '@bitgo/sdk-c
 import { GenerateUnifiedWalletOptions, UnifiedWallet } from '../types';
 
 export class EddsaUnifiedWallets extends UnifiedWallets {
-  constructor(bitgo: BitGoBase) {
-    super(bitgo);
+  constructor(bitgo: BitGoBase, coinName: string) {
+    super(bitgo, coinName);
   }
 
   generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet> {
