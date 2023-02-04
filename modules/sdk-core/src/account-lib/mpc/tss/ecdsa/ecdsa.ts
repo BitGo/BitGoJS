@@ -356,6 +356,7 @@ export default class Ecdsa {
       const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
       const proof = rangeProof.prove(
         Ecdsa.curve,
+        3072,
         pk,
         {
           ntilde: hexToBigInt(ntildeb),
@@ -438,6 +439,7 @@ export default class Ecdsa {
         aShareToBeSent.gammaProof &&
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
+          3072,
           pka,
           {
             ntilde: ntildea,
@@ -469,6 +471,7 @@ export default class Ecdsa {
         aShareToBeSent.wProof &&
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
+          3072,
           pka,
           {
             ntilde: ntildea,
@@ -532,6 +535,7 @@ export default class Ecdsa {
         aShareToBeSent.proof &&
         !rangeProof.verify(
           Ecdsa.curve,
+          3072,
           pka,
           {
             ntilde: ntildeb,
@@ -567,6 +571,7 @@ export default class Ecdsa {
       if (ntildea) {
         proof = rangeProof.proveWithCheck(
           Ecdsa.curve,
+          3072,
           pka,
           {
             ntilde: ntildea,
@@ -612,6 +617,7 @@ export default class Ecdsa {
       if (ntildea) {
         proof = rangeProof.proveWithCheck(
           Ecdsa.curve,
+          3072,
           pka,
           {
             ntilde: ntildea,
