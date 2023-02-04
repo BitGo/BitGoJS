@@ -47,6 +47,7 @@ export function generateNTilde(bitlength: number): NTilde {
 /**
  * Generate a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
+ * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
  * @param {NTilde} ntilde The verifier's NTilde values.
  * @param {bigint} c The ciphertext.
@@ -54,7 +55,16 @@ export function generateNTilde(bitlength: number): NTilde {
  * @param {bigint} r The obfuscation value used to encrypt m.
  * @returns {RangeProof} The generated proof.
  */
-export function prove(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, c: bigint, m: bigint, r: bigint): RangeProof {
+export function prove(
+  curve: BaseCurve,
+  modulusBits: number,
+  pk: PublicKey,
+  ntilde: NTilde,
+  c: bigint,
+  m: bigint,
+  r: bigint
+): RangeProof {
+  const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
   const qntilde = q * ntilde.ntilde;
@@ -68,17 +78,17 @@ export function prove(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, c: bigint
   const w = (modPow(ntilde.h1, alpha, ntilde.ntilde) * modPow(ntilde.h2, gamma, ntilde.ntilde)) % ntilde.ntilde;
   const hash = createHash('sha256');
   hash.update('\x06\x00\x00\x00\x00\x00\x00\x00');
-  hash.update(bigIntToBufferBE(pk.n));
+  hash.update(bigIntToBufferBE(pk.n, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(pk.g));
+  hash.update(bigIntToBufferBE(pk.g, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c));
+  hash.update(bigIntToBufferBE(c, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(z));
+  hash.update(bigIntToBufferBE(z, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(u));
+  hash.update(bigIntToBufferBE(u, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(w));
+  hash.update(bigIntToBufferBE(w, modulusBytes));
   hash.update('$');
   const e = bigIntFromBufferBE(hash.digest()) % q;
   const s = (modPow(r, e, pk.n) * beta) % pk.n;
@@ -90,13 +100,22 @@ export function prove(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, c: bigint
 /**
  * Verify a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
+ * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
  * @param {NTilde} ntilde The verifier's NTilde values.
  * @param {RangeProof} proof The range proof.
  * @param {bigint} c The ciphertext.
  * @returns {boolean} True if verification succeeds.
  */
-export function verify(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, proof: RangeProof, c: bigint): boolean {
+export function verify(
+  curve: BaseCurve,
+  modulusBits: number,
+  pk: PublicKey,
+  ntilde: NTilde,
+  proof: RangeProof,
+  c: bigint
+): boolean {
+  const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
   if (proof.s1 == q3) {
@@ -104,17 +123,17 @@ export function verify(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, proof: R
   }
   const hash = createHash('sha256');
   hash.update('\x06\x00\x00\x00\x00\x00\x00\x00');
-  hash.update(bigIntToBufferBE(pk.n));
+  hash.update(bigIntToBufferBE(pk.n, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(pk.g));
+  hash.update(bigIntToBufferBE(pk.g, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c));
+  hash.update(bigIntToBufferBE(c, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.z));
+  hash.update(bigIntToBufferBE(proof.z, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.u));
+  hash.update(bigIntToBufferBE(proof.u, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.w));
+  hash.update(bigIntToBufferBE(proof.w, modulusBytes));
   hash.update('$');
   const e = bigIntFromBufferBE(hash.digest()) % q;
   let products: bigint;
@@ -135,6 +154,7 @@ export function verify(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, proof: R
 /**
  * Generate a zero-knowledge range proof that a homomorphically manipulated value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
+ * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
  * @param {NTilde} ntilde The verifier's NTilde values.
  * @param {bigint} c1 The original ciphertext.
@@ -147,6 +167,7 @@ export function verify(curve: BaseCurve, pk: PublicKey, ntilde: NTilde, proof: R
  */
 export function proveWithCheck(
   curve: BaseCurve,
+  modulusBits: number,
   pk: PublicKey,
   ntilde: NTilde,
   c1: bigint,
@@ -156,6 +177,7 @@ export function proveWithCheck(
   r: bigint,
   X: bigint
 ): RangeProofWithCheck {
+  const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
   const qntilde = q * ntilde.ntilde;
@@ -176,27 +198,27 @@ export function proveWithCheck(
   const w = (modPow(ntilde.h1, gamma, ntilde.ntilde) * modPow(ntilde.h2, tau, ntilde.ntilde)) % ntilde.ntilde;
   const hash = createHash('sha256');
   hash.update('\x0d\x00\x00\x00\x00\x00\x00\x00');
-  hash.update(bigIntToBufferBE(pk.n));
+  hash.update(bigIntToBufferBE(pk.n, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(pk.g));
+  hash.update(bigIntToBufferBE(pk.g, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(X));
+  hash.update(bigIntToBufferBE(X, 33));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c1));
+  hash.update(bigIntToBufferBE(c1, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c2));
+  hash.update(bigIntToBufferBE(c2, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(u));
+  hash.update(bigIntToBufferBE(u, 33));
   hash.update('$');
-  hash.update(bigIntToBufferBE(z));
+  hash.update(bigIntToBufferBE(z, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(zprm));
+  hash.update(bigIntToBufferBE(zprm, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(t));
+  hash.update(bigIntToBufferBE(t, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(v));
+  hash.update(bigIntToBufferBE(v, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(w));
+  hash.update(bigIntToBufferBE(w, modulusBytes));
   hash.update('$');
   const e = bigIntFromBufferBE(hash.digest()) % q;
   const s = (modPow(r, e, pk.n) * beta) % pk.n;
@@ -210,6 +232,7 @@ export function proveWithCheck(
 /**
  * Verify a zero-knowledge range proof that a homomorphically manipulated value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
+ * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
  * @param {NTilde} ntilde The verifier's NTilde values.
  * @param {RangeProofWithCheck} proof The range proof.
@@ -220,6 +243,7 @@ export function proveWithCheck(
  */
 export function verifyWithCheck(
   curve: BaseCurve,
+  modulusBits: number,
   pk: PublicKey,
   ntilde: NTilde,
   proof: RangeProofWithCheck,
@@ -227,6 +251,7 @@ export function verifyWithCheck(
   c2: bigint,
   X: bigint
 ): boolean {
+  const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
   if (proof.s1 == q3) {
@@ -234,27 +259,27 @@ export function verifyWithCheck(
   }
   const hash = createHash('sha256');
   hash.update('\x0d\x00\x00\x00\x00\x00\x00\x00');
-  hash.update(bigIntToBufferBE(pk.n));
+  hash.update(bigIntToBufferBE(pk.n, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(pk.g));
+  hash.update(bigIntToBufferBE(pk.g, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(X));
+  hash.update(bigIntToBufferBE(X, 33));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c1));
+  hash.update(bigIntToBufferBE(c1, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(c2));
+  hash.update(bigIntToBufferBE(c2, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.u));
+  hash.update(bigIntToBufferBE(proof.u, 33));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.z));
+  hash.update(bigIntToBufferBE(proof.z, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.zprm));
+  hash.update(bigIntToBufferBE(proof.zprm, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.t));
+  hash.update(bigIntToBufferBE(proof.t, modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.v));
+  hash.update(bigIntToBufferBE(proof.v, 2 * modulusBytes));
   hash.update('$');
-  hash.update(bigIntToBufferBE(proof.w));
+  hash.update(bigIntToBufferBE(proof.w, modulusBytes));
   hash.update('$');
   const e = bigIntFromBufferBE(hash.digest()) % q;
   const gS1 = curve.basePointMult(curve.scalarReduce(proof.s1));
