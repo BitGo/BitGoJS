@@ -1005,7 +1005,7 @@ export class Eth extends BaseCoin {
     }
   }
 
-  signRecoveryTSS(
+  private signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombinedWithNTilde,
     backupKeyCombined: ECDSA.KeyCombinedWithNTilde,
     txHex: string
