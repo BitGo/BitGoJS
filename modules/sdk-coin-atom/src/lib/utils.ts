@@ -170,9 +170,9 @@ export class Utils implements BaseUtils {
   getExplicitSignerDataFromDecodedTx(decodedTx: DecodedTxRaw): SignerData {
     const sequence = this.getSequenceFromDecodedTx(decodedTx);
     return {
-      accountNumber: 100, // TODO - get this from tx data somehow
+      accountNumber: 100, // TODO BG-67575 - if possible, get this information from txData
       sequence,
-      chainId: thetaTestnetChainId, // TODO - figure out if we can get this from tx data
+      chainId: thetaTestnetChainId, // TODO BG-67576 - if possible, get this information from txData
     };
   }
 
@@ -186,10 +186,8 @@ export class Utils implements BaseUtils {
   }
 
   createSignDocFromAtomTransaction(pubkey: any, atomTransaction: AtomTransaction) {
-    // TODO - validate that this is a valid atom transaction class
     const register = new Registry(defaultRegistryTypes);
     const txBodyBytes = register.encodeTxBody(atomTransaction.sendMessages as any);
-    console.log(register.decodeTxBody(txBodyBytes));
     const sequence = atomTransaction.explicitSignerData.sequence;
     const authInfoBytes = makeAuthInfoBytes(
       [{ pubkey, sequence }],

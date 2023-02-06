@@ -24,6 +24,7 @@ describe('Atom Transaction', () => {
       const json = tx.toJson();
       should.equal(json.signerAddress, testData.TEST_TX.sender);
     });
+    // TODO BG-67031 - implement further testing of Atom transaction class and builder
     // it('should build a transfer from raw unsigned base64', function () {
     //   tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
     //   const json = tx.toJson();
