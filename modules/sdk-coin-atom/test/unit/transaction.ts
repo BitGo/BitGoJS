@@ -24,21 +24,35 @@ describe('Atom Transaction', () => {
       const json = tx.toJson();
       should.equal(json.signerAddress, testData.TEST_TX.sender);
     });
-    // TODO BG-67031 - implement further testing of Atom transaction class and builder
-    // it('should build a transfer from raw unsigned base64', function () {
-    //   tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
-    //   const json = tx.toJson();
-    //   should.equal(json.signerAddress, testData.TEST_TX.sender);
-    // });
-    // it('should build a transfer from raw unsigned base64, add signature, and re build', function () {
-    //   tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
-    //   const json = tx.toJson();
-    //   should.equal(json.signerAddress, testData.TEST_TX.sender);
-    // });
     it('should fail to build a transfer from incorrect raw hex', function () {
       should.throws(() => tx.fromRawTransaction('random' + testData.TEST_TX.signedTxBase64), 'incorrect raw data');
     });
     it('should fail to explain transaction with invalid raw hex', function () {
+      should.throws(() => tx.fromRawTransaction('randomString'), 'Invalid transaction');
+    });
+  });
+
+  describe('Explain transaction', () => {
+    it('should explain a transfer pay transaction', function () {
+      tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: 'UNAVAILABLE_TEXT',
+        outputs: [
+          {
+            address: testData.TEST_TX.recipient,
+            amount: testData.TEST_TX.sendAmount,
+          },
+        ],
+        outputAmount: testData.TEST_TX.sendAmount,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: testData.TEST_TX.feeAmount },
+        type: 0,
+      });
+    });
+    it('should fail to explain transaction with invalid raw base64 string', function () {
       should.throws(() => tx.fromRawTransaction('randomString'), 'Invalid transaction');
     });
   });

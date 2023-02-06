@@ -1,5 +1,5 @@
 import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
-import { Coin, SignerData } from '@cosmjs/stargate';
+import { Coin } from '@cosmjs/stargate';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
@@ -29,7 +29,7 @@ export interface TxData extends AtomTransaction {
 export interface AtomTransaction {
   type: string;
   signerAddress: string;
-  explicitSignerData: SignerData;
+  sequence: number;
   sendMessages: MessageData[];
   gasBudget: GasFeeLimitData;
 }

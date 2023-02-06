@@ -11,13 +11,30 @@ export const TEST_ACCOUNT = {
 };
 
 export const TEST_TX = {
+  signature:
+    'e21048009e5bbef93cdcd45bf9c40303423118837cf80800717bc0109c6636b168f3de879460c009bf6d09637842ab9b51d257b6b97e4ff3a6cd9427325dd2b6',
+  pubKey: '03ab8d1d860207f559c630290e60a0afe31afacfcd8c900c07b40f1d3b11c954a1',
   signedTxBase64:
-    'CpIBCo8BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm8KLWNvc21vczF5dGV6MDZ5eDB1M3lqempqam0wMnh5eDNtaDI1YWtlbnpxbDNuOBItY29zbW9zMTZnaG45YzZmNXl1YTA5enF3N3k3OTRtdmMzMGg0eTRtZDdja3VrGg8KBXVhdG9tEgYxMDAwMDASZgpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAyWF+4XfQ0l8vuwqDm7iu6SPqr5lhAj34JKwuxzHR4FxEgQKAggBGC8SEgoMCgV1YXRvbRIDNTAwEMCaDBpAXmO3vwffXztBLagQlS+fabZnHnQnl5wOHweCMUJKuIc1XWSMCFZUUTrmmnZpxDw3Qvmlh14XhV0iekbFifjHEA==',
-  sender: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+    'CpIBCo8BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm8KLWNvc21vczE0cHRmOWx6czl1ZWduYXlyNWd6bG1zbDk3NzZ2MGwyeXZ3dGc0aBItY29zbW9zMTZnaG45YzZmNXl1YTA5enF3N3k3OTRtdmMzMGg0eTRtZDdja3VrGg8KBXVhdG9tEgYxMDAwMDASZwpOCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohA6uNHYYCB/VZxjApDmCgr+Ma+s/NjJAMB7QPHTsRyVShEgQKAggBEhUKDwoFdWF0b20SBjEwMDAwMBDAmgwaQOIQSACeW775PNzUW/nEAwNCMRiDfPgIAHF7wBCcZjaxaPPeh5RgwAm/bQljeEKrm1HSV7a5fk/zps2UJzJd0rY=',
+  sender: 'cosmos14ptf9lzs9uegnayr5gzlmsl9776v0l2yvwtg4h',
   recipient: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
   chainId: 'theta-testnet-001',
-  accountId: '722559',
-  sequence: '47',
+  accountId: '723928',
+  sequence: 0,
+  sendAmount: '100000',
+  feeAmount: '200000',
+  sendMessage: {
+    typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+    value: {
+      fromAddress: 'cosmos14ptf9lzs9uegnayr5gzlmsl9776v0l2yvwtg4h',
+      toAddress: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+      amount: [{ denom: 'uatom', amount: '100000' }],
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'uatom', amount: '100000' }],
+    gas: 200000, // gas limit
+  },
 };
 
 export const address = {

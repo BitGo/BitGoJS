@@ -13,8 +13,10 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer } from 'buffer';
 import { AtomTransactionType, sendMsgType } from './constants';
 import utils from './utils';
-import { encodePubkey, makeSignBytes } from '@cosmjs/proto-signing';
+import { encodePubkey } from '@cosmjs/proto-signing';
 import { encodeSecp256k1Pubkey } from '@cosmjs/amino';
+import { Any } from 'cosmjs-types/google/protobuf/any';
+import { fromHex } from '@cosmjs/encoding';
 
 export class Transaction extends BaseTransaction {
   private _atomTransaction: AtomTransaction;
@@ -70,7 +72,7 @@ export class Transaction extends BaseTransaction {
       id: this._id,
       type: tx.type,
       signerAddress: tx.signerAddress,
-      explicitSignerData: tx.explicitSignerData,
+      sequence: tx.sequence,
       sendMessages: tx.sendMessages,
       gasBudget: tx.gasBudget,
     };
@@ -118,6 +120,10 @@ export class Transaction extends BaseTransaction {
   fromRawTransaction(rawTransaction: string): void {
     try {
       this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
+      if (utils.isSignedRawTx(rawTransaction)) {
+        const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
+        this.addSignature(signerInfo.pubKey, signerInfo.signature);
+      }
       this._type = TransactionType.Send;
     } catch (e) {
       throw e;
@@ -125,18 +131,11 @@ export class Transaction extends BaseTransaction {
   }
 
   serialize(): string {
-    const pubkey = encodePubkey(
-      encodeSecp256k1Pubkey(Buffer.from(this._atomTransaction.sendMessages[0].value.fromAddress, 'hex'))
-    ) as unknown as string;
-    const signDoc = utils.createSignDocFromAtomTransaction(pubkey, this.atomTransaction);
-    if (!this._signature) {
-      // no signature yet, get the signable bytes
-      const signableBytes = makeSignBytes(signDoc);
-      const signableBytesBuffer = Buffer.from(signableBytes);
-      return signableBytesBuffer.toString('base64');
-    }
+    // TODO BG-67811 - Support unsigned txs serializing to pass to HSM
+    const pubKey: Any = encodePubkey(encodeSecp256k1Pubkey(fromHex(this.atomSignature.publicKey.pub)));
+    const signDoc = utils.createSignDocFromAtomTransaction(pubKey, this.atomTransaction);
     // If we do have signatures, add them and return the base64 serialized signed tx data
-    const signedRawTx = utils.createSignedTxRaw(pubkey, signDoc, this.signature[0]);
+    const signedRawTx = utils.createSignedTxRaw(this.atomSignature, signDoc);
     return utils.createBase64SignedTxBytesFromSignedTxRaw(signedRawTx);
   }
 
@@ -150,14 +149,14 @@ export class Transaction extends BaseTransaction {
       throw new Error('Transaction type not supported: ' + typeUrl);
     }
     const sendMessageData = utils.getMessageDataFromDecodedTx(decodedTx);
-    const explicitSignerData = utils.getExplicitSignerDataFromDecodedTx(decodedTx);
+    const sequence = utils.getSequenceFromDecodedTx(decodedTx);
     const gasBudget = utils.getGasBudgetFromDecodedTx(decodedTx);
     return {
       type,
       sendMessages: sendMessageData,
       signerAddress: sendMessageData[0].value.fromAddress,
       gasBudget,
-      explicitSignerData,
+      sequence,
     };
   }
 

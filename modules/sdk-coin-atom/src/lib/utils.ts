@@ -1,9 +1,9 @@
-import { BaseUtils, ParseTransactionError } from '@bitgo/sdk-core';
+import { BaseUtils, ParseTransactionError, Signature } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import { thetaTestnetChainId } from './constants';
-import { fromBase64, fromHex, toBase64 } from '@cosmjs/encoding';
+import { fromBase64, fromHex, toBase64, toHex } from '@cosmjs/encoding';
 import {
   DecodedTxRaw,
+  decodePubkey,
   decodeTxRaw,
   EncodeObject,
   makeAuthInfoBytes,
@@ -11,10 +11,10 @@ import {
   Registry,
 } from '@cosmjs/proto-signing';
 import { AtomTransaction, GasFeeLimitData, MessageData } from './iface';
-import { Coin, defaultRegistryTypes, SignerData } from '@cosmjs/stargate';
+import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
 import { encodeSecp256k1Signature } from '@cosmjs/amino';
-import { Secp256k1Signature } from '@cosmjs/crypto';
 import { TxRaw, SignDoc } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { Any } from 'cosmjs-types/google/protobuf/any';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -153,7 +153,7 @@ export class Utils implements BaseUtils {
    * @param decodedTx
    * @private
    */
-  private getSequenceFromDecodedTx(decodedTx: DecodedTxRaw): number {
+  getSequenceFromDecodedTx(decodedTx: DecodedTxRaw): number {
     return Number(decodedTx.authInfo.signerInfos[0].sequence);
   }
 
@@ -173,15 +173,6 @@ export class Utils implements BaseUtils {
     };
   }
 
-  getExplicitSignerDataFromDecodedTx(decodedTx: DecodedTxRaw): SignerData {
-    const sequence = this.getSequenceFromDecodedTx(decodedTx);
-    return {
-      accountNumber: 100, // TODO BG-67575 - if possible, get this information from txData
-      sequence,
-      chainId: thetaTestnetChainId, // TODO BG-67576 - if possible, get this information from txData
-    };
-  }
-
   /**
    * Returns the array of MessageData[] from the decoded transaction
    * @param decodedTx
@@ -193,8 +184,11 @@ export class Utils implements BaseUtils {
 
   createSignDocFromAtomTransaction(pubkey: any, atomTransaction: AtomTransaction) {
     const register = new Registry(defaultRegistryTypes);
-    const txBodyBytes = register.encodeTxBody(atomTransaction.sendMessages as any);
-    const sequence = atomTransaction.explicitSignerData.sequence;
+    const txBodyValue = {
+      messages: atomTransaction.sendMessages as unknown as Any[],
+    };
+    const txBodyBytes = register.encodeTxBody(txBodyValue);
+    const sequence = atomTransaction.sequence;
     const authInfoBytes = makeAuthInfoBytes(
       [{ pubkey, sequence }],
       atomTransaction.gasBudget.amount,
@@ -203,17 +197,17 @@ export class Utils implements BaseUtils {
       undefined,
       undefined
     );
-    return makeSignDoc(
-      txBodyBytes,
-      authInfoBytes,
-      atomTransaction.explicitSignerData.chainId,
-      atomTransaction.explicitSignerData.accountNumber
-    );
+    // Ignoring linting because makeSignDoc expects string/number inputs but are null for our purposes
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return makeSignDoc(txBodyBytes, authInfoBytes, null, null);
   }
 
-  createSignedTxRaw(pubkey: string, signDoc: SignDoc, signature: any): TxRaw {
-    const signatureBytes = new Secp256k1Signature(fromHex(signature.r), fromHex(signature.s)).toFixedLength();
-    const stdSignature = encodeSecp256k1Signature(fromHex(pubkey), signatureBytes);
+  createSignedTxRaw(atomSignature: Signature, signDoc: SignDoc): TxRaw {
+    console.log('atom sig at this point: ' + atomSignature.signature);
+    console.log('hex of that signature: ' + atomSignature.signature.toString('hex'));
+    const stdSignature = encodeSecp256k1Signature(fromHex(atomSignature.publicKey.pub), atomSignature.signature);
+    console.log('stdSig: ' + stdSignature.signature);
     return TxRaw.fromPartial({
       bodyBytes: signDoc.bodyBytes,
       authInfoBytes: signDoc.authInfoBytes,
@@ -224,6 +218,31 @@ export class Utils implements BaseUtils {
   createBase64SignedTxBytesFromSignedTxRaw(signedTxRaw: TxRaw): string {
     const signedTxBytes = TxRaw.encode(signedTxRaw).finish();
     return toBase64(signedTxBytes);
+  }
+
+  isSignedRawTx(rawTransaction: string): boolean {
+    // if (!this.isValidRawTransaction(rawTransaction)) {
+    //   return false;
+    // }
+    const decodedTx = this.getDecodedTxFromRawBase64(rawTransaction);
+    if (decodedTx.authInfo.signerInfos.length > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  getSignerInfoFromRawSignedTx(rawTransaction: string) {
+    if (!this.isSignedRawTx(rawTransaction)) {
+      throw new Error('getSignerInfoFromRawTx failed, raw tx is not signed');
+    }
+    const decodedTx = this.getDecodedTxFromRawBase64(rawTransaction);
+    const aminoPubKey = decodedTx.authInfo.signerInfos[0].publicKey as Any;
+    const decodedPubKeyHex = toHex(fromBase64(decodePubkey(aminoPubKey)?.value));
+    const pubKey = {
+      pub: decodedPubKeyHex,
+    };
+    const signature = Buffer.from(decodedTx.signatures[0]);
+    return { pubKey, signature };
   }
 }
 

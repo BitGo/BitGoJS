@@ -14,7 +14,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 import { AtomTransaction, GasFeeLimitData, MessageData } from './iface';
-import { Coin, SignerData } from '@cosmjs/stargate';
+import { Coin } from '@cosmjs/stargate';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -22,7 +22,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   protected _type: string;
   protected _signerAddress: string;
-  protected _explicitSignerData: SignerData;
+  protected _sequence: number;
   protected _sendMessages: MessageData[];
   protected _gasBudget: GasFeeLimitData;
 
@@ -55,9 +55,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push({ publicKey, signature });
+    this.transaction.addSignature(publicKey, signature);
   }
 
-  type(type: string) {
+  type(type: string): void {
     this._type = type;
   }
 
@@ -84,12 +85,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    *
-   * @param {SignerData} expliticSignerData signer data: {accountNumber, sequence, chainId}
+   * @param {number} sequence - sequence data for tx signer
    * @returns {TransactionBuilder} This transaction builder
    */
-  expliticSignerData(explicitSignerData: SignerData): this {
-    this.validateSignerData(explicitSignerData);
-    this._explicitSignerData = explicitSignerData;
+  sequence(sequence: number): this {
+    this.validateSequence(sequence);
+    this._sequence = sequence;
     return this;
   }
 
@@ -112,6 +113,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.signerAddress(txData.signerAddress);
     this.sendMessages(txData.sendMessages);
     this.gasBudget(txData.gasBudget);
+    this.sequence(txData.sequence);
   }
 
   /** @inheritdoc */
@@ -133,14 +135,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected buildAtomTransaction(): AtomTransaction {
     assert(this._type, new BuildTransactionError('type is required before building'));
     assert(this._signerAddress, new BuildTransactionError('signerAddress is required before building'));
-    assert(this._explicitSignerData, new BuildTransactionError('explicitSignerData is required before building'));
+    assert(this._sequence >= 0, new BuildTransactionError('sequence is required before building'));
     assert(this._sendMessages, new BuildTransactionError('sendMessages are required before building'));
     assert(this._gasBudget, new BuildTransactionError('gasPrice is required before building'));
 
     return {
       type: this._type,
       signerAddress: this._signerAddress,
-      explicitSignerData: this._explicitSignerData,
+      sequence: this._sequence,
       sendMessages: this._sendMessages,
       gasBudget: this._gasBudget,
     };
@@ -153,14 +155,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private validateAmountData(amountArray: Coin[]): void {
     // TODO - make the error messages more descriptive of which amount data is failing
     // Do amount checking by casting to numbers/bignumber and comparing as well
-    for (const amount of amountArray) {
-      if (!amount.amount) {
-        throw new BuildTransactionError('Invalid amount: undefined');
-      }
-      if (!amount.denom) {
-        throw new BuildTransactionError('Invalid denom: undefined');
-      }
-    }
+    // for (const amount of amountArray) {
+    //   if (!amount.amount) {
+    //     throw new BuildTransactionError('Invalid amount: undefined');
+    //   }
+    //   if (!amount.denom) {
+    //     throw new BuildTransactionError('Invalid denom: undefined');
+    //   }
+    // }
   }
 
   validateGasBudget(gasBudget: GasFeeLimitData): void {
@@ -225,8 +227,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._signerAddress === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing signerAddress');
     }
-    if (this._explicitSignerData === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing explicitSignerData');
+    if (this._sequence === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing sequence');
     }
     if (this._sendMessages === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing sendMessages');
@@ -243,15 +245,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  private validateSignerData(explicitSignerData: SignerData) {
-    if (!explicitSignerData.chainId) {
-      throw new BuildTransactionError('Invalid explicitSignerData: missing chainId');
-    }
-    if (!explicitSignerData.accountNumber) {
-      throw new BuildTransactionError('Invalid explicitSignerData: missing accountNumber');
-    }
-    if (!explicitSignerData.sequence) {
-      throw new BuildTransactionError('Invalid explicitSignerData: missing sequence');
+  private validateSequence(sequence: number) {
+    if (sequence < 0) {
+      throw new BuildTransactionError('Invalid sequence: less than zero');
     }
   }
 }
