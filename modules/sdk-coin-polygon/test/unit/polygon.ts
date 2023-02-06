@@ -10,6 +10,7 @@ import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
 import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/sdk-coin-eth';
 import * as sjcl from '@bitgo/sjcl';
+import * as sinon from 'sinon';
 
 nock.enableNetConnect();
 
@@ -27,6 +28,12 @@ describe('Polygon', function () {
   const hopTxid = '0x4af65143bc77da2b50f35b3d13cacb4db18f026bf84bc0743550bc57b9b53351';
   const userReqSig =
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
+  const tssRecoverySignature = {
+    y: '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c',
+    r: '0a2cf230d9bb5fc8dbcc0d1f972e028100a25dc1cd2ee33ab643304c848ac605',
+    s: '09784da0e1be16008f325cc31fd00903b1fc769807657149ac84a28b1ca5cc6e',
+    recid: 1,
+  };
 
   before(function () {
     const bitgoKeyXprv =
@@ -528,6 +535,10 @@ describe('Polygon', function () {
     const backupXprv =
       'xprv9s21ZrQH143K35SXywHZHvHgeETE5yaumd9bGbHQRBx3Q4JQew5JFGBvzqiZjCUkBdBUZnfuMDTGURRayN1hFSWxEJQsCEAMm1D3pk1h7Jj';
 
+    afterEach(async () => {
+      sinon.restore();
+    });
+
     it('should generate an unsigned sweep', async function () {
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
       const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
@@ -659,6 +670,8 @@ describe('Polygon', function () {
         isTss: true,
       };
 
+      // signRecoveryTSS() will timeout in CI after rangeproof additions, just mock the signature generation
+      sinon.stub(basecoin, 'signRecoveryTSS').returns(tssRecoverySignature);
       const recovery = await basecoin.recover(recoveryParams);
       // id and tx will always be different because of expireTime
       should.exist(recovery);
