@@ -93,6 +93,18 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
     };
   }
 
+  if (backupKeyProvider === 'BitGo Trust' && backupKeychain.type === 'tss') {
+    const userToBackupShare = backupKeychain.keyShares?.find((keyShare) => keyShare.from === 'user' && keyShare.to === 'backup');
+    assert(userToBackupShare);
+    return {
+      title: 'B: User To Backup Key Share',
+      image: '.qrUserToBackupKeyShare',
+      description: `This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
+        `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
+      data: JSON.stringify(userToBackupShare),
+    };
+  }
+
   const pub = getPubFromKey(backupKeychain);
   assert(pub);
 
@@ -115,7 +127,25 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   };
 }
 
-function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
+function generateBitGoQrData(bitgoKeychain: Keychain, {
+  backupKeychain,
+  backupKeyProvider,
+}: {
+  backupKeychain?: Keychain,
+  backupKeyProvider?: string;
+}): QrDataEntry {
+  if (backupKeyProvider === 'BitGo Trust' && backupKeychain?.type === 'tss') {
+    const bitgoToBackupShare = backupKeychain.keyShares?.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+    assert(bitgoToBackupShare);
+    return {
+      title: 'C: BitGo To Backup Key Share',
+      image: '.qrBitGoToBackupKeyShare',
+      description: `This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
+        `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
+      data: JSON.stringify(bitgoToBackupShare),
+    };
+  }
+
   const bitgoData = getPubFromKey(bitgoKeychain);
   assert(bitgoData);
 
@@ -146,7 +176,10 @@ export function generateQrData({
       backupKeyProvider,
       backupMasterKey,
     }),
-    bitgo: generateBitGoQrData(bitgoKeychain),
+    bitgo: generateBitGoQrData(bitgoKeychain, {
+      backupKeychain,
+      backupKeyProvider,
+    }),
   };
 
   if (passphrase && passcodeEncryptionCode) {

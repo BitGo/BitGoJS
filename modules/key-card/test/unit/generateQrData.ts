@@ -2,19 +2,23 @@ import * as assert from 'assert';
 import * as should from 'should';
 import { generateQrData } from '../../src/generateQrData';
 import { decrypt } from '@bitgo/sdk-api';
-import { Keychain, KeyType } from '@bitgo/sdk-core';
+import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
 function createKeychain({
   commonKeychain,
   commonPub,
   encryptedPrv,
+  keyShares,
+  provider,
   pub,
   type,
 }: {
   commonKeychain?: string;
   commonPub?: string;
   encryptedPrv?: string;
+  keyShares?: ApiKeyShare[];
+  provider?: string;
   pub?: string;
   type?: KeyType;
 }): Keychain {
@@ -23,6 +27,8 @@ function createKeychain({
     commonPub,
     encryptedPrv,
     id: 'id',
+    keyShares,
+    provider,
     pub: pub ?? 'pub',
     type: type ?? 'independent',
   };
@@ -138,13 +144,14 @@ describe('generateQrData', function () {
     const coin = coins.get('btc');
     const userEncryptedPrv = 'prv123encrypted';
     const backupPub = 'pub673backup';
-    const backupKeyProvider = '3rd Party Provider';
+    const provider = '3rd Party Provider';
     const bitgoPub = 'pub789bitgo';
     const qrData = generateQrData({
       backupKeychain: createKeychain({
         pub: backupPub,
+        provider,
       }),
-      backupKeyProvider,
+      backupKeyProvider: provider,
       bitgoKeychain: createKeychain({
         pub: bitgoPub,
       }),
@@ -160,15 +167,54 @@ describe('generateQrData', function () {
     qrData.backup.title.should.equal('B: Backup Key');
     qrData.backup.image.should.equal('.qrPublicBackupKey');
     qrData.backup.description.should.equal('This is the public key held at ' +
-      backupKeyProvider +
+      provider +
       ', an ' +
       coin.name +
       ' recovery service. If you lose\r\nyour key, ' +
-      backupKeyProvider +
+      provider +
       ' will be able to sign transactions to recover funds.');
     qrData.backup.data.should.equal(backupPub);
 
     assert(qrData.bitgo);
     qrData.bitgo.data.should.equal(bitgoPub);
+  });
+
+  it('tss backup key held at BitGo Trust', function () {
+    const coin = coins.get('btc');
+    const userEncryptedPrv = 'prv123encrypted';
+    const provider = 'BitGoTrustAsKRS';
+    const backupKeyProvider = 'BitGo Trust';
+    const userToBackupKeyShare: ApiKeyShare = { from: 'user', to: 'backup', publicShare: 'userToBackupPublic', privateShare: 'userToBackupPrivate' };
+    const bitgoToBackupKeyShare: ApiKeyShare = { from: 'bitgo', to: 'backup', publicShare: 'bitgoToBackupPublic', privateShare: 'bitgoToBackupPrivate' };
+    const qrData = generateQrData({
+      backupKeychain: createKeychain({
+        provider,
+        keyShares: [userToBackupKeyShare, bitgoToBackupKeyShare],
+        type: 'tss',
+      }),
+      backupKeyProvider,
+      bitgoKeychain: createKeychain({
+        type: 'tss',
+      }),
+      coin,
+      userKeychain: createKeychain({
+        encryptedPrv: userEncryptedPrv,
+        type: 'tss',
+      }),
+    });
+
+    qrData.user.data.should.equal(userEncryptedPrv);
+
+    assert(qrData.backup);
+    qrData.backup.title.should.equal('B: User To Backup Key Share');
+    qrData.backup.image.should.equal('.qrUserToBackupKeyShare');
+    qrData.backup.description.should.equal(`This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
+    qrData.backup.data.should.equal(JSON.stringify(userToBackupKeyShare));
+
+    assert(qrData.bitgo);
+    qrData.bitgo.title.should.equal('C: BitGo To Backup Key Share');
+    qrData.bitgo.image.should.equal('.qrBitGoToBackupKeyShare');
+    qrData.bitgo.description.should.equal(`This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
+    qrData.bitgo.data.should.equal(JSON.stringify(bitgoToBackupKeyShare));
   });
 });
