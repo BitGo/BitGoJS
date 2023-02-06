@@ -228,6 +228,7 @@ export interface RecoverFromWrongChainOptions {
   wallet: string;
   walletPassphrase?: string;
   xprv?: string;
+  apiKey?: string;
   /** @deprecated */
   coin?: AbstractUtxoCoin;
   recoveryCoin?: AbstractUtxoCoin;
@@ -1269,12 +1270,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.signed return a half-signed transaction (default=true)
    * @param params.walletPassphrase the wallet passphrase
    * @param params.xprv the unencrypted xprv (used instead of wallet passphrase)
+   * @param params.apiKey for utxo coins other than [BTC,TBTC] this is a Block Chair api key
    * @returns {*}
    */
   async recoverFromWrongChain<TNumber extends number | bigint = number>(
     params: RecoverFromWrongChainOptions
   ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
-    const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
+    const { txid, recoveryAddress, wallet, walletPassphrase, xprv, apiKey } = params;
 
     // params.recoveryCoin used to be params.coin, backwards compatibility
     const recoveryCoin = params.coin || params.recoveryCoin;
@@ -1300,6 +1302,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       recoveryAddress,
       walletPassphrase: signed ? walletPassphrase : undefined,
       xprv: signed ? xprv : undefined,
+      apiKey,
     });
   }
 

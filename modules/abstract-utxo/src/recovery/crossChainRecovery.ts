@@ -103,14 +103,16 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | W
 /**
  * @param coin
  * @param txid
+ * @param apiKey - a blockchair api key
  * @return all unspents for transaction outputs, including outputs from other transactions
  */
 async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   txid: string,
-  amountType: 'number' | 'bigint' = 'number'
+  amountType: 'number' | 'bigint' = 'number',
+  apiKey?: string
 ): Promise<Unspent<TNumber>[]> {
-  const api = coin.getRecoveryProvider();
+  const api = coin.getRecoveryProvider(apiKey);
   const tx = await api.getTransactionIO(txid);
   const addresses = tx.outputs.map((output) => output.address);
   const unspents = await api.getUnspentsForAddresses(addresses);
@@ -359,6 +361,8 @@ type RecoverParams = {
   walletPassphrase?: string;
   /** If set, signs transaction */
   xprv?: string;
+  /** for utxo coins other than [BTC,TBTC] this is a Block Chair api key **/
+  apiKey?: string;
 };
 
 /**
@@ -376,7 +380,12 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   params: RecoverParams
 ): Promise<CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>> {
   const wallet = await getWallet(bitgo, params.recoveryCoin, params.walletId);
-  const unspents = await getAllRecoveryOutputs<TNumber>(params.sourceCoin, params.txid, params.sourceCoin.amountType);
+  const unspents = await getAllRecoveryOutputs<TNumber>(
+    params.sourceCoin,
+    params.txid,
+    params.sourceCoin.amountType,
+    params.apiKey
+  );
   const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
   const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
   const prv =
