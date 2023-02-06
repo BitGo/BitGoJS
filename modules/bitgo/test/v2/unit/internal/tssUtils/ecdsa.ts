@@ -349,6 +349,23 @@ describe('TSS Ecdsa Utils:', async function () {
       userKeychain.should.deepEqual(nockedUserKeychain);
       backupKeychain.id.should.equal('2');
       backupKeychain.provider?.should.equal(backupProvider);
+
+      // verify that all four key shares are included on the response of the backup keychain
+      assert(backupKeychain.keyShares);
+      backupKeychain.keyShares.length.should.equal(4);
+      for (const keyShare of bitgoHeldBackupShares.keyShares) {
+        backupKeychain.keyShares.should.matchAny(keyShare);
+      }
+      const bitgoToBackupShare = bitgoKeychain.keyShares?.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+      assert(bitgoToBackupShare);
+      backupKeychain.keyShares.should.matchAny(bitgoToBackupShare);
+
+      const userToBackupShare = backupKeychain.keyShares.find((keyShare) => keyShare.from === 'user' && keyShare.to === 'backup');
+      assert(userToBackupShare);
+      userToBackupShare.publicShare.should.equal(Buffer.concat([
+        Buffer.from(userKeyShare.nShares[2].y, 'hex'),
+        Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
+      ]).toString('hex'));
     });
 
     it('should generate TSS key chains with optional params', async function () {
