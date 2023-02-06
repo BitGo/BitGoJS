@@ -9,3 +9,13 @@ export const TEST_ACCOUNT = {
   extendedPub:
     'xpub661MyMwAqRbcEuDLp5TCcKbmKXsR3s7fNNTnmhKmqGFFwUJ7besDgjJis6eVbJgcTv9nuUuy71kKq7UrFvhTQCv8ng2ppt5yCQYMZ1y1C9s',
 };
+
+export const TEST_TX = {
+  signedTxBase64:
+    'CpIBCo8BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm8KLWNvc21vczF5dGV6MDZ5eDB1M3lqempqam0wMnh5eDNtaDI1YWtlbnpxbDNuOBItY29zbW9zMTZnaG45YzZmNXl1YTA5enF3N3k3OTRtdmMzMGg0eTRtZDdja3VrGg8KBXVhdG9tEgYxMDAwMDASZgpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAyWF+4XfQ0l8vuwqDm7iu6SPqr5lhAj34JKwuxzHR4FxEgQKAggBGC8SEgoMCgV1YXRvbRIDNTAwEMCaDBpAXmO3vwffXztBLagQlS+fabZnHnQnl5wOHweCMUJKuIc1XWSMCFZUUTrmmnZpxDw3Qvmlh14XhV0iekbFifjHEA==',
+  sender: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+  recipient: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+  chainId: 'theta-testnet-001',
+  accountId: '722559',
+  sequence: '47',
+};
