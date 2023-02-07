@@ -1005,32 +1005,32 @@ export class Eth extends BaseCoin {
     }
   }
 
-  private signRecoveryTSS(
+  private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombinedWithNTilde,
     backupKeyCombined: ECDSA.KeyCombinedWithNTilde,
     txHex: string
-  ): ECDSAMethodTypes.Signature {
+  ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
 
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
-    const signShares: ECDSA.SignShareRT = MPC.signShare(
+    const signShares: ECDSA.SignShareRT = await MPC.signShare(
       userKeyCombined.xShare,
       userKeyCombined.yShares[signerTwoIndex]
     );
 
-    let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
+    let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
       xShare: backupKeyCombined.xShare,
       yShare: backupKeyCombined.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
 
-    const signConvertS12: ECDSA.SignConvertRT = MPC.signConvert({
+    const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
       aShare: signConvertS21.aShare,
       wShare: signShares.wShare,
     });
 
-    signConvertS21 = MPC.signConvert({
+    signConvertS21 = await MPC.signConvert({
       muShare: signConvertS12.muShare,
       bShare: signConvertS21.bShare,
     });
@@ -1279,7 +1279,7 @@ export class Eth extends BaseCoin {
 
     const signableHex = tx.getMessageToSign(false).toString('hex');
 
-    const signature = this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
     tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
 

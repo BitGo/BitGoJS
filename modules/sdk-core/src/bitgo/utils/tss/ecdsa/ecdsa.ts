@@ -650,15 +650,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       n: signingKey.nShares[bitgoIndex].n,
     };
 
-    const signingKeyWithChallenge = MPC.signChallenge(signingKey.xShare, yShare);
-    const bitgoChallenge = await getTxRequestChallenge(
-      this.bitgo,
-      this.wallet.id(),
-      txRequestId,
-      '0',
-      requestType,
-      'ecdsa'
-    );
+    const [signingKeyWithChallenge, bitgoChallenge] = await Promise.all([
+      MPC.signChallenge(signingKey.xShare, yShare),
+      getTxRequestChallenge(this.bitgo, this.wallet.id(), txRequestId, '0', requestType, 'ecdsa'),
+    ]);
 
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
       i: userIndex,
