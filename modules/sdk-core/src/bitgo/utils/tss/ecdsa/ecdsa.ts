@@ -23,6 +23,7 @@ import { BackupProvider, IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
+import { getTxRequestChallenge } from '../../../tss/common';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -642,12 +643,26 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     );
 
     const bitgoIndex = 3;
+    const userIndex = 1;
     const yShare = {
       i: userSigningMaterial.pShare.i,
       j: bitgoIndex,
       n: signingKey.nShares[bitgoIndex].n,
     };
-    const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, yShare);
+
+    const [signingKeyWithChallenge, bitgoChallenge] = await Promise.all([
+      MPC.signChallenge(signingKey.xShare, yShare),
+      getTxRequestChallenge(this.bitgo, this.wallet.id(), txRequestId, '0', requestType, 'ecdsa'),
+    ]);
+
+    const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
+      i: userIndex,
+      j: bitgoIndex,
+      n: userSigningMaterial.bitgoNShare.n,
+      ntilde: bitgoChallenge.ntilde,
+      h1: bitgoChallenge.h1,
+      h2: bitgoChallenge.h2,
+    });
     const u = signingKey.nShares[bitgoIndex].u;
 
     let chaincode = userSigningMaterial.bitgoNShare.chaincode;

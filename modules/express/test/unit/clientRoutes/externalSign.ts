@@ -138,7 +138,9 @@ describe('External signer', () => {
     } as unknown as express.Request;
     const result = await handleV2GenerateShareTSS(reqR);
     const bitgoCombine = MPC.keyCombine(bitgo.uShare, [result.signingKeyYShare, backup.yShares[3]]);
-    const bitgoSignShare = MPC.signShare(Buffer.from(tMessage, 'hex'), bitgoCombine.pShare, [bitgoCombine.jShares[1]]);
+    const bitgoSignShare = await MPC.signShare(Buffer.from(tMessage, 'hex'), bitgoCombine.pShare, [
+      bitgoCombine.jShares[1],
+    ]);
     const signatureShareRec = {
       from: SignatureShareType.BITGO,
       to: SignatureShareType.USER,

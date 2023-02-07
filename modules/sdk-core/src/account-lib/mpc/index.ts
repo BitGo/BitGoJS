@@ -2,7 +2,7 @@ import HDTree, { Ed25519BIP32 } from './hdTree';
 import { EDDSA } from './tss';
 import ShamirSecret from './shamir';
 
-export { Ecdsa, ECDSA, Eddsa, EDDSA } from './tss';
+export { Ecdsa, ECDSA, Eddsa, EDDSA, rangeProof } from './tss';
 
 export * from './curves';
 export * from './util';
