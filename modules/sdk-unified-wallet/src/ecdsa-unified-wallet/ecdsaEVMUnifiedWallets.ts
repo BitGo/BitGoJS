@@ -10,7 +10,7 @@ import { supportedCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
 export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
-  constructor(bitgo: BitGoBase, coinName = 'eth') {
+  constructor(bitgo: BitGoBase, coinName = 'gteth') {
     super(bitgo, coinName);
     this.urlPath = '/wallet/evm';
   }

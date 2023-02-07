@@ -1,4 +1,3 @@
-import { CoinFamily } from '@bitgo/statics';
-
-export const supportedCoins: string[] = [CoinFamily.ETH, CoinFamily.POLYGON];
+// import { CoinFamily } from '@bitgo/statics';
+export const supportedCoins: string[] = ['gteth', 'tpolygon'];
 export type EvmWalletCoins = typeof supportedCoins[number];
