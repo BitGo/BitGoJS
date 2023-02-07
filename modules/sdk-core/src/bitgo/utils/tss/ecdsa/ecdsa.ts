@@ -1,4 +1,5 @@
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
+import { bigIntToBufferBE } from '../../../../account-lib';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, ApiKeyShare, CreateBackupOptions, Keychain, KeyType } from '../../../keychain';
@@ -614,41 +615,18 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupNShare');
     }
 
-    let signablePayload;
-    let derivationPath;
-
-    if (requestType === RequestType.tx) {
-      assert(
-        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
-        'Unable to find transactions in txRequest'
-      );
-      const unsignedTx =
-        txRequestResolved.apiVersion === 'full'
-          ? txRequestResolved.transactions![0].unsignedTx
-          : txRequestResolved.unsignedTxs[0];
-      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
-      derivationPath = txRequestResolved.transactions![0].unsignedTx.derivationPath;
-    } else if (requestType === RequestType.message) {
-      signablePayload = (params as TSSParamsForMessage).bufferToSign;
-      // TODO BG-67299 Message signing with derivation path
-      derivationPath = '';
-    }
-
     const MPC = new Ecdsa();
-    const signingKey = MPC.keyDerive(
-      userSigningMaterial.pShare,
-      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
-      derivationPath
-    );
+    const signingKey = MPC.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
 
-    const bitgoIndex = 3;
-    const yShare = {
-      i: userSigningMaterial.pShare.i,
-      j: bitgoIndex,
-      n: signingKey.nShares[bitgoIndex].n,
-    };
-    const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, yShare);
-    const u = signingKey.nShares[bitgoIndex].u;
+    const threshold = 2;
+    const numShares = 3;
+    const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
+    const userSignShare = await ECDSAMethods.createUserSignShare(signingKey.xShare, signingKey.yShares[3]);
+
+    const u = bigIntToBufferBE(uShares.shares[3], 32).toString('hex');
 
     let chaincode = userSigningMaterial.bitgoNShare.chaincode;
     while (chaincode.length < 64) {
@@ -692,6 +670,21 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       { muShare, dShare, i: muShare.i }
     )) as DShare;
 
+    let signablePayload;
+
+    if (requestType === RequestType.tx) {
+      assert(
+        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
+        'Unable to find transactions in txRequest'
+      );
+      const unsignedTx =
+        txRequestResolved.apiVersion === 'full'
+          ? txRequestResolved.transactions![0].unsignedTx
+          : txRequestResolved.unsignedTxs[0];
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+    } else if (requestType === RequestType.message) {
+      signablePayload = (params as TSSParamsForMessage).bufferToSign;
+    }
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
       bitgoToUserDShare,
