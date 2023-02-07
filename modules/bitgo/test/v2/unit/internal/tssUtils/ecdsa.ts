@@ -948,9 +948,9 @@ describe('TSS Ecdsa Utils:', async function () {
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
     const backupKeyId = backupGpgKeyActual.keyPacket.getFingerprint();
-    const bitgoToUserPublicU = (ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[1].u, 'hex'), false) as Uint8Array).toString()
+    const bitgoToUserPublicU = Buffer.from((ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[1].u, 'hex'), true) as Uint8Array)).toString('hex')
       + params.bitgoKeyShare.nShares[1].chaincode;
-    const bitgoToBackupPublicU = (ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[2].u, 'hex'), false) as Uint8Array).toString()
+    const bitgoToBackupPublicU = Buffer.from((ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[2].u, 'hex'), true) as Uint8Array)).toString('hex')
       + params.bitgoKeyShare.nShares[2].chaincode;
 
     bitgoKeychain.walletHSMGPGPublicKeySigs = await createWalletSignatures(
