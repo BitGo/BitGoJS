@@ -12,15 +12,24 @@ import { SuiObjectRef, SuiTransaction, TransactionExplanation, TxData, TxDetails
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { bcs } from './bcs';
-import { SUI_GAS_PRICE, SuiTransactionType, UNAVAILABLE_TEXT } from './constants';
+import {
+  SER_BUFFER_SIZE,
+  SIGNATURE_SCHEME_BYTES,
+  SUI_GAS_PRICE,
+  SUI_INTENT_BYTES,
+  SuiTransactionType,
+  UNAVAILABLE_TEXT,
+} from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
 import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
+import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
   private _suiTransaction: SuiTransaction;
   private _signature: Signature;
+  private _serializedSig: Uint8Array;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -36,6 +45,11 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc **/
   get id(): string {
+    if (this._signature !== undefined) {
+      const dataBytes = this.getDataBytes();
+      const hash = this.getSha256Hash('TransactionData', dataBytes);
+      this._id = bs58.encode(hash);
+    }
     return this._id || UNAVAILABLE_TEXT;
   }
 
@@ -49,6 +63,19 @@ export class Transaction extends BaseTransaction {
     return this._signature;
   }
 
+  get serializedSig(): Uint8Array {
+    return this._serializedSig;
+  }
+
+  setSerializedSig(publicKey: BasePublicKey, signature: Buffer): void {
+    const pubKey = Buffer.from(publicKey.pub, 'hex');
+    const serialized_sig = new Uint8Array(1 + signature.length + pubKey.length);
+    serialized_sig.set(SIGNATURE_SCHEME_BYTES);
+    serialized_sig.set(signature, 1);
+    serialized_sig.set(pubKey, 1 + signature.length);
+    this._serializedSig = serialized_sig;
+  }
+
   getInputCoins(): SuiObjectRef[] {
     return this.suiTransaction.payTx.coins;
   }
@@ -56,6 +83,22 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
+  }
+
+  /**
+   * Sign this transaction
+   *
+   * @param {KeyPair} signer key
+   */
+
+  sign(signer: KeyPair): void {
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('empty transaction to sign');
+    }
+
+    const signature = signer.signMessageinUint8Array(this.signablePayload);
+    this.setSerializedSig({ pub: signer.getKeys().pub }, Buffer.from(signature));
+    this.addSignature({ pub: signer.getKeys().pub }, Buffer.from(signature));
   }
 
   /** @inheritdoc */
@@ -205,6 +248,9 @@ export class Transaction extends BaseTransaction {
    * Helper function for serialize() to get the correct txData with transaction type
    */
   private getTxData(): TxData {
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('empty transaction');
+    }
     const suiTx = this._suiTransaction;
     let tx: TxDetails;
 
@@ -248,14 +294,25 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  serialize(): string {
+  getDataBytes(): Uint8Array {
     const txData = this.getTxData();
-    const bufferSize = 8192;
+    return bcs.ser('TransactionData', txData, SER_BUFFER_SIZE).toBytes();
+  }
 
-    const dataBytes = bcs.ser('TransactionData', txData, bufferSize).toBytes();
+  /** @inheritDoc */
+  get signablePayload(): Buffer {
+    const dataBytes = this.getDataBytes();
+
+    const intentMessage = new Uint8Array(SUI_INTENT_BYTES.length + dataBytes.length);
+    intentMessage.set(SUI_INTENT_BYTES);
+    intentMessage.set(dataBytes, SUI_INTENT_BYTES.length);
+    return Buffer.from(intentMessage);
+  }
+
+  serialize(): string {
+    const dataBytes = this.getDataBytes();
     if (this._signature !== undefined) {
-      const txBytes = bcs.ser('TransactionData', txData).toBytes();
-      const hash = this.getSha256Hash('TransactionData', txBytes);
+      const hash = this.getSha256Hash('TransactionData', dataBytes);
       this._id = bs58.encode(hash);
     }
     return Buffer.from(dataBytes).toString('base64');

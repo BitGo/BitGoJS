@@ -23,10 +23,12 @@ import {
 } from './iface';
 import assert from 'assert';
 import { SUI_GAS_PRICE, SuiTransactionType } from './constants';
+import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
+  private _signer: KeyPair;
 
   protected _type: SuiTransactionType;
   protected _sender: string;
@@ -58,13 +60,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    throw new Error('Method not implemented.');
+    const signer = new KeyPair({ prv: key.key });
+    this._signer = signer;
+    this.transaction.sign(signer);
+    return this.transaction;
   }
 
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push({ publicKey, signature });
     this.transaction.addSignature(publicKey, signature);
+    this.transaction.setSerializedSig(publicKey, signature);
   }
 
   /**
@@ -110,7 +116,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
-    this._signatures = [tx.suiSignature];
+
+    if (tx.signature && tx.signature.length > 0) {
+      this._signatures = [tx.suiSignature];
+    }
+
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
     this.sender(txData.sender);
@@ -161,6 +171,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     this.transaction.transactionType(this.transactionType);
+
+    if (this._signer) {
+      this.transaction.sign(this._signer);
+    }
+
+    this._signatures.forEach((signature) => {
+      this.transaction.addSignature(signature.publicKey, signature.signature);
+    });
+
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
@@ -274,7 +293,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new Error('Method not implemented.');
+    try {
+      new KeyPair({ prv: key.key });
+    } catch {
+      throw new BuildTransactionError(`Key validation failed`);
+    }
   }
 
   /** @inheritdoc */
