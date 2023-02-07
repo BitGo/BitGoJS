@@ -57,26 +57,22 @@ describe('generateQrData', function () {
     });
 
     qrData.user.title.should.equal('A: User Key');
-    qrData.user.image.should.equal('.qrEncryptedUserKey');
     qrData.user.description.should.equal('This is your private key, encrypted with your wallet password.');
     qrData.user.data.should.equal(userEncryptedPrv);
 
     assert(qrData.backup);
     qrData.backup.title.should.equal('B: Backup Key');
-    qrData.backup.image.should.equal('.qrEncryptedBackupKey');
     qrData.backup.description.should.equal('This is your backup private key, encrypted with your wallet password.');
     qrData.backup.data.should.equal(backupEncryptedPrv);
 
     assert(qrData.bitgo);
     qrData.bitgo.title.should.equal('C: BitGo Public Key');
-    qrData.bitgo.image.should.equal('.qrBitgoKey');
     qrData.bitgo.description.should.equal('This is the public part of the key that BitGo will use to ' +
       'co-sign transactions\r\nwith you on your wallet.');
     qrData.bitgo.data.should.equal(bitgoPub);
 
     assert(qrData.passcode);
     qrData.passcode.title.should.equal('D: Encrypted wallet Password');
-    qrData.passcode.image.should.equal('.qrEncryptedWalletPasscode');
     qrData.passcode.description.should.equal('This is the wallet password, encrypted client-side with a key held by\r\nBitGo.');
     const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
@@ -120,14 +116,12 @@ describe('generateQrData', function () {
         });
 
         qrData.user.title.should.equal('A: Provided User Key');
-        qrData.user.image.should.equal('.qrPublicUserKey');
         qrData.user.description.should.equal('This is the public key you provided for your wallet.');
         qrData.user.data.should.equal(userPub);
         should.equal(qrData.user.publicMasterKey, userMasterKey);
 
         assert(qrData.backup);
         qrData.backup.title.should.equal('B: Provided Backup Key');
-        qrData.backup.image.should.equal('.qrEncryptedUserProvidedXpub');
         qrData.backup.description.should.equal('This is the public key you provided for your wallet.');
         qrData.backup.data.should.equal(backupPub);
         should.equal(qrData.backup?.publicMasterKey, backupMasterKey);
@@ -165,7 +159,6 @@ describe('generateQrData', function () {
 
     assert(qrData.backup);
     qrData.backup.title.should.equal('B: Backup Key');
-    qrData.backup.image.should.equal('.qrPublicBackupKey');
     qrData.backup.description.should.equal('This is the public key held at ' +
       provider +
       ', an ' +
@@ -207,13 +200,11 @@ describe('generateQrData', function () {
 
     assert(qrData.backup);
     qrData.backup.title.should.equal('B: User To Backup Key Share');
-    qrData.backup.image.should.equal('.qrUserToBackupKeyShare');
     qrData.backup.description.should.equal(`This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
     qrData.backup.data.should.equal(JSON.stringify(userToBackupKeyShare));
 
     assert(qrData.bitgo);
     qrData.bitgo.title.should.equal('C: BitGo To Backup Key Share');
-    qrData.bitgo.image.should.equal('.qrBitGoToBackupKeyShare');
     qrData.bitgo.description.should.equal(`This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
     qrData.bitgo.data.should.equal(JSON.stringify(bitgoToBackupKeyShare));
   });
