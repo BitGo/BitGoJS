@@ -118,7 +118,7 @@ export async function createUserSignShare(
   if (yShare.i !== ShareKeyPosition.USER || yShare.j !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid YShare provided for sign');
   }
-  return MPC.signShare(xShare, yShare);
+  return await MPC.signShare(xShare, yShare);
 }
 
 /**

@@ -39,24 +39,26 @@ describe('BSC Transfer Builder', () => {
       serializedTransaction = Buffer.from(unsignedTransaction.toBroadcastFormat());
     });
 
-    it('A and B signing', () => {
-      const A_sign_challenge = MPC.signChallenge(A_combine.xShare, A_combine.yShares[2]);
-      const B_sign_challenge = MPC.signChallenge(B_combine.xShare, B_combine.yShares[1]);
+    it('A and B signing', async () => {
+      const [A_sign_challenge, B_sign_challenge] = await Promise.all([
+        MPC.signChallenge(A_combine.xShare, A_combine.yShares[2]),
+        MPC.signChallenge(B_combine.xShare, B_combine.yShares[1]),
+      ]);
 
-      const B_sign_share = MPC.signShare(B_sign_challenge.xShare, A_sign_challenge.yShares[2]);
+      const B_sign_share = await MPC.signShare(B_sign_challenge.xShare, A_sign_challenge.yShares[2]);
 
-      const A_sign_convert = MPC.signConvert({
+      const A_sign_convert = await MPC.signConvert({
         xShare: A_sign_challenge.xShare,
         yShare: B_sign_challenge.yShares[1],
         kShare: B_sign_share.kShare,
       });
 
-      const B_sign_convert = MPC.signConvert({
+      const B_sign_convert = await MPC.signConvert({
         wShare: B_sign_share.wShare,
         aShare: A_sign_convert.aShare,
       });
 
-      const A_second_sign_convert = MPC.signConvert({
+      const A_second_sign_convert = await MPC.signConvert({
         bShare: A_sign_convert.bShare,
         muShare: B_sign_convert.muShare,
       });
@@ -84,24 +86,26 @@ describe('BSC Transfer Builder', () => {
       MPC.verify(serializedTransaction, signature).should.be.true;
     });
 
-    it('A and C signing', () => {
-      const A_sign_challenge = MPC.signChallenge(A_combine.xShare, A_combine.yShares[3]);
-      const C_sign_challenge = MPC.signChallenge(C_combine.xShare, C_combine.yShares[1]);
+    it('A and C signing', async () => {
+      const [A_sign_challenge, C_sign_challenge] = await Promise.all([
+        MPC.signChallenge(A_combine.xShare, A_combine.yShares[3]),
+        MPC.signChallenge(C_combine.xShare, C_combine.yShares[1]),
+      ]);
 
-      const C_sign_share = MPC.signShare(C_combine.xShare, A_sign_challenge.yShares[3]);
+      const C_sign_share = await MPC.signShare(C_combine.xShare, A_sign_challenge.yShares[3]);
 
-      const A_sign_convert = MPC.signConvert({
+      const A_sign_convert = await MPC.signConvert({
         xShare: A_sign_challenge.xShare,
         yShare: C_sign_challenge.yShares[1],
         kShare: C_sign_share.kShare,
       });
 
-      const C_sign_convert = MPC.signConvert({
+      const C_sign_convert = await MPC.signConvert({
         wShare: C_sign_share.wShare,
         aShare: A_sign_convert.aShare,
       });
 
-      const A_second_sign_convert = MPC.signConvert({
+      const A_second_sign_convert = await MPC.signConvert({
         bShare: A_sign_convert.bShare,
         muShare: C_sign_convert.muShare,
       });
@@ -129,24 +133,26 @@ describe('BSC Transfer Builder', () => {
       MPC.verify(serializedTransaction, signature).should.be.true;
     });
 
-    it('B and C signing', () => {
-      const B_sign_challenge = MPC.signChallenge(B_combine.xShare, B_combine.yShares[3]);
-      const C_sign_challenge = MPC.signChallenge(C_combine.xShare, C_combine.yShares[2]);
+    it('B and C signing', async () => {
+      const [B_sign_challenge, C_sign_challenge] = await Promise.all([
+        MPC.signChallenge(B_combine.xShare, B_combine.yShares[3]),
+        MPC.signChallenge(C_combine.xShare, C_combine.yShares[2]),
+      ]);
 
-      const C_sign_share = MPC.signShare(C_sign_challenge.xShare, B_sign_challenge.yShares[3]);
+      const C_sign_share = await MPC.signShare(C_sign_challenge.xShare, B_sign_challenge.yShares[3]);
 
-      const B_sign_convert = MPC.signConvert({
+      const B_sign_convert = await MPC.signConvert({
         xShare: B_sign_challenge.xShare,
         yShare: C_sign_challenge.yShares[2],
         kShare: C_sign_share.kShare,
       });
 
-      const C_sign_convert = MPC.signConvert({
+      const C_sign_convert = await MPC.signConvert({
         wShare: C_sign_share.wShare,
         aShare: B_sign_convert.aShare,
       });
 
-      const B_second_sign_convert = MPC.signConvert({
+      const B_second_sign_convert = await MPC.signConvert({
         bShare: B_sign_convert.bShare,
         muShare: C_sign_convert.muShare,
       });

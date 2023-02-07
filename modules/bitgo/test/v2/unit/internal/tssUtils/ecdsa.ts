@@ -570,15 +570,14 @@ describe('TSS Ecdsa Utils:', async function () {
         userKeyShare.nShares[3], backupKeyShare.nShares[3],
       ]);
 
-      const bitgoChallenge = rangeProof.generateNTilde(3072);
+      const bitgoChallenge = await rangeProof.generateNTilde(3072);
       await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
         ntilde: bitgoChallenge.ntilde.toString(),
         h1: bitgoChallenge.h1.toString(),
         h2: bitgoChallenge.h2.toString(),
       } });
 
-      const userSigningKeyWithChallenge = MPC.signChallenge(userSigningKey.xShare, userSigningKey.yShares[3]);
-      const bitgoSigningKeyWithChallenge = MPC.signChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1]);
+      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.signChallenge(userSigningKey.xShare, userSigningKey.yShares[3]), MPC.signChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1])]);
 
       /**
        * START STEP ONE
@@ -592,7 +591,7 @@ describe('TSS Ecdsa Utils:', async function () {
         to: SignatureShareType.BITGO,
         share: ECDSAMethods.convertKShare(userSignShare.kShare).share.replace(ECDSAMethods.delimeter, ''),
       };
-      const getBitgoAandBShare = MPC.signConvert({
+      const getBitgoAandBShare = await MPC.signConvert({
         kShare: userSignShare.kShare,
         xShare: bitgoSigningKeyWithChallenge.xShare,
         yShare: bitgoSigningKey.yShares['1'], // corresponds to the user
@@ -629,7 +628,7 @@ describe('TSS Ecdsa Utils:', async function () {
         to: SignatureShareType.BITGO,
         share: ECDSAMethods.convertMuShare(userGammaAndMuShares.muShare!).share.replace(ECDSAMethods.delimeter, ''),
       };
-      const getBitGoGShareAndSignerIndexes = MPC.signConvert({
+      const getBitGoGShareAndSignerIndexes = await MPC.signConvert({
         bShare: getBitgoAandBShare.bShare,
         muShare: userGammaAndMuShares.muShare,
       });

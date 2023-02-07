@@ -282,8 +282,8 @@ export default class Ecdsa {
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  signChallenge(xShare: XShare, yShare: YShare): KeyCombinedWithNTilde {
-    const challenge = rangeProof.generateNTilde(3072);
+  async signChallenge(xShare: XShare, yShare: YShare): Promise<KeyCombinedWithNTilde> {
+    const challenge = await rangeProof.generateNTilde(3072);
     const ntilde = bigIntToBufferBE(challenge.ntilde, 384).toString('hex');
     const h1 = bigIntToBufferBE(challenge.h1, 384).toString('hex');
     const h2 = bigIntToBufferBE(challenge.h2, 384).toString('hex');
@@ -310,16 +310,16 @@ export default class Ecdsa {
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  signShare(xShare: XShare | XShareWithNTilde, yShare: YShare | YShareWithNTilde): SignShareRT {
+  async signShare(xShare: XShare | XShareWithNTilde, yShare: YShare | YShareWithNTilde): Promise<SignShareRT> {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
     // Generate a challenge if ntilde is not present in the xShare.
     if (!hasNTilde(xShare)) {
-      xShare = this.signChallenge(xShare, yShare).xShare;
+      xShare = (await this.signChallenge(xShare, yShare)).xShare;
     }
 
     const k = Ecdsa.curve.scalarRandom();
-    const rk = rangeProof.randomCoPrimeTo(pk.n);
+    const rk = await rangeProof.randomCoPrimeTo(pk.n);
     const ck = pk.encrypt(k, rk);
     const gamma = Ecdsa.curve.scalarRandom();
 
@@ -354,7 +354,7 @@ export default class Ecdsa {
     let proofShare;
     if (hasNTilde(yShare)) {
       const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
-      const proof = rangeProof.prove(
+      const proof = await rangeProof.prove(
         Ecdsa.curve,
         3072,
         pk,
@@ -397,7 +397,7 @@ export default class Ecdsa {
    * @param {SignConvert}
    * @returns {SignConvertRT}
    */
-  signConvert(shares: SignConvert): SignConvertRT {
+  async signConvert(shares: SignConvert): Promise<SignConvertRT> {
     let shareParticipant: Partial<BShare> | Partial<GShare>, shareToBeSent: Partial<AShare> | MUShare;
     let isGammaShare = false;
     let kShare: Partial<KShare> = {};
@@ -409,7 +409,7 @@ export default class Ecdsa {
         h1: shares.kShare.h1,
         h2: shares.kShare.h2,
       };
-      const signShare = this.signShare(xShare, yShare);
+      const signShare = await this.signShare(xShare, yShare);
       kShare = signShare.kShare;
       shareToBeSent = { ...shares.kShare } as Partial<AShare>;
       shareParticipant = { ...signShare.wShare } as Partial<BShare>;
@@ -561,7 +561,7 @@ export default class Ecdsa {
         'hex'
       );
       const g = hexToBigInt(bShareParticipant.gamma);
-      const rb = rangeProof.randomCoPrimeTo(pka.n);
+      const rb = await rangeProof.randomCoPrimeTo(pka.n);
       const cb = pka.encrypt(beta0, rb);
       const alpha = pka.addition(pka.multiply(k, g), cb);
       aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
@@ -569,7 +569,7 @@ export default class Ecdsa {
       const gx = Ecdsa.curve.basePointMult(g);
       let proof: RangeProofWithCheck;
       if (ntildea) {
-        proof = rangeProof.proveWithCheck(
+        proof = await rangeProof.proveWithCheck(
           Ecdsa.curve,
           3072,
           pka,
@@ -608,14 +608,14 @@ export default class Ecdsa {
         'hex'
       );
       const w = hexToBigInt(bShareParticipant.w);
-      const rn = rangeProof.randomCoPrimeTo(pka.n);
+      const rn = await rangeProof.randomCoPrimeTo(pka.n);
       const cn = pka.encrypt(nu0, rn);
       const mu = pka.addition(pka.multiply(k, w), cn);
       shareToBeSent.mu = bigIntToBufferBE(mu, 32).toString('hex');
       // Prove $\w_i \in Z_{N^2}$.
       const wx = Ecdsa.curve.basePointMult(w);
       if (ntildea) {
-        proof = rangeProof.proveWithCheck(
+        proof = await rangeProof.proveWithCheck(
           Ecdsa.curve,
           3072,
           pka,

@@ -5,24 +5,23 @@
 import { createHash } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, primeSync, randBitsSync, randBetween } from 'bigint-crypto-utils';
+import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 
-function generateModulus(bitlength: number): bigint {
+async function generateModulus(bitlength: number): Promise<bigint> {
   let n, p, q;
   do {
-    p = primeSync(Math.floor(bitlength / 2) + 1);
-    q = primeSync(Math.floor(bitlength / 2));
+    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
     n = p * q;
   } while (q === p || bitLength(n) !== bitlength);
   return n;
 }
 
-export function randomCoPrimeTo(x: bigint): bigint {
+export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
   while (true) {
-    const y = bigIntFromBufferBE(Buffer.from(randBitsSync(bitLength(x), true)));
+    const y = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(x), true)));
     if (y > BigInt(0) && gcd(x, y) === BigInt(1)) {
       return y;
     }
@@ -35,10 +34,9 @@ export function randomCoPrimeTo(x: bigint): bigint {
  * be the same as the bit length of the paillier public keys used for MtA.
  * @returns {NTilde} The generated NTilde values.
  */
-export function generateNTilde(bitlength: number): NTilde {
-  const ntilde = generateModulus(bitlength);
-  const f1 = randomCoPrimeTo(ntilde);
-  const f2 = randomCoPrimeTo(ntilde);
+export async function generateNTilde(bitlength: number): Promise<NTilde> {
+  const ntilde = await generateModulus(bitlength);
+  const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
   const h2 = modPow(f2, BigInt(2), ntilde);
   return { ntilde, h1, h2 };
@@ -55,7 +53,7 @@ export function generateNTilde(bitlength: number): NTilde {
  * @param {bigint} r The obfuscation value used to encrypt m.
  * @returns {RangeProof} The generated proof.
  */
-export function prove(
+export async function prove(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
@@ -63,14 +61,14 @@ export function prove(
   c: bigint,
   m: bigint,
   r: bigint
-): RangeProof {
+): Promise<RangeProof> {
   const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
   const qntilde = q * ntilde.ntilde;
   const q3ntilde = q3 * ntilde.ntilde;
   const alpha = randBetween(q3);
-  const beta = randomCoPrimeTo(pk.n);
+  const beta = await randomCoPrimeTo(pk.n);
   const gamma = randBetween(q3ntilde);
   const rho = randBetween(qntilde);
   const z = (modPow(ntilde.h1, m, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;
@@ -165,7 +163,7 @@ export function verify(
  * @param {bigint} X The curve's base point raised to x.
  * @returns {RangeProofWithCheck} The generated proof.
  */
-export function proveWithCheck(
+export async function proveWithCheck(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
@@ -176,7 +174,7 @@ export function proveWithCheck(
   y: bigint,
   r: bigint,
   X: bigint
-): RangeProofWithCheck {
+): Promise<RangeProofWithCheck> {
   const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
@@ -187,7 +185,7 @@ export function proveWithCheck(
   const sigma = randBetween(qntilde);
   const tau = randBetween(qntilde);
   const rhoprm = randBetween(q3ntilde);
-  const beta = randomCoPrimeTo(pk.n);
+  const beta = await randomCoPrimeTo(pk.n);
   const gamma = randBetween(q3ntilde);
   const u = curve.basePointMult(curve.scalarReduce(alpha));
   const z = (modPow(ntilde.h1, x, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;

@@ -198,7 +198,7 @@ describe('TSS ECDSA TESTS', function () {
 
       ntildeMock = sinon.stub(rangeProof, 'generateNTilde');
       for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).returns(ntildes[i] as unknown as ECDSA.NTilde);
+        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.NTilde);
       }
     });
 
@@ -216,7 +216,7 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Two
         // Second signer generates their range proof challenge.
-        const signerTwoWithChallenge: ECDSA.KeyCombined = MPC.signChallenge(
+        const signerTwoWithChallenge: ECDSA.KeyCombined = await MPC.signChallenge(
           signerTwo.xShare,
           signerTwo.yShares[signerOneIndex],
         );
@@ -225,7 +225,7 @@ describe('TSS ECDSA TESTS', function () {
         // Sign Shares are created by one of the participants (signerOne)
         // with its private XShare and YShare corresponding to the other participant (signerTwo)
         // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-        const signShares: ECDSA.SignShareRT = MPC.signShare(
+        const signShares: ECDSA.SignShareRT = await MPC.signShare(
           signerOne.xShare,
           signerTwoWithChallenge.yShares[signerOneIndex],
         );
@@ -234,7 +234,7 @@ describe('TSS ECDSA TESTS', function () {
         // signerTwo receives the KShare from signerOne and uses it produce private
         // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
         // which is sent to signerOne
-        let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
+        let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
           xShare: signerTwoWithChallenge.xShare,
           yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
@@ -244,7 +244,7 @@ describe('TSS ECDSA TESTS', function () {
         // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
         // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
         // is sent to signerTwo to produce its Gamma Share
-        const signConvertS12: ECDSA.SignConvertRT = MPC.signConvert({
+        const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
           aShare: signConvertS21.aShare,
           wShare: signShares.wShare,
         });
@@ -252,7 +252,7 @@ describe('TSS ECDSA TESTS', function () {
         // Step Six
         // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
         // uses it produce private GShare (Gamma Share)
-        signConvertS21 = MPC.signConvert({
+        signConvertS21 = await MPC.signConvert({
           muShare: signConvertS12.muShare,
           bShare: signConvertS21.bShare,
         });
