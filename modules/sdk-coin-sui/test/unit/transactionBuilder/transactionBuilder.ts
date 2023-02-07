@@ -4,6 +4,8 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { SUI_GAS_PRICE, SuiTransactionType } from '../../../src/lib/constants';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
+import { KeyPair } from '../../../src';
+import { PayTx } from '../../../src/lib/iface';
 
 describe('Sui Transaction Builder', async () => {
   let builders;
@@ -367,5 +369,51 @@ describe('Sui Transaction Builder', async () => {
       should.doesNotThrow(() => builder.validateAddress(testData.sender));
       should(() => builder.validateAddress(invalidAddress)).throwError('Invalid address ' + invalidAddress.address);
     }
+  });
+
+  it('should submit a paySui transaction', async () => {
+    const prvKey = 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22';
+    const keyPair = new KeyPair({ prv: prvKey });
+    const senderAddress = keyPair.getAddress();
+    const payTx: PayTx = {
+      coins: [
+        {
+          objectId: '0x37233cc97a6ad53be34280b8c875d094374ba958',
+          version: 1375,
+          digest: '4620q3O8Amxber2CqxIN0jxt4mEQAPSLSKxEKlN656Y=',
+        },
+      ],
+      recipients: ['0x15ff62b9a1bd971d93e9aae4578f89934c5fcd85'],
+      amounts: [1],
+    };
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.type(SuiTransactionType.PaySui);
+    txBuilder.sender(senderAddress);
+    txBuilder.payTx(payTx);
+    txBuilder.gasBudget(10000);
+    const unsignedTx = await txBuilder.build();
+    const signableHex = unsignedTx.signablePayload.toString('hex');
+    const serializedTx = unsignedTx.toBroadcastFormat();
+    txBuilder.sign({ key: keyPair.getKeys().prv });
+    const signedTransaction = await txBuilder.build();
+    const serializedTransaction = signedTransaction.toBroadcastFormat();
+    const finalSig = (signedTransaction as SuiTransaction).serializedSig;
+    const finalSigString = Buffer.from(finalSig).toString('base64');
+
+    const txBuilder2 = factory.from(serializedTx);
+    const tx = await txBuilder2.build();
+    tx.type.should.equal(TransactionType.Send);
+    const signableHex2 = tx.signablePayload.toString('hex');
+    signableHex.should.equal(signableHex2);
+    const signable = new Uint8Array(Buffer.from(signableHex2, 'hex'));
+    const signaturePayment = keyPair.signMessageinUint8Array(signable);
+    txBuilder2.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signaturePayment));
+    const signedTransaction2 = await txBuilder2.build();
+    signedTransaction.id.should.equal(tx.id);
+    const finalSig2 = (signedTransaction2 as SuiTransaction).serializedSig;
+    const finalSigString2 = Buffer.from(finalSig2).toString('base64');
+    finalSigString.should.equal(finalSigString2);
+    const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
+    serializedTransaction2.should.equal(serializedTransaction);
   });
 });

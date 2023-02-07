@@ -241,4 +241,11 @@ export class Sui extends BaseCoin {
     tmp.set(pubBuf, 1);
     return '0x' + sha3.sha3_256(tmp).slice(0, 40);
   }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const factory = this.getBuilder();
+    const rebuiltTransaction = await factory.from(serializedTx).build();
+    return rebuiltTransaction.signablePayload;
+  }
 }

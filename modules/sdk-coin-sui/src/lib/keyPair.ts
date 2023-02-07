@@ -1,7 +1,8 @@
-import { DefaultKeys, Ed25519KeyPair, KeyPairOptions } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, toUint8Array } from '@bitgo/sdk-core';
 import * as sha3 from 'js-sha3';
 import utils from './utils';
 import bs58 from 'bs58';
+import * as nacl from 'tweetnacl';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -47,5 +48,19 @@ export class KeyPair extends Ed25519KeyPair {
     tmp.set(pubBuf, 1);
     // prefix with 0x to normalize address
     return '0x'.concat(sha3.sha3_256(tmp).slice(0, 40));
+  }
+
+  /**
+   *  Sign the message in Uint8Array
+   *
+   * @param {Uint8Array} message to be signed
+   * @returns {Uint8Array} signed message
+   */
+  signMessageinUint8Array(message: Uint8Array): Uint8Array {
+    const { prv } = this.keyPair;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }
