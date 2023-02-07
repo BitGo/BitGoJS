@@ -116,9 +116,12 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   const tx = await api.getTransactionIO(txid);
   const addresses = tx.outputs.map((output) => output.address);
   const unspents = await api.getUnspentsForAddresses(addresses);
+  // the api may return cashaddr's instead of legacy for BCH and BCHA
+  // downstream processes's only expect legacy addresses
   return unspents.map((recoveryOutput) => {
     return {
       ...recoveryOutput,
+      address: coin.canonicalAddress(recoveryOutput.address),
       value: utxolib.bitgo.toTNumber<TNumber>(BigInt(recoveryOutput.value), amountType),
     };
   });

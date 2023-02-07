@@ -21,6 +21,9 @@ describe('Custom BCH Tests', function () {
     bch
       .canonicalAddress('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'cashaddr')
       .should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
+    bch
+      .canonicalAddress('qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'cashaddr')
+      .should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
 
     // P2PKH base58 -> cashaddr
     bch
@@ -30,6 +33,9 @@ describe('Custom BCH Tests', function () {
     // P2SH cashaddr -> cashaddr
     bch
       .canonicalAddress('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'cashaddr')
+      .should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
+    bch
+      .canonicalAddress('ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'cashaddr')
       .should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
 
     // P2SH base58 -> cashaddr
@@ -46,6 +52,9 @@ describe('Custom BCH Tests', function () {
     bch
       .canonicalAddress('bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'base58')
       .should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
+    bch
+      .canonicalAddress('qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'base58')
+      .should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
 
     // P2PKH base58 -> base58
     bch
@@ -55,6 +64,9 @@ describe('Custom BCH Tests', function () {
     // P2SH cashaddr -> base58
     bch
       .canonicalAddress('bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58')
+      .should.equal('3LDsS579y7sruadqu11beEJoTjdFiFCdX4');
+    bch
+      .canonicalAddress('pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58')
       .should.equal('3LDsS579y7sruadqu11beEJoTjdFiFCdX4');
 
     // P2SH base58 -> base58
@@ -66,10 +78,16 @@ describe('Custom BCH Tests', function () {
     bch
       .canonicalAddress('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq')
       .should.equal('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC');
+    bch
+      .canonicalAddress('ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq')
+      .should.equal('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC');
 
     // all capitalized
     bch
       .canonicalAddress('BITCOINCASH:QQQ3728YW0Y47SQN6L2NA30MCW6ZM78DZQRE909M2R', 'base58')
+      .should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
+    bch
+      .canonicalAddress('QQQ3728YW0Y47SQN6L2NA30MCW6ZM78DZQRE909M2R', 'base58')
       .should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
 
     // testnet addresses
@@ -83,7 +101,10 @@ describe('Custom BCH Tests', function () {
       .canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'cashaddr')
       .should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
     tbch
-      .canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'base58')
+      .canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'cashaddr')
+      .should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
+    tbch
+      .canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'base58')
       .should.equal('2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X');
     tbch
       .canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'base58')

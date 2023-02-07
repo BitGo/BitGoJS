@@ -5,6 +5,8 @@ import { bitgo } from '@bitgo/utxo-lib';
 import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
 import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Bch } from '@bitgo/sdk-coin-bch';
+import { Bsv } from '@bitgo/sdk-coin-bsv';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 export class MockRecoveryProvider implements RecoveryProvider {
@@ -61,26 +63,55 @@ export class MockRecoveryProvider implements RecoveryProvider {
   }
 }
 export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+  private addressVersion: 'cashaddr' | 'base58';
+  private addressFormat: utxolib.addressFormat.AddressFormat;
   constructor(
     public coin: AbstractUtxoCoin,
     public unspents: Unspent<TNumber>[],
     public tx: utxolib.bitgo.UtxoTransaction<TNumber>
-  ) {}
+  ) {
+    // this is how blockchair will return the data, as a cashaddr for BCH like coins
+    // BSV supports cashaddr, but at the time of writing the SDK does not support cashaddr for bsv
+    this.addressFormat = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'default';
+    this.addressVersion = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'base58';
+  }
 
   async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
-    return this.tx.outs.map((o, vout: number) => ({
-      id: `${this.tx?.getId()}:${vout}`,
-      address: utxolib.address.fromOutputScript(o.script, this.coin.network),
-      value: Number(o.value),
-      valueString: this.coin.amountType === 'bigint' ? o.value.toString() : undefined,
-    }));
+    return this.tx.outs.map((o, vout: number) => {
+      let address = utxolib.addressFormat.fromOutputScriptWithFormat(o.script, this.addressFormat, this.coin.network);
+      if (address.includes(':')) {
+        [, address] = address.split(':');
+      }
+      return {
+        id: `${this.tx?.getId()}:${vout}`,
+        address,
+        value: Number(o.value),
+        valueString: this.coin.amountType === 'bigint' ? o.value.toString() : undefined,
+      };
+    });
   }
 
   async getTransactionIO(txid: string): Promise<TransactionIO> {
     const payload: TransactionIO = {
-      inputs: this.unspents.map((u) => ({ address: u.address })),
-      outputs:
-        this.tx.outs.map((o) => ({ address: utxolib.address.fromOutputScript(o.script, this.coin.network) })) ?? [],
+      inputs: this.unspents.map((u) => {
+        // imitate how blockchair returns data
+        let address = this.coin.canonicalAddress(u.address, this.addressVersion);
+        if (address.includes(':')) {
+          [, address] = address.split(':');
+        }
+        return {
+          address,
+        };
+      }),
+      outputs: this.tx.outs.map((o) => {
+        let address = utxolib.addressFormat.fromOutputScriptWithFormat(o.script, this.addressFormat, this.coin.network);
+        if (address.includes(':')) {
+          [, address] = address.split(':');
+        }
+        return {
+          address,
+        };
+      }),
     };
     return payload;
   }
