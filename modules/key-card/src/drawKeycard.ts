@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { FAQ } from './faq';
 import { QrData } from './generateQrData';
+import { splitKeys } from './utils';
 
 // Max for Binary/Byte Data https://en.wikipedia.org/wiki/QR_code#Standards
 // keys for TSS wallets aren't alphanumeric, so qrcode.react falls back to binary/byte encoding
@@ -21,13 +22,14 @@ const color = {
 
 const margin = 30;
 
-export function drawKeycard({ activationCode, questions, keyCardImage, qrData, walletLabel }: {
+export async function drawKeycard({ activationCode, createQrCanvas, questions, keyCardImage, qrData, walletLabel }: {
   activationCode?: string;
+  createQrCanvas: (data: string) => Promise<HTMLCanvasElement>;
   keyCardImage?: HTMLImageElement;
   qrData: QrData;
   questions: FAQ[];
   walletLabel: string;
-}): jsPDF {
+}): Promise<jsPDF> {
   // document details
   const width = 8.5 * 72;
   let y = 0;
@@ -88,7 +90,8 @@ export function drawKeycard({ activationCode, questions, keyCardImage, qrData, w
   const qrSize = 130;
 
   const qrKeys = ['user', 'passcode', 'backup', 'bitgo'];
-  qrKeys.forEach(function (name, index) {
+  for (let index = 0; index < qrKeys.length; index++) {
+    const name = qrKeys[index];
     if (index === 2) {
       // Add 2nd Page
       doc.addPage();
@@ -101,6 +104,24 @@ export function drawKeycard({ activationCode, questions, keyCardImage, qrData, w
     let topY = y;
     const textLeft = left(qrSize + 15);
     let textHeight = 0;
+
+    if (qr.data.length <= QRBinaryMaxLength) {
+      const image = await createQrCanvas(qr.data);
+      doc.addImage(image, left(0), y, qrSize, qrSize);
+    } else {
+      // key is too long for one QR code
+      const keys = splitKeys(qr.data, QRBinaryMaxLength);
+      for (const key of keys) {
+        const image = await createQrCanvas(key);
+        doc.addImage(image, left(0), y, qrSize, qrSize);
+        const textBuffer = 15;
+        moveDown(qrSize + textBuffer);
+        doc.setFontSize(font.body).setTextColor(color.black);
+        doc.text('Part ' + (index + 1).toString(), left(0), y);
+        moveDown(20);
+      }
+      y = topY;
+    }
 
     doc.setFontSize(font.subheader).setTextColor(color.black);
     moveDown(10);
@@ -172,7 +193,7 @@ export function drawKeycard({ activationCode, questions, keyCardImage, qrData, w
     }
     const marginBottom = 15;
     moveDown(rowHeight - (y - topY) + marginBottom);
-  });
+  }
 
   // Add next Page
   doc.addPage();

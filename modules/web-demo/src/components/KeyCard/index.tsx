@@ -1,9 +1,10 @@
+import QRCode from 'qrcode';
 import React from 'react';
 import { coins } from '@bitgo/statics';
 import { generateKeycard } from '@bitgo/key-card';
 import { Keychain } from '@bitgo/sdk-core';
 
-function downloadKeycard() {
+async function downloadKeycard() {
   const userKeychain: Keychain = {
     id: '63e107b5ef7bba0007145e41065b26a6',
     pub: 'xpub661MyMwAqRbcFXFJ8wZhWjEiFg9wM89UamPyP3XsnEHg2VJ4m7wE7ALLszakPiEEy5cH9FCAvCrx1cL6rLE6jewaa1ubP8DjqsDtP4R7w5g',
@@ -24,11 +25,12 @@ function downloadKeycard() {
     type: 'independent',
   };
 
-  generateKeycard({
+  await generateKeycard({
     activationCode: '123456',
     backupKeychain,
     bitgoKeychain,
-    coin: coins.get('tsol'),
+    coin: coins.get('tltc'),
+    createQrCanvas: QRCode.toCanvas,
     passcodeEncryptionCode: '654321',
     passphrase: 'test_wallet_passphrase',
     userKeychain,
