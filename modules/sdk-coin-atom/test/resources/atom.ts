@@ -19,3 +19,22 @@ export const TEST_TX = {
   accountId: '722559',
   sequence: '47',
 };
+
+export const address = {
+  address1: 'cosmos1ut2w0m3xa7z2rvndv23pthv9qc7hksx6tkf9uq',
+  address2: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2',
+  address3: 'cosxyz1xxxz06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+  address4: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+  address6: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+};
+
+export const blockHash = {
+  hash1: 'b43e8f64d384f5bfcfb60da6a353f3efc4f2465767e5c7ce9c6e3ebce9df5551',
+  hash2: 'e1571435b14a14f6caed10b2088377a34d000c83e77e08842c044b5f4bbcd9fa',
+};
+
+export const txIds = {
+  hash1: '152E7623699AE4E23AA2A9A166E153AC31DBCEB95C0FF48FC78B384087480168',
+  hash2: 'BF1ECA4F1C5A2DD039E7FB722875334CA494BCF642B1E260DA2A306FD91148DF',
+  hash3: 'f25baab14faf059deb490dfcaa58533442cf76e18ccda4f6bef23f588e82ed30',
+};

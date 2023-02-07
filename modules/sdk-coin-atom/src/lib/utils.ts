@@ -19,7 +19,7 @@ import { TxRaw, SignDoc } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new Error('Method not implemented.');
+    return this.validateBlake2b(hash);
   }
 
   /** @inheritdoc */
@@ -39,9 +39,15 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new Error('Method not implemented.');
+    return this.validateBlake2b(txId);
   }
 
+  validateBlake2b(hash: string): boolean {
+    if (hash?.length !== 64) {
+      return false;
+    }
+    return hash.match(/^[a-zA-Z0-9]+$/) !== null;
+  }
   /**
    * Checks if raw transaction can be deserialized
    *
