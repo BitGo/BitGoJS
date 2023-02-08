@@ -2,10 +2,10 @@
  * Zero Knowledge Range Proofs as described in (Two-party generation of DSA signatures)[1].
  * [1]: https://reitermk.github.io/papers/2004/IJIS.pdf
  */
-import { createHash } from 'crypto';
+import { createHash, createDiffieHellman } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
+import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
@@ -13,8 +13,13 @@ import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 async function generateModulus(bitlength: number): Promise<bigint> {
   let n, p, q;
   do {
-    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
-    n = p * q;
+    // Use crypto.createDiffieHellman because it generates safe primes
+    // (ie in the form p = 2q + 1 where q is also prime.
+    [p, q] = await Promise.all([
+      createDiffieHellman(Math.floor(bitlength / 2)),
+      createDiffieHellman(Math.floor(bitlength / 2)),
+    ]);
+    n = bigIntFromBufferBE(p.getPrime()) * bigIntFromBufferBE(q.getPrime());
   } while (q === p || bitLength(n) !== bitlength);
   return n;
 }
