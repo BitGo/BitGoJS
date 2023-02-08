@@ -10,6 +10,8 @@ export * as classify from './classify';
 
 export * from './noble_ecc';
 
+export * from './noble_crypto';
+
 export {
   networks,
   Network,

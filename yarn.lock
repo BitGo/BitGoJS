@@ -919,6 +919,11 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
+"@brandonblack/musig@^0.0.1-alpha.0":
+  version "0.0.1-alpha.0"
+  resolved "https://registry.yarnpkg.com/@brandonblack/musig/-/musig-0.0.1-alpha.0.tgz#7b65c9646545705fee60fdc064e2dc65dec4d7e0"
+  integrity sha512-lgM+9UD4fpMTDCczx7V1csY+cQ8WXag8qRz/hwxrPATwzszfKb9IwnCggWJj7o7Ou/t2CFVqfiErmayLf3AW7g==
+
 "@celo/base@2.3.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@celo/base/-/base-2.3.0.tgz#a6369473200d5cc7e856a2a95a3f4d2fddfbfc6b"
