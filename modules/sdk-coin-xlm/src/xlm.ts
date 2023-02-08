@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
@@ -1042,9 +1043,11 @@ export class Xlm extends BaseCoin {
         throw new Error('keychains are required, but could not be fetched');
       }
 
+      assert(keychains.backup.pub);
       if (this.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
         throw new Error('transaction signed with wrong key');
       }
+      assert(keychains.user.pub);
       if (!this.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
         throw new Error('transaction signature invalid');
       }

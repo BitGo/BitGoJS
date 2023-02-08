@@ -647,7 +647,10 @@ export class Wallet implements IWallet {
       ...params,
       txPrebuild: response,
       keychain: keychains[0],
-      pubs: keychains.map((k) => k.pub),
+      pubs: keychains.map((k) => {
+        assert(k.pub);
+        return k.pub;
+      }),
     };
     const signedTransaction = await this.signTransaction(transactionParams);
     const selectParams = _.pick(params, ['comment', 'otp']);
@@ -1576,7 +1579,10 @@ export class Wallet implements IWallet {
     let { pubs } = params;
     if (!pubs && this.baseCoin.keyIdsForSigning().length > 1) {
       const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this });
-      pubs = keychains.map((k) => k.pub);
+      pubs = keychains.map((k) => {
+        assert(k.pub);
+        return k.pub;
+      });
     }
 
     const signTransactionParams = {
@@ -1662,7 +1668,6 @@ export class Wallet implements IWallet {
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
-      pubs: keychains.map((k) => k.pub),
       reqId: params.reqId,
     };
     return this.signMessageTss(presign);
@@ -1778,9 +1783,14 @@ export class Wallet implements IWallet {
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
-      pubs: keychains.map((k) => k.pub),
       reqId: params.reqId,
     };
+    if (this._wallet.multisigType === 'onchain') {
+      signingParams.pubs = keychains.map((k) => {
+        assert(k.pub);
+        return k.pub;
+      });
+    }
 
     try {
       return await this.signTransaction(signingParams);

@@ -50,6 +50,7 @@ describe('V2 Wallet:', function () {
       '5b3424f91bf349930e34017700000000',
     ],
     coinSpecific: {},
+    multisigType: 'onchain',
   };
   const wallet = new Wallet(bitgo, basecoin, walletData);
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -318,6 +319,7 @@ describe('V2 Wallet:', function () {
           '598f606cc8e43aef09fcb785221d9dd2',
           '5935d59cf660764331bafcade1855fd7',
         ],
+        multisigType: 'onchain',
       };
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
     });
@@ -458,11 +460,11 @@ describe('V2 Wallet:', function () {
         .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
         .reply(200)
         .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
-        .reply(200)
+        .reply(200, { pub: 'pub' })
         .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
-        .reply(200)
+        .reply(200, { pub: 'pub' })
         .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
-        .reply(200)
+        .reply(200, { pub: 'pub' })
         .post(wallet.url('/tx/send').replace(bgUrl, ''))
         .reply(200, { ok: true });
 
