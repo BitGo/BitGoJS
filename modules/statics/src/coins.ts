@@ -36,7 +36,18 @@ import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
-import { ofc, ofcAlgoToken, ofcerc20, ofcStellarToken, tofc, tofcAlgoToken, tofcerc20, tofcStellarToken } from './ofc';
+import {
+  ofc,
+  ofcAlgoToken,
+  ofcerc20,
+  ofcHederaToken,
+  ofcStellarToken,
+  tofc,
+  tofcAlgoToken,
+  tofcerc20,
+  tofcHederaToken,
+  tofcStellarToken,
+} from './ofc';
 import { utxo, UtxoCoin } from './utxo';
 
 const BCH_FEATURES = [
@@ -1587,6 +1598,10 @@ export const coins = CoinMap.fromCoins([
   ofcAlgoToken('ofcalgo:usdc', 'Algorand USDC', 6, UnderlyingAsset['algo:USDC-31566704']),
 
   tofcAlgoToken('ofctalgo:usdc', 'Test Algorand USDC', 6, UnderlyingAsset['talgo:USDC-10458941']),
+
+  ofcHederaToken('ofchbar:usdc', 'Mainnet Hedera USD Coin', 6, UnderlyingAsset.USDC),
+
+  tofcHederaToken('ofcthbar:usdc', 'Testnet Hedera USD Coin', 6, UnderlyingAsset.USDC),
 
   ofcStellarToken(
     'ofcxlm:usdc',

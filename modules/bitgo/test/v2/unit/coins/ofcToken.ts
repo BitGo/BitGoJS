@@ -244,6 +244,27 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for Hedera USDC', function () {
+    const tokenMain = 'ofchbar:usdc';
+    const tokenTest = 'ofcthbar:usdc';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Mainnet Hedera USD Coin');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Testnet Hedera USD Coin');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+  });
+
   describe('check ofc tokens for Stellar USDC', function () {
     const tokenMain = 'ofcxlm:usdc';
     const tokenTest = 'ofctxlm:tst';
