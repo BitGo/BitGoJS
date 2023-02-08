@@ -4,13 +4,18 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
-import { MoveCallTx, RequestAddDelegation, SuiTransactionType } from '../../../src/lib/iface';
+import {
+  MoveCallTx,
+  RequestAddDelegation,
+  RequestWithdrawDelegation,
+  SuiTransactionType,
+} from '../../../src/lib/iface';
 import { KeyPair } from '../../../src';
 
 describe('Sui Staking Builder', () => {
   const factory = getBuilderFactory('tsui');
 
-  describe('Succeed', () => {
+  describe('Succeed AddDelegation', () => {
     it('should build a staking addDelegation tx with one coin', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddDelegation);
@@ -113,6 +118,76 @@ describe('Sui Staking Builder', () => {
       const txBuilder2 = factory.from(serializedTx);
       const tx = await txBuilder2.build();
       tx.type.should.equal(TransactionType.AddDelegator);
+      const signableHex2 = tx.signablePayload.toString('hex');
+      signableHex.should.equal(signableHex2);
+      const signable = new Uint8Array(Buffer.from(signableHex2, 'hex'));
+      const signaturePayment = keyPair.signMessageinUint8Array(signable);
+      txBuilder2.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signaturePayment));
+
+      const signedTransaction2 = await txBuilder2.build();
+      signedTransaction.id.should.equal(tx.id);
+      const finalSig2 = (signedTransaction2 as SuiTransaction<MoveCallTx>).serializedSig;
+      const finalSigString2 = Buffer.from(finalSig2).toString('base64');
+      finalSigString.should.equal(finalSigString2);
+      const serializedTransaction2 = signedTransaction2.toBroadcastFormat();
+      serializedTransaction2.should.equal(serializedTransaction);
+    });
+  });
+
+  describe('Succeed WithdrawDelegation', () => {
+    it('should build a staking WithdrawDelegation tx with one coin', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.WithdrawDelegation);
+      txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
+      txBuilder.requestWithdrawDelegation(testData.requestWithdrawDelegation);
+
+      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
+      txBuilder.gasPayment(testData.stakingGasPayment);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.StakingWithdraw);
+      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasPayment.should.deepEqual(testData.stakingGasPayment);
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.requestWithdrawDelegation.delegation.objectId,
+        value: '',
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.STAKING_SENDER_ADDRESS,
+        value: '',
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.WITHDRAW_DELEGATION_TX);
+    });
+
+    it('should submit a WithdrawDelegation transaction', async () => {
+      const prvKey = 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22';
+      const keyPair = new KeyPair({ prv: prvKey });
+      const senderAddress = keyPair.getAddress();
+      const requestWithdrawDelegation: RequestWithdrawDelegation = testData.requestWithdrawDelegation;
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.WithdrawDelegation);
+      txBuilder.sender(senderAddress);
+      txBuilder.requestWithdrawDelegation(requestWithdrawDelegation);
+      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
+      txBuilder.gasPayment(testData.stakingGasPayment);
+
+      const unsignedTx = await txBuilder.build();
+      const signableHex = unsignedTx.signablePayload.toString('hex');
+      const serializedTx = unsignedTx.toBroadcastFormat();
+      txBuilder.sign({ key: keyPair.getKeys().prv });
+      const signedTransaction = await txBuilder.build();
+      const serializedTransaction = signedTransaction.toBroadcastFormat();
+      const finalSig = (signedTransaction as SuiTransaction<MoveCallTx>).serializedSig;
+      const finalSigString = Buffer.from(finalSig).toString('base64');
+
+      const txBuilder2 = factory.from(serializedTx);
+      const tx = await txBuilder2.build();
+      tx.type.should.equal(TransactionType.StakingWithdraw);
       const signableHex2 = tx.signablePayload.toString('hex');
       signableHex.should.equal(signableHex2);
       const signable = new Uint8Array(Buffer.from(signableHex2, 'hex'));

@@ -5,6 +5,8 @@ export enum SuiTransactionType {
   PaySui = 'PaySui',
   PayAllSui = 'PayAllSui',
   AddDelegation = 'AddDelegation',
+  WithdrawDelegation = 'WithdrawDelegation',
+  SwitchDelegator = 'SwitchDelegator',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -139,12 +141,6 @@ export interface MoveCallTx {
   arguments: SuiJsonValue[];
 }
 
-export interface RequestAddDelegation {
-  coins: SuiObjectRef[];
-  amount: number;
-  validatorAddress: SuiAddress;
-}
-
 export interface SuiTransaction<T = PayTx | MoveCallTx> {
   type: SuiTransactionType;
   sender: string;
@@ -152,6 +148,17 @@ export interface SuiTransaction<T = PayTx | MoveCallTx> {
   gasBudget: number;
   gasPrice: number;
   gasPayment: SuiObjectRef;
+}
+// Staking DTOs
+export interface RequestAddDelegation {
+  coins: SuiObjectRef[];
+  amount: number;
+  validatorAddress: SuiAddress;
+}
+
+export interface RequestWithdrawDelegation {
+  delegation: SuiObjectRef;
+  stakedCoinId: SuiObjectRef;
 }
 
 /**
