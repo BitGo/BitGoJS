@@ -73,7 +73,7 @@ describe('generateQrData', function () {
 
     assert(qrData.passcode);
     qrData.passcode.title.should.equal('D: Encrypted wallet Password');
-    qrData.passcode.description.should.equal('This is the wallet password, encrypted client-side with a key held by\r\nBitGo.');
+    qrData.passcode.description.should.equal('This is the wallet password, encrypted client-side with a key held by BitGo.');
     const decryptedData = decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
@@ -200,12 +200,12 @@ describe('generateQrData', function () {
 
     assert(qrData.backup);
     qrData.backup.title.should.equal('B: User To Backup Key Share');
-    qrData.backup.description.should.equal(`This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
+    qrData.backup.description.should.equal(`This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness, contact ${backupKeyProvider} and they will help you recover your funds.`);
     qrData.backup.data.should.equal(JSON.stringify(userToBackupKeyShare));
 
     assert(qrData.bitgo);
     qrData.bitgo.title.should.equal('C: BitGo To Backup Key Share');
-    qrData.bitgo.description.should.equal(`This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
+    qrData.bitgo.description.should.equal(`This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness, contact ${backupKeyProvider} and they will help you recover your funds.`);
     qrData.bitgo.data.should.equal(JSON.stringify(bitgoToBackupKeyShare));
   });
 });

@@ -6,7 +6,7 @@ import * as assert from 'assert';
 export interface GenerateQrDataParams {
   // The backup keychain as it is returned from the BitGo API upon creation
   backupKeychain: Keychain,
-  // The 3rd party provider of the backup key if neither the user nor BitGo stores it
+  // The name of the 3rd party provider of the backup key if neither the user nor BitGo stores it
   backupKeyProvider?: string;
   // The key id of the backup key, only used for cold keys
   backupMasterKey?: string;
@@ -94,8 +94,8 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
     assert(userToBackupShare);
     return {
       title: 'B: User To Backup Key Share',
-      description: `This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
-        `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
+      description: `This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness,` +
+        ` contact ${backupKeyProvider} and they will help you recover your funds.`,
       data: JSON.stringify(userToBackupShare),
     };
   }
@@ -132,8 +132,8 @@ function generateBitGoQrData(bitgoKeychain: Keychain, {
     assert(bitgoToBackupShare);
     return {
       title: 'C: BitGo To Backup Key Share',
-      description: `This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
-        `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
+      description: `This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness,` +
+        ` contact ${backupKeyProvider} and they will help you recover your funds.`,
       data: JSON.stringify(bitgoToBackupShare),
     };
   }
@@ -178,7 +178,7 @@ export function generateQrData({
 
     qrData.passcode = {
       title: 'D: Encrypted wallet Password',
-      description: 'This is the wallet password, encrypted client-side with a key held by\r\nBitGo.',
+      description: 'This is the wallet password, encrypted client-side with a key held by BitGo.',
       data: encryptedWalletPasscode,
     };
   }
