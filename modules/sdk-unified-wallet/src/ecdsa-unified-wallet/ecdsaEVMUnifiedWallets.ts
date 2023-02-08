@@ -7,16 +7,16 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { UnifiedWalletID, UnifiedWallet, GenerateUnifiedWalletOptions } from '../types';
-import { supportedCoins, EvmWalletCoins } from './types';
+import { supportedCoins, supportedTestCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
 const isEmpty = (obj) => [Object, Array].includes((obj || {}).constructor) && !Object.entries(obj || {}).length;
 
 export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
-  private coinIdMapping: Record<EvmWalletCoins, Wallet> = {};
+  private coinIdMapping: Record<string, Wallet> = {};
   private unifiedWallet: UnifiedWallet;
-  constructor(bitgo: BitGoBase, coinName = 'eth') {
-    super(bitgo, coinName);
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
     this.urlPath = '/wallet/evm';
   }
 
@@ -47,8 +47,16 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     };
     const walletIDs: UnifiedWalletID[] = [];
     let walletData;
+    let coins: string[];
+    switch (this.bitgo.getEnv()) {
+      case 'prod':
+        coins = supportedCoins;
+        break;
+      default:
+        coins = supportedTestCoins;
+    }
 
-    for (const coin of supportedCoins) {
+    for (const coin of coins) {
       walletData = await this.generateCoinWalletData(coin, walletParams, keychainsTriplet);
       const evmID: UnifiedWalletID = {
         coin,
