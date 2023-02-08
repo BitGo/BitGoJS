@@ -1,4 +1,4 @@
-import { RequestAddDelegation } from '../../src/lib/iface';
+import { RequestAddDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
 
 export const addresses = {
   validAddresses: [
@@ -102,6 +102,9 @@ export const ADD_DELEGATION_TX_ONE_COIN =
 export const ADD_DELEGATION_TX_MUL_COIN =
   'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0fcmVxdWVzdF9hZGRfZGVsZWdhdGlvbl9tdWxfY29pbgAEAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAgIA04qu2gdWrA6gjyu5Mh0Uk67VReVdbQ8AAAAAACB4naj6xTwn26Zp38B8igAEMaHHZ7Wrwe4stWu/LX/+BACGGeGdNxXaEDTmBSzwgbqKPTZWVkQBAAAAAAAAIL2aQ2LqY28LGQb+/MLm667s3z1B7myvJpkX7XZqOFYSAAkBAC0xAQAAAAAAFF0G83ZU8RzdJxeQiPz+raqyHhPvj6UdQ6pFKizuLBUEF9HD3i2ydy00DUx6Imb68sxm/W0MxgXvrv3Nd11tDwAAAAAAIJaT9hMNZoKfDzZm+4C1JUX/NDraziXrSPLnxhCJMhLxAQAAAAAAAABAQg8AAAAAAA==';
 
+export const WITHDRAW_DELEGATION_TX =
+  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0bcmVxdWVzdF93aXRoZHJhd19kZWxlZ2F0aW9uAAMBAQAAAAAAAAAAAAAAAAAAAAAAAAAFAQAAAAAAAAABAEQDN090dM0eVaYicFh/7SAT0uJJIvMIAAAAAAAgIEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4kBAAqsjrgdtdnfoUmhSVfmKRXkInvEFZ0IAAAAAAAgUnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ2PpR1DqkUqLO4sFQQX0cPeLbJ3LTQNTHoiZvryzGb9bQzGBe+u/c13XW0PAAAAAAAglpP2Ew1mgp8PNmb7gLUlRf80OtrOJetI8ufGEIkyEvEBAAAAAAAAAEBCDwAAAAAA';
+
 export const invalidPayTxs = [
   {
     coins: [
@@ -167,4 +170,20 @@ export const requestAddDelegationTxMultipleCoins: RequestAddDelegation = {
   coins: [coinToStakeOne, coinToStakeTwo],
   amount: STAKING_AMOUNT,
   validatorAddress: VALIDATOR_ADDRESS,
+};
+
+export const requestWithdrawDelegation: RequestWithdrawDelegation = {
+  delegation: {
+    objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
+    version: 586530,
+    digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
+    // type: '0x2::staking_pool::Delegation'
+  },
+  stakedCoinId: {
+    objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
+    version: 564501,
+    digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
+    // type: '0x2::staking_pool::StakedSui',
+  },
+  amount: STAKING_AMOUNT,
 };

@@ -1,4 +1,5 @@
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
+export const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
 // Need to keep in sync with
 // https://github.com/MystenLabs/sui/blob/f32877f2e40d35a008710c232e49b57aab886462/crates/sui-types/src/messages.rs#L338
