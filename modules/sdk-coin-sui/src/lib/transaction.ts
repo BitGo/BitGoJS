@@ -2,44 +2,35 @@ import {
   BaseKey,
   BaseTransaction,
   InvalidTransactionError,
-  ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
-  TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { SuiObjectRef, SuiTransaction, TransactionExplanation, TxData, TxDetails } from './iface';
+import { MoveCallTx, PayTx, SuiObjectRef, SuiTransaction, SuiTransactionType, TxData, TxDetails } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { bcs } from './bcs';
-import {
-  SER_BUFFER_SIZE,
-  SIGNATURE_SCHEME_BYTES,
-  SUI_GAS_PRICE,
-  SUI_INTENT_BYTES,
-  SuiTransactionType,
-  UNAVAILABLE_TEXT,
-} from './constants';
+import { SER_BUFFER_SIZE, SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
 import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 
-export class Transaction extends BaseTransaction {
-  private _suiTransaction: SuiTransaction;
-  private _signature: Signature;
+export abstract class Transaction<T> extends BaseTransaction {
+  protected _suiTransaction: SuiTransaction<T>;
+  protected _signature: Signature;
   private _serializedSig: Uint8Array;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  get suiTransaction(): SuiTransaction {
+  get suiTransaction(): SuiTransaction<T> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: SuiTransaction): void {
+  setSuiTransaction(tx: SuiTransaction<T>): void {
     this._suiTransaction = tx;
   }
 
@@ -76,10 +67,6 @@ export class Transaction extends BaseTransaction {
     this._serializedSig = serialized_sig;
   }
 
-  getInputCoins(): SuiObjectRef[] {
-    return this.suiTransaction.payTx.coins;
-  }
-
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
@@ -110,79 +97,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): TxData {
-    if (!this._suiTransaction) {
-      throw new ParseTransactionError('Empty transaction');
-    }
-
-    const tx = this._suiTransaction;
-    let txDetails: TxDetails;
-
-    switch (tx.type) {
-      case SuiTransactionType.Pay:
-        txDetails = {
-          Pay: {
-            coins: tx.payTx.coins,
-            recipients: tx.payTx.recipients,
-            amounts: tx.payTx.amounts,
-          },
-        };
-        break;
-      case SuiTransactionType.PaySui:
-        txDetails = {
-          PaySui: {
-            coins: tx.payTx.coins,
-            recipients: tx.payTx.recipients,
-            amounts: tx.payTx.amounts,
-          },
-        };
-        break;
-      case SuiTransactionType.PayAllSui:
-        txDetails = {
-          PayAllSui: {
-            coins: tx.payTx.coins,
-            recipient: tx.payTx.recipients[0],
-          },
-        };
-        break;
-      default:
-        throw new InvalidTransactionError('SuiTransactionType not supported');
-    }
-
-    return {
-      id: this._id,
-      kind: { Single: txDetails },
-      sender: tx.sender,
-      gasPayment: tx.gasPayment,
-      gasBudget: tx.gasBudget,
-      gasPrice: SUI_GAS_PRICE,
-    };
-  }
-
-  /** @inheritDoc */
-  explainTransaction(): TransactionExplanation {
-    const result = this.toJson();
-    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'];
-    const outputs: TransactionRecipient[] = [];
-
-    const explanationResult: TransactionExplanation = {
-      displayOrder,
-      id: this.id,
-      outputs,
-      outputAmount: '0',
-      changeOutputs: [],
-      changeAmount: '0',
-      fee: { fee: this.suiTransaction.gasBudget.toString() },
-      type: this.type,
-    };
-
-    switch (this.type) {
-      case TransactionType.Send:
-        return this.explainTransferTransaction(result, explanationResult);
-      default:
-        throw new InvalidTransactionError('Transaction type not supported');
-    }
-  }
+  abstract toJson(): TxData;
 
   /**
    * Set the transaction type.
@@ -194,105 +109,21 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   *  get the correct txData with transaction type
+   */
+  abstract getTxData(): TxData;
+
+  /**
    * Load the input and output data on this transaction.
    */
-  loadInputsAndOutputs(): void {
-    if (!this.suiTransaction) {
-      return;
-    }
-
-    const tx = this.suiTransaction;
-    const payTx = tx.payTx;
-    const recipients = payTx.recipients;
-    const amounts = payTx.amounts;
-    if (tx.type !== SuiTransactionType.PayAllSui && recipients.length !== amounts.length) {
-      throw new Error(
-        `The length of recipients ${recipients.length} does not equal to the length of amounts ${amounts.length}`
-      );
-    }
-
-    const isEmptyAmount = amounts.length === 0;
-    this._outputs = recipients.map((recipient, index) => ({
-      address: recipient,
-      value: isEmptyAmount ? '' : amounts[index].toString(),
-      coin: this._coinConfig.name,
-    }));
-
-    const totalAmount = isEmptyAmount ? '' : amounts.reduce((accumulator, current) => accumulator + current, 0);
-    this._inputs = [
-      {
-        address: tx.sender,
-        value: totalAmount.toString(),
-        coin: this._coinConfig.name,
-      },
-    ];
-  }
+  abstract loadInputsAndOutputs(): void;
 
   /**
    * Sets this transaction payload
    *
    * @param rawTransaction
    */
-  fromRawTransaction(rawTransaction: string): void {
-    try {
-      utils.isValidRawTransaction(rawTransaction);
-      this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction);
-      this._type = TransactionType.Send;
-      this.loadInputsAndOutputs();
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  /**
-   * Helper function for serialize() to get the correct txData with transaction type
-   */
-  private getTxData(): TxData {
-    if (!this._suiTransaction) {
-      throw new InvalidTransactionError('empty transaction');
-    }
-    const suiTx = this._suiTransaction;
-    let tx: TxDetails;
-
-    switch (suiTx.type) {
-      case SuiTransactionType.Pay:
-        tx = {
-          Pay: {
-            coins: suiTx.payTx.coins,
-            recipients: suiTx.payTx.recipients,
-            amounts: suiTx.payTx.amounts,
-          },
-        };
-        break;
-      case SuiTransactionType.PaySui:
-        tx = {
-          PaySui: {
-            coins: suiTx.payTx.coins,
-            recipients: suiTx.payTx.recipients,
-            amounts: suiTx.payTx.amounts,
-          },
-        };
-        break;
-      case SuiTransactionType.PayAllSui:
-        tx = {
-          PayAllSui: {
-            coins: suiTx.payTx.coins,
-            recipient: suiTx.payTx.recipients[0],
-          },
-        };
-        break;
-      default:
-        throw new InvalidTransactionError('SuiTransactionType not supported');
-    }
-
-    return {
-      kind: { Single: tx },
-      gasPayment: suiTx.gasPayment,
-      gasPrice: SUI_GAS_PRICE,
-      gasBudget: suiTx.gasBudget,
-      sender: suiTx.sender,
-    };
-  }
+  abstract fromRawTransaction(rawTransaction: string): void;
 
   getDataBytes(): Uint8Array {
     const txData = this.getTxData();
@@ -344,20 +175,18 @@ export class Transaction extends BaseTransaction {
       type = SuiTransactionType.PaySui;
     } else if (txDetails.hasOwnProperty('PayAllSui')) {
       type = SuiTransactionType.PayAllSui;
+    } else if (txDetails.hasOwnProperty('Call')) {
+      type = SuiTransactionType.AddDelegation;
     } else {
       throw new Error('Transaction type not supported: ' + txDetails);
     }
 
-    const { coins, recipients, amounts } = this.getProperTxDetails(k, type);
+    const tx = this.getProperTxDetails(k, type);
 
     return {
       type,
       sender: utils.normalizeHexId(k.sender),
-      payTx: {
-        coins,
-        recipients,
-        amounts,
-      },
+      tx: tx,
       gasBudget: k.gasBudget.toNumber(),
       gasPrice: k.gasPrice.toNumber(),
       gasPayment: {
@@ -368,68 +197,53 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  static getProperTxDetails(
-    k: any,
-    type: SuiTransactionType
-  ): { coins: SuiObjectRef[]; recipients: string[]; amounts: number[] } {
-    // bcs deserialized number into Big Number and removed '0x' prefix from addresses, needs to convert them back
-    let coins;
-    let recipients;
-    let amounts;
-
+  static getProperTxDetails(k: any, type: SuiTransactionType): PayTx | MoveCallTx {
     switch (type) {
       case SuiTransactionType.Pay:
-        coins = k.kind.Single.Pay.coins;
-        recipients = k.kind.Single.Pay.recipients;
-        amounts = k.kind.Single.Pay.amounts;
-        break;
+        return {
+          coins: this.normalizeCoins(k.kind.Single.Pay.coins),
+          recipients: k.kind.Single.Pay.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
+          amounts: k.kind.Single.Pay.amounts.map((amount) => amount.toNumber()) as number[],
+        };
       case SuiTransactionType.PaySui:
-        coins = k.kind.Single.PaySui.coins;
-        recipients = k.kind.Single.PaySui.recipients;
-        amounts = k.kind.Single.PaySui.amounts;
-        break;
+        return {
+          coins: this.normalizeCoins(k.kind.Single.PaySui.coins),
+          recipients: k.kind.Single.PaySui.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
+          amounts: k.kind.Single.PaySui.amounts.map((amount) => amount.toNumber()) as number[],
+        };
       case SuiTransactionType.PayAllSui:
-        coins = k.kind.Single.PayAllSui.coins;
-        recipients = [k.kind.Single.PayAllSui.recipient];
-        amounts = []; // PayAllSui deserialization doesn't return the amount
-        break;
+        return {
+          coins: this.normalizeCoins(k.kind.Single.PayAllSui.coins),
+          recipients: [k.kind.Single.PayAllSui.recipient].map((recipient) =>
+            utils.normalizeHexId(recipient)
+          ) as string[],
+          amounts: [], // PayAllSui deserialization doesn't return the amount
+        };
+      case SuiTransactionType.AddDelegation:
+        return {
+          package: k.kind.Single.Call.package,
+          module: k.kind.Single.Call.module,
+          function: k.kind.Single.Call.function,
+          typeArguments: k.kind.Single.Call.typeArguments,
+          arguments: [
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
+            this.normalizeCoins(utils.mapCallArgTopCoins(k.kind.Single.Call.arguments[1])),
+            utils.mapCallArgToAmount(k.kind.Single.Call.arguments[2]),
+            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])),
+          ],
+        };
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
+  }
 
-    coins = coins.map((coin): SuiObjectRef => {
+  private static normalizeCoins(coins: any[]): SuiObjectRef[] {
+    return coins.map((coin) => {
       return {
         objectId: utils.normalizeHexId(coin.objectId),
         version: coin.version.toNumber(),
         digest: coin.digest,
       };
-    }) as SuiObjectRef[];
-    recipients = recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[];
-    amounts = amounts.map((amount) => amount.toNumber()) as number[];
-
-    return { coins, recipients, amounts };
-  }
-
-  /**
-   * Returns a complete explanation for a transfer transaction
-   * @param {TxData} json The transaction data in json format
-   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
-   * @returns {TransactionExplanation}
-   */
-  explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const recipients = this.suiTransaction.payTx.recipients;
-    const amounts = this.suiTransaction.payTx.amounts;
-
-    const outputs: TransactionRecipient[] = recipients.map((recipient, index) => ({
-      address: recipient,
-      amount: amounts.length === 0 ? '' : amounts[index].toString(),
-    }));
-    const outputAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
-
-    return {
-      ...explanationResult,
-      outputAmount,
-      outputs,
-    };
+    });
   }
 }

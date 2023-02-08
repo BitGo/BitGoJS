@@ -149,6 +149,36 @@ describe('SUI:', function () {
     });
   });
 
+  describe('Parse Staking Transactions: ', () => {
+    const transferInputsResponse = {
+      address: testData.STAKING_SENDER_ADDRESS,
+      amount: new BigNumber(testData.STAKING_AMOUNT).plus(testData.STAKING_GAS_BUDGET).toFixed(),
+    };
+
+    const transferOutputsResponse = {
+      address: testData.STAKING_SENDER_ADDRESS,
+      amount: testData.STAKING_AMOUNT.toString(),
+    };
+
+    it('should parse a staking requestAddDelegation transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [transferInputsResponse],
+        outputs: [transferOutputsResponse],
+      });
+    });
+
+    it('should fail to parse a staking requestAddDelegation transaction when explainTransaction response is undefined', async function () {
+      const stub = sinon.stub(Sui.prototype, 'explainTransaction');
+      stub.resolves(undefined);
+      await basecoin
+        .parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN })
+        .should.be.rejectedWith('Invalid transaction');
+      stub.restore();
+    });
+  });
+
   describe('Address Validation', () => {
     let keychains;
     let commonKeychain;

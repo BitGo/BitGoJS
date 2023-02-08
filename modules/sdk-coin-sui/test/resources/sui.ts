@@ -1,3 +1,5 @@
+import { RequestAddDelegation } from '../../src/lib/iface';
+
 export const addresses = {
   validAddresses: [
     '0xcba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08',
@@ -94,6 +96,12 @@ export const TRANSFER_PAY_ALL_SUI_TX_WITHOUT_GAS_PAYMENT_AND_NOT_IN_PAYTX =
 export const INVALID_RAW_TX =
   'AAAAAAAAAAAAA6e73616374696f6e446174613a3a02111b8a49f67370bc4a58e500b9e64cb6547ee9b403000000000000002064ba1fb2f2fbd2938a350015d601f4db89cd7e8e2370d0dd9ae3ac4f635c1581111b8a49f67370bc4a58e500b9e64cb6462e39b802000000000000002064ba1fb2f2fbd2938a350015d601f4db89cd7e8e2370d0dd9ae3ac47aa1ff81f01c4173a804406a365e69dfb297d4eaaf002546ebd016400000000000000cba4a48bb0f8b586c167e5dcefaa1c5e96ab3f0836d6ca08f2081732944d1e5b6b406a4a462e39b8030000000000000020b9490ede63215262c434e03f606d9799f3ba704523ceda184b386d47aa1ff81f01000000000000006400000000000000';
 
+export const ADD_DELEGATION_TX_ONE_COIN =
+  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0fcmVxdWVzdF9hZGRfZGVsZWdhdGlvbl9tdWxfY29pbgAEAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAgEA04qu2gdWrA6gjyu5Mh0Uk67VReVdbQ8AAAAAACB4naj6xTwn26Zp38B8igAEMaHHZ7Wrwe4stWu/LX/+BAAJAQAtMQEAAAAAABRdBvN2VPEc3ScXkIj8/q2qsh4T74+lHUOqRSos7iwVBBfRw94tsnctNA1MeiJm+vLMZv1tDMYF7679zXddbQ8AAAAAACCWk/YTDWaCnw82ZvuAtSVF/zQ62s4l60jy58YQiTIS8QEAAAAAAAAAQEIPAAAAAAA=';
+
+export const ADD_DELEGATION_TX_MUL_COIN =
+  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0fcmVxdWVzdF9hZGRfZGVsZWdhdGlvbl9tdWxfY29pbgAEAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAgIA04qu2gdWrA6gjyu5Mh0Uk67VReVdbQ8AAAAAACB4naj6xTwn26Zp38B8igAEMaHHZ7Wrwe4stWu/LX/+BACGGeGdNxXaEDTmBSzwgbqKPTZWVkQBAAAAAAAAIL2aQ2LqY28LGQb+/MLm667s3z1B7myvJpkX7XZqOFYSAAkBAC0xAQAAAAAAFF0G83ZU8RzdJxeQiPz+raqyHhPvj6UdQ6pFKizuLBUEF9HD3i2ydy00DUx6Imb68sxm/W0MxgXvrv3Nd11tDwAAAAAAIJaT9hMNZoKfDzZm+4C1JUX/NDraziXrSPLnxhCJMhLxAQAAAAAAAABAQg8AAAAAAA==';
+
 export const invalidPayTxs = [
   {
     coins: [
@@ -122,3 +130,41 @@ export const invalidPayTxs = [
     amounts: [0],
   },
 ];
+
+export const STAKING_GAS_BUDGET = 1000000;
+
+export const STAKING_AMOUNT = 20000000;
+
+export const STAKING_SENDER_ADDRESS = '0x8fa51d43aa452a2cee2c150417d1c3de2db2772d';
+
+export const coinToStakeOne = {
+  objectId: '0xd38aaeda0756ac0ea08f2bb9321d1493aed545e5',
+  version: 1011037,
+  digest: 'eJ2o+sU8J9umad/AfIoABDGhx2e1q8HuLLVrvy1//gQ=',
+};
+
+export const coinToStakeTwo = {
+  objectId: '0x8619e19d3715da1034e6052cf081ba8a3d365656',
+  version: 324,
+  digest: 'vZpDYupjbwsZBv78wubrruzfPUHubK8mmRftdmo4VhI=',
+};
+
+export const stakingGasPayment = {
+  objectId: '0x340d4c7a2266faf2cc66fd6d0cc605efaefdcd77',
+  version: 1011037,
+  digest: 'lpP2Ew1mgp8PNmb7gLUlRf80OtrOJetI8ufGEIkyEvE=',
+};
+
+export const VALIDATOR_ADDRESS = '0x5d06f37654f11cdd27179088fcfeadaab21e13ef';
+
+export const requestAddDelegationTxOneCoin: RequestAddDelegation = {
+  coins: [coinToStakeOne],
+  amount: STAKING_AMOUNT,
+  validatorAddress: VALIDATOR_ADDRESS,
+};
+
+export const requestAddDelegationTxMultipleCoins: RequestAddDelegation = {
+  coins: [coinToStakeOne, coinToStakeTwo],
+  amount: STAKING_AMOUNT,
+  validatorAddress: VALIDATOR_ADDRESS,
+};
