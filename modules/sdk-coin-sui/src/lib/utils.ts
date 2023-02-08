@@ -4,26 +4,13 @@ import {
   ParseTransactionError,
   isValidEd25519PublicKey,
   InvalidParameterValueError,
-  TransactionType,
-  NotSupported,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
 import { bcs } from './bcs';
 import { fromB64 } from '@mysten/bcs';
-import {
-  CallArg,
-  ImmOrOwnedArg,
-  MethodNames,
-  ObjectArg,
-  ObjVecArg,
-  SharedObjectRef,
-  SuiAddress,
-  SuiObjectRef,
-  SuiTransactionType,
-} from './iface';
+import { CallArg, ImmOrOwnedArg, ObjectArg, ObjVecArg, SharedObjectRef, SuiAddress, SuiObjectRef } from './iface';
 import { Buffer } from 'buffer';
-import _ from 'lodash';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -205,31 +192,10 @@ export class Utils implements BaseUtils {
    *
    * @param {ObjVecArg} callArg
    */
-  mapCallArgToCoins(callArg: ObjVecArg): SuiObjectRef[] {
+  mapCallArgTopCoins(callArg: ObjVecArg): SuiObjectRef[] {
     return Array.from(callArg.ObjVec).map((it: ObjectArg) => {
       return (it as ImmOrOwnedArg).ImmOrOwned;
     });
-  }
-
-  /**
-   * Map SuiObjectRef object to CallArg
-   *
-   * @param {SuiObjectRef[]} coins
-   * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
-   */
-  mapSuiObjectRefToCallArg(suiObjectRef: SuiObjectRef): CallArg {
-    return {
-      Object: { ImmOrOwned: suiObjectRef },
-    };
-  }
-
-  /**
-   * Map CallArg object to SuiObjectRef
-   *
-   * @param {ObjVecArg} callArg
-   */
-  mapCallArgToSuiObjectRef(callArg: CallArg): SuiObjectRef {
-    return _.get(callArg, 'Object.ImmOrOwned');
   }
 
   /**
@@ -297,40 +263,6 @@ export class Utils implements BaseUtils {
       }
     } catch (e) {
       throw new BuildTransactionError('Failed to deserialize address from call argument');
-    }
-  }
-
-  /**
-   * Get transaction type by function name
-   *
-   * @param {MethodNames} fctName
-   */
-  getTransactionType(fctName: string): TransactionType {
-    switch (fctName) {
-      case MethodNames.RequestAddDelegationMulCoin:
-        return TransactionType.AddDelegator;
-      case MethodNames.RequestWithdrawDelegation:
-        return TransactionType.StakingWithdraw;
-      default:
-        throw new NotSupported(`Staking Transaction type with function ${fctName} not supported`);
-    }
-  }
-
-  /**
-   * Get SUI transaction type by function name
-   *
-   * @param {MethodNames} fctName
-   */
-  getSuiTransactionType(fctName: string): SuiTransactionType {
-    switch (fctName) {
-      case MethodNames.RequestAddDelegationMulCoin:
-        return SuiTransactionType.AddDelegation;
-      case MethodNames.RequestWithdrawDelegation:
-        return SuiTransactionType.WithdrawDelegation;
-      case MethodNames.RequestSwitchDelegation:
-        return SuiTransactionType.SwitchDelegator;
-      default:
-        throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
     }
   }
 }

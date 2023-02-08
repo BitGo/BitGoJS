@@ -16,7 +16,6 @@ import sha3 from 'js-sha3';
 import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
-import _ from 'lodash';
 
 export abstract class Transaction<T> extends BaseTransaction {
   protected _suiTransaction: SuiTransaction<T>;
@@ -177,7 +176,7 @@ export abstract class Transaction<T> extends BaseTransaction {
     } else if (txDetails.hasOwnProperty('PayAllSui')) {
       type = SuiTransactionType.PayAllSui;
     } else if (txDetails.hasOwnProperty('Call')) {
-      type = utils.getSuiTransactionType(_.get(txDetails, 'Call.function'));
+      type = SuiTransactionType.AddDelegation;
     } else {
       throw new Error('Transaction type not supported: ' + txDetails);
     }
@@ -228,21 +227,9 @@ export abstract class Transaction<T> extends BaseTransaction {
           typeArguments: k.kind.Single.Call.typeArguments,
           arguments: [
             utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeCoins(utils.mapCallArgToCoins(k.kind.Single.Call.arguments[1])),
+            this.normalizeCoins(utils.mapCallArgTopCoins(k.kind.Single.Call.arguments[1])),
             utils.mapCallArgToAmount(k.kind.Single.Call.arguments[2]),
             utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])),
-          ],
-        };
-      case SuiTransactionType.WithdrawDelegation:
-        return {
-          package: k.kind.Single.Call.package,
-          module: k.kind.Single.Call.module,
-          function: k.kind.Single.Call.function,
-          typeArguments: k.kind.Single.Call.typeArguments,
-          arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
           ],
         };
       default:
@@ -252,15 +239,11 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   private static normalizeCoins(coins: any[]): SuiObjectRef[] {
     return coins.map((coin) => {
-      return this.normalizeSuiObjectRef(coin);
+      return {
+        objectId: utils.normalizeHexId(coin.objectId),
+        version: coin.version.toNumber(),
+        digest: coin.digest,
+      };
     });
-  }
-
-  private static normalizeSuiObjectRef(obj: SuiObjectRef): SuiObjectRef {
-    return {
-      objectId: utils.normalizeHexId(obj.objectId),
-      version: Number(obj.version),
-      digest: obj.digest,
-    };
   }
 }
