@@ -113,7 +113,11 @@ export class Keychains implements IKeychains {
             newPassword: params.newPassword,
           });
           if (updatedKeychain.encryptedPrv) {
-            changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
+            const changedKeyIdentifier =
+              updatedKeychain.type === 'tss' ? updatedKeychain.commonKeychain : updatedKeychain.pub;
+            if (changedKeyIdentifier) {
+              changedKeys[changedKeyIdentifier] = updatedKeychain.encryptedPrv;
+            }
           }
         } catch (e) {
           // if the password was incorrect, silence the error, throw otherwise
