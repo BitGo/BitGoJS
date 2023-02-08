@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.2.2...@bitgo/account-lib@4.3.0) (2023-02-08)
+
+### Features
+
+- **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+- **sdk-coin-atom:** add atom to account-lib ([9786381](https://github.com/BitGo/BitGoJS/commit/97863817f2e1dd29043482ea10ea408f266526bc))
+
 ## [4.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.2.2...@bitgo/account-lib@4.2.3) (2023-01-30)
 
 **Note:** Version bump only for package @bitgo/account-lib
