@@ -3,6 +3,7 @@ import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { randomBytes, createHash, Hash } from 'crypto';
+import { bip32 } from '@bitgo/utxo-lib';
 import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
@@ -55,7 +56,7 @@ export default class Ecdsa {
    * @param {number} index participant index
    * @param {number} threshold Signing threshold
    * @param {number} numShares  Number of shares
-   * @param {Buffer} seed optional seed to use for key generation
+   * @param {Buffer} seed optional 64 byte seed to use for key generation
    * @param {Boolean} sync optional sync flag, if true then a synchronous version of Paillier key generation is used that does not spawn Worker threads.
    * @returns {Promise<KeyShare>} Returns the private p-share
    * and n-shares to be distributed to participants at their corresponding index.
@@ -65,9 +66,16 @@ export default class Ecdsa {
       throw 'Invalid KeyShare Config';
     }
 
-    if (seed && seed.length !== 72) {
-      throw new Error('Seed must have length 72');
+    if (seed && seed.length < 64) {
+      throw new Error('Seed must have a length of at least 64 bytes');
     }
+
+    let seedWithValidLength = seed;
+    if (seed && seed.length > 64) {
+      // if seed length is greater than 64 bytes, hash seed to 64 bytes.
+      seedWithValidLength = createHash('sha512').update(seed).digest();
+    }
+
     // Generate additively homomorphic encryption key.
     let paillierKeyPair: paillierBigint.KeyPair;
     if (!sync) {
@@ -76,9 +84,13 @@ export default class Ecdsa {
       paillierKeyPair = paillierBigint.generateRandomKeysSync(3072, true);
     }
     const { publicKey, privateKey } = paillierKeyPair;
-    const u = (seed && bigIntFromU8ABE(secp.utils.hashToPrivateKey(seed.slice(0, 40)))) ?? Ecdsa.curve.scalarRandom();
+    // Accept a 64 byte seed and create an extended private key from that seed
+    const secretKey = seedWithValidLength && bip32.fromSeed(seedWithValidLength);
+    const u =
+      (secretKey && secretKey.privateKey && bigIntFromU8ABE(new Uint8Array(secretKey.privateKey))) ??
+      Ecdsa.curve.scalarRandom();
     const y = Ecdsa.curve.basePointMult(u);
-    const chaincode = seed?.slice(40) ?? randomBytes(32);
+    const chaincode = (secretKey && secretKey.chainCode) ?? randomBytes(32);
     // Compute secret shares of the private key
     const { shares: uShares, v } = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
