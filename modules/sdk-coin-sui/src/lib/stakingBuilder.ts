@@ -1,14 +1,15 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, NotImplementedError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import {
-  MoveCallTx,
   MethodNames,
   ModulesNames,
+  MoveCallTx,
   MoveCallTxDetails,
   RequestAddDelegation,
+  RequestWithdrawDelegation,
+  SuiObjectRef,
   SuiTransaction,
   SuiTransactionType,
-  SuiObjectRef,
 } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { SUI_PACKAGE, SUI_SYSTEM_STATE_OBJECT } from './constants';
@@ -16,10 +17,12 @@ import { SuiMoveCallTransactionSchema } from './txnSchema';
 import { StakingTransaction } from './stakingTransaction';
 import { Transaction } from './transaction';
 import BigNumber from 'bignumber.js';
+import utils from './utils';
 
 export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   protected _moveCallTx: MoveCallTx;
   protected _addDelegationTx: RequestAddDelegation;
+  protected _withdrawDelegation: RequestWithdrawDelegation;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -51,32 +54,47 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    * @protected
    */
   protected get transactionType(): TransactionType {
-    return TransactionType.AddDelegator;
+    return utils.getTransactionType(this._moveCallTx.function);
   }
 
   /**
    * Create a new transaction for delegating coins ready to be signed and executed.
    *
-   * @param {RequestAddDelegation} addDelegationTx
+   * @param {RequestAddDelegation} addDelegation
    */
-  requestAddDelegation(addDelegationTx: RequestAddDelegation): this {
-    this.validateAddress({ address: addDelegationTx.validatorAddress });
-    this.validateValue(BigNumber(addDelegationTx.amount));
-    for (const coin of addDelegationTx.coins) {
-      this.validateSuiObjectRef(coin, 'addDelegationTx.coins');
+  requestAddDelegation(addDelegation: RequestAddDelegation): this {
+    this.validateAddress({ address: addDelegation.validatorAddress });
+    this.validateValue(BigNumber(addDelegation.amount));
+    for (const coin of addDelegation.coins) {
+      this.validateSuiObjectRef(coin, 'addDelegation.coins');
     }
-    this._addDelegationTx = addDelegationTx;
+    this._addDelegationTx = addDelegation;
     this._moveCallTx = {
       package: SUI_PACKAGE,
       module: ModulesNames.SuiSystem,
       function: MethodNames.RequestAddDelegationMulCoin,
       typeArguments: [],
-      arguments: [
-        SUI_SYSTEM_STATE_OBJECT,
-        addDelegationTx.coins,
-        addDelegationTx.amount,
-        addDelegationTx.validatorAddress,
-      ],
+      arguments: [SUI_SYSTEM_STATE_OBJECT, addDelegation.coins, addDelegation.amount, addDelegation.validatorAddress],
+    };
+    return this;
+  }
+
+  /**
+   * Create a new transaction for withdrawing coins ready to be signed
+   *
+   * @param {RequestWithdrawDelegation} addDelegationTx
+   */
+  requestWithdrawDelegation(withdrawDelegation: RequestWithdrawDelegation): this {
+    this.validateSuiObjectRef(withdrawDelegation.delegation, 'withdrawDelegation.delegation');
+    this.validateSuiObjectRef(withdrawDelegation.stakedCoinId, 'withdrawDelegation.stakedCoinId');
+
+    this._withdrawDelegation = withdrawDelegation;
+    this._moveCallTx = {
+      package: SUI_PACKAGE,
+      module: ModulesNames.SuiSystem,
+      function: MethodNames.RequestWithdrawDelegation,
+      typeArguments: [],
+      arguments: [SUI_SYSTEM_STATE_OBJECT, withdrawDelegation.delegation, withdrawDelegation.stakedCoinId],
     };
     return this;
   }
@@ -94,6 +112,15 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   protected async buildImplementation(): Promise<Transaction<MoveCallTx>> {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     this.transaction.transactionType(this.transactionType);
+
+    if (this._signer) {
+      this.transaction.sign(this._signer);
+    }
+
+    this._signatures.forEach((signature) => {
+      this.transaction.addSignature(signature.publicKey, signature.signature);
+    });
+
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
@@ -105,7 +132,10 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    */
   initBuilder(tx: StakingTransaction): void {
     this._transaction = tx;
-    this._signatures = [tx.suiSignature];
+
+    if (tx.signature && tx.signature.length > 0) {
+      this._signatures = [tx.suiSignature];
+    }
 
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
@@ -124,7 +154,12 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
           });
           break;
         case MethodNames.RequestWithdrawDelegation:
-          throw new NotImplementedError(`${txDetails.Call.function} not implemented`);
+          this.type(SuiTransactionType.WithdrawDelegation);
+          this.requestWithdrawDelegation({
+            delegation: txDetails.Call.arguments[1] as SuiObjectRef,
+            stakedCoinId: txDetails.Call.arguments[2] as SuiObjectRef,
+          });
+          break;
         case MethodNames.RequestSwitchDelegation:
           throw new NotImplementedError(`${txDetails.Call.function} not implemented`);
         default:

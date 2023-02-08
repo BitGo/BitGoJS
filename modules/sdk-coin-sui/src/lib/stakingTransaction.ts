@@ -80,6 +80,17 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           },
         };
         break;
+      case SuiTransactionType.WithdrawDelegation:
+        txDetails = {
+          Call: {
+            package: suiTx.tx.package || SUI_PACKAGE,
+            module: suiTx.tx.module || ModulesNames.SuiSystem,
+            function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
+            typeArguments: suiTx.tx.typeArguments,
+            arguments: suiTx.tx.arguments,
+          },
+        };
+        break;
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
@@ -125,6 +136,8 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     switch (this.type) {
       case TransactionType.AddDelegator:
         return this.explainAddDelegationTransaction(result, explanationResult);
+      case TransactionType.StakingWithdraw:
+        return this.explainAddDelegationTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
@@ -146,24 +159,42 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     if (!this.suiTransaction) {
       return;
     }
-    if (this.suiTransaction.type === SuiTransactionType.AddDelegation) {
-      const staking_amount = this.suiTransaction.tx.arguments[2].toString();
-      this._inputs = [
-        {
-          address: this.suiTransaction.sender,
-          value: staking_amount, // staking_amount
-          coin: this._coinConfig.name,
-        },
-      ];
-      this._outputs = [
-        {
-          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()), // validator address
-          value: staking_amount, // staking_amount
-          coin: this._coinConfig.name,
-        },
-      ];
-    } else {
-      return;
+    switch (this.suiTransaction.type) {
+      case SuiTransactionType.AddDelegation:
+        const staking_amount = this.suiTransaction.tx.arguments[2].toString();
+        this._inputs = [
+          {
+            address: this.suiTransaction.sender,
+            value: staking_amount, // staking_amount
+            coin: this._coinConfig.name,
+          },
+        ];
+        this._outputs = [
+          {
+            address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()), // validator address
+            value: staking_amount, // staking_amount
+            coin: this._coinConfig.name,
+          },
+        ];
+        break;
+      case SuiTransactionType.WithdrawDelegation:
+        this._inputs = [
+          {
+            address: utils.normalizeHexId((this.suiTransaction.tx.arguments[1] as SuiObjectRef).objectId), // delegator address
+            value: '',
+            coin: this._coinConfig.name,
+          },
+        ];
+        this._outputs = [
+          {
+            address: this.suiTransaction.sender,
+            value: '',
+            coin: this._coinConfig.name,
+          },
+        ];
+        break;
+      default:
+        return;
     }
   }
 
@@ -176,7 +207,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     try {
       utils.isValidRawTransaction(rawTransaction);
       this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as SuiTransaction<MoveCallTx>;
-      this._type = TransactionType.AddDelegator;
+      this._type = utils.getTransactionType(this._suiTransaction.tx.function);
       this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
@@ -205,6 +236,21 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
               utils.mapCoinsToCallArg(suiTx.tx.arguments[1] as SuiObjectRef[]),
               utils.mapAmountToCallArg(Number(suiTx.tx.arguments[2])),
               utils.mapAddressToCallArg(suiTx.tx.arguments[3].toString()),
+            ],
+          },
+        };
+        break;
+      case SuiTransactionType.WithdrawDelegation:
+        tx = {
+          Call: {
+            package: suiTx.tx.package || SUI_FRAMEWORK_ADDRESS,
+            module: suiTx.tx.module || ModulesNames.SuiSystem,
+            function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
+            typeArguments: suiTx.tx.typeArguments,
+            arguments: [
+              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
+              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
+              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
             ],
           },
         };
@@ -244,6 +290,32 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
         },
       ],
       outputAmount: amount,
+    };
+  }
+
+  /**
+   * Returns a complete explanation for a withdraw delegation transaction
+   *
+   * @param {TxData} json The transaction data in json format
+   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
+   * @returns {TransactionExplanation}
+   */
+  explainWithdrawDelegationTransaction(
+    json: TxData,
+    explanationResult: TransactionExplanation
+  ): TransactionExplanation {
+    return {
+      ...explanationResult,
+      fee: {
+        fee: this.suiTransaction.gasBudget.toString(),
+      },
+      type: TransactionType.StakingWithdraw,
+      outputs: [
+        {
+          address: json.sender,
+          amount: '',
+        },
+      ],
     };
   }
 }
