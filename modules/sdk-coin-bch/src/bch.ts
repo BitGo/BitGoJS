@@ -35,11 +35,11 @@ export class Bch extends AbstractUtxoCoin {
    * https://www.bitcoinabc.org/cashaddr. We're sticking with the old base58 format because
    * migrating over to the new format will be laborious, and we want to see how the space evolves
    *
-   * @param address
+   * @param address may or may not be prefixed with the network, example bitcoincash:pppkt7q2axpsm2cajyjtu6x8fsh6ywauzgxmsru962 or pppkt7q2axpsm2cajyjtu6x8fsh6ywauzgxmsru962
    * @param version the version of the desired address, 'base58' or 'cashaddr', defaulting to 'base58'
    * @returns {*} address string
    */
-  canonicalAddress(address, version = 'base58') {
+  canonicalAddress(address: string, version: unknown = 'base58'): string {
     if (version === 'base58') {
       return utxolib.addressFormat.toCanonicalFormat(address, this.network);
     }
