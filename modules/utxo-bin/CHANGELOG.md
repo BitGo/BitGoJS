@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.7.0...@bitgo/utxo-bin@2.7.2) (2023-02-08)
+
+### Bug Fixes
+
+- **utxo-bin:** lock @types/yargs to last working version ([5f9ce73](https://github.com/BitGo/BitGoJS/commit/5f9ce7380e73657e21f7c25f63085869e87d29c9))
+
 ## [2.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.7.0...@bitgo/utxo-bin@2.7.1) (2023-01-30)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

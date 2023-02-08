@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.10.5...@bitgo/abstract-utxo@1.12.0) (2023-02-08)
+
+### Bug Fixes
+
+- accept apiKey for recoverFromWrongChain ([3f27775](https://github.com/BitGo/BitGoJS/commit/3f2777506326ae08d0e5d211146522af0d15c3f2))
+- convert addr to canonical addr during wrongChainRecovery ([2089596](https://github.com/BitGo/BitGoJS/commit/20895964eeac1eedc9f859f0ce9b607313cc6568))
+
+### Features
+
+- update tests for crossChainRecovery ([6cdd3a9](https://github.com/BitGo/BitGoJS/commit/6cdd3a94baa4427412d06e3e151096feea5e26ff))
+- use UtxoApi to facilitate cross chain recoveries ([61151aa](https://github.com/BitGo/BitGoJS/commit/61151aa2634b7fa89f995a85940fd680f87cf854))
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.10.5...@bitgo/abstract-utxo@1.11.0) (2023-01-30)
 
 ### Features
