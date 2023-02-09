@@ -18,7 +18,6 @@ describe('Atom Transaction Builder', async () => {
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
     // Should recreate the same raw tx data when re-build and turned to broadcast format
-    console.log(tx.signature[0]);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTxData.signedTxBase64);
   });
@@ -30,12 +29,11 @@ describe('Atom Transaction Builder', async () => {
       }
     });
 
-    // TODO - make signerAddress validation check to make this throw
-    xit('should throw for invalid sender', function () {
+    it('should throw for invalid sender', function () {
       const invalidSender = 'randomString';
       for (const txBuilder of builders) {
         should(() => txBuilder.signerAddress(invalidSender)).throw(
-          'Invalid or missing signerAddress, got: ' + invalidSender
+          'transactionBuilder: sender isValidAddress check failed :' + invalidSender
         );
       }
     });
@@ -47,21 +45,22 @@ describe('Atom Transaction Builder', async () => {
         should.doesNotThrow(() => txBuilder.gasBudget(testTxData.gasBudget));
       }
     });
-    // TODO - update gasBudget validation to make this throw
-    xit('should throw for invalid gasBudget', function () {
+
+    it('should throw for invalid gasBudget', function () {
       const invalidGasBudget = 0;
       for (const txBuilder of builders) {
-        should(() => txBuilder.gasBudget(invalidGasBudget)).throw('Invalid gas budget ' + invalidGasBudget);
+        should(() => txBuilder.gasBudget({ gas: invalidGasBudget })).throw('Invalid gas limit ' + invalidGasBudget);
       }
     });
   });
 
-  // TODO - have not yet implemented this method
-  xit('validateAddress', function () {
+  it('validateAddress', function () {
     const invalidAddress = { address: 'randomString' };
     for (const builder of builders) {
-      should.doesNotThrow(() => builder.validateAddress(testTxData.sender));
-      should(() => builder.validateAddress(invalidAddress)).throwError('Invalid address ' + invalidAddress.address);
+      should.doesNotThrow(() => builder.validateAddress({ address: testTxData.sender }));
+      should(() => builder.validateAddress(invalidAddress)).throwError(
+        'transactionBuilder: address isValidAddress check failed : ' + invalidAddress.address
+      );
     }
   });
 });

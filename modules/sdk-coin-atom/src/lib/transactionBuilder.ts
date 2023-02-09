@@ -71,7 +71,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   signerAddress(signerAddress: string): this {
     if (!utils.isValidAddress(signerAddress)) {
-      throw new Error('transactionBuilder: sender isValidAddress check failed');
+      throw new Error('transactionBuilder: sender isValidAddress check failed :' + signerAddress);
     }
     this._signerAddress = signerAddress;
     return this;
@@ -149,20 +149,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new BuildTransactionError('validateAddress method not yet implemented');
+    if (!utils.isValidAddress(address.address)) {
+      throw new Error('transactionBuilder: address isValidAddress check failed : ' + address.address);
+    }
   }
 
   private validateAmountData(amountArray: Coin[]): void {
-    // TODO - make the error messages more descriptive of which amount data is failing
+    // TODO [BG-67863]- make the error messages more descriptive of which amount data is failing
     // Do amount checking by casting to numbers/bignumber and comparing as well
-    // for (const amount of amountArray) {
-    //   if (!amount.amount) {
-    //     throw new BuildTransactionError('Invalid amount: undefined');
-    //   }
-    //   if (!amount.denom) {
-    //     throw new BuildTransactionError('Invalid denom: undefined');
-    //   }
-    // }
   }
 
   validateGasBudget(gasBudget: GasFeeLimitData): void {

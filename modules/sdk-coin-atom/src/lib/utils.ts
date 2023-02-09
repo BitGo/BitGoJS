@@ -204,10 +204,7 @@ export class Utils implements BaseUtils {
   }
 
   createSignedTxRaw(atomSignature: Signature, signDoc: SignDoc): TxRaw {
-    console.log('atom sig at this point: ' + atomSignature.signature);
-    console.log('hex of that signature: ' + atomSignature.signature.toString('hex'));
     const stdSignature = encodeSecp256k1Signature(fromHex(atomSignature.publicKey.pub), atomSignature.signature);
-    console.log('stdSig: ' + stdSignature.signature);
     return TxRaw.fromPartial({
       bodyBytes: signDoc.bodyBytes,
       authInfoBytes: signDoc.authInfoBytes,
@@ -221,9 +218,6 @@ export class Utils implements BaseUtils {
   }
 
   isSignedRawTx(rawTransaction: string): boolean {
-    // if (!this.isValidRawTransaction(rawTransaction)) {
-    //   return false;
-    // }
     const decodedTx = this.getDecodedTxFromRawBase64(rawTransaction);
     if (decodedTx.authInfo.signerInfos.length > 0) {
       return true;
