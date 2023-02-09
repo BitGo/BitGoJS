@@ -31,7 +31,6 @@ export interface GenerateQrDataParams {
 interface QrDataEntry {
   data: string;
   description: string;
-  image: string;
   title: string;
   publicMasterKey?: string;
 }
@@ -58,7 +57,6 @@ function generateUserQrData(userKeychain: Keychain, userMasterKey?: string): QrD
   if (userKeychain.encryptedPrv) {
     return {
       title: 'A: User Key',
-      image: '.qrEncryptedUserKey',
       description: 'This is your private key, encrypted with your wallet password.',
       data: userKeychain.encryptedPrv,
     };
@@ -69,7 +67,6 @@ function generateUserQrData(userKeychain: Keychain, userMasterKey?: string): QrD
 
   return {
     title: 'A: Provided User Key',
-    image: '.qrPublicUserKey',
     description: 'This is the public key you provided for your wallet.',
     data: pub,
     publicMasterKey: userMasterKey,
@@ -87,7 +84,6 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   if (backupKeychain.encryptedPrv) {
     return {
       title,
-      image: '.qrEncryptedBackupKey',
       description: 'This is your backup private key, encrypted with your wallet password.',
       data: backupKeychain.encryptedPrv,
     };
@@ -98,7 +94,6 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
     assert(userToBackupShare);
     return {
       title: 'B: User To Backup Key Share',
-      image: '.qrUserToBackupKeyShare',
       description: `This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
         `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
       data: JSON.stringify(userToBackupShare),
@@ -111,7 +106,6 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   if (backupKeyProvider) {
     return {
       title: 'B: Backup Key',
-      image: '.qrPublicBackupKey',
       description: `This is the public key held at ${backupKeyProvider}, an ${coin.name} recovery service. ` +
         `If you lose\r\nyour key, ${backupKeyProvider} will be able to sign transactions to recover funds.`,
       data: pub,
@@ -120,7 +114,6 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
 
   return {
     title: 'B: Provided Backup Key',
-    image: '.qrEncryptedUserProvidedXpub',
     description: 'This is the public key you provided for your wallet.',
     data: pub,
     publicMasterKey: backupMasterKey,
@@ -139,7 +132,6 @@ function generateBitGoQrData(bitgoKeychain: Keychain, {
     assert(bitgoToBackupShare);
     return {
       title: 'C: BitGo To Backup Key Share',
-      image: '.qrBitGoToBackupKeyShare',
       description: `This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of business,` +
         `\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`,
       data: JSON.stringify(bitgoToBackupShare),
@@ -151,7 +143,6 @@ function generateBitGoQrData(bitgoKeychain: Keychain, {
 
   return {
     title: 'C: BitGo Public Key',
-    image: '.qrBitgoKey',
     description:
       'This is the public part of the key that BitGo will use to ' +
       'co-sign transactions\r\nwith you on your wallet.',
@@ -187,7 +178,6 @@ export function generateQrData({
 
     qrData.passcode = {
       title: 'D: Encrypted wallet Password',
-      image: '.qrEncryptedWalletPasscode',
       description: 'This is the wallet password, encrypted client-side with a key held by\r\nBitGo.',
       data: encryptedWalletPasscode,
     };

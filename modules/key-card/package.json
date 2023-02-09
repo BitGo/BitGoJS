@@ -36,6 +36,10 @@
     "@bitgo/sdk-api": "^1.9.7",
     "@bitgo/sdk-core": "^5.2.0",
     "@bitgo/statics": "^14.1.0",
-    "jspdf": "^2.5.1"
+    "jspdf": "^2.5.1",
+    "qrcode": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.0"
   }
 }
