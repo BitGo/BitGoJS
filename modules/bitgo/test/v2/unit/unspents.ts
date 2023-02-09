@@ -52,7 +52,7 @@ describe('Verify string type is used for value of unspent', function () {
 
         wallet.keyIds().forEach((keyId) => nock(bgUrl)
           .get(`/api/v2/${wallet.coin()}/key/${keyId}`)
-          .reply(200, {}));
+          .reply(200, { id: keyId, pub: 'pub' }));
 
         sinon.stub(wallet, 'signTransaction').resolves({});
 

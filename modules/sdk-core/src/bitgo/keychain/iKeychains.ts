@@ -6,7 +6,7 @@ export type KeyType = 'tss' | 'independent' | 'blsdkg';
 
 export interface Keychain {
   id: string;
-  pub: string;
+  pub?: string;
   prv?: string;
   provider?: string;
   encryptedPrv?: string;

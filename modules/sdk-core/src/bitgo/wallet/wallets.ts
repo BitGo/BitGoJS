@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
@@ -400,6 +401,8 @@ export class Wallets implements IWallets {
 
     const { prv } = userKeychain;
     if (_.isString(prv)) {
+      assert(backupKeychain.pub);
+      assert(bitgoKeychain.pub);
       walletParams.keySignatures = {
         backup: (await this.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
         bitgo: (await this.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),

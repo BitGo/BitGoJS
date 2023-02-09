@@ -3,6 +3,7 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -629,6 +630,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     // verify the signature against the user public key
+    assert(userKeychain.pub);
     const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
     const signingAddress = utxolib.address.toBase58Check(
       utxolib.crypto.hash160(publicKey),
@@ -638,6 +640,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // BG-5703: use BTC mainnet prefix for all key signature operations
     // (this means do not pass a prefix parameter, and let it use the default prefix instead)
+    assert(keychainToVerify.pub);
     try {
       return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
     } catch (e) {
