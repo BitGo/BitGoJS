@@ -10,6 +10,8 @@ import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
 import { toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
+import { BIP32Factory } from 'bip32';
+import * as bs58check from 'bs58check';
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -267,19 +269,26 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
   }
 
   /**
-   * @param publicKeys
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
-  getSignatureValidationArray(inputIndex: number, publicKeys: Buffer[]): boolean[] {
+  getSignatureValidationArray(inputIndex: number): boolean[] {
     const noSigErrorMessages = ['No signatures to validate', 'No signatures for this pubkey'];
     const input = checkForInput(this.data.inputs, inputIndex);
     const isP2tr = input.tapScriptSig?.length;
-    return publicKeys.map((publicKey) => {
+    if (!this.data.globalMap.globalXpub) {
+      throw new Error('Cannot get signature validation array without global xpubs');
+    }
+    if (this.data.globalMap.globalXpub.length !== 3) {
+      throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
+    }
+    return this.data.globalMap.globalXpub.map((xpub) => {
+      // const bip32 = ECPair.fromPublicKey(xpub.extendedPubkey, { network: (this as any).opts.network });
+      const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
       try {
         return isP2tr
-          ? this.validateTaprootSignaturesOfInput(inputIndex, publicKey)
-          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), publicKey);
+          ? this.validateTaprootSignaturesOfInput(inputIndex, bip32.publicKey)
+          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), bip32.publicKey);
       } catch (err) {
         // Not an elegant solution. Might need upstream changes like custom error types.
         if (noSigErrorMessages.includes(err.message)) {

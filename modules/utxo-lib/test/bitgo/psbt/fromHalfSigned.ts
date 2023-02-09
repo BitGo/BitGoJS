@@ -11,6 +11,7 @@ import { getDefaultWalletKeys, getKeyName } from '../../testutil';
 
 import { readFixture } from '../../fixture.util';
 import { normDefault } from '../../testutil/normalize';
+import * as bs58check from 'bs58check';
 
 function getScriptTypes(): outputScripts.ScriptType[] {
   return [...outputScripts.scriptTypes2Of3, 'p2shP2pk'];
@@ -95,6 +96,18 @@ function runTest(
 
     function signPsbt(startTx: UtxoTransaction<bigint>, signers: BIP32Interface[]) {
       const psbt = UtxoPsbt.fromTransaction(startTx, prevOutputs);
+      psbt.updateGlobal({
+        globalXpub: walletKeys.triple.map((bip32) => {
+          const masterFingerprint = Buffer.alloc(4);
+          masterFingerprint.writeUInt32BE(bip32.parentFingerprint);
+          const extendedPubkey = bip32.neutered().toBase58();
+          return {
+            extendedPubkey: bs58check.decode(extendedPubkey),
+            masterFingerprint,
+            path: 'm',
+          };
+        }),
+      });
       signers.forEach((s) => {
         if (scriptType === 'p2tr') {
           psbt.signTaprootInput(0, s, [
@@ -108,7 +121,7 @@ function runTest(
           psbt.signAllInputs(s);
         }
       });
-      assert.deepStrictEqual(psbt.getSignatureValidationArray(0, walletKeys.publicKeys), signingKeys);
+      assert.deepStrictEqual(psbt.getSignatureValidationArray(0), signingKeys);
       psbt.finalizeAllInputs();
       return psbt.extractTransaction();
     }
