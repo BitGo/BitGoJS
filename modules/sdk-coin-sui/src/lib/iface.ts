@@ -6,7 +6,7 @@ export enum SuiTransactionType {
   PayAllSui = 'PayAllSui',
   AddDelegation = 'AddDelegation',
   WithdrawDelegation = 'WithdrawDelegation',
-  SwitchDelegator = 'SwitchDelegator',
+  SwitchDelegation = 'SwitchDelegation',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -159,6 +159,13 @@ export interface RequestAddDelegation {
 export interface RequestWithdrawDelegation {
   delegation: SuiObjectRef;
   stakedCoinId: SuiObjectRef;
+  amount: number;
+}
+
+export interface RequestSwitchDelegation {
+  delegation: SuiObjectRef;
+  stakedCoinId: SuiObjectRef;
+  newValidatorAddress: SuiAddress;
   amount: number;
 }
 

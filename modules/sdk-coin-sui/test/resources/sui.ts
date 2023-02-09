@@ -1,4 +1,4 @@
-import { RequestAddDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
+import { RequestAddDelegation, RequestSwitchDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
 
 export const addresses = {
   validAddresses: [
@@ -105,6 +105,9 @@ export const ADD_DELEGATION_TX_MUL_COIN =
 export const WITHDRAW_DELEGATION_TX =
   'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0bcmVxdWVzdF93aXRoZHJhd19kZWxlZ2F0aW9uAAMBAQAAAAAAAAAAAAAAAAAAAAAAAAAFAQAAAAAAAAABAEQDN090dM0eVaYicFh/7SAT0uJJIvMIAAAAAAAgIEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4kBAAqsjrgdtdnfoUmhSVfmKRXkInvEFZ0IAAAAAAAgUnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ2PpR1DqkUqLO4sFQQX0cPeLbJ3LTQNTHoiZvryzGb9bQzGBe+u/c13XW0PAAAAAAAglpP2Ew1mgp8PNmb7gLUlRf80OtrOJetI8ufGEIkyEvEBAAAAAAAAAEBCDwAAAAAA';
 
+export const SWITCH_DELEGATION_TX =
+  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAIEt/p6rXSTjdKP6wJOXyx0c2xsgJ4MJtfxe7qHC34u4UCnN1aV9zeXN0ZW0ZcmVxdWVzdF9zd2l0Y2hfZGVsZWdhdGlvbgAEAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQBEAzdPdHTNHlWmInBYf+0gE9LiSSLzCAAAAAAAICBAFDvx/UdVD2CqjvV1sAwxBih9KRy3P2HvTtrRgweJAQAKrI64HbXZ36FJoUlX5ikV5CJ7xBWdCAAAAAAAIFJ5WnRvZ3EsgzU1vcDIHbINjhs9SYT5+SnJTSAHbiydABRI+chmIEWAXZ2Y+vPo1Y1iUXGKIo+lHUOqRSos7iwVBBfRw94tsnctNA1MeiJm+vLMZv1tDMYF7679zXddbQ8AAAAAACCWk/YTDWaCnw82ZvuAtSVF/zQ62s4l60jy58YQiTIS8QEAAAAAAAAAQEIPAAAAAAA=';
+
 export const invalidPayTxs = [
   {
     coins: [
@@ -159,6 +162,7 @@ export const stakingGasPayment = {
 };
 
 export const VALIDATOR_ADDRESS = '0x5d06f37654f11cdd27179088fcfeadaab21e13ef';
+export const NEW_VALIDATOR_ADDRESS = '0x48f9c8662045805d9d98faf3e8d58d6251718a22';
 
 export const requestAddDelegationTxOneCoin: RequestAddDelegation = {
   coins: [coinToStakeOne],
@@ -185,5 +189,22 @@ export const requestWithdrawDelegation: RequestWithdrawDelegation = {
     digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
     // type: '0x2::staking_pool::StakedSui',
   },
+  amount: STAKING_AMOUNT,
+};
+
+export const requestSwitchDelegation: RequestSwitchDelegation = {
+  delegation: {
+    objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
+    version: 586530,
+    digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
+    // type: '0x2::staking_pool::Delegation'
+  },
+  stakedCoinId: {
+    objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
+    version: 564501,
+    digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
+    // type: '0x2::staking_pool::StakedSui',
+  },
+  newValidatorAddress: NEW_VALIDATOR_ADDRESS,
   amount: STAKING_AMOUNT,
 };

@@ -67,7 +67,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.STAKING_GAS_BUDGET.toString() },
-        type: 20,
+        type: 21,
       });
     });
 
@@ -98,7 +98,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.STAKING_GAS_BUDGET.toString() },
-        type: 20,
+        type: 21,
       });
     });
 

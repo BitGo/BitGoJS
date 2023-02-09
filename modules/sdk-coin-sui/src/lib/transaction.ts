@@ -254,6 +254,19 @@ export abstract class Transaction<T> extends BaseTransaction {
             this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
           ],
         };
+      case SuiTransactionType.SwitchDelegation:
+        return {
+          package: k.kind.Single.Call.package,
+          module: k.kind.Single.Call.module,
+          function: k.kind.Single.Call.function,
+          typeArguments: k.kind.Single.Call.typeArguments,
+          arguments: [
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
+            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])), // new validator address
+          ],
+        };
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
