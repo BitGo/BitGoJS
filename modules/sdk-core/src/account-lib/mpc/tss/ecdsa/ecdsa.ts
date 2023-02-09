@@ -464,7 +464,7 @@ export default class Ecdsa {
           hexToBigInt(aShareToBeSent.gammaProof.x)
         )
       ) {
-        throw new Error('could not verify signing share');
+        throw new Error('could not verify signing share for gamma proof');
       }
       // Verify $\w_i \in Z_{N^2}$.
       if (
@@ -496,7 +496,7 @@ export default class Ecdsa {
           hexToBigInt(aShareToBeSent.wProof.x)
         )
       ) {
-        throw new Error('could not verify share');
+        throw new Error('could not verify share for wProof');
       }
       const sk = new paillierBigint.PrivateKey(
         hexToBigInt(bShareParticipant.l as string),
@@ -553,7 +553,7 @@ export default class Ecdsa {
           k
         )
       ) {
-        throw new Error('Could not verify signing share');
+        throw new Error('Could not verify signing A share proof');
       }
       // MtA $k_j, \gamma_i$.
       const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
