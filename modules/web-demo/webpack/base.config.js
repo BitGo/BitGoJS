@@ -152,6 +152,10 @@ const prodPlugins = [
   }),
 ];
 
+const resolveFallback = {
+  'process/browser': require.resolve('process/browser'),
+};
+
 module.exports = {
   aliasItems,
   copyPluginPatterns,
@@ -165,4 +169,5 @@ module.exports = {
   prodRules,
   devPlugins,
   prodPlugins,
+  resolveFallback,
 };

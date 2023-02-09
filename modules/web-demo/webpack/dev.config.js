@@ -7,6 +7,7 @@ const {
   outputConfig,
   devRules,
   devPlugins,
+  resolveFallback,
 } = require('./base.config');
 const { mergeWith } = require('lodash');
 const bitgoConfig = require('../../../webpack/bitgojs.config');
@@ -28,6 +29,7 @@ module.exports = (env, options) => {
       resolve: {
         extensions: ['.tsx', '.ts', '.js'],
         alias: aliasItems,
+        fallback: resolveFallback,
       },
       output: {
         filename: 'js/[name].bundle.js',
