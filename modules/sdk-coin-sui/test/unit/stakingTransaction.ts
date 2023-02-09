@@ -4,6 +4,7 @@ import { Transaction } from '../../src';
 import * as testData from '../resources/sui';
 import { MethodNames, MoveCallTx } from '../../src/lib/iface';
 import { StakingTransaction } from '../../src/lib/stakingTransaction';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('Sui RequestAddDelegation Transaction', () => {
   let tx: Transaction<MoveCallTx>;
@@ -67,7 +68,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.STAKING_GAS_BUDGET.toString() },
-        type: 20,
+        type: TransactionType.AddDelegator,
       });
     });
 
@@ -98,7 +99,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.STAKING_GAS_BUDGET.toString() },
-        type: 20,
+        type: TransactionType.AddDelegator,
       });
     });
 

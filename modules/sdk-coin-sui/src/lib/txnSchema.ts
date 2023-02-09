@@ -73,6 +73,7 @@ const TypeTagSchema = joi
 const TypeArgumentsSchema = joi.array().items(TypeTagSchema).required();
 const RequestAddDelegationArgumentsSchema = joi.array().length(4).items(SuiJsonValueSchema).required();
 const RequestWithdrawArgumentsSchema = joi.array().length(3).items(SuiJsonValueSchema).required();
+const RequestSwitchArgumentsSchema = joi.array().length(4).items(SuiJsonValueSchema).required();
 
 export const RequestAddDelegationTransactionSchema = joi.object({
   package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
@@ -82,7 +83,7 @@ export const RequestAddDelegationTransactionSchema = joi.object({
   arguments: RequestAddDelegationArgumentsSchema.required(),
 });
 
-export const RequestWithdrawTransactionSchema = joi.object({
+export const RequestWithdrawDelegationTransactionSchema = joi.object({
   package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
   module: joi.string().required(),
   function: joi.string().required(),
@@ -90,11 +91,26 @@ export const RequestWithdrawTransactionSchema = joi.object({
   arguments: RequestWithdrawArgumentsSchema.required(),
 });
 
+export const RequestSwitchDelegationTransactionSchema = joi.object({
+  package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
+  module: joi.string().required(),
+  function: joi.string().required(),
+  typeArguments: TypeArgumentsSchema.optional(),
+  arguments: RequestSwitchArgumentsSchema.required(),
+});
+
 export const StakeTransactionSchema = joi.alternatives(RequestAddDelegationTransactionSchema).match('one');
 export const SuiMoveCallTransactionSchema = joi.object({
   type: joi.string().required(),
   sender: joi.string().required(),
-  tx: joi.alternatives(RequestAddDelegationTransactionSchema, RequestWithdrawTransactionSchema).match('one').required(),
+  tx: joi
+    .alternatives(
+      RequestAddDelegationTransactionSchema,
+      RequestWithdrawDelegationTransactionSchema,
+      RequestSwitchDelegationTransactionSchema
+    )
+    .match('any')
+    .required(),
   gasBudget: joi.number().required(),
   gasPrice: joi.number().required(),
   gasPayment: joi.alternatives(SuiObjectRefSchema).match('one').required(),
