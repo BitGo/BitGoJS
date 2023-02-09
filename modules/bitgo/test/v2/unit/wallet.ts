@@ -24,7 +24,7 @@ import {
   TypedMessage,
   MessageTypes,
   SignTypedDataVersion,
-  GetUserPrvOptions,
+  GetUserPrvOptions, ManageUnspentsOptions,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -1163,6 +1163,25 @@ describe('V2 Wallet:', function () {
       }
 
       response.isDone().should.be.true();
+    });
+
+    it('should only build tx (not sign/send) while consolidating unspents', async function () {
+      const toBeUsedNock = nock(bgUrl);
+      toBeUsedNock.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
+        .reply(200);
+
+      const unusedNocks = nock(bgUrl);
+      unusedNocks.get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
+        .reply(200);
+      unusedNocks
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`)
+        .reply(200);
+
+      await wallet.consolidateUnspents({ recipients }, ManageUnspentsOptions.BUILD_ONLY);
+
+      toBeUsedNock.isDone().should.be.true();
+      unusedNocks.pendingMocks().length.should.eql(2);
+      nock.cleanAll();
     });
 
     it('should pass maxFeeRate parameter when calling sweep wallets', async function () {
