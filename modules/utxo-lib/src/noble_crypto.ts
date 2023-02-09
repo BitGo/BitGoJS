@@ -1,11 +1,12 @@
 import * as createHash from 'create-hash';
 import * as necc from '@noble/secp256k1';
 import { MuSigFactory, MuSig } from '@brandonblack/musig';
+import base_crypto from '@brandonblack/musig/base_crypto';
 
-import * as baseCrypto from './base_crypto';
+// import * as baseCrypto from './base_crypto';
 
 const crypto = {
-  ...baseCrypto,
+  ...base_crypto,
   pointMultiplyUnsafe: (p: Uint8Array, a: Uint8Array, compress: boolean): Uint8Array | null => {
     try {
       const product = necc.Point.fromHex(p).multiplyAndAddUnsafe(
@@ -43,7 +44,7 @@ const crypto = {
   pointAddTweak: (p: Uint8Array, tweak: Uint8Array, compress: boolean): Uint8Array | null => {
     try {
       const P = necc.Point.fromHex(p);
-      const t = baseCrypto.readSecret(tweak);
+      const t = base_crypto.readSecret(tweak);
       const Q = necc.Point.BASE.multiplyAndAddUnsafe(P, t, 1n);
       if (!Q) throw new Error('Tweaked point at infinity');
       return Q.toRawBytes(compress);
