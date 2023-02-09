@@ -93,6 +93,11 @@ const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
 
+export enum ManageUnspentsOptions {
+  BUILD_ONLY,
+  BUILD_SIGN_SEND,
+}
+
 export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
@@ -612,7 +617,8 @@ export class Wallet implements IWallet {
    */
   private async manageUnspents(
     routeName: ManageUnspents,
-    params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {}
+    params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {},
+    option = ManageUnspentsOptions.BUILD_SIGN_SEND
   ): Promise<any> {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
@@ -638,6 +644,10 @@ export class Wallet implements IWallet {
       .post(this.url(`/${routeName}Unspents`))
       .send(filteredParams)
       .result();
+
+    if (option === ManageUnspentsOptions.BUILD_ONLY) {
+      return response;
+    }
 
     const keychains = (await this.baseCoin
       .keychains()
@@ -680,8 +690,11 @@ export class Wallet implements IWallet {
    *                  - maximum number of unspents you want to use in the transaction
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    */
-  async consolidateUnspents(params: ConsolidateUnspentsOptions = {}): Promise<any> {
-    return this.manageUnspents('consolidate', params);
+  async consolidateUnspents(
+    params: ConsolidateUnspentsOptions = {},
+    option = ManageUnspentsOptions.BUILD_SIGN_SEND
+  ): Promise<any> {
+    return this.manageUnspents('consolidate', params, option);
   }
 
   /**
