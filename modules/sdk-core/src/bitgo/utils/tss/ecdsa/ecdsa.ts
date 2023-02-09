@@ -681,6 +681,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       encryptionKeys: [bitgoGpgKey],
     })) as string;
 
+    // signing stage one with K share send to bitgo and receives A share
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
@@ -695,9 +696,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
       userGammaAndMuShares.gShare as ECDSA.GShare
     );
-
     const muShare = userGammaAndMuShares.muShare!;
     const dShare = userOmicronAndDeltaShare.dShare;
+
+    // signing stage two with muShare and dShare send to bitgo and receives D share
     const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
@@ -713,6 +715,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload
     );
 
+    // signing stage three with SShare send to bitgo and receives SShare
     await ECDSAMethods.sendShareToBitgo(
       this.bitgo,
       this.wallet.id(),
