@@ -22,7 +22,7 @@ describe('TSS ECDSA TESTS', function () {
   let keyShares: ECDSA.KeyCombined[];
   let commonPublicKey: string;
   const seed = Buffer.from(
-    '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
+    'c4d1583a0b7b88626b56f0c83ee6df4d95d99cca73893ffb57c5e4411fa1b2b9c87456080e8d3f03462f065688abc28be2d4af3164d593c50b55269b435ea48d',
     'hex',
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
@@ -78,6 +78,7 @@ describe('TSS ECDSA TESTS', function () {
     ];
     commonPublicKey = aKeyCombine.xShare.y;
     pallierMock.reset();
+    pallierMock.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {
@@ -117,9 +118,26 @@ describe('TSS ECDSA TESTS', function () {
       mockFKeyShare.should.deepEqual(F);
     });
 
-    it('should fail if seed is not length 72', async function () {
-      await MPC.keyShare(1, 2, 3, randomBytes(33)).should.be.rejectedWith('Seed must have length 72');
-      await MPC.keyShare(1, 2, 3, randomBytes(66)).should.be.rejectedWith('Seed must have length 72');
+    it('should fail if seed is length less than 64 bytes', async function () {
+      await MPC.keyShare(1, 2, 3, randomBytes(16)).should.be.rejectedWith(
+        'Seed must have a length of at least 64 bytes',
+      );
+      await MPC.keyShare(1, 2, 3, randomBytes(32)).should.be.rejectedWith(
+        'Seed must have a length of at least 64 bytes',
+      );
+    });
+
+    it('should pass if seed length is greater than 64', async function () {
+      const paillierMock = sinon
+        .stub(paillierBigint, 'generateRandomKeys')
+        .onCall(0)
+        .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair);
+      const seed72Bytes = Buffer.from(
+        '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
+        'hex',
+      );
+      (await MPC.keyShare(1, 2, 3, seed72Bytes)).pShare.u.length.should.equal(64);
+      paillierMock.restore();
     });
 
     it('should calculate correct chaincode while combining', async function () {
