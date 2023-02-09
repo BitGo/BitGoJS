@@ -50,6 +50,8 @@ export enum TransactionType {
   Import,
   // Cross chain Recovery for evm like chains
   RecoveryWalletDeployment,
+  // Switch Delegation
+  StakingSwitch,
 }
 
 /**

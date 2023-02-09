@@ -1,11 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, NotImplementedError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import {
   MethodNames,
   ModulesNames,
   MoveCallTx,
   MoveCallTxDetails,
   RequestAddDelegation,
+  RequestSwitchDelegation,
   RequestWithdrawDelegation,
   SuiObjectRef,
   SuiTransaction,
@@ -23,6 +24,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   protected _moveCallTx: MoveCallTx;
   protected _addDelegationTx: RequestAddDelegation;
   protected _withdrawDelegation: RequestWithdrawDelegation;
+  protected _switchDelegation: RequestSwitchDelegation;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -99,6 +101,32 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     return this;
   }
 
+  /**
+   * Create a new transaction for switching delegation ready to be signed
+   *
+   * @param {switchDelegation} switchDelegation
+   */
+  requestSwitchDelegation(switchDelegation: RequestSwitchDelegation): this {
+    this.validateSuiObjectRef(switchDelegation.delegation, 'switchDelegation.delegation');
+    this.validateSuiObjectRef(switchDelegation.stakedCoinId, 'switchDelegation.stakedCoinId');
+    this.validateAddress({ address: switchDelegation.newValidatorAddress });
+
+    this._switchDelegation = switchDelegation;
+    this._moveCallTx = {
+      package: SUI_PACKAGE,
+      module: ModulesNames.SuiSystem,
+      function: MethodNames.RequestSwitchDelegation,
+      typeArguments: [],
+      arguments: [
+        SUI_SYSTEM_STATE_OBJECT,
+        switchDelegation.delegation,
+        switchDelegation.stakedCoinId,
+        switchDelegation.newValidatorAddress,
+      ],
+    };
+    return this;
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction<MoveCallTx> {
     const tx = new StakingTransaction(this._coinConfig);
@@ -162,7 +190,14 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
           });
           break;
         case MethodNames.RequestSwitchDelegation:
-          throw new NotImplementedError(`${txDetails.Call.function} not implemented`);
+          this.type(SuiTransactionType.SwitchDelegation);
+          this.requestSwitchDelegation({
+            delegation: txDetails.Call.arguments[1] as SuiObjectRef,
+            stakedCoinId: txDetails.Call.arguments[2] as SuiObjectRef,
+            newValidatorAddress: txDetails.Call.arguments[3].toString(),
+            amount: this._withdrawDelegation?.amount || 0,
+          });
+          break;
         default:
           throw new NotSupported(`${txDetails.Call.function} not supported`);
       }

@@ -133,6 +133,12 @@ export class Utils implements BaseUtils {
     return true;
   }
 
+  /**
+   * Returns whether or not the string is a valid amount
+   *
+   * @param {number} amounts - the amount to validate
+   * @returns {boolean} - the validation result
+   */
   isValidAmount(amount: number): boolean {
     const bigNumberAmount = new BigNumber(amount);
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
@@ -180,6 +186,7 @@ export class Utils implements BaseUtils {
    * Map CallArg object to Shared
    *
    * @param {CallArg} callArg
+   * @return {SharedObjectRef}
    */
   mapCallArgToSharedObject(callArg: CallArg): SharedObjectRef {
     return callArg['Object'].Shared;
@@ -189,6 +196,7 @@ export class Utils implements BaseUtils {
    * Map coins objects to CallArg
    *
    * @param {SuiObjectRef[]} coins
+   * @return {CallArg}
    * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
    */
   mapCoinsToCallArg(coins: SuiObjectRef[]): CallArg {
@@ -203,6 +211,7 @@ export class Utils implements BaseUtils {
    * Map CallArg object to Coins
    *
    * @param {ObjVecArg} callArg
+   * @return {SuiObjectRef[]}
    */
   mapCallArgToCoins(callArg: ObjVecArg): SuiObjectRef[] {
     return Array.from(callArg.ObjVec).map((it: ObjectArg) => {
@@ -214,6 +223,7 @@ export class Utils implements BaseUtils {
    * Map SuiObjectRef object to CallArg
    *
    * @param {SuiObjectRef[]} coins
+   * @return {CallArg}
    * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
    */
   mapSuiObjectRefToCallArg(suiObjectRef: SuiObjectRef): CallArg {
@@ -226,6 +236,7 @@ export class Utils implements BaseUtils {
    * Map CallArg object to SuiObjectRef
    *
    * @param {ObjVecArg} callArg
+   * @return {SuiObjectRef}
    */
   mapCallArgToSuiObjectRef(callArg: CallArg): SuiObjectRef {
     return ((callArg as { Object: ObjectArg }).Object as ImmOrOwnedArg).ImmOrOwned;
@@ -235,6 +246,7 @@ export class Utils implements BaseUtils {
    * Map staking amount to CallArg
    *
    * @param {number} amount
+   * @return {CallArg}
    * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
    */
   mapAmountToCallArg(amount: number): CallArg {
@@ -251,6 +263,7 @@ export class Utils implements BaseUtils {
    * Map CallArg to staking amount
    *
    * @param {CallArg} callArg
+   * @return {number}
    * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
    */
   mapCallArgToAmount(callArg: CallArg): number {
@@ -269,6 +282,7 @@ export class Utils implements BaseUtils {
    * Map staking validator address to CallArg
    *
    * @param {SuiAddress} suiAddress
+   * @return {CallArg}
    * example: { Pure: bcs.ser('address', VALIDATOR_ADDRESS).toBytes() };
    */
   mapAddressToCallArg(address: SuiAddress): CallArg {
@@ -285,6 +299,7 @@ export class Utils implements BaseUtils {
    * Map CallArg to staking amount
    *
    * @param {CallArg} callArg
+   * @return {string}
    * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
    */
   mapCallArgToAddress(callArg: CallArg): string {
@@ -303,6 +318,7 @@ export class Utils implements BaseUtils {
    * Get transaction type by function name
    *
    * @param {MethodNames} fctName
+   * @return {TransactionType}
    */
   getTransactionType(fctName: string): TransactionType {
     switch (fctName) {
@@ -310,6 +326,8 @@ export class Utils implements BaseUtils {
         return TransactionType.AddDelegator;
       case MethodNames.RequestWithdrawDelegation:
         return TransactionType.StakingWithdraw;
+      case MethodNames.RequestSwitchDelegation:
+        return TransactionType.StakingSwitch;
       default:
         throw new NotSupported(`Staking Transaction type with function ${fctName} not supported`);
     }
@@ -319,6 +337,7 @@ export class Utils implements BaseUtils {
    * Get SUI transaction type by function name
    *
    * @param {MethodNames} fctName
+   * @return {SuiTransactionType}
    */
   getSuiTransactionType(fctName: string): SuiTransactionType {
     switch (fctName) {
@@ -327,7 +346,7 @@ export class Utils implements BaseUtils {
       case MethodNames.RequestWithdrawDelegation:
         return SuiTransactionType.WithdrawDelegation;
       case MethodNames.RequestSwitchDelegation:
-        return SuiTransactionType.SwitchDelegator;
+        return SuiTransactionType.SwitchDelegation;
       default:
         throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
     }
