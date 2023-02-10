@@ -198,7 +198,10 @@ export async function sendShareToBitgo(
   requestType: RequestType,
   shareType: SendShareType,
   share: SShare | MuDShare | KShare,
-  signerShare?: string
+  signerShare?: string,
+  vssProof?: string,
+  privateShareProof?: string,
+  userPublicGpgKey?: string
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -211,7 +214,19 @@ export async function sendShareToBitgo(
       assert(signerShare, `signer share must be present`);
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
+      await sendSignatureShare(
+        bitgo,
+        walletId,
+        txRequestId,
+        signatureShare,
+        requestType,
+        signerShare,
+        'ecdsa',
+        'full',
+        vssProof,
+        privateShareProof,
+        userPublicGpgKey
+      );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,
         walletId,
