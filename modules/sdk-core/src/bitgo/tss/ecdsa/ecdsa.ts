@@ -369,8 +369,7 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
     publicShare: keyShare.publicShare,
     encryptedPrivateShare: keyShare.privateShare,
     n: keyShare.n ?? '', // this is not currently needed for key creation
-    // TODO (BG-65434) : make it as mandatory
-    privateShareProof: keyShare.privateShareProof ?? '',
+    privateShareProof: keyShare.privateShareProof,
     vssProof: keyShare.vssProof,
   };
 }
