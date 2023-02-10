@@ -151,12 +151,12 @@ describe('SUI:', function () {
 
   describe('Parse Staking Transactions: ', () => {
     const transferInputsResponse = {
-      address: testData.STAKING_SENDER_ADDRESS,
+      address: testData.VALIDATOR_ADDRESS,
       amount: new BigNumber(testData.STAKING_AMOUNT).plus(testData.STAKING_GAS_BUDGET).toFixed(),
     };
 
     const transferOutputsResponse = {
-      address: testData.STAKING_SENDER_ADDRESS,
+      address: testData.VALIDATOR_ADDRESS,
       amount: testData.STAKING_AMOUNT.toString(),
     };
 
