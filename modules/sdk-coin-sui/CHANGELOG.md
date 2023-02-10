@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.7.0...@bitgo/sdk-coin-sui@1.7.2) (2023-02-08)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix sui signing ([860e078](https://github.com/BitGo/BitGoJS/commit/860e078f3b2e6cb724411d28994e67ce5d6d0340))
+
 ## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.7.0...@bitgo/sdk-coin-sui@1.7.1) (2023-01-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

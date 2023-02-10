@@ -3,7 +3,7 @@
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
 FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b AS filter-packages-json
-MAINTAINER Developer Relations <developer-relations-team@bitgo.com>
+LABEL maintainer="Developer Relations <developer-relations-team@bitgo.com>"
 
 COPY package.json yarn.lock lerna.json ./
 WORKDIR /tmp/bitgo
@@ -66,6 +66,8 @@ COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 RUN cd /var/modules/account-lib && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 RUN cd /var/modules/sdk-coin-algo && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
+RUN cd /var/modules/sdk-coin-atom && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 RUN cd /var/modules/sdk-coin-avaxc && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
@@ -106,8 +108,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
 RUN cd /var/modules/sdk-coin-xtz && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
 RUN cd /var/modules/sdk-coin-ada && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
-RUN cd /var/modules/sdk-coin-atom && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bch /var/modules/sdk-coin-bch/
 RUN cd /var/modules/sdk-coin-bch && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bcha /var/modules/sdk-coin-bcha/
@@ -152,6 +152,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
+    yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-eth && \
@@ -172,7 +173,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-xtz && \
     yarn link @bitgo/sdk-coin-ada && \
-    yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-bch && \
     yarn link @bitgo/sdk-coin-bcha && \
     yarn link @bitgo/sdk-coin-bsv && \
@@ -189,9 +189,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 30 Jan 2023 19:20:14 GMT"
-LABEL version=9.22.1
-LABEL git_hash=7916868b6d3efa9843e50834e09690fde10f6f7b
+LABEL created="Wed, 08 Feb 2023 18:17:22 GMT"
+LABEL version=9.23.0
+LABEL git_hash=a9abe802593794596f2a53e4119416dafe1cd5e5
 #LABEL_END
 
 USER node

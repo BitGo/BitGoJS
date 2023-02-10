@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.2.0) (2023-02-08)
+
+### Features
+
+- **statics:** add custody coin features for avaxc ([d67a9d9](https://github.com/BitGo/BitGoJS/commit/d67a9d932f30d48853ad7e4c20388b60ae269529))
+- **statics:** add ofc algorand usdc token ([9450360](https://github.com/BitGo/BitGoJS/commit/9450360e828253ee633acaae8cc0ec57d386a7dc))
+
 # [14.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.1.0) (2023-01-30)
 
 ### Features

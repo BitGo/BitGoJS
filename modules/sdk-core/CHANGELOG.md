@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.1.0...@bitgo/sdk-core@6.0.0) (2023-02-08)
+
+### Bug Fixes
+
+- **bitgo:** remove enforcement of HMAC verification on all non-prod environments ([118722c](https://github.com/BitGo/BitGoJS/commit/118722c80bfcf8cfc850e07d575ecf10aacb3fd2))
+- **sdk-core:** correct ecdsa verifyWalletSigs() ([3b1476c](https://github.com/BitGo/BitGoJS/commit/3b1476cab6ae9a4888a03e15685e70f539df02c2))
+- **sdk-core:** fix ecdsa tss wallet creation ([cd0eaec](https://github.com/BitGo/BitGoJS/commit/cd0eaec629da42cddcc9a2d16b93f5a8ba0ce3c1))
+- **sdk-core:** get low balance forwarder ([6b8205c](https://github.com/BitGo/BitGoJS/commit/6b8205c449e2f5fe3dca0247d92dfdf2fdb6ef58))
+- **sdk-core:** make derivation play nicely with rangeproofs ([26ad5b5](https://github.com/BitGo/BitGoJS/commit/26ad5b58ff72caa1859a9e6d9c8376f140e8213b))
+- **sdk-core:** sign typed data json stringify ([8adbb76](https://github.com/BitGo/BitGoJS/commit/8adbb76667a54c2e460f6d72a5de5bd6ce793d19))
+- **sdk-core:** update fixtures and fix tests ([c936478](https://github.com/BitGo/BitGoJS/commit/c9364786d7d11c9fbb621109efb1fb43a894e9d4))
+- **sdk-core:** update password for tss ([ab83d5d](https://github.com/BitGo/BitGoJS/commit/ab83d5d440e5624cadc1f0f247634ac310b68c8d))
+- **sdk-core:** use hex toString() verify ecdsa ([aead4a4](https://github.com/BitGo/BitGoJS/commit/aead4a4e02842b552e7fc21927fedc8320148cb5))
+
+### Features
+
+- **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+- **sdk-core:** add challenge endpoint for tss rangeproof ([fbd1019](https://github.com/BitGo/BitGoJS/commit/fbd101980fb88813cf1971d7f2915a830e10088e))
+- **sdk-core:** add ecdsa to verifyShareProof() ([9be664b](https://github.com/BitGo/BitGoJS/commit/9be664b8ee4267e20e0a40d30653d3bd3795b205))
+- **sdk-core:** add ecdsa wallet sig verification ([375be2d](https://github.com/BitGo/BitGoJS/commit/375be2d86002258ba11012888fea41094dabc39b))
+- **sdk-core:** add range proofs ([0087be9](https://github.com/BitGo/BitGoJS/commit/0087be954030cf375aaa1ac1f6e78dee390addba))
+- **sdk-core:** add type property to Keychain ([5092b29](https://github.com/BitGo/BitGoJS/commit/5092b29a653ae5e5abb7320f65a7d926a7e4cc9f))
+- **sdk-core:** change beta to random coprime ([48f4dc6](https://github.com/BitGo/BitGoJS/commit/48f4dc69342989bdc386413656dc8f35255c0975))
+- **sdk-core:** delete unused proof from mu share ([c621945](https://github.com/BitGo/BitGoJS/commit/c6219450ab99d716ba7bf7d3d9d8936bd2e1a994))
+- **sdk-core:** ecdsa signing use derivation path ([f4ca720](https://github.com/BitGo/BitGoJS/commit/f4ca720587822fd295b1a97f78c9127c2576a46d))
+- **sdk-core:** include keyShares in third party backup tss keychain ([c5997de](https://github.com/BitGo/BitGoJS/commit/c5997de87f85bb012665cfe538705eeadbb522cc))
+- **sdk-core:** only generate range proof if ntilde present ([d332395](https://github.com/BitGo/BitGoJS/commit/d332395aa29f0491e3ff34681da156850f556766))
+- **sdk-core:** rename type ([c81221f](https://github.com/BitGo/BitGoJS/commit/c81221f3961abe3d73f4bf3c8801fb7f1b4f9b27))
+- **sdk-core:** use fix sized buffers when filling e preimage ([77cca38](https://github.com/BitGo/BitGoJS/commit/77cca388c54c6fb3e94e66ab394e52ea11dba329))
+- **sdk-core:** use trust backup gpg for encrypting ([400a9af](https://github.com/BitGo/BitGoJS/commit/400a9af34a5eb1933965bfc675911cd24b8c605b))
+- send enterprise id to backupkeys end-point ([701ff7c](https://github.com/BitGo/BitGoJS/commit/701ff7c1aa41ea82ce06b09b36613f0781ad5e9d))
+
+### BREAKING CHANGES
+
+- **sdk-core:** rename type backupGpgKey to BackupGpgKey
+- **sdk-core:** The `verifyEdShareProof` function is renamed to
+  `verifyShareProof` and now expects a 4th parameter which must be a
+  string of either `eddsa` or `ecdsa`.
+
 # [5.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.1.0...@bitgo/sdk-core@5.2.0) (2023-01-30)
 
 ### Bug Fixes
