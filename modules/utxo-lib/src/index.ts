@@ -8,7 +8,11 @@ export * as addressFormat from './addressFormat';
 
 export * as classify from './classify';
 
+export * as taproot from './taproot';
+
 export * from './noble_ecc';
+
+export * as p2trPayments from './payments';
 
 export {
   networks,
