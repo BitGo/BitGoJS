@@ -60,7 +60,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         id: 'UNAVAILABLE',
         outputs: [
           {
-            address: testData.STAKING_SENDER_ADDRESS,
+            address: testData.VALIDATOR_ADDRESS,
             amount: testData.STAKING_AMOUNT,
           },
         ],
@@ -91,7 +91,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
         id: 'UNAVAILABLE',
         outputs: [
           {
-            address: testData.STAKING_SENDER_ADDRESS,
+            address: testData.VALIDATOR_ADDRESS,
             amount: testData.STAKING_AMOUNT,
           },
         ],

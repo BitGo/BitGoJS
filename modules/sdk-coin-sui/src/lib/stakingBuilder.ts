@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import {
   MethodNames,
   ModulesNames,
@@ -67,6 +67,10 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   requestAddDelegation(addDelegation: RequestAddDelegation): this {
     this.validateAddress({ address: addDelegation.validatorAddress });
     this.validateValue(BigNumber(addDelegation.amount));
+
+    if (this._sender === addDelegation.validatorAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+    }
     for (const coin of addDelegation.coins) {
       this.validateSuiObjectRef(coin, 'addDelegation.coins');
     }
@@ -110,6 +114,10 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     this.validateSuiObjectRef(switchDelegation.delegation, 'switchDelegation.delegation');
     this.validateSuiObjectRef(switchDelegation.stakedCoinId, 'switchDelegation.stakedCoinId');
     this.validateAddress({ address: switchDelegation.newValidatorAddress });
+
+    if (this._sender === switchDelegation.newValidatorAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+    }
 
     this._switchDelegation = switchDelegation;
     this._moveCallTx = {

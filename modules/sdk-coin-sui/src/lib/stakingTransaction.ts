@@ -330,7 +330,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       type: TransactionType.AddDelegator,
       outputs: [
         {
-          address: json.sender,
+          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
           amount: Number(amount),
         },
       ],
@@ -381,6 +381,10 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       outputs: [
         {
           address: json.sender,
+          amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+        },
+        {
+          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
           amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
         },
       ],
