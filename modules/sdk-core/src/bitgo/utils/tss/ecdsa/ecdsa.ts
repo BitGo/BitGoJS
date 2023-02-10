@@ -17,7 +17,7 @@ import {
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, SendShareType } from '../../../tss/ecdsa/types';
-import { generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
+import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { BackupProvider, IWallet } from '../../../wallet';
 import assert from 'assert';
@@ -680,6 +680,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       },
       encryptionKeys: [bitgoGpgKey],
     })) as string;
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.nShares[bitgoIndex].u, 'ecdsa');
+    const vssProof = signingKey.nShares[bitgoIndex].v;
 
     // signing stage one with K share send to bitgo and receives A share
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
@@ -689,7 +692,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       requestType,
       SendShareType.KShare,
       userSignShare.kShare,
-      encryptedSignerShare
+      encryptedSignerShare,
+      vssProof,
+      privateShareProof,
+      userGpgKey.publicKey
     )) as AShare;
 
     const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
