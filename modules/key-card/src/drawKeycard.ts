@@ -106,18 +106,18 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
     let textHeight = 0;
 
     if (qr.data.length <= QRBinaryMaxLength) {
-      const image = await QRCode.toCanvas(qr.data);
+      const image = await QRCode.toCanvas(qr.data, { errorCorrectionLevel: 'L' });
       doc.addImage(image, left(0), y, qrSize, qrSize);
     } else {
       // key is too long for one QR code
       const keys = splitKeys(qr.data, QRBinaryMaxLength);
-      for (const key of keys) {
-        const image = await QRCode.toCanvas(key);
+      for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+        const image = await QRCode.toCanvas(keys[keyIndex], { errorCorrectionLevel: 'L' });
         doc.addImage(image, left(0), y, qrSize, qrSize);
         const textBuffer = 15;
         moveDown(qrSize + textBuffer);
         doc.setFontSize(font.body).setTextColor(color.black);
-        doc.text('Part ' + (index + 1).toString(), left(0), y);
+        doc.text('Part ' + (keyIndex + 1).toString(), left(0), y);
         moveDown(20);
       }
       y = topY;
