@@ -37,8 +37,7 @@ import {
   YShareWithNTilde,
 } from './types';
 
-const _1n = BigInt(1);
-const _3n = BigInt(3);
+const _5n = BigInt(5);
 
 function hasNTilde(share: XShare | YShare): share is XShareWithNTilde | YShareWithNTilde {
   return 'ntilde' in share;
@@ -568,7 +567,7 @@ export default class Ecdsa {
         throw new Error('Could not verify signing A share proof');
       }
       // MtA $k_j, \gamma_i$.
-      const beta0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      const beta0 = bigintCryptoUtils.randBetween(Ecdsa.curve.order() ** _5n);
       bShareParticipant.beta = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(beta0)), 32).toString(
         'hex'
       );
@@ -607,7 +606,7 @@ export default class Ecdsa {
             s: bigIntToBufferBE(proof.s, 384).toString('hex'),
             s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
             s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
-            t1: bigIntToBufferBE(proof.t1, 416).toString('hex'),
+            t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
             t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
             u: bigIntToBufferBE(proof.u, 33).toString('hex'),
             x: bigIntToBufferBE(gx, 33).toString('hex'),
@@ -615,7 +614,7 @@ export default class Ecdsa {
         });
       }
       // MtA $k_j, w_i$.
-      const nu0 = bigintCryptoUtils.randBetween(n / _3n - _1n);
+      const nu0 = bigintCryptoUtils.randBetween(Ecdsa.curve.order() ** _5n);
       shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(nu0)), 32).toString(
         'hex'
       );
@@ -653,7 +652,7 @@ export default class Ecdsa {
             s: bigIntToBufferBE(proof.s, 384).toString('hex'),
             s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
             s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
-            t1: bigIntToBufferBE(proof.t1, 416).toString('hex'),
+            t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
             t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
             u: bigIntToBufferBE(proof.u, 33).toString('hex'),
             x: bigIntToBufferBE(wx, 33).toString('hex'),
