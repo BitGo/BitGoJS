@@ -188,7 +188,11 @@ export async function offerUserToBitgoRShare(
   txRequestId: string,
   userSignShare: SignShare,
   encryptedSignerShare: string,
-  apiMode: 'full' | 'lite' = 'lite'
+  apiMode: 'full' | 'lite' = 'lite',
+  vssProof?: string,
+  privateShareProof?: string,
+  userPublicGpgKey?: string,
+  publicShare?: string
 ): Promise<void> {
   const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
   if (_.isNil(rShare)) {
@@ -200,8 +204,7 @@ export async function offerUserToBitgoRShare(
   const signatureShare: SignatureShareRecord = {
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,
-    // TODO(BG-61037): Fix signing with VSS
-    share: /* rShare.v + */ rShare.r + rShare.R,
+    share: rShare.r + rShare.R,
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
@@ -213,7 +216,11 @@ export async function offerUserToBitgoRShare(
     RequestType.tx,
     encryptedSignerShare,
     'eddsa',
-    apiMode
+    apiMode,
+    vssProof,
+    privateShareProof,
+    userPublicGpgKey,
+    publicShare
   );
 }
 

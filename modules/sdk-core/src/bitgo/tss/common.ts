@@ -49,7 +49,8 @@ export async function sendSignatureShare(
   apiMode: 'full' | 'lite' = 'lite',
   vssProof?: string,
   privateShareProof?: string,
-  userPublicGpgKey?: string
+  userPublicGpgKey?: string,
+  publicShare?: string
 ): Promise<SignatureShareRecord> {
   let addendum = '';
   switch (requestType) {
@@ -73,6 +74,7 @@ export async function sendSignatureShare(
       vssProof,
       privateShareProof,
       userPublicGpgKey,
+      publicShare,
     })
     .result();
 }

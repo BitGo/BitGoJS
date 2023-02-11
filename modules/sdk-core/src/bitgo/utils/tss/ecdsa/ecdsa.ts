@@ -683,6 +683,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.nShares[bitgoIndex].u, 'ecdsa');
     const vssProof = signingKey.nShares[bitgoIndex].v;
+    const userPublicGpgKey = userGpgKey.publicKey;
+    const publicShare = signingKey.nShares[bitgoIndex].y + signingKey.nShares[bitgoIndex].chaincode;
 
     // signing stage one with K share send to bitgo and receives A share
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
@@ -695,7 +697,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       encryptedSignerShare,
       vssProof,
       privateShareProof,
-      userGpgKey.publicKey
+      userPublicGpgKey,
+      publicShare
     )) as AShare;
 
     const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
