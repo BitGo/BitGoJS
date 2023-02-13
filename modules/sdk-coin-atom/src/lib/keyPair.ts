@@ -58,7 +58,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   getAddress(): string {
     const PUBLIC_KEY_SIZE = 32;
     const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
-    const pubBuf = Buffer.from(this.getPublicKey({ compressed: false }).toString(), 'hex');
+    const pubBuf = Buffer.from(this.getKeys().pub.slice(0, 64), 'hex');
     tmp.set(pubBuf, 1);
     // convert to base64
     const base64String = toBase64(tmp);
