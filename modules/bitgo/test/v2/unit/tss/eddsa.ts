@@ -398,8 +398,7 @@ describe('test tss helper functions', function () {
 
     describe('offerUserToBitgoRShare:', async function() {
       it('should succeed to send Signature Share', async function() {
-        // TODO(BG-61037): add back v when VSS signing is fixed
-        const signatureShare = { from: 'user', to: 'bitgo', share: /* validUserSignShare.rShares[3].v + */ validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
+        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, validUserSignShare, 'signerShare').should.be.fulfilled();
         nock.isDone().should.equal(true);

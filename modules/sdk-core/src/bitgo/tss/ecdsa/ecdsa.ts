@@ -201,7 +201,8 @@ export async function sendShareToBitgo(
   signerShare?: string,
   vssProof?: string,
   privateShareProof?: string,
-  userPublicGpgKey?: string
+  userPublicGpgKey?: string,
+  publicShare?: string
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -225,7 +226,8 @@ export async function sendShareToBitgo(
         'full',
         vssProof,
         privateShareProof,
-        userPublicGpgKey
+        userPublicGpgKey,
+        publicShare
       );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,

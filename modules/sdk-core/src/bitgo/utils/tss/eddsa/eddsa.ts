@@ -510,9 +510,16 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
 
-    const signerShare = signingKey.yShares[3].u + signingKey.yShares[3].chaincode;
+    const bitgoIndex = 3;
+    const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.yShares[bitgoIndex].u, 'eddsa');
+    const vssProof = signingKey.yShares[bitgoIndex].v;
+    const userPublicGpgKey = userGpgKey.publicKey;
+    const publicShare = signingKey.yShares[bitgoIndex].y + signingKey.yShares[bitgoIndex].chaincode;
 
     await offerUserToBitgoRShare(
       this.bitgo,
@@ -520,7 +527,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId,
       userSignShare,
       encryptedSignerShare,
-      apiVersion
+      apiVersion,
+      vssProof,
+      privateShareProof,
+      userPublicGpgKey,
+      publicShare
     );
 
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
