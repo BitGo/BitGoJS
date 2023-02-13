@@ -253,7 +253,11 @@ export function verifyWithCheck(
   const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
-  if (proof.s1 == q3) {
+  const q7 = q ** BigInt(7);
+  if (proof.s1 > q3) {
+    return false;
+  }
+  if (proof.t1 > q7) {
     return false;
   }
   const hash = createHash('sha256');
