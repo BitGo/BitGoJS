@@ -1,1 +1,6 @@
-// list GH advisories here we don't care about
+# list GH advisories here we don't care about
+
+# false positive
+# https://github.com/github/advisory-database/pull/1693
+GHSA-8x6c-cv3v-vp6g
+
