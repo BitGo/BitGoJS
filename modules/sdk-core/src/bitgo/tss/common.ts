@@ -47,10 +47,7 @@ export async function sendSignatureShare(
   signerShare?: string,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
   apiMode: 'full' | 'lite' = 'lite',
-  vssProof?: string,
-  privateShareProof?: string,
-  userPublicGpgKey?: string,
-  publicShare?: string
+  userPublicGpgKey?: string
 ): Promise<SignatureShareRecord> {
   let addendum = '';
   switch (requestType) {
@@ -71,10 +68,7 @@ export async function sendSignatureShare(
     .send({
       signatureShare,
       signerShare,
-      vssProof,
-      privateShareProof,
       userPublicGpgKey,
-      publicShare,
     })
     .result();
 }
