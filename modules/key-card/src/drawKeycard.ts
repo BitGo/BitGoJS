@@ -4,9 +4,11 @@ import { FAQ } from './faq';
 import { QrData } from './generateQrData';
 import { splitKeys } from './utils';
 
-// Max for Binary/Byte Data https://en.wikipedia.org/wiki/QR_code#Standards
-// keys for TSS wallets aren't alphanumeric, so qrcode.react falls back to binary/byte encoding
-export const QRBinaryMaxLength = 2953;
+// Max for Binary/Byte Data https://github.com/soldair/node-qrcode#qr-code-capacity
+// the largest theoretically possible value is actually 2953 but the QR codes get so dense that scanning them with a
+// phone (off of a printed page) doesn't work anymore
+// this limitation was chosen by trial and error
+export const QRBinaryMaxLength = 1500;
 
 const font = {
   header: 24,
@@ -23,6 +25,38 @@ const color = {
 
 const margin = 30;
 
+// Helpers for data formatting / positioning on the paper
+function left(x: number): number {
+  return margin + x;
+}
+function moveDown(y: number, ydelta: number): number {
+  return y + ydelta;
+}
+
+function drawOnePageOfQrCodes(qrImages: HTMLCanvasElement[], doc: jsPDF, y: number, qrSize: number, startIndex): number {
+  doc.setFont('helvetica');
+  let qrIndex: number = startIndex;
+  for (; qrIndex < qrImages.length; qrIndex++) {
+    const image = qrImages[qrIndex];
+    const textBuffer = 15;
+    if (y + qrSize + textBuffer >= doc.internal.pageSize.getHeight()) {
+      return qrIndex;
+    }
+
+    doc.addImage(image, left(0), y, qrSize, qrSize);
+
+    if (qrImages.length === 1) {
+      return qrIndex + 1;
+    }
+
+    y = moveDown(y, qrSize + textBuffer);
+    doc.setFontSize(font.body).setTextColor(color.black);
+    doc.text('Part ' + (qrIndex + 1).toString(), left(0), y);
+    y = moveDown(y, 20);
+  }
+  return qrIndex + 1;
+}
+
 export async function drawKeycard({ activationCode, questions, keyCardImage, qrData, walletLabel }: {
   activationCode?: string;
   keyCardImage?: HTMLImageElement;
@@ -34,18 +68,13 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
   const width = 8.5 * 72;
   let y = 0;
 
-  // Helpers for data formatting / positioning on the paper
-  const left = (x: number) => margin + x;
-  const moveDown = (ydelta: number) => (y += ydelta);
-
   // Create the PDF instance
-
   const doc = new jsPDF('portrait', 'pt', 'letter'); // jshint ignore:line
   doc.setFont('helvetica');
 
   // PDF Header Area - includes the logo and company name
   // This is data for the BitGo logo in the top left of the PDF
-  moveDown(30);
+  y = moveDown(y, 30);
 
   if (keyCardImage) {
     doc.addImage(keyCardImage, left(0), y, 303, 40);
@@ -53,12 +82,12 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
 
   // Activation Code
   if (activationCode) {
-    moveDown(8);
+    y = moveDown(y, 8);
     doc.setFontSize(font.body).setTextColor(color.gray);
     doc.text('Activation Code', left(460), y);
   }
   doc.setFontSize(font.header).setTextColor(color.black);
-  moveDown(25);
+  y = moveDown(y, 25);
   doc.text('KeyCard', left(325), y - 1);
   if (activationCode) {
     doc.setFontSize(font.header).setTextColor(color.gray);
@@ -68,25 +97,25 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
   // Subheader
   // titles
   const date = new Date().toDateString();
-  moveDown(margin);
+  y = moveDown(y, margin);
   doc.setFontSize(font.body).setTextColor(color.gray);
   doc.text('Created on ' + date + ' for wallet named:', left(0), y);
   // copy
-  moveDown(25);
+  y = moveDown(y, 25);
   doc.setFontSize(font.subheader).setTextColor(color.black);
   doc.text(walletLabel, left(0), y);
   // Red Bar
-  moveDown(20);
+  y = moveDown(y, 20);
   doc.setFillColor(255, 230, 230);
   doc.rect(left(0), y, width - 2 * margin, 32, 'F');
 
   // warning message
-  moveDown(20);
+  y = moveDown(y, 20);
   doc.setFontSize(font.body).setTextColor(color.red);
   doc.text('Print this document, or keep it securely offline. See below for FAQ.', left(75), y);
 
   // Generate the first page's data for the backup PDF
-  moveDown(35);
+  y = moveDown(y, 35);
   const qrSize = 130;
 
   const qrKeys = ['user', 'passcode', 'backup', 'bitgo'];
@@ -105,45 +134,35 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
     const textLeft = left(qrSize + 15);
     let textHeight = 0;
 
-    if (qr.data.length <= QRBinaryMaxLength) {
-      const image = await QRCode.toCanvas(qr.data, { errorCorrectionLevel: 'L' });
-      doc.addImage(image, left(0), y, qrSize, qrSize);
-    } else {
-      // key is too long for one QR code
-      const keys = splitKeys(qr.data, QRBinaryMaxLength);
-      for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-        const image = await QRCode.toCanvas(keys[keyIndex], { errorCorrectionLevel: 'L' });
-        doc.addImage(image, left(0), y, qrSize, qrSize);
-        const textBuffer = 15;
-        moveDown(qrSize + textBuffer);
-        doc.setFontSize(font.body).setTextColor(color.black);
-        doc.text('Part ' + (keyIndex + 1).toString(), left(0), y);
-        moveDown(20);
-      }
-      y = topY;
+    const qrImages: HTMLCanvasElement[] = [];
+    const keys = splitKeys(qr.data, QRBinaryMaxLength);
+    for (const key of keys) {
+      qrImages.push(await QRCode.toCanvas(key, { errorCorrectionLevel: 'L' }));
     }
 
+    let nextQrIndex = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, 0);
+
     doc.setFontSize(font.subheader).setTextColor(color.black);
-    moveDown(10);
+    y = moveDown(y, 10);
     textHeight += 10;
     doc.text(qr.title, textLeft, y);
     textHeight += doc.getLineHeight();
-    moveDown(15);
+    y = moveDown(y, 15);
     textHeight += 15;
     doc.setFontSize(font.body).setTextColor(color.darkgray);
     doc.text(qr.description, textLeft, y);
     textHeight += doc.getLineHeight();
     doc.setFontSize(font.body - 2);
     if (qr?.data?.length > QRBinaryMaxLength) {
-      moveDown(30);
+      y = moveDown(y, 30);
       textHeight += 30;
-      doc.text('Note: you will need to put Part 1 and Part 2 together for the full key', textLeft, y);
+      doc.text('Note: you will need to put all Parts together for the full key', textLeft, y);
     }
-    moveDown(30);
+    y = moveDown(y, 30);
     textHeight += 30;
     doc.text('Data:', textLeft, y);
     textHeight += doc.getLineHeight();
-    moveDown(15);
+    y = moveDown(y, 15);
     textHeight += 15;
     const width = 72 * 8.5 - textLeft - 30;
     doc.setFont('courier').setFontSize(9).setTextColor(color.black);
@@ -156,10 +175,12 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
         textHeight = 0;
         y = 30;
         topY = y;
+        nextQrIndex = drawOnePageOfQrCodes(qrImages, doc, y, qrSize, nextQrIndex);
+        doc.setFont('courier').setFontSize(9).setTextColor(color.black);
       }
       doc.text(lines[line], textLeft, y);
       if (line !== lines.length - 1) {
-        moveDown(buffer);
+        y = moveDown(y, buffer);
         textHeight += buffer;
       }
     }
@@ -169,7 +190,7 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
       const text = 'Key Id: ' + qr.publicMasterKey;
 
       // Gray bar
-      moveDown(20);
+      y = moveDown(y, 20);
       textHeight += 20;
       doc.setFillColor(247, 249, 249); // Gray background
       doc.setDrawColor(0, 0, 0); // Border
@@ -187,12 +208,9 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
     doc.setFont('helvetica');
     // Move down the size of the QR code minus accumulated height on the right side, plus margin
     // if we have a key that spans multiple pages, then exclude QR code size
-    let rowHeight = Math.max(qrSize, textHeight);
-    if (qr?.data?.length > QRBinaryMaxLength) {
-      rowHeight = textHeight;
-    }
+    const rowHeight = Math.max(qr.data.length > QRBinaryMaxLength ? qrSize + 20 : qrSize, textHeight);
     const marginBottom = 15;
-    moveDown(rowHeight - (y - topY) + marginBottom);
+    y = moveDown(y, rowHeight - (y - topY) + marginBottom);
   }
 
   // Add next Page
@@ -200,22 +218,22 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
 
   // next pages title
   y = 0;
-  moveDown(55);
+  y = moveDown(y, 55);
   doc.setFontSize(font.header).setTextColor(color.black);
   doc.text('BitGo KeyCard FAQ', left(0), y);
 
   // Generate the second page's data for the backup PDF
-  moveDown(30);
+  y = moveDown(y, 30);
   questions.forEach(function (q) {
     doc.setFontSize(font.subheader).setTextColor(color.black);
     doc.text(q.question, left(0), y);
-    moveDown(20);
+    y = moveDown(y, 20);
     doc.setFontSize(font.body).setTextColor(color.darkgray);
     q.answer.forEach(function (line) {
       doc.text(line, left(0), y);
-      moveDown(font.body + 3);
+      y = moveDown(y, font.body + 3);
     });
-    moveDown(22);
+    y = moveDown(y, 22);
   });
 
   return doc;
