@@ -3,6 +3,7 @@ import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
 export interface AccountConstructorOptions {
+  id: string;
   fullName: string;
   name: string;
   alias?: string;
@@ -378,6 +379,7 @@ export class FiatCoin extends BaseCoin {
 /**
  * Factory function for account coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -390,6 +392,7 @@ export class FiatCoin extends BaseCoin {
  * @param isToken? Whether or not this account coin is a token of another coin
  */
 export function account(
+  id: string,
   name: string,
   fullName: string,
   network: AccountNetwork,
@@ -404,6 +407,7 @@ export function account(
 ) {
   return Object.freeze(
     new AccountCoin({
+      id,
       name,
       fullName,
       network,
@@ -422,6 +426,7 @@ export function account(
 /**
  * Factory function for erc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -434,6 +439,7 @@ export function account(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -447,6 +453,7 @@ export function erc20(
 ) {
   return Object.freeze(
     new Erc20Coin({
+      id,
       name,
       fullName,
       network,
@@ -466,6 +473,7 @@ export function erc20(
 /**
  * Factory function for testnet erc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -477,6 +485,7 @@ export function erc20(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function terc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -487,12 +496,13 @@ export function terc20(
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.kovan
 ) {
-  return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return erc20(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for erc721 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param contractAddress Contract address of this token
@@ -504,6 +514,7 @@ export function terc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc721(
+  id: string,
   name: string,
   fullName: string,
   contractAddress: string,
@@ -515,6 +526,7 @@ export function erc721(
 ) {
   return Object.freeze(
     new Erc721Coin({
+      id,
       name,
       fullName,
       network,
@@ -534,6 +546,7 @@ export function erc721(
 /**
  * Factory function for testnet erc721 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param contractAddress Contract address of this token
@@ -544,6 +557,7 @@ export function erc721(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function terc721(
+  id: string,
   name: string,
   fullName: string,
   contractAddress: string,
@@ -553,12 +567,13 @@ export function terc721(
   network: EthereumNetwork = Networks.test.goerli,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
-  return erc721(name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
+  return erc721(id, name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
 }
 
 /**
  * Factory function for nonstandard token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param contractAddress Contract address of this token
@@ -570,6 +585,7 @@ export function terc721(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function nonstandardToken(
+  id: string,
   name: string,
   fullName: string,
   contractAddress: string,
@@ -581,6 +597,7 @@ export function nonstandardToken(
 ) {
   return Object.freeze(
     new ContractAddressDefinedToken({
+      id,
       name,
       fullName,
       network,
@@ -600,6 +617,7 @@ export function nonstandardToken(
 /**
  * Factory function for erc1155 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param contractAddress Contract address of this token
@@ -611,6 +629,7 @@ export function nonstandardToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc1155(
+  id: string,
   name: string,
   fullName: string,
   contractAddress: string,
@@ -622,6 +641,7 @@ export function erc1155(
 ) {
   return Object.freeze(
     new Erc1155Coin({
+      id,
       name,
       fullName,
       network,
@@ -641,6 +661,7 @@ export function erc1155(
 /**
  * Factory function for testnet erc1155 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param contractAddress Contract address of this token
@@ -651,6 +672,7 @@ export function erc1155(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function terc1155(
+  id: string,
   name: string,
   fullName: string,
   contractAddress: string,
@@ -660,12 +682,13 @@ export function terc1155(
   network: EthereumNetwork = Networks.test.goerli,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
-  return erc1155(name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
+  return erc1155(id, name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
 }
 
 /**
  * Factory function for ERC20-compatible account coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param network Network object for this coin
@@ -678,6 +701,7 @@ export function terc1155(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc20CompatibleAccountCoin(
+  id: string,
   name: string,
   fullName: string,
   network: EthereumNetwork,
@@ -692,6 +716,7 @@ export function erc20CompatibleAccountCoin(
 ) {
   return Object.freeze(
     new Erc20CompatibleAccountCoin({
+      id,
       name,
       fullName,
       network,
@@ -711,6 +736,7 @@ export function erc20CompatibleAccountCoin(
 /**
  * Factory function for celo token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -723,6 +749,7 @@ export function erc20CompatibleAccountCoin(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function celoToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -736,6 +763,7 @@ export function celoToken(
 ) {
   return Object.freeze(
     new CeloCoin({
+      id,
       name,
       fullName,
       network,
@@ -755,6 +783,7 @@ export function celoToken(
 /**
  * Factory function for testnet celo token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -766,6 +795,7 @@ export function celoToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function tceloToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -776,12 +806,13 @@ export function tceloToken(
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.celo
 ) {
-  return celoToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return celoToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for celo token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -794,6 +825,7 @@ export function tceloToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function bscToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -807,6 +839,7 @@ export function bscToken(
 ) {
   return Object.freeze(
     new BscCoin({
+      id,
       name,
       fullName,
       network,
@@ -826,6 +859,7 @@ export function bscToken(
 /**
  * Factory function for testnet bsc token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -837,6 +871,7 @@ export function bscToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function tbscToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -847,12 +882,13 @@ export function tbscToken(
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.bsc
 ) {
-  return bscToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return bscToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for Stellar token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -866,6 +902,7 @@ export function tbscToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function stellarToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -879,6 +916,7 @@ export function stellarToken(
 ) {
   return Object.freeze(
     new StellarCoin({
+      id,
       name,
       fullName,
       decimalPlaces,
@@ -898,6 +936,7 @@ export function stellarToken(
 /**
  * Factory function for testnet Stellar token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -910,6 +949,7 @@ export function stellarToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function tstellarToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -920,12 +960,13 @@ export function tstellarToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.stellar
 ) {
-  return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
+  return stellarToken(id, name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for tron token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -938,6 +979,7 @@ export function tstellarToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tronToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -951,6 +993,7 @@ export function tronToken(
 ) {
   return Object.freeze(
     new TronErc20Coin({
+      id,
       name,
       fullName,
       network,
@@ -970,6 +1013,7 @@ export function tronToken(
 /**
  * Factory function for testnet tron token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -982,6 +1026,7 @@ export function tronToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ttronToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -994,6 +1039,7 @@ export function ttronToken(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return tronToken(
+    id,
     name,
     fullName,
     decimalPlaces,
@@ -1010,6 +1056,7 @@ export function ttronToken(
 /**
  * Factory function for Hedera coin instances
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1022,6 +1069,7 @@ export function ttronToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function hederaCoin(
+  id: string,
   name: string,
   fullName: string,
   network: AccountNetwork,
@@ -1035,6 +1083,7 @@ export function hederaCoin(
 ) {
   return Object.freeze(
     new HederaCoin({
+      id,
       name,
       fullName,
       decimalPlaces,
@@ -1054,6 +1103,7 @@ export function hederaCoin(
 /**
  * Factory function for Hedera token instances
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1067,6 +1117,7 @@ export function hederaCoin(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function hederaToken(
+  id: string,
   name: string,
   fullName: string,
   network: AccountNetwork,
@@ -1081,6 +1132,7 @@ export function hederaToken(
 ) {
   return Object.freeze(
     new HederaToken({
+      id,
       name,
       fullName,
       decimalPlaces,
@@ -1101,7 +1153,9 @@ export function hederaToken(
 /**
  * Factory function for ALGO token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
+
  * @param alias (optional) alternative identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1115,6 +1169,7 @@ export function hederaToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function algoToken(
+  id: string,
   name: string,
   alias: string | undefined,
   fullName: string,
@@ -1129,6 +1184,7 @@ export function algoToken(
 ): Readonly<AlgoCoin> {
   return Object.freeze(
     new AlgoCoin({
+      id,
       name,
       alias,
       fullName,
@@ -1149,6 +1205,7 @@ export function algoToken(
 /**
  * Factory function for testnet ALGO token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param alias (optional) alternative identifier of the token
  * @param fullName Complete human-readable name of the token
@@ -1162,6 +1219,7 @@ export function algoToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function talgoToken(
+  id: string,
   name: string,
   alias: string | undefined,
   fullName: string,
@@ -1173,12 +1231,13 @@ export function talgoToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.algorand
 ): Readonly<AlgoCoin> {
-  return algoToken(name, alias, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
+  return algoToken(id, name, alias, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for eos token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1191,6 +1250,7 @@ export function talgoToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function eosToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1204,6 +1264,7 @@ export function eosToken(
 ) {
   return Object.freeze(
     new EosCoin({
+      id,
       name,
       fullName,
       network,
@@ -1223,6 +1284,7 @@ export function eosToken(
 /**
  * Factory function for testnet eos token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1234,6 +1296,7 @@ export function eosToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function teosToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1244,12 +1307,13 @@ export function teosToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.eos
 ) {
-  return eosToken(name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
+  return eosToken(id, name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for sol token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1262,6 +1326,7 @@ export function teosToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function solToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1275,6 +1340,7 @@ export function solToken(
 ) {
   return Object.freeze(
     new SolCoin({
+      id,
       name,
       fullName,
       network,
@@ -1294,6 +1360,7 @@ export function solToken(
 /**
  * Factory function for testnet solana token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1305,6 +1372,7 @@ export function solToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
  */
 export function tsolToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1315,12 +1383,13 @@ export function tsolToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.sol
 ) {
-  return solToken(name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
+  return solToken(id, name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for ada token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1333,6 +1402,7 @@ export function tsolToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function adaToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1347,6 +1417,7 @@ export function adaToken(
 ) {
   return Object.freeze(
     new AdaCoin({
+      id,
       name,
       fullName,
       network,
@@ -1367,6 +1438,7 @@ export function adaToken(
 /**
  * Factory function for testnet cardano token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1378,6 +1450,7 @@ export function adaToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
  */
 export function tadaToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1389,12 +1462,13 @@ export function tadaToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.ada
 ) {
-  return adaToken(name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
+  return adaToken(id, name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
 }
 
 /**
  * Factory function for avaxErc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1407,6 +1481,7 @@ export function tadaToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function avaxErc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1420,6 +1495,7 @@ export function avaxErc20(
 ) {
   return Object.freeze(
     new AvaxERC20Token({
+      id,
       name,
       fullName,
       network,
@@ -1439,6 +1515,7 @@ export function avaxErc20(
 /**
  * Factory function for testnet avaxErc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1451,6 +1528,7 @@ export function avaxErc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tavaxErc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1463,6 +1541,7 @@ export function tavaxErc20(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return avaxErc20(
+    id,
     name,
     fullName,
     decimalPlaces,
@@ -1479,6 +1558,7 @@ export function tavaxErc20(
 /**
  * Factory function for polygonErc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1491,6 +1571,7 @@ export function tavaxErc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function polygonErc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1504,6 +1585,7 @@ export function polygonErc20(
 ) {
   return Object.freeze(
     new PolygonERC20Token({
+      id,
       name,
       fullName,
       network,
@@ -1523,6 +1605,7 @@ export function polygonErc20(
 /**
  * Factory function for Mumbai testnet polygonErc20 token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
@@ -1535,6 +1618,7 @@ export function polygonErc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tpolygonErc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -1547,6 +1631,7 @@ export function tpolygonErc20(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return polygonErc20(
+    id,
     name,
     fullName,
     decimalPlaces,
@@ -1563,6 +1648,7 @@ export function tpolygonErc20(
 /**
  * Factory function for fiat coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin, should start with 'fiat' or 'tfiat' followed by the 3-char ISO-4217 alphabetical code
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -1575,6 +1661,7 @@ export function tpolygonErc20(
  * @param isToken? Whether or not this coin is a token of another coin
  */
 export function fiat(
+  id: string,
   name: FiatCoinName,
   fullName: string,
   network: BaseNetwork,
@@ -1588,6 +1675,7 @@ export function fiat(
 ) {
   return Object.freeze(
     new FiatCoin({
+      id,
       name,
       fullName,
       network,
