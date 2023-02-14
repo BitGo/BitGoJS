@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 
-import { Network, supportsSegwit, supportsTaproot, taproot } from '..';
+import { Network, p2trPayments, supportsSegwit, supportsTaproot, taproot } from '..';
 
 import { isTriple, Triple, Tuple } from './types';
 
@@ -209,7 +209,7 @@ export function createPaymentP2tr(
     redeemIndex = getRedeemIndex(keyCombinations2of2, redeemIndex.signer, redeemIndex.cosigner);
   }
   const redeems = keyCombinations2of2.map((pubkeys, index) =>
-    bitcoinjs.payments.p2tr_ns(
+    p2trPayments.p2tr_ns(
       {
         pubkeys,
         depth: index === 0 ? 1 : 2,
@@ -218,7 +218,7 @@ export function createPaymentP2tr(
     )
   );
 
-  return bitcoinjs.payments.p2tr(
+  return p2trPayments.p2tr(
     {
       pubkeys: keyCombinations2of2[0],
       redeems,

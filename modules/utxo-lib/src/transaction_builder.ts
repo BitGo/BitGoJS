@@ -1,5 +1,5 @@
 import * as types from 'bitcoinjs-lib/src/types';
-import { address as baddress } from './';
+import { address as baddress, p2trPayments } from './';
 import * as bufferutils from 'bitcoinjs-lib/src/bufferutils';
 import * as classify from './classify';
 import { crypto as bcrypto } from './';
@@ -520,7 +520,7 @@ function expandInput<TNumber extends number | bigint = number>(
     }
 
     case SCRIPT_TYPES.P2TR_NS: {
-      const { n, pubkeys, signatures } = payments.p2tr_ns(
+      const { n, pubkeys, signatures } = p2trPayments.p2tr_ns(
         {
           // Witness signatures are reverse of pubkeys, because it's a stack
           signatures: witnessStack.length ? witnessStack.reverse() : undefined,
@@ -599,7 +599,7 @@ function expandInput<TNumber extends number | bigint = number>(
     } else {
       // script path spend
       const { tapscript, controlBlock, annex } = parsedWitness;
-      const prevOutScript = payments.p2tr(
+      const prevOutScript = p2trPayments.p2tr(
         {
           redeems: [{ output: tapscript }],
           redeemIndex: 0,
@@ -717,7 +717,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
       // HACK ourPubKey to BIP340-style
       if (ourPubKey.length === 33) ourPubKey = ourPubKey.slice(1);
       // TODO: support multiple pubkeys
-      const p2tr = payments.p2tr({ pubkey: ourPubKey, controlBlock }, { eccLib });
+      const p2tr = p2trPayments.p2tr({ pubkey: ourPubKey, controlBlock }, { eccLib });
 
       // Does tweaked output for a single pubkey match?
       if (!script.equals(p2tr.output!)) return { type };
@@ -731,7 +731,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
     }
 
     case SCRIPT_TYPES.P2TR_NS: {
-      const p2trNs = payments.p2tr_ns({ output: script }, { eccLib });
+      const p2trNs = p2trPayments.p2tr_ns({ output: script }, { eccLib });
       // P2TR ScriptPath
       return {
         type,
@@ -863,7 +863,7 @@ function prepareInput<TNumber extends number | bigint = number>(
     /* tslint:disable-next-line:no-shadowed-variable */
     let prevOutScript = input.prevOutScript;
     if (!prevOutScript) {
-      prevOutScript = payments.p2tr(
+      prevOutScript = p2trPayments.p2tr(
         {
           redeems: [{ output: witnessScript }],
           redeemIndex: 0,
@@ -1062,7 +1062,7 @@ function build<TNumber extends number | bigint = number>(
       if (input.witnessScriptType === SCRIPT_TYPES.P2TR_NS) {
         // ScriptPath
         const redeem = build<TNumber>(input.witnessScriptType!, input, allowIncomplete);
-        return payments.p2tr(
+        return p2trPayments.p2tr(
           {
             output: input.prevOutScript,
             controlBlock: input.controlBlock,
@@ -1077,7 +1077,7 @@ function build<TNumber extends number | bigint = number>(
       // KeyPath
       if (signatures.length === 0) break;
 
-      return payments.p2tr({ pubkeys, signature: signatures[0] }, { eccLib });
+      return p2trPayments.p2tr({ pubkeys, signature: signatures[0] }, { eccLib });
     }
     case SCRIPT_TYPES.P2TR_NS: {
       const m = input.maxSignatures;
@@ -1090,7 +1090,7 @@ function build<TNumber extends number | bigint = number>(
       // if the transaction is not not complete (complete), or if signatures.length === m, validate
       // otherwise, the number of OP_0's may be >= m, so don't validate (boo)
       const validate = !allowIncomplete || m === signatures.length;
-      return payments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate, eccLib });
+      return p2trPayments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate, eccLib });
     }
   }
 }
