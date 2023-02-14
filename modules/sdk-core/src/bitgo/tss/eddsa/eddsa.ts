@@ -205,6 +205,9 @@ export async function offerUserToBitgoRShare(
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,
     share: rShare.r + rShare.R,
+    vssProof,
+    privateShareProof,
+    publicShare,
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
@@ -217,10 +220,7 @@ export async function offerUserToBitgoRShare(
     encryptedSignerShare,
     'eddsa',
     apiMode,
-    vssProof,
-    privateShareProof,
-    userPublicGpgKey,
-    publicShare
+    userPublicGpgKey
   );
 }
 
