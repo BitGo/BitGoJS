@@ -11,7 +11,6 @@ import {
   Wallet,
   RequestTracer,
 } from '@bitgo/sdk-core';
-import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 
 export abstract class UnifiedWallets implements IUnifiedWallets {
@@ -19,8 +18,16 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
   protected readonly coin: IBaseCoin;
   protected urlPath: string;
 
-  protected constructor(bitgo: BitGoBase, coinName: string) {
+  protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
+    let coinName;
+    switch (this.bitgo.getEnv()) {
+      case 'prod':
+        coinName = 'eth';
+        break;
+      default:
+        coinName = 'gteth';
+    }
     this.coin = this.bitgo.coin(coinName);
   }
 
@@ -37,10 +44,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @returns KeychainsTriplet
    * @private
    */
-  protected abstract generateKeychainsTriplet(
-    params: GenerateWalletOptions,
-    coins?: CoinFamily[]
-  ): Promise<KeychainsTriplet>;
+  protected abstract generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet>;
 
   /**
    * Calls Bitgo API to create an EVM wallet.
