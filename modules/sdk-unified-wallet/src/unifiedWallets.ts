@@ -7,6 +7,9 @@ import {
   KeychainsTriplet,
   WalletData,
   IBaseCoin,
+  GetWalletOptions,
+  Wallet,
+  RequestTracer,
 } from '@bitgo/sdk-core';
 import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
@@ -79,5 +82,24 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
 
   async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
     return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).result();
+  }
+
+  protected async getWallet(params: GetWalletOptions = {}): Promise<Wallet> {
+    if (!params.id) {
+      throw new Error('id is required');
+    }
+    const query: GetWalletOptions = {};
+    if (params.allTokens) {
+      if (typeof params.allTokens !== 'boolean') {
+        throw new Error('invalid allTokens argument, expecting boolean');
+      }
+      query.allTokens = params.allTokens;
+    }
+    this.bitgo.setRequestTracer(new RequestTracer());
+    const walletData = await this.bitgo
+      .get(this.coin.url('/wallet/' + params.id))
+      .query(query)
+      .result();
+    return new Wallet(this.bitgo, this.coin, walletData);
   }
 }

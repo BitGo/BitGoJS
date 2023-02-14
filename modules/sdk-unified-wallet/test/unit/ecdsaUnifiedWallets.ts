@@ -14,7 +14,7 @@ describe('EVM Wallets:', function () {
   let evmWallets: EcdsaEVMUnifiedWallets;
   let bgUrl: string;
   let sandbox: sinon.SinonSandbox;
-  const ethWalletId = '123-eth';
+  const ethWalletId = 'eth-123-eth';
   const polygonWalletId = '456-polygon';
   const ethAddress = 'bitgo, california';
   const expected: UnifiedWallet = {
@@ -127,6 +127,25 @@ describe('EVM Wallets:', function () {
       nock(bgUrl).get('/api/v2/wallet/evm').reply(200, [expected]);
       const result = await evmWallets.getAllUnifiedWallets();
       result.should.deepEqual([expected]);
+    });
+
+    describe('get specific coin wallet', function () {
+      const id = '123';
+      it('should validate parameters', async function () {
+        await evmWallets.getCoinWalletById('', 'test').should.be.rejectedWith('Id field cannot be empty');
+        nock(bgUrl).get('/api/v2/wallet/evm').query({ id }).reply(200, expected);
+        await evmWallets.getCoinWalletById(id, 'test').should.be.rejectedWith('unsupported coin test');
+      });
+      it('should return valid coin wallet', async function () {
+        const expectedEthWallet = {
+          bitgo,
+          coin: bitgo.coin('eth'),
+        };
+        nock(bgUrl).get('/api/v2/wallet/evm').query({ id }).reply(200, expected);
+        nock(bgUrl).get('/api/v2/eth/wallet/eth-123-eth').reply(200, expectedEthWallet);
+        const result = await evmWallets.getCoinWalletById(id, 'eth');
+        result.baseCoin.getFullName().should.equal('Ethereum');
+      });
     });
   });
 });

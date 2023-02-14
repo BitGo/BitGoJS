@@ -4,12 +4,17 @@ import {
   KeychainsTriplet,
   SupplementGenerateWalletOptions,
   Keychains,
+  Wallet,
 } from '@bitgo/sdk-core';
 import { UnifiedWalletID, UnifiedWallet, GenerateUnifiedWalletOptions } from '../types';
-import { supportedCoins } from './types';
+import { supportedCoins, EvmWalletCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
+const isEmpty = (obj) => [Object, Array].includes((obj || {}).constructor) && !Object.entries(obj || {}).length;
+
 export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
+  private coinIdMapping: Record<EvmWalletCoins, Wallet> = {};
+  private unifiedWallet: UnifiedWallet;
   constructor(bitgo: BitGoBase, coinName = 'eth') {
     super(bitgo, coinName);
     this.urlPath = '/wallet/evm';
@@ -71,5 +76,29 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
       backupProvider: params.backupProvider,
     });
     return keychainsTriplet;
+  }
+
+  async getCoinWalletById(id: string, coinName: string): Promise<Wallet> {
+    if (!id) {
+      throw new Error('Id field cannot be empty');
+    }
+    if (!supportedCoins.includes(coinName)) {
+      throw new Error(`unsupported coin ${coinName}`);
+    }
+    if (this.unifiedWallet === undefined) {
+      this.unifiedWallet = await this.getUnifiedWalletById(id);
+    }
+    if (isEmpty(this.coinIdMapping) || !Object.keys(this.coinIdMapping).includes(coinName)) {
+      let coinWalletId;
+      for (const id of this.unifiedWallet.wallets) {
+        if (id.coin == coinName) {
+          coinWalletId = id.walletId;
+          break;
+        }
+      }
+      const wallet = await this.getWallet({ id: coinWalletId, allTokens: false });
+      this.coinIdMapping[coinName] = wallet;
+    }
+    return this.coinIdMapping[coinName];
   }
 }
