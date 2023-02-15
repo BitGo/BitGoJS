@@ -768,18 +768,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param bitgoKeychain previously created BitGo keychain; must be compatible with user and backup key shares
    * @param decryptedShare The decrypted bitgo-to-user/backup private share retrieved from the keychain
    * @param verifierIndex The index of the party to verify: 1 = user, 2 = backup
+   * @param bitgoGpgPub Bitgo's public GPG key for encryption between bitgo/backup or user
    */
   async verifyWalletSignatures(
     userGpgPub: string,
     backupGpgPub: string,
     bitgoKeychain: Keychain,
     decryptedShare: string,
-    verifierIndex: 1 | 2
+    verifierIndex: 1 | 2,
+    bitgoGpgPub?: openpgp.Key
   ): Promise<void> {
     assert(bitgoKeychain.commonKeychain);
     assert(bitgoKeychain.walletHSMGPGPublicKeySigs);
-
-    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    // Allow config of bitgo's gpg key in settings where the sdk is being used offline.
+    const bitgoGpgKey = bitgoGpgPub ?? (await getBitgoGpgPubKey(this.bitgo));
     const userKeyPub = await openpgp.readKey({ armoredKey: userGpgPub });
     const userKeyId = userKeyPub.keyPacket.getFingerprint();
     const backupKeyPub = await openpgp.readKey({ armoredKey: backupGpgPub });

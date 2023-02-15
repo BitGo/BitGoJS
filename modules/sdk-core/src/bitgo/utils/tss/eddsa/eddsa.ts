@@ -39,12 +39,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     backupGpgPub: string,
     bitgoKeychain: Keychain,
     decryptedShare: string,
-    verifierIndex: 1 | 2
+    verifierIndex: 1 | 2,
+    bitgoGpgPub?: openpgp.Key
   ): Promise<void> {
     assert(bitgoKeychain.commonKeychain);
     assert(bitgoKeychain.walletHSMGPGPublicKeySigs);
 
-    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    // Allow config of bitgo's gpg key in settings where the sdk is being used offline.
+    const bitgoGpgKey = bitgoGpgPub ?? (await getBitgoGpgPubKey(this.bitgo));
 
     const userKeyPub = await openpgp.readKey({ armoredKey: userGpgPub });
     const userKeyId = userKeyPub.keyPacket.getFingerprint();
