@@ -169,9 +169,9 @@ export interface AShare {
   k: string;
   alpha: string;
   mu: string;
-  proof?: RangeProofShare;
-  gammaProof?: RangeProofWithCheckShare;
-  wProof?: RangeProofWithCheckShare;
+  proof: RangeProofShare;
+  gammaProof: RangeProofWithCheckShare;
+  wProof: RangeProofWithCheckShare;
 }
 
 // Beta Share
@@ -187,8 +187,8 @@ export interface MUShare {
   j: number;
   alpha: string;
   mu: string;
-  gammaProof?: RangeProofWithCheckShare;
-  wProof?: RangeProofWithCheckShare;
+  gammaProof: RangeProofWithCheckShare;
+  wProof: RangeProofWithCheckShare;
 }
 
 // Gamma Share
