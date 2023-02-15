@@ -1,4 +1,9 @@
-import { ConflictingCoinFeaturesError, DisallowedCoinFeatureError, MissingRequiredCoinFeatureError } from './errors';
+import {
+  ConflictingCoinFeaturesError,
+  DisallowedCoinFeatureError,
+  InvalidIdError,
+  MissingRequiredCoinFeatureError,
+} from './errors';
 import { BaseNetwork } from './networks';
 
 export enum CoinKind {
@@ -1220,7 +1225,8 @@ export enum BaseUnit {
 }
 
 export interface BaseCoinConstructorOptions {
-  fullName: string; // full, human readable name of this coin. Eg, "Bitcoin Cash" for bch
+  id: string; // uuid v4
+  fullName: string; // full, human-readable name of this coin. Eg, "Bitcoin Cash" for bch
   name: string; // unique identifier for this coin, usually the lowercase ticker or symbol. Eg, "btc" for bitcoin
   alias?: string; // alternative name usually used during name migrations
   prefix?: string;
@@ -1239,6 +1245,7 @@ export abstract class BaseCoin {
   /*
     Display properties
    */
+  public readonly id: string;
   public readonly fullName: string;
   public readonly name: string;
   public readonly prefix?: string;
@@ -1286,6 +1293,11 @@ export abstract class BaseCoin {
    */
   protected abstract disallowedFeatures(): Set<CoinFeature>;
 
+  private static isValidUuidV4 = (uuid: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  };
+
   /**
    * Ensures that the base coin constructor was passed a valid set of options.
    *
@@ -1320,11 +1332,17 @@ export abstract class BaseCoin {
       // some required features were missing
       throw new MissingRequiredCoinFeatureError(options.name, Array.from(requiredFeatures));
     }
+
+    // assets require a valid uuid v4 id
+    if (!BaseCoin.isValidUuidV4(options.id)) {
+      throw new InvalidIdError(options.name, options.id);
+    }
   }
 
   protected constructor(options: BaseCoinConstructorOptions) {
     this.validateOptions(options);
 
+    this.id = options.id;
     this.fullName = options.fullName;
     this.name = options.name;
     this.alias = options.alias;

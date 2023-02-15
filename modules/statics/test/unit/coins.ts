@@ -98,6 +98,14 @@ describe('CoinMap', function () {
   it('should report if it does not contain coin', () => {
     coins.has('zzzz:TBD:232332').should.be.false();
   });
+
+  it('should fail if asset ids are not unique', () => {
+    const assetIds = new Set();
+    coins.forEach((coin) => {
+      assetIds.has(coin.id).should.be.false();
+      assetIds.add(coin.id);
+    });
+  });
 });
 
 coins.forEach((coin, coinName) => {
@@ -106,6 +114,10 @@ coins.forEach((coin, coinName) => {
 
     it('has expected name', function () {
       coin.name.should.eql(coinName);
+    });
+
+    it('should have id', function () {
+      coin.id.should.be.not.empty();
     });
 
     if (!coin.isToken && coin.family !== CoinFamily.FIAT) {

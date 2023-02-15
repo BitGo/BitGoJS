@@ -2,6 +2,7 @@ import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } 
 import { UtxoNetwork } from './networks';
 
 export interface UtxoConstructorOptions {
+  id: string;
   fullName: string;
   name: string;
   network: UtxoNetwork;
@@ -49,6 +50,7 @@ export class UtxoCoin extends BaseCoin {
 /**
  * Factory function for utxo coin instances.
  *
+ * @param id uuid v4 of the coin
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -59,6 +61,7 @@ export class UtxoCoin extends BaseCoin {
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function utxo(
+  id: string,
   name: string,
   fullName: string,
   network: UtxoNetwork,
@@ -72,6 +75,7 @@ export function utxo(
 ) {
   return Object.freeze(
     new UtxoCoin({
+      id,
       name,
       fullName,
       network,

@@ -2,6 +2,7 @@ import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } 
 import { AvalancheNetwork } from './networks';
 
 export interface AVAXPConstructorOptions {
+  id: string;
   fullName: string;
   name: string;
   network: AvalancheNetwork;
@@ -48,6 +49,7 @@ export class AVAXPCoin extends BaseCoin {
 /**
  * Factory function for utxo coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -58,6 +60,7 @@ export class AVAXPCoin extends BaseCoin {
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function avaxp(
+  id: string,
   name: string,
   fullName: string,
   network: AvalancheNetwork,
@@ -70,6 +73,7 @@ export function avaxp(
 ) {
   return Object.freeze(
     new AVAXPCoin({
+      id,
       name,
       fullName,
       network,
