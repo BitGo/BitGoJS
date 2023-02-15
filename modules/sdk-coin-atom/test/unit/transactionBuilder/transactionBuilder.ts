@@ -59,7 +59,21 @@ describe('Atom Transaction Builder', async () => {
     for (const builder of builders) {
       should.doesNotThrow(() => builder.validateAddress({ address: testTxData.sender }));
       should(() => builder.validateAddress(invalidAddress)).throwError(
-        'transactionBuilder: address isValidAddress check failed : ' + invalidAddress.address
+        'transactionBuilder: address isValidAddress check failed: ' + invalidAddress.address
+      );
+    }
+  });
+
+  it('validateAmount', function () {
+    for (const builder of builders) {
+      should.doesNotThrow(() => builder.validateAmountData([testData.coinAmounts.amount1]));
+      should.doesNotThrow(() => builder.validateAmountData([testData.coinAmounts.amount2]));
+      should.doesNotThrow(() => builder.validateAmountData([testData.coinAmounts.amount3]));
+      should(() => builder.validateAmountData([testData.coinAmounts.amount4])).throwError(
+        'transactionBuilder: validateAmountData Invalid amount: ' + testData.coinAmounts.amount4.amount
+      );
+      should(() => builder.validateAmountData([testData.coinAmounts.amount5])).throwError(
+        'transactionBuilder: validateAmountData Invalid denom: ' + testData.coinAmounts.amount5.denom
       );
     }
   });
