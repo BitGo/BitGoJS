@@ -179,6 +179,7 @@ describe('generateQrData', function () {
     const backupKeyProvider = 'BitGo Trust';
     const userToBackupKeyShare: ApiKeyShare = { from: 'user', to: 'backup', publicShare: 'userToBackupPublic', privateShare: 'userToBackupPrivate' };
     const bitgoToBackupKeyShare: ApiKeyShare = { from: 'bitgo', to: 'backup', publicShare: 'bitgoToBackupPublic', privateShare: 'bitgoToBackupPrivate' };
+    const bitgoCommonKeychain = 'commonCommonBitGo';
     const qrData = generateQrData({
       backupKeychain: createKeychain({
         provider,
@@ -188,6 +189,7 @@ describe('generateQrData', function () {
       backupKeyProvider,
       bitgoKeychain: createKeychain({
         type: 'tss',
+        commonKeychain: bitgoCommonKeychain,
       }),
       coin,
       userKeychain: createKeychain({
@@ -199,13 +201,13 @@ describe('generateQrData', function () {
     qrData.user.data.should.equal(userEncryptedPrv);
 
     assert(qrData.backup);
-    qrData.backup.title.should.equal('B: User To Backup Key Share');
-    qrData.backup.description.should.equal(`This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness, contact ${backupKeyProvider} and they will help you recover your funds.`);
-    qrData.backup.data.should.equal(JSON.stringify(userToBackupKeyShare));
+    qrData.backup.title.should.equal('B: Backup Key Shares');
+    qrData.backup.description.should.equal(`These are the key shares for ${backupKeyProvider}. If BitGo Inc. goes out of business,\r\ncontact ${backupKeyProvider} and they will help you recover your funds.`);
+    qrData.backup.data.should.equal(JSON.stringify([userToBackupKeyShare, bitgoToBackupKeyShare]));
 
     assert(qrData.bitgo);
-    qrData.bitgo.title.should.equal('C: BitGo To Backup Key Share');
-    qrData.bitgo.description.should.equal(`This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness, contact ${backupKeyProvider} and they will help you recover your funds.`);
-    qrData.bitgo.data.should.equal(JSON.stringify(bitgoToBackupKeyShare));
+    qrData.bitgo.title.should.equal('C: BitGo Public Key');
+    qrData.bitgo.description.should.equal('This is the public part of the key that BitGo will use to co-sign transactions\r\nwith you on your wallet.');
+    qrData.bitgo.data.should.equal(bitgoCommonKeychain);
   });
 });
