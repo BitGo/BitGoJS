@@ -1,8 +1,9 @@
 import { BaseCoin } from './base';
-import { DuplicateCoinDefinitionError, CoinNotDefinedError } from './errors';
+import { DuplicateCoinDefinitionError, CoinNotDefinedError, DuplicateCoinIdDefinitionError } from './errors';
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
+  private readonly _coinByIds = new Map<string, Readonly<BaseCoin>>();
   // Holds key equivalences used during an asset name migration
   private readonly _coinByAliases = new Map<string, Readonly<BaseCoin>>();
 
@@ -16,6 +17,12 @@ export class CoinMap {
         throw new DuplicateCoinDefinitionError(coin.name);
       }
       coinMap._map.set(coin.name, coin);
+
+      if (coinMap._coinByIds.has(coin.id)) {
+        throw new DuplicateCoinIdDefinitionError(coin.id);
+      }
+      coinMap._coinByIds.set(coin.id, coin);
+
       const alias = coin.alias;
       if (alias) {
         if (coinMap.has(alias)) {
@@ -34,7 +41,7 @@ export class CoinMap {
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    const coin = this._map.get(key) || this._coinByAliases.get(key);
+    const coin = this._map.get(key) || this._coinByIds.get(key) || this._coinByAliases.get(key);
 
     if (coin) {
       return coin;
@@ -44,7 +51,7 @@ export class CoinMap {
   }
 
   public has(key: string): boolean {
-    return this._map.has(key) || this._coinByAliases.has(key);
+    return this._map.has(key) || this._coinByIds.has(key) || this._coinByAliases.has(key);
   }
 
   public map<T>(mapper: (coin: Readonly<BaseCoin>, coinName: string) => T): T[] {
