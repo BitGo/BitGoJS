@@ -10,7 +10,6 @@ import * as querystring from 'querystring';
 
 import * as rippleAddressCodec from 'ripple-address-codec';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
-import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 import * as rippleKeypairs from 'ripple-keypairs';
 import {
   BaseCoin,
@@ -31,7 +30,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 
-const ripple = require('./ripple');
+import rippleLib from './ripple';
 
 interface Address {
   address: string;
@@ -250,7 +249,6 @@ export class Xrp extends BaseCoin {
     }
     const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
 
-    const rippleLib = ripple();
     const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
       signAs: userAddress,
     });
@@ -289,19 +287,27 @@ export class Xrp extends BaseCoin {
       throw new Error('missing required param txHex');
     }
     let transaction;
-    let txHex;
+    let txHex: string;
     try {
-      transaction = rippleBinaryCodec.decode(params.txHex);
-      txHex = params.txHex;
+      transaction = JSON.parse(params.txHex);
+      txHex = rippleBinaryCodec.encode(transaction);
     } catch (e) {
       try {
-        transaction = JSON.parse(params.txHex);
-        txHex = rippleBinaryCodec.encode(transaction);
+        transaction = rippleBinaryCodec.decode(params.txHex);
+        txHex = params.txHex;
       } catch (e) {
         throw new Error('txHex needs to be either hex or JSON string for XRP');
       }
     }
-    const id = computeBinaryTransactionHash(txHex);
+
+    let id: string;
+    // hashes ids are different for signed and unsigned tx
+    // first we try to get the hash id as if it is signed, will throw if its not
+    try {
+      id = rippleLib.hashes.hashSignedTx(txHex);
+    } catch (e) {
+      id = rippleLib.hashes.hashTx(txHex);
+    }
 
     if (transaction.TransactionType == 'AccountSet') {
       return {
@@ -560,7 +566,6 @@ export class Xrp extends BaseCoin {
     if (isUnsignedSweep) {
       return txJSON;
     }
-    const rippleLib = ripple();
     if (!keys[0].privateKey) {
       throw new Error(`userKey is not a private key`);
     }
@@ -577,7 +582,9 @@ export class Xrp extends BaseCoin {
       }
       const backupKey = keys[1].privateKey.toString('hex');
       const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
-      signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+      signedTransaction = {
+        signedTransaction: rippleLib.multisign([userSignature.signedTransaction, backupSignature.signedTransaction]),
+      };
     }
 
     const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
