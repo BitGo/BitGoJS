@@ -107,3 +107,13 @@ export interface ContractEntry extends Entry {
   data?: string;
   contractAddress?: string;
 }
+
+export interface AccountInfo {
+  address: string;
+  balance: number;
+  owner_permission: {
+    keys: [PermissionKey];
+  };
+  active_permission: [{ keys: [PermissionKey] }];
+  trc20: [Record<string, string>];
+}

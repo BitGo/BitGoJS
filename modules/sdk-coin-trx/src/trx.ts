@@ -28,6 +28,7 @@ import {
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
+import { TransactionReceipt } from './lib/iface';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -78,8 +79,9 @@ export interface RecoveryOptions {
 }
 
 export interface RecoveryTransaction {
-  tx: TransactionPrebuild;
-  recoveryAmount: number;
+  tx?: TransactionPrebuild;
+  recoveryAmount?: number;
+  tokenTxs?: TransactionReceipt[];
 }
 
 export enum NodeTypes {
@@ -91,12 +93,7 @@ export enum NodeTypes {
  * This structure is not a complete model of the AccountResponse from a node.
  */
 export interface AccountResponse {
-  address: string;
-  balance: number;
-  owner_permission: {
-    keys: [Interface.PermissionKey];
-  };
-  active_permission: [{ keys: [Interface.PermissionKey] }];
+  data: [Interface.AccountInfo];
 }
 
 export class Trx extends BaseCoin {
@@ -391,15 +388,46 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Make a query to Trongrid for information such as balance, token balance, solidity calls
+   * @param query {Object} key-value pairs of parameters to append after /api
+   * @returns {Object} response from Trongrid
+   */
+  private async recoveryGet(query: { path: string; jsonObj: any; node: NodeTypes }): Promise<any> {
+    let nodeUri = '';
+    switch (query.node) {
+      case NodeTypes.Full:
+        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.full;
+        break;
+      case NodeTypes.Solidity:
+        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.solidity;
+        break;
+      default:
+        throw new Error('node type not found');
+    }
+
+    const response = await request
+      .get(nodeUri + query.path)
+      .type('json')
+      .send(query.jsonObj);
+
+    if (!response.ok) {
+      throw new Error('could not reach Tron node');
+    }
+
+    // unfortunately, it doesn't look like most TRON nodes return valid json as body
+    return JSON.parse(response.text);
+  }
+
+  /**
    * Query our explorer for the balance of an address
    * @param address {String} the address encoded in hex
    * @returns {BigNumber} address balance
    */
-  private async getAccountFromNode(address: string): Promise<AccountResponse> {
-    return await this.recoveryPost({
-      path: '/walletsolidity/getaccount',
-      jsonObj: { address },
-      node: NodeTypes.Solidity,
+  private async getAccountBalancesFromNode(address: string): Promise<AccountResponse> {
+    return await this.recoveryGet({
+      path: '/v1/accounts/' + address,
+      jsonObj: {},
+      node: NodeTypes.Full,
     });
   }
 
@@ -421,6 +449,35 @@ export class Trx extends BaseCoin {
         to_address: toAddr,
         owner_address: fromAddr,
         amount,
+      },
+      node: NodeTypes.Full,
+    });
+  }
+
+  /**
+   * Retrieves our build transaction from a node.
+   * @param toAddr hex-encoded address
+   * @param fromAddr hex-encoded address
+   * @param amount
+   */
+  private async getTriggerSmartContractTransaction(
+    toAddr: string,
+    fromAddr: string,
+    amount: string,
+    contractAddr: string
+  ): Promise<{ transaction: Interface.TransactionReceipt }> {
+    const functionSelector = 'transfer(address,uint256)';
+    const types = ['address', 'uint256'];
+    const values = [toAddr, amount];
+    const parameter = Utils.encodeDataParams(types, values, '');
+    return await this.recoveryPost({
+      path: '/wallet/triggersmartcontract',
+      jsonObj: {
+        owner_address: fromAddr,
+        contract_address: contractAddr,
+        function_selector: functionSelector,
+        parameter: parameter,
+        fee_limit: 100000000,
       },
       node: NodeTypes.Full,
     });
@@ -470,21 +527,55 @@ export class Trx extends BaseCoin {
     const recoveryAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
     // call the node to get our account balance
-    const account = await this.getAccountFromNode(bitgoHexAddr);
-    const recoveryAmount = account.balance;
+    const account = await this.getAccountBalancesFromNode(Utils.getBase58AddressFromHex(bitgoHexAddr));
+    const recoveryAmount = account.data[0].balance;
 
     const userXPub = keys[0].neutered().toBase58();
     const userXPrv = keys[0].toBase58();
     const backupXPub = keys[1].neutered().toBase58();
 
+    // first construct token txns
+    const tokenTxns: any = [];
+    for (const token of account.data[0].trc20) {
+      // mainnet tokens
+      if (token.TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8) {
+        const amount = token.TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8;
+        const contractAddr = Utils.getHexAddressFromBase58Address('TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8');
+        tokenTxns.push(
+          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
+            .transaction
+        );
+      } else if (token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t) {
+        const amount = token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t;
+        const contractAddr = Utils.getHexAddressFromBase58Address('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');
+        tokenTxns.push(
+          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
+            .transaction
+        );
+
+        // testnet tokens
+      } else if (token.TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id) {
+        const amount = token.TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id;
+        const contractAddr = Utils.getHexAddressFromBase58Address('TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id');
+        tokenTxns.push(
+          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
+            .transaction
+        );
+      } else if (token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs) {
+        const amount = token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs;
+        const contractAddr = Utils.getHexAddressFromBase58Address('TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs');
+        tokenTxns.push(
+          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
+            .transaction
+        );
+      }
+    }
     // construct the tx -
     // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
     // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun or 1 Tron)
     if (MINIMUM_TRON_MSIG_TRANSACTION_FEE > recoveryAmount) {
       throw new Error('Amount of funds to recover wouldnt be able to fund a send');
     }
-    const recoveryAmountMinusFees = recoveryAmount - MINIMUM_TRON_MSIG_TRANSACTION_FEE;
-    const buildTx = await this.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
 
     const keyHexAddresses = [
       this.pubToHexAddress(this.xpubToUncompressedPub(userXPub)),
@@ -493,8 +584,55 @@ export class Trx extends BaseCoin {
     ];
 
     // run checks to ensure this is a valid tx - permissions match our signer keys
-    this.checkPermissions(account.owner_permission.keys, keyHexAddresses);
-    this.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
+    const ownerKeys: { address: string; weight: number }[] = [];
+    for (const key of account.data[0].owner_permission.keys) {
+      const address = Utils.getHexAddressFromBase58Address(key.address);
+      const weight = key.weight;
+      ownerKeys.push({ address, weight });
+    }
+    const activePermissionKeys: { address: string; weight: number }[] = [];
+    for (const key of account.data[0].active_permission[0].keys) {
+      const address = Utils.getHexAddressFromBase58Address(key.address);
+      const weight = key.weight;
+      activePermissionKeys.push({ address, weight });
+    }
+    this.checkPermissions(ownerKeys, keyHexAddresses);
+    this.checkPermissions(activePermissionKeys, keyHexAddresses);
+
+    // build and sign token txns
+    const finalTokenTxs: any = [];
+    for (const tokenTxn of tokenTxns) {
+      const txBuilder = getBuilder(this.getChain()).from(tokenTxn);
+
+      // this tx should be enough to drop into a node
+      if (isUnsignedSweep) {
+        finalTokenTxs.push((await txBuilder.build()).toJson());
+        continue;
+      }
+
+      const userPrv = this.xprvToCompressedPrv(userXPrv);
+
+      txBuilder.sign({ key: userPrv });
+
+      // krs recoveries don't get signed
+      if (!isKrsRecovery) {
+        const backupXPrv = keys[1].toBase58();
+        const backupPrv = this.xprvToCompressedPrv(backupXPrv);
+
+        txBuilder.sign({ key: backupPrv });
+      }
+      finalTokenTxs.push((await txBuilder.build()).toJson());
+    }
+
+    // tokens must be recovered before the native asset, so that there is sufficient of the native asset to cover fees
+    if (finalTokenTxs.length > 0) {
+      return {
+        tokenTxs: finalTokenTxs,
+      };
+    }
+
+    const recoveryAmountMinusFees = recoveryAmount - MINIMUM_TRON_MSIG_TRANSACTION_FEE;
+    const buildTx = await this.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
 
     // construct our tx
     const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);
