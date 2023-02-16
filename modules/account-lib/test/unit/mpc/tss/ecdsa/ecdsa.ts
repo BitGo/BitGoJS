@@ -254,7 +254,7 @@ describe('TSS ECDSA TESTS', function () {
         // which is sent to signerOne
         let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
           xShare: signerTwoWithChallenge.xShare,
-          yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
+          yShare: signerTwoWithChallenge.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
         });
 

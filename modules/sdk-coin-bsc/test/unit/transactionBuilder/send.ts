@@ -92,7 +92,7 @@ describe('BSC Transfer Builder', () => {
         MPC.signChallenge(C_combine.xShare, C_combine.yShares[1]),
       ]);
 
-      const C_sign_share = await MPC.signShare(C_combine.xShare, A_sign_challenge.yShares[3]);
+      const C_sign_share = await MPC.signShare(C_sign_challenge.xShare, A_sign_challenge.yShares[3]);
 
       const A_sign_convert = await MPC.signConvert({
         xShare: A_sign_challenge.xShare,
