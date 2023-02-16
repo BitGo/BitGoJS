@@ -55,6 +55,7 @@ import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } 
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
+import assert from 'assert';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -1006,22 +1007,41 @@ export class Eth extends BaseCoin {
   }
 
   private async signRecoveryTSS(
-    userKeyCombined: ECDSA.KeyCombinedWithNTilde,
-    backupKeyCombined: ECDSA.KeyCombinedWithNTilde,
+    userKeyCombined: ECDSA.KeyCombined,
+    backupKeyCombined: ECDSA.KeyCombined,
     txHex: string
   ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
-
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
-    const signShares: ECDSA.SignShareRT = await MPC.signShare(
-      userKeyCombined.xShare,
-      userKeyCombined.yShares[signerTwoIndex]
-    );
+
+    const userXShare: ECDSAMethodTypes.XShareWithNTilde = (
+      await MPC.signChallenge(userKeyCombined.xShare, userKeyCombined.yShares[signerTwoIndex])
+    ).xShare;
+    const userYShare: ECDSAMethodTypes.YShareWithNTilde = {
+      ...userKeyCombined.yShares[signerTwoIndex],
+      ntilde: userXShare.ntilde,
+      h1: userXShare.h1,
+      h2: userXShare.h2,
+    };
+    const backupXShare: ECDSAMethodTypes.XShareWithNTilde = {
+      ...backupKeyCombined.xShare,
+      ntilde: userXShare.ntilde,
+      h1: userXShare.h1,
+      h2: userXShare.h2,
+    };
+    const backupYShare: ECDSAMethodTypes.YShareWithNTilde = {
+      ...backupKeyCombined.yShares[signerOneIndex],
+      ntilde: backupXShare.ntilde,
+      h1: backupXShare.h1,
+      h2: backupXShare.h2,
+    };
+
+    const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
     let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
-      xShare: backupKeyCombined.xShare,
-      yShare: backupKeyCombined.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
+      xShare: backupXShare,
+      yShare: backupYShare, // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
 
@@ -1071,7 +1091,7 @@ export class Eth extends BaseCoin {
     userPublicOrPrivateKeyShare: string,
     backupPrivateOrPublicKeyShare: string,
     walletPassphrase?: string
-  ) {
+  ): [ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined] {
     let backupPrv;
     let userPrv;
     try {
@@ -1201,22 +1221,24 @@ export class Eth extends BaseCoin {
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
 
-    let backupKeyAddress;
-    let userKeyCombined;
-    let backupKeyCombined;
-
-    if (isUnsignedSweep) {
-      const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
-      backupKeyAddress = backupKeyPair.getAddress();
-    } else {
-      [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
-        userPublicOrPrivateKeyShare,
-        backupPrivateOrPublicKeyShare,
-        params.walletPassphrase
-      );
-      const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
-      backupKeyAddress = backupKeyPair.getAddress();
-    }
+    const [backupKeyAddress, userKeyCombined, backupKeyCombined] = ((): [
+      string,
+      ECDSAMethodTypes.KeyCombined | undefined,
+      ECDSAMethodTypes.KeyCombined | undefined
+    ] => {
+      if (isUnsignedSweep) {
+        const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
+        return [backupKeyPair.getAddress(), undefined, undefined];
+      } else {
+        const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+          userPublicOrPrivateKeyShare,
+          backupPrivateOrPublicKeyShare,
+          params.walletPassphrase
+        );
+        const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
+        return [backupKeyPair.getAddress(), userKeyCombined, backupKeyCombined];
+      }
+    })();
 
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
 
@@ -1278,7 +1300,7 @@ export class Eth extends BaseCoin {
     }
 
     const signableHex = tx.getMessageToSign(false).toString('hex');
-
+    assert(userKeyCombined && backupKeyCombined);
     const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
     tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);

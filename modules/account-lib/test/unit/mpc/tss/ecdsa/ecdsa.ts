@@ -234,7 +234,7 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Two
         // Second signer generates their range proof challenge.
-        const signerTwoWithChallenge: ECDSA.KeyCombined = await MPC.signChallenge(
+        const signerTwoWithChallenge: ECDSA.KeyCombinedWithNTilde = await MPC.signChallenge(
           signerTwo.xShare,
           signerTwo.yShares[signerOneIndex],
         );
