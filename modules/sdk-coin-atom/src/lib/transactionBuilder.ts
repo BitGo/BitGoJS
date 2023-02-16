@@ -15,6 +15,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 import { AtomTransaction, GasFeeLimitData, MessageData } from './iface';
 import { Coin } from '@cosmjs/stargate';
+import { validDenoms } from './constants';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -150,13 +151,20 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     if (!utils.isValidAddress(address.address)) {
-      throw new Error('transactionBuilder: address isValidAddress check failed : ' + address.address);
+      throw new BuildTransactionError('transactionBuilder: address isValidAddress check failed: ' + address.address);
     }
   }
 
-  private validateAmountData(amountArray: Coin[]): void {
-    // TODO [BG-67863]- make the error messages more descriptive of which amount data is failing
-    // Do amount checking by casting to numbers/bignumber and comparing as well
+  validateAmountData(amountArray: Coin[]): void {
+    amountArray.forEach((coinAmount) => {
+      const amount = BigNumber(coinAmount.amount);
+      if (amount.isLessThanOrEqualTo(0)) {
+        throw new BuildTransactionError('transactionBuilder: validateAmountData Invalid amount: ' + amount);
+      }
+      if (!validDenoms.find((denom) => denom === coinAmount.denom)) {
+        throw new BuildTransactionError('transactionBuilder: validateAmountData Invalid denom: ' + coinAmount.denom);
+      }
+    });
   }
 
   validateGasBudget(gasBudget: GasFeeLimitData): void {

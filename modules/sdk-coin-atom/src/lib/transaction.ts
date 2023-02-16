@@ -8,15 +8,14 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { AtomTransaction, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Buffer } from 'buffer';
-import { AtomTransactionType, sendMsgType } from './constants';
-import utils from './utils';
-import { encodePubkey } from '@cosmjs/proto-signing';
 import { encodeSecp256k1Pubkey } from '@cosmjs/amino';
-import { Any } from 'cosmjs-types/google/protobuf/any';
 import { fromHex } from '@cosmjs/encoding';
+import { encodePubkey } from '@cosmjs/proto-signing';
+import { Any } from 'cosmjs-types/google/protobuf/any';
+import { AtomTransactionType, sendMsgType } from './constants';
+import { AtomTransaction, TransactionExplanation, TxData } from './iface';
+import utils from './utils';
 
 export class Transaction extends BaseTransaction {
   private _atomTransaction: AtomTransaction;

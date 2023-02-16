@@ -56,3 +56,11 @@ export const txIds = {
   hash2: 'BF1ECA4F1C5A2DD039E7FB722875334CA494BCF642B1E260DA2A306FD91148DF',
   hash3: 'f25baab14faf059deb490dfcaa58533442cf76e18ccda4f6bef23f588e82ed30',
 };
+
+export const coinAmounts = {
+  amount1: { amount: '100000', denom: 'uatom' },
+  amount2: { amount: '0.1', denom: 'atom' },
+  amount3: { amount: '100000000000', denom: 'natom' },
+  amount4: { amount: '-1', denom: 'uatom' },
+  amount5: { amount: '1000', denom: 'hatom' },
+};
