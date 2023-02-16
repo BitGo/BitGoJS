@@ -12,7 +12,7 @@ export { scriptTypeForChain } from './wallet/chains';
 export const scriptTypeP2shP2pk = 'p2shP2pk';
 export type ScriptTypeP2shP2pk = typeof scriptTypeP2shP2pk;
 
-export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
+export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
 
 export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
@@ -24,8 +24,8 @@ export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
 /**
  * @return true iff scriptType requires witness data
  */
-export function hasWitnessData(scriptType: ScriptType): scriptType is 'p2shP2wsh' | 'p2wsh' | 'p2tr' {
-  return ['p2shP2wsh', 'p2wsh', 'p2tr'].includes(scriptType);
+export function hasWitnessData(scriptType: ScriptType): scriptType is 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2' {
+  return ['p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'].includes(scriptType);
 }
 
 /**
@@ -42,6 +42,7 @@ export function isSupportedScriptType(network: Network, scriptType: ScriptType):
     case 'p2wsh':
       return supportsSegwit(network);
     case 'p2tr':
+    case 'p2trMusig2':
       return supportsTaproot(network);
   }
 
@@ -63,6 +64,8 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
       return 'p2wsh-p2ms';
     case 'p2tr':
       return 'p2tr-p2ns';
+    case 'p2trMusig2':
+      return 'p2tr';
   }
 
   /* istanbul ignore next */
@@ -126,10 +129,10 @@ export function createOutputScript2of3(
     }
   });
 
-  if (scriptType === 'p2tr') {
-    // p2tr addresses use a combination of 2 of 2 multisig scripts distinct from
+  if (scriptType === 'p2tr' || scriptType === 'p2trMusig2') {
+    // p2tr/p2trMusig2 addresses use a combination of 2 of 2 multisig scripts distinct from
     // the 2 of 3 multisig used for other script types
-    return createTaprootScript2of3(pubkeys);
+    return createTaprootScript2of3(scriptType, pubkeys);
   }
 
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
@@ -176,13 +179,30 @@ export function toXOnlyPublicKey(b: Buffer): Buffer {
   throw new Error(`invalid key size ${b.length}`);
 }
 
-function getTaptreeKeyCombinations(keys: Triple<Buffer>): Tuple<Buffer>[] {
+export function checkPlainPublicKey(b: Buffer): Buffer {
+  if (b.length === 33) {
+    return b;
+  }
+  throw new Error(`invalid key size ${b.length}. Must use plain keys.`);
+}
+
+function getTaptreeKeyCombinations(scriptType: 'p2tr' | 'p2trMusig2', keys: Triple<Buffer>): Tuple<Buffer>[] {
   const [userKey, backupKey, bitGoKey] = keys.map((k) => toXOnlyPublicKey(k));
-  return [
-    [userKey, bitGoKey],
-    [userKey, backupKey],
-    [backupKey, bitGoKey],
-  ];
+  return scriptType === 'p2tr'
+    ? [
+        [userKey, bitGoKey],
+        [userKey, backupKey],
+        [backupKey, bitGoKey],
+      ]
+    : [
+        [userKey, backupKey],
+        [backupKey, bitGoKey],
+      ];
+}
+
+function getKeyPathCombination(scriptType: 'p2tr' | 'p2trMusig2', keys: Triple<Buffer>): Tuple<Buffer> {
+  const sanitizePublicKey = scriptType === 'p2tr' ? toXOnlyPublicKey : checkPlainPublicKey;
+  return [sanitizePublicKey(keys[0]), sanitizePublicKey(keys[2])];
 }
 
 function getRedeemIndex(keyCombinations: [Buffer, Buffer][], signer: Buffer, cosigner: Buffer): number {
@@ -200,11 +220,12 @@ function getRedeemIndex(keyCombinations: [Buffer, Buffer][], signer: Buffer, cos
   throw new Error(`could not find singer/cosigner combination`);
 }
 
-export function createPaymentP2tr(
+function createPaymentP2trCommon(
+  scriptType: 'p2tr' | 'p2trMusig2',
   pubkeys: Triple<Buffer>,
   redeemIndex?: number | { signer: Buffer; cosigner: Buffer }
 ): bitcoinjs.Payment {
-  const keyCombinations2of2 = getTaptreeKeyCombinations(pubkeys);
+  const keyCombinations2of2 = getTaptreeKeyCombinations(scriptType, pubkeys);
   if (typeof redeemIndex === 'object') {
     redeemIndex = getRedeemIndex(keyCombinations2of2, redeemIndex.signer, redeemIndex.cosigner);
   }
@@ -212,7 +233,7 @@ export function createPaymentP2tr(
     p2trPayments.p2tr_ns(
       {
         pubkeys,
-        depth: index === 0 ? 1 : 2,
+        depth: scriptType === 'p2trMusig2' || index === 0 ? 1 : 2,
       },
       { eccLib }
     )
@@ -220,7 +241,7 @@ export function createPaymentP2tr(
 
   return p2trPayments.p2tr(
     {
-      pubkeys: keyCombinations2of2[0],
+      pubkeys: getKeyPathCombination(scriptType, pubkeys),
       redeems,
       redeemIndex,
     },
@@ -228,11 +249,19 @@ export function createPaymentP2tr(
   );
 }
 
-export function getLeafHash(
+export function createPaymentP2tr(
+  pubkeys: Triple<Buffer>,
+  redeemIndex?: number | { signer: Buffer; cosigner: Buffer }
+): bitcoinjs.Payment {
+  return createPaymentP2trCommon('p2tr', pubkeys, redeemIndex);
+}
+
+function getLeafHashCommon(
+  scriptType: 'p2tr' | 'p2trMusig2',
   params: bitcoinjs.Payment | { publicKeys: Triple<Buffer>; signer: Buffer; cosigner: Buffer }
 ): Buffer {
   if ('publicKeys' in params) {
-    params = createPaymentP2tr(params.publicKeys, params);
+    params = createPaymentP2trCommon(scriptType, params.publicKeys, params);
   }
   const { output, controlBlock, redeem } = params;
   if (!output || !controlBlock || !redeem || !redeem.output) {
@@ -241,8 +270,18 @@ export function getLeafHash(
   return taproot.getTapleafHash(eccLib, controlBlock, redeem.output);
 }
 
-export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
-  const keyCombinations = getTaptreeKeyCombinations(pubkeys);
+export function getLeafHash(
+  params: bitcoinjs.Payment | { publicKeys: Triple<Buffer>; signer: Buffer; cosigner: Buffer }
+): Buffer {
+  return getLeafHashCommon('p2tr', params);
+}
+
+function createSpendScriptP2trCommon(
+  scriptType: 'p2tr' | 'p2trMusig2',
+  pubkeys: Triple<Buffer>,
+  keyCombination: Tuple<Buffer>
+): SpendScriptP2tr {
+  const keyCombinations = getTaptreeKeyCombinations(scriptType, pubkeys);
   const [a, b] = keyCombination.map((k) => toXOnlyPublicKey(k));
   const redeemIndex = keyCombinations.findIndex(
     ([c, d]) => (a.equals(c) && b.equals(d)) || (a.equals(d) && b.equals(c))
@@ -252,7 +291,7 @@ export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: T
     throw new Error(`could not find redeemIndex for key combination`);
   }
 
-  const payment = createPaymentP2tr(pubkeys, redeemIndex);
+  const payment = createPaymentP2trCommon(scriptType, pubkeys, redeemIndex);
   const { controlBlock } = payment;
   assert(Buffer.isBuffer(controlBlock));
 
@@ -272,15 +311,22 @@ export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: T
   };
 }
 
+export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
+  return createSpendScriptP2trCommon('p2tr', pubkeys, keyCombination);
+}
+
 /**
- * Creates and returns a taproot output script using the user and bitgo keys for the aggregate
- * public key and a taptree containing a user+bitgo 2-of-2 script at the first depth level of the
- * tree and user+backup and bitgo+backup 2-of-2 scripts one level deeper.
+ * Creates and returns a taproot output script using the user+bitgo keys for the aggregate
+ * public key using MuSig2 and a taptree containing either of the following depends on scriptType.
+ * p2tr type: a user+bitgo 2-of-2 script at the first depth level of the tree and user+backup
+ * and bitgo+backup 2-of-2 scripts one level deeper.
+ * p2trMusig2 type: user+backup and bitgo+backup 2-of-2 scripts at the first depth level of the
+ * tree.
  * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
  * @returns {{scriptPubKey}}
  */
-function createTaprootScript2of3(pubkeys: Triple<Buffer>): SpendableScript {
-  const { output } = createPaymentP2tr(pubkeys);
+function createTaprootScript2of3(scriptType: 'p2tr' | 'p2trMusig2', pubkeys: Triple<Buffer>): SpendableScript {
+  const { output } = createPaymentP2trCommon(scriptType, pubkeys);
   assert(Buffer.isBuffer(output));
   return {
     scriptPubKey: output,

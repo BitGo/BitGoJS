@@ -20,7 +20,7 @@ function runTest<TNumber extends number | bigint>(scriptType: ScriptType2Of3, am
   const network = networks.bitcoin;
 
   describe(`createTransactionFromNonStandardHalfSigned ${scriptType} ${amountType}`, function () {
-    if (scriptType === 'p2tr') {
+    if (scriptType === 'p2tr' || scriptType === 'p2trMusig2') {
       return; // TODO: enable p2tr tests when signing is supported
     }
     fixtureKeys.forEach((signKey, pubkeyIndex) => {

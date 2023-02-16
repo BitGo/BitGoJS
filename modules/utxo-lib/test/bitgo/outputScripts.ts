@@ -21,8 +21,8 @@ describe('output script support', function () {
     assert.deepStrictEqual(
       getNetworkList().map((n) => [getNetworkName(n), scriptTypes2Of3.filter((t) => isSupportedScriptType(n, t))]),
       [
-        ['bitcoin', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr']],
-        ['testnet', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr']],
+        ['bitcoin', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
+        ['testnet', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
         ['bitcoincash', ['p2sh']],
         ['bitcoincashTestnet', ['p2sh']],
         ['bitcoingold', ['p2sh', 'p2shP2wsh', 'p2wsh']],
@@ -65,6 +65,7 @@ describe('createOutputScript2of3()', function () {
     'a020478d8f208753ae';
   const p2wsh = '002095ecaacb606b9ece3821c0111c0a1208dd1d35192809bf8cf6cbad4bbeaca67f';
   const p2tr = '5120a4ce7d122bdc05224b27415228728e5d5bf485961a07493d068ddbb4d4569059';
+  const p2trMusig2 = '5120d3baf9958c8f4fe8fa50bf18a79457739dd6439119db42c39433e693b7fefaa3';
 
   scriptTypes2Of3.forEach((scriptType) => {
     it(`creates output script (type=${scriptType})`, function () {
@@ -89,6 +90,9 @@ describe('createOutputScript2of3()', function () {
         case 'p2tr':
           assert.strictEqual(scriptPubKey.toString('hex'), p2tr);
           // TODO: validate script control blocks once they are returned by payments.p2tr()
+          break;
+        case 'p2trMusig2':
+          assert.strictEqual(scriptPubKey.toString('hex'), p2trMusig2);
           break;
         default:
           throw new Error(`unexpected type ${scriptType}`);

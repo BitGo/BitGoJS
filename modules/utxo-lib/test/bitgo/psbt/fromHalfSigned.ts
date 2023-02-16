@@ -13,8 +13,14 @@ import { readFixture } from '../../fixture.util';
 import { normDefault } from '../../testutil/normalize';
 import * as bs58check from 'bs58check';
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 function getScriptTypes(): outputScripts.ScriptType[] {
-  return [...outputScripts.scriptTypes2Of3, 'p2shP2pk'];
+  return [...getScriptTypes2Of3(), 'p2shP2pk'];
 }
 
 const walletKeys = getDefaultWalletKeys();

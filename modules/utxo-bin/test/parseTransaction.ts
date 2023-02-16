@@ -5,7 +5,13 @@ import { getFixtureString, getTransactionWithSpendType, formatTreeNoColor } from
 import { ParserNode } from '../src/Parser';
 import { cmdParseTx, getTxParser } from '../src/commands';
 
-utxolib.bitgo.outputScripts.scriptTypes2Of3.forEach((t) => {
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
+getScriptTypes2Of3().forEach((t) => {
   const params: [string, string[]][] = [
     ['default', []],
     ['all', ['--all']],

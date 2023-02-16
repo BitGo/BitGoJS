@@ -43,6 +43,12 @@ const FEE = BigInt(100);
 
 type InputType = outputScripts.ScriptType2Of3 | 'p2shP2pk';
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 describe('WalletUnspent', function () {
   const network = networks.bitcoin;
   const walletKeys = getDefaultWalletKeys();
@@ -230,7 +236,7 @@ describe('WalletUnspent', function () {
   }
 
   function getInputScripts(): InputType[][] {
-    return outputScripts.scriptTypes2Of3.flatMap((t) => [
+    return getScriptTypes2Of3().flatMap((t) => [
       [t, t],
       [t, t, 'p2shP2pk'],
     ]);
