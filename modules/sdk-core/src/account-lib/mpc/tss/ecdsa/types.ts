@@ -136,7 +136,7 @@ export interface KShare {
   h1: string;
   h2: string;
   k: string;
-  proof?: RangeProofShare;
+  proof: RangeProofShare;
 }
 export interface SignShareRT {
   wShare: WShare;

@@ -55,7 +55,6 @@ import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } 
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
-import assert from 'assert';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -1300,7 +1299,9 @@ export class Eth extends BaseCoin {
     }
 
     const signableHex = tx.getMessageToSign(false).toString('hex');
-    assert(userKeyCombined && backupKeyCombined);
+    if (!userKeyCombined || !backupKeyCombined) {
+      throw new Error('Missing key combined shares for user or backup');
+    }
     const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
     tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
