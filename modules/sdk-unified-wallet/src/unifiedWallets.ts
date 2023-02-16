@@ -7,8 +7,10 @@ import {
   KeychainsTriplet,
   WalletData,
   IBaseCoin,
+  GetWalletOptions,
+  Wallet,
+  RequestTracer,
 } from '@bitgo/sdk-core';
-import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 
 export abstract class UnifiedWallets implements IUnifiedWallets {
@@ -16,8 +18,16 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
   protected readonly coin: IBaseCoin;
   protected urlPath: string;
 
-  protected constructor(bitgo: BitGoBase, coinName: string) {
+  protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
+    let coinName;
+    switch (this.bitgo.getEnv()) {
+      case 'prod':
+        coinName = 'eth';
+        break;
+      default:
+        coinName = 'gteth';
+    }
     this.coin = this.bitgo.coin(coinName);
   }
 
@@ -34,10 +44,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @returns KeychainsTriplet
    * @private
    */
-  protected abstract generateKeychainsTriplet(
-    params: GenerateWalletOptions,
-    coins?: CoinFamily[]
-  ): Promise<KeychainsTriplet>;
+  protected abstract generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet>;
 
   /**
    * Calls Bitgo API to create an EVM wallet.
@@ -79,5 +86,24 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
 
   async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
     return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).result();
+  }
+
+  protected async getWallet(params: GetWalletOptions = {}): Promise<Wallet> {
+    if (!params.id) {
+      throw new Error('id is required');
+    }
+    const query: GetWalletOptions = {};
+    if (params.allTokens) {
+      if (typeof params.allTokens !== 'boolean') {
+        throw new Error('invalid allTokens argument, expecting boolean');
+      }
+      query.allTokens = params.allTokens;
+    }
+    this.bitgo.setRequestTracer(new RequestTracer());
+    const walletData = await this.bitgo
+      .get(this.coin.url('/wallet/' + params.id))
+      .query(query)
+      .result();
+    return new Wallet(this.bitgo, this.coin, walletData);
   }
 }

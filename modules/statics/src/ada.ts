@@ -2,6 +2,7 @@ import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } 
 import { AdaNetwork } from './networks';
 
 export interface AdaConstructorOptions {
+  id: string;
   fullName: string;
   name: string;
   network: AdaNetwork;
@@ -48,6 +49,7 @@ export class Ada extends BaseCoin {
 /**
  * Factory function for utxo coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -58,6 +60,7 @@ export class Ada extends BaseCoin {
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ada(
+  id: string,
   name: string,
   fullName: string,
   network: AdaNetwork,
@@ -69,6 +72,7 @@ export function ada(
 ) {
   return Object.freeze(
     new Ada({
+      id,
       name,
       fullName,
       network,

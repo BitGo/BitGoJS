@@ -188,6 +188,10 @@ export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition }
  * @param shareType
  * @param share
  * @param signerShare
+ * @param vssProof - the v value of the share
+ * @param privateShareProof - the uSig of the share
+ * @param publicShare - the y value of the share
+ * @param userPublicGpgKey - the public key of the gpg key used for creating the privateShareProof
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendShareToBitgo(
@@ -200,8 +204,8 @@ export async function sendShareToBitgo(
   signerShare?: string,
   vssProof?: string,
   privateShareProof?: string,
-  userPublicGpgKey?: string,
-  publicShare?: string
+  publicShare?: string,
+  userPublicGpgKey?: string
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -214,6 +218,9 @@ export async function sendShareToBitgo(
       assert(signerShare, `signer share must be present`);
       const kShare = share as KShare;
       signatureShare = convertKShare(kShare);
+      signatureShare.vssProof = vssProof;
+      signatureShare.publicShare = publicShare;
+      signatureShare.privateShareProof = privateShareProof;
       await sendSignatureShare(
         bitgo,
         walletId,
@@ -223,10 +230,7 @@ export async function sendShareToBitgo(
         signerShare,
         'ecdsa',
         'full',
-        vssProof,
-        privateShareProof,
-        userPublicGpgKey,
-        publicShare
+        userPublicGpgKey
       );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,

@@ -6223,6 +6223,22 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
+"bitcoinjs-lib@npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.3":
+  version "7.1.0-master.3"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/bitcoinjs-lib/-/bitcoinjs-lib-7.1.0-master.3.tgz#60783666fa7aa7a63491fe3bf715b85c97bb9677"
+  integrity sha512-nJuJ0U0bYp9SKd9P39feHI7vKc7CnxYzD3yKekGI+o0Xkao/LLhvtdTuIBw+RY25en0qhCQxFnkKjYCJtEYBmQ==
+  dependencies:
+    bech32 "^2.0.0"
+    bip174 "npm:@bitgo-forks/bip174@3.0.0-rc.1"
+    bs58check "^2.1.2"
+    create-hash "^1.1.0"
+    fastpriorityqueue "^0.7.1"
+    json5 "^2.2.3"
+    ripemd160 "^2.0.2"
+    typeforce "^1.11.3"
+    varuint-bitcoin "^1.1.2"
+    wif "^2.0.1"
+
 bitcoinjs-message@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/bitcoinjs-message/-/bitcoinjs-message-2.2.0.tgz#8116ec7f447f9889e23030fc15c5286a6ae5503b"

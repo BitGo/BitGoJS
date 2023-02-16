@@ -242,6 +242,9 @@ export interface SignatureShareRecord {
   from: SignatureShareType;
   to: SignatureShareType;
   share: string;
+  vssProof?: string;
+  privateShareProof?: string;
+  publicShare?: string;
 }
 
 export type TSSParams = {

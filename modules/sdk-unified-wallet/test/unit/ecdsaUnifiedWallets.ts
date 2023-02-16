@@ -6,15 +6,15 @@ import { bitgoKeyChain, backupKeychain, userKeyChain } from '../fixtures/ecdsaUn
 import * as sinon from 'sinon';
 import nock = require('nock');
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Eth } from '@bitgo/sdk-coin-eth';
-import { Polygon } from '@bitgo/sdk-coin-polygon';
+import { Gteth } from '@bitgo/sdk-coin-eth';
+import { Tpolygon } from '@bitgo/sdk-coin-polygon';
 
 describe('EVM Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
   let evmWallets: EcdsaEVMUnifiedWallets;
   let bgUrl: string;
   let sandbox: sinon.SinonSandbox;
-  const ethWalletId = '123-eth';
+  const ethWalletId = 'eth-123-eth';
   const polygonWalletId = '456-polygon';
   const ethAddress = 'bitgo, california';
   const expected: UnifiedWallet = {
@@ -28,10 +28,10 @@ describe('EVM Wallets:', function () {
   };
 
   before(function () {
-    bitgo.safeRegister('eth', Eth.createInstance);
-    bitgo.safeRegister('polygon', Polygon.createInstance);
+    bitgo.safeRegister('gteth', Gteth.createInstance);
+    bitgo.safeRegister('tpolygon', Tpolygon.createInstance);
     bitgo.initializeTestVars();
-    evmWallets = new EcdsaEVMUnifiedWallets(bitgo, 'eth');
+    evmWallets = new EcdsaEVMUnifiedWallets(bitgo);
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     nock.cleanAll();
   });
@@ -93,9 +93,9 @@ describe('EVM Wallets:', function () {
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBitgoKeychain').resolves(bitgoKeyChain);
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createBackupKeychain').resolves(backupKeychain);
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createUserKeychain').resolves(userKeyChain);
-      nock(bgUrl).get(`/api/v2/eth/tss/pubkey`).reply(200, bitgoGPGPublicKeyResponse);
-      nock(bgUrl).post('/api/v2/eth/wallet').reply(200, ethWalletData);
-      nock(bgUrl).post('/api/v2/polygon/wallet').reply(200, polygonWalletData);
+      nock(bgUrl).get(`/api/v2/gteth/tss/pubkey`).reply(200, bitgoGPGPublicKeyResponse);
+      nock(bgUrl).post('/api/v2/gteth/wallet').reply(200, ethWalletData);
+      nock(bgUrl).post('/api/v2/tpolygon/wallet').reply(200, polygonWalletData);
       nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
       params = {
         label: 'test123',
@@ -127,6 +127,25 @@ describe('EVM Wallets:', function () {
       nock(bgUrl).get('/api/v2/wallet/evm').reply(200, [expected]);
       const result = await evmWallets.getAllUnifiedWallets();
       result.should.deepEqual([expected]);
+    });
+
+    describe('get specific coin wallet', function () {
+      const id = '123';
+      it('should validate parameters', async function () {
+        await evmWallets.getCoinWalletById('', 'test').should.be.rejectedWith('Id field cannot be empty');
+        nock(bgUrl).get('/api/v2/wallet/evm').query({ id }).reply(200, expected);
+        await evmWallets.getCoinWalletById(id, 'test').should.be.rejectedWith('unsupported coin test');
+      });
+      it('should return valid coin wallet', async function () {
+        const expectedEthWallet = {
+          bitgo,
+          coin: bitgo.coin('gteth'),
+        };
+        nock(bgUrl).get('/api/v2/wallet/evm').query({ id }).reply(200, expected);
+        nock(bgUrl).get('/api/v2/gteth/wallet/eth-123-eth').reply(200, expectedEthWallet);
+        const result = await evmWallets.getCoinWalletById(id, 'eth');
+        result.baseCoin.getFullName().should.equal('Goerli Testnet Ethereum');
+      });
     });
   });
 });

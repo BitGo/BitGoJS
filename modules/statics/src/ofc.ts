@@ -2,6 +2,7 @@ import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } 
 import { BaseNetwork, Networks, OfcNetwork } from './networks';
 
 export interface OfcConstructorOptions {
+  id: string;
   fullName: string;
   name: string;
   network: BaseNetwork;
@@ -54,6 +55,7 @@ export class OfcCoin extends BaseCoin {
 /**
  * Factory function for ofc coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -67,6 +69,7 @@ export class OfcCoin extends BaseCoin {
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofc(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -82,6 +85,7 @@ export function ofc(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -101,6 +105,7 @@ export function ofc(
 /**
  * Factory function for testnet ofc coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -114,6 +119,7 @@ export function ofc(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofc(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -128,6 +134,7 @@ export function tofc(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -147,6 +154,7 @@ export function tofc(
 /**
  * Factory function for ofc erc20 coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -160,6 +168,7 @@ export function tofc(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofcerc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -175,6 +184,7 @@ export function ofcerc20(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -194,6 +204,7 @@ export function ofcerc20(
 /**
  * Factory function for testnet ofc erc20 coin instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -207,6 +218,7 @@ export function ofcerc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofcerc20(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -222,6 +234,7 @@ export function tofcerc20(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -242,6 +255,7 @@ export function tofcerc20(
 /**
  * Factory function for ofc stellar token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -255,6 +269,7 @@ export function tofcerc20(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofcStellarToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -270,6 +285,7 @@ export function ofcStellarToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -289,6 +305,7 @@ export function ofcStellarToken(
 /**
  * Factory function for testnet ofc stellar token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -302,6 +319,7 @@ export function ofcStellarToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofcStellarToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -317,6 +335,7 @@ export function tofcStellarToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -337,6 +356,7 @@ export function tofcStellarToken(
 /**
  * Factory function for ofc algo token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -350,6 +370,7 @@ export function tofcStellarToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofcAlgoToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -365,6 +386,7 @@ export function ofcAlgoToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -384,6 +406,7 @@ export function ofcAlgoToken(
 /**
  * Factory function for testnet ofc algo token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -397,6 +420,7 @@ export function ofcAlgoToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofcAlgoToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -412,6 +436,7 @@ export function tofcAlgoToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -432,6 +457,7 @@ export function tofcAlgoToken(
 /**
  * Factory function for ofc hedera token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -445,6 +471,7 @@ export function tofcAlgoToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofcHederaToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -460,6 +487,7 @@ export function ofcHederaToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,
@@ -479,6 +507,7 @@ export function ofcHederaToken(
 /**
  * Factory function for testnet ofc hedera token instances.
  *
+ * @param id uuid v4
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
@@ -492,6 +521,7 @@ export function ofcHederaToken(
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofcHederaToken(
+  id: string,
   name: string,
   fullName: string,
   decimalPlaces: number,
@@ -507,6 +537,7 @@ export function tofcHederaToken(
 ) {
   return Object.freeze(
     new OfcCoin({
+      id,
       name,
       fullName,
       network,

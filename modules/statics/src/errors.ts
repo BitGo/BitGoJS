@@ -40,6 +40,13 @@ export class MissingRequiredCoinFeatureError extends BitGoStaticsError {
   }
 }
 
+export class InvalidIdError extends BitGoStaticsError {
+  public constructor(coinName: string, id: string) {
+    super(`invalid uuid '${id}' for coin '${coinName}'`);
+    Object.setPrototypeOf(this, InvalidIdError.prototype);
+  }
+}
+
 export class InvalidContractAddressError extends BitGoStaticsError {
   public constructor(coinName: string, contractAddress: string) {
     super(`invalid contract address '${contractAddress}' for coin '${coinName}'`);

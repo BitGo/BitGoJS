@@ -47,10 +47,7 @@ export async function sendSignatureShare(
   signerShare?: string,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
   apiMode: 'full' | 'lite' = 'lite',
-  vssProof?: string,
-  privateShareProof?: string,
-  userPublicGpgKey?: string,
-  publicShare?: string
+  userPublicGpgKey?: string
 ): Promise<SignatureShareRecord> {
   let addendum = '';
   switch (requestType) {
@@ -71,10 +68,7 @@ export async function sendSignatureShare(
     .send({
       signatureShare,
       signerShare,
-      vssProof,
-      privateShareProof,
       userPublicGpgKey,
-      publicShare,
     })
     .result();
 }
@@ -111,7 +105,7 @@ export async function getTxRequestChallenge(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
-  return await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({}).result();
 }
 
 /**

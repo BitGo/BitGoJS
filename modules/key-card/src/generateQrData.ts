@@ -90,13 +90,13 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   }
 
   if (backupKeyProvider === 'BitGo Trust' && backupKeychain.type === 'tss') {
-    const userToBackupShare = backupKeychain.keyShares?.find((keyShare) => keyShare.from === 'user' && keyShare.to === 'backup');
-    assert(userToBackupShare);
+    const keyShares = backupKeychain.keyShares?.filter((keyShare) => keyShare.to === 'backup');
+    assert(keyShares?.length === 2);
     return {
-      title: 'B: User To Backup Key Share',
-      description: `This is the key share from you for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness,` +
-        ` contact ${backupKeyProvider} and they will help you recover your funds.`,
-      data: JSON.stringify(userToBackupShare),
+      title: 'B: Backup Key Shares',
+      description: `These are the key shares for ${backupKeyProvider}. If BitGo Inc. goes out of business,\r\n` +
+        `contact ${backupKeyProvider} and they will help you recover your funds.`,
+      data: JSON.stringify(keyShares),
     };
   }
 
@@ -120,24 +120,7 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   };
 }
 
-function generateBitGoQrData(bitgoKeychain: Keychain, {
-  backupKeychain,
-  backupKeyProvider,
-}: {
-  backupKeychain?: Keychain,
-  backupKeyProvider?: string;
-}): QrDataEntry {
-  if (backupKeyProvider === 'BitGo Trust' && backupKeychain?.type === 'tss') {
-    const bitgoToBackupShare = backupKeychain.keyShares?.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
-    assert(bitgoToBackupShare);
-    return {
-      title: 'C: BitGo To Backup Key Share',
-      description: `This is the key share from BitGo Inc for ${backupKeyProvider}. If BitGo Inc goes out of\r\nbusiness,` +
-        ` contact ${backupKeyProvider} and they will help you recover your funds.`,
-      data: JSON.stringify(bitgoToBackupShare),
-    };
-  }
-
+function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
   const bitgoData = getPubFromKey(bitgoKeychain);
   assert(bitgoData);
 
@@ -167,10 +150,7 @@ export function generateQrData({
       backupKeyProvider,
       backupMasterKey,
     }),
-    bitgo: generateBitGoQrData(bitgoKeychain, {
-      backupKeychain,
-      backupKeyProvider,
-    }),
+    bitgo: generateBitGoQrData(bitgoKeychain),
   };
 
   if (passphrase && passcodeEncryptionCode) {

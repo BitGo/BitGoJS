@@ -23,7 +23,7 @@ export async function nockGetTxRequest(params: {walletId: string, txRequestId: s
 
 export async function nockGetChallenge(params: {walletId: string, txRequestId: string, addendum: string, response: any}): Promise<nock.Scope> {
   return nock('https://bitgo.fakeurl')
-    .get('/api/v2/wallet/' + params.walletId + '/txrequests/' + params.txRequestId + params.addendum + '/challenge')
+    .post('/api/v2/wallet/' + params.walletId + '/txrequests/' + params.txRequestId + params.addendum + '/challenge')
     .reply(200, params.response);
 }
 

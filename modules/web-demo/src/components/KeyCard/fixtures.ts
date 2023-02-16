@@ -48,7 +48,7 @@ export async function downloadKeycardForHotLtcWallet() {
     passcodeEncryptionCode: '654321',
     passphrase: 'test_wallet_passphrase',
     userKeychain,
-    walletLabel: 'Hello World',
+    walletLabel: 'Hot LTC Wallet',
   });
 }
 
@@ -136,7 +136,7 @@ export async function downloadKeycardForHotEthTSSWallet() {
     passcodeEncryptionCode: '654321',
     passphrase: 'test_wallet_passphrase',
     userKeychain,
-    walletLabel: 'Hello World',
+    walletLabel: 'Hot ETH TSS Wallet',
   });
 }
 
@@ -271,6 +271,6 @@ export async function downloadKeycardForSelfManagedHotAdvancedPolygonWallet() {
     passcodeEncryptionCode: '654321',
     passphrase: 'test_wallet_passphrase',
     userKeychain,
-    walletLabel: 'Hello World',
+    walletLabel: 'SMHA Polygon Wallet',
   });
 }

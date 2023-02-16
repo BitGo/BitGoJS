@@ -23,7 +23,7 @@ import { AddressFormat } from '../../addressFormat';
  */
 function getHashFromOutputScript(name: string, output: Buffer): Buffer | undefined {
   type PaymentFunc = ({ output }: { output: Buffer }) => bitcoinjs.Payment;
-  const func = (bitcoinjs.payments as Record<string, PaymentFunc>)[name];
+  const func = (bitcoinjs.payments as unknown as Record<string, PaymentFunc>)[name];
   if (!func) {
     throw new Error(`no payment with name ${name}`);
   }
