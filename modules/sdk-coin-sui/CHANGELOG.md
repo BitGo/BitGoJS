@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.7.0...@bitgo/sdk-coin-sui@2.0.0) (2023-02-16)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix sui signing ([860e078](https://github.com/BitGo/BitGoJS/commit/860e078f3b2e6cb724411d28994e67ce5d6d0340))
+
+### Features
+
+- **sdk-coin-sui:** add support for staking transactions ([c7dc420](https://github.com/BitGo/BitGoJS/commit/c7dc420bb1270beb66ca0c4782ea9da00928ee32))
+- **sdk-coin-sui:** add switch delegation tx ([08e6f94](https://github.com/BitGo/BitGoJS/commit/08e6f94d1640dd1796bafc7bd18bc7a35e76f8fd))
+- **sdk-coin-sui:** add withdrawDelegation staking tx ([f2161d4](https://github.com/BitGo/BitGoJS/commit/f2161d4c67751ddf3355393792a0a10fd8563c4f))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sui:** makes SuiTransaction and transactionBuilder
+  generic to support PayTx and MoveCallTx as tx property
+
 ## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@1.7.0...@bitgo/sdk-coin-sui@1.7.2) (2023-02-08)
 
 ### Bug Fixes

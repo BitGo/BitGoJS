@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.3.0) (2023-02-16)
+
+### Features
+
+- **statics:** add a unique id to every asset ([f96e4d3](https://github.com/BitGo/BitGoJS/commit/f96e4d3bb5515ca52a78387c5c75811abd39c802))
+- **statics:** add custody coin features for avaxc ([d67a9d9](https://github.com/BitGo/BitGoJS/commit/d67a9d932f30d48853ad7e4c20388b60ae269529))
+- **statics:** add ofc algorand usdc token ([9450360](https://github.com/BitGo/BitGoJS/commit/9450360e828253ee633acaae8cc0ec57d386a7dc))
+- **statics:** add ofc hedera usdc token ([67f1c5d](https://github.com/BitGo/BitGoJS/commit/67f1c5da5b92f228e02451071bacdcbe482c06fd))
+
 # [14.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.2.0) (2023-02-08)
 
 ### Features
