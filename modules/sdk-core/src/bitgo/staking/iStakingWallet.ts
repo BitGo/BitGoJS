@@ -31,6 +31,13 @@ export interface UnstakeOptions {
   delegationId?: string;
 }
 
+export interface SwitchValidatorOptions {
+  amount: string;
+  clientId?: string;
+  delegationId: string;
+  validator: string;
+}
+
 export interface DelegationOptions {
   delegationStatus?: DelegationStatus;
   delegationIds?: Set<string>;
@@ -106,6 +113,7 @@ export interface IStakingWallet {
   readonly coin: string;
   stake(options: StakeOptions): Promise<StakingRequest>;
   unstake(options: UnstakeOptions): Promise<StakingRequest>;
+  switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;
   build(transaction: StakingTransaction): Promise<StakingPrebuildTransactionResult>;

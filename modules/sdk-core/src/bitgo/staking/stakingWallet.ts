@@ -11,6 +11,7 @@ import {
   StakingSignedTransaction,
   StakingSignOptions,
   StakingTransaction,
+  SwitchValidatorOptions,
   TransactionsReadyToSign,
   UnstakeOptions,
 } from './iStakingWallet';
@@ -57,6 +58,16 @@ export class StakingWallet implements IStakingWallet {
    */
   async unstake(options: UnstakeOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'UNSTAKE');
+  }
+
+  /**
+   * Submit a request to switch the validator used for a specific delegation
+   * This will create a new delegation with the new validator address and mark the old delegation as inactive
+   * @param options - switch validator options
+   * @return StakingRequest
+   */
+  async switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest> {
+    return await this.createStakingRequest(options, 'SWITCH_VALIDATOR');
   }
 
   /**
@@ -212,7 +223,10 @@ export class StakingWallet implements IStakingWallet {
       .result();
   }
 
-  private async createStakingRequest(options: StakeOptions | UnstakeOptions, type: string): Promise<StakingRequest> {
+  private async createStakingRequest(
+    options: StakeOptions | UnstakeOptions | SwitchValidatorOptions,
+    type: string
+  ): Promise<StakingRequest> {
     return await this.bitgo
       .post(this.bitgo.microservicesUrl(this.stakingRequestsURL()))
       .send({
