@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-api",
-  "version": "1.9.9",
+  "version": "1.9.10",
   "description": "REST wrapper for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -50,7 +50,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^7.0.0",
+    "@bitgo/sdk-core": "^7.0.1",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/unspents": "^0.11.12",
     "@bitgo/utxo-lib": "^7.7.0",

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@2.0.0...@bitgo/sdk-coin-atom@2.1.0) (2023-02-17)
+
+### Features
+
+- **sdk-coin-atom:** add function to validate amount data ([8ab8054](https://github.com/BitGo/BitGoJS/commit/8ab805403f9e636dc4e32a7ea6302b6d9e5b205e))
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@1.1.0...@bitgo/sdk-coin-atom@2.0.0) (2023-02-16)
 
 ### Bug Fixes

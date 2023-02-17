@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.0.0...bitgo@18.0.1) (2023-02-17)
+
+
+### Bug Fixes
+
+* polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+* use post on get challenge end-point ([f2a8320](https://github.com/BitGo/BitGoJS/commit/f2a8320ea985132e052ab81472043a47ec7f57c1))
+
+
+
+
+
 # [18.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.3.0...bitgo@18.0.0) (2023-02-16)
 
 

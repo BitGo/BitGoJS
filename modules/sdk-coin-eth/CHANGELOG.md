@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.2.0...@bitgo/sdk-coin-eth@4.2.1) (2023-02-17)
+
+### Bug Fixes
+
+- polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+
 # [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.0.0...@bitgo/sdk-coin-eth@4.2.0) (2023-02-16)
 
 ### Bug Fixes

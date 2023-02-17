@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@7.0.0...@bitgo/sdk-core@7.0.1) (2023-02-17)
+
+### Bug Fixes
+
+- append bitgo challenge to bitgo a share ([4ef60e5](https://github.com/BitGo/BitGoJS/commit/4ef60e56d33d36c6ac0ba74986c45d19b52914e3))
+- polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+- use post on get challenge end-point ([f2a8320](https://github.com/BitGo/BitGoJS/commit/f2a8320ea985132e052ab81472043a47ec7f57c1))
+
 # [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@5.1.0...@bitgo/sdk-core@7.0.0) (2023-02-16)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.3.0...@bitgo/statics@14.4.0) (2023-02-17)
+
+### Features
+
+- **statics:** add ofc erc20 tokens ([d05e69f](https://github.com/BitGo/BitGoJS/commit/d05e69fb6d47dc629286b2815ecd9435e3854db0))
+- **statics:** enable getting asset by id ([b96fbaf](https://github.com/BitGo/BitGoJS/commit/b96fbaf36f676400ed2ec2fa66d2a3931aabdf42))
+
 # [14.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.0.0...@bitgo/statics@14.3.0) (2023-02-16)
 
 ### Features
