@@ -321,7 +321,7 @@ export default class Ecdsa {
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  async signShare(xShare: XShare | XShareWithNTilde, yShare: YShare | YShareWithNTilde): Promise<SignShareRT> {
+  async signShare(xShare: XShare | XShareWithNTilde, yShare: YShareWithNTilde): Promise<SignShareRT> {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
     // Generate a challenge if ntilde is not present in the xShare.
@@ -362,31 +362,28 @@ export default class Ecdsa {
       kShare: {} as KShare,
     };
 
-    let proofShare;
-    if (hasNTilde(yShare)) {
-      const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
-      const proof = await rangeProof.prove(
-        Ecdsa.curve,
-        3072,
-        pk,
-        {
-          ntilde: hexToBigInt(ntildeb),
-          h1: hexToBigInt(h1b),
-          h2: hexToBigInt(h2b),
-        },
-        ck,
-        k,
-        rk
-      );
-      proofShare = {
-        z: bigIntToBufferBE(proof.z, 384).toString('hex'),
-        u: bigIntToBufferBE(proof.u, 768).toString('hex'),
-        w: bigIntToBufferBE(proof.w, 384).toString('hex'),
-        s: bigIntToBufferBE(proof.s, 384).toString('hex'),
-        s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
-        s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
-      };
-    }
+    const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
+    const proof = await rangeProof.prove(
+      Ecdsa.curve,
+      3072,
+      pk,
+      {
+        ntilde: hexToBigInt(ntildeb),
+        h1: hexToBigInt(h1b),
+        h2: hexToBigInt(h2b),
+      },
+      ck,
+      k,
+      rk
+    );
+    const proofShare = {
+      z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+      u: bigIntToBufferBE(proof.u, 768).toString('hex'),
+      w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+      s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+      s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+      s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+    };
 
     signers.kShare = {
       i: yShare.j,
@@ -447,7 +444,6 @@ export default class Ecdsa {
       }
       // Verify $\gamma_i \in Z_{N^2}$.
       if (
-        aShareToBeSent.gammaProof &&
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
@@ -479,7 +475,6 @@ export default class Ecdsa {
       }
       // Verify $\w_i \in Z_{N^2}$.
       if (
-        aShareToBeSent.wProof &&
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
@@ -543,7 +538,6 @@ export default class Ecdsa {
       }
       const k = hexToBigInt(aShareToBeSent.k);
       if (
-        aShareToBeSent.proof &&
         !rangeProof.verify(
           Ecdsa.curve,
           3072,
@@ -579,40 +573,38 @@ export default class Ecdsa {
       // Prove $\gamma_i \in Z_{N^2}$.
       const gx = Ecdsa.curve.basePointMult(g);
       let proof: RangeProofWithCheck;
-      if (ntildea) {
-        proof = await rangeProof.proveWithCheck(
-          Ecdsa.curve,
-          3072,
-          pka,
-          {
-            ntilde: ntildea,
-            h1: h1a,
-            h2: h2a,
-          },
-          k,
-          alpha,
-          g,
-          beta0,
-          rb,
-          gx
-        );
-        Object.assign(aShareToBeSent, {
-          gammaProof: {
-            z: bigIntToBufferBE(proof.z, 384).toString('hex'),
-            zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
-            t: bigIntToBufferBE(proof.t, 384).toString('hex'),
-            v: bigIntToBufferBE(proof.v, 768).toString('hex'),
-            w: bigIntToBufferBE(proof.w, 384).toString('hex'),
-            s: bigIntToBufferBE(proof.s, 384).toString('hex'),
-            s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
-            s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
-            t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
-            t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
-            u: bigIntToBufferBE(proof.u, 33).toString('hex'),
-            x: bigIntToBufferBE(gx, 33).toString('hex'),
-          },
-        });
-      }
+      proof = await rangeProof.proveWithCheck(
+        Ecdsa.curve,
+        3072,
+        pka,
+        {
+          ntilde: ntildea,
+          h1: h1a,
+          h2: h2a,
+        },
+        k,
+        alpha,
+        g,
+        beta0,
+        rb,
+        gx
+      );
+      Object.assign(aShareToBeSent, {
+        gammaProof: {
+          z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+          zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
+          t: bigIntToBufferBE(proof.t, 384).toString('hex'),
+          v: bigIntToBufferBE(proof.v, 768).toString('hex'),
+          w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+          s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+          s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+          s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+          t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
+          t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
+          u: bigIntToBufferBE(proof.u, 33).toString('hex'),
+          x: bigIntToBufferBE(gx, 33).toString('hex'),
+        },
+      });
       // MtA $k_j, w_i$.
       const nu0 = bigintCryptoUtils.randBetween(Ecdsa.curve.order() ** _5n);
       shareParticipant.nu = bigIntToBufferBE(Ecdsa.curve.scalarNegate(Ecdsa.curve.scalarReduce(nu0)), 32).toString(
@@ -625,40 +617,38 @@ export default class Ecdsa {
       shareToBeSent.mu = bigIntToBufferBE(mu, 32).toString('hex');
       // Prove $\w_i \in Z_{N^2}$.
       const wx = Ecdsa.curve.basePointMult(w);
-      if (ntildea) {
-        proof = await rangeProof.proveWithCheck(
-          Ecdsa.curve,
-          3072,
-          pka,
-          {
-            ntilde: ntildea,
-            h1: h1a,
-            h2: h2a,
-          },
-          k,
-          hexToBigInt(aShareToBeSent.mu),
-          w,
-          nu0,
-          rn,
-          wx
-        );
-        Object.assign(shareToBeSent, {
-          wProof: {
-            z: bigIntToBufferBE(proof.z, 384).toString('hex'),
-            zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
-            t: bigIntToBufferBE(proof.t, 384).toString('hex'),
-            v: bigIntToBufferBE(proof.v, 768).toString('hex'),
-            w: bigIntToBufferBE(proof.w, 384).toString('hex'),
-            s: bigIntToBufferBE(proof.s, 384).toString('hex'),
-            s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
-            s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
-            t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
-            t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
-            u: bigIntToBufferBE(proof.u, 33).toString('hex'),
-            x: bigIntToBufferBE(wx, 33).toString('hex'),
-          },
-        });
-      }
+      proof = await rangeProof.proveWithCheck(
+        Ecdsa.curve,
+        3072,
+        pka,
+        {
+          ntilde: ntildea,
+          h1: h1a,
+          h2: h2a,
+        },
+        k,
+        hexToBigInt(aShareToBeSent.mu),
+        w,
+        nu0,
+        rn,
+        wx
+      );
+      Object.assign(shareToBeSent, {
+        wProof: {
+          z: bigIntToBufferBE(proof.z, 384).toString('hex'),
+          zprm: bigIntToBufferBE(proof.zprm, 384).toString('hex'),
+          t: bigIntToBufferBE(proof.t, 384).toString('hex'),
+          v: bigIntToBufferBE(proof.v, 768).toString('hex'),
+          w: bigIntToBufferBE(proof.w, 384).toString('hex'),
+          s: bigIntToBufferBE(proof.s, 384).toString('hex'),
+          s1: bigIntToBufferBE(proof.s1, 96).toString('hex'),
+          s2: bigIntToBufferBE(proof.s2, 480).toString('hex'),
+          t1: bigIntToBufferBE(proof.t1, 224).toString('hex'),
+          t2: bigIntToBufferBE(proof.t2, 480).toString('hex'),
+          u: bigIntToBufferBE(proof.u, 33).toString('hex'),
+          x: bigIntToBufferBE(wx, 33).toString('hex'),
+        },
+      });
       if ((shareParticipant as GShare).alpha) {
         const partialShareParticipant = shareParticipant as Partial<BShare>;
         const partialShareToBeSent = shareToBeSent as Partial<AShare>;

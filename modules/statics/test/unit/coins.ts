@@ -1,5 +1,19 @@
 import 'should';
-import { BaseNetwork, CoinFamily, CoinFeature, coins, Erc20Coin, EthereumNetwork, NetworkType } from '../../src';
+import {
+  BaseNetwork,
+  BaseUnit,
+  CoinFamily,
+  CoinFeature,
+  CoinMap,
+  coins,
+  Erc20Coin,
+  EthereumNetwork,
+  Networks,
+  NetworkType,
+  UnderlyingAsset,
+  UtxoCoin,
+} from '../../src';
+import { utxo } from '../../src/utxo';
 
 interface DuplicateCoinObject {
   name: string;
@@ -85,6 +99,25 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
 };
 
 describe('CoinMap', function () {
+  const btc = utxo(
+    '5c1691c5-c9cc-49ed-abe0-c433dab2edaa',
+    'btc',
+    'Bitcoin',
+    Networks.main.bitcoin,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    [...UtxoCoin.DEFAULT_FEATURES]
+  );
+
+  it('should fail to map a coin with duplicated name', () => {
+    (() => CoinMap.fromCoins([btc, btc])).should.throw(`coin '${btc.name}' is already defined`);
+  });
+
+  it('should fail to map a coin with duplicated id', () => {
+    const btc2 = { ...btc, name: 'btc2' };
+    (() => CoinMap.fromCoins([btc, btc2])).should.throw(`coin with id '${btc.id}' is already defined`);
+  });
+
   it('should have iterator', function () {
     [...coins].length.should.be.greaterThan(100);
   });
@@ -105,6 +138,16 @@ describe('CoinMap', function () {
       assetIds.has(coin.id).should.be.false();
       assetIds.add(coin.id);
     });
+  });
+
+  it('should get coin by id', () => {
+    const btc = coins.get('btc');
+    const btcById = coins.get(btc.id);
+    btcById.should.deepEqual(btc);
+  });
+
+  it('should find coin by id', () => {
+    coins.has(btc.id).should.be.true();
   });
 });
 

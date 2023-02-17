@@ -15,10 +15,9 @@ import {
   SendShareType,
   SignatureShare,
   SignShare,
-  WShare,
   XShare,
+  WShare,
   XShareWithNTilde,
-  YShare,
   YShareWithNTilde,
   SendShareToBitgoRT,
   ReceivedShareType,
@@ -109,7 +108,7 @@ export async function createCombinedKey(
  */
 export async function createUserSignShare(
   xShare: XShare | XShareWithNTilde,
-  yShare: YShare | YShareWithNTilde
+  yShare: YShareWithNTilde
 ): Promise<SignShare> {
   if (xShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid XShare, XShare doesn't belong to the User`);

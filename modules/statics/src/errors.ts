@@ -26,6 +26,13 @@ export class DuplicateCoinDefinitionError extends BitGoStaticsError {
   }
 }
 
+export class DuplicateCoinIdDefinitionError extends BitGoStaticsError {
+  public constructor(id: string) {
+    super(`coin with id '${id}' is already defined`);
+    Object.setPrototypeOf(this, DuplicateCoinIdDefinitionError.prototype);
+  }
+}
+
 export class DisallowedCoinFeatureError extends BitGoStaticsError {
   public constructor(coinName: string, feature: CoinFeature) {
     super(`coin feature '${feature}' is disallowed for coin ${coinName}.`);

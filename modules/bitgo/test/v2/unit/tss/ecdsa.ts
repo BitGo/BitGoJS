@@ -279,7 +279,20 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const userSignShare = await ECDSAMethods.createUserSignShare(userKey.xShare, userKey.yShares[3]);
+        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+        const xShare: ECDSAMethodTypes.XShareWithNTilde = {
+          ...shares.xShare,
+          ntilde: shares.xShare.ntilde,
+          h1: shares.xShare.h1,
+          h2: shares.xShare.h2,
+        };
+        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+          ...userKey.yShares[3],
+          ntilde: shares.xShare.ntilde,
+          h1: shares.xShare.h1,
+          h2: shares.xShare.h2,
+        };
+        const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
         userSignShare.should.have.properties(['wShare', 'kShare']);
         const { wShare, kShare } = userSignShare;
         wShare.should.have.property('gamma').and.be.a.String();
@@ -304,8 +317,15 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        const invalidUserSigningMaterial = { ...userKey, xShare: { ...userKey.xShare, i: 3 } };
-        await ECDSAMethods.createUserSignShare(invalidUserSigningMaterial.xShare, invalidUserSigningMaterial.yShares[3]).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
+        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+        const xShare: ECDSAMethodTypes.XShareWithNTilde = { ...shares.xShare, i: 3 };
+        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+          ...userKey.yShares[3],
+          ntilde: shares.xShare.ntilde,
+          h1: shares.xShare.h1,
+          h2: shares.xShare.h2,
+        };
+        await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
       });
     });
 

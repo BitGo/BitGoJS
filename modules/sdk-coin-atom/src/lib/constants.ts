@@ -3,3 +3,4 @@ export enum AtomTransactionType {
   Pay = 'Pay',
 }
 export const sendMsgType = '/cosmos.bank.v1beta1.MsgSend';
+export const validDenoms = ['natom', 'uatom', 'matom', 'atom'];

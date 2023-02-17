@@ -699,9 +699,18 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       privateShareProof,
       userPublicGpgKey,
       publicShare
-    )) as AShare;
+    )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
 
-    const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
+    // Append the BitGo challenge to the Ashare to be used in subsequent proofs
+    const bitgoToUserAShareWithNTilde: AShare = {
+      ...bitgoToUserAShare,
+      ...bitgoChallenge,
+    };
+
+    const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(
+      userSignShare.wShare,
+      bitgoToUserAShareWithNTilde
+    );
     const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
       userGammaAndMuShares.gShare as ECDSA.GShare
     );

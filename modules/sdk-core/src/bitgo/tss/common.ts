@@ -105,7 +105,7 @@ export async function getTxRequestChallenge(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
-  return await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({}).result();
 }
 
 /**

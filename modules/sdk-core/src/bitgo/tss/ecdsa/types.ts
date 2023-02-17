@@ -19,6 +19,7 @@ export type SignatureShare = ECDSA.SShare;
 export type Signature = ECDSA.Signature;
 export type BShare = ECDSA.BShare;
 export type SShare = ECDSA.SShare;
+export type KeyCombined = ECDSA.KeyCombined;
 
 export enum SendShareType {
   KShare = 'KShare',
