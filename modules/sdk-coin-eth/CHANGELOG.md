@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.2.0...@bitgo/sdk-coin-eth@4.2.1) (2023-02-17)
+
+### Bug Fixes
+
+- polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.0.0...@bitgo/sdk-coin-eth@4.2.0) (2023-02-16)
+
+### Bug Fixes
+
+- **sdk-coin-bsc:** build from txHex ([15173e9](https://github.com/BitGo/BitGoJS/commit/15173e967741964f19b042a9523e280ec758e440))
+
+### Features
+
+- **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+- **sdk-coin-eth:** enable consolidation support gteth ([fd3532e](https://github.com/BitGo/BitGoJS/commit/fd3532e7428758562e60d19e32839d00c4a56ec4))
+
 # [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.0.0...@bitgo/sdk-coin-eth@4.1.0) (2023-02-08)
 
 ### Bug Fixes

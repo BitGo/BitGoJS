@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.4.0...@bitgo/account-lib@4.4.1) (2023-02-17)
+
+### Bug Fixes
+
+- polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+
+# [4.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.2.2...@bitgo/account-lib@4.4.0) (2023-02-16)
+
+### Bug Fixes
+
+- **account-lib:** modify ECDSA keyShare to use bip32 lib ([9ce8f23](https://github.com/BitGo/BitGoJS/commit/9ce8f2330307e884cec99900433a7085c82e2b3c))
+
+### Features
+
+- **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+- **sdk-coin-atom:** add atom to account-lib ([9786381](https://github.com/BitGo/BitGoJS/commit/97863817f2e1dd29043482ea10ea408f266526bc))
+
 # [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.2.2...@bitgo/account-lib@4.3.0) (2023-02-08)
 
 ### Features

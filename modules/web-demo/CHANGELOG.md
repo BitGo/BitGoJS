@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.5.0...@bitgo/web-demo@1.5.1) (2023-02-17)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.4.2...@bitgo/web-demo@1.5.0) (2023-02-16)
+
+### Bug Fixes
+
+- **key-card:** fix errors in key-card drawing code ([092bc0a](https://github.com/BitGo/BitGoJS/commit/092bc0a4b851d6cf9d396e8eb5af476b4c52954d))
+- **key-card:** reduce size of QR codes ([c8e08b8](https://github.com/BitGo/BitGoJS/commit/c8e08b8ca007bd45cb0628c5a06a80b81f5a308e))
+- **web-demo:** rebase against latest on the updated versions ([e50f581](https://github.com/BitGo/BitGoJS/commit/e50f5816582331f77765c378bd0c8ebe640b6ed4))
+
+### Features
+
+- **key-card:** add basic code to generate key cards ([83b01fc](https://github.com/BitGo/BitGoJS/commit/83b01fc5c31801e4f8db1166b06f2b8e7de3183f))
+- **key-card:** add support for qrcodes ([d79b9f7](https://github.com/BitGo/BitGoJS/commit/d79b9f7192dcabe9a7a1d5c261b799b5cbedb6f7))
+
 ## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.4.2...@bitgo/web-demo@1.4.4) (2023-02-08)
 
 **Note:** Version bump only for package @bitgo/web-demo

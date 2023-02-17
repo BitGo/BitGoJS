@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.24.0...@bitgo/express@9.24.1) (2023-02-17)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+# [9.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.22.0...@bitgo/express@9.24.0) (2023-02-16)
+
+
+### Bug Fixes
+
+* **sdk-core:** update fixtures and fix tests ([c936478](https://github.com/BitGo/BitGoJS/commit/c9364786d7d11c9fbb621109efb1fb43a894e9d4))
+
+
+### Features
+
+* **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+
+
+
+
+
 # [9.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.22.0...@bitgo/express@9.23.0) (2023-02-08)
 
 

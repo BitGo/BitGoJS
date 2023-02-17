@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.0...@bitgo/sdk-coin-xlm@2.0.1) (2023-02-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@1.2.11...@bitgo/sdk-coin-xlm@2.0.0) (2023-02-16)
+
+### Bug Fixes
+
+- **sdk-core:** mark pub as optional in Keychain interface ([7d6012c](https://github.com/BitGo/BitGoJS/commit/7d6012cf1058e43d96e129dc2b1607b5316dca1c))
+
+### BREAKING CHANGES
+
+- **sdk-core:** Keychain.pub is now optional
+
 ## [1.2.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@1.2.11...@bitgo/sdk-coin-xlm@1.2.13) (2023-02-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

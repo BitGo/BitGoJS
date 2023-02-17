@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.0.0...bitgo@18.0.1) (2023-02-17)
+
+
+### Bug Fixes
+
+* polygon recovery with range proof ([19317f7](https://github.com/BitGo/BitGoJS/commit/19317f709354e61b3e4947870049e99f85556029))
+* use post on get challenge end-point ([f2a8320](https://github.com/BitGo/BitGoJS/commit/f2a8320ea985132e052ab81472043a47ec7f57c1))
+
+
+
+
+
+# [18.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.3.0...bitgo@18.0.0) (2023-02-16)
+
+
+### Bug Fixes
+
+* **bitgo:** remove enforcement of HMAC verification on all non-prod environments ([118722c](https://github.com/BitGo/BitGoJS/commit/118722c80bfcf8cfc850e07d575ecf10aacb3fd2))
+* convert addr to canonical addr during wrongChainRecovery ([2089596](https://github.com/BitGo/BitGoJS/commit/20895964eeac1eedc9f859f0ce9b607313cc6568))
+* **sdk-core:** correct ecdsa verifyWalletSigs() ([3b1476c](https://github.com/BitGo/BitGoJS/commit/3b1476cab6ae9a4888a03e15685e70f539df02c2))
+* **sdk-core:** eddsa signing vss share ([ae40423](https://github.com/BitGo/BitGoJS/commit/ae404230eec93c0eb2ddfc386fdb18fc42e17c12))
+* **sdk-core:** get low balance forwarder ([6b8205c](https://github.com/BitGo/BitGoJS/commit/6b8205c449e2f5fe3dca0247d92dfdf2fdb6ef58))
+* **sdk-core:** make derivation play nicely with rangeproofs ([26ad5b5](https://github.com/BitGo/BitGoJS/commit/26ad5b58ff72caa1859a9e6d9c8376f140e8213b))
+* **sdk-core:** mark pub as optional in Keychain interface ([7d6012c](https://github.com/BitGo/BitGoJS/commit/7d6012cf1058e43d96e129dc2b1607b5316dca1c))
+* **sdk-core:** reduce size of beta0 and nu0 per revised whitepaper ([94d50c9](https://github.com/BitGo/BitGoJS/commit/94d50c91b375aa8155eae71f1ad41d66ffbd37c5))
+* **sdk-core:** update fixtures and fix tests ([c936478](https://github.com/BitGo/BitGoJS/commit/c9364786d7d11c9fbb621109efb1fb43a894e9d4))
+* **sdk-core:** use hex toString() verify ecdsa ([aead4a4](https://github.com/BitGo/BitGoJS/commit/aead4a4e02842b552e7fc21927fedc8320148cb5))
+* use new mock for cross chain recovery test ([d54db09](https://github.com/BitGo/BitGoJS/commit/d54db099d1a3fbdeb0dcc1526858e6f195946a78))
+
+
+### Features
+
+* **account-lib:** make rangeproof stuff async ([380f288](https://github.com/BitGo/BitGoJS/commit/380f288e9cc5f6e98834e118bad65787e836c5a2))
+* **bitgo:** remove unused dev dependency ([134955b](https://github.com/BitGo/BitGoJS/commit/134955b7d6a52fb5531fbcef1c89580a72e33069))
+* **sdk-core:** add ecdsa to verifyShareProof() ([9be664b](https://github.com/BitGo/BitGoJS/commit/9be664b8ee4267e20e0a40d30653d3bd3795b205))
+* **sdk-core:** add ecdsa wallet sig verification ([375be2d](https://github.com/BitGo/BitGoJS/commit/375be2d86002258ba11012888fea41094dabc39b))
+* **sdk-core:** add type property to Keychain ([5092b29](https://github.com/BitGo/BitGoJS/commit/5092b29a653ae5e5abb7320f65a7d926a7e4cc9f))
+* **sdk-core:** allow consolidateUnspents method to only build the tx also ([790f2d1](https://github.com/BitGo/BitGoJS/commit/790f2d1d1451c3ce4ffade7609eb0cd23424f43c))
+* **sdk-core:** ecdsa signing use derivation path ([f4ca720](https://github.com/BitGo/BitGoJS/commit/f4ca720587822fd295b1a97f78c9127c2576a46d))
+* **sdk-core:** include keyShares in third party backup tss keychain ([c5997de](https://github.com/BitGo/BitGoJS/commit/c5997de87f85bb012665cfe538705eeadbb522cc))
+* **sdk-core:** rename type ([c81221f](https://github.com/BitGo/BitGoJS/commit/c81221f3961abe3d73f4bf3c8801fb7f1b4f9b27))
+* **sdk-core:** use trust backup gpg for encrypting ([400a9af](https://github.com/BitGo/BitGoJS/commit/400a9af34a5eb1933965bfc675911cd24b8c605b))
+* send enterprise id to backupkeys end-point ([701ff7c](https://github.com/BitGo/BitGoJS/commit/701ff7c1aa41ea82ce06b09b36613f0781ad5e9d))
+* **statics:** add ofc algorand usdc token ([9450360](https://github.com/BitGo/BitGoJS/commit/9450360e828253ee633acaae8cc0ec57d386a7dc))
+* **statics:** add ofc hedera usdc token ([67f1c5d](https://github.com/BitGo/BitGoJS/commit/67f1c5da5b92f228e02451071bacdcbe482c06fd))
+* update tests for crossChainRecovery ([6cdd3a9](https://github.com/BitGo/BitGoJS/commit/6cdd3a94baa4427412d06e3e151096feea5e26ff))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** Keychain.pub is now optional
+* **sdk-core:** rename type backupGpgKey to BackupGpgKey
+* **sdk-core:** The `verifyEdShareProof` function is renamed to
+`verifyShareProof` and now expects a 4th parameter which must be a
+string of either `eddsa` or `ecdsa`.
+
+
+
+
+
 # [17.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@16.3.0...bitgo@17.0.0) (2023-02-08)
 
 
