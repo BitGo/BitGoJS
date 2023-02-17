@@ -1,6 +1,7 @@
 import { generateKeycard } from '@bitgo/key-card';
 import { coins } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
+import * as BitGoJS from 'bitgo';
 
 function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -272,5 +273,48 @@ export async function downloadKeycardForSelfManagedHotAdvancedPolygonWallet() {
     passphrase: 'test_wallet_passphrase',
     userKeychain,
     walletLabel: 'SMHA Polygon Wallet',
+  });
+}
+
+export async function createNewSMHAWalletAndDownloadKeycard() {
+  const bitgo = new BitGoJS.BitGo({ env: 'test' });
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const accessToken = document.getElementById('accessToken').value;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const enterpriseId = document.getElementById('enterpriseId').value;
+
+  const label = 'My new SMHA Wallet';
+
+  const passphrase = 'test_wallet_passphrase';
+
+  const coin = 'tpolygon';
+
+  bitgo.authenticateWithAccessToken({ accessToken });
+
+  const walletOptions = {
+    backupProvider: 'BitGoTrustAsKrs' as const,
+    enterprise: enterpriseId,
+    label,
+    passphrase,
+    multisigType: 'tss' as const,
+    walletVersion: 3,
+  };
+
+  const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
+
+  await generateKeycard({
+    activationCode: '123456',
+    backupKeychain: wallet.backupKeychain,
+    backupKeyProvider: 'BitGo Trust',
+    bitgoKeychain: wallet.bitgoKeychain,
+    coin: coins.get('tpolygon'),
+    keyCardImage: await downloadKeycardImage('polygon'),
+    passcodeEncryptionCode: '654321',
+    passphrase,
+    userKeychain: wallet.userKeychain,
+    walletLabel: label,
   });
 }
