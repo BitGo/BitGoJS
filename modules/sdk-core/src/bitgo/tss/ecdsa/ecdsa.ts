@@ -35,6 +35,7 @@ import { bip32, ecc } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
+import { ECDSAMethods } from '../index';
 
 const MPC = new Ecdsa();
 
@@ -217,6 +218,7 @@ export async function sendShareToBitgo(
     case SendShareType.KShare:
       assert(signerShare, `signer share must be present`);
       const kShare = share as KShare;
+      console.log(`kShare: ${JSON.stringify(kShare)}`);
       signatureShare = convertKShare(kShare);
       signatureShare.vssProof = vssProof;
       signatureShare.publicShare = publicShare;
@@ -239,9 +241,11 @@ export async function sendShareToBitgo(
         ReceivedShareType.AShare,
         requestType
       );
+      console.log(`alphaShare from BitGo: ${JSON.stringify(responseFromBitgo)}`);
       break;
     case SendShareType.MUShare:
       const shareToSend = share as MuDShare;
+      console.log(`user mu and delta share: ${JSON.stringify(shareToSend)}`);
       const muShareRecord = convertMuShare(shareToSend.muShare);
       const dShareRecord = convertDShare(shareToSend.dShare);
       signatureShare = {
@@ -249,6 +253,11 @@ export async function sendShareToBitgo(
         from: getParticipantFromIndex(shareToSend.dShare.j),
         share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
       };
+      console.log(`mu and dShare smushed: ${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`);
+      const convertedMuShare = ECDSAMethods.parseMuShare(muShareRecord);
+      const convertedDShare = ECDSAMethods.parseDShare(dShareRecord);
+      console.log(`convertedMuShare: ${JSON.stringify(convertedMuShare)}`);
+      console.log(`convertedDShare: ${JSON.stringify(convertedDShare)}`);
       await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,
@@ -257,6 +266,7 @@ export async function sendShareToBitgo(
         ReceivedShareType.DShare,
         requestType
       );
+      console.log(`delta share from BitGo: ${JSON.stringify(responseFromBitgo)}`);
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;

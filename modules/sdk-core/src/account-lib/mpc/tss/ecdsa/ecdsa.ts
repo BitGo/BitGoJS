@@ -424,7 +424,9 @@ export default class Ecdsa {
     } else if ((shares.bShare && shares.muShare) || (shares.aShare && shares.wShare)) {
       isGammaShare = true;
       shareToBeSent = shares.aShare ? ({ ...shares.aShare } as MUShare) : ({ ...shares.muShare } as MUShare);
+      // share to be sent is aShare
       shareParticipant = shares.wShare ? ({ ...shares.wShare } as Partial<GShare>) : ({ ...shares.bShare } as GShare);
+      // share participant is wShare
     } else {
       throw new Error('Invalid config for Sign Convert');
     }
@@ -444,6 +446,7 @@ export default class Ecdsa {
       }
       // Verify $\gamma_i \in Z_{N^2}$.
       if (
+        // we are checking user's challenge values against BitGo's gamma proof
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
@@ -475,6 +478,7 @@ export default class Ecdsa {
       }
       // Verify $\w_i \in Z_{N^2}$.
       if (
+        // we are checking user's challenge values against BitGo's wProof?
         !rangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
@@ -511,6 +515,8 @@ export default class Ecdsa {
       );
       const gShareParticipant = shareParticipant as GShare;
       const muShareToBeSent = shareToBeSent as MUShare;
+      // gShareParticipant is wShare?
+      // muShareToBeSend is aShare?
       const alpha = sk.decrypt(hexToBigInt(aShareToBeSent.alpha));
       gShareParticipant.alpha = bigIntToBufferBE(Ecdsa.curve.scalarReduce(alpha), 32).toString('hex');
       const mu = sk.decrypt(hexToBigInt(aShareToBeSent.mu as string)); // recheck encrypted number

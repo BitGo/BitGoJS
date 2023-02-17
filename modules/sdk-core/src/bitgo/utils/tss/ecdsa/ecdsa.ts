@@ -701,6 +701,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       publicShare
     )) as AShare;
 
+    // bitgoToUserAShare.ntilde = signingKeyWithChallenge.xShare.ntilde;
+    // bitgoToUserAShare.h1 = signingKeyWithChallenge.xShare.h1;
+    // bitgoToUserAShare.h2 = signingKeyWithChallenge.xShare.h2;
+    bitgoToUserAShare.ntilde = bitgoChallenge.ntilde;
+    bitgoToUserAShare.h1 = bitgoChallenge.h1;
+    bitgoToUserAShare.h2 = bitgoChallenge.h2;
     const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, bitgoToUserAShare);
     const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
       userGammaAndMuShares.gShare as ECDSA.GShare
