@@ -88,9 +88,10 @@ function testParseAddress(
   describe(`parse address ${address} with arguments ${args.join(' ')}`, function () {
     it(`formats address`, async function () {
       const formatted = formatTreeNoColor(parse(address, args));
+      const addrNoColon = address.replace(':', '_');
       assert.strictEqual(
         await getFixtureString(
-          `test/fixtures/formatAddress_${utxolib.getNetworkName(network)}_${addressFormat}_${address}${suffix}`,
+          `test/fixtures/formatAddress_${utxolib.getNetworkName(network)}_${addressFormat}_${addrNoColon}${suffix}`,
           formatted
         ),
         formatted
