@@ -52,6 +52,7 @@ The `UtxoTransaction(Builder)` classes have the same interface as the `Transacti
 |Bitcoin Gold|`utxolib.networks.bitcoingold`|`utxolib.networks.bitcoingoldTestnet`|
 |Bitcoin SV (Satoshi Vision)|`utxolib.networks.bitcoinsv`|`utxolib.networks.bitcoinsvTestnet`|
 |Dash|`utxolib.networks.dash`|`utxolib.networks.dash`|
+|eCash|`utxolib.networks.ecash`|`utxolib.networks.ecashTestnet`|
 |Litecoin|`utxolib.networks.litecoin`|`utxolib.networks.litecoinTest`|
 |Zcash|`utxolib.networks.zcash`|`utxolib.networks.zcashTest`|
 
