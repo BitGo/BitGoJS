@@ -697,8 +697,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       encryptedSignerShare,
       vssProof,
       privateShareProof,
-      userPublicGpgKey,
-      publicShare
+      publicShare,
+      userPublicGpgKey
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
 
     // Append the BitGo challenge to the Ashare to be used in subsequent proofs
