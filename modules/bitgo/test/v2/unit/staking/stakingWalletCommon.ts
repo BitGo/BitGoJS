@@ -119,6 +119,37 @@ describe('Staking Wallet Common', function () {
 
   });
 
+  describe('switch validator', function () {
+    it('should call staking-service to switch validator', async function () {
+      const expected = fixtures.stakingRequest(
+        [
+          fixtures.transaction('NEW'),
+        ]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          clientId: 'clientId',
+          validator: 'validator',
+          delegationId: 'delegation',
+          type: 'SWITCH_VALIDATOR',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await stakingWallet.switchValidator({
+        amount: '1',
+        clientId: 'clientId',
+        validator: 'validator',
+        delegationId: 'delegation',
+      });
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+
+  });
+
   describe('cancelStakingRequest', function () {
     it('should call staking-service to cancel staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
