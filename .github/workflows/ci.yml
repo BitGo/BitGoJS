@@ -105,10 +105,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup node:${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Setup node 16
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16 # this just needs to pass our lock file requirement for compilation
 
       - name: Build Info
         run: |
