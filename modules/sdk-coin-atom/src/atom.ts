@@ -12,6 +12,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+import utils from './lib/utils';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 
@@ -84,7 +85,7 @@ export class Atom extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidAddress(address);
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
