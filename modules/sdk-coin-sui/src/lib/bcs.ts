@@ -54,7 +54,7 @@ bcs.registerStructType('PayAllSuiTx', {
 });
 
 bcs.registerStructType('MoveCallTx', {
-  package: 'SuiObjectRef',
+  package: 'address',
   module: 'string',
   function: 'string',
   typeArguments: 'vector<TypeTag>',
@@ -86,6 +86,7 @@ bcs
   .registerStructType('SharedObjectRef', {
     objectId: 'address',
     initialSharedVersion: 'u64',
+    mutable: 'bool',
   })
   .registerEnumType('ObjectArg', {
     ImmOrOwned: 'SuiObjectRef',

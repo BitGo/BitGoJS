@@ -151,7 +151,7 @@ describe('Sui Staking Builder', () => {
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.requestWithdrawDelegation.delegation.objectId,
+        address: testData.requestWithdrawDelegation.delegationObjectId.objectId,
         value: 'TRANSFER_AMOUNT_UNKNOWN',
         coin: 'tsui',
       });

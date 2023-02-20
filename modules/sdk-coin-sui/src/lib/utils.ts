@@ -179,6 +179,7 @@ export class Utils implements BaseUtils {
     return {
       objectId: utils.normalizeHexId(obj.objectId),
       initialSharedVersion: Number(obj.initialSharedVersion),
+      mutable: obj.mutable,
     };
   }
 

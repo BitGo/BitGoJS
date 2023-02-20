@@ -62,6 +62,9 @@ export type SharedObjectRef = {
 
   /** The version the object was shared at */
   initialSharedVersion: number;
+
+  /** Whether reference is mutable */
+  mutable: boolean;
 };
 
 export type ImmOrOwnedArg = { ImmOrOwned: SuiObjectRef };
@@ -107,7 +110,7 @@ export interface PayAllSuiTxDetails {
  */
 export interface MoveCallTxDetails {
   Call: {
-    package: SuiObjectRef;
+    package: SuiAddress;
     module: string;
     function: string;
     typeArguments: TypeTag[];
@@ -134,7 +137,7 @@ export interface PayTx {
 }
 
 export interface MoveCallTx {
-  package: SuiObjectRef;
+  package: SuiAddress;
   module: string;
   function: string;
   typeArguments: TypeTag[];
@@ -157,14 +160,14 @@ export interface RequestAddDelegation {
 }
 
 export interface RequestWithdrawDelegation {
-  delegation: SuiObjectRef;
-  stakedCoinId: SuiObjectRef;
+  delegationObjectId: SuiObjectRef;
+  stakedSuiObjectId: SuiObjectRef;
   amount: number;
 }
 
 export interface RequestSwitchDelegation {
-  delegation: SuiObjectRef;
-  stakedCoinId: SuiObjectRef;
+  delegationObjectId: SuiObjectRef;
+  stakedSuiObjectId: SuiObjectRef;
   newValidatorAddress: SuiAddress;
   amount: number;
 }
