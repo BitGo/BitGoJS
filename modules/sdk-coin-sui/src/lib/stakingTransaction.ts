@@ -21,7 +21,7 @@ import {
 } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { SUI_FRAMEWORK_ADDRESS, SUI_GAS_PRICE, SUI_PACKAGE, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
+import { SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_GAS_PRICE, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 
@@ -72,7 +72,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.AddDelegation:
         txDetails = {
           Call: {
-            package: suiTx.tx.package || SUI_PACKAGE,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestAddDelegationMulCoin,
             typeArguments: suiTx.tx.typeArguments,
@@ -83,7 +83,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.WithdrawDelegation:
         txDetails = {
           Call: {
-            package: suiTx.tx.package || SUI_PACKAGE,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
             typeArguments: suiTx.tx.typeArguments,
@@ -94,7 +94,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.SwitchDelegation:
         txDetails = {
           Call: {
-            package: suiTx.tx.package || SUI_PACKAGE,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestSwitchDelegation,
             typeArguments: suiTx.tx.typeArguments,
@@ -256,7 +256,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.AddDelegation:
         tx = {
           Call: {
-            package: suiTx.tx.package || SUI_FRAMEWORK_ADDRESS,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestAddDelegationMulCoin,
             typeArguments: suiTx.tx.typeArguments,
@@ -272,7 +272,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.WithdrawDelegation:
         tx = {
           Call: {
-            package: suiTx.tx.package || SUI_FRAMEWORK_ADDRESS,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
             typeArguments: suiTx.tx.typeArguments,
@@ -287,7 +287,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       case SuiTransactionType.SwitchDelegation:
         tx = {
           Call: {
-            package: suiTx.tx.package || SUI_FRAMEWORK_ADDRESS,
+            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
             function: suiTx.tx.function || MethodNames.RequestSwitchDelegation,
             typeArguments: suiTx.tx.typeArguments,
@@ -330,7 +330,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       type: TransactionType.AddDelegator,
       outputs: [
         {
-          address: json.sender,
+          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
           amount: Number(amount),
         },
       ],
@@ -381,6 +381,10 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       outputs: [
         {
           address: json.sender,
+          amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+        },
+        {
+          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
           amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
         },
       ],

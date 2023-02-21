@@ -9,6 +9,7 @@ const SuiObjectRefSchema = joi.object({
 const SharedObjectRefSchema = joi.object({
   objectId: joi.string().required(),
   initialSharedVersion: joi.number().required(),
+  mutable: joi.boolean().required(),
 });
 
 const ImmOrOwnedArgSchema = joi.object({
@@ -76,7 +77,7 @@ const RequestWithdrawArgumentsSchema = joi.array().length(3).items(SuiJsonValueS
 const RequestSwitchArgumentsSchema = joi.array().length(4).items(SuiJsonValueSchema).required();
 
 export const RequestAddDelegationTransactionSchema = joi.object({
-  package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
+  package: joi.string().required(),
   module: joi.string().required(),
   function: joi.string().required(),
   typeArguments: TypeArgumentsSchema.optional(),
@@ -84,7 +85,7 @@ export const RequestAddDelegationTransactionSchema = joi.object({
 });
 
 export const RequestWithdrawDelegationTransactionSchema = joi.object({
-  package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
+  package: joi.string().required(),
   module: joi.string().required(),
   function: joi.string().required(),
   typeArguments: TypeArgumentsSchema.optional(),
@@ -92,7 +93,7 @@ export const RequestWithdrawDelegationTransactionSchema = joi.object({
 });
 
 export const RequestSwitchDelegationTransactionSchema = joi.object({
-  package: joi.alternatives(SuiObjectRefSchema).match('one').required(),
+  package: joi.string().required(),
   module: joi.string().required(),
   function: joi.string().required(),
   typeArguments: TypeArgumentsSchema.optional(),

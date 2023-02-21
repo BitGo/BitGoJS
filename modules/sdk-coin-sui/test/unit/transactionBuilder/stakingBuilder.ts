@@ -12,6 +12,7 @@ import {
   SuiTransactionType,
 } from '../../../src/lib/iface';
 import { KeyPair } from '../../../src';
+import assert = require('assert');
 
 describe('Sui Staking Builder', () => {
   const factory = getBuilderFactory('tsui');
@@ -150,7 +151,7 @@ describe('Sui Staking Builder', () => {
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.requestWithdrawDelegation.delegation.objectId,
+        address: testData.requestWithdrawDelegation.delegationObjectId.objectId,
         value: 'TRANSFER_AMOUNT_UNKNOWN',
         coin: 'tsui',
       });
@@ -328,6 +329,32 @@ describe('Sui Staking Builder', () => {
       txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
       txBuilder.gasPayment(testData.stakingGasPayment);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "tx" is required');
+    });
+
+    it('should build not create staking AddDelegation tx with validator as sender', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
+      const requestAddDelegation = {
+        ...testData.requestAddDelegationTxMultipleCoins,
+        validatorAddress: testData.STAKING_SENDER_ADDRESS,
+      };
+      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
+      txBuilder.gasPayment(testData.stakingGasPayment);
+      assert.throws(() => txBuilder.requestAddDelegation(requestAddDelegation));
+    });
+
+    it('should build not create staking SwitchDelegation tx with validator as sender', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.SwitchDelegation);
+      txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
+      const requestSwitchDelegation = {
+        ...testData.requestSwitchDelegation,
+        newValidatorAddress: testData.STAKING_SENDER_ADDRESS,
+      };
+      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
+      txBuilder.gasPayment(testData.stakingGasPayment);
+      assert.throws(() => txBuilder.requestSwitchDelegation(requestSwitchDelegation));
     });
   });
 });

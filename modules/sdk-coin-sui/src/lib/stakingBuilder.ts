@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import {
   MethodNames,
   ModulesNames,
@@ -13,7 +13,7 @@ import {
   SuiTransactionType,
 } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
-import { SUI_PACKAGE, SUI_SYSTEM_STATE_OBJECT } from './constants';
+import { SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT } from './constants';
 import { SuiMoveCallTransactionSchema } from './txnSchema';
 import { StakingTransaction } from './stakingTransaction';
 import { Transaction } from './transaction';
@@ -67,12 +67,16 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   requestAddDelegation(addDelegation: RequestAddDelegation): this {
     this.validateAddress({ address: addDelegation.validatorAddress });
     this.validateValue(BigNumber(addDelegation.amount));
+
+    if (this._sender === addDelegation.validatorAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+    }
     for (const coin of addDelegation.coins) {
       this.validateSuiObjectRef(coin, 'addDelegation.coins');
     }
     this._addDelegationTx = addDelegation;
     this._moveCallTx = {
-      package: SUI_PACKAGE,
+      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
       module: ModulesNames.SuiSystem,
       function: MethodNames.RequestAddDelegationMulCoin,
       typeArguments: [],
@@ -87,16 +91,16 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    * @param {RequestWithdrawDelegation} addDelegationTx
    */
   requestWithdrawDelegation(withdrawDelegation: RequestWithdrawDelegation): this {
-    this.validateSuiObjectRef(withdrawDelegation.delegation, 'withdrawDelegation.delegation');
-    this.validateSuiObjectRef(withdrawDelegation.stakedCoinId, 'withdrawDelegation.stakedCoinId');
+    this.validateSuiObjectRef(withdrawDelegation.delegationObjectId, 'withdrawDelegation.delegation');
+    this.validateSuiObjectRef(withdrawDelegation.stakedSuiObjectId, 'withdrawDelegation.stakedCoinId');
 
     this._withdrawDelegation = withdrawDelegation;
     this._moveCallTx = {
-      package: SUI_PACKAGE,
+      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
       module: ModulesNames.SuiSystem,
       function: MethodNames.RequestWithdrawDelegation,
       typeArguments: [],
-      arguments: [SUI_SYSTEM_STATE_OBJECT, withdrawDelegation.delegation, withdrawDelegation.stakedCoinId],
+      arguments: [SUI_SYSTEM_STATE_OBJECT, withdrawDelegation.delegationObjectId, withdrawDelegation.stakedSuiObjectId],
     };
     return this;
   }
@@ -107,20 +111,24 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    * @param {switchDelegation} switchDelegation
    */
   requestSwitchDelegation(switchDelegation: RequestSwitchDelegation): this {
-    this.validateSuiObjectRef(switchDelegation.delegation, 'switchDelegation.delegation');
-    this.validateSuiObjectRef(switchDelegation.stakedCoinId, 'switchDelegation.stakedCoinId');
+    this.validateSuiObjectRef(switchDelegation.delegationObjectId, 'switchDelegation.delegation');
+    this.validateSuiObjectRef(switchDelegation.stakedSuiObjectId, 'switchDelegation.stakedCoinId');
     this.validateAddress({ address: switchDelegation.newValidatorAddress });
+
+    if (this._sender === switchDelegation.newValidatorAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+    }
 
     this._switchDelegation = switchDelegation;
     this._moveCallTx = {
-      package: SUI_PACKAGE,
+      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
       module: ModulesNames.SuiSystem,
       function: MethodNames.RequestSwitchDelegation,
       typeArguments: [],
       arguments: [
         SUI_SYSTEM_STATE_OBJECT,
-        switchDelegation.delegation,
-        switchDelegation.stakedCoinId,
+        switchDelegation.delegationObjectId,
+        switchDelegation.stakedSuiObjectId,
         switchDelegation.newValidatorAddress,
       ],
     };
@@ -184,16 +192,16 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
         case MethodNames.RequestWithdrawDelegation:
           this.type(SuiTransactionType.WithdrawDelegation);
           this.requestWithdrawDelegation({
-            delegation: txDetails.Call.arguments[1] as SuiObjectRef,
-            stakedCoinId: txDetails.Call.arguments[2] as SuiObjectRef,
+            delegationObjectId: txDetails.Call.arguments[1] as SuiObjectRef,
+            stakedSuiObjectId: txDetails.Call.arguments[2] as SuiObjectRef,
             amount: this._withdrawDelegation?.amount || 0,
           });
           break;
         case MethodNames.RequestSwitchDelegation:
           this.type(SuiTransactionType.SwitchDelegation);
           this.requestSwitchDelegation({
-            delegation: txDetails.Call.arguments[1] as SuiObjectRef,
-            stakedCoinId: txDetails.Call.arguments[2] as SuiObjectRef,
+            delegationObjectId: txDetails.Call.arguments[1] as SuiObjectRef,
+            stakedSuiObjectId: txDetails.Call.arguments[2] as SuiObjectRef,
             newValidatorAddress: txDetails.Call.arguments[3].toString(),
             amount: this._withdrawDelegation?.amount || 0,
           });

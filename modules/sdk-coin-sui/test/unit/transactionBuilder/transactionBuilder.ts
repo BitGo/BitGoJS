@@ -2,7 +2,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SUI_GAS_PRICE, SUI_PACKAGE, SUI_SYSTEM_STATE_OBJECT } from '../../../src/lib/constants';
+import { SUI_GAS_PRICE, SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT } from '../../../src/lib/constants';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { KeyPair } from '../../../src';
 import { MethodNames, ModulesNames, PayTx, SuiTransactionType } from '../../../src/lib/iface';
@@ -272,7 +272,7 @@ describe('Sui Transaction Builder', async () => {
       await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
       const signedTx = await txBuilder2.build();
       should.equal(signedTx.type, TransactionType.AddDelegator);
-      should.equal(signedTx.id, 'G1QrBfJupfv8xwzTGVUEoFFYsYyBxM3gU7y27igFa3Y4');
+      should.equal(signedTx.id, '6xgbnj42rgwkvgmru8rv5fi8vRuauq9GxxQJv4hb1jJs');
 
       const rawSignedTx = signedTx.toBroadcastFormat();
       should.equal(rawSignedTx, testData.ADD_DELEGATION_TX_MUL_COIN);
@@ -305,7 +305,7 @@ describe('Sui Transaction Builder', async () => {
       jsonTx.gasPrice.should.equal(SUI_GAS_PRICE);
       jsonTx.kind.Single.should.deepEqual({
         Call: {
-          package: SUI_PACKAGE,
+          package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
           module: ModulesNames.SuiSystem,
           function: MethodNames.RequestAddDelegationMulCoin,
           typeArguments: [],
