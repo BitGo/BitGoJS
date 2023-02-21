@@ -37,6 +37,7 @@ import {
   KeychainsTriplet,
   KeyIndices,
   P2shP2wshUnsupportedError,
+  P2trMusig2UnsupportedError,
   P2trUnsupportedError,
   P2wshUnsupportedError,
   ParsedTransaction as BaseParsedTransaction,
@@ -989,6 +990,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           throw new P2wshUnsupportedError();
         case 'p2tr':
           throw new P2trUnsupportedError();
+        case 'p2trMusig2':
+          throw new P2trMusig2UnsupportedError();
         default:
           throw new UnsupportedAddressTypeError();
       }

@@ -233,6 +233,7 @@ export class Dimensions {
       case 'p2shP2pk':
         return Dimensions.SingleInput[scriptType];
       case 'p2tr':
+      case 'p2trMusig2':
         switch (params.scriptPathLevel) {
           case undefined:
             return Dimensions.SingleInput.p2trKeypath;

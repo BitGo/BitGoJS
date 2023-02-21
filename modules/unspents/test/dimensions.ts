@@ -154,7 +154,7 @@ describe('Dimensions from unspent types', function () {
         nP2shP2wshInputs: 2,
         nP2shInputs: 2,
         nP2wshInputs: 2,
-        nP2trKeypathInputs: 0,
+        nP2trKeypathInputs: 2,
         nP2trScriptPathLevel1Inputs: 2,
         nP2trScriptPathLevel2Inputs: 0,
         nP2shP2pkInputs: 0,

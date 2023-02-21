@@ -47,7 +47,7 @@ function run(coin: AbstractUtxoCoin) {
       switch (coin.getChain()) {
         case 'btc':
         case 'tbtc':
-          supportedAddressTypes.should.eql(['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr']);
+          supportedAddressTypes.should.eql(['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']);
           break;
         case 'btg':
         case 'tbtg':

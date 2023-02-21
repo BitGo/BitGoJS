@@ -24,6 +24,12 @@ import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outp
 import { sendFromFaucet, generateToFaucet } from './faucet';
 import { ZcashTransaction } from '../../../src/bitgo';
 
+function getScriptTypes() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return scriptTypes.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 async function printRpcHelp(rpc: RpcClient, network: Network): Promise<void> {
   console.log(await rpc.getHelp());
 }
@@ -152,7 +158,7 @@ async function createTransactionsForScriptType(
 }
 
 async function createTransactions(rpc: RpcClient, protocol: Protocol) {
-  for (const scriptType of scriptTypes) {
+  for (const scriptType of getScriptTypes()) {
     await createTransactionsForScriptType(rpc, scriptType, protocol);
   }
 }

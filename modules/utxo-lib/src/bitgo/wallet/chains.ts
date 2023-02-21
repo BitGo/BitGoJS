@@ -18,7 +18,14 @@ export const chainCodesP2sh = [0, 1] as const;
 export const chainCodesP2shP2wsh = [10, 11] as const;
 export const chainCodesP2wsh = [20, 21] as const;
 export const chainCodesP2tr = [30, 31] as const;
-export const chainCodes = [...chainCodesP2sh, ...chainCodesP2shP2wsh, ...chainCodesP2wsh, ...chainCodesP2tr];
+export const chainCodesP2trMusig2 = [40, 41] as const;
+export const chainCodes = [
+  ...chainCodesP2sh,
+  ...chainCodesP2shP2wsh,
+  ...chainCodesP2wsh,
+  ...chainCodesP2tr,
+  ...chainCodesP2trMusig2,
+];
 export type ChainCode = typeof chainCodes[number];
 export function isChainCode(n: unknown): n is ChainCode {
   return chainCodes.includes(n as ChainCode);
@@ -36,6 +43,7 @@ const map = new Map<ScriptType2Of3, ChainCodePair>(
     ['p2shP2wsh', chainCodesP2shP2wsh],
     ['p2wsh', chainCodesP2wsh],
     ['p2tr', chainCodesP2tr],
+    ['p2trMusig2', chainCodesP2trMusig2],
   ].map(([k, v]) => [k as ScriptType2Of3, Object.freeze(v) as ChainCodePair])
 );
 
@@ -107,6 +115,11 @@ export function isInternalChainCode(v: ChainCode): boolean {
  * @return true iff chain code is a segwit address
  */
 export function isSegwit(v: ChainCode): boolean {
-  const segwitCodes: ChainCode[] = [...chainCodesP2shP2wsh, ...chainCodesP2wsh, ...chainCodesP2tr];
+  const segwitCodes: ChainCode[] = [
+    ...chainCodesP2shP2wsh,
+    ...chainCodesP2wsh,
+    ...chainCodesP2tr,
+    ...chainCodesP2trMusig2,
+  ];
   return segwitCodes.includes(v);
 }

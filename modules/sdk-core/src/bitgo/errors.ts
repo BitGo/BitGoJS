@@ -49,6 +49,12 @@ export class P2trUnsupportedError extends BitGoJsError {
   }
 }
 
+export class P2trMusig2UnsupportedError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'p2trMusig2 not supported by this coin');
+  }
+}
+
 export class UnsupportedAddressTypeError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'invalid address type');

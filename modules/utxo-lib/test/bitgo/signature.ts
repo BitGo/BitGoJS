@@ -32,6 +32,12 @@ import { getTransactionWithHighS } from './signatureModify';
 import { normDefault } from '../testutil/normalize';
 import { getKeyName } from '../testutil';
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 function keyName(k: BIP32Interface): string | undefined {
   return getKeyName(fixtureKeys, k);
 }
@@ -336,7 +342,7 @@ describe('Signature (scriptTypes2Of3)', function () {
     // During development it might make sense to test all networks.
     .filter(isBitcoin)
     .forEach((network) => {
-      scriptTypes2Of3.forEach((scriptType) => {
+      getScriptTypes2Of3().forEach((scriptType) => {
         runTestCheckSignatureVerify(network, scriptType);
 
         getSignKeyCombinations(2).map(([k1, k2]) => {
@@ -345,7 +351,7 @@ describe('Signature (scriptTypes2Of3)', function () {
           runTestParseScript(network, scriptType, k1, k2);
         });
       });
-      scriptTypes2Of3.forEach((scriptType) => {
+      getScriptTypes2Of3().forEach((scriptType) => {
         runTestCheckSignatureVerify<bigint>(network, scriptType, undefined, undefined, 'bigint');
 
         getSignKeyCombinations(2).map(([k1, k2]) => {

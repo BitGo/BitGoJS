@@ -29,11 +29,17 @@ export type SignatureTargetType = 'unsigned' | 'halfsigned' | 'fullsigned';
 const network = networks.bitcoin;
 const rootWalletKeys = getDefaultWalletKeys();
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 describe('Parse PSBT', function () {
   it('fail to parse finalized psbt', function () {
     const unspents = mockUnspents(
       rootWalletKeys,
-      outputScripts.scriptTypes2Of3.map((inputType) => inputType),
+      getScriptTypes2Of3().map((inputType) => inputType),
       BigInt('10000000000000000'),
       network
     );
@@ -257,8 +263,8 @@ describe('Psbt from transaction using wallet unspents', function () {
   }
 
   function getInputScripts(): InputType[][] {
-    return outputScripts.scriptTypes2Of3.flatMap((t) => {
-      return outputScripts.scriptTypes2Of3.flatMap((lastType) => {
+    return getScriptTypes2Of3().flatMap((t) => {
+      return getScriptTypes2Of3().flatMap((lastType) => {
         return [[t, t, lastType]];
       });
     });

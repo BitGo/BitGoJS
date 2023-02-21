@@ -32,6 +32,12 @@ import {
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = bitgo.WalletUnspent<TNumber>;
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 function run<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   inputScripts: InputScriptType[],
@@ -286,7 +292,7 @@ function runWithAmountType(coin: AbstractUtxoCoin, inputScripts: InputScriptType
 }
 
 utxoCoins.forEach((coin) =>
-  utxolib.bitgo.outputScripts.scriptTypes2Of3.forEach((type) => {
+  getScriptTypes2Of3().forEach((type) => {
     if (coin.supportsAddressType(type)) {
       runWithAmountType(coin, [type, type]);
 

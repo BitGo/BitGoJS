@@ -30,6 +30,11 @@
     "bc1pcjlw5y5j872ux2tk60gu5l25jz4rag50jm2latxganpgsxvjt66sr7hzvl"
   ],
   [
+    "p2trMusig2",
+    "5120d49e6527ec328e4731f61a653af4e885d66eb1f44db43ba55476d822da1f4aad",
+    "bc1p6j0x2flvx28ywv0krfjn4a8gshtxav05fk6rhf25wmvz9kslf2ksyhtxfs"
+  ],
+  [
     "p2pkh",
     "76a91491b8f56f155030f74259be43dff4d94a6258d84a88ac",
     "1EHWYySCDPN536VzrSvYxKDEx8K2v2yabh"
@@ -58,6 +63,11 @@
     "p2tr",
     "5120bc26f82eb59de4f345c94d7a307b022e4da476339f749d4af7e241ab9ea9d804",
     "bc1phsn0st44nhj0x3wff4arq7cz9ex6ga3nna6f6jhhufq6h84fmqzqnqwqrm"
+  ],
+  [
+    "p2trMusig2",
+    "51200280886ff88d96e56d96876646ed31f803eacbf5af0d375f4d74cc8fa17d61b2",
+    "bc1pq2qgsmlc3ktw2mvksanydmf3lqp74jl44uxnwh6dwnxglgtavxeqqx7a7y"
   ],
   [
     "p2pkh",
@@ -90,6 +100,11 @@
     "bc1p88r82xx3wwpqes4e00mwhpe7me2zdmq7dlfdtlc5curagnquq38qef59st"
   ],
   [
+    "p2trMusig2",
+    "5120c053e9da9066c8b1641bc35a85a39843c896791a44a9a609eae34439cc02379f",
+    "bc1pcpf7nk5svmytzeqmcddgtgucg0yfv7g6gj56vz02udzrnnqzx70s7ds7jx"
+  ],
+  [
     "p2pkh",
     "76a9145a8451539186feb4578b4f5613df6991e307823088ac",
     "19FcKrniJeAg17ws3P3f11F486XH8rwL6s"
@@ -118,5 +133,10 @@
     "p2tr",
     "5120a851285f56e16e91512f54b76e72c1cb2da34ae4de457702d095d3135c77fbfb",
     "bc1p4pgjsh6ku9hfz5f02jmkuukpevk6xjhymezhwqksjhf3xhrhl0asz42wc0"
+  ],
+  [
+    "p2trMusig2",
+    "51209a2c592988bfe7cd0843d5486b8b25398599140e01ab7944e5cabd3c07d2a58b",
+    "bc1pngk9j2vghlnu6zzr64yxhze98xzej9qwqx4hj389e27ncp7j5k9sk6krs3"
   ]
 ]

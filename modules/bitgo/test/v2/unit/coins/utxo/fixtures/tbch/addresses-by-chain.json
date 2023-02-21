@@ -94,5 +94,21 @@
     {
       "error": "p2tr not supported by this coin"
     }
+  ],
+  [
+    {
+      "chain": 40
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 41
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
   ]
 ]

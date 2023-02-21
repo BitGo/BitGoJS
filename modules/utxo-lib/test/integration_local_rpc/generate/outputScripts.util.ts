@@ -59,6 +59,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
     case 'p2shP2wsh':
     case 'p2wsh':
     case 'p2tr':
+    case 'p2trMusig2':
       return createOutputScript2of3(pubkeys, scriptType).scriptPubKey;
     case 'p2pkh':
       return utxolib.payments.p2pkh({ pubkey: keys[0].publicKey }).output as Buffer;

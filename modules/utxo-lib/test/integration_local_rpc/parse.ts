@@ -42,6 +42,12 @@ import { getDefaultCosigner, decimalCoinsToSats } from '../testutil';
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
+function getScriptTypes() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return scriptTypes.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 function runTestParse<TNumber extends number | bigint>(
   protocol: Protocol,
   txType: FixtureTxType,
@@ -305,7 +311,7 @@ describe(`regtest fixtures`, function () {
     getProtocolVersions(network).forEach((version) => {
       const isDefault = version === getDefaultTransactionVersion(network);
       describe(`${getNetworkName(network)} fixtures (version=${version}, isDefault=${isDefault})`, function () {
-        scriptTypes.forEach((scriptType) => {
+        getScriptTypes().forEach((scriptType) => {
           fixtureTxTypes.forEach((txType) => {
             runTestParse(
               { network, version },

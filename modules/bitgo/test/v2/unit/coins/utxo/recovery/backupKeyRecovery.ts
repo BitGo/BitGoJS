@@ -91,6 +91,12 @@ function getKeysForFullSignedRecovery(
   return getNamedKeys([userKey, backupKey, bitgoKey.neutered()], password);
 }
 
+function getScriptTypes2Of3() {
+  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
+  //  because the test suite is written with TransactionBuilder
+  return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+}
+
 function run(
   coin: AbstractUtxoCoin,
   scriptType: ScriptType2Of3,
@@ -231,7 +237,7 @@ function run(
 utxoCoins.forEach((coin) => {
   const walletKeys = getDefaultWalletKeys();
 
-  outputScripts.scriptTypes2Of3.forEach((scriptType) => {
+  getScriptTypes2Of3().forEach((scriptType) => {
     run(
       coin,
       scriptType,

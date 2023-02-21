@@ -35,6 +35,9 @@ describe('chain codes', function () {
 
         [30, 31],
         [30, 31],
+
+        [40, 41],
+        [40, 41],
       ]
     );
 
@@ -45,7 +48,7 @@ describe('chain codes', function () {
 
     assert.deepStrictEqual(
       chainCodes.map((c) => scriptTypeForChain(c)),
-      ['p2sh', 'p2sh', 'p2shP2wsh', 'p2shP2wsh', 'p2wsh', 'p2wsh', 'p2tr', 'p2tr']
+      ['p2sh', 'p2sh', 'p2shP2wsh', 'p2shP2wsh', 'p2wsh', 'p2wsh', 'p2tr', 'p2tr', 'p2trMusig2', 'p2trMusig2']
     );
 
     chainCodes.forEach((c) => {
