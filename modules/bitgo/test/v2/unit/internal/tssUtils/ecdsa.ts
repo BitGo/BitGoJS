@@ -704,6 +704,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
+      const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
       await setupSignTxRequestNocks(false, userSignShare, aShare, dShare);
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest,
@@ -715,9 +716,12 @@ describe('TSS Ecdsa Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {
+      const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
       await setupSignTxRequestNocks(true, userSignShare, aShare, dShare);
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest: txRequestId,
@@ -729,6 +733,8 @@ describe('TSS Ecdsa Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
     it('signTxRequest should fail with invalid user prv', async function () {
