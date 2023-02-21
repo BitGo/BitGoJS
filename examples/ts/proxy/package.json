@@ -1,0 +1,19 @@
+{
+  "name": "sdk-proxy-poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "BitGo",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "express-http-proxy": "^1.6.3",
+    "http-proxy-middleware": "^2.0.6",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.3",
+    "typescript-cached-transpile": "^0.0.6"
+  }
+}
