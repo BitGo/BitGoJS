@@ -135,6 +135,38 @@
       }
     },
     {
+      "description": "p2tr, out (from scripts & aggregate key with plain pubkeys) -- Musig2",
+      "arguments": {
+        "pubkeys": [
+          "03798b7136020f5bd1b3e81b831bebbf2f8a865c31c396fdf04be3368e5285e5ec",
+          "03e3689e987959b6d25ba26bef6074510402d4644187e46bb4b6de429cc4c2130b"
+        ],
+        "redeems": [
+          {
+            "outputHex": "2020040c8338b34cb9c06c6b1bd38095eafa8f9b72398a1084fdb67473d82dfda3ad20d806a63b6e2d83f11f22f9a11ba7a49ac451e8acf57591ec058e422eb997d55ead",
+            "depth": 2
+          },
+          {
+            "outputHex": "20d806a63b6e2d83f11f22f9a11ba7a49ac451e8acf57591ec058e422eb997d55ead200dcd7e6035f7ff5c860b78cfdd2bd80b4b160ca99a71654796afde11457e11e7ad",
+            "depth": 2
+          },
+          {
+            "outputHex": "200dcd7e6035f7ff5c860b78cfdd2bd80b4b160ca99a71654796afde11457e11e7ad2020040c8338b34cb9c06c6b1bd38095eafa8f9b72398a1084fdb67473d82dfda3ad",
+            "witness": [ "deadbeef", "deadbeef" ],
+            "depth": 1
+          }
+        ],
+        "network": "regtest",
+        "redeemIndex": 2
+      },
+      "options": {},
+      "expected": {
+        "name": "p2tr",
+        "output": "OP_1 ac541fcae42b0e657468fe3b93fbf4927b51550f3490fa30428e39e1f4366ede",
+        "address": "bcrt1p432pljhy9v8x2arglcae87l5jfa4z4g0xjg05vzz3cu7rapkdm0qxan0m6"
+      }
+    },
+    {
       "description": "p2tr, address from output",
       "arguments": {
         "output": "OP_1 618d4140bbf980976a0f4d2ff9bb05a6772866840770452ff405148b872f0dc8",
@@ -287,7 +319,7 @@
         "network": "testnet"
       },
       "options": {},
-      "exception": "Expected property \"pubkey\" of type \\?isXOnlyPoint"
+      "exception": "Expected property \"pubkey\" of type \\?isXOnlyPoint|[isPlainPubkey]"
     },
     {
       "description": "p2tr invalid pubkeys",
@@ -299,7 +331,7 @@
         "network": "testnet"
       },
       "options": {},
-      "exception": "Expected property \"pubkeys\\.1\" of type isXOnlyPoint"
+      "exception": "Expected property \"pubkeys\\.1\" of type isXOnlyPoint|[isPlainPubkey]"
     },
     {
       "description": "p2tr internal pubkey mismatch",
