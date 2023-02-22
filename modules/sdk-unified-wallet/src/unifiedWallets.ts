@@ -76,12 +76,23 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
   }
 
   async getUnifiedWalletById(evmWalletId: string): Promise<UnifiedWallet> {
-    const newWallet = await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).query({ evmWalletId }).result();
+    const result: { result: UnifiedWallet[] } = await this.bitgo
+      .get(this.bitgo.url(this.urlPath, 2))
+      .query({ evmWalletId })
+      .result();
+    assert(result.result.length === 1, 'Unexpected EVM wallet return');
+    const newWallet = result.result[0];
     return newWallet;
   }
 
   async getUnifiedWalletByAddress(address: string): Promise<UnifiedWallet> {
-    return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).query({ address }).result();
+    const result: { result: UnifiedWallet[] } = await this.bitgo
+      .get(this.bitgo.url(this.urlPath, 2))
+      .query({ address })
+      .result();
+    assert(result.result.length === 1, 'Unexpected EVM wallet return');
+    const newWallet = result.result[0];
+    return newWallet;
   }
 
   async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
