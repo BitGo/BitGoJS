@@ -996,6 +996,7 @@ export enum UnderlyingAsset {
   VISR = 'visr',
   VRGX = 'vrgx',
   VXC = 'vxc',
+  VI = 'vi',
   VSP = 'vsp',
   // Wrapped AAVE
   WAAVE = 'waave',
