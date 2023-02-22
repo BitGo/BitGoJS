@@ -13,9 +13,11 @@ import {
 } from '@cosmjs/proto-signing';
 import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
-import { AuthInfo, TxBody, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
-import { AtomTransaction, GasFeeLimitData, MessageData } from './iface';
+
+import { accountAddressRegex } from './constants';
+import { AtomTransaction, FeeData, MessageData } from './iface';
 import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
@@ -56,6 +58,9 @@ export class Utils implements BaseUtils {
     return this.validateBlake2b(txId);
   }
 
+  /**
+   * Checks if transaction hash is in valid black2b format
+   */
   validateBlake2b(hash: string): boolean {
     if (hash?.length !== 64) {
       return false;
@@ -68,16 +73,28 @@ export class Utils implements BaseUtils {
    * @param {string} rawTransaction - transaction in base64 string format
    * @returns {boolean} - the validation result
    */
-  isValidRawTransaction(rawTransaction: string): boolean {
+  private isValidRawTransaction(rawTransaction: string): boolean {
     try {
       const decodedTx: DecodedTxRaw = this.getDecodedTxFromRawBase64(rawTransaction);
       if (decodedTx) {
-        TxRaw.encode(
-          TxRaw.fromPartial({
-            bodyBytes: TxBody.encode(decodedTx.body).finish(),
-            authInfoBytes: AuthInfo.encode(decodedTx.authInfo).finish(),
-          })
-        ).finish();
+        if (!decodedTx.body) {
+          return false;
+        }
+        if (!decodedTx.body.messages || !decodedTx.body.messages.length) {
+          return false;
+        }
+        if (!decodedTx.authInfo) {
+          return false;
+        }
+        if (!decodedTx.authInfo.fee) {
+          return false;
+        }
+        if (!decodedTx.authInfo.signerInfos || !decodedTx.authInfo.signerInfos.length) {
+          return false;
+        }
+        if (!decodedTx.authInfo.signerInfos[0].publicKey) {
+          return false;
+        }
         return true;
       }
       return false;
@@ -91,7 +108,7 @@ export class Utils implements BaseUtils {
    *
    * @param {string} rawTransaction - Transaction in base64 string  format
    */
-  validateRawTransaction(rawTransaction: string): void {
+  validateRawTransaction(rawTransaction: string | undefined): void {
     if (!rawTransaction) {
       throw new ParseTransactionError('Invalid raw transaction: Undefined');
     }
@@ -100,15 +117,17 @@ export class Utils implements BaseUtils {
     }
   }
 
+  /**
+   * Validates if the address matches with regex @see accountAddressRegex
+   *
+   * @param address
+   */
   isValidAddress(address: string): boolean {
-    const allowed_chars = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-    const atomRegex = '^(cosmos)1([' + allowed_chars + ']+)$';
-    const re = new RegExp(atomRegex);
-    return re.test(address);
+    return accountAddressRegex.test(address);
   }
 
   /**
-   * Returns whether or not the string is a valid amount
+   * Validates whether amounts are in range
    *
    * @param {number[]} amounts - the amounts to validate
    * @returns {boolean} - the validation result
@@ -122,6 +141,12 @@ export class Utils implements BaseUtils {
     return true;
   }
 
+  /**
+   * Validates whether amount is in range
+   *
+   * @param amount
+   * @returns
+   */
   isValidAmount(amount: number): boolean {
     const bigNumberAmount = new BigNumber(amount);
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
@@ -193,15 +218,29 @@ export class Utils implements BaseUtils {
     return encodedMessage.typeUrl;
   }
 
-  getGasBudgetFromDecodedTx(decodedTx: DecodedTxRaw): GasFeeLimitData {
+  /**
+   * Returns the fee data from the decoded transaction
+   * @param decodedTx
+   * @returns
+   */
+  getGasBudgetFromDecodedTx(decodedTx: DecodedTxRaw): FeeData {
     return {
       amount: decodedTx.authInfo.fee?.amount as Coin[],
-      gas: Number(decodedTx.authInfo.fee?.gasLimit),
+      gasLimit: Number(decodedTx.authInfo.fee?.gasLimit),
     };
   }
 
+  /**
+   * Returns the publicKey from the decoded transaction
+   * @param decodedTx
+   * @returns publicKey in hex format if it exists, undefined otherwise
+   */
   getPublicKeyFromDecodedTx(decodedTx: DecodedTxRaw): string | undefined {
-    return decodedTx.authInfo.signerInfos?.[0].publicKey?.value?.toString();
+    const publicKeyUInt8Array = decodedTx.authInfo.signerInfos?.[0].publicKey?.value;
+    if (publicKeyUInt8Array) {
+      return toHex(fromBase64(decodePubkey(decodedTx.authInfo.signerInfos?.[0].publicKey)?.value));
+    }
+    return undefined;
   }
 
   /**
@@ -213,6 +252,13 @@ export class Utils implements BaseUtils {
     return this.getMessageDataFromEncodedMessages(encodedMessages);
   }
 
+  /**
+   * Creates a sign doc from an atom transaction @see AtomTransaction
+   *
+   * @Precondition atomTransaction.accountNumber and atomTransaction.chainId must be defined
+   * @param atomTransaction
+   * @returns
+   */
   createSignDocFromAtomTransaction(atomTransaction: AtomTransaction) {
     if (!atomTransaction.accountNumber) {
       throw new Error('accountNumber is required to create a sign doc');
@@ -224,6 +270,13 @@ export class Utils implements BaseUtils {
     return makeSignDoc(txRaw.bodyBytes, txRaw.authInfoBytes, atomTransaction.chainId, atomTransaction.accountNumber);
   }
 
+  /**
+   * Creates a txRaw from an atom transaction @see AtomTransaction
+   *
+   * @Precondition atomTransaction.publicKey must be defined
+   * @param atomTransaction
+   * @returns
+   */
   createTxRawFromAtomTransaction(atomTransaction: AtomTransaction): TxRaw {
     if (!atomTransaction.publicKey) {
       throw new Error('publicKey is required to create a txRaw');
@@ -237,7 +290,7 @@ export class Utils implements BaseUtils {
     const authInfoBytes = makeAuthInfoBytes(
       [{ pubkey: encodedPublicKey, sequence }],
       atomTransaction.gasBudget.amount,
-      atomTransaction.gasBudget.gas,
+      atomTransaction.gasBudget.gasLimit,
       undefined,
       undefined,
       undefined
@@ -248,6 +301,13 @@ export class Utils implements BaseUtils {
     });
   }
 
+  /**
+   * Encodes a signature into a txRaw
+   *
+   * @param signature
+   * @param tx
+   * @returns
+   */
   createSignedTxRaw(signature: Signature, tx: { bodyBytes: Uint8Array; authInfoBytes: Uint8Array }): TxRaw {
     const stdSignature = encodeSecp256k1Signature(fromHex(signature.publicKey.pub), signature.signature);
     return TxRaw.fromPartial({
@@ -257,6 +317,12 @@ export class Utils implements BaseUtils {
     });
   }
 
+  /**
+   * Decodes a raw transaction into a DecodedTxRaw and checks if it has non empty signatures
+   *
+   * @param rawTransaction
+   * @returns
+   */
   isSignedRawTx(rawTransaction: string): boolean {
     const decodedTx = this.getDecodedTxFromRawBase64(rawTransaction);
     if (decodedTx.signatures.length > 0) {
@@ -265,6 +331,13 @@ export class Utils implements BaseUtils {
     return false;
   }
 
+  /**
+   * Decodes a raw transaction into a DecodedTxRaw and returns the signer info in form of {pubKey, signature}
+   *
+   * @Assumption Only one signature is present in the raw transaction
+   * @param rawTransaction
+   * @returns
+   */
   getSignerInfoFromRawSignedTx(rawTransaction: string) {
     if (!this.isSignedRawTx(rawTransaction)) {
       throw new Error('getSignerInfoFromRawTx failed, raw tx is not signed');

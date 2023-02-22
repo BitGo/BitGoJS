@@ -34,7 +34,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc **/
   get id(): string {
-    return this._id || 'UNAVAILABLE_TEXT';
+    return this._id || 'UNAVAILABLE';
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
@@ -89,7 +89,7 @@ export class Transaction extends BaseTransaction {
       outputAmount: '0',
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: this.atomTransaction.gasBudget.gas.toString() }, // TODO - explore the fee explanation more, do we need to show limit or base amount
+      fee: { fee: this.atomTransaction.gasBudget.amount[0].amount },
       type: this.type,
     };
 
@@ -115,19 +115,18 @@ export class Transaction extends BaseTransaction {
    *
    * @param rawTransaction
    */
-  fromRawTransaction(rawTransaction: string): void {
-    try {
-      this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
-      if (utils.isSignedRawTx(rawTransaction)) {
-        const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
-        this.addSignature(signerInfo.pubKey, signerInfo.signature);
-      }
-      this._type = TransactionType.Send;
-    } catch (e) {
-      throw e;
+  enrichTransactionDetailsFromRawTransaction(rawTransaction: string): void {
+    this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
+    if (utils.isSignedRawTx(rawTransaction)) {
+      const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
+      this.addSignature(signerInfo.pubKey, signerInfo.signature);
     }
+    this._type = TransactionType.Send;
   }
 
+  /**
+   * Serialize the transaction to a JSON string
+   */
   serialize(): string {
     const txRaw = utils.createTxRawFromAtomTransaction(this.atomTransaction);
     if (this._signatures.length > 0) {
@@ -186,5 +185,11 @@ export class Transaction extends BaseTransaction {
       outputAmount,
       outputs,
     };
+  }
+
+  static fromRawTransaction(rawTransaction: string, coinConfig: Readonly<CoinConfig>): Transaction {
+    const tx = new Transaction(coinConfig);
+    tx.enrichTransactionDetailsFromRawTransaction(rawTransaction);
+    return tx;
   }
 }

@@ -49,7 +49,9 @@ describe('Atom Transaction Builder', async () => {
     it('should throw for invalid gasBudget', function () {
       const invalidGasBudget = 0;
       for (const txBuilder of builders) {
-        should(() => txBuilder.gasBudget({ gas: invalidGasBudget })).throw('Invalid gas limit ' + invalidGasBudget);
+        should(() => txBuilder.gasBudget({ gasLimit: invalidGasBudget })).throw(
+          'Invalid gas limit ' + invalidGasBudget
+        );
       }
     });
   });

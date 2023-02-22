@@ -14,9 +14,9 @@ export interface MessageData {
   };
 }
 
-export interface GasFeeLimitData {
+export interface FeeData {
   amount: Coin[];
-  gas: number; // gas limit
+  gasLimit: number;
 }
 
 /**
@@ -31,7 +31,7 @@ export interface AtomTransaction {
   signerAddress: string;
   sequence: number;
   sendMessages: MessageData[];
-  gasBudget: GasFeeLimitData;
+  gasBudget: FeeData;
   accountNumber?: number;
   chainId?: string;
   publicKey?: string;

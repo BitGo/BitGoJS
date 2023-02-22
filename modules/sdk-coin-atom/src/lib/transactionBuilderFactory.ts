@@ -20,7 +20,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           throw new InvalidTransactionError('Invalid transaction');
       }
     } catch (e) {
-      throw e;
+      throw new InvalidTransactionError('Invalid transaction');
     }
   }
 
@@ -54,8 +54,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @returns {Transaction} parsedtransaction
    */
   private parseTransaction(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
-    tx.fromRawTransaction(rawTransaction);
-    return tx;
+    return Transaction.fromRawTransaction(rawTransaction, this._coinConfig);
   }
 }

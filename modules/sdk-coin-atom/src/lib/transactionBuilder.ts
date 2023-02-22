@@ -3,19 +3,19 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Coin } from '@cosmjs/stargate';
+import assert from 'assert';
+import BigNumber from 'bignumber.js';
+
+import { validDenoms } from './constants';
+import { AtomTransaction, FeeData, MessageData } from './iface';
 import { Transaction } from './transaction';
 import utils from './utils';
-import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import assert from 'assert';
-import { AtomTransaction, GasFeeLimitData, MessageData } from './iface';
-import { Coin } from '@cosmjs/stargate';
-import { validDenoms } from './constants';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -25,10 +25,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _signerAddress: string;
   protected _sequence: number;
   protected _sendMessages: MessageData[];
-  protected _gasBudget: GasFeeLimitData;
-  private _accountNumber: number;
-  private _chainId: string;
-  private _publicKey: string;
+  protected _gasBudget: FeeData;
+  private _accountNumber?: number;
+  private _chainId?: string;
+  private _publicKey?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -81,7 +81,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  gasBudget(gasBudget: GasFeeLimitData): this {
+  gasBudget(gasBudget: FeeData): this {
     this.validateGasBudget(gasBudget);
     this._gasBudget = gasBudget;
     return this;
@@ -104,6 +104,20 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  publicKey(publicKey: string | undefined): this {
+    this._publicKey = publicKey;
+    return this;
+  }
+
+  accountNumber(accountNumber: number | undefined): this {
+    this._accountNumber = accountNumber;
+    return this;
+  }
+
+  chainId(chainId: string | undefined): this {
+    this._chainId = chainId;
+    return this;
+  }
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
@@ -118,13 +132,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.sendMessages(txData.sendMessages);
     this.gasBudget(txData.gasBudget);
     this.sequence(txData.sequence);
+    this.publicKey(txData.publicKey);
+    this.accountNumber(txData.accountNumber);
+    this.chainId(txData.chainId);
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
-    tx.fromRawTransaction(rawTransaction);
+    const tx = Transaction.fromRawTransaction(rawTransaction, this._coinConfig);
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -142,7 +158,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     assert(this._sequence >= 0, new BuildTransactionError('sequence is required before building'));
     assert(this._sendMessages, new BuildTransactionError('sendMessages are required before building'));
     assert(this._gasBudget, new BuildTransactionError('gasPrice is required before building'));
-    assert(this._publicKey, new BuildTransactionError('publicKey is required before building'));
 
     return {
       type: this._type,
@@ -174,9 +189,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     });
   }
 
-  validateGasBudget(gasBudget: GasFeeLimitData): void {
-    if (gasBudget.gas <= 0) {
-      throw new BuildTransactionError('Invalid gas limit ' + gasBudget.gas);
+  validateGasBudget(gasBudget: FeeData): void {
+    if (gasBudget.gasLimit <= 0) {
+      throw new BuildTransactionError('Invalid gas limit ' + gasBudget.gasLimit);
     }
     this.validateAmountData(gasBudget.amount);
   }
@@ -210,12 +225,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    if (!rawTransaction) {
-      throw new ParseTransactionError('Invalid raw transaction: Undefined');
-    }
-    if (!utils.isValidRawTransaction(rawTransaction)) {
-      throw new ParseTransactionError('Invalid raw transaction');
-    }
+    utils.validateRawTransaction(rawTransaction);
   }
 
   /** @inheritdoc */
