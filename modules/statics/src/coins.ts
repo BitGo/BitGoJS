@@ -9123,6 +9123,24 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LQID,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'd82f66bf-e921-44e4-a9b0-462eda94a9ad',
+    'sol:vi',
+    'VI',
+    6,
+    '7zBWymxbZt7PVHQzfi3i85frc1YRiQc23K7bh3gos8ZC',
+    UnderlyingAsset.VI,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '5f98c609-de50-41b4-8f82-c59e5273166e',
+    'sol:ftt-sollet',
+    'Wrapped FTT (Sollet)',
+    6,
+    'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
+    UnderlyingAsset.FTT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
