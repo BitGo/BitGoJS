@@ -26,6 +26,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _sequence: number;
   protected _sendMessages: MessageData[];
   protected _gasBudget: GasFeeLimitData;
+  private _accountNumber: number;
+  private _chainId: string;
+  private _publicKey: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -128,7 +131,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setAtomTransaction(this.buildAtomTransaction());
+    this.transaction.atomTransaction = this.buildAtomTransaction();
     this.transaction.transactionType(this.transactionType);
     return this.transaction;
   }
@@ -139,6 +142,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     assert(this._sequence >= 0, new BuildTransactionError('sequence is required before building'));
     assert(this._sendMessages, new BuildTransactionError('sendMessages are required before building'));
     assert(this._gasBudget, new BuildTransactionError('gasPrice is required before building'));
+    assert(this._publicKey, new BuildTransactionError('publicKey is required before building'));
 
     return {
       type: this._type,
@@ -146,6 +150,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       sequence: this._sequence,
       sendMessages: this._sendMessages,
       gasBudget: this._gasBudget,
+      publicKey: this._publicKey,
+      accountNumber: this._accountNumber,
+      chainId: this._chainId,
     };
   }
 

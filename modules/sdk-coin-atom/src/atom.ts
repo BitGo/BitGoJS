@@ -36,7 +36,7 @@ export class Atom extends BaseCoin {
    * Factor between the coin's base unit and its smallest subdivison
    */
   getBaseFactor(): string | number {
-    return Math.pow(10, this._staticsCoin.decimalPlaces);
+    return 1e6;
   }
 
   getChain(): string {
@@ -77,11 +77,11 @@ export class Atom extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPublicKey(pub);
   }
 
   isValidPrv(prv: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPrivateKey(prv);
   }
 
   isValidAddress(address: string): boolean {

@@ -32,4 +32,7 @@ export interface AtomTransaction {
   sequence: number;
   sendMessages: MessageData[];
   gasBudget: GasFeeLimitData;
+  accountNumber?: number;
+  chainId?: string;
+  publicKey?: string;
 }
