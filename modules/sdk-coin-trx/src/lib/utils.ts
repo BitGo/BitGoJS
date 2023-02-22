@@ -414,7 +414,7 @@ export function toHex(buffer: Buffer | Uint8Array): string {
  * @param values - value to encode
  * @param methodId - the first 4 bytes of the function selector
  */
-export function encodeDataParams(types: string[], values: any[], methodId: string): string {
+export function encodeDataParams(types: string[], values: any[], methodId?: string): string {
   types.forEach((type, index) => {
     if (type == 'address') {
       values[index] = values[index].replace(ADDRESS_PREFIX_REGEX, '0x');
@@ -426,9 +426,13 @@ export function encodeDataParams(types: string[], values: any[], methodId: strin
   try {
     data = abiCoder.encode(types, values);
   } catch (e) {
-    console.log(e); // do something with this error i.e. throw it
+    throw new UtilsError('There was an error encoding the data params.');
   }
-  return hexConcat([methodId, data]).replace(/^(0x)/, '');
+  if (methodId) {
+    return hexConcat([methodId, data]).replace(/^(0x)/, '');
+  } else {
+    return data.replace(/^(0x)/, '');
+  }
 }
 
 /**
