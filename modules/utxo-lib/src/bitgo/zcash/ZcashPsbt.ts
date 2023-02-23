@@ -7,7 +7,6 @@ import {
 import { Network, PsbtTransaction, Signer } from '../../';
 import { Psbt as PsbtBase } from 'bip174';
 import * as types from 'bitcoinjs-lib/src/types';
-import { UtxoTransaction } from '../UtxoTransaction';
 import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
 const typeforce = require('typeforce');
 
@@ -41,7 +40,7 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
    * @param buffer Psbt buffer
    * @param opts options
    */
-  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt<ZcashTransaction<bigint>> {
     const psbt = super.fromBuffer(buffer, opts) as ZcashPsbt;
 
     // Read `consensusBranchId` from the global-map

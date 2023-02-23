@@ -45,19 +45,19 @@ export interface PsbtOpts {
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
 // `setVersion`. Our inputs could have tapscriptsigs (or in future tapkeysigs)
 // and not fail that check. Do we want to do anything about that?
-export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
+export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigint>> extends Psbt {
   protected static transactionFromBuffer(buffer: Buffer, network: Network): UtxoTransaction<bigint> {
     return UtxoTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
   }
 
-  static createPsbt(opts: PsbtOpts, data?: PsbtBase): UtxoPsbt<UtxoTransaction<bigint>> {
-    return new UtxoPsbt<UtxoTransaction<bigint>>(
+  static createPsbt(opts: PsbtOpts, data?: PsbtBase): UtxoPsbt {
+    return new UtxoPsbt(
       opts,
       data || new PsbtBase(new PsbtTransaction({ tx: new UtxoTransaction<bigint>(opts.network) }))
     );
   }
 
-  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt {
     const transactionFromBuffer: TransactionFromBuffer = (buffer: Buffer): ITransaction => {
       const tx = this.transactionFromBuffer(buffer, opts.network);
       return new PsbtTransaction({ tx });
@@ -70,7 +70,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
-  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt {
     return this.fromBuffer(Buffer.from(data, 'hex'), opts);
   }
 
@@ -135,10 +135,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return this;
   }
 
-  static fromTransaction(
-    transaction: UtxoTransaction<bigint>,
-    prevOutputs: TxOutput<bigint>[]
-  ): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromTransaction(transaction: UtxoTransaction<bigint>, prevOutputs: TxOutput<bigint>[]): UtxoPsbt {
     if (prevOutputs.length !== transaction.ins.length) {
       throw new Error(
         `Transaction has ${transaction.ins.length} inputs, but ${prevOutputs.length} previous outputs provided`

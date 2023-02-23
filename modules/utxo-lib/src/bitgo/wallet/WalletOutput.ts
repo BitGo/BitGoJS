@@ -1,6 +1,5 @@
 import { taproot } from 'bitcoinjs-lib';
 import { UtxoPsbt } from '../UtxoPsbt';
-import { UtxoTransaction } from '../UtxoTransaction';
 import { RootWalletKeys } from './WalletKeys';
 import { ChainCode, scriptTypeForChain } from './chains';
 import { createOutputScript2of3, createPaymentP2tr, toXOnlyPublicKey } from '../outputScripts';
@@ -19,7 +18,7 @@ import { createOutputScript2of3, createPaymentP2tr, toXOnlyPublicKey } from '../
  * @param value value of the change output
  */
 export function addWalletOutputToPsbt(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   rootWalletKeys: RootWalletKeys,
   chain: ChainCode,
   index: number,

@@ -6,7 +6,6 @@ import {
   outputScripts,
   KeyName,
   UtxoPsbt,
-  UtxoTransaction,
   ZcashPsbt,
   createPsbtFromHex,
 } from '../../../src/bitgo';
@@ -306,7 +305,7 @@ describe('Psbt from transaction using wallet unspents', function () {
 
 function testUtxoPsbt(coinNetwork: Network) {
   describe(`Testing UtxoPsbt (de)serialization for ${getNetworkName(coinNetwork)} network`, function () {
-    let psbt: UtxoPsbt<UtxoTransaction<bigint>>;
+    let psbt: UtxoPsbt;
     let psbtHex: string;
     before(async function () {
       const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000'), coinNetwork);

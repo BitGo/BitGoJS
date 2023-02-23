@@ -115,7 +115,7 @@ function validateSignature(
 
 export function validatePsbtParsing(
   tx: UtxoTransaction<bigint>,
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   unspents: WalletUnspent<bigint>[],
   signatureTarget: SignatureTargetType
 ): void {
@@ -157,7 +157,7 @@ export function toBigInt<TNumber extends number | bigint>(unspents: Unspent<TNum
 }
 
 export function signPsbt(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   unspents: Unspent<bigint>[],
   rootWalletKeys: RootWalletKeys,
   signer: string,
