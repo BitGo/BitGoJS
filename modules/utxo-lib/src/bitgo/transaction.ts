@@ -15,9 +15,20 @@ import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
   network: Network,
-  { version }: { version?: number } = {},
-  amountType: 'number' | 'bigint' = 'number'
+  { version, amountType }: { version?: number; amountType?: 'number' | 'bigint' } = {},
+  deprecatedAmountType?: 'number' | 'bigint'
 ): UtxoTransaction<TNumber> {
+  if (amountType) {
+    if (deprecatedAmountType && amountType !== deprecatedAmountType) {
+      throw new Error(`invalid arguments`);
+    }
+  } else {
+    if (deprecatedAmountType) {
+      amountType = deprecatedAmountType;
+    } else {
+      amountType = 'number';
+    }
+  }
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -98,7 +109,7 @@ export function createTransactionFromHex<TNumber extends number | bigint = numbe
   network: Network,
   amountType: 'number' | 'bigint' = 'number'
 ): UtxoTransaction<TNumber> {
-  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, {}, amountType);
+  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, { amountType });
 }
 
 export function getDefaultTransactionVersion(network: Network): number {

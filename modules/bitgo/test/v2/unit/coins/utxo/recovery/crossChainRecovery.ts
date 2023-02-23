@@ -192,12 +192,9 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
 
     function checkRecoveryTransactionSignature(tx: string | utxolib.bitgo.UtxoTransaction<TNumber>) {
       if (typeof tx === 'string') {
-        tx = utxolib.bitgo.createTransactionFromBuffer<TNumber>(
-          Buffer.from(tx, 'hex'),
-          sourceCoin.network,
-          undefined,
-          sourceCoin.amountType
-        );
+        tx = utxolib.bitgo.createTransactionFromBuffer<TNumber>(Buffer.from(tx, 'hex'), sourceCoin.network, {
+          amountType: sourceCoin.amountType,
+        });
       }
       const unspents = getRecoveryUnspents();
       should.equal(tx.ins.length, unspents.length);
