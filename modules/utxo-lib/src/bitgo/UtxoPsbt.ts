@@ -458,4 +458,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
   }
+
+  clone(): this {
+    return super.clone() as this;
+  }
 }
