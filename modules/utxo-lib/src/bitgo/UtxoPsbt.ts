@@ -74,6 +74,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return this.fromBuffer(Buffer.from(data, 'hex'), opts);
   }
 
+  get network(): Network {
+    return this.tx.network;
+  }
+
   toHex(): string {
     return this.toBuffer().toString('hex');
   }
