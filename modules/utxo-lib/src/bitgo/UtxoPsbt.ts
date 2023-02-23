@@ -266,7 +266,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
         sigHashType = Transaction.SIGHASH_DEFAULT;
         sig = signature;
       }
-      const { hash } = this.getTaprootHashForSig(inputIndex, true, [sigHashType], leafHash);
+      const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType], leafHash);
       results.push(eccLib.verifySchnorr(hash, pubkey, sig));
     }
     return results.every((res) => res === true);
@@ -395,7 +395,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     if (!leafHashes.find((l) => l.equals(leafHash))) {
       throw new Error(`Signer cannot sign for leaf hash ${leafHash.toString('hex')}`);
     }
-    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, false, sighashTypes, leafHash);
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes, leafHash);
     let signature = signer.signSchnorr(hash);
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       signature = Buffer.concat([signature, Buffer.of(sighashType)]);
@@ -414,7 +414,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
 
   private getTaprootHashForSig(
     inputIndex: number,
-    forValidate: boolean,
     sighashTypes?: number[],
     leafHash?: Buffer
   ): {
