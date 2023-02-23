@@ -10,6 +10,7 @@ import {
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
+import { ILinkWallet } from '../link';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
@@ -649,6 +650,7 @@ export interface IWallet {
   toJSON(): WalletData;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
+  toLinkWallet(): ILinkWallet;
   downloadKeycard(params?: DownloadKeycardOptions): void;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;

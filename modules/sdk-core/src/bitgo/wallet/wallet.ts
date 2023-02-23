@@ -83,6 +83,7 @@ import {
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
 } from './iWallet';
+import { LinkWallet } from '../link';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
@@ -2228,11 +2229,22 @@ export class Wallet implements IWallet {
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
-    const isEthTss =
-      this.baseCoin.getFamily() == 'eth' && this._wallet.coinSpecific?.walletVersion
-        ? this._wallet.coinSpecific.walletVersion >= 3
-        : false;
+    const isEthTss = this.isEthTss();
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Create a BitGo Link wallet from this wallet
+   */
+  toLinkWallet(): LinkWallet {
+    const isEthTss = this.isEthTss();
+    return new LinkWallet(this, isEthTss);
+  }
+
+  private isEthTss() {
+    return this.baseCoin.getFamily() === 'eth' && this._wallet.coinSpecific?.walletVersion
+      ? this._wallet.coinSpecific.walletVersion >= 3
+      : false;
   }
 
   /**
