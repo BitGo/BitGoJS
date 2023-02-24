@@ -11,7 +11,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Erc20Token, Teth } from '../../src';
+import { Erc20Token, Gteth, Teth } from '../../src';
 import { EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
 
@@ -51,6 +51,7 @@ describe('ETH:', function () {
       bitgo.safeRegister(name, coinConstructor);
     });
     bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('gteth', Gteth.createInstance);
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
   });
@@ -117,6 +118,56 @@ describe('ETH:', function () {
         coin: 'teth',
         wallet: 'fakeWalletId',
         walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should verify gteth transaction if txParams is missing recipients but prebuild has recipients', async function () {
+      const coin = bitgo.coin('gteth') as Gteth;
+      const wallet = new Wallet(bitgo, coin, {});
+
+      const txPrebuild = {
+        feeInfo: {
+          date: '2023-02-24T03:40:07.132Z',
+          gasPrice: '128401124466',
+          baseFee: '128301124466',
+          gasUsedRatio: '0.25102833333333335',
+          safeLowMinerTip: '1500000000',
+          normalMinerTip: '1500000000',
+          standardMinerTip: '2500000000',
+          fastestMinerTip: '9733095191',
+          ludicrousMinerTip: '216784424677',
+        },
+        eip1559: {
+          maxPriorityFeePerGas: '2875000000',
+          maxFeePerGas: '259477248932',
+        },
+        recipients: [
+          {
+            amount: '0',
+            address: '0x25305d31ced3ea9f37ecd712554e3372a697cd26',
+          },
+        ],
+        nextContractSequenceId: 84,
+        gasLimit: 200000,
+        isBatch: false,
+        coin: 'gteth',
+        walletId: '63bdf039657c220006e1fd947237da85',
+        walletContractAddress: '0x25305d31ced3ea9f37ecd712554e3372a697cd26',
+      };
+
+      const txParams = {
+        walletPassphrase: 'fakeWalletPassphrase',
+        prebuildTx: txPrebuild,
       };
 
       const verification = {};
@@ -245,7 +296,7 @@ describe('ETH:', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should reject when client txParams are missing', async function () {
+    it('should not reject when client txParams are missing', async function () {
       const coin = bitgo.coin('teth') as Teth;
       const wallet = new Wallet(bitgo, coin, {});
 
@@ -264,9 +315,9 @@ describe('ETH:', function () {
 
       const verification = {};
 
-      await coin
-        .verifyTransaction({ txParams: txParams as any, txPrebuild: txPrebuild as any, wallet, verification })
-        .should.be.rejectedWith('missing params');
+      (
+        await coin.verifyTransaction({ txParams: txParams as any, txPrebuild: txPrebuild as any, wallet, verification })
+      ).should.be.true();
     });
 
     it('should reject txPrebuild that is both batch and hop', async function () {

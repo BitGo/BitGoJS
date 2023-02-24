@@ -45,6 +45,7 @@ import {
   VerifyTransactionOptions,
   Wallet,
   TypedData,
+  ITransactionRecipient,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
@@ -2014,19 +2015,22 @@ export class Eth extends BaseCoin {
       return this.verifyTssTransaction(params);
     }
 
-    if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
+    const recipientsToValidate: ITransactionRecipient[] = txParams?.recipients ?? txPrebuild.recipients;
+
+    if (!recipientsToValidate || !wallet) {
       throw new Error(`missing params`);
     }
-    if (txParams.hop && txParams.recipients.length > 1) {
+
+    if (txParams && txParams.hop && recipientsToValidate.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
     if (txPrebuild.recipients.length !== 1) {
       throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
     }
-    if (txParams.hop && txPrebuild.hopTransaction) {
+    if (txParams && txParams.hop && txPrebuild.hopTransaction) {
       // Check recipient amount for hop transaction
-      if (txParams.recipients.length !== 1) {
-        throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+      if (recipientsToValidate.length !== 1) {
+        throw new Error(`hop transaction only supports 1 recipient but ${recipientsToValidate.length} found`);
       }
 
       // Check tx sends to hop address
@@ -2040,7 +2044,7 @@ export class Eth extends BaseCoin {
       }
 
       // Convert TransactionRecipient array to Recipient array
-      const recipients: Recipient[] = txParams.recipients.map((r) => {
+      const recipients: Recipient[] = recipientsToValidate.map((r) => {
         return {
           address: r.address,
           amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
@@ -2049,11 +2053,11 @@ export class Eth extends BaseCoin {
 
       // Check destination address and amount
       await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
-    } else if (txParams.recipients.length > 1) {
+    } else if (recipientsToValidate.length > 1) {
       // Check total amount for batch transaction
       let expectedTotalAmount = new BigNumber(0);
-      for (let i = 0; i < txParams.recipients.length; i++) {
-        expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+      for (let i = 0; i < recipientsToValidate.length; i++) {
+        expectedTotalAmount = expectedTotalAmount.plus(recipientsToValidate[i].amount);
       }
       if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
         throw new Error(
@@ -2071,18 +2075,18 @@ export class Eth extends BaseCoin {
       }
     } else {
       // Check recipient address and amount for normal transaction
-      if (txParams.recipients.length !== 1) {
-        throw new Error(`normal transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+      if (recipientsToValidate.length !== 1) {
+        throw new Error(`normal transaction only supports 1 recipient but ${recipientsToValidate.length} found`);
       }
-      const expectedAmount = new BigNumber(txParams.recipients[0].amount);
+      const expectedAmount = new BigNumber(recipientsToValidate[0].amount);
       if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
         throw new Error(
           'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
         );
       }
       if (
-        this.isETHAddress(txParams.recipients[0].address) &&
-        txParams.recipients[0].address !== txPrebuild.recipients[0].address
+        this.isETHAddress(recipientsToValidate[0].address) &&
+        recipientsToValidate[0].address !== txPrebuild.recipients[0].address
       ) {
         throw new Error('destination address in normal txPrebuild does not match that in txParams supplied by client');
       }

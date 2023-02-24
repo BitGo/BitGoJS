@@ -290,7 +290,7 @@ describe('Polygon', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should reject when client txParams are missing', async function () {
+    it('should not reject when client txParams are missing', async function () {
       const wallet = new Wallet(bitgo, basecoin, {});
 
       const txParams = null;
@@ -308,9 +308,7 @@ describe('Polygon', function () {
 
       const verification = {};
 
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
-        .should.be.rejectedWith('missing params');
+      (await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })).should.be.true();
     });
 
     it('should reject txPrebuild that is both batch and hop', async function () {

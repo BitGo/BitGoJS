@@ -510,8 +510,7 @@ describe('Avalanche C-Chain', function () {
     });
 
     it('should reject when client txParams are missing', async function () {
-      const coin = bitgo.coin('teth');
-      const wallet = new Wallet(bitgo, coin, {});
+      const wallet = new Wallet(bitgo, tavaxCoin, {});
 
       const txParams = null;
 
@@ -528,7 +527,7 @@ describe('Avalanche C-Chain', function () {
 
       const verification = {};
 
-      await coin
+      await tavaxCoin
         .verifyTransaction({ txParams: txParams as any, txPrebuild: txPrebuild as any, wallet, verification })
         .should.be.rejectedWith('missing params');
     });
