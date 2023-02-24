@@ -27,6 +27,7 @@ describe('TSS ECDSA TESTS', function () {
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
+    sinon.restore();
     const pallierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
       .onCall(0)
@@ -79,6 +80,10 @@ describe('TSS ECDSA TESTS', function () {
     commonPublicKey = aKeyCombine.xShare.y;
     pallierMock.reset();
     pallierMock.restore();
+  });
+
+  beforeEach(async () => {
+    sinon.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {
