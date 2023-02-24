@@ -57,7 +57,7 @@ function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [Wall
 }
 
 function updatePsbtInput(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   inputIndex: number,
   unspent: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys
@@ -128,7 +128,7 @@ export function toWalletPsbt(
   tx: UtxoTransaction<bigint>,
   unspents: WalletUnspent<bigint>[],
   rootWalletKeys: RootWalletKeys
-): UtxoPsbt<UtxoTransaction<bigint>> {
+): UtxoPsbt {
   const prevOutputs = unspents.map((u) => toPrevOutputWithPrevTx(u, tx.network));
   const psbt = createPsbtFromTransaction(tx, prevOutputs);
   unspents.forEach((u, i) => {
@@ -147,7 +147,7 @@ export function toWalletPsbt(
  * @return signed PSBT with signer's key for unspent
  */
 export function signWalletPsbt(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   inputIndex: number,
   signer: BIP32Interface,
   unspent: WalletUnspent<bigint>
@@ -276,10 +276,7 @@ function parseInputMetadata(input: PsbtInput, scriptType: ScriptType2Of3): Parse
  * P2TR => scriptType, pubScript (witnessScript), controlBlock, scriptPathLevel, leafVersion, public keys, signatures.
  * Any unsigned PSBT and without required metadata is returned with undefined.
  */
-export function parsePsbtInput(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
-  inputIndex: number
-): ParsedPsbt2Of3 | ParsedPsbtP2TR | undefined {
+export function parsePsbtInput(psbt: UtxoPsbt, inputIndex: number): ParsedPsbt2Of3 | ParsedPsbtP2TR | undefined {
   const input = checkForInput(psbt.data.inputs, inputIndex);
   if (psbt.isInputFinalized(inputIndex)) {
     throw new Error('Finalized PSBT parsing is not supported');

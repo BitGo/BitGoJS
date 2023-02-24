@@ -37,11 +37,7 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
   throw new Error(`invalid network`);
 }
 
-export function createPsbtFromBuffer(
-  buf: Buffer,
-  network: Network,
-  bip32PathsAbsolute = false
-): UtxoPsbt<UtxoTransaction<bigint>> {
+export function createPsbtFromBuffer(buf: Buffer, network: Network, bip32PathsAbsolute = false): UtxoPsbt {
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -61,18 +57,11 @@ export function createPsbtFromBuffer(
   throw new Error(`invalid network`);
 }
 
-export function createPsbtFromHex(
-  hex: string,
-  network: Network,
-  bip32PathsAbsolute = false
-): UtxoPsbt<UtxoTransaction<bigint>> {
+export function createPsbtFromHex(hex: string, network: Network, bip32PathsAbsolute = false): UtxoPsbt {
   return createPsbtFromBuffer(Buffer.from(hex, 'hex'), network, bip32PathsAbsolute);
 }
 
-export function createPsbtFromTransaction(
-  tx: UtxoTransaction<bigint>,
-  prevOuts: TxOutput<bigint>[]
-): UtxoPsbt<UtxoTransaction<bigint>> {
+export function createPsbtFromTransaction(tx: UtxoTransaction<bigint>, prevOuts: TxOutput<bigint>[]): UtxoPsbt {
   switch (getMainnet(tx.network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -141,7 +130,7 @@ export function setTransactionBuilderDefaults<TNumber extends number | bigint>(
 }
 
 export function setPsbtDefaults(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   network: Network,
   { version = getDefaultTransactionVersion(network) }: { version?: number } = {}
 ): void {
@@ -176,10 +165,7 @@ export function setPsbtDefaults(
   }
 }
 
-export function createPsbtForNetwork(
-  psbtOpts: PsbtOpts,
-  { version }: { version?: number } = {}
-): UtxoPsbt<UtxoTransaction<bigint>> {
+export function createPsbtForNetwork(psbtOpts: PsbtOpts, { version }: { version?: number } = {}): UtxoPsbt {
   let psbt;
 
   switch (getMainnet(psbtOpts.network)) {

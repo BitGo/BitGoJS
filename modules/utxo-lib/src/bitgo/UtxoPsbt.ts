@@ -45,19 +45,19 @@ export interface PsbtOpts {
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
 // `setVersion`. Our inputs could have tapscriptsigs (or in future tapkeysigs)
 // and not fail that check. Do we want to do anything about that?
-export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
+export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigint>> extends Psbt {
   protected static transactionFromBuffer(buffer: Buffer, network: Network): UtxoTransaction<bigint> {
     return UtxoTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
   }
 
-  static createPsbt(opts: PsbtOpts, data?: PsbtBase): UtxoPsbt<UtxoTransaction<bigint>> {
-    return new UtxoPsbt<UtxoTransaction<bigint>>(
+  static createPsbt(opts: PsbtOpts, data?: PsbtBase): UtxoPsbt {
+    return new UtxoPsbt(
       opts,
       data || new PsbtBase(new PsbtTransaction({ tx: new UtxoTransaction<bigint>(opts.network) }))
     );
   }
 
-  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromBuffer(buffer: Buffer, opts: PsbtOpts): UtxoPsbt {
     const transactionFromBuffer: TransactionFromBuffer = (buffer: Buffer): ITransaction => {
       const tx = this.transactionFromBuffer(buffer, opts.network);
       return new PsbtTransaction({ tx });
@@ -70,8 +70,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return psbt;
   }
 
-  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromHex(data: string, opts: PsbtOpts): UtxoPsbt {
     return this.fromBuffer(Buffer.from(data, 'hex'), opts);
+  }
+
+  get network(): Network {
+    return this.tx.network;
   }
 
   toHex(): string {
@@ -131,10 +135,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     return this;
   }
 
-  static fromTransaction(
-    transaction: UtxoTransaction<bigint>,
-    prevOutputs: TxOutput<bigint>[]
-  ): UtxoPsbt<UtxoTransaction<bigint>> {
+  static fromTransaction(transaction: UtxoTransaction<bigint>, prevOutputs: TxOutput<bigint>[]): UtxoPsbt {
     if (prevOutputs.length !== transaction.ins.length) {
       throw new Error(
         `Transaction has ${transaction.ins.length} inputs, but ${prevOutputs.length} previous outputs provided`
@@ -262,7 +263,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
         sigHashType = Transaction.SIGHASH_DEFAULT;
         sig = signature;
       }
-      const { hash } = this.getTaprootHashForSig(inputIndex, true, [sigHashType], leafHash);
+      const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType], leafHash);
       results.push(eccLib.verifySchnorr(hash, pubkey, sig));
     }
     return results.every((res) => res === true);
@@ -391,7 +392,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     if (!leafHashes.find((l) => l.equals(leafHash))) {
       throw new Error(`Signer cannot sign for leaf hash ${leafHash.toString('hex')}`);
     }
-    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, false, sighashTypes, leafHash);
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes, leafHash);
     let signature = signer.signSchnorr(hash);
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       signature = Buffer.concat([signature, Buffer.of(sighashType)]);
@@ -410,7 +411,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
 
   private getTaprootHashForSig(
     inputIndex: number,
-    forValidate: boolean,
     sighashTypes?: number[],
     leafHash?: Buffer
   ): {
@@ -457,5 +457,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint>> extends Psbt {
     });
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
+  }
+
+  clone(): this {
+    return super.clone() as this;
   }
 }

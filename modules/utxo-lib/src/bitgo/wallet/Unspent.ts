@@ -90,7 +90,7 @@ export interface WalletUnspentLegacy<TNumber extends number | bigint = number> e
 }
 
 export function addReplayProtectionUnspentToPsbt(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   u: Unspent<bigint>,
   redeemScript: Buffer,
   network: Network
@@ -115,7 +115,7 @@ export function addReplayProtectionUnspentToPsbt(
 }
 
 export function addWalletUnspentToPsbt(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  psbt: UtxoPsbt,
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
