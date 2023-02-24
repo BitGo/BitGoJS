@@ -1529,7 +1529,7 @@
     "@ethereumjs/common" "^2.6.4"
     ethereumjs-util "^7.1.5"
 
-"@ethereumjs/util@^8.0.0":
+"@ethereumjs/util@8.0.3", "@ethereumjs/util@^8.0.0":
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/@ethereumjs/util/-/util-8.0.3.tgz#410c2dc8c6d519b29f1a471aa9b9df9952e41239"
   integrity sha512-0apCbwc8xAaie6W7q6QyogfyRS2BMU816a8KwpnpRw9Qrc6Bws+l7J3LfCLMt2iL6Wi8CYb0B29AeIr2N4vHnw==
