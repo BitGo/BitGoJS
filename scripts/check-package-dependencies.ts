@@ -16,6 +16,8 @@ const options = {
     '@components/**',
     '@types/**',
     'blake2b',
+    // Required for sdk-coin-eth
+    '@ethereumjs/util',
     'express-serve-static-core',
     // Required for sdk-coin-ada
     '@emurgo/cardano-serialization-lib-browser',

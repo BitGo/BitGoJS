@@ -45,6 +45,7 @@
     "@bitgo/utxo-lib": "^7.7.0",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
+    "@ethereumjs/util": "8.0.3",
     "@metamask/eth-sig-util": "^5.0.2",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
