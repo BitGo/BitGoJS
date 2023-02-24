@@ -21,7 +21,7 @@ import {
 } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_GAS_PRICE, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
+import { SUI_PACKAGE_FRAMEWORK_ADDRESS, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 
@@ -110,9 +110,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       id: this._id,
       kind: { Single: txDetails },
       sender: suiTx.sender,
-      gasPayment: suiTx.gasPayment,
-      gasBudget: suiTx.gasBudget,
-      gasPrice: SUI_GAS_PRICE,
+      gasData: suiTx.gasData,
     };
   }
 
@@ -140,7 +138,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       outputAmount: '0',
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: this.suiTransaction.gasBudget.toString() },
+      fee: { fee: this.suiTransaction.gasData.budget.toString() },
       type: this.type,
     };
 
@@ -306,10 +304,8 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
 
     return {
       kind: { Single: tx },
-      gasPayment: suiTx.gasPayment,
-      gasPrice: SUI_GAS_PRICE,
-      gasBudget: suiTx.gasBudget,
       sender: suiTx.sender,
+      gasData: suiTx.gasData,
     };
   }
 
@@ -325,7 +321,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     return {
       ...explanationResult,
       fee: {
-        fee: this.suiTransaction.gasBudget.toString(),
+        fee: this.suiTransaction.gasData.budget.toString(),
       },
       type: TransactionType.AddDelegator,
       outputs: [
@@ -352,7 +348,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     return {
       ...explanationResult,
       fee: {
-        fee: this.suiTransaction.gasBudget.toString(),
+        fee: this.suiTransaction.gasData.budget.toString(),
       },
       type: TransactionType.StakingWithdraw,
       outputs: [
@@ -375,7 +371,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     return {
       ...explanationResult,
       fee: {
-        fee: this.suiTransaction.gasBudget.toString(),
+        fee: this.suiTransaction.gasData.budget.toString(),
       },
       type: TransactionType.StakingSwitch,
       outputs: [

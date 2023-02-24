@@ -12,8 +12,8 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SuiObjectRef, SuiTransactionType } from './iface';
-import { SUI_GAS_PRICE } from './constants';
+import { GasData, SuiObjectRef, SuiTransactionType } from './iface';
+import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
@@ -23,9 +23,7 @@ export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
 
   protected _type: SuiTransactionType;
   protected _sender: string;
-  protected _gasBudget: number;
-  protected _gasPrice = SUI_GAS_PRICE;
-  protected _gasPayment: SuiObjectRef;
+  protected _gasData: GasData;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -80,15 +78,9 @@ export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
     return this;
   }
 
-  gasBudget(gasBudget: number): this {
-    this.validateGasBudget(gasBudget);
-    this._gasBudget = gasBudget;
-    return this;
-  }
-
-  gasPayment(gasPayment: SuiObjectRef): this {
-    this.validateGasPayment(gasPayment);
-    this._gasPayment = gasPayment;
+  gasData(gasData: GasData): this {
+    this.validateGasData(gasData);
+    this._gasData = gasData;
     return this;
   }
 
@@ -107,6 +99,17 @@ export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
     }
   }
 
+  validateGasData(gasData: GasData): void {
+    if (!utils.isValidAddress(gasData.owner)) {
+      throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
+    }
+    if (gasData.payment) {
+      this.validateGasPayment(gasData.payment);
+    }
+    this.validateGasBudget(gasData.budget);
+    this.validateGasPrice(gasData.price);
+  }
+
   validateGasBudget(gasBudget: number): void {
     if (gasBudget <= 0) {
       throw new BuildTransactionError('Invalid gas budget ' + gasBudget);
@@ -114,7 +117,8 @@ export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
   }
 
   validateGasPrice(gasPrice: number): void {
-    if (gasPrice !== SUI_GAS_PRICE) {
+    // TODO: check with Sui on the gas price
+    if (gasPrice !== DUMMY_SUI_GAS_PRICE) {
       throw new BuildTransactionError('Invalid gas price ' + gasPrice);
     }
   }

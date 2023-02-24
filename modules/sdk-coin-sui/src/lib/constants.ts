@@ -3,9 +3,9 @@ import { SharedObjectRef } from './iface';
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
-// Need to keep in sync with
-// https://github.com/MystenLabs/sui/blob/f32877f2e40d35a008710c232e49b57aab886462/crates/sui-types/src/messages.rs#L338
-export const SUI_GAS_PRICE = 1;
+// Refer to
+// https://github.com/MystenLabs/sui/blob/main/crates/sui-types/src/messages.rs#L50
+export const DUMMY_SUI_GAS_PRICE = 1;
 export const SUI_ADDRESS_LENGTH = 20;
 export const SER_BUFFER_SIZE = 8192;
 

@@ -18,7 +18,7 @@ import {
 } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { SUI_GAS_PRICE, UNAVAILABLE_TEXT } from './constants';
+import { UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 
@@ -111,9 +111,7 @@ export class TransferTransaction extends Transaction<PayTx> {
       id: this._id,
       kind: { Single: txDetails },
       sender: tx.sender,
-      gasPayment: tx.gasPayment,
-      gasBudget: tx.gasBudget,
-      gasPrice: SUI_GAS_PRICE,
+      gasData: tx.gasData,
     };
   }
 
@@ -130,7 +128,7 @@ export class TransferTransaction extends Transaction<PayTx> {
       outputAmount: '0',
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: this.suiTransaction.gasBudget.toString() },
+      fee: { fee: this.suiTransaction.gasData.budget.toString() },
       type: this.type,
     };
 
@@ -247,10 +245,8 @@ export class TransferTransaction extends Transaction<PayTx> {
 
     return {
       kind: { Single: tx },
-      gasPayment: suiTx.gasPayment,
-      gasPrice: SUI_GAS_PRICE,
-      gasBudget: suiTx.gasBudget,
       sender: suiTx.sender,
+      gasData: suiTx.gasData,
     };
   }
 

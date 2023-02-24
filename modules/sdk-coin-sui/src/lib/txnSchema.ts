@@ -6,6 +6,13 @@ const SuiObjectRefSchema = joi.object({
   digest: joi.string().required(),
 });
 
+const GasDataSchema = joi.object({
+  owner: joi.string().required(),
+  price: joi.number().required(),
+  budget: joi.number().required(),
+  payment: SuiObjectRefSchema.optional(),
+});
+
 const SharedObjectRefSchema = joi.object({
   objectId: joi.string().required(),
   initialSharedVersion: joi.number().required(),
@@ -112,7 +119,5 @@ export const SuiMoveCallTransactionSchema = joi.object({
     )
     .match('any')
     .required(),
-  gasBudget: joi.number().required(),
-  gasPrice: joi.number().required(),
-  gasPayment: joi.alternatives(SuiObjectRefSchema).match('one').required(),
+  gasData: GasDataSchema.required(),
 });
