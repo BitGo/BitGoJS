@@ -126,7 +126,7 @@ export function createSpendTransaction<TNumber extends number | bigint = number>
 ): Transaction<TNumber> {
   const matches: (TxOutPoint & TxOutput<TNumber>)[] = inputTxs
     .map((inputTxBuffer): (TxOutPoint & TxOutput<TNumber>)[] => {
-      const inputTx = createTransactionFromBuffer<TNumber>(inputTxBuffer, network, {}, amountType);
+      const inputTx = createTransactionFromBuffer<TNumber>(inputTxBuffer, network, { amountType });
 
       const { scriptPubKey } = createOutputScript2of3(
         keys.map((k) => k.publicKey),

@@ -165,8 +165,7 @@ function run<TNumber extends number | bigint = number>(
       const transaction = utxolib.bitgo.createTransactionFromBuffer<TNumber>(
         Buffer.from(tx.txHex, 'hex'),
         coin.network,
-        undefined,
-        amountType
+        { amountType }
       );
       transaction.ins.forEach((input, index) => {
         if (inputScripts[index] === 'replayProtection') {

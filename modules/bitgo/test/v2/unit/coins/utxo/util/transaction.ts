@@ -55,7 +55,7 @@ export function transactionHexToObj(
   amountType: 'number' | 'bigint' = 'number'
 ): TransactionObj {
   const obj = transactionToObj(
-    utxolib.bitgo.createTransactionFromBuffer(Buffer.from(txHex, 'hex'), network, undefined, amountType)
+    utxolib.bitgo.createTransactionFromBuffer(Buffer.from(txHex, 'hex'), network, { amountType })
   );
   if (obj.hex !== txHex) {
     throw new Error(`serialized txHex does not match input`);
