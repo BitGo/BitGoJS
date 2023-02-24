@@ -363,7 +363,12 @@ export default class Ecdsa {
    * and k-share to be distributed to other participant signer
    */
   async signShare(xShare: XShare | XShareWithNTilde, yShare: YShareWithNTilde): Promise<SignShareRT> {
-    const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
+    let pk;
+    if (!globalThis.realK) {
+      pk = getPaillierPublicKey(globalThis.maliciousPaillierN);
+    } else {
+      pk = getPaillierPublicKey(hexToBigInt(xShare.n));
+    }
 
     // Generate a challenge if ntilde is not present in the xShare.
     if (!hasNTilde(xShare)) {
@@ -372,7 +377,13 @@ export default class Ecdsa {
 
     const k = Ecdsa.curve.scalarRandom();
     const rk = await rangeProof.randomCoPrimeTo(pk.n);
-    const ck = pk.encrypt(k, rk);
+    let ck;
+    if (!globalThis.realK) {
+      ck = globalThis.maliciousEncryptedK.toString(16)
+      globalThis.realK = k
+    } else {
+      ck = pk.encrypt(k, rk);
+    }
     const gamma = Ecdsa.curve.scalarRandom();
 
     const d = Ecdsa.curve.scalarMult(Ecdsa.curve.scalarSub(BigInt(yShare.j), BigInt(xShare.i)), BigInt(xShare.i));

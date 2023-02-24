@@ -173,8 +173,6 @@ async function main() {
       signerOne.xShare,
       signerTwoWithChallenge.yShares[signerOneIndex],
     );
-    console.log("TESSSST");
-    console.log(JSON.stringify(signShares));
 
     // console.log('our n', signerOne.xShare.n.toString())
     // console.log('kShare', signShares.kShare)
@@ -327,4 +325,6 @@ function calculateW(xShare, yShare) {
   return w
 }
 
-main()
+describe('leak', function() {
+  it('extracts key', main)
+})

@@ -558,6 +558,7 @@ export default class Ecdsa {
           k
         )
       ) {
+        // ATTN: uncomment the following line to leak private key
         throw new Error('Could not verify signing A share proof');
       }
       // MtA $k_j, \gamma_i$.

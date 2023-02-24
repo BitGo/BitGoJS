@@ -12,7 +12,7 @@
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepare": "npm run build-ts && cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
-    "unit-test": "nyc -- mocha",
+    "unit-test": "mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
   },
