@@ -47,14 +47,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     };
     const walletIDs: UnifiedWalletID[] = [];
     let walletData;
-    let coins: string[];
-    switch (this.bitgo.getEnv()) {
-      case 'prod':
-        coins = supportedCoins;
-        break;
-      default:
-        coins = supportedTestCoins;
-    }
+    const coins = this.getSupportedCoinList();
 
     for (const coin of coins) {
       walletData = await this.generateCoinWalletData(coin, walletParams, keychainsTriplet);
@@ -90,6 +83,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     if (!id) {
       throw new Error('Id field cannot be empty');
     }
+    const supportedCoins = this.getSupportedCoinList();
     if (!supportedCoins.includes(coinName)) {
       throw new Error(`unsupported coin ${coinName}`);
     }
@@ -98,9 +92,9 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     }
     if (isEmpty(this.coinIdMapping) || !Object.keys(this.coinIdMapping).includes(coinName)) {
       let coinWalletId;
-      for (const id of this.unifiedWallet.wallets) {
-        if (id.coin == coinName) {
-          coinWalletId = id.walletId;
+      for (const wallet of this.unifiedWallet.wallets) {
+        if (wallet.coin == coinName) {
+          coinWalletId = wallet.walletId;
           break;
         }
       }
@@ -108,5 +102,17 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
       this.coinIdMapping[coinName] = wallet;
     }
     return this.coinIdMapping[coinName];
+  }
+
+  private getSupportedCoinList(): string[] {
+    let coins: string[];
+    switch (this.bitgo.getEnv()) {
+      case 'prod':
+        coins = supportedCoins;
+        break;
+      default:
+        coins = supportedTestCoins;
+    }
+    return coins;
   }
 }
