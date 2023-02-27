@@ -2847,8 +2847,12 @@ export class Wallet implements IWallet {
         signedMessageRequest.messages[0].combineSigShare,
         'Unable to find combineSigShare in signedMessageRequest.messages'
       );
-      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.mesages');
-      return signedMessageRequest.messages[0].txHash;
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+      return {
+        txHash: signedMessageRequest.messages[0].txHash,
+        messageRaw: params.message?.messageRaw,
+        txRequestId: signedMessageRequest.txRequestId,
+      };
     } catch (e) {
       throw new Error('failed to sign message ' + e);
     }
@@ -2897,7 +2901,11 @@ export class Wallet implements IWallet {
         'Unable to find combineSigShare in signedTypedDataRequest.messages'
       );
       assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
-      return signedTypedDataRequest.messages[0].txHash;
+      return {
+        txHash: signedTypedDataRequest.messages[0].txHash,
+        messageRaw: params.typedData.typedDataRaw,
+        txRequestId: signedTypedDataRequest.txRequestId,
+      };
     } catch (e) {
       throw new Error('failed to sign typed data ' + e);
     }
