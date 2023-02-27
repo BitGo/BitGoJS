@@ -643,6 +643,7 @@ export enum UnderlyingAsset {
   LUA = 'lua',
   LUNA = 'luna',
   LYN = 'lyn',
+  MAGIC = 'magic',
   MANA = 'mana',
   MAPS = 'maps',
   MASK = 'mask',
@@ -818,6 +819,7 @@ export enum UnderlyingAsset {
   SAND = 'sand',
   SASHIMI = 'sashimi',
   SAMO = 'samo',
+  SBC = 'sbc',
   SBR = 'sbr',
   // Saber IOU Token (Liquidity Mining Rewards)
   SBRIOU = 'sbriou',
@@ -829,6 +831,7 @@ export enum UnderlyingAsset {
   SGA = 'sga',
   SGDX = 'sgdx',
   SGR = 'sgr',
+  SGT = 'sgt',
   SHDW = 'shdw',
   SHK = 'shk',
   SHOPX = 'shopx',
