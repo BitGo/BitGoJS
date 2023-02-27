@@ -2810,7 +2810,9 @@ export class Wallet implements IWallet {
    * @param params signing options
    */
   private async signMessageTss(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
-    assert(params.reqId);
+    if (!params.reqId) {
+      params.reqId = new RequestTracer();
+    }
 
     if (!params.prv) {
       throw new Error('prv required to sign message with TSS');
@@ -2847,8 +2849,13 @@ export class Wallet implements IWallet {
         signedMessageRequest.messages[0].combineSigShare,
         'Unable to find combineSigShare in signedMessageRequest.messages'
       );
-      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.mesages');
-      return signedMessageRequest.messages[0].txHash;
+      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+      return {
+        coin: this.coin(),
+        txHash: signedMessageRequest.messages[0].txHash,
+        messageRaw: params.message?.messageRaw,
+        txRequestId: signedMessageRequest.txRequestId,
+      };
     } catch (e) {
       throw new Error('failed to sign message ' + e);
     }
@@ -2860,7 +2867,9 @@ export class Wallet implements IWallet {
    * @private
    */
   private async signTypedDataTss(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
-    assert(params.reqId, 'reqId required for signing typed data');
+    if (!params.reqId) {
+      params.reqId = new RequestTracer();
+    }
     if (!params.prv) {
       throw new Error('prv required to sign typed data with TSS');
     }
@@ -2897,7 +2906,12 @@ export class Wallet implements IWallet {
         'Unable to find combineSigShare in signedTypedDataRequest.messages'
       );
       assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
-      return signedTypedDataRequest.messages[0].txHash;
+      return {
+        coin: this.coin(),
+        txHash: signedTypedDataRequest.messages[0].txHash,
+        messageRaw: params.typedData.typedDataRaw,
+        txRequestId: signedTypedDataRequest.txRequestId,
+      };
     } catch (e) {
       throw new Error('failed to sign typed data ' + e);
     }

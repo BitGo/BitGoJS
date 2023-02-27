@@ -364,7 +364,12 @@ export type SignedTransaction =
   | FullySignedTransaction
   | SignedTransactionRequest;
 
-export type SignedMessage = SignedTransactionRequest | string;
+export interface SignedMessage {
+  coin?: string;
+  txHash: string;
+  messageRaw: string;
+  txRequestId: string;
+}
 
 export interface RecoverWalletTokenOptions {
   tokenContractAddress: string;
