@@ -155,14 +155,17 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   [index: string]: unknown;
 }
 
-export interface WalletSignMessageOptions extends WalletSignBaseOptions {
-  message?: Message;
+interface WalletSignMessageBase extends WalletSignBaseOptions {
+  walletPassphrase?: string;
   custodianMessageId?: string;
 }
 
-export interface WalletSignTypedDataOptions extends WalletSignBaseOptions {
+export interface WalletSignMessageOptions extends WalletSignMessageBase {
+  message?: Message;
+}
+
+export interface WalletSignTypedDataOptions extends WalletSignMessageBase {
   typedData: TypedData;
-  custodianMessageId?: string;
 }
 
 export interface GetUserPrvOptions {
