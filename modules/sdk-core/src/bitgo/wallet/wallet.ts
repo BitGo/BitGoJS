@@ -2810,7 +2810,9 @@ export class Wallet implements IWallet {
    * @param params signing options
    */
   private async signMessageTss(params: WalletSignMessageOptions = {}): Promise<SignedMessage> {
-    assert(params.reqId);
+    if (!params.reqId) {
+      params.reqId = new RequestTracer();
+    }
 
     if (!params.prv) {
       throw new Error('prv required to sign message with TSS');
@@ -2864,7 +2866,9 @@ export class Wallet implements IWallet {
    * @private
    */
   private async signTypedDataTss(params: WalletSignTypedDataOptions): Promise<SignedMessage> {
-    assert(params.reqId, 'reqId required for signing typed data');
+    if (!params.reqId) {
+      params.reqId = new RequestTracer();
+    }
     if (!params.prv) {
       throw new Error('prv required to sign typed data with TSS');
     }
