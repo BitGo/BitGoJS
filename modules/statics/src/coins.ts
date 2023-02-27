@@ -3501,6 +3501,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LYN
   ),
   erc20(
+    'da39727e-150b-4995-bab7-88b60ef2dbd9',
+    'magic',
+    'Magic',
+    18,
+    '0xb0c7a3ba49c7a6eaba6cd4a96c55a1391070ac9a',
+    UnderlyingAsset.MAGIC
+  ),
+  erc20(
     '090b4ea4-5c7f-439c-8fb5-7d4bfa901e82',
     'mana',
     'Decentraland',
@@ -4702,6 +4710,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SASHIMI
   ),
   erc20(
+    'b01a005d-21b2-49af-b77c-fd513e38dd20',
+    'sbc',
+    'Sustainable Bitcoin Certificate',
+    8,
+    '0xd5978e6ca51ae45f4c1821ce95025502d0246f5e',
+    UnderlyingAsset.SBC
+  ),
+  erc20(
     '957ee557-c800-4846-bc18-a9d483a0d784',
     'sga',
     'Saga',
@@ -4724,6 +4740,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xaea8e1b6cb5c05d1dac618551c76bcd578ea3524',
     UnderlyingAsset.SGR
+  ),
+  erc20(
+    '518fe28c-87fc-4b9f-b07e-a2b8f63f4686',
+    'sgt',
+    'Suzu Governance Token',
+    8,
+    '0xf530b2eaf740cf72b8b90ca3bdbb9486b863b3ce',
+    UnderlyingAsset.SGT
   ),
   erc20(
     '83bc85a6-aabb-4694-831a-e6ee548b0892',
