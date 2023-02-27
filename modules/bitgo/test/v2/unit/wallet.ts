@@ -24,7 +24,9 @@ import {
   TypedMessage,
   MessageTypes,
   SignTypedDataVersion,
-  GetUserPrvOptions, ManageUnspentsOptions,
+  GetUserPrvOptions,
+  ManageUnspentsOptions,
+  SignedMessage,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -2189,7 +2191,7 @@ describe('V2 Wallet:', function () {
     describe('Message Signing', function () {
       const txHash = '0xrrrsss1b';
       const txRequestForMessageSigning: TxRequest = {
-        txRequestId: 'id',
+        txRequestId: reqId.toString(),
         transactions: [],
         intent: {
           intentType: 'signMessage',
@@ -2214,6 +2216,7 @@ describe('V2 Wallet:', function () {
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
       const messageRaw = 'test';
+      const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw };
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
@@ -2251,7 +2254,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw, txRequestId },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(txHash);
+          signMessage.should.deepEqual(expected);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2268,7 +2271,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(txHash);
+          signMessage.should.deepEqual(expected);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2284,7 +2287,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(txHash);
+          signMessage.should.deepEqual(expected);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2301,9 +2304,9 @@ describe('V2 Wallet:', function () {
     });
 
     describe('Typed Data Signing', function () {
-      const txHash = '0xrrrsss1b';
+      const txHash = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
       const txRequestForTypedDataSigning: TxRequest = {
-        txRequestId: 'id',
+        txRequestId: reqId.toString(),
         transactions: [],
         intent: {
           intentType: 'signMessage',
@@ -2395,11 +2398,11 @@ describe('V2 Wallet:', function () {
         }).should.be.rejectedWith('SignTypedData v1 is not supported due to security concerns');
 
       });
-
       messageSigningCoins.map((coinName) => {
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
         const txRequestId = txRequestForTypedDataSigning.txRequestId;
         typedDataBase.txRequestId = txRequestId;
+        const expected: SignedMessage = { txRequestId, messageRaw: JSON.stringify(typedMessage), txHash };
 
         describe(`sign typed data V3 for ${coinName}`, async function() {
           const typedData = { ...typedDataBase };
@@ -2416,10 +2419,9 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
+            signedTypedData.should.deepEqual(expected);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
           });
 
           it('should sign typed data V3 when custodianMessageID is provided', async function () {
@@ -2435,10 +2437,9 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
+            signedTypedData.should.deepEqual(expected);
             const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
           });
 
           it('should fail to sign typed data V3 with empty prv', async function () {
@@ -2461,10 +2462,9 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
+            signedTypedData.should.deepEqual(expected);
             const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
           });
         });
 
@@ -2473,7 +2473,6 @@ describe('V2 Wallet:', function () {
           typedData.version = SignTypedDataVersion.V4;
           it('should sign typed data V4', async function () {
             typedData.txRequestId = txRequestId;
-            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
             nock(bgUrl)
               .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
@@ -2483,15 +2482,11 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
-            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            signedTypedData.should.deepEqual(expected);
           });
 
           it('should sign typed data V4 when custodianMessageID is provided', async function () {
             typedData.txRequestId = txRequestId;
-            const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
             nock(bgUrl)
               .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
@@ -2502,10 +2497,7 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
-            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            signedTypedData.should.deepEqual(expected);
           });
 
           it('should fail to sign typed data V4 with empty prv', async function () {
@@ -2528,10 +2520,9 @@ describe('V2 Wallet:', function () {
               typedData,
               prv: 'secretKey',
             });
-            signedTypedData.should.deepEqual(txHash);
+            signedTypedData.should.deepEqual(expected);
             const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            const expected = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(expected);
+            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
           });
         });
 
