@@ -2216,7 +2216,7 @@ describe('V2 Wallet:', function () {
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
       const messageRaw = 'test';
-      const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw };
+      const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw, coin: 'teth' };
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
@@ -2240,6 +2240,9 @@ describe('V2 Wallet:', function () {
       });
 
       messageSigningCoins.map((coinName) => {
+
+        const expectedWithCoinField = { ...expected, coin: 'teth' };
+
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
         const txRequestId = txRequestForMessageSigning.txRequestId;
 
@@ -2254,7 +2257,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw, txRequestId },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(expected);
+          signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2271,7 +2274,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(expected);
+          signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2287,7 +2290,7 @@ describe('V2 Wallet:', function () {
             message: { messageRaw },
             prv: 'secretKey',
           });
-          signMessage.should.deepEqual(expected);
+          signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
           actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
         });
@@ -2402,7 +2405,7 @@ describe('V2 Wallet:', function () {
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
         const txRequestId = txRequestForTypedDataSigning.txRequestId;
         typedDataBase.txRequestId = txRequestId;
-        const expected: SignedMessage = { txRequestId, messageRaw: JSON.stringify(typedMessage), txHash };
+        const expected: SignedMessage = { txRequestId, messageRaw: JSON.stringify(typedMessage), txHash, coin: 'teth' };
 
         describe(`sign typed data V3 for ${coinName}`, async function() {
           const typedData = { ...typedDataBase };
@@ -2525,9 +2528,7 @@ describe('V2 Wallet:', function () {
             actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
           });
         });
-
       });
-
     });
 
     describe('Send Many', function () {

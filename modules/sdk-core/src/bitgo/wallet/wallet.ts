@@ -2851,6 +2851,7 @@ export class Wallet implements IWallet {
       );
       assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
       return {
+        coin: this.coin(),
         txHash: signedMessageRequest.messages[0].txHash,
         messageRaw: params.message?.messageRaw,
         txRequestId: signedMessageRequest.txRequestId,
@@ -2906,6 +2907,7 @@ export class Wallet implements IWallet {
       );
       assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
       return {
+        coin: this.coin(),
         txHash: signedTypedDataRequest.messages[0].txHash,
         messageRaw: params.typedData.typedDataRaw,
         txRequestId: signedTypedDataRequest.txRequestId,

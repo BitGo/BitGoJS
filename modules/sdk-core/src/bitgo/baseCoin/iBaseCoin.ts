@@ -365,6 +365,7 @@ export type SignedTransaction =
   | SignedTransactionRequest;
 
 export interface SignedMessage {
+  coin?: string;
   txHash: string;
   messageRaw: string;
   txRequestId: string;
