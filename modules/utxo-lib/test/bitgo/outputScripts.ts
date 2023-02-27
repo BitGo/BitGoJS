@@ -65,7 +65,7 @@ describe('createOutputScript2of3()', function () {
     'a020478d8f208753ae';
   const p2wsh = '002095ecaacb606b9ece3821c0111c0a1208dd1d35192809bf8cf6cbad4bbeaca67f';
   const p2tr = '5120a4ce7d122bdc05224b27415228728e5d5bf485961a07493d068ddbb4d4569059';
-  const p2trMusig2 = '5120d3baf9958c8f4fe8fa50bf18a79457739dd6439119db42c39433e693b7fefaa3';
+  const p2trMusig2 = '5120040f4e95f28e6415bc839f03007fa9a960437d9d8345221ac99ebb5388d8b324';
 
   scriptTypes2Of3.forEach((scriptType) => {
     it(`creates output script (type=${scriptType})`, function () {
