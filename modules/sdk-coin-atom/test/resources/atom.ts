@@ -23,7 +23,7 @@ export const TEST_TX = {
   accountId: '723928',
   sequence: 0,
   sendAmount: '100000',
-  feeAmount: '200000',
+  feeAmount: '100000',
   sendMessage: {
     typeUrl: '/cosmos.bank.v1beta1.MsgSend',
     value: {
@@ -34,7 +34,7 @@ export const TEST_TX = {
   },
   gasBudget: {
     amount: [{ denom: 'uatom', amount: '100000' }],
-    gas: 200000, // gas limit
+    gasLimit: 200000,
   },
 };
 

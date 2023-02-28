@@ -8,13 +8,16 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
-  UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import utils from './lib/utils';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BigNumber } from 'bignumber.js';
+import * as _ from 'lodash';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { Transaction } from './lib';
+import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
+import utils from './lib/utils';
 
 export class Atom extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -36,7 +39,7 @@ export class Atom extends BaseCoin {
    * Factor between the coin's base unit and its smallest subdivison
    */
   getBaseFactor(): string | number {
-    return Math.pow(10, this._staticsCoin.decimalPlaces);
+    return 1e6;
   }
 
   getChain(): string {
@@ -60,16 +63,70 @@ export class Atom extends BaseCoin {
     return 'ecdsa';
   }
 
-  verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    let totalAmount = new BigNumber(0);
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild, txParams } = params;
+    const transaction = new Transaction(coinConfig);
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    transaction.enrichTransactionDetailsFromRawTransaction(rawTx);
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+    return true;
   }
 
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
+  async parseTransaction(params: ParseTransactionOptions & { txHex: string }): Promise<ParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    if (transactionExplanation.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+      };
+    }
+    const senderAddress = transactionExplanation.outputs[0].address;
+    const feeAmount = new BigNumber(transactionExplanation.fee.fee === '' ? '0' : transactionExplanation.fee.fee);
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(transactionExplanation.outputAmount).plus(feeAmount).toFixed(),
+      },
+    ];
+    const outputs = transactionExplanation.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+    return {
+      inputs,
+      outputs,
+    };
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
@@ -77,11 +134,11 @@ export class Atom extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPublicKey(pub);
   }
 
   isValidPrv(prv: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPrivateKey(prv);
   }
 
   isValidAddress(address: string): boolean {
@@ -92,7 +149,16 @@ export class Atom extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  explainTransaction(unsignedTransaction: UnsignedTransaction): Promise<ExplanationResult> {
-    throw new Error('Method not implemented.');
+  async explainTransaction(options: { txHex: string }): Promise<ExplanationResult> {
+    if (!options.txHex) {
+      throw new Error('missing required txHex parameter');
+    }
+    try {
+      const transactionBuilder = new TransactionBuilderFactory(coins.get(this.getChain())).from(options.txHex);
+      const transaction = await transactionBuilder.build();
+      return transaction.explainTransaction();
+    } catch (e) {
+      throw new Error('Invalid transaction');
+    }
   }
 }

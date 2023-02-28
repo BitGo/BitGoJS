@@ -9,14 +9,15 @@ describe('Atom Transfer Builder', () => {
   const factory = getBuilderFactory('tatom');
   const testTx = testData.TEST_TX;
   describe('Succeed', () => {
-    // TODO BG-67573 - Fix this when implemented unsigned tx building
-    xit('should build a transfer pay tx', async function () {
+    it('should build a transfer pay tx', async function () {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.type(AtomTransactionType.Pay);
       txBuilder.sequence(testTx.sequence);
       txBuilder.signerAddress(testTx.sender);
       txBuilder.gasBudget(testTx.gasBudget);
       txBuilder.sendMessages([testTx.sendMessage]);
+      txBuilder.publicKey(testTx.pubKey);
+      txBuilder.addSignature({ pub: testTx.pubKey }, Buffer.from(testTx.signature, 'hex'));
 
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);

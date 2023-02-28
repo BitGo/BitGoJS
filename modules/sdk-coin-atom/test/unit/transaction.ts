@@ -20,25 +20,28 @@ describe('Atom Transaction', () => {
 
   describe('From raw transaction', () => {
     it('should build a transfer from raw signed base64', function () {
-      tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
+      tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_TX.signedTxBase64);
       const json = tx.toJson();
       should.equal(json.signerAddress, testData.TEST_TX.sender);
     });
     it('should fail to build a transfer from incorrect raw hex', function () {
-      should.throws(() => tx.fromRawTransaction('random' + testData.TEST_TX.signedTxBase64), 'incorrect raw data');
+      should.throws(
+        () => tx.enrichTransactionDetailsFromRawTransaction('random' + testData.TEST_TX.signedTxBase64),
+        'incorrect raw data'
+      );
     });
     it('should fail to explain transaction with invalid raw hex', function () {
-      should.throws(() => tx.fromRawTransaction('randomString'), 'Invalid transaction');
+      should.throws(() => tx.enrichTransactionDetailsFromRawTransaction('randomString'), 'Invalid transaction');
     });
   });
 
   describe('Explain transaction', () => {
     it('should explain a transfer pay transaction', function () {
-      tx.fromRawTransaction(testData.TEST_TX.signedTxBase64);
+      tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_TX.signedTxBase64);
       const explainedTransaction = tx.explainTransaction();
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
-        id: 'UNAVAILABLE_TEXT',
+        id: 'UNAVAILABLE',
         outputs: [
           {
             address: testData.TEST_TX.recipient,
@@ -53,7 +56,7 @@ describe('Atom Transaction', () => {
       });
     });
     it('should fail to explain transaction with invalid raw base64 string', function () {
-      should.throws(() => tx.fromRawTransaction('randomString'), 'Invalid transaction');
+      should.throws(() => tx.enrichTransactionDetailsFromRawTransaction('randomString'), 'Invalid transaction');
     });
   });
 });

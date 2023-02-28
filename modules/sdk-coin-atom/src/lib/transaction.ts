@@ -9,13 +9,12 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { encodeSecp256k1Pubkey } from '@cosmjs/amino';
-import { fromHex } from '@cosmjs/encoding';
-import { encodePubkey } from '@cosmjs/proto-signing';
-import { Any } from 'cosmjs-types/google/protobuf/any';
+import { makeSignBytes } from '@cosmjs/proto-signing';
+import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { AtomTransactionType, sendMsgType } from './constants';
 import { AtomTransaction, TransactionExplanation, TxData } from './iface';
 import utils from './utils';
+import { toBase64 } from '@cosmjs/encoding';
 
 export class Transaction extends BaseTransaction {
   private _atomTransaction: AtomTransaction;
@@ -29,19 +28,18 @@ export class Transaction extends BaseTransaction {
     return this._atomTransaction;
   }
 
-  setAtomTransaction(tx: AtomTransaction): void {
+  set atomTransaction(tx: AtomTransaction) {
     this._atomTransaction = tx;
   }
 
   /** @inheritDoc **/
   get id(): string {
-    return this._id || 'UNAVAILABLE_TEXT';
+    return this._id || 'UNAVAILABLE';
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push(signature.toString('hex'));
     this._signature = { publicKey, signature };
-    this.serialize();
   }
 
   get atomSignature(): Signature {
@@ -74,6 +72,7 @@ export class Transaction extends BaseTransaction {
       sequence: tx.sequence,
       sendMessages: tx.sendMessages,
       gasBudget: tx.gasBudget,
+      publicKey: tx.publicKey,
     };
   }
 
@@ -90,7 +89,7 @@ export class Transaction extends BaseTransaction {
       outputAmount: '0',
       changeOutputs: [],
       changeAmount: '0',
-      fee: { fee: this.atomTransaction.gasBudget.gas.toString() }, // TODO - explore the fee explanation more, do we need to show limit or base amount
+      fee: { fee: this.atomTransaction.gasBudget.amount[0].amount },
       type: this.type,
     };
 
@@ -116,26 +115,31 @@ export class Transaction extends BaseTransaction {
    *
    * @param rawTransaction
    */
-  fromRawTransaction(rawTransaction: string): void {
-    try {
-      this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
-      if (utils.isSignedRawTx(rawTransaction)) {
-        const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
-        this.addSignature(signerInfo.pubKey, signerInfo.signature);
-      }
-      this._type = TransactionType.Send;
-    } catch (e) {
-      throw e;
+  enrichTransactionDetailsFromRawTransaction(rawTransaction: string): void {
+    this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
+    if (utils.isSignedRawTx(rawTransaction)) {
+      const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
+      this.addSignature(signerInfo.pubKey, signerInfo.signature);
     }
+    this._type = TransactionType.Send;
   }
 
+  /**
+   * Serialize the transaction to a JSON string
+   */
   serialize(): string {
-    // TODO BG-67811 - Support unsigned txs serializing to pass to HSM
-    const pubKey: Any = encodePubkey(encodeSecp256k1Pubkey(fromHex(this.atomSignature.publicKey.pub)));
-    const signDoc = utils.createSignDocFromAtomTransaction(pubKey, this.atomTransaction);
-    // If we do have signatures, add them and return the base64 serialized signed tx data
-    const signedRawTx = utils.createSignedTxRaw(this.atomSignature, signDoc);
-    return utils.createBase64SignedTxBytesFromSignedTxRaw(signedRawTx);
+    const txRaw = utils.createTxRawFromAtomTransaction(this.atomTransaction);
+    if (this._signatures.length > 0) {
+      const signedRawTx = utils.createSignedTxRaw(this.atomSignature, txRaw);
+      return toBase64(TxRaw.encode(signedRawTx).finish());
+    }
+    return toBase64(TxRaw.encode(txRaw).finish());
+  }
+
+  /** @inheritdoc **/
+  get signablePayload(): Buffer {
+    const signDoc = utils.createSignDocFromAtomTransaction(this.atomTransaction);
+    return Buffer.from(makeSignBytes(signDoc));
   }
 
   static deserializeAtomTransaction(rawTx: string): AtomTransaction {
@@ -150,12 +154,14 @@ export class Transaction extends BaseTransaction {
     const sendMessageData = utils.getMessageDataFromDecodedTx(decodedTx);
     const sequence = utils.getSequenceFromDecodedTx(decodedTx);
     const gasBudget = utils.getGasBudgetFromDecodedTx(decodedTx);
+    const publicKey = utils.getPublicKeyFromDecodedTx(decodedTx);
     return {
       type,
       sendMessages: sendMessageData,
       signerAddress: sendMessageData[0].value.fromAddress,
       gasBudget,
       sequence,
+      publicKey,
     };
   }
 
@@ -179,5 +185,11 @@ export class Transaction extends BaseTransaction {
       outputAmount,
       outputs,
     };
+  }
+
+  static fromRawTransaction(rawTransaction: string, coinConfig: Readonly<CoinConfig>): Transaction {
+    const tx = new Transaction(coinConfig);
+    tx.enrichTransactionDetailsFromRawTransaction(rawTransaction);
+    return tx;
   }
 }

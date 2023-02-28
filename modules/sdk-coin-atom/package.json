@@ -48,10 +48,12 @@
     "@cosmjs/proto-signing": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1",
-    "cosmjs-types": "^0.6.1"
+    "cosmjs-types": "^0.6.1",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",
-    "@bitgo/sdk-test": "^1.2.15"
+    "@bitgo/sdk-test": "^1.2.15",
+    "@types/lodash": "^4.14.183"
   }
 }
