@@ -7759,21 +7759,42 @@ export const coins = CoinMap.fromCoins([
     'ofcterc18dp13',
     'Test ERC Token 18 decimals',
     18,
-    UnderlyingAsset.TERC18DP13
+    UnderlyingAsset.TERC18DP13,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'gteth'
   ),
   tofcerc20(
     '3abd55f9-c3c7-4810-8ff4-bc31a3d0fc69',
     'ofcterc18dp14',
     'Test ERC Token 18 decimals',
     18,
-    UnderlyingAsset.TERC18DP14
+    UnderlyingAsset.TERC18DP14,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'gteth'
   ),
   tofcerc20(
     'bffc55db-1f40-4e9e-857e-b591ac86d9b3',
     'ofcterc18dp15',
     'Test ERC Token 18 decimals',
     18,
-    UnderlyingAsset.TERC18DP15
+    UnderlyingAsset.TERC18DP15,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'gteth'
   ),
   tstellarToken(
     '47887cb5-98bb-4942-bd25-3ccca0847f36',
