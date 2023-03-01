@@ -7,6 +7,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import {
+  GasData,
   MoveCallTx,
   MoveCallTxDetails,
   PayTx,
@@ -192,18 +193,13 @@ export abstract class Transaction<T> extends BaseTransaction {
     }
 
     const tx = this.getProperTxDetails(k, type);
+    const gasData = this.getProperGasData(k);
 
     return {
       type,
       sender: utils.normalizeHexId(k.sender),
-      tx: tx,
-      gasBudget: k.gasBudget.toNumber(),
-      gasPrice: k.gasPrice.toNumber(),
-      gasPayment: {
-        objectId: utils.normalizeHexId(k.gasPayment.objectId),
-        version: k.gasPayment.version.toNumber(),
-        digest: k.gasPayment.digest,
-      },
+      tx,
+      gasData,
     };
   }
 
@@ -213,13 +209,13 @@ export abstract class Transaction<T> extends BaseTransaction {
         return {
           coins: this.normalizeCoins(k.kind.Single.Pay.coins),
           recipients: k.kind.Single.Pay.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
-          amounts: k.kind.Single.Pay.amounts.map((amount) => amount.toNumber()) as number[],
+          amounts: k.kind.Single.Pay.amounts.map((amount) => Number(amount)),
         };
       case SuiTransactionType.PaySui:
         return {
           coins: this.normalizeCoins(k.kind.Single.PaySui.coins),
           recipients: k.kind.Single.PaySui.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
-          amounts: k.kind.Single.PaySui.amounts.map((amount) => amount.toNumber()) as number[],
+          amounts: k.kind.Single.PaySui.amounts.map((amount) => Number(amount)),
         };
       case SuiTransactionType.PayAllSui:
         return {
@@ -270,6 +266,15 @@ export abstract class Transaction<T> extends BaseTransaction {
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
+  }
+
+  static getProperGasData(k: any): GasData {
+    return {
+      payment: this.normalizeSuiObjectRef(k.gasData.payment),
+      owner: utils.normalizeHexId(k.gasData.owner),
+      price: Number(k.gasData.price),
+      budget: Number(k.gasData.budget),
+    };
   }
 
   private static normalizeCoins(coins: any[]): SuiObjectRef[] {

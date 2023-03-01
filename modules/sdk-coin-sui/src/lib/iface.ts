@@ -118,6 +118,13 @@ export interface MoveCallTxDetails {
   };
 }
 
+export interface GasData {
+  owner: string; // Gas Object's owner
+  price: number;
+  budget: number;
+  payment?: SuiObjectRef;
+}
+
 /**
  * The transaction data returned from the toJson() function of a transaction
  */
@@ -125,9 +132,7 @@ export interface TxData {
   id?: string;
   kind: { Single: TxDetails };
   sender: string;
-  gasPayment: SuiObjectRef;
-  gasBudget: number;
-  gasPrice: number;
+  gasData: GasData;
 }
 
 export interface PayTx {
@@ -148,9 +153,7 @@ export interface SuiTransaction<T = PayTx | MoveCallTx> {
   type: SuiTransactionType;
   sender: string;
   tx: T;
-  gasBudget: number;
-  gasPrice: number;
-  gasPayment: SuiObjectRef;
+  gasData: GasData;
 }
 // Staking DTOs
 export interface RequestAddDelegation {

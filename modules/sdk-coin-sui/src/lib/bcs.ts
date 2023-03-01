@@ -1,127 +1,128 @@
-import { BCS, decodeStr, encodeStr, getSuiMoveConfig } from '@mysten/bcs';
-import { Buffer } from 'buffer';
+import { BCS, getSuiMoveConfig } from '@mysten/bcs';
 
-export const bcs = new BCS(getSuiMoveConfig());
-
-bcs
-  .registerType(
-    'utf8string',
-    (writer, str) => {
-      const bytes = Array.from(Buffer.from(str));
-      return writer.writeVec(bytes, (writer, el) => writer.write8(el));
+const BCS_SPEC = {
+  enums: {
+    'Option<T>': {
+      None: null,
+      Some: 'T',
     },
-    (reader) => {
-      const bytes = reader.readVec((reader) => reader.read8());
-      return Buffer.from(bytes).toString('utf-8');
-    }
-  )
-  .registerType(
-    'ObjectDigest',
-    (writer, str) => {
-      const bytes = Array.from(decodeStr(str, 'base64'));
-      return writer.writeVec(bytes, (writer, el) => writer.write8(el));
+    ObjectArg: {
+      ImmOrOwned: 'SuiObjectRef',
+      Shared: 'SharedObjectRef',
     },
-    (reader) => {
-      const bytes = reader.readVec((reader) => reader.read8());
-      return encodeStr(new Uint8Array(bytes), 'base64');
-    }
-  );
+    CallArg: {
+      Pure: 'vector<u8>',
+      Object: 'ObjectArg',
+      ObjVec: 'vector<ObjectArg>',
+    },
+    TypeTag: {
+      bool: null,
+      u8: null,
+      u64: null,
+      u128: null,
+      address: null,
+      signer: null,
+      vector: 'TypeTag',
+      struct: 'StructTag',
+      u16: null,
+      u32: null,
+      u256: null,
+    },
+    Transaction: {
+      TransferObject: 'TransferObjectTx',
+      Publish: 'PublishTx',
+      Call: 'MoveCallTx',
+      TransferSui: 'TransferSuiTx',
+      Pay: 'PayTx',
+      PaySui: 'PaySuiTx',
+      PayAllSui: 'PayAllSuiTx',
+    },
+    TransactionKind: {
+      Single: 'Transaction',
+      Batch: 'vector<Transaction>',
+    },
+  },
+  structs: {
+    SuiObjectRef: {
+      objectId: BCS.ADDRESS,
+      version: BCS.U64,
+      digest: 'ObjectDigest',
+    },
+    TransferObjectTx: {
+      recipient: BCS.ADDRESS,
+      object_ref: 'SuiObjectRef',
+    },
+    PayTx: {
+      coins: 'vector<SuiObjectRef>',
+      recipients: 'vector<address>',
+      amounts: 'vector<u64>',
+    },
+    PaySuiTx: {
+      coins: 'vector<SuiObjectRef>',
+      recipients: 'vector<address>',
+      amounts: 'vector<u64>',
+    },
+    PayAllSuiTx: {
+      coins: 'vector<SuiObjectRef>',
+      recipient: BCS.ADDRESS,
+    },
+    TransferSuiTx: {
+      recipient: BCS.ADDRESS,
+      amount: 'Option<u64>',
+    },
+    PublishTx: {
+      modules: 'vector<vector<u8>>',
+    },
+    SharedObjectRef: {
+      objectId: BCS.ADDRESS,
+      initialSharedVersion: BCS.U64,
+      mutable: BCS.BOOL,
+    },
+    StructTag: {
+      address: BCS.ADDRESS,
+      module: BCS.STRING,
+      name: BCS.STRING,
+      typeParams: 'vector<TypeTag>',
+    },
+    MoveCallTx: {
+      package: BCS.ADDRESS,
+      module: BCS.STRING,
+      function: BCS.STRING,
+      typeArguments: 'vector<TypeTag>',
+      arguments: 'vector<CallArg>',
+    },
+    TransactionData: {
+      kind: 'TransactionKind',
+      sender: BCS.ADDRESS,
+      gasData: 'GasData',
+    },
+    GasData: {
+      payment: 'SuiObjectRef',
+      owner: BCS.ADDRESS,
+      price: BCS.U64,
+      budget: BCS.U64,
+    },
+    // Signed transaction data needed to generate transaction digest.
+    SenderSignedData: {
+      data: 'TransactionData',
+      txSignatures: 'vector<vector<u8>>',
+    },
+  },
+  aliases: {
+    ObjectDigest: BCS.BASE64,
+  },
+};
 
-bcs.registerStructType('SuiObjectRef', {
-  objectId: 'address',
-  version: 'u64',
-  digest: 'ObjectDigest',
-});
+export const bcs = new BCS({ ...getSuiMoveConfig(), types: BCS_SPEC });
 
-/**
- * Transaction type used for Pay transaction.
- */
-bcs.registerStructType('PayTx', {
-  coins: 'vector<SuiObjectRef>',
-  recipients: 'vector<address>',
-  amounts: 'vector<u64>',
-});
-
-bcs.registerStructType('PaySuiTx', {
-  coins: 'vector<SuiObjectRef>',
-  recipients: 'vector<address>',
-  amounts: 'vector<u64>',
-});
-
-bcs.registerStructType('PayAllSuiTx', {
-  coins: 'vector<SuiObjectRef>',
-  recipient: 'address',
-});
-
-bcs.registerStructType('MoveCallTx', {
-  package: 'address',
-  module: 'string',
-  function: 'string',
-  typeArguments: 'vector<TypeTag>',
-  arguments: 'vector<CallArg>',
-});
-
-bcs
-  .registerEnumType('TypeTag', {
-    bool: null,
-    u8: null,
-    u64: null,
-    u128: null,
-    address: null,
-    signer: null,
-    vector: 'TypeTag',
-    struct: 'StructTag',
-    u16: null,
-    u32: null,
-    u256: null,
-  })
-  .registerStructType('StructTag', {
-    address: 'address',
-    module: 'string',
-    name: 'string',
-    typeParams: 'vector<TypeTag>',
-  });
-
-bcs
-  .registerStructType('SharedObjectRef', {
-    objectId: 'address',
-    initialSharedVersion: 'u64',
-    mutable: 'bool',
-  })
-  .registerEnumType('ObjectArg', {
-    ImmOrOwned: 'SuiObjectRef',
-    Shared: 'SharedObjectRef',
-  })
-  .registerEnumType('CallArg', {
-    Pure: 'vector<u8>',
-    Object: 'ObjectArg',
-    ObjVec: 'vector<ObjectArg>',
-  });
-
-bcs.registerEnumType('Transaction', {
-  TransferObject: 'TransferObjectTx',
-  Publish: 'PublishTx',
-  Call: 'MoveCallTx',
-  TransferSui: 'TransferSuiTx',
-  Pay: 'PayTx',
-  PaySui: 'PaySuiTx',
-  PayAllSui: 'PayAllSuiTx',
-});
-
-bcs.registerEnumType('TransactionKind', {
-  Single: 'Transaction',
-  Batch: 'vector<Transaction>',
-});
-
-bcs.registerStructType('TransactionData', {
-  kind: 'TransactionKind',
-  sender: 'address',
-  gasPayment: 'SuiObjectRef',
-  gasPrice: 'u64',
-  gasBudget: 'u64',
-});
-
-bcs.registerStructType('SenderSignedData', {
-  data: 'TransactionData',
-  txSignature: 'vector<u8>',
-});
+bcs.registerType(
+  'utf8string',
+  (writer, str) => {
+    const bytes = Array.from(new TextEncoder().encode(str));
+    return writer.writeVec(bytes, (writer, el) => writer.write8(el));
+  },
+  (reader) => {
+    const bytes = reader.readVec((reader) => reader.read8());
+    return new TextDecoder().decode(new Uint8Array(bytes));
+  }
+);

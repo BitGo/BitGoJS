@@ -97,7 +97,7 @@ describe('SUI:', function () {
         outputAmount: testData.AMOUNT,
         changeOutputs: [],
         changeAmount: '0',
-        fee: { fee: testData.GAS_BUDGET.toString() },
+        fee: { fee: testData.gasData.budget.toString() },
         type: 0,
       });
     });
@@ -122,7 +122,7 @@ describe('SUI:', function () {
   describe('Parse Transactions: ', () => {
     const transferInputsResponse = {
       address: testData.recipients[0],
-      amount: new BigNumber(testData.AMOUNT).plus(testData.GAS_BUDGET).toFixed(),
+      amount: new BigNumber(testData.AMOUNT).plus(testData.gasData.budget).toFixed(),
     };
 
     const transferOutputsResponse = {

@@ -24,11 +24,10 @@ describe('Sui Staking Builder', () => {
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
 
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.AddDelegator);
-      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasPayment.should.deepEqual(testData.stakingGasPayment);
+      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.stakingGasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -52,11 +51,10 @@ describe('Sui Staking Builder', () => {
       txBuilder.type(SuiTransactionType.AddDelegation);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestAddDelegation(testData.requestAddDelegationTxMultipleCoins);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.AddDelegator);
-      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasPayment.should.deepEqual(testData.stakingGasPayment);
+      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.stakingGasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -105,8 +103,7 @@ describe('Sui Staking Builder', () => {
       txBuilder.type(SuiTransactionType.AddDelegation);
       txBuilder.sender(senderAddress);
       txBuilder.requestAddDelegation(addDelegation);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
 
       const unsignedTx = await txBuilder.build();
       const signableHex = unsignedTx.signablePayload.toString('hex');
@@ -143,11 +140,10 @@ describe('Sui Staking Builder', () => {
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestWithdrawDelegation(testData.requestWithdrawDelegation);
 
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.StakingWithdraw);
-      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasPayment.should.deepEqual(testData.stakingGasPayment);
+      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.stakingGasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -175,8 +171,7 @@ describe('Sui Staking Builder', () => {
       txBuilder.type(SuiTransactionType.WithdrawDelegation);
       txBuilder.sender(senderAddress);
       txBuilder.requestWithdrawDelegation(requestWithdrawDelegation);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
 
       const unsignedTx = await txBuilder.build();
       const signableHex = unsignedTx.signablePayload.toString('hex');
@@ -213,11 +208,10 @@ describe('Sui Staking Builder', () => {
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestSwitchDelegation(testData.requestSwitchDelegation);
 
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.StakingSwitch);
-      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasPayment.should.deepEqual(testData.stakingGasPayment);
+      (tx as SuiTransaction<MoveCallTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.stakingGasPayment);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -245,8 +239,7 @@ describe('Sui Staking Builder', () => {
       txBuilder.type(SuiTransactionType.SwitchDelegation);
       txBuilder.sender(senderAddress);
       txBuilder.requestSwitchDelegation(requestSwitchDelegation);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
 
       const unsignedTx = await txBuilder.build();
       const signableHex = unsignedTx.signablePayload.toString('hex');
@@ -282,34 +275,19 @@ describe('Sui Staking Builder', () => {
       should(() => builder.sender('randomString')).throwError('Invalid or missing sender, got: randomString');
     });
 
-    it('should fail on missing gasPayment', async function () {
+    it('should fail on missing gasData', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddDelegation);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      await txBuilder
-        .build()
-        .should.rejectedWith('Stake Builder Transaction validation failed: "gasPayment" is required');
-    });
-
-    it('should fail on missing gasBudget', async function () {
-      const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
-      txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
-      txBuilder.gasPayment(testData.stakingGasPayment);
-      await txBuilder
-        .build()
-        .should.rejectedWith('Stake Builder Transaction validation failed: "gasBudget" is required');
+      await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "gasData" is required');
     });
 
     it('should fail on missing sender', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddDelegation);
       txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "sender" is required');
     });
 
@@ -317,8 +295,7 @@ describe('Sui Staking Builder', () => {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "type" is required');
     });
 
@@ -326,8 +303,7 @@ describe('Sui Staking Builder', () => {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddDelegation);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "tx" is required');
     });
 
@@ -339,8 +315,7 @@ describe('Sui Staking Builder', () => {
         ...testData.requestAddDelegationTxMultipleCoins,
         validatorAddress: testData.STAKING_SENDER_ADDRESS,
       };
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       assert.throws(() => txBuilder.requestAddDelegation(requestAddDelegation));
     });
 
@@ -352,8 +327,7 @@ describe('Sui Staking Builder', () => {
         ...testData.requestSwitchDelegation,
         newValidatorAddress: testData.STAKING_SENDER_ADDRESS,
       };
-      txBuilder.gasBudget(testData.STAKING_GAS_BUDGET);
-      txBuilder.gasPayment(testData.stakingGasPayment);
+      txBuilder.gasData(testData.stakingGasData);
       assert.throws(() => txBuilder.requestSwitchDelegation(requestSwitchDelegation));
     });
   });

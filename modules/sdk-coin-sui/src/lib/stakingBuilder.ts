@@ -43,9 +43,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
       type: SuiTransactionType.AddDelegation,
       sender: this._sender,
       tx: this._moveCallTx,
-      gasBudget: this._gasBudget,
-      gasPrice: this._gasPrice,
-      gasPayment: this._gasPayment,
+      gasData: this._gasData,
     };
   }
 
@@ -88,7 +86,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   /**
    * Create a new transaction for withdrawing coins ready to be signed
    *
-   * @param {RequestWithdrawDelegation} addDelegationTx
+   * @param {RequestWithdrawDelegation} withdrawDelegation
    */
   requestWithdrawDelegation(withdrawDelegation: RequestWithdrawDelegation): this {
     this.validateSuiObjectRef(withdrawDelegation.delegationObjectId, 'withdrawDelegation.delegation');
@@ -174,9 +172,8 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     }
 
     const txData = tx.toJson();
-    this.gasBudget(txData.gasBudget);
     this.sender(txData.sender);
-    this.gasPayment(txData.gasPayment);
+    this.gasData(txData.gasData);
 
     const txDetails = txData.kind.Single as MoveCallTxDetails;
     if (txDetails.hasOwnProperty('Call')) {
@@ -220,9 +217,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
       type: this._type,
       sender: this._sender,
       tx: this._moveCallTx,
-      gasPrice: this._gasPrice,
-      gasBudget: this._gasBudget,
-      gasPayment: this._gasPayment,
+      gasData: this._gasData,
     });
   }
 
@@ -253,9 +248,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
       type: this._type,
       sender: this._sender,
       tx: this._moveCallTx,
-      gasBudget: this._gasBudget,
-      gasPrice: this._gasPrice,
-      gasPayment: this._gasPayment,
+      gasData: this._gasData,
     };
   }
 }

@@ -1,9 +1,8 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
-import { Transaction } from '../../src';
+import { Transaction, TransferTransaction } from '../../src';
 import * as testData from '../resources/sui';
 import { PayTx } from '../../src/lib/iface';
-import { TransferTransaction } from '../../src/lib/transferTransaction';
 
 describe('Sui Pay Transaction', () => {
   let tx: Transaction<PayTx>;
@@ -47,7 +46,7 @@ describe('Sui Pay Transaction', () => {
         outputAmount: testData.AMOUNT,
         changeOutputs: [],
         changeAmount: '0',
-        fee: { fee: testData.GAS_BUDGET.toString() },
+        fee: { fee: testData.gasData.budget.toString() },
         type: 0,
       });
     });
@@ -67,7 +66,7 @@ describe('Sui Pay Transaction', () => {
         outputAmount: 0,
         changeOutputs: [],
         changeAmount: '0',
-        fee: { fee: testData.GAS_BUDGET.toString() },
+        fee: { fee: testData.gasData.budget.toString() },
         type: 0,
       });
     });

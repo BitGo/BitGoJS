@@ -3117,12 +3117,12 @@
     tweetnacl "^1.0.3"
     tweetnacl-util "^0.15.1"
 
-"@mysten/bcs@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.4.0.tgz#d0c9deb91918fcd37a2f1eb30621ac5a58ef6381"
-  integrity sha512-9qtPtFgUu7k2DnS1PyfT5lRngzgzUPx5x6BobcxOZgl+nxoa+WZNvJBWU6VoI2RJi2uxg72MswCEtgFsYaoIfQ==
+"@mysten/bcs@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.6.0.tgz#a7c19a1fce441b5b1c2c9abade588542b723cd38"
+  integrity sha512-kw5GVjtonq7+CU8M2E2N3ndvWhSltDsMzXjy6WECAib1kr+FL9wn7dTmsw84QQjRslspKt1BGhNb+/CpLZp1cQ==
   dependencies:
-    bn.js "^5.2.1"
+    bs58 "^5.0.0"
 
 "@noble/ed25519@^1.7.0":
   version "1.7.1"
@@ -5997,6 +5997,11 @@ base-x@^1.0.1:
   resolved "https://registry.yarnpkg.com/base-x/-/base-x-1.1.0.tgz#42d3d717474f9ea02207f6d1aa1f426913eeb7ac"
   integrity sha512-c0WLeG3K5OlL4Skz2/LVdS+MjggByKhowxQpG+JpCLA48s/bGwIDyzA1naFjywtNvp/37fLK0p0FpjTNNLLUXQ==
 
+base-x@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/base-x/-/base-x-4.0.0.tgz#d0e3b7753450c73f8ad2389b5c018a4af7b2224a"
+  integrity sha512-FuwxlW4H5kh37X/oW59pwTzzTKRzfrrQwhmyspRM7swOEZcHtDZSCt45U6oKgtuFE+WYPblePMVIPR4RZrh/hw==
+
 base16@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/base16/-/base16-1.0.0.tgz#e297f60d7ec1014a7a971a39ebc8a98c0b681e70"
@@ -6605,6 +6610,13 @@ bs58@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/bs58/-/bs58-2.0.1.tgz#55908d58f1982aba2008fa1bed8f91998a29bf8d"
   integrity sha512-77ld2g7Hn1GyIUpuUVfbZdhO1q9R9gv/GYam4HAeAW/tzhQDrbJ2ZttN1tIe4hmKrWFE+oUtAhBNx/EA5SVdTg==
+
+bs58@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/bs58/-/bs58-5.0.0.tgz#865575b4d13c09ea2a84622df6c8cbeb54ffc279"
+  integrity sha512-r+ihvQJvahgYT50JD05dyJNKlmmSlMoOGwn1lCcEzanPglg7TxYjioQUYehQ9mAR/+hOSd2jRc/Z2y5UxBymvQ==
+  dependencies:
+    base-x "^4.0.0"
 
 bs58check@<3.0.0, bs58check@^2.1.1, bs58check@^2.1.2:
   version "2.1.2"
