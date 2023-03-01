@@ -6558,6 +6558,38 @@ export const coins = CoinMap.fromCoins([
     '0x72b886d09c117654ab7da13a14d603001de0b777',
     UnderlyingAsset.XDEFI
   ),
+  erc20(
+    '8c3142c8-0cd9-42f2-8849-3aca3da1a214',
+    'gate',
+    'GATE',
+    18,
+    '0x9d7630adf7ab0b0cb00af747db76864df0ec82e4',
+    UnderlyingAsset.GATE
+  ),
+  erc20(
+    'e173c7c3-106b-4572-9c6c-e56c2f06c9c4',
+    'lcx',
+    'LCX',
+    18,
+    '0x037a54aab062628c9bbae1fdb1583c195585fe41',
+    UnderlyingAsset.LCX
+  ),
+  erc20(
+    'd66b743b-8101-46e4-a3a9-8a32e47f8cda',
+    'floki',
+    'FLOKI',
+    9,
+    '0xcf0c122c6b73ff809c693db761e7baebe62b6a2e',
+    UnderlyingAsset.FLOKI
+  ),
+  erc20(
+    '2504fe5b-37d1-4db3-8829-ba4c5b649163',
+    'rfox',
+    'RFOX',
+    18,
+    '0xa1d6df714f91debf4e0802a542e13067f31b8262',
+    UnderlyingAsset.RFOX
+  ),
 
   celoToken(
     '1a9935a6-54d2-4988-97ff-d871338e29b5',
