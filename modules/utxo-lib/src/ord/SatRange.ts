@@ -17,7 +17,7 @@ export class SatRange {
 
   /**
    * @param offset
-   * @return SatRange with start end end shifted by offset
+   * @return SatRange with start and end shifted by offset
    */
   shiftedBy(offset: bigint): SatRange {
     return new SatRange(this.start + offset, this.end + offset);
