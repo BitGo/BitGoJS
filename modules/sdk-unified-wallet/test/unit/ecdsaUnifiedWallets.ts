@@ -125,7 +125,7 @@ describe('EVM Wallets:', function () {
 
     it('should get all unified wallets', async function () {
       nock(bgUrl).get('/api/v2/wallet/evm').reply(200, [expected]);
-      const result = await evmWallets.getAllUnifiedWallets();
+      const result = await evmWallets.getUnifiedWallets();
       result.should.deepEqual([expected]);
     });
 
