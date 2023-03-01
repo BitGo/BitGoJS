@@ -1,14 +1,8 @@
 /* eslint no-redeclare: 0 */
 import * as assert from 'assert';
-import { InvalidOrdOutput, InvalidSatRange, OrdOutput, SatRange } from '../../src/ord';
+import { InvalidOrdOutput, InvalidSatRange, OrdOutput } from '../../src/ord';
+import { output, range } from './util';
 
-function range(start: number, end: number = start): SatRange {
-  return new SatRange(BigInt(start), BigInt(end));
-}
-
-function output(value: number, ...ordinals: SatRange[]): OrdOutput {
-  return new OrdOutput(BigInt(value), ordinals);
-}
 describe('SatRange', function () {
   it('size', function () {
     assert.strictEqual(range(0).size(), BigInt(1));
