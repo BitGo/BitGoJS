@@ -95,7 +95,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     return newWallet;
   }
 
-  async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
+  async getUnifiedWallets(): Promise<UnifiedWallet[]> {
     return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).result();
   }
 
