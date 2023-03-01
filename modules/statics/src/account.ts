@@ -1,4 +1,5 @@
 import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { DOMAIN_PATTERN } from './constants';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
@@ -87,6 +88,12 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
 export interface AdaCoinConstructorOptions extends AccountConstructorOptions {
   policyId: string;
   assetName: string;
+}
+
+export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
+  issuerAddress: string;
+  currencyCode: string;
+  domain: string;
 }
 
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
@@ -209,8 +216,7 @@ export class StellarCoin extends AccountCoinToken {
       ...options,
     });
 
-    const domainPattern = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/;
-    if (options.domain !== '' && !options.domain.match(domainPattern)) {
+    if (options.domain !== '' && !options.domain.match(DOMAIN_PATTERN)) {
       throw new InvalidDomainError(options.name, options.domain);
     }
 
@@ -350,6 +356,31 @@ export class AvaxERC20Token extends ContractAddressDefinedToken {
 export class PolygonERC20Token extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {
     super(options);
+  }
+}
+
+/**
+ * The Xrp network supports tokens
+ * Xrp tokens are identified by their issuer address
+ * Naming format is similar to XLM
+ * <network>:<token>-<issuer>
+ */
+export class XrpCoin extends AccountCoinToken {
+  public issuerAddress: string;
+  public currencyCode: string;
+  public domain: string;
+  constructor(options: XrpCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    if (options.domain !== '' && !options.domain.match(DOMAIN_PATTERN)) {
+      throw new InvalidDomainError(options.name, options.domain);
+    }
+
+    this.domain = options.domain as string;
+    this.currencyCode = options.currencyCode;
+    this.issuerAddress = options.issuerAddress;
   }
 }
 
@@ -1642,6 +1673,105 @@ export function tpolygonErc20(
     suffix,
     network,
     primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for xrp token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param issuerAddress: The address of the issuer of the token,
+ * @param currencyCode The token symbol. Example: USD, BTC, ETH, etc.
+ * @param domain? the domain of the issuer of the token,
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Cardano main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function xrpToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  issuerAddress: string,
+  currencyCode: string,
+  domain = '',
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.xrp,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new XrpCoin({
+      id,
+      name,
+      fullName,
+      network,
+      issuerAddress,
+      currencyCode,
+      domain,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.XRP,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet cardano token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param issuerAddress: The address of the issuer of the token,
+ * @param currencyCode The token symbol. Example: USD, BTC, ETH, etc.
+ * @param domain? the domain of the issuer of the token,
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet Cardano network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function txrpToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  issuerAddress: string,
+  currencyCode: string,
+  domain = '',
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.xrp
+) {
+  return xrpToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    issuerAddress,
+    currencyCode,
+    domain,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
   );
 }
 
