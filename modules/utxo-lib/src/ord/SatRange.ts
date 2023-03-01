@@ -4,6 +4,10 @@ export class InvalidSatRange extends Error {
   }
 }
 
+function toRange(v: bigint | SatRange): SatRange {
+  return typeof v === 'bigint' ? new SatRange(v, v) : v;
+}
+
 /**
  * Range of satoshi, inclusive.
  * Inscriptions have start === end.
@@ -24,7 +28,8 @@ export class SatRange {
   }
 
   /** @return true iff this intersects with _other_ */
-  intersectsWith(other: SatRange): boolean {
+  intersectsWith(other: bigint | SatRange): boolean {
+    other = toRange(other);
     if (this.start <= other.start) {
       return other.start <= this.end;
     }
@@ -32,7 +37,8 @@ export class SatRange {
   }
 
   /** @return true iff this is superset of _other_. */
-  isSupersetOf(other: SatRange): boolean {
+  isSupersetOf(other: bigint | SatRange): boolean {
+    other = toRange(other);
     return this.start <= other.start && other.end <= this.end;
   }
 
