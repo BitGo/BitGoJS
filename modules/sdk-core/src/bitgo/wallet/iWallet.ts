@@ -423,6 +423,7 @@ export interface SubmitTransactionOptions {
     txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
     payload?: string;
     txBase64?: string;
+    signedChildPsbt?: string; // PSBT that has the output of txHex as input with a signature
   };
   comment?: string;
   txRequestId?: string;
