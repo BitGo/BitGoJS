@@ -1,14 +1,8 @@
 /* eslint no-redeclare: 0 */
 import * as assert from 'assert';
-import { InvalidOrdOutput, InvalidSatRange, OrdOutput, SatRange } from '../../src/ord';
+import { InvalidOrdOutput, InvalidSatRange, OrdOutput } from '../../src/ord';
+import { output, range } from './util';
 
-function range(start: number, end: number = start): SatRange {
-  return new SatRange(BigInt(start), BigInt(end));
-}
-
-function output(value: number, ...ordinals: SatRange[]): OrdOutput {
-  return new OrdOutput(BigInt(value), ordinals);
-}
 describe('SatRange', function () {
   it('size', function () {
     assert.strictEqual(range(0).size(), BigInt(1));
@@ -66,7 +60,7 @@ describe('OrdOutput', function () {
     });
   });
 
-  describe('splitAt', function () {
+  describe('splitAt(AllowZero)', function () {
     it('splits into two outputs', function () {
       const o = output(1000, range(0), range(500));
       assert.deepStrictEqual(o.splitAt(BigInt(1)), [output(1, range(0)), output(999, range(499))]);
@@ -75,15 +69,54 @@ describe('OrdOutput', function () {
       [BigInt(1), BigInt(100), BigInt(500), BigInt(600), BigInt(900), BigInt(999)].forEach((value) =>
         assert.deepStrictEqual(OrdOutput.joinAll(o.splitAt(value)), o)
       );
+
+      assert.deepStrictEqual(o.splitAtAllowZero(BigInt(0)), [null, o]);
+      assert.deepStrictEqual(o.splitAtAllowZero(BigInt(1000)), [o, null]);
     });
   });
 
-  describe('splitAll', function () {
+  describe('splitAll, splitAllWithParams', function () {
     it('splits according to values', function () {
       const o = output(1000, range(0), range(500), range(900));
       const split = o.splitAll([BigInt(100), BigInt(800)]);
+      const splitExact = o.splitAllWithParams([BigInt(100), BigInt(800), BigInt(100)], { exact: true });
       assert.deepStrictEqual(split, [output(100, range(0)), output(800, range(400)), output(100, range(0))]);
+      assert.deepStrictEqual(split, splitExact);
       assert.deepStrictEqual(OrdOutput.joinAll(split), o);
+    });
+
+    it('checks input sum for exact: true', function () {
+      assert.throws(
+        () => output(1000).splitAllWithParams([BigInt(500), BigInt(499)], { exact: true }),
+        /Error: value sum 999 does not match this.value 1000/
+      );
+    });
+
+    it('does not create zero-sized outputs', function () {
+      const o = output(1000);
+      assert.throws(() => o.splitAll([BigInt(0)]));
+      assert.throws(() => o.splitAll([BigInt(1000)]));
+    });
+
+    it('allows null outputs in `allowZero: true`', function () {
+      const o = output(1000);
+      assert.deepStrictEqual(o.splitAllWithParams([BigInt(500), BigInt(0)], { allowZero: true }), [
+        output(500),
+        null,
+        output(500),
+      ]);
+
+      assert.deepStrictEqual(o.splitAllWithParams([BigInt(500), BigInt(0), BigInt(500)], { allowZero: true }), [
+        output(500),
+        null,
+        output(500),
+        null,
+      ]);
+
+      assert.deepStrictEqual(
+        o.splitAllWithParams([BigInt(500), BigInt(0), BigInt(500)], { allowZero: true, exact: true }),
+        [output(500), null, output(500)]
+      );
     });
   });
 });

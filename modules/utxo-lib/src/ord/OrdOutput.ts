@@ -69,7 +69,7 @@ export class OrdOutput {
    *                   Not required to be exhaustive.
    */
   constructor(public value: bigint, public ordinals: SatRange[] = []) {
-    const maxRange = new SatRange(BigInt(0), value - BigInt(1));
+    const maxRange = this.asSatRange();
     ordinals.forEach((r, i) => {
       if (!maxRange.isSupersetOf(r)) {
         throw new InvalidOrdOutput(`range ${r} outside output maxRange ${maxRange}`, value, ordinals);
@@ -103,6 +103,10 @@ export class OrdOutput {
       throw new TypeError(`empty input`);
     }
     return ords.reduce((a, b) => a.joinedWith(b));
+  }
+
+  asSatRange(): SatRange {
+    return new SatRange(BigInt(0), this.value - BigInt(1));
   }
 
   /**
@@ -140,20 +144,59 @@ export class OrdOutput {
   }
 
   /**
+   * Like splitAt but returns _null_ where a zero-sized OrdOutput would be
+   * @param value
+   */
+  splitAtAllowZero(value: bigint): [OrdOutput | null, OrdOutput | null] {
+    if (value === BigInt(0)) {
+      return [null, this.fromSatRange(this.asSatRange())];
+    }
+    if (value === this.value) {
+      return [this.fromSatRange(this.asSatRange()), null];
+    }
+    return this.splitAt(value);
+  }
+
+  /**
+   * Split output successively at values.
+   * @param values
+   * @param exact - when set, ensure that value sum matches _this.value_
+   * @param allowZero - when set, return _null_ for zero-sized values
+   * @return (OrdOutput | null)[]. Zero-sized outputs are substituted with _null_.
+   */
+  splitAllWithParams(
+    values: bigint[],
+    { exact = false, allowZero = false }: { allowZero?: boolean; exact?: boolean }
+  ): (OrdOutput | null)[] {
+    if (values.length === 0) {
+      throw new Error(`invalid argument`);
+    }
+    if (exact) {
+      const valueSum = values.reduce((a, b) => a + b, BigInt(0));
+      if (this.value !== valueSum) {
+        throw new Error(`value sum ${valueSum} does not match this.value ${this.value}`);
+      }
+      return this.splitAllWithParams(values.slice(0, -1), { allowZero, exact: false });
+    }
+    const [v, ...rest] = values;
+    const [a, b] = allowZero ? this.splitAtAllowZero(v) : this.splitAt(v);
+    if (rest.length) {
+      if (b === null) {
+        throw new Error(`invalid remainder`);
+      } else {
+        return [a, ...b.splitAllWithParams(rest, { exact, allowZero })];
+      }
+    } else {
+      return [a, b];
+    }
+  }
+
+  /**
    * Split output successively at values.
    * @param values
    * @return OrdOutput[] with length _values.length + 1_
    */
   splitAll(values: bigint[]): OrdOutput[] {
-    if (values.length === 0) {
-      throw new Error(`invalid argument`);
-    }
-    const [v, ...rest] = values;
-    const [a, b] = this.splitAt(v);
-    if (rest.length) {
-      return [a, ...b.splitAll(rest)];
-    } else {
-      return [a, b];
-    }
+    return this.splitAllWithParams(values, { exact: false, allowZero: false }) as OrdOutput[];
   }
 }

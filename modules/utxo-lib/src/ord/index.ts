@@ -4,3 +4,4 @@
 
 export * from './SatRange';
 export * from './OrdOutput';
+export * from './OutputLayout';

@@ -24,7 +24,7 @@
     "coverage-html": "nyc report --reporter=html",
     "coverage": "npm run build && nyc --check-coverage mocha",
     "test": "npm run coverage",
-    "unit-test": "mocha",
+    "unit-test": "mocha --recursive test",
     "lint": "eslint --quiet .",
     "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
     "precommit": "yarn lint-staged"
