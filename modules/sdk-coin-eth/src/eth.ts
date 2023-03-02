@@ -45,6 +45,7 @@ import {
   VerifyTransactionOptions,
   Wallet,
   TypedData,
+  PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
@@ -300,6 +301,7 @@ interface EthTransactionParams extends TransactionParams {
   gasLimit?: number;
   hopParams?: HopParams;
   hop?: boolean;
+  prebuildTx?: PrebuildTransactionResult;
 }
 
 interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
@@ -1984,7 +1986,10 @@ export class Eth extends BaseCoin {
     const { txParams, txPrebuild, wallet } = params;
     if (
       !txParams?.recipients &&
-      !(txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+      !(
+        txParams.prebuildTx?.consolidateId ||
+        (txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+      )
     ) {
       throw new Error(`missing txParams`);
     }
