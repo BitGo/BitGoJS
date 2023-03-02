@@ -7696,7 +7696,7 @@ export const coins = CoinMap.fromCoins([
     'tbsc:busd',
     'Test Binance USD Token',
     18,
-    '0x78867bbeef44f2326bf8ddd1941a4439382ef2a7',
+    '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee',
     UnderlyingAsset['tbsc:busd']
   ),
   terc721(
