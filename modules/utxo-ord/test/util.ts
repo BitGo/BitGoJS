@@ -1,4 +1,4 @@
-import { OrdOutput, SatRange } from '../../src/ord';
+import { OrdOutput, SatRange } from '../src';
 
 export function range(start: number, end: number = start): SatRange {
   return new SatRange(BigInt(start), BigInt(end));

@@ -1,6 +1,6 @@
 /* eslint no-redeclare: 0 */
 import * as assert from 'assert';
-import { InvalidOrdOutput, InvalidSatRange, OrdOutput } from '../../src/ord';
+import { InvalidOrdOutput, InvalidSatRange, OrdOutput } from '../src';
 import { output, range } from './util';
 
 describe('SatRange', function () {

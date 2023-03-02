@@ -9,8 +9,7 @@ https://github.com/casey/ord/blob/master/bip.mediawiki#terminology-and-notation
 > `680df1e4d43016571e504b0b142ee43c5c0b83398a97bdcfd94ea6f287322d22:0:6`
 
 */
-
-import { parseOutputId } from '../bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
 
 export type SatPoint = `${string}:${number}:${bigint}`;
 
@@ -28,7 +27,7 @@ export function parseSatPoint(p: SatPoint): { txid: string; vout: number; offset
     throw new Error(`SatPoint offset must be positive`);
   }
   return {
-    ...parseOutputId([txid, vout].join(':')),
+    ...bitgo.parseOutputId([txid, vout].join(':')),
     offset,
   };
 }
