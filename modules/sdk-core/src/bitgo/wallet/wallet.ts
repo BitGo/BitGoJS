@@ -2388,6 +2388,11 @@ export class Wallet implements IWallet {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
 
+    if (this._wallet.type === 'custodial' && this._wallet.multisigType !== 'tss') {
+      params.type = 'consolidate';
+      return await this.bitgo.post(this.url('/tx/initiate')).send(params).result();
+    }
+
     // one of a set of consolidation transactions
     if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
       throw new Error('Invalid build of account consolidation.');
