@@ -25,7 +25,7 @@ import {
   TSSParams,
   TxRequest,
 } from '../baseTypes';
-import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
+import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare, Commitment } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 
@@ -395,12 +395,13 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   async createGShareFromTxRequest(params: {
     txRequest: string | TxRequest;
     prv: string;
+    bitgoToUserCommitment: Commitment;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
   }): Promise<GShare> {
     let txRequestResolved: TxRequest;
 
-    const { txRequest, prv, bitgoToUserRShare, userToBitgoRShare } = params;
+    const { txRequest, prv, bitgoToUserCommitment, bitgoToUserRShare, userToBitgoRShare } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -423,6 +424,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const userToBitGoGShare = await createUserToBitGoGShare(
       userToBitgoRShare,
+      bitgoToUserCommitment,
       bitgoToUserRShare,
       userSigningMaterial.backupYShare,
       userSigningMaterial.bitgoYShare,
@@ -534,10 +536,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       publicShare
     );
 
+    const bitgoToUserCommitment = {} as Commitment; // TODO: Not sure where to source this from -JD
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
 
     const userToBitGoGShare = await createUserToBitGoGShare(
       userSignShare,
+      bitgoToUserCommitment,
       bitgoToUserRShare,
       userSigningMaterial.backupYShare,
       userSigningMaterial.bitgoYShare,

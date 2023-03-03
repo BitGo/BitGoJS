@@ -5,6 +5,7 @@ import { SerializedKeyPair } from 'openpgp';
 
 export type KeyShare = EDDSA.KeyShare;
 export type YShare = EDDSA.YShare;
+export type Commitment = EDDSA.Commitment;
 /** @deprected use UnsignedTransactionTss from baseTypes */
 export type EddsaUnsignedTransaction = UnsignedTransactionTss;
 
