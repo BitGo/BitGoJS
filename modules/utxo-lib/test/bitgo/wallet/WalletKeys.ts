@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { DerivedWalletKeys, RootWalletKeys, WalletKeys } from '../../../src/bitgo';
-import { getDefaultWalletKeys } from '../../testutil';
+import { getDefaultWalletKeys } from '../../../src/testutil';
 
 describe('WalletKeys', function () {
   let defaultWalletKeys: RootWalletKeys;

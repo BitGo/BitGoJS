@@ -10,6 +10,8 @@ export * as classify from './classify';
 
 export * as taproot from './taproot';
 
+export * as testutil from './testutil';
+
 export * from './noble_ecc';
 
 export * as p2trPayments from './payments';

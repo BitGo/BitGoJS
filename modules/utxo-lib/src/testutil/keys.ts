@@ -1,9 +1,9 @@
 import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';
 import * as crypto from 'crypto';
 
-import { Triple } from '../../src/bitgo';
-import { RootWalletKeys } from '../../src/bitgo/wallet/WalletKeys';
-import { ecc } from '../../src/noble_ecc';
+import { Triple } from '../bitgo';
+import { RootWalletKeys } from '../bitgo';
+import { ecc } from '../noble_ecc';
 
 const bip32: BIP32API = BIP32Factory(ecc);
 

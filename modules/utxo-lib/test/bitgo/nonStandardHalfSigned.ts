@@ -5,11 +5,11 @@ import * as assert from 'assert';
 import { networks, Network, getNetworkName } from '../../src';
 import { createTransactionFromHex } from '../../src/bitgo';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+import { getDefaultCosigner } from '../../src/testutil';
 
 import { getHalfSignedTransaction2Of3 } from '../transaction_util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { padInputScript } from '../../src/bitgo/nonStandardHalfSigned';
-import { getDefaultCosigner } from '../testutil';
 
 async function getFixture<T>(network: Network, name: string): Promise<T> {
   const p = path.join(__dirname, 'fixtures', 'nonStandardHalfSigned', getNetworkName(network) as string, name);

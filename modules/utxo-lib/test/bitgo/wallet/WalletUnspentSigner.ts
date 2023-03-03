@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 
 import { WalletUnspentSigner } from '../../../src/bitgo';
-
-import { getDefaultWalletKeys } from '../../testutil';
+import { getDefaultWalletKeys } from '../../../src/testutil';
 
 describe('WalletUnspentSigner', function () {
   it('derives expected keys', function () {

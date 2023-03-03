@@ -3,11 +3,11 @@ import { describe, it } from 'mocha';
 
 import { BIP32Interface, getNetworkName, Network, networks } from '../../../src';
 import { outputScripts, PrevOutput, UtxoPsbt, UtxoTransaction } from '../../../src/bitgo';
+import { getDefaultWalletKeys, getKeyName } from '../../../src/testutil';
 import { getLeafHash } from '../../../src/bitgo/outputScripts';
 import { getInputUpdate } from '../../../src/bitgo/psbt/fromHalfSigned';
 
 import { getPrevOutputs, getTransactionStages } from '../../transaction_util';
-import { getDefaultWalletKeys, getKeyName } from '../../testutil';
 
 import { readFixture } from '../../fixture.util';
 import { normDefault } from '../../testutil/normalize';

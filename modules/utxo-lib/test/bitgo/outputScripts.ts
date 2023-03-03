@@ -8,10 +8,8 @@ import {
   isSupportedScriptType,
   scriptTypes2Of3,
 } from '../../src/bitgo/outputScripts';
-import { ECPair } from '../../src/noble_ecc';
-
-import { getKeyTriple } from '../testutil';
-import { getNetworkList, getNetworkName } from '../../src';
+import { ECPair, getNetworkName, getNetworkList } from '../../src';
+import { getKeyTriple } from '../../src/testutil';
 
 const keys = getKeyTriple('utxo');
 const pubkeys = keys.map((k) => k.publicKey) as [Buffer, Buffer, Buffer];
