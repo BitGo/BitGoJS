@@ -29,14 +29,14 @@ import {
   signInputP2shP2pk,
 } from '../../../src/bitgo';
 
-import { getDefaultWalletKeys } from '../../testutil';
+import { getDefaultWalletKeys } from '../../../src/testutil';
+import { defaultTestOutputAmount } from '../../transaction_util';
 import {
+  mockWalletUnspent,
   isReplayProtectionUnspent,
   mockReplayProtectionUnspent,
-  mockWalletUnspent,
   replayProtectionKeyPair,
-} from './util';
-import { defaultTestOutputAmount } from '../../transaction_util';
+} from '../../../src/testutil/mock';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);

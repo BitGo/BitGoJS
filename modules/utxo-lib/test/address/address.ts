@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as assert from 'assert';
 import * as utxolib from '../../src';
-import { getNetworkList, getNetworkName } from '../../src/networks';
+import { getNetworkList, getNetworkName } from '../../src';
+import { getKeyTriple } from '../../src/testutil';
 
 import {
   createScriptPubKey,
@@ -12,7 +13,6 @@ import {
 
 import { AddressFormat } from '../../src/addressFormat';
 import * as fixtureUtil from '../fixture.util';
-import { getKeyTriple } from '../testutil';
 
 export type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
 

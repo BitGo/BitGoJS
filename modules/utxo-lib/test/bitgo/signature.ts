@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import { BIP32Interface } from 'bip32';
 
 import { script as bscript, classify, TxOutput } from '../../src';
+import { getKeyName } from '../../src/testutil';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet, Network, networks } from '../../src/networks';
 
 import { ScriptType, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
@@ -30,7 +31,6 @@ import {
 } from '../transaction_util';
 import { getTransactionWithHighS } from './signatureModify';
 import { normDefault } from '../testutil/normalize';
-import { getKeyName } from '../testutil';
 
 function getScriptTypes2Of3() {
   // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet

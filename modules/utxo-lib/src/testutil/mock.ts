@@ -1,41 +1,30 @@
-import { getMainnet, Network, networks } from '../../../src';
+import { BIP32Interface } from 'bip32';
+import * as noble from '@noble/secp256k1';
+import * as utxolib from '..';
+import { getMainnet, Network, networks } from '../networks';
+
 import {
-  formatOutputId,
-  WalletUnspent,
-  NonWitnessWalletUnspent,
   ChainCode,
   createPsbtForNetwork,
+  fromOutput,
+  fromOutputWithPrevTx,
+  getExternalChainCode,
+  isSegwit,
+  NonWitnessWalletUnspent,
+  outputScripts,
+  RootWalletKeys,
+  scriptTypeForChain,
   Unspent,
   UnspentWithPrevTx,
   UtxoTransaction,
-  fromOutputWithPrevTx,
-  isSegwit,
-  fromOutput,
-  outputScripts,
-  getExternalChainCode,
-} from '../../../src/bitgo';
+  WalletUnspent,
+} from '../bitgo';
+import { fromOutputScript } from '../address';
+import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../bitgo/outputScripts';
 
-import {
-  createOutputScript2of3,
-  createOutputScriptP2shP2pk,
-  scriptTypeForChain,
-} from '../../../src/bitgo/outputScripts';
-import { RootWalletKeys } from '../../../src/bitgo/wallet/WalletKeys';
-import { fromOutputScript } from '../../../src/address';
+import { getDefaultWalletKeys, getKey } from './keys';
 
-import { getDefaultWalletKeys, getKey } from '../../testutil';
-import { mockTransactionId } from '../../transaction_util';
-import * as utxolib from '../../../src';
-import * as noble from '@noble/secp256k1';
-import { BIP32Interface } from 'bip32';
-import { InputType } from '../psbt/Psbt';
-
-export function mockOutputId(vout: number): string {
-  return formatOutputId({
-    txid: mockTransactionId(),
-    vout,
-  });
-}
+export type InputType = outputScripts.ScriptType2Of3;
 
 export function mockPrevTx(
   vout: number,

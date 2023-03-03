@@ -24,12 +24,12 @@ import {
   UtxoTransactionBuilder,
   PrevOutput,
   toTNumber,
+  UtxoPsbt,
 } from '../src/bitgo';
+import { KeyTriple } from '../src/testutil';
 
 import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import { KeyTriple } from './testutil';
-import { UtxoPsbt } from '../src/bitgo/UtxoPsbt';
 
 export function getSignKeyCombinations(length: number): BIP32Interface[][] {
   if (length === 0) {

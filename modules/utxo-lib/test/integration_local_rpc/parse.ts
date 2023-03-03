@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 import { BIP32Interface } from 'bip32';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
+import { getDefaultCosigner } from '../../src/testutil';
 
 import {
   createTransactionBuilderForNetwork,
@@ -37,7 +38,7 @@ import {
 } from './generate/fixtures';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
-import { getDefaultCosigner, decimalCoinsToSats } from '../testutil';
+import { decimalCoinsToSats } from '../testutil';
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];

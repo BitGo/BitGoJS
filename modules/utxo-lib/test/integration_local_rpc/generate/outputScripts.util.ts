@@ -8,6 +8,7 @@ import {
   ScriptType2Of3,
   scriptTypes2Of3,
 } from '../../../src/bitgo/outputScripts';
+import { getDefaultCosigner, KeyTriple } from '../../../src/testutil';
 
 import {
   isTriple,
@@ -17,7 +18,6 @@ import {
   TxOutPoint,
   UtxoTransaction,
 } from '../../../src/bitgo';
-import { getDefaultCosigner, KeyTriple } from '../../testutil';
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];

@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { getNetworkName, networks } from '../../../src';
+import { Network, getNetworkName, networks } from '../../../src';
 import {
   getExternalChainCode,
   outputScripts,
@@ -8,15 +8,17 @@ import {
   UtxoPsbt,
   ZcashPsbt,
   createPsbtFromHex,
+  parsePsbtInput,
+  toWalletPsbt,
 } from '../../../src/bitgo';
-
-import { getDefaultWalletKeys } from '../../testutil';
-import { defaultTestOutputAmount } from '../../transaction_util';
-import { parsePsbtInput, toWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
-import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
 import { createOutputScript2of3 } from '../../../src/bitgo/outputScripts';
-import { mockUnspents } from '../wallet/util';
-import { Network } from '../../../src/networks';
+
+import { getDefaultWalletKeys } from '../../../src/testutil';
+
+import { defaultTestOutputAmount } from '../../transaction_util';
+import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
+
+import { mockUnspents } from '../../../src/testutil/mock';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);

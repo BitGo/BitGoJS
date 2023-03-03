@@ -2,9 +2,10 @@ import * as assert from 'assert';
 
 import { networks } from '../../../src';
 import * as utxolib from '../../../src';
-import { mockUnspents } from '../wallet/util';
-import { getDefaultWalletKeys } from '../../testutil';
 import { addWalletOutputToPsbt, getInternalChainCode, ZcashPsbt } from '../../../src/bitgo';
+import { getDefaultWalletKeys } from '../../../src/testutil';
+
+import { mockUnspents } from '../../../src/testutil/mock';
 
 const network = networks.zcash;
 const rootWalletKeys = getDefaultWalletKeys();
