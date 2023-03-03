@@ -1,7 +1,16 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 import sodium from 'libsodium-wrappers-sumo';
-import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
+import Eddsa, {
+  GShare,
+  JShare,
+  KeyShare,
+  PShare,
+  Commitment,
+  RShare,
+  SignShare,
+  YShare,
+} from './../../../account-lib/mpc/tss';
 import { BitGoBase } from './../../bitgoBase';
 import {
   DecryptableYShare,
@@ -118,7 +127,7 @@ export async function createUserSignShare(signablePayload: Buffer, pShare: PShar
     throw new Error('Invalid PShare, PShare doesnt belong to the User');
   }
   const jShare: JShare = { i: ShareKeyPosition.BITGO, j: ShareKeyPosition.USER };
-  return MPC.signShare(signablePayload, pShare, [jShare]);
+  return MPC.signShare(signablePayload, pShare, jShare);
 }
 
 /**
@@ -132,6 +141,7 @@ export async function createUserSignShare(signablePayload: Buffer, pShare: PShar
  */
 export async function createUserToBitGoGShare(
   userSignShare: SignShare,
+  bitgoToUserCommitment: Commitment,
   bitgoToUserRShare: SignatureShareRecord,
   backupToUserYShare: YShare,
   bitgoToUserYShare: YShare,
@@ -170,7 +180,7 @@ export async function createUserToBitGoGShare(
   };
 
   const MPC = await Eddsa.initialize();
-  return MPC.sign(signablePayload, userSignShare.xShare, [RShare], [backupToUserYShare]);
+  return MPC.sign(signablePayload, userSignShare.xShare, bitgoToUserCommitment, RShare, backupToUserYShare);
 }
 
 /**
@@ -194,7 +204,7 @@ export async function offerUserToBitgoRShare(
   userPublicGpgKey?: string,
   publicShare?: string
 ): Promise<void> {
-  const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
+  const rShare: RShare = userSignShare.rShare;
   if (_.isNil(rShare)) {
     throw new Error('userToBitgo RShare not found');
   }
@@ -380,19 +390,21 @@ export async function getTSSSignature(
   ]);
 
   const messageBuffer = transaction.signablePayload;
-  const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, [userCombine.jShares[2]]);
-  const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, [backupCombine.jShares[1]]);
+  const userSignShare = MPC.signShare(messageBuffer, userSubkey.pShare, userCombine.jShares[2]);
+  const backupSignShare = MPC.signShare(messageBuffer, backupSubkey.pShare, backupCombine.jShares[1]);
   const userSign = MPC.sign(
     messageBuffer,
     userSignShare.xShare,
-    [backupSignShare.rShares[1]],
-    [userSigningMaterial.bitgoYShare]
+    backupSignShare.commitment,
+    backupSignShare.rShare,
+    userSigningMaterial.bitgoYShare
   );
   const backupSign = MPC.sign(
     messageBuffer,
     backupSignShare.xShare,
-    [userSignShare.rShares[2]],
-    [backupSigningMaterial.bitgoYShare]
+    userSignShare.commitment,
+    userSignShare.rShare,
+    backupSigningMaterial.bitgoYShare
   );
   const signature = MPC.signCombine([userSign, backupSign]);
   const result = MPC.verify(messageBuffer, signature);

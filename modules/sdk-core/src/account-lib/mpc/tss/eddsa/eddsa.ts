@@ -34,6 +34,7 @@ import { Ed25519Curve } from '../../curves';
 import Shamir from '../../shamir';
 import HDTree from '../../hdTree';
 import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE, clamp } from '../../util';
+import { hexToBigInt } from '../../../util/crypto';
 import {
   KeyShare,
   UShare,
@@ -45,6 +46,7 @@ import {
   SignShare,
   Signature,
   XShare,
+  Commitment,
   RShare,
   GShare,
 } from './types';
@@ -252,11 +254,11 @@ export default class Eddsa {
     return shares;
   }
 
-  signShare(message: Buffer, pShare: PShare, jShares: JShare[], seed?: Buffer): SignShare {
+  signShare(message: Buffer, pShare: PShare, jShare: JShare, seed?: Buffer): SignShare {
     if (seed && seed.length !== 64) {
       throw new Error('Seed must have length 64');
     }
-    const indices = [pShare, ...jShares].map(({ i }) => i);
+    const indices = [pShare, jShare].map(({ i }) => i);
     const { shares: split_u, v } = Eddsa.shamir.split(
       bigIntFromBufferLE(Buffer.from(pShare.u, 'hex')),
       pShare.t,
@@ -283,35 +285,48 @@ export default class Eddsa {
       R: bigIntToBufferLE(R, 32).toString('hex'),
     };
 
+    const c = Eddsa.curve.basePointMult(split_r[jShare.i]);
+    const z = createHash('sha256').update(message).digest();
+
     const resultShares: SignShare = {
       xShare: P_i,
-      rShares: {},
-    };
-
-    for (let ind = 0; ind < jShares.length; ind++) {
-      const S_j = jShares[ind];
-      resultShares.rShares[S_j.i] = {
-        i: S_j.i,
+      commitment: {
+        c: bigIntToBufferLE(c, 32).toString('hex'),
+        z: z.toString('hex'),
+      },
+      rShare: {
+        i: jShare.i,
         j: pShare.i,
-        u: bigIntToBufferLE(split_u[S_j.i], 32).toString('hex'),
+        u: bigIntToBufferLE(split_u[jShare.i], 32).toString('hex'),
         v: bigIntToBufferLE(v[0], 32).toString('hex'),
-        r: bigIntToBufferLE(split_r[S_j.i], 32).toString('hex'),
+        r: bigIntToBufferLE(split_r[jShare.i], 32).toString('hex'),
         R: bigIntToBufferLE(R, 32).toString('hex'),
-      };
-    }
+      },
+    };
     return resultShares;
   }
 
-  sign(message: Buffer, playerShare: XShare, rShares: RShare[], yShares: YShare[] = []): GShare {
+  sign(
+    message: Buffer,
+    playerShare: XShare,
+    otherPlayerCommitment: Commitment,
+    otherPlayerRShare: RShare,
+    yShare: YShare
+  ): GShare {
+    const c = Eddsa.curve.basePointMult(hexToBigInt(otherPlayerRShare.r));
+    if (c !== hexToBigInt(otherPlayerCommitment.c)) {
+      throw new Error('Could not verify other player share');
+    }
+
     const S_i = playerShare;
 
-    const uValues = [playerShare, ...rShares, ...yShares].map(({ u }) => bigIntFromBufferLE(Buffer.from(u, 'hex')));
+    const uValues = [playerShare, otherPlayerRShare, yShare].map(({ u }) => bigIntFromBufferLE(Buffer.from(u, 'hex')));
     const x = uValues.reduce((acc, u) => Eddsa.curve.scalarAdd(acc, u));
 
-    const RValues = [playerShare, ...rShares].map(({ R }) => bigIntFromBufferLE(Buffer.from(R, 'hex')));
+    const RValues = [playerShare, otherPlayerRShare].map(({ R }) => bigIntFromBufferLE(Buffer.from(R, 'hex')));
     const R = RValues.reduce((partial, share) => Eddsa.curve.pointAdd(partial, share));
 
-    const rValues = [playerShare, ...rShares].map(({ r }) => bigIntFromBufferLE(Buffer.from(r, 'hex')));
+    const rValues = [playerShare, otherPlayerRShare].map(({ r }) => bigIntFromBufferLE(Buffer.from(r, 'hex')));
     const r = rValues.reduce((partial, share) => Eddsa.curve.scalarAdd(partial, share));
 
     const combinedBuffer = Buffer.concat([bigIntToBufferLE(R, 32), Buffer.from(S_i.y, 'hex'), message]);

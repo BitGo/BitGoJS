@@ -25,7 +25,7 @@ import {
   PopulatedIntentForTypedDataSigning,
   CreateBitGoKeychainParamsBase,
 } from './baseTypes';
-import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
+import { Commitment, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -141,6 +141,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    *
    * @param {TxRequest} txRequest - transaction request with unsigned transaction
    * @param {string} prv - user signing material
+   * @param {Commitment} bitgoToUserCommitment - BitGo to User Commitment
    * @param {SignatureShareRecord} bitgoToUserRShare - BitGo to User R Share
    * @param {SignShare} userToBitgoRShare - User to BitGo R Share
    * @returns {Promise<GShare>} - GShare from User to BitGo
@@ -148,6 +149,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
+    bitgoToUserCommitment: Commitment;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
   }): Promise<GShare> {
