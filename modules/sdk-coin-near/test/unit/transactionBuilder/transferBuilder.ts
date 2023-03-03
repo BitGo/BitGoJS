@@ -92,16 +92,26 @@ describe('Near Transfer Builder', () => {
       const unsignedTransaction = await txBuilder.build();
       const signablePayload = unsignedTransaction.signablePayload;
 
-      // signing with 3-3 signatures
-      let A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[2], A_combine.jShares[3]]);
-      let B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[1], B_combine.jShares[3]]);
-      let C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[1], C_combine.jShares[2]]);
-      let A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [B_sign_share.rShares[1], C_sign_share.rShares[1]]);
-      let B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
-      let C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
-      let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
+      // signing with A and B
+      let A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, A_combine.jShares[2]);
+      let B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, B_combine.jShares[1]);
+      let A_sign = MPC.sign(
+        signablePayload,
+        A_sign_share.xShare,
+        B_sign_share.commitment,
+        B_sign_share.rShare,
+        C.yShares[1]
+      );
+      let B_sign = MPC.sign(
+        signablePayload,
+        B_sign_share.xShare,
+        A_sign_share.commitment,
+        A_sign_share.rShare,
+        C.yShares[2]
+      );
+      // sign the message_buffer (unsigned txHex)
+      let signature = MPC.signCombine([A_sign, B_sign]);
       let rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-
       txBuilder = factory.getTransferBuilder();
       txBuilder.sender(sender, commonPub);
       txBuilder.nonce(1);
@@ -113,30 +123,23 @@ describe('Near Transfer Builder', () => {
       signedTransaction.signature.length.should.equal(1);
       signedTransaction.signature[0].should.equal(base58.encode(rawSignature));
 
-      // signing with A and B
-      A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[2]]);
-      B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[1]]);
-      A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
-      B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
-      // sign the message_buffer (unsigned txHex)
-      signature = MPC.signCombine([A_sign, B_sign]);
-      rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-      txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(sender, commonPub);
-      txBuilder.nonce(1);
-      txBuilder.receiverId(testData.accounts.account2.address);
-      txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount(testData.AMOUNT);
-      txBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, rawSignature);
-      signedTransaction = await txBuilder.build();
-      signedTransaction.signature.length.should.equal(1);
-      signedTransaction.signature[0].should.equal(base58.encode(rawSignature));
-
       // signing with A and C
-      A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[3]]);
-      C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[1]]);
-      A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
-      C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
+      A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, A_combine.jShares[3]);
+      let C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, C_combine.jShares[1]);
+      A_sign = MPC.sign(
+        signablePayload,
+        A_sign_share.xShare,
+        C_sign_share.commitment,
+        C_sign_share.rShare,
+        B.yShares[1]
+      );
+      let C_sign = MPC.sign(
+        signablePayload,
+        C_sign_share.xShare,
+        A_sign_share.commitment,
+        A_sign_share.rShare,
+        B.yShares[3]
+      );
       signature = MPC.signCombine([A_sign, C_sign]);
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
@@ -151,10 +154,22 @@ describe('Near Transfer Builder', () => {
       signedTransaction.signature[0].should.equal(base58.encode(rawSignature));
 
       // signing with B and C
-      B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[3]]);
-      C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[2]]);
-      B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [C_sign_share.rShares[2]], [A.yShares[2]]);
-      C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [B_sign_share.rShares[3]], [A.yShares[3]]);
+      B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, B_combine.jShares[3]);
+      C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, C_combine.jShares[2]);
+      B_sign = MPC.sign(
+        signablePayload,
+        B_sign_share.xShare,
+        C_sign_share.commitment,
+        C_sign_share.rShare,
+        A.yShares[2]
+      );
+      C_sign = MPC.sign(
+        signablePayload,
+        C_sign_share.xShare,
+        B_sign_share.commitment,
+        B_sign_share.rShare,
+        A.yShares[3]
+      );
       signature = MPC.signCombine([B_sign, C_sign]);
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
