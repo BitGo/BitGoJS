@@ -91,7 +91,7 @@ describe('WalletUnspent', function () {
 
     unspents.forEach((u) => {
       if (isWalletUnspent(u)) {
-        addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner, network);
+        addWalletUnspentToPsbt(psbt, u, walletKeys, signer, cosigner);
       } else {
         throw new Error(`invalid unspent`);
       }

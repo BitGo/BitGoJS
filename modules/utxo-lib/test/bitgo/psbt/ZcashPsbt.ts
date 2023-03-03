@@ -16,7 +16,7 @@ describe('Zcash PSBT', function () {
     psbt = await utxolib.bitgo.ZcashPsbt.createPsbt({ network });
 
     unspents.forEach((unspent) => {
-      utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, rootWalletKeys, 'user', 'bitgo', network);
+      utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, rootWalletKeys, 'user', 'bitgo');
     });
     addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode('p2sh'), 0, BigInt('1000000000000000'));
   });
