@@ -181,6 +181,10 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Switzerland entities
    */
   CUSTODY_BITGO_SWITZERLAND = 'custody-bitgo-switzerland',
+  /*
+   * This coin has transactions that expire after a certain amount of time.
+   */
+  EXPIRING_TRANSACTIONS = 'expiring-transactions',
 }
 
 /**
