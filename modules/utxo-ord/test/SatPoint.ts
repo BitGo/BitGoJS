@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { formatSatPoint, isSatPoint, parseSatPoint } from '../../src/ord';
+import { formatSatPoint, isSatPoint, parseSatPoint } from '../src';
 
 describe('SatPoint', function () {
   describe('parseSatPoint', function () {

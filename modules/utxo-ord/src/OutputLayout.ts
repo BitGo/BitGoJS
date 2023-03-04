@@ -137,11 +137,11 @@ type Parameters<T> = {
 };
 
 /** @return canonical sequence of parameters */
-function toArray<T>(p: Parameters<T>): [T, T, T, T] {
+export function toArray<T>(p: Parameters<T>): [T, T, T, T] {
   return [p.firstChangeOutput, p.inscriptionOutput, p.secondChangeOutput, p.feeOutput];
 }
 
-function toParameters<T>(
+export function toParameters<T>(
   firstChangeOutput: T,
   inscriptionOutput: T,
   secondChangeOutput: T,
@@ -228,7 +228,7 @@ function toOutputLayout(total: bigint, p: Parameters<Constraint>): OutputLayout 
       return;
     }
     for (const k in p) {
-      if (p[k] === expandable[0]) {
+      if (p[k as keyof Parameters<unknown>] === expandable[0]) {
         return toOutputLayout(total, { ...p, [k]: new Constraint(remainder, remainder) });
       }
     }

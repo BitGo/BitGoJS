@@ -1,13 +1,6 @@
 import * as assert from 'assert';
 
-import {
-  SatRange,
-  Constraint,
-  findOutputLayout,
-  SearchParams,
-  OutputLayout,
-  getOrdOutputsForLayout,
-} from '../../src/ord';
+import { SatRange, Constraint, findOutputLayout, SearchParams, OutputLayout, getOrdOutputsForLayout } from '../src';
 
 import { output, range } from './util';
 
