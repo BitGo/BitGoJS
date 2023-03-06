@@ -30,6 +30,7 @@ import {
   tsolToken,
   tstellarToken,
   ttronToken,
+  txrpToken,
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
@@ -87,6 +88,7 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 );
 const XRP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
 ];
@@ -9518,6 +9520,16 @@ export const coins = CoinMap.fromCoins([
     '',
     Networks.test.polygon,
     KeyCurve.Secp256k1
+  ),
+  txrpToken(
+    '8ef16158-1015-4a67-b6fe-db669c18ab2b',
+    'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
+    'XRPL Testnet Token',
+    15,
+    'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
+    'TST',
+    'xrpl.org',
+    UnderlyingAsset['txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd']
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(

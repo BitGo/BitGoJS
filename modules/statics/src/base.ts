@@ -1195,6 +1195,9 @@ export enum UnderlyingAsset {
 
   // Cardano Token
   adaTestnetToken = 'temporary-placeholder',
+
+  // XRP tokens
+  'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
 }
 
 /**

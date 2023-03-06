@@ -13,6 +13,7 @@ import {
   Erc721Coin,
   Erc1155Coin,
   TronErc20Coin,
+  XrpCoin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -62,6 +63,12 @@ export type OfcTokenConfig = BaseTokenConfig & {
 
 export type HbarTokenConfig = BaseNetworkConfig;
 
+export type XrpTokenConfig = BaseNetworkConfig & {
+  issuerAddress: string;
+  currencyCode: string;
+  domain?: string;
+};
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -103,6 +110,9 @@ export interface Tokens {
     trx: {
       tokens: TrxTokenConfig[];
     };
+    xrp: {
+      tokens: XrpTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -143,6 +153,9 @@ export interface Tokens {
     };
     trx: {
       tokens: TrxTokenConfig[];
+    };
+    xrp: {
+      tokens: XrpTokenConfig[];
     };
   };
 }
@@ -358,6 +371,22 @@ const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedXrpTokens = coins.reduce((acc: XrpTokenConfig[], coin) => {
+  if (coin instanceof XrpCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+      issuerAddress: coin.issuerAddress,
+      currencyCode: coin.currencyCode,
+      domain: coin.domain,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -400,6 +429,9 @@ export const tokens: Tokens = {
     trx: {
       tokens: formattedTrxTokens.filter((token) => token.network === 'Mainnet'),
     },
+    xrp: {
+      tokens: formattedXrpTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -441,6 +473,9 @@ export const tokens: Tokens = {
     },
     trx: {
       tokens: formattedTrxTokens.filter((token) => token.network === 'Testnet'),
+    },
+    xrp: {
+      tokens: formattedXrpTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
