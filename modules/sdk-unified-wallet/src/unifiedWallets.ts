@@ -1,5 +1,5 @@
 import { IUnifiedWallets } from './iUnifiedWallets';
-import { UnifiedWalletParams, UnifiedWallet, GenerateUnifiedWalletOptions } from './types';
+import { UnifiedWalletParams, UnifiedWallet, GenerateUnifiedWalletOptions, PaginationOptions } from './types';
 import {
   SupplementGenerateWalletOptions,
   BitGoBase,
@@ -95,8 +95,11 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     return newWallet;
   }
 
-  async getAllUnifiedWallets(): Promise<UnifiedWallet[]> {
-    return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).result();
+  async getUnifiedWallets(
+    paginationOptions: PaginationOptions = { prevPage: 0, limit: 15, order: 'DESC' }
+  ): Promise<UnifiedWallet[]> {
+    const { limit, order, prevPage: page } = paginationOptions;
+    return await this.bitgo.get(this.bitgo.url(this.urlPath, 2)).query({ limit, order, page }).result();
   }
 
   protected async getWallet(params: GetWalletOptions = {}): Promise<Wallet> {

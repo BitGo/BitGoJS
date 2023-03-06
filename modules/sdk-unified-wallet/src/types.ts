@@ -21,3 +21,11 @@ export type CurveType = 'Ecdsa' | 'Eddsa';
 export interface GenerateUnifiedWalletOptions extends GenerateWalletOptions {
   curve: CurveType;
 }
+
+export type PaginationOrder = 'ASC' | 'DESC';
+
+export interface PaginationOptions {
+  prevPage?: number;
+  limit?: number;
+  order: PaginationOrder;
+}
