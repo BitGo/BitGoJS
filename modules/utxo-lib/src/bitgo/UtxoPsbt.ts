@@ -3,7 +3,17 @@ import { TapBip32Derivation, Transaction as ITransaction, TransactionFromBuffer 
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
-import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
+import {
+  taproot,
+  HDSigner,
+  Psbt,
+  PsbtTransaction,
+  Transaction,
+  TxOutput,
+  Network,
+  ecc as eccLib,
+  p2trPayments,
+} from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
@@ -12,6 +22,15 @@ import { toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
 import { BIP32Factory } from 'bip32';
 import * as bs58check from 'bs58check';
+import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
+
+export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
+
+export enum ProprietaryKeySubtype {
+  ZEC_CONSENSUS_BRANCH_ID = 0x00,
+  MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
+  MUSIG2_PUB_NONCE = 0x02,
+}
 
 export interface HDTaprootSigner extends HDSigner {
   /**
@@ -40,6 +59,27 @@ export interface PsbtOpts {
   network: Network;
   maximumFeeRate?: number; // [sat/byte]
   bip32PathsAbsolute?: boolean;
+}
+
+/**
+ * Psbt proprietary keydata object.
+ * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
+ * => <bytes valuedata>
+ */
+export interface ProprietaryKeyValueData {
+  key: ProprietaryKey;
+  value: Buffer;
+}
+
+/**
+ * Psbt proprietary keydata object search fields.
+ * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
+ */
+export interface ProprietaryKeySearch {
+  identifier: string;
+  subtype: number;
+  keydata?: Buffer;
+  identifierEncoding?: BufferEncoding;
 }
 
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
@@ -457,6 +497,79 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     });
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
+  }
+
+  /**
+   * @retuns true iff the input is taproot.
+   */
+  isTaprootInput(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    function isP2tr(output: Buffer): boolean {
+      try {
+        p2trPayments.p2tr({ output }, { eccLib });
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+    return !!(
+      input.tapInternalKey ||
+      input.tapMerkleRoot ||
+      (input.tapLeafScript && input.tapLeafScript.length) ||
+      (input.tapBip32Derivation && input.tapBip32Derivation.length) ||
+      (input.witnessUtxo && isP2tr(input.witnessUtxo.script))
+    );
+  }
+
+  /**
+   * @returns hash and hashType for taproot input at inputIndex
+   * @throws error if input at inputIndex is not a taproot input
+   */
+  getTaprootHashForSigChecked(
+    inputIndex: number,
+    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL],
+    leafHash?: Buffer
+  ): {
+    hash: Buffer;
+    sighashType: number;
+  } {
+    if (!this.isTaprootInput(inputIndex)) {
+      throw new Error(`${inputIndex} input is not a taproot type to take taproot tx hash`);
+    }
+    return this.getTaprootHashForSig(inputIndex, sighashTypes, leafHash);
+  }
+
+  /**
+   * Adds proprietary key value pair to PSBT input.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  addProprietaryKeyValToInput(inputIndex: number, keyValueData: ProprietaryKeyValueData): this {
+    return this.addUnknownKeyValToInput(inputIndex, {
+      key: encodeProprietaryKey(keyValueData.key),
+      value: keyValueData.value,
+    });
+  }
+
+  /**
+   * To search any data from proprietary key value againts keydata.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValueData[] {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.unknownKeyVals || input.unknownKeyVals.length === 0) {
+      return [];
+    }
+    const keyVals = input.unknownKeyVals.map(({ key, value }, i) => {
+      return { key: decodeProprietaryKey(key), value };
+    });
+    return keyVals.filter((keyVal) => {
+      return (
+        keySearch === undefined ||
+        (keySearch.identifier === keyVal.key.identifier &&
+          keySearch.subtype === keyVal.key.subtype &&
+          (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))
+      );
+    });
   }
 
   clone(): this {

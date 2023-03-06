@@ -2,7 +2,7 @@ import { taproot } from 'bitcoinjs-lib';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { RootWalletKeys } from './WalletKeys';
 import { ChainCode, scriptTypeForChain } from './chains';
-import { createOutputScript2of3, createPaymentP2tr, toXOnlyPublicKey } from '../outputScripts';
+import { createOutputScript2of3, createPaymentP2tr, createPaymentP2trMusig2, toXOnlyPublicKey } from '../outputScripts';
 
 /**
  * Add a verifiable wallet output to the PSBT. The output and all data
@@ -26,8 +26,9 @@ export function addWalletOutputToPsbt(
 ): void {
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
   const scriptType = scriptTypeForChain(chain);
-  if (scriptType === 'p2tr') {
-    const payment = createPaymentP2tr(walletKeys.publicKeys);
+  if (scriptType === 'p2tr' || scriptType === 'p2trMusig2') {
+    const payment =
+      scriptType === 'p2tr' ? createPaymentP2tr(walletKeys.publicKeys) : createPaymentP2trMusig2(walletKeys.publicKeys);
     const allLeafHashes = payment.redeems!.map((r) => taproot.hashTapLeaf(r.output!));
 
     psbt.addOutput({

@@ -1,15 +1,23 @@
 import { getMainnet, Network, networks } from '../..';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
-import { createOutputScript2of3, createSpendScriptP2tr, scriptTypeForChain } from '../outputScripts';
+import {
+  createKeyPathP2trMusig2,
+  createOutputScript2of3,
+  createSpendScriptP2tr,
+  createSpendScriptP2trMusig2,
+  scriptTypeForChain,
+  toXOnlyPublicKey,
+} from '../outputScripts';
 import { toOutputScript } from '../../address';
 import { signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
 import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { KeyName, RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { Triple } from '../types';
+import { Triple, Tuple } from '../types';
 import { toOutput, UnspentWithPrevTx, Unspent, isUnspentWithPrevTx, toPrevOutput } from '../Unspent';
 import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
+import { encodePsbtMusig2ParticipantsKeyValData } from '../Musig2';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -156,8 +164,11 @@ export function addWalletUnspentToPsbt(
     psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
   }
 
-  if (scriptType === 'p2tr') {
-    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2tr(walletKeys.publicKeys, [
+  const isBackupFlow = signer === 'backup' || cosigner === 'backup';
+
+  if (scriptType === 'p2tr' || (scriptType === 'p2trMusig2' && isBackupFlow)) {
+    const createSpendScriptP2trFn = scriptType === 'p2tr' ? createSpendScriptP2tr : createSpendScriptP2trMusig2;
+    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2trFn(walletKeys.publicKeys, [
       walletKeys[signer].publicKey,
       walletKeys[cosigner].publicKey,
     ]);
@@ -165,7 +176,30 @@ export function addWalletUnspentToPsbt(
       tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
       tapBip32Derivation: [signer, cosigner].map((key) => ({
         leafHashes: [leafHash],
-        pubkey: walletKeys[key].publicKey.slice(1), // 32-byte x-only
+        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
+        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
+        masterFingerprint: rootWalletKeys[key].fingerprint,
+      })),
+    });
+  } else if (scriptType === 'p2trMusig2') {
+    const {
+      internalPubkey: tapInternalKey,
+      outputPubkey: tapOutputKey,
+      taptreeRoot,
+    } = createKeyPathP2trMusig2(walletKeys.publicKeys);
+    const participantPubKeys: Tuple<Buffer> = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
+    const participantsKeyValData = encodePsbtMusig2ParticipantsKeyValData({
+      tapOutputKey,
+      tapInternalKey,
+      participantPubKeys,
+    });
+    psbt.addProprietaryKeyValToInput(inputIndex, participantsKeyValData);
+    psbt.updateInput(inputIndex, {
+      tapInternalKey: tapInternalKey,
+      tapMerkleRoot: taptreeRoot,
+      tapBip32Derivation: [signer, cosigner].map((key) => ({
+        leafHashes: [],
+        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
         path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
         masterFingerprint: rootWalletKeys[key].fingerprint,
       })),

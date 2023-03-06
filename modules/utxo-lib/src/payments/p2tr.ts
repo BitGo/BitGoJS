@@ -132,7 +132,7 @@ export function p2tr(a: Payment, opts?: PaymentOpts): Payment {
     } else if (a.pubkeys && a.pubkeys.length > 1) {
       // multiple pubkeys
       if (isPlainPubkeys(a.pubkeys)) {
-        return musig.getXOnlyPubkey(musig.keyAgg(musig.keySort(a.pubkeys)));
+        return Buffer.from(musig.getXOnlyPubkey(musig.keyAgg(musig.keySort(a.pubkeys))));
       }
 
       return Buffer.from(taproot.aggregateMuSigPubkeys(ecc, a.pubkeys));
