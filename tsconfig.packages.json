@@ -128,7 +128,7 @@
       "path": "./modules/sdk-coin-zec"
     },
     {
-      "path": "./modules/sdk-evm-rpc-wrapper"
+      "path": "./modules/sdk-rpc-wrapper"
     }
     ,
     {
