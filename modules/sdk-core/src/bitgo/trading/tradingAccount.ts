@@ -142,9 +142,9 @@ export class TradingAccount implements ITradingAccount {
   }
 
   /**
-   * Signs a pre-built trade payload with the user key on this trading account
+   * Signs an arbitrary payload with the user key on this trading account
    * @param params
-   * @param params.payload trade payload object from TradingAccount::buildPayload()
+   * @param params.payload arbitrary payload object (string | Record<string, unknown>)
    * @param params.walletPassphrase passphrase on this trading account, used to unlock the account user key
    * @returns hex-encoded signature of the payload
    */
@@ -154,7 +154,7 @@ export class TradingAccount implements ITradingAccount {
       input: key.encryptedPrv,
       password: params.walletPassphrase,
     });
-    const payload = JSON.stringify(params.payload);
+    const payload = typeof params.payload === 'string' ? params.payload : JSON.stringify(params.payload);
     return ((await this.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
   }
 

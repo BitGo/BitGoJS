@@ -16,7 +16,7 @@ export interface BuildPayloadAmounts {
 }
 
 export interface SignPayloadParameters {
-  payload: Payload;
+  payload: string | Record<string, unknown>;
   walletPassphrase: string;
 }
 
