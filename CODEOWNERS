@@ -26,6 +26,7 @@ modules/sdk-unified-wallet @BitGo/defi-team
 modules/unspents/ @BitGo/btc-team
 modules/utxo-bin/ @BitGo/btc-team
 modules/utxo-lib/ @BitGo/btc-team
+modules/utxo-ord/ @BitGo/btc-team
 
 # Eth
 modules/account-lib/ @BitGo/eth-team
