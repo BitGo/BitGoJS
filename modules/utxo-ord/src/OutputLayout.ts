@@ -242,8 +242,8 @@ function toOutputLayout(total: bigint, p: Parameters<Constraint>): OutputLayout 
  * High-level constraints for output layout
  */
 export type SearchParams = {
-  minChange: bigint;
-  maxChange: bigint;
+  minChangeOutput: bigint;
+  maxChangeOutput: bigint;
   minInscriptionOutput: bigint;
   maxInscriptionOutput: bigint;
   feeFixed: bigint;
@@ -252,8 +252,8 @@ export type SearchParams = {
 
 /**
  * @param inscriptionInput
- * @param minChange
- * @param maxChange
+ * @param minChangeOutput
+ * @param maxChangeOutput
  * @param minInscriptionOutput
  * @param maxInscriptionOutput
  * @param feeFixed
@@ -262,14 +262,7 @@ export type SearchParams = {
  */
 export function findOutputLayout(
   inscriptionInput: OrdOutput,
-  {
-    minChange = BigInt(10_000),
-    maxChange = Constraint.MAXSAT,
-    minInscriptionOutput = BigInt(10_000),
-    maxInscriptionOutput = BigInt(20_000),
-    feeFixed,
-    feePerOutput,
-  }: SearchParams
+  { minChangeOutput, maxChangeOutput, minInscriptionOutput, maxInscriptionOutput, feeFixed, feePerOutput }: SearchParams
 ): OutputLayout | undefined {
   if (inscriptionInput.ordinals.length !== 1) {
     throw new Error(`unexpected ordinal count`);
@@ -283,7 +276,7 @@ export function findOutputLayout(
   }
 
   const fixedZero = Constraint.ZERO;
-  const expandableChangePadding = new Constraint(minChange, maxChange);
+  const expandableChangePadding = new Constraint(minChangeOutput, maxChangeOutput);
   const expandableInscriptionConstraint = new Constraint(minInscriptionOutput, maxInscriptionOutput);
   const fixedMinInscriptionConstraint = new Constraint(minInscriptionOutput, minInscriptionOutput);
   const fixedMaxInscriptionConstraint = new Constraint(maxInscriptionOutput, maxInscriptionOutput);

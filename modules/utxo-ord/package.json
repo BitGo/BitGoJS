@@ -26,7 +26,8 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "^7.7.0"
+    "@bitgo/utxo-lib": "^7.7.0",
+    "@bitgo/unspents": "^0.11.12"
   },
   "lint-staged": {
     "*.{js,ts}": [

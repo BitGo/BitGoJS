@@ -6,8 +6,8 @@ import { output, range } from './util';
 
 describe('Ordinal Transaction Layout', function () {
   const params: SearchParams = {
-    minChange: BigInt(10),
-    maxChange: Constraint.MAXSAT,
+    minChangeOutput: BigInt(10),
+    maxChangeOutput: Constraint.MAXSAT,
     minInscriptionOutput: BigInt(10),
     maxInscriptionOutput: BigInt(20),
     feeFixed: BigInt(10),
