@@ -22,7 +22,6 @@ modules/sdk-coin-doge/ @BitGo/btc-team
 modules/sdk-coin-ltc/ @BitGo/btc-team
 modules/sdk-coin-zec/ @BitGo/btc-team
 modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
-modules/sdk-unified-wallet @BitGo/defi-team
 modules/unspents/ @BitGo/btc-team
 modules/utxo-bin/ @BitGo/btc-team
 modules/utxo-lib/ @BitGo/btc-team
@@ -70,6 +69,7 @@ modules/key-card/ @BitGo/wallets
 modules/sdk-api/ @BitGo/developer-relations-team
 modules/sdk-core/ @BitGo/developer-relations-team
 modules/sdk-test/ @BitGo/developer-relations-team
+modules/sdk-unified-wallet @BitGo/defi-team
 modules/sjcl/ @BitGo/developer-relations-team
 modules/statics/ @BitGo/developer-relations-team
 modules/web-demo/ @BitGo/developer-relations-team
