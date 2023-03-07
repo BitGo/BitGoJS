@@ -1,0 +1,39 @@
+{
+  "name": "@bitgo/sdk-evm-rpc-wrapper",
+  "version": "1.0.0",
+  "description": "Bitgo SDK wrapper to handle EVM RPC events",
+  "main": "./dist/src/index.js",
+  "type": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
+  },
+  "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-evm"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  }
+}

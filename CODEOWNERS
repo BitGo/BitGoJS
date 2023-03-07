@@ -68,6 +68,7 @@ modules/express/ @BitGo/developer-relations-team
 modules/key-card/ @BitGo/wallets
 modules/sdk-api/ @BitGo/developer-relations-team
 modules/sdk-core/ @BitGo/developer-relations-team
+modules/sdk-evm-rpc-wrapper @BitGo/defi-team
 modules/sdk-test/ @BitGo/developer-relations-team
 modules/sdk-unified-wallet @BitGo/defi-team
 modules/sjcl/ @BitGo/developer-relations-team
