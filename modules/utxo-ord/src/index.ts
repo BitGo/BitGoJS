@@ -7,3 +7,4 @@ export * from './OrdOutput';
 export * from './OutputLayout';
 export * from './SatPoint';
 export * from './psbt';
+export * as inscriptions from './inscriptions';
