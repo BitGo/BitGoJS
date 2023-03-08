@@ -33,12 +33,16 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
   btg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  cspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  cspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   doge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   eos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   eth: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+    ],
   },
   etc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
@@ -47,6 +51,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   ltc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
+  matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   polygon: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   xrp: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
@@ -71,12 +76,16 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
   tbtg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tcspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  tcspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   gteth: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+    ],
   },
   tetc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
@@ -85,6 +94,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tltc: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
   },
+  tmatic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tpolygon: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
   txrp: {
     features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
