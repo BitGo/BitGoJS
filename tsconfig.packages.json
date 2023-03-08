@@ -128,6 +128,10 @@
       "path": "./modules/sdk-coin-zec"
     },
     {
+      "path": "./modules/sdk-rpc-wrapper"
+    }
+    ,
+    {
       "path": "./modules/sdk-core"
     },
     {

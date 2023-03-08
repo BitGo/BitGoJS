@@ -1,7 +1,7 @@
 {
-  "name": "@bitgo/sdk-unified-wallet",
-  "version": "2.0.1",
-  "description": "Bitgo SDK library for EVM Wallets",
+  "name": "@bitgo/sdk-rpc-wrapper",
+  "version": "1.0.0",
+  "description": "Bitgo SDK wrapper to handle EVM RPC events",
   "main": "./dist/src/index.js",
   "type": "./dist/src/index.d.ts",
   "scripts": {
@@ -13,15 +13,12 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^7.0.1",
-    "@bitgo/statics": "^14.4.0"
+    "@bitgo/sdk-core": "^7.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",
     "@bitgo/sdk-coin-eth": "^4.2.1",
-    "@bitgo/sdk-coin-polygon": "^1.4.8",
-    "@bitgo/sdk-test": "^1.2.15",
-    "openpgp": "5.1.0"
+    "@bitgo/sdk-test": "^1.2.15"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",
@@ -31,7 +28,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-unified-wallet"
+    "directory": "modules/sdk-rpc-wrapper"
   },
   "lint-staged": {
     "*.{js,ts}": [
