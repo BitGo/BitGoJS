@@ -18,7 +18,6 @@ import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
-   *
    * @param { KeyPairOptions } source Either a master seed, a private key (extended or raw), or a public key
    *     (extended, compressed, or uncompressed)
    */
@@ -44,7 +43,6 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
   /**
    * Cosmos default keys format: raw private and compressed public key
-   *
    * @returns { DefaultKeys } The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {

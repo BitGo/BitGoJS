@@ -1,8 +1,8 @@
-import { AuthInfo, TxBody, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import should from 'should';
 
 import utils from '../../src/lib/utils';
-import { address, blockHash, TEST_TX, txIds } from '../resources/atom';
+import { address, blockHash, txIds } from '../resources/atom';
+import * as testData from '../resources/atom';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {
@@ -43,33 +43,15 @@ describe('utils', () => {
     should.equal(utils.isValidTransactionId('dalij43ta0ga2dadda02'), false);
   });
 
-  it('should validate raw transaction correctly', () => {
-    should.doesNotThrow(() => utils.validateRawTransaction(TEST_TX.signedTxBase64));
-  });
-
-  it('should validate invalid raw transaction correctly', () => {
-    should(() => utils.validateRawTransaction(undefined)).throw('Invalid raw transaction: Undefined');
-
-    const emptyMessageTx = Buffer.from(
-      TxRaw.encode(
-        TxRaw.fromPartial({
-          bodyBytes: TxBody.encode(
-            TxBody.fromPartial({
-              messages: [],
-            })
-          ).finish(),
-          authInfoBytes: AuthInfo.encode(
-            AuthInfo.fromJSON({
-              signerInfos: [
-                {
-                  seqence: 0,
-                },
-              ],
-            })
-          ).finish(),
-        })
-      ).finish()
-    ).toString('base64');
-    should(() => utils.validateRawTransaction(emptyMessageTx)).throw('Invalid raw transaction');
+  it('validateAmount', function () {
+    should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount1]));
+    should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount2]));
+    should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount3]));
+    should(() => utils.validateAmountData([testData.coinAmounts.amount4])).throwError(
+      'transactionBuilder: validateAmount: Invalid amount: ' + testData.coinAmounts.amount4.amount
+    );
+    should(() => utils.validateAmountData([testData.coinAmounts.amount5])).throwError(
+      'transactionBuilder: validateAmount: Invalid denom: ' + testData.coinAmounts.amount5.denom
+    );
   });
 });

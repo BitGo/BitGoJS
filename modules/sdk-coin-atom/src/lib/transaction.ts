@@ -3,22 +3,29 @@ import {
   BaseTransaction,
   InvalidTransactionError,
   ParseTransactionError,
-  PublicKey as BasePublicKey,
-  Signature,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { toBase64 } from '@cosmjs/encoding';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
-import { AtomTransactionType, sendMsgType } from './constants';
-import { AtomTransaction, TransactionExplanation, TxData } from './iface';
+
+import { UNAVAILABLE_TEXT } from './constants';
+import {
+  AtomTransaction,
+  DelegateOrUndelegeteMessage,
+  SendMessage,
+  TransactionExplanation,
+  TxData,
+  WithdrawDelegatorRewardsMessage,
+} from './iface';
 import utils from './utils';
-import { toBase64 } from '@cosmjs/encoding';
 
 export class Transaction extends BaseTransaction {
   private _atomTransaction: AtomTransaction;
-  private _signature: Signature;
+  private _accountNumber: number;
+  private _chainId: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -28,22 +35,34 @@ export class Transaction extends BaseTransaction {
     return this._atomTransaction;
   }
 
-  set atomTransaction(tx: AtomTransaction) {
-    this._atomTransaction = tx;
+  set atomTransaction(atomTransaction: Readonly<AtomTransaction>) {
+    this._atomTransaction = atomTransaction;
+  }
+
+  get chainId(): string {
+    return this._chainId;
+  }
+
+  set chainId(chainId: string) {
+    this._chainId = chainId;
+  }
+
+  get accountNumber(): number {
+    return this._accountNumber;
+  }
+
+  set accountNumber(accountNumber: number) {
+    this._accountNumber = accountNumber;
   }
 
   /** @inheritDoc **/
   get id(): string {
-    return this._id || 'UNAVAILABLE';
-  }
-
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this._signatures.push(signature.toString('hex'));
-    this._signature = { publicKey, signature };
-  }
-
-  get atomSignature(): Signature {
-    return this._signature;
+    if (this._id) {
+      return this._id;
+    } else if (this._atomTransaction?.hash !== undefined) {
+      return this._atomTransaction.hash;
+    }
+    return UNAVAILABLE_TEXT;
   }
 
   /** @inheritdoc */
@@ -66,13 +85,16 @@ export class Transaction extends BaseTransaction {
     }
     const tx = this._atomTransaction;
     return {
-      id: this._id,
-      type: tx.type,
-      signerAddress: tx.signerAddress,
+      id: this.id,
+      type: this._type,
       sequence: tx.sequence,
       sendMessages: tx.sendMessages,
       gasBudget: tx.gasBudget,
       publicKey: tx.publicKey,
+      signature: tx.signature,
+      accountNumber: this._accountNumber,
+      chainId: this._chainId,
+      hash: tx.hash,
     };
   }
 
@@ -92,18 +114,11 @@ export class Transaction extends BaseTransaction {
       fee: { fee: this.atomTransaction.gasBudget.amount[0].amount },
       type: this.type,
     };
-
-    switch (this.type) {
-      case TransactionType.Send:
-        return this.explainTransferTransaction(result, explanationResult);
-      default:
-        throw new InvalidTransactionError('Transaction type not supported');
-    }
+    return this.explainTransactionInternal(result, explanationResult);
   }
 
   /**
    * Set the transaction type.
-   *
    * @param {TransactionType} transactionType The transaction type to be set.
    */
   transactionType(transactionType: TransactionType): void {
@@ -112,25 +127,33 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Sets this transaction payload
-   *
-   * @param rawTransaction
+   * @param rawTransaction raw transaction in base64 encoded string
    */
   enrichTransactionDetailsFromRawTransaction(rawTransaction: string): void {
-    this._atomTransaction = Transaction.deserializeAtomTransaction(rawTransaction);
-    if (utils.isSignedRawTx(rawTransaction)) {
-      const signerInfo = utils.getSignerInfoFromRawSignedTx(rawTransaction);
-      this.addSignature(signerInfo.pubKey, signerInfo.signature);
+    this.atomTransaction = utils.deserializeAtomTransaction(rawTransaction);
+    if (this.atomTransaction.signature) {
+      this.addSignature(Buffer.from(this.atomTransaction.signature).toString('hex'));
     }
-    this._type = TransactionType.Send;
+    this._type = utils.getTransactionTypeFromTypeUrl(this._atomTransaction.sendMessages[0].typeUrl);
+  }
+
+  /**
+   * Add a signature to the transaction
+   * @param {string} signature in hex format
+   */
+  addSignature(signature: string) {
+    this._signatures = [];
+    this._signatures.push(signature);
   }
 
   /**
    * Serialize the transaction to a JSON string
+   * @returns {string} serialized base64 encoded transaction
    */
   serialize(): string {
     const txRaw = utils.createTxRawFromAtomTransaction(this.atomTransaction);
-    if (this._signatures.length > 0) {
-      const signedRawTx = utils.createSignedTxRaw(this.atomSignature, txRaw);
+    if (this.atomTransaction?.publicKey !== undefined && this._signatures.length > 0) {
+      const signedRawTx = utils.createSignedTxRaw(this.atomTransaction.publicKey, this._signatures[0], txRaw);
       return toBase64(TxRaw.encode(signedRawTx).finish());
     }
     return toBase64(TxRaw.encode(txRaw).finish());
@@ -138,31 +161,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc **/
   get signablePayload(): Buffer {
-    const signDoc = utils.createSignDocFromAtomTransaction(this.atomTransaction);
-    return Buffer.from(makeSignBytes(signDoc));
-  }
-
-  static deserializeAtomTransaction(rawTx: string): AtomTransaction {
-    const decodedTx = utils.getDecodedTxFromRawBase64(rawTx);
-    let type: AtomTransactionType;
-    const typeUrl = utils.getTypeUrlFromDecodedTx(decodedTx);
-    if (typeUrl === sendMsgType) {
-      type = AtomTransactionType.Pay;
-    } else {
-      throw new Error('Transaction type not supported: ' + typeUrl);
-    }
-    const sendMessageData = utils.getMessageDataFromDecodedTx(decodedTx);
-    const sequence = utils.getSequenceFromDecodedTx(decodedTx);
-    const gasBudget = utils.getGasBudgetFromDecodedTx(decodedTx);
-    const publicKey = utils.getPublicKeyFromDecodedTx(decodedTx);
-    return {
-      type,
-      sendMessages: sendMessageData,
-      signerAddress: sendMessageData[0].value.fromAddress,
-      gasBudget,
-      sequence,
-      publicKey,
-    };
+    return Buffer.from(makeSignBytes(utils.createSignDoc(this.atomTransaction, this._accountNumber, this._chainId)));
   }
 
   /**
@@ -172,24 +171,61 @@ export class Transaction extends BaseTransaction {
    * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
    * @returns {TransactionExplanation}
    */
-  explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const outputAmount = this._atomTransaction.sendMessages[0].value.amount[0].amount;
-    const outputs: TransactionRecipient[] = [
-      {
-        address: this._atomTransaction.sendMessages[0].value.toAddress,
-        amount: outputAmount,
-      },
-    ];
+  explainTransactionInternal(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    let outputs: TransactionRecipient[];
+    let message;
+    let outputAmount;
+    switch (json.type) {
+      case TransactionType.Send:
+        explanationResult.type = TransactionType.Send;
+        message = json.sendMessages[0].value as SendMessage;
+        outputAmount = message.amount[0].amount;
+        outputs = [
+          {
+            address: message.toAddress,
+            amount: outputAmount,
+          },
+        ];
+        break;
+      case TransactionType.StakingActivate:
+        explanationResult.type = TransactionType.StakingActivate;
+        message = json.sendMessages[0].value as DelegateOrUndelegeteMessage;
+        outputAmount = message.amount.amount;
+        outputs = [
+          {
+            address: message.validatorAddress,
+            amount: outputAmount,
+          },
+        ];
+        break;
+      case TransactionType.StakingDeactivate:
+        explanationResult.type = TransactionType.StakingDeactivate;
+        message = json.sendMessages[0].value as DelegateOrUndelegeteMessage;
+        outputAmount = message.amount.amount;
+        outputs = [
+          {
+            address: message.validatorAddress,
+            amount: outputAmount,
+          },
+        ];
+        break;
+      case TransactionType.StakingWithdraw:
+        explanationResult.type = TransactionType.StakingWithdraw;
+        message = json.sendMessages[0].value as WithdrawDelegatorRewardsMessage;
+        outputs = [
+          {
+            address: message.validatorAddress,
+            amount: UNAVAILABLE_TEXT,
+          },
+        ];
+        break;
+      default:
+        throw new InvalidTransactionError('Transaction type not supported');
+    }
     return {
       ...explanationResult,
       outputAmount,
       outputs,
     };
-  }
-
-  static fromRawTransaction(rawTransaction: string, coinConfig: Readonly<CoinConfig>): Transaction {
-    const tx = new Transaction(coinConfig);
-    tx.enrichTransactionDetailsFromRawTransaction(rawTransaction);
-    return tx;
   }
 }
