@@ -1,7 +1,16 @@
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EvmRPCWrapper } from '../../src/evmRPCWrapper';
-import { Wallet, common, ECDSAUtils, Keychains, Ecdsa, SignedMessage, SignTypedDataVersion } from '@bitgo/sdk-core';
+import {
+  Wallet,
+  common,
+  ECDSAUtils,
+  Keychains,
+  Ecdsa,
+  SignedMessage,
+  SignTypedDataVersion,
+  SendManyOptions,
+} from '@bitgo/sdk-core';
 import { EVMRPCRequest } from '../../src/types';
 import { Gteth } from '@bitgo/sdk-coin-eth';
 import * as sinon from 'sinon';
@@ -11,8 +20,10 @@ import {
   reqId,
   typedMessage,
   txRequestForTypedDataSigning,
+  transactionOptions,
 } from '../fixtures/evmRPCWrapperFixtures';
 import nock = require('nock');
+import { personal_sign, eth_signTypedData, eth_sendTransaction } from '../../src/constants';
 
 describe('EVMRPCWrapper handleRPCCall', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -60,7 +71,7 @@ describe('EVMRPCWrapper handleRPCCall', function () {
     signTxRequestForMessage.resolves(txRequestForMessageSigning);
     const messageRaw = 'test message';
     params = {
-      method: 'personal_sign',
+      method: personal_sign,
       params: [messageRaw],
     };
     const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw, coin };
@@ -79,7 +90,7 @@ describe('EVMRPCWrapper handleRPCCall', function () {
   it('eth_signTypedData should call wallet signTypedData', async function () {
     signTxRequestForMessage.resolves(txRequestForTypedDataSigning);
     params = {
-      method: 'eth_signTypedData',
+      method: eth_signTypedData,
       params: [JSON.stringify(typedMessage)],
     };
     const messageRaw = JSON.stringify(typedMessage);
@@ -101,5 +112,17 @@ describe('EVMRPCWrapper handleRPCCall', function () {
       walletPassphrase,
     });
     actual.result.should.deepEqual(expected);
+  });
+
+  it('eth_sendTransaction should call wallet sendMany', async function () {
+    params = {
+      method: eth_sendTransaction,
+      params: [JSON.stringify(transactionOptions)],
+    };
+    const expected = 'sendTxRequest';
+    const sendManyStub = sandbox.stub(Wallet.prototype, 'sendMany').resolves(expected);
+    const actual = await evmRPCWrapper.handleRPCCall(params, walletPassphrase);
+    sendManyStub.calledOnceWith(transactionOptions as unknown as SendManyOptions);
+    actual.result.should.equal(expected);
   });
 });

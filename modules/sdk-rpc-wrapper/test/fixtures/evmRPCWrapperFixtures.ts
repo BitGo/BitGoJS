@@ -1,4 +1,5 @@
 import { TxRequest, SignatureShareType, RequestTracer, TypedMessage, MessageTypes } from '@bitgo/sdk-core';
+import { EVMRPCTransactionOptions } from '../../src';
 
 export const ethWalletData = {
   id: '598f606cd8fc24710d2ebadb1d9459bb',
@@ -94,4 +95,11 @@ export const typedMessage: TypedMessage<MessageTypes> = {
   primaryType: 'Message',
   types,
   message: { data: 'bitgo says hello!' },
+};
+
+export const transactionOptions: EVMRPCTransactionOptions = {
+  to: '',
+  gasLimit: '0xb',
+  gasPrice: '0xa',
+  value: '',
 };

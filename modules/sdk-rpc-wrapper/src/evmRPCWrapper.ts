@@ -1,5 +1,13 @@
-import { EVMRPCRequest, EVMRPCResult } from './types';
-import { Wallet, WalletSignMessageOptions, WalletSignTypedDataOptions, SignTypedDataVersion } from '@bitgo/sdk-core';
+import { EVMRPCRequest, EVMRPCResult, EVMRPCTransactionOptions } from './types';
+import {
+  Wallet,
+  WalletSignMessageOptions,
+  WalletSignTypedDataOptions,
+  SignTypedDataVersion,
+  SendManyOptions,
+} from '@bitgo/sdk-core';
+import { hexStringToNumber } from '@bitgo/sdk-coin-eth';
+import { personal_sign, eth_signTypedData, eth_sendTransaction } from './constants';
 
 export class EvmRPCWrapper {
   private wallet: Wallet;
@@ -14,15 +22,15 @@ export class EvmRPCWrapper {
   /**
    * Handles RPC call from an EVM provider and invokes the appropriate BitGo SDK wallet method.
    *
-   * @param param
-   * @param walletPassphrase
+   * @evmrpcRequest request
+   * @evmrpcRequest walletPassphrase
    */
-  async handleRPCCall(param: EVMRPCRequest, walletPassphrase: string): Promise<EVMRPCResult> {
-    const { method, id, jsonrpc, params } = param;
+  async handleRPCCall(request: EVMRPCRequest, walletPassphrase: string): Promise<EVMRPCResult> {
+    const { method, id, jsonrpc, params } = request;
     let result;
 
     switch (method) {
-      case 'personal_sign':
+      case personal_sign:
         const walletSignMessageOptions: WalletSignMessageOptions = {
           message: {
             messageRaw: params[0],
@@ -31,7 +39,7 @@ export class EvmRPCWrapper {
         };
         result = await this.wallet.signMessage(walletSignMessageOptions);
         break;
-      case 'eth_signTypedData':
+      case eth_signTypedData:
         const walletSignTypedDataOptions: WalletSignTypedDataOptions = {
           walletPassphrase,
           typedData: {
@@ -40,6 +48,14 @@ export class EvmRPCWrapper {
           },
         };
         result = await this.wallet.signTypedData(walletSignTypedDataOptions);
+        break;
+
+      case eth_sendTransaction:
+        let option = params[0];
+        if (this.isString(params[0])) {
+          option = JSON.parse(params[0]);
+        }
+        result = await this.sendTransaction(option as unknown as EVMRPCTransactionOptions);
         break;
       default:
         throw new Error(`method '${method}' not yet implemented`);
@@ -50,5 +66,29 @@ export class EvmRPCWrapper {
       jsonrpc,
       result,
     };
+  }
+
+  private async sendTransaction(options: EVMRPCTransactionOptions): Promise<any> {
+    const { to, data, gasPrice, gasLimit, value } = options;
+
+    const sendManyOptions: SendManyOptions = {
+      recipients: [
+        {
+          address: to,
+          amount: value,
+          data,
+        },
+      ],
+      gasPrice: hexStringToNumber(gasPrice),
+      gasLimit: hexStringToNumber(gasLimit),
+    };
+    return await this.wallet.sendMany(sendManyOptions);
+  }
+
+  private isString(str: string): boolean {
+    if (str != null && typeof str.valueOf() === 'string') {
+      return true;
+    }
+    return false;
   }
 }
