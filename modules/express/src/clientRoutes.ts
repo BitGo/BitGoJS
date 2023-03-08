@@ -461,6 +461,41 @@ export async function handleV2Sign(req: express.Request) {
   }
 }
 
+export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
+  const walletId = req.body.walletId;
+  const payload = req.body.payload;
+  const ofcCoinName = 'ofc';
+
+  if (!payload) {
+    throw new ApiResponseError('Missing required field: payload', 400);
+  }
+
+  if (!walletId) {
+    throw new ApiResponseError('Missing required field: walletId', 400);
+  }
+
+  const bitgo = req.bitgo;
+
+  // This is to set us up for multiple trading accounts per enterprise
+  const wallet = await bitgo.coin(ofcCoinName).wallets().get({ id: walletId });
+
+  if (wallet === undefined) {
+    throw new ApiResponseError(`Could not find OFC wallet ${walletId}`, 404);
+  }
+
+  const walletPassphrase = getWalletPwFromEnv(wallet.id());
+  const tradingAccount = wallet.toTradingAccount();
+  const stringifiedPayload = JSON.stringify(req.body.payload);
+  const signature = await tradingAccount.signPayload({
+    payload: stringifiedPayload,
+    walletPassphrase,
+  });
+  return {
+    payload: stringifiedPayload,
+    signature,
+  };
+}
+
 /**
  * handle new wallet creation
  * @param req
@@ -1120,6 +1155,9 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleV2AcceptWalletShare)
   );
+
+  // sign arbitrary payloads w/ trading account key
+  app.post(`/api/v2/ofc/signPayload`, parseBody, prepareBitGo(config), promiseWrapper(handleV2OFCSignPayload));
 
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
