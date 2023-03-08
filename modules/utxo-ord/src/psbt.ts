@@ -1,17 +1,10 @@
 import { Network, bitgo, address } from '@bitgo/utxo-lib';
 import { Dimensions, VirtualSizes } from '@bitgo/unspents';
 
-import {
-  getOrdOutputsForLayout,
-  OrdOutput,
-  OutputLayout,
-  toArray,
-  SatPoint,
-  findOutputLayout,
-  Constraint,
-  parseSatPoint,
-  SatRange,
-} from './index';
+import { OrdOutput } from './OrdOutput';
+import { parseSatPoint, SatPoint } from './SatPoint';
+import { SatRange } from './SatRange';
+import { getOrdOutputsForLayout, OutputLayout, toArray, findOutputLayout } from './OutputLayout';
 
 export type WalletOutputPath = {
   chain: bitgo.ChainCode;
@@ -118,7 +111,6 @@ export function findOutputLayoutForWalletUnspents(
 
   const {
     minChangeOutput = BigInt(10_000),
-    maxChangeOutput = Constraint.MAXSAT,
     minInscriptionOutput = BigInt(10_000),
     maxInscriptionOutput = BigInt(20_000),
   } = constraints;
@@ -127,7 +119,6 @@ export function findOutputLayoutForWalletUnspents(
   const inscriptionOutput = new OrdOutput(input.value, [toSatRange(satPoint)]);
   return findOutputLayout(inscriptionOutput, {
     minChangeOutput,
-    maxChangeOutput,
     minInscriptionOutput,
     maxInscriptionOutput,
     feeFixed: getFee(

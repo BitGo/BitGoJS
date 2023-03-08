@@ -51,7 +51,6 @@ Broadly speaking, there are four scenarios:
 
 (3) Large inscription input with inscription close to end of input.
     Change output padding start followed by inscription output.
-    (TODO)
 
     ┌────────┬────────┐
     │        │ u0     │
@@ -75,7 +74,6 @@ Broadly speaking, there are four scenarios:
 
 (4) Large inscription input with inscription in the middle.
     Inscription input (u1) with padding on both sides (u0 and u2)
-    (TODO)
 
     ┌────────┬────────┐
     │        │ u0     │
@@ -99,32 +97,25 @@ Broadly speaking, there are four scenarios:
  */
 
 import { OrdOutput } from './OrdOutput';
-import { SatRange } from './SatRange';
+
+const ZERO = BigInt(0);
+const ONE = BigInt(1);
+
+function max(a: bigint, b: bigint): bigint {
+  return a < b ? b : a;
+}
+
+function min(a: bigint, b: bigint): bigint {
+  return a < b ? a : b;
+}
+
+function sum(arr: bigint[]): bigint {
+  return arr.reduce((a, b) => a + b, ZERO);
+}
 
 /**
  * A range constraint
  */
-export class Constraint {
-  /**
-   * @param minValue - inclusive
-   * @param maxValue - inclusive
-   */
-  constructor(public minValue: bigint, public maxValue: bigint) {
-    if (minValue < 0 || maxValue < minValue) {
-      throw new Error(`invalid constraint [${minValue}, ${maxValue}]`);
-    }
-  }
-
-  /** @return true iff value satisfies constraint */
-  check(v: bigint): boolean {
-    return new SatRange(this.minValue, this.maxValue).isSupersetOf(v);
-  }
-
-  static ZERO = new Constraint(BigInt(0), BigInt(0));
-  /** infinity for all practical purposes */
-  static MAXSAT = BigInt(21e14);
-}
-
 type Parameters<T> = {
   /** Padding preceding the inscription output */
   firstChangeOutput: T;
@@ -178,26 +169,20 @@ export function getOrdOutputsForLayout(
 }
 
 /**
- * @param layout
- * @return output sum (including fee output) for layout.
- */
-function getLayoutSum(layout: OutputLayout): bigint {
-  return toArray(layout).reduce((a, b) => a + b, BigInt(0));
-}
-
-/**
+ * @param constraints
  * @param inscriptionInput
  * @param layout
- * @param constraints
  * @return true iff layout satisfies constraints
  */
-function check(inscriptionInput: OrdOutput, layout: OutputLayout, constraints: Parameters<Constraint>): boolean {
+function check(constraints: Constraints, inscriptionInput: OrdOutput, layout: OutputLayout): boolean {
   if (
-    constraints.firstChangeOutput.check(layout.firstChangeOutput) &&
-    constraints.inscriptionOutput.check(layout.inscriptionOutput) &&
-    constraints.secondChangeOutput.check(layout.secondChangeOutput) &&
-    constraints.feeOutput.check(layout.feeOutput) &&
-    getLayoutSum(layout) === inscriptionInput.value
+    (layout.firstChangeOutput === ZERO || constraints.minChangeOutput <= layout.firstChangeOutput) &&
+    (layout.secondChangeOutput === ZERO || constraints.minChangeOutput <= layout.secondChangeOutput) &&
+    constraints.minInscriptionOutput <= layout.inscriptionOutput &&
+    layout.inscriptionOutput <= constraints.maxInscriptionOutput &&
+    getFeeForOutputs(constraints, [layout.firstChangeOutput, layout.inscriptionOutput, layout.secondChangeOutput]) <=
+      layout.feeOutput &&
+    sum(toArray(layout)) === inscriptionInput.value
   ) {
     /* make sure inscription actually lies on the inscriptionOutput */
     const outputs = getOrdOutputsForLayout(inscriptionInput, layout);
@@ -208,93 +193,115 @@ function check(inscriptionInput: OrdOutput, layout: OutputLayout, constraints: P
 }
 
 /**
- * Solves the constraints defined in _p_ to produce a layout by expanding a parameter.
- * Currently only works with one expandable parameter.
- * @param total - the total input sum
- * @param p - the constraint parameters.
- * @return OutputLayout
- */
-function toOutputLayout(total: bigint, p: Parameters<Constraint>): OutputLayout | undefined {
-  const fixed = Object.values(p).filter((v) => v.minValue === v.maxValue);
-  const expandable = Object.values(p).filter((v) => v.minValue !== v.maxValue);
-  if (expandable.length === 0) {
-    return Object.fromEntries(Object.entries(p).map(([k, v]) => [k, v.minValue])) as OutputLayout;
-  }
-
-  if (expandable.length === 1) {
-    const sumFixed = fixed.reduce((sum, e) => sum + e.minValue, BigInt(0));
-    const remainder = total - sumFixed;
-    if (remainder < 0) {
-      return;
-    }
-    for (const k in p) {
-      if (p[k as keyof Parameters<unknown>] === expandable[0]) {
-        return toOutputLayout(total, { ...p, [k]: new Constraint(remainder, remainder) });
-      }
-    }
-    throw new Error(`illegal state`);
-  }
-
-  throw new Error(`cannot expand more than one constraint`);
-}
-
-/**
  * High-level constraints for output layout
  */
-export type SearchParams = {
+export type Constraints = {
   minChangeOutput: bigint;
-  maxChangeOutput: bigint;
   minInscriptionOutput: bigint;
   maxInscriptionOutput: bigint;
   feeFixed: bigint;
   feePerOutput: bigint;
+  satPos: bigint;
+  total: bigint;
 };
+
+function getFeeForOutputs(p: { feePerOutput: bigint; feeFixed: bigint }, outputs: bigint[]): bigint {
+  return outputs.reduce((sum, oValue): bigint => sum + (oValue === ZERO ? ZERO : p.feePerOutput), p.feeFixed);
+}
+function getStartChangeOutput(c: Constraints): bigint | null {
+  // we don't need a change padding output
+  if (c.satPos < c.maxInscriptionOutput) {
+    return ZERO;
+  }
+  if (c.minChangeOutput <= c.satPos) {
+    return c.satPos;
+  }
+  return null;
+}
+
+function getInscriptionOutput(c: Constraints, startChangeOutput: bigint): bigint | null {
+  const result = min(c.maxInscriptionOutput, max(c.minInscriptionOutput, c.satPos - startChangeOutput + ONE));
+  if (c.satPos < startChangeOutput || startChangeOutput + result < c.satPos) {
+    return null;
+  }
+  // if is not worth creating an end change output, let's maximize the inscription output
+  if (getEndChangeOutput(c, startChangeOutput, result) === ZERO) {
+    const remainder = c.total - startChangeOutput - getFeeForOutputs(c, [startChangeOutput, result]);
+    return min(remainder, c.maxInscriptionOutput);
+  }
+  return result;
+}
+
+function getEndChangeOutput(c: Constraints, startChangeOutput: bigint, inscriptionOutput: bigint): bigint | null {
+  const remainder = c.total - sum([startChangeOutput, inscriptionOutput]);
+  const minFeeWithoutSecondOutput = getFeeForOutputs(c, [startChangeOutput, inscriptionOutput]);
+  const minFeeWithSecondOutput = getFeeForOutputs(c, [startChangeOutput, inscriptionOutput, c.minChangeOutput]);
+  if (remainder < minFeeWithoutSecondOutput) {
+    // We cannot even pay the fee for the output(s) we have so far.
+    return null;
+  }
+  if (remainder - minFeeWithSecondOutput < c.minChangeOutput) {
+    // The remainder is too small to pay for the end change output. Let's skip it and pay a higher fee.
+    return ZERO;
+  }
+  // let's use as much as we can for fee while leaving enough for fee
+  return remainder - minFeeWithSecondOutput;
+}
+
+function getFeeOutput(
+  c: Constraints,
+  startChangeOutput: bigint,
+  inscriptionOutput: bigint,
+  endChangeOutput: bigint
+): bigint | null {
+  const minFee = getFeeForOutputs(c, [startChangeOutput, inscriptionOutput, endChangeOutput]);
+  const remainder = c.total - sum([startChangeOutput, inscriptionOutput, endChangeOutput]);
+  if (remainder < minFee) {
+    return null;
+  }
+  return remainder;
+}
 
 /**
  * @param inscriptionInput
- * @param minChangeOutput
- * @param maxChangeOutput
- * @param minInscriptionOutput
- * @param maxInscriptionOutput
- * @param feeFixed
- * @param feePerOutput
+ * @param search
  * @return a solution that satisfies constraints. If no solution can be found, return `undefined`.
  */
 export function findOutputLayout(
   inscriptionInput: OrdOutput,
-  { minChangeOutput, maxChangeOutput, minInscriptionOutput, maxInscriptionOutput, feeFixed, feePerOutput }: SearchParams
+  search: Omit<Constraints, 'satPos' | 'total'>
 ): OutputLayout | undefined {
   if (inscriptionInput.ordinals.length !== 1) {
     throw new Error(`unexpected ordinal count`);
   }
-  if (inscriptionInput.ordinals[0].size() !== BigInt(1)) {
+  if (inscriptionInput.ordinals[0].size() !== ONE) {
     throw new Error(`only single-satoshi inscriptions are supported`);
   }
-  function feeConstraintForOutputCount(n: number) {
-    const fee = feeFixed + feePerOutput * BigInt(n);
-    return new Constraint(fee, fee);
+
+  const satPos = inscriptionInput.ordinals[0].start;
+  const total = inscriptionInput.value;
+
+  const constraints: Constraints = { ...search, satPos, total };
+
+  const startChangeOutput = getStartChangeOutput(constraints);
+  if (startChangeOutput === null) {
+    return;
   }
-
-  const fixedZero = Constraint.ZERO;
-  const expandableChangePadding = new Constraint(minChangeOutput, maxChangeOutput);
-  const expandableInscriptionConstraint = new Constraint(minInscriptionOutput, maxInscriptionOutput);
-  const fixedMinInscriptionConstraint = new Constraint(minInscriptionOutput, minInscriptionOutput);
-  const fixedMaxInscriptionConstraint = new Constraint(maxInscriptionOutput, maxInscriptionOutput);
-
-  const candidates = [
-    toParameters(fixedZero, expandableInscriptionConstraint, fixedZero, feeConstraintForOutputCount(1)),
-    toParameters(fixedZero, fixedMinInscriptionConstraint, expandableChangePadding, feeConstraintForOutputCount(2)),
-    toParameters(fixedZero, fixedMaxInscriptionConstraint, expandableChangePadding, feeConstraintForOutputCount(2)),
-    /* TODO(BG-68135): search solution space with change padding at the start */
-  ];
-
-  for (const candidate of candidates) {
-    const result = toOutputLayout(inscriptionInput.value, candidate);
-    if (!result) {
-      continue;
-    }
-    if (check(inscriptionInput, result, candidate)) {
-      return result;
-    }
+  const inscriptionOutput = getInscriptionOutput(constraints, startChangeOutput);
+  if (inscriptionOutput === null) {
+    return;
   }
+  const endChangeOutput = getEndChangeOutput(constraints, startChangeOutput, inscriptionOutput);
+  if (endChangeOutput === null) {
+    return;
+  }
+  const feeOutput = getFeeOutput(constraints, startChangeOutput, inscriptionOutput, endChangeOutput);
+  if (feeOutput === null) {
+    return;
+  }
+  const result = toParameters(startChangeOutput, inscriptionOutput, endChangeOutput, feeOutput);
+  if (!check(constraints, inscriptionInput, result)) {
+    throw new Error(`invalid result`);
+  }
+  return result;
 }
