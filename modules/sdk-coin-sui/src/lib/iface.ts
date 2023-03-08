@@ -22,10 +22,38 @@ export type SuiObjectRef = {
   digest: string;
 };
 
+/**
+ * Object marking a stake for a Validator.
+ */
+export type StakedSui = {
+  id: SuiAddress;
+  /** The validator we are staking with. */
+  validatorAddress: SuiAddress;
+  /** The epoch at which the staking pool started operating. */
+  poolStartingEpoch: bigint;
+  /** The epoch at which the delegation is requested. */
+  delegationRequestEpoch: bigint;
+  /** The staked SUI tokens. */
+  staked: bigint;
+  /**
+   * If the stake comes from a Coin<SUI>, this field is None. If it comes from a LockedCoin<SUI>,
+   * this field will record the original lock expiration epoch, to be used when unstaking.
+   */
+  suiTokenLock: { some: bigint } | { none: true };
+};
+
 export type ObjectId = string;
 export type SuiAddress = string;
 
-export type SuiJsonValue = boolean | number | string | SuiObjectRef | SharedObjectRef | CallArg | Array<unknown>;
+export type SuiJsonValue =
+  | boolean
+  | number
+  | string
+  | SuiObjectRef
+  | StakedSui
+  | SharedObjectRef
+  | CallArg
+  | Array<unknown>;
 
 /**
  * Kind of a TypeTag which is represented by a Move type identifier.
@@ -74,7 +102,7 @@ export type ObjVecArg = { ObjVec: ArrayLike<ObjectArg> };
 /**
  * An object argument.
  */
-export type CallArg = { Pure: ArrayLike<number> } | { Object: ObjectArg } | ObjVecArg;
+export type CallArg = { Pure: ArrayLike<number> } | { Object: ObjectArg } | ObjVecArg | StakedSui;
 
 export type TxDetails = PayTxDetails | PaySuiTxDetails | PayAllSuiTxDetails | MoveCallTxDetails;
 
@@ -160,14 +188,12 @@ export interface RequestAddDelegation {
 }
 
 export interface RequestWithdrawDelegation {
-  delegationObjectId: SuiObjectRef;
-  stakedSuiObjectId: SuiObjectRef;
+  stakedSui: StakedSui;
   amount: number;
 }
 
 export interface RequestSwitchDelegation {
-  delegationObjectId: SuiObjectRef;
-  stakedSuiObjectId: SuiObjectRef;
+  stakedSui: StakedSui;
   newValidatorAddress: SuiAddress;
   amount: number;
 }

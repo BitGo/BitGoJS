@@ -12,6 +12,7 @@ import {
   ModulesNames,
   MoveCallTx,
   SharedObjectRef,
+  StakedSui,
   SuiObjectRef,
   SuiTransaction,
   SuiTransactionType,
@@ -21,7 +22,20 @@ import {
 } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_GAS_PRICE, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
+import {
+  SUI_PACKAGE_FRAMEWORK_ADDRESS,
+  SUI_GAS_PRICE,
+  TRANSFER_AMOUNT_UNKNOWN_TEXT,
+  ADD_DELEGATION_SYSTEM_STATE_INDEX,
+  ADD_DELEGATION_COINS_INDEX,
+  ADD_DELEGATION_AMOUNT_INDEX,
+  ADD_DELEGATION_VALIDATOR_INDEX,
+  WITHDRAW_DELEGATION_SYSTEM_STATE_INDEX,
+  WITHDRAW_DELEGATION_STAKED_SUI_INDEX,
+  SWITCH_DELEGATION_SYSTEM_STATE_INDEX,
+  SWITCH_DELEGATION_STAKED_SUI_INDEX,
+  SWITCH_DELEGATION_VALIDATOR_INDEX,
+} from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 
@@ -261,10 +275,10 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
             function: suiTx.tx.function || MethodNames.RequestAddDelegationMulCoin,
             typeArguments: suiTx.tx.typeArguments,
             arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapCoinsToCallArg(suiTx.tx.arguments[1] as SuiObjectRef[]),
-              utils.mapAmountToCallArg(Number(suiTx.tx.arguments[2])),
-              utils.mapAddressToCallArg(suiTx.tx.arguments[3].toString()),
+              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[ADD_DELEGATION_SYSTEM_STATE_INDEX] as SharedObjectRef),
+              utils.mapCoinsToCallArg(suiTx.tx.arguments[ADD_DELEGATION_COINS_INDEX] as SuiObjectRef[]),
+              utils.mapAmountToCallArg(Number(suiTx.tx.arguments[ADD_DELEGATION_AMOUNT_INDEX])),
+              utils.mapAddressToCallArg(suiTx.tx.arguments[ADD_DELEGATION_VALIDATOR_INDEX].toString()),
             ],
           },
         };
@@ -277,9 +291,10 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
             function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
             typeArguments: suiTx.tx.typeArguments,
             arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
+              utils.mapSharedObjectToCallArg(
+                suiTx.tx.arguments[WITHDRAW_DELEGATION_SYSTEM_STATE_INDEX] as SharedObjectRef
+              ),
+              utils.mapStakedSuiRefToCallArg(suiTx.tx.arguments[WITHDRAW_DELEGATION_STAKED_SUI_INDEX] as StakedSui),
             ],
           },
         };
@@ -292,10 +307,11 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
             function: suiTx.tx.function || MethodNames.RequestSwitchDelegation,
             typeArguments: suiTx.tx.typeArguments,
             arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
-              utils.mapAddressToCallArg(suiTx.tx.arguments[3].toString()),
+              utils.mapSharedObjectToCallArg(
+                suiTx.tx.arguments[SWITCH_DELEGATION_SYSTEM_STATE_INDEX] as SharedObjectRef
+              ),
+              utils.mapStakedSuiRefToCallArg(suiTx.tx.arguments[SWITCH_DELEGATION_STAKED_SUI_INDEX] as StakedSui),
+              utils.mapAddressToCallArg(suiTx.tx.arguments[SWITCH_DELEGATION_VALIDATOR_INDEX].toString()),
             ],
           },
         };

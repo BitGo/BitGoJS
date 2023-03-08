@@ -19,7 +19,21 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { bcs } from './bcs';
-import { SER_BUFFER_SIZE, SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
+import {
+  ADD_DELEGATION_AMOUNT_INDEX,
+  ADD_DELEGATION_COINS_INDEX,
+  ADD_DELEGATION_SYSTEM_STATE_INDEX,
+  ADD_DELEGATION_VALIDATOR_INDEX,
+  SER_BUFFER_SIZE,
+  SIGNATURE_SCHEME_BYTES,
+  SUI_INTENT_BYTES,
+  SWITCH_DELEGATION_STAKED_SUI_INDEX,
+  SWITCH_DELEGATION_SYSTEM_STATE_INDEX,
+  SWITCH_DELEGATION_VALIDATOR_INDEX,
+  UNAVAILABLE_TEXT,
+  WITHDRAW_DELEGATION_STAKED_SUI_INDEX,
+  WITHDRAW_DELEGATION_SYSTEM_STATE_INDEX,
+} from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
 import { fromB64, fromHEX } from '@mysten/bcs';
@@ -236,10 +250,12 @@ export abstract class Transaction<T> extends BaseTransaction {
           function: k.kind.Single.Call.function,
           typeArguments: k.kind.Single.Call.typeArguments,
           arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeCoins(utils.mapCallArgToCoins(k.kind.Single.Call.arguments[1])),
-            utils.mapCallArgToAmount(k.kind.Single.Call.arguments[2]),
-            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])),
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[ADD_DELEGATION_SYSTEM_STATE_INDEX]),
+            this.normalizeCoins(utils.mapCallArgToCoins(k.kind.Single.Call.arguments[ADD_DELEGATION_COINS_INDEX])),
+            utils.mapCallArgToAmount(k.kind.Single.Call.arguments[ADD_DELEGATION_AMOUNT_INDEX]),
+            utils.normalizeHexId(
+              utils.mapCallArgToAddress(k.kind.Single.Call.arguments[ADD_DELEGATION_VALIDATOR_INDEX])
+            ),
           ],
         };
       case SuiTransactionType.WithdrawDelegation:
@@ -249,9 +265,8 @@ export abstract class Transaction<T> extends BaseTransaction {
           function: k.kind.Single.Call.function,
           typeArguments: k.kind.Single.Call.typeArguments,
           arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[WITHDRAW_DELEGATION_SYSTEM_STATE_INDEX]),
+            utils.mapCallArgToStakedSui(k.kind.Single.Call.arguments[WITHDRAW_DELEGATION_STAKED_SUI_INDEX]),
           ],
         };
       case SuiTransactionType.SwitchDelegation:
@@ -261,10 +276,11 @@ export abstract class Transaction<T> extends BaseTransaction {
           function: k.kind.Single.Call.function,
           typeArguments: k.kind.Single.Call.typeArguments,
           arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
-            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])), // new validator address
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[SWITCH_DELEGATION_SYSTEM_STATE_INDEX]),
+            utils.mapCallArgToStakedSui(k.kind.Single.Call.arguments[SWITCH_DELEGATION_STAKED_SUI_INDEX]),
+            utils.normalizeHexId(
+              utils.mapCallArgToAddress(k.kind.Single.Call.arguments[SWITCH_DELEGATION_VALIDATOR_INDEX])
+            ),
           ],
         };
       default:

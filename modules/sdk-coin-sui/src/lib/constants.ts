@@ -22,3 +22,15 @@ export const SUI_SYSTEM_STATE_OBJECT = {
   initialSharedVersion: 1,
   mutable: true,
 } as SharedObjectRef;
+
+export const ADD_DELEGATION_SYSTEM_STATE_INDEX = 0;
+export const ADD_DELEGATION_COINS_INDEX = 1;
+export const ADD_DELEGATION_AMOUNT_INDEX = 2;
+export const ADD_DELEGATION_VALIDATOR_INDEX = 3;
+
+export const WITHDRAW_DELEGATION_SYSTEM_STATE_INDEX = 0;
+export const WITHDRAW_DELEGATION_STAKED_SUI_INDEX = 1;
+
+export const SWITCH_DELEGATION_SYSTEM_STATE_INDEX = 0;
+export const SWITCH_DELEGATION_STAKED_SUI_INDEX = 1;
+export const SWITCH_DELEGATION_VALIDATOR_INDEX = 2;

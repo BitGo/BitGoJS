@@ -18,6 +18,7 @@ import {
   ObjectArg,
   ObjVecArg,
   SharedObjectRef,
+  StakedSui,
   SuiAddress,
   SuiObjectRef,
   SuiTransactionType,
@@ -241,6 +242,29 @@ export class Utils implements BaseUtils {
    */
   mapCallArgToSuiObjectRef(callArg: CallArg): SuiObjectRef {
     return ((callArg as { Object: ObjectArg }).Object as ImmOrOwnedArg).ImmOrOwned;
+  }
+
+  /**
+   * Map StakedSui object to CallArg
+   *
+   * @param {StakedSui} stakedSui
+   * @return {CallArg}
+   * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
+   */
+  mapStakedSuiRefToCallArg(stakedSui: StakedSui): CallArg {
+    // TODO - TBD after 0.28 release
+    return stakedSui;
+  }
+
+  /**
+   * Map CallArg object to StakedSui
+   *
+   * @param {ObjVecArg} callArg
+   * @return {StakedSui}
+   */
+  mapCallArgToStakedSui(callArg: CallArg): StakedSui {
+    // TODO - TBD after 0.28 release
+    return callArg as StakedSui;
   }
 
   /**

@@ -183,7 +183,7 @@ export const requestWithdrawDelegation: RequestWithdrawDelegation = {
     digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
     // type: '0x2::staking_pool::Delegation'
   },
-  stakedSuiObjectId: {
+  stakedSui: {
     objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
     version: 564501,
     digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
@@ -199,7 +199,7 @@ export const requestSwitchDelegation: RequestSwitchDelegation = {
     digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
     // type: '0x2::staking_pool::Delegation'
   },
-  stakedSuiObjectId: {
+  stakedSui: {
     objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
     version: 564501,
     digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
