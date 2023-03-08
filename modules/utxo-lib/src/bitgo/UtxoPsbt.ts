@@ -217,6 +217,29 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this;
   }
 
+  finalizeTapInputWithSingleLeafScriptAndSignature(inputIndex: number): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (input.tapLeafScript?.length !== 1) {
+      throw new Error('Only one leaf script supported for finalizing');
+    }
+    if (input.tapScriptSig?.length !== 1) {
+      throw new Error('Could not find signatures in Script Sig.');
+    }
+
+    const { controlBlock, script } = input.tapLeafScript[0];
+    const witness: Buffer[] = [input.tapScriptSig[0].signature, script, controlBlock];
+    const witnessLength = witness.reduce((s, b) => s + b.length + varuint.encodingLength(b.length), 1);
+
+    const bufferWriter = BufferWriter.withCapacity(witnessLength);
+    bufferWriter.writeVector(witness);
+    const finalScriptWitness = bufferWriter.end();
+
+    this.data.updateInput(inputIndex, { finalScriptWitness });
+    this.data.clearFinalizedInput(inputIndex);
+
+    return this;
+  }
+
   /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    *
