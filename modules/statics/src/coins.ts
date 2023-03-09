@@ -118,6 +118,7 @@ const POLYGON_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.EVM_WALLET,
   CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
