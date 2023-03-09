@@ -100,17 +100,15 @@ describe('Recovery:', function () {
         krsProvider: 'keyternal',
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
-        .then(function (recovery) {
-          const json = JSON.parse(recovery);
-          json.TransactionType.should.equal('Payment');
-          json.Account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
-          json.Destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
-          json.DestinationTag.should.equal(12345);
-          json.Amount.should.equal('9899000000');
-          json.Flags.should.equal(2147483648);
-          json.LastLedgerSequence.should.equal(1397137);
-          json.Fee.should.equal('30');
-          json.Sequence.should.equal(4);
+        .then(async function (recovery) {
+          recovery.should.equal('120000228000000024000000042E00003039201B0015519161400000024E06C0C068400000000000001E811439CA010E0E0198150F8DDD5768CCD2B095701D8C8314201276ADC469C4F10D1369E0F5C5A7DEF37B2267');
+          const explanation = await basecoin.explainTransaction({ txHex: recovery });
+          explanation.id.should.equal('E9D077876DA2A73A60CB4CD89E8076DEFE18639B3B283E025C1C0F85710B9000');
+          explanation.outputAmount.should.equal('9899000000');
+          explanation.outputs.length.should.equal(1);
+          explanation.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345');
+          explanation.outputs[0].amount.should.equal('9899000000');
+          explanation.fee.fee.should.equal('30');
         });
     });
   });

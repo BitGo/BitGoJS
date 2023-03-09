@@ -23,6 +23,7 @@ interface EnvironmentTemplate {
   nearNodeUrls: string[];
   solNodeUrl: string;
   adaNodeUrl: string;
+  xrpNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -95,6 +96,7 @@ const mainnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
+  xrpNodeUrl: 'https://s1.ripple.com:51234',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -124,6 +126,7 @@ const testnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://rpc.testnet.near.org'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://testnet.koios.rest/api/v0',
+  xrpNodeUrl: 'https://s.altnet.rippletest.net:51234',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
