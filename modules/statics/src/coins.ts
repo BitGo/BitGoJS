@@ -96,6 +96,7 @@ const CSPR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
 const ALGO_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -128,7 +129,12 @@ const SOL_FEATURES = [
 ];
 const STX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const MATIC_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING, CoinFeature.METAMASK_INSTITUTIONAL];
+const MATIC_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.STAKING,
+  CoinFeature.METAMASK_INSTITUTIONAL,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+];
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
@@ -396,6 +402,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.EVM_WALLET,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -422,6 +429,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.EVM_WALLET,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
     ]
   ),
   account(
