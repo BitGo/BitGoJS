@@ -277,6 +277,12 @@ export async function downloadKeycardForSelfManagedHotAdvancedPolygonWallet() {
 }
 
 export async function createNewSMHAWalletAndDownloadKeycard() {
+  // const customRootURI = 'https://testnet-01-app.bitgo-dev.com';
+  // const bitgo = new BitGoJS.BitGo({
+  //   env: 'custom',
+  //   customRootURI,
+  // });
+
   const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -286,11 +292,11 @@ export async function createNewSMHAWalletAndDownloadKeycard() {
   // @ts-ignore
   const enterpriseId = document.getElementById('enterpriseId').value;
 
-  const label = 'My new SMHA Wallet';
+  const label = 'demo gteth wallet';
 
-  const passphrase = 'test_wallet_passphrase';
+  const passphrase = 'abcd';
 
-  const coin = 'tpolygon';
+  const coin = 'gteth';
 
   bitgo.authenticateWithAccessToken({ accessToken });
 
@@ -310,8 +316,8 @@ export async function createNewSMHAWalletAndDownloadKeycard() {
     backupKeychain: wallet.backupKeychain,
     backupKeyProvider: 'BitGo Trust',
     bitgoKeychain: wallet.bitgoKeychain,
-    coin: coins.get('tpolygon'),
-    keyCardImage: await downloadKeycardImage('polygon'),
+    coin: coins.get('gteth'),
+    keyCardImage: await downloadKeycardImage('eth'),
     passcodeEncryptionCode: '654321',
     passphrase,
     userKeychain: wallet.userKeychain,
