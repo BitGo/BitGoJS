@@ -35,6 +35,24 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     }
 
     const keychainsTriplet = await this.generateKeychainsTriplet(params);
+    return await this.generateUnifiedWalletFromKeys(keychainsTriplet, params);
+  }
+
+  async generateUnifiedWalletFromKeys(
+    keychainsTriplet: KeychainsTriplet,
+    params: GenerateWalletOptions
+  ): Promise<UnifiedWallet> {
+    if (typeof params.label !== 'string') {
+      throw new Error('missing required string parameter label');
+    }
+    const isTss = params.multisigType === 'tss';
+    if (!isTss) {
+      throw new Error('EVM wallet only supports TSS');
+    }
+
+    if (params.walletVersion !== 3) {
+      throw new Error('EVM wallet is only supported for wallet version 3');
+    }
     const walletParams: SupplementGenerateWalletOptions = {
       label: params.label,
       m: 2,
