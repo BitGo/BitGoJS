@@ -307,6 +307,7 @@ export async function createNewSMHAWalletAndDownloadKeycard() {
     passphrase,
     multisigType: 'tss' as const,
     walletVersion: 3,
+    passcodeEncryptionCode: '654321',
   };
 
   const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
