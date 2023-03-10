@@ -14,4 +14,8 @@ export class EddsaUnifiedWallets extends UnifiedWallets {
   generateUnifiedWallet(params: GenerateUnifiedWalletOptions): Promise<UnifiedWallet> {
     throw new Error('Method not yet implemented');
   }
+
+  generateUnifiedWalletFromKeys(keys: KeychainsTriplet, params: GenerateWalletOptions): Promise<UnifiedWallet> {
+    throw new Error('Method not yet implemented');
+  }
 }

@@ -32,10 +32,16 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
   }
 
   /**
-   * Generates an EVM wallet and associated evm coin specific wallets.
+   * Generates a Unified wallet and associated coin specific wallets.
    * @param params
    */
   abstract generateUnifiedWallet(params: GenerateUnifiedWalletOptions): Promise<UnifiedWallet>;
+
+  /**
+   * Generates a Unified wallet and associated coin specific wallets.
+   * @param keys
+   */
+  abstract generateUnifiedWalletFromKeys(keys: KeychainsTriplet, params: GenerateWalletOptions): Promise<UnifiedWallet>;
 
   /**
    * Generate Keychain triplet to be used in creating all EVM coin wallets
