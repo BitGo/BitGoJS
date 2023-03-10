@@ -123,7 +123,7 @@ const testnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://rpc.testnet.near.org'],
   solNodeUrl: 'https://api.devnet.solana.com',
-  adaNodeUrl: 'https://testnet.koios.rest/api/v0',
+  adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
