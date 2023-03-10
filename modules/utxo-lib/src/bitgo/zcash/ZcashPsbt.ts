@@ -1,4 +1,4 @@
-import { PsbtOpts, UtxoPsbt } from '../UtxoPsbt';
+import { PSBT_PROPRIETARY_IDENTIFIER, PsbtOpts, ProprietaryKeySubtype, UtxoPsbt } from '../UtxoPsbt';
 import {
   getDefaultConsensusBranchIdForVersion,
   getDefaultVersionGroupIdForVersion,
@@ -10,14 +10,11 @@ import * as types from 'bitcoinjs-lib/src/types';
 import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
 const typeforce = require('typeforce');
 
-enum Subtype {
-  ZEC_CONSENSUS_BRANCH_ID = 0x00,
-}
 const CONSENSUS_BRANCH_ID_KEY = Buffer.concat([
   Buffer.of(0xfc),
   Buffer.of(0x05),
-  Buffer.from('BITGO', 'ascii'),
-  Buffer.of(Subtype.ZEC_CONSENSUS_BRANCH_ID),
+  Buffer.from(PSBT_PROPRIETARY_IDENTIFIER),
+  Buffer.of(ProprietaryKeySubtype.ZEC_CONSENSUS_BRANCH_ID),
 ]);
 
 export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {

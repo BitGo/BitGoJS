@@ -6,6 +6,7 @@ import { Network, p2trPayments, supportsSegwit, supportsTaproot, taproot } from 
 import { isTriple, Triple, Tuple } from './types';
 
 import { ecc as eccLib } from '../noble_ecc';
+import { getDepthFirstTaptree, getTweakedOutputKey } from '../taproot';
 
 export { scriptTypeForChain } from './wallet/chains';
 
@@ -83,6 +84,15 @@ export type SpendScriptP2tr = {
   witnessScript: Buffer;
   leafVersion: number;
   leafHash: Buffer;
+};
+
+/**
+ * Tweak data holder for P2tr Musig2 key path.
+ */
+export type KeyPathP2trMusig2 = {
+  internalPubkey: Buffer;
+  outputPubkey: Buffer;
+  taptreeRoot: Buffer;
 };
 
 /**
@@ -179,6 +189,19 @@ export function toXOnlyPublicKey(b: Buffer): Buffer {
   throw new Error(`invalid key size ${b.length}`);
 }
 
+/**
+ * Validates size of the pub key for 32 bytes and returns the same iff true.
+ */
+export function checkXOnlyPublicKey(b: Buffer): Buffer {
+  if (b.length === 32) {
+    return b;
+  }
+  throw new Error(`invalid key size ${b.length}. Must use x-only key.`);
+}
+
+/**
+ * Validates size of the pub key for 32 bytes and returns the same iff true.
+ */
 export function checkPlainPublicKey(b: Buffer): Buffer {
   if (b.length === 33) {
     return b;
@@ -256,6 +279,13 @@ export function createPaymentP2tr(
   return createPaymentP2trCommon('p2tr', pubkeys, redeemIndex);
 }
 
+export function createPaymentP2trMusig2(
+  pubkeys: Triple<Buffer>,
+  redeemIndex?: number | { signer: Buffer; cosigner: Buffer }
+): bitcoinjs.Payment {
+  return createPaymentP2trCommon('p2trMusig2', pubkeys, redeemIndex);
+}
+
 function getLeafHashCommon(
   scriptType: 'p2tr' | 'p2trMusig2',
   params: bitcoinjs.Payment | { publicKeys: Triple<Buffer>; signer: Buffer; cosigner: Buffer }
@@ -274,6 +304,17 @@ export function getLeafHash(
   params: bitcoinjs.Payment | { publicKeys: Triple<Buffer>; signer: Buffer; cosigner: Buffer }
 ): Buffer {
   return getLeafHashCommon('p2tr', params);
+}
+
+export function createKeyPathP2trMusig2(pubkeys: Triple<Buffer>): KeyPathP2trMusig2 {
+  const payment = createPaymentP2trCommon('p2trMusig2', pubkeys);
+  assert(payment.internalPubkey);
+  assert(payment.tapTree);
+  return {
+    internalPubkey: payment.internalPubkey,
+    outputPubkey: getTweakedOutputKey(payment),
+    taptreeRoot: getDepthFirstTaptree(payment.tapTree).root,
+  };
 }
 
 function createSpendScriptP2trCommon(
@@ -313,6 +354,10 @@ function createSpendScriptP2trCommon(
 
 export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
   return createSpendScriptP2trCommon('p2tr', pubkeys, keyCombination);
+}
+
+export function createSpendScriptP2trMusig2(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
+  return createSpendScriptP2trCommon('p2trMusig2', pubkeys, keyCombination);
 }
 
 /**

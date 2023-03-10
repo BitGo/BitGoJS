@@ -5,7 +5,7 @@
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
 import assert = require('assert');
 import FastPriorityQueue = require('fastpriorityqueue');
-import { script as bscript, crypto as bcrypto } from 'bitcoinjs-lib';
+import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 const varuint = require('varuint-bitcoin');
 
 /**
@@ -476,4 +476,12 @@ export function getTaptreeRoot(
   }
 
   return taptreeMerkleHash;
+}
+
+export function getTweakedOutputKey(payment: bpayments.Payment): Buffer {
+  assert(payment.output);
+  if (payment.output.length === 34) {
+    return payment.output?.subarray(2);
+  }
+  throw new Error(`invalid p2tr tweaked output key size ${payment.output.length}`);
 }
