@@ -1,37 +1,32 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { EcdsaEVMUnifiedWallets, GenerateUnifiedWalletOptions, UnifiedWallet } from '../../src';
-import { common, KeychainsTriplet } from '@bitgo/sdk-core';
-import { keyTriplet } from '../fixtures/ecdsaUnifiedWalletFixtures';
-import * as sinon from 'sinon';
-import nock = require('nock');
+import { EddsaUnifiedWallets, GenerateUnifiedWalletOptions, UnifiedWallet } from '../../src';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Gteth } from '@bitgo/sdk-coin-eth';
-import { Tpolygon } from '@bitgo/sdk-coin-polygon';
+import * as sinon from 'sinon';
+import { Tsol } from '@bitgo/sdk-coin-sol';
+import nock = require('nock');
+import { KeychainsTriplet, common } from '@bitgo/sdk-core';
 import { UnifiedWallets } from '../../src/unifiedWallets';
+import { keyTriplet } from '../fixtures/ecdsaUnifiedWalletFixtures';
 
-describe('EVM Wallets:', function () {
+describe('EDDSA Unified Wallets', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-  let evmWallets: EcdsaEVMUnifiedWallets;
-  let bgUrl: string;
+  let unifiedWallets: EddsaUnifiedWallets;
   let sandbox: sinon.SinonSandbox;
-  const ethWalletId = 'eth-123-eth';
-  const polygonWalletId = '456-polygon';
-  const ethAddress = 'bitgo, california';
+  let bgUrl: string;
+  const solWalletId = 'sol-123-sol';
+  const solAddress = 'sol, milkyway';
+  const solWalletData = { id: solWalletId, receiveAddress: { address: solAddress } };
   const expected: UnifiedWallet = {
-    id: 'great unified wallet',
-    wallets: [
-      { coin: 'gteth', walletId: ethWalletId, address: ethAddress },
-      { coin: 'tpolygon', walletId: polygonWalletId, address: ethAddress },
-    ],
-    curve: 'ecdsa',
-    keys: [],
+    id: '',
+    wallets: [{ coin: 'tsol', walletId: solWalletId, address: solAddress }],
+    curve: 'eddsa',
+    keys: ['1', '3', '2'],
   };
 
   before(function () {
-    bitgo.safeRegister('gteth', Gteth.createInstance);
-    bitgo.safeRegister('tpolygon', Tpolygon.createInstance);
+    bitgo.safeRegister('tsol', Tsol.createInstance);
     bitgo.initializeTestVars();
-    evmWallets = new EcdsaEVMUnifiedWallets(bitgo);
+    unifiedWallets = new EddsaUnifiedWallets(bitgo);
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     nock.cleanAll();
   });
@@ -44,69 +39,66 @@ describe('EVM Wallets:', function () {
     sandbox.restore();
   });
 
-  describe('Generate EVM wallet:', function () {
+  describe('Generate EDDSA Unified wallet', function () {
     let params;
-    const ethWalletData = { id: ethWalletId, receiveAddress: { address: ethAddress } };
-    const polygonWalletData = { id: polygonWalletId, receiveAddress: { address: ethAddress } };
 
     it('should validate parameters for generateUnifiedWallet', async function () {
       params = {};
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('missing required string' + ' parameter' + ' label');
+        .should.be.rejectedWith('missing required string parameter label');
 
       params = { label: 'test123' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
       params = { ...params, multisigType: 'blsdkg' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
       params = { ...params, multisigType: 'tss' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet is only supported for wallet version 3');
 
       params = { ...params, walletVersion: 2 };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet is only supported for wallet version 3');
     });
 
     it('should validate parameters for generateUnifiedWalletFromKeys', async function () {
       params = {};
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('missing required string' + ' parameter' + ' label');
+        .should.be.rejectedWith('missing required string parameter label');
 
       params = { label: 'test123' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
       params = { ...params, multisigType: 'blsdkg' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
       params = { ...params, multisigType: 'tss' };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet is only supported for wallet version 3');
 
       params = { ...params, walletVersion: 2 };
-      await evmWallets
+      await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet is only supported for wallet version 3');
     });
 
     it('should correctly generate wallet', async function () {
       sandbox.stub(UnifiedWallets.prototype, 'generateKeychainsTriplet').resolves(keyTriplet);
-      nock(bgUrl).post('/api/v2/gteth/wallet').reply(200, ethWalletData);
-      nock(bgUrl).post('/api/v2/tpolygon/wallet').reply(200, polygonWalletData);
+      nock(bgUrl).post('/api/v2/tsol/wallet').reply(200, solWalletData);
       nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
       params = {
         label: 'test123',
@@ -114,44 +106,36 @@ describe('EVM Wallets:', function () {
         walletVersion: 3,
         passphrase: 'test123',
       };
-      const result = await evmWallets.generateUnifiedWallet(params as GenerateUnifiedWalletOptions);
+      const result = await unifiedWallets.generateUnifiedWallet(params as GenerateUnifiedWalletOptions);
       result.should.deepEqual(expected);
     });
 
     it('should correctly generate wallet using keychainTriplet', async function () {
+      nock(bgUrl).post('/api/v2/tsol/wallet').reply(200, solWalletData);
+      nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
       params = {
         label: 'test123',
         multisigType: 'tss',
         walletVersion: 3,
         passphrase: 'test123',
       };
-      nock(bgUrl).post('/api/v2/gteth/wallet').reply(200, ethWalletData);
-      nock(bgUrl).post('/api/v2/tpolygon/wallet').reply(200, polygonWalletData);
-      nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
-      const result = await evmWallets.generateUnifiedWalletFromKeys(keyTriplet, params);
+      const result = await unifiedWallets.generateUnifiedWalletFromKeys(
+        keyTriplet,
+        params as GenerateUnifiedWalletOptions
+      );
       result.should.deepEqual(expected);
     });
   });
 
-  describe('Unified Wallet functions', function () {
+  describe('EDDSA Unified wallet functions', function () {
     it('should get unified wallet by id', async function () {
       const evmWalletId = '123';
-      nock(bgUrl)
-        .get('/api/v2/wallet/evm')
-        .query({ evmWalletId })
-        .reply(200, { result: [expected] });
-      const result = await evmWallets.getUnifiedWalletById(evmWalletId);
-      result.should.deepEqual(expected);
+      await unifiedWallets.getUnifiedWalletById(evmWalletId).should.rejectedWith('Not yet implemented');
     });
 
     it('should get unified wallet by address', async function () {
       const address = '0x0';
-      nock(bgUrl)
-        .get('/api/v2/wallet/evm')
-        .query({ address })
-        .reply(200, { result: [expected] });
-      const result = await evmWallets.getUnifiedWalletByAddress(address);
-      result.should.deepEqual(expected);
+      await unifiedWallets.getUnifiedWalletByAddress(address).should.rejectedWith('Not yet implemented');
     });
 
     it('should get all unified wallets', async function () {
@@ -159,32 +143,14 @@ describe('EVM Wallets:', function () {
       const order = 'DESC';
       const page = 0;
       nock(bgUrl).get('/api/v2/wallet/evm').query({ limit, order, page }).reply(200, [expected]);
-      const result = await evmWallets.getUnifiedWallets();
+      const result = await unifiedWallets.getUnifiedWallets();
       result.should.deepEqual([expected]);
     });
 
     describe('get specific coin wallet', function () {
       const evmWalletId = '123';
-      it('should validate parameters', async function () {
-        await evmWallets.getCoinWalletById('', 'test').should.be.rejectedWith('Id field cannot be empty');
-        nock(bgUrl)
-          .get('/api/v2/wallet/evm')
-          .query({ evmWalletId })
-          .reply(200, { result: [expected] });
-        await evmWallets.getCoinWalletById(evmWalletId, 'test').should.be.rejectedWith('unsupported coin test');
-      });
       it('should return valid coin wallet', async function () {
-        const expectedEthWallet = {
-          bitgo,
-          coin: bitgo.coin('gteth'),
-        };
-        nock(bgUrl)
-          .get('/api/v2/wallet/evm')
-          .query({ evmWalletId })
-          .reply(200, { result: [expected] });
-        nock(bgUrl).get('/api/v2/gteth/wallet/eth-123-eth').reply(200, expectedEthWallet);
-        const result = await evmWallets.getCoinWalletById(evmWalletId, 'gteth');
-        result.baseCoin.getFullName().should.equal('Goerli Testnet Ethereum');
+        await unifiedWallets.getCoinWalletById(evmWalletId, 'tsol').should.rejectedWith('Not yet implemented');
       });
     });
   });

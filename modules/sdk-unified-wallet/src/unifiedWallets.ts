@@ -10,26 +10,32 @@ import {
   GetWalletOptions,
   Wallet,
   RequestTracer,
+  Keychains,
 } from '@bitgo/sdk-core';
 import assert from 'assert';
+
+const isEmpty = (obj) => [Object, Array].includes((obj || {}).constructor) && !Object.entries(obj || {}).length;
 
 export abstract class UnifiedWallets implements IUnifiedWallets {
   protected readonly bitgo: BitGoBase;
   protected readonly coin: IBaseCoin;
+  protected coinIdMapping: Record<string, Wallet> = {};
   protected urlPath: string;
+  private unifiedWallet: UnifiedWallet;
 
   protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
-    let coinName;
-    switch (this.bitgo.getEnv()) {
-      case 'prod':
-        coinName = 'eth';
-        break;
-      default:
-        coinName = 'gteth';
-    }
-    this.coin = this.bitgo.coin(coinName);
+    this.coin = this.bitgo.coin(this.getDefaultCoinName());
+    this.urlPath = '/wallet/evm';
   }
+
+  protected abstract getDefaultCoinName(): string;
+
+  /**
+   * Get the list of supported coin for a given unified wallet type
+   * @protected
+   */
+  protected abstract getSupportedCoinList(): string[];
 
   /**
    * Generates a Unified wallet and associated coin specific wallets.
@@ -50,7 +56,18 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
    * @returns KeychainsTriplet
    * @private
    */
-  protected abstract generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet>;
+  async generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet> {
+    // Create MPC Keychains
+    const keychains = new Keychains(this.bitgo, this.coin);
+    const keychainsTriplet = await keychains.createMpc({
+      multisigType: 'tss',
+      passphrase: params.passphrase,
+      enterprise: params.enterprise,
+      originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
+      backupProvider: params.backupProvider,
+    });
+    return keychainsTriplet;
+  }
 
   /**
    * Calls Bitgo API to create an EVM wallet.
@@ -81,6 +98,10 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     return newWallet;
   }
 
+  /**
+   * Get a unified wallet using the unified wallet id
+   * @param evmWalletId
+   */
   async getUnifiedWalletById(evmWalletId: string): Promise<UnifiedWallet> {
     const result: { result: UnifiedWallet[] } = await this.bitgo
       .get(this.bitgo.url(this.urlPath, 2))
@@ -91,6 +112,10 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     return newWallet;
   }
 
+  /**
+   * Get a unified wallet using the unified wallet address
+   * @param address
+   */
   async getUnifiedWalletByAddress(address: string): Promise<UnifiedWallet> {
     const result: { result: UnifiedWallet[] } = await this.bitgo
       .get(this.bitgo.url(this.urlPath, 2))
@@ -101,6 +126,10 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     return newWallet;
   }
 
+  /**
+   * Get all unified wallets associated with current BitGo account
+   * @param paginationOptions
+   */
   async getUnifiedWallets(
     paginationOptions: PaginationOptions = { prevPage: 0, limit: 15, order: 'DESC' }
   ): Promise<UnifiedWallet[]> {
@@ -125,5 +154,31 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
       .query(query)
       .result();
     return new Wallet(this.bitgo, this.coin, walletData);
+  }
+
+  /** @inheritDoc */
+  async getCoinWalletById(id: string, coinName: string): Promise<Wallet> {
+    if (!id) {
+      throw new Error('Id field cannot be empty');
+    }
+    const supportedCoins = this.getSupportedCoinList();
+    if (!supportedCoins.includes(coinName)) {
+      throw new Error(`unsupported coin ${coinName}`);
+    }
+    if (this.unifiedWallet === undefined) {
+      this.unifiedWallet = await this.getUnifiedWalletById(id);
+    }
+    if (isEmpty(this.coinIdMapping) || !Object.keys(this.coinIdMapping).includes(coinName)) {
+      let coinWalletId;
+      for (const wallet of this.unifiedWallet.wallets) {
+        if (wallet.coin == coinName) {
+          coinWalletId = wallet.walletId;
+          break;
+        }
+      }
+      const wallet = await this.getWallet({ id: coinWalletId, allTokens: false });
+      this.coinIdMapping[coinName] = wallet;
+    }
+    return this.coinIdMapping[coinName];
   }
 }

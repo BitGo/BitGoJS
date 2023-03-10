@@ -1,5 +1,5 @@
 import { UnifiedWallet, GenerateUnifiedWalletOptions, PaginationOptions } from './types';
-import { KeychainsTriplet, GenerateWalletOptions } from '@bitgo/sdk-core';
+import { KeychainsTriplet, GenerateWalletOptions, Wallet } from '@bitgo/sdk-core';
 
 export interface IUnifiedWallets {
   generateUnifiedWallet(params: GenerateUnifiedWalletOptions): Promise<UnifiedWallet>;
@@ -7,4 +7,5 @@ export interface IUnifiedWallets {
   getUnifiedWalletById(id: string): Promise<UnifiedWallet>;
   getUnifiedWalletByAddress(address: string): Promise<UnifiedWallet>;
   getUnifiedWallets(paginationOptions: PaginationOptions): Promise<UnifiedWallet[]>;
+  getCoinWalletById(id: string, coinName: string): Promise<Wallet>;
 }
