@@ -189,24 +189,33 @@ export function toXOnlyPublicKey(b: Buffer): Buffer {
   throw new Error(`invalid key size ${b.length}`);
 }
 
+function checkSize(b: Buffer, targetSize: number, name: string): Buffer {
+  if (b.length === targetSize) {
+    return b;
+  }
+  throw new Error(`invalid size ${b.length}. Must use ${name}.`);
+}
+
 /**
  * Validates size of the pub key for 32 bytes and returns the same iff true.
  */
 export function checkXOnlyPublicKey(b: Buffer): Buffer {
-  if (b.length === 32) {
-    return b;
-  }
-  throw new Error(`invalid key size ${b.length}. Must use x-only key.`);
+  return checkSize(b, 32, 'x-only key');
 }
 
 /**
  * Validates size of the pub key for 32 bytes and returns the same iff true.
  */
 export function checkPlainPublicKey(b: Buffer): Buffer {
-  if (b.length === 33) {
-    return b;
-  }
-  throw new Error(`invalid key size ${b.length}. Must use plain keys.`);
+  return checkSize(b, 33, 'plain key');
+}
+
+export function checkTapMerkleRoot(b: Buffer): Buffer {
+  return checkSize(b, 32, 'tap merkle root');
+}
+
+export function checkTxHash(b: Buffer): Buffer {
+  return checkSize(b, 32, 'tx hash');
 }
 
 function getTaptreeKeyCombinations(scriptType: 'p2tr' | 'p2trMusig2', keys: Triple<Buffer>): Tuple<Buffer>[] {
