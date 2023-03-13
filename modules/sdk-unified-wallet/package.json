@@ -20,8 +20,8 @@
     "@bitgo/sdk-api": "^1.9.10",
     "@bitgo/sdk-coin-eth": "^4.2.1",
     "@bitgo/sdk-coin-polygon": "^1.4.8",
-    "@bitgo/sdk-test": "^1.2.15",
-    "openpgp": "5.1.0"
+    "@bitgo/sdk-coin-sol": "^2.3.9",
+    "@bitgo/sdk-test": "^1.2.15"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

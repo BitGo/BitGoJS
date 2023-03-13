@@ -1,23 +1,11 @@
-import {
-  GenerateWalletOptions,
-  BitGoBase,
-  KeychainsTriplet,
-  SupplementGenerateWalletOptions,
-  Keychains,
-  Wallet,
-} from '@bitgo/sdk-core';
+import { GenerateWalletOptions, BitGoBase, KeychainsTriplet, SupplementGenerateWalletOptions } from '@bitgo/sdk-core';
 import { UnifiedWalletID, UnifiedWallet, GenerateUnifiedWalletOptions } from '../types';
 import { supportedCoins, supportedTestCoins } from './types';
 import { UnifiedWallets } from '../unifiedWallets';
 
-const isEmpty = (obj) => [Object, Array].includes((obj || {}).constructor) && !Object.entries(obj || {}).length;
-
 export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
-  private coinIdMapping: Record<string, Wallet> = {};
-  private unifiedWallet: UnifiedWallet;
   constructor(bitgo: BitGoBase) {
     super(bitgo);
-    this.urlPath = '/wallet/evm';
   }
 
   /** @inheritDoc */
@@ -38,6 +26,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     return await this.generateUnifiedWalletFromKeys(keychainsTriplet, params);
   }
 
+  /** @inheritDoc */
   async generateUnifiedWalletFromKeys(
     keychainsTriplet: KeychainsTriplet,
     params: GenerateWalletOptions
@@ -83,46 +72,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
     });
   }
 
-  /** @inheritDoc */
-  async generateKeychainsTriplet(params: GenerateWalletOptions): Promise<KeychainsTriplet> {
-    // Create MPC Keychains
-    const evmWalletKeychains = new Keychains(this.bitgo, this.coin);
-    const keychainsTriplet = await evmWalletKeychains.createMpc({
-      multisigType: 'tss',
-      passphrase: params.passphrase,
-      enterprise: params.enterprise,
-      originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
-      backupProvider: params.backupProvider,
-    });
-    return keychainsTriplet;
-  }
-
-  async getCoinWalletById(id: string, coinName: string): Promise<Wallet> {
-    if (!id) {
-      throw new Error('Id field cannot be empty');
-    }
-    const supportedCoins = this.getSupportedCoinList();
-    if (!supportedCoins.includes(coinName)) {
-      throw new Error(`unsupported coin ${coinName}`);
-    }
-    if (this.unifiedWallet === undefined) {
-      this.unifiedWallet = await this.getUnifiedWalletById(id);
-    }
-    if (isEmpty(this.coinIdMapping) || !Object.keys(this.coinIdMapping).includes(coinName)) {
-      let coinWalletId;
-      for (const wallet of this.unifiedWallet.wallets) {
-        if (wallet.coin == coinName) {
-          coinWalletId = wallet.walletId;
-          break;
-        }
-      }
-      const wallet = await this.getWallet({ id: coinWalletId, allTokens: false });
-      this.coinIdMapping[coinName] = wallet;
-    }
-    return this.coinIdMapping[coinName];
-  }
-
-  private getSupportedCoinList(): string[] {
+  protected getSupportedCoinList(): string[] {
     let coins: string[];
     switch (this.bitgo.getEnv()) {
       case 'prod':
@@ -132,5 +82,17 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
         coins = supportedTestCoins;
     }
     return coins;
+  }
+
+  protected getDefaultCoinName(): string {
+    let coinName;
+    switch (this.bitgo.getEnv()) {
+      case 'prod':
+        coinName = 'eth';
+        break;
+      default:
+        coinName = 'gteth';
+    }
+    return coinName;
   }
 }
