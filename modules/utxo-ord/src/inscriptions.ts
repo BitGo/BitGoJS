@@ -15,9 +15,9 @@ import {
   address,
   taproot,
   ECPair,
-  Transaction,
 } from '@bitgo/utxo-lib';
-import { TapLeafScript } from 'bip174/src/lib/interfaces';
+import * as utxolib from '@bitgo/utxo-lib';
+import { PreparedInscriptionRevealData } from '@bitgo/sdk-core';
 
 const OPS = bscript.OPS;
 const MAX_LENGTH_TAP_DATA_PUSH = 520;
@@ -117,12 +117,6 @@ function getInscriptionRevealSize(
   return psbt.extractTransaction(/* disableFeeCheck */ true).virtualSize();
 }
 
-export type PreparedInscriptionRevealData = {
-  address: string;
-  revealTransactionVSize: number;
-  tapLeafScript: TapLeafScript;
-};
-
 /**
  * @returns PreparedInscriptionRevealData
  * @param pubkey
@@ -144,7 +138,7 @@ export function createInscriptionRevealData(
   assert(payment.redeem?.output);
   const commitAddress = address.fromOutputScript(commitOutput, network);
 
-  const tapLeafScript: TapLeafScript[] = [
+  const tapLeafScript: utxolib.bitgo.TapLeafScript[] = [
     {
       controlBlock,
       script: payment.redeem?.output,
@@ -177,37 +171,45 @@ export function createOutputScriptForInscription(pubkey: Buffer, contentType: st
  *
  * @param privateKey
  * @param tapLeafScript
- * @param commitTxnHash
  * @param commitAddress
- * @param vout
+ * @param recipientAddress
+ * @param unsignedCommitTx
  * @param network
  *
  * @return a fully signed reveal transaction
  */
 export function signRevealTransaction(
   privateKey: Buffer,
-  tapLeafScript: TapLeafScript,
+  tapLeafScript: utxolib.bitgo.TapLeafScript,
   commitAddress: string,
-  commitTxnHash: string,
-  vout: number,
+  recipientAddress: string,
+  unsignedCommitTx: Buffer,
   network: Network
-): Transaction<bigint> {
+): utxolib.bitgo.UtxoPsbt {
+  const unserCommitTxn = utxolib.bitgo.createTransactionFromBuffer(unsignedCommitTx, network);
+  const hash = unserCommitTxn.getHash();
+  const commitOutput = utxolib.address.toOutputScript(commitAddress, network);
+  const vout = unserCommitTxn.outs.findIndex((out) => out.script.equals(commitOutput));
+
+  if (vout === -1) {
+    throw new Error('Invalid commit transaction');
+  }
+
   const psbt = bitgo.createPsbtForNetwork({ network });
-  const commitOutput = address.toOutputScript(commitAddress, network);
   psbt.addInput({
-    hash: commitTxnHash,
+    hash,
     index: vout,
     witnessUtxo: { script: commitOutput, value: BigInt(100_000) },
     tapLeafScript: [tapLeafScript],
   });
 
-  psbt.addOutput({ script: commitOutput, value: BigInt(10_000) });
+  const recipientOutput = address.toOutputScript(recipientAddress, network);
+  psbt.addOutput({ script: recipientOutput, value: BigInt(10_000) });
 
   const signer = ECPair.fromPrivateKey(privateKey);
   const parsedControlBlock = taproot.parseControlBlock(eccLib, tapLeafScript.controlBlock);
   const leafHash = taproot.getTapleafHash(eccLib, parsedControlBlock, tapLeafScript.script as Buffer);
   psbt.signTaprootInput(0, signer, [leafHash]);
-  psbt.finalizeTapInputWithSingleLeafScriptAndSignature(0);
 
-  return psbt.extractTransaction(/* disableFeeCheck*/ true);
+  return psbt;
 }

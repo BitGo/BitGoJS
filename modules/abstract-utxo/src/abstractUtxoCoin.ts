@@ -70,6 +70,7 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
+import { InscriptionBuilder } from './inscriptionBuilder';
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
   bitgo;
@@ -1361,5 +1362,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   getRecoveryProvider(apiToken?: string): RecoveryProvider {
     return forCoin(this.getChain(), apiToken);
+  }
+
+  getInscriptionBuilder(wallet: Wallet): InscriptionBuilder {
+    return new InscriptionBuilder(wallet, this);
   }
 }

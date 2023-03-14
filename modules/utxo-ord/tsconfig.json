@@ -17,6 +17,9 @@
       "path": "../statics"
     },
     {
+      "path": "../sdk-core"
+    },
+    {
       "path": "../utxo-lib"
     }
   ]

@@ -150,6 +150,9 @@
       "path": "./modules/utxo-lib"
     },
     {
+      "path": "./modules/utxo-ord"
+    },
+    {
       "path": "./modules/web-demo"
     }
   ]

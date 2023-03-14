@@ -39,6 +39,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from './iBaseCoin';
+import { IInscriptionBuilder } from '../inscriptionBuilder';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
@@ -456,5 +457,9 @@ export abstract class BaseCoin implements IBaseCoin {
 
   async recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction> {
     throw new NotImplementedError('recoverToken is not supported for this coin');
+  }
+
+  getInscriptionBuilder(wallet: Wallet): IInscriptionBuilder {
+    throw new NotImplementedError('Inscription Builder is not supported for this coin');
   }
 }
