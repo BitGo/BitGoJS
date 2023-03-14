@@ -22,6 +22,8 @@ import { encodePsbtMusig2ParticipantsKeyValData } from '../Musig2';
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
   index: number;
+  witnessScript?: string;
+  valueString?: string;
 }
 
 export interface NonWitnessWalletUnspent<TNumber extends number | bigint = number>

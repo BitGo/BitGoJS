@@ -1,3 +1,6 @@
+import { TapLeafScript } from 'bip174/src/lib/interfaces';
+export { TapLeafScript };
+
 export type Tuple<T> = [T, T];
 
 export function isTuple<T>(arr: T[]): arr is Tuple<T> {

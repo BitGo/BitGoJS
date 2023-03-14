@@ -3,8 +3,10 @@ import {
   BitGoBase,
   BaseCoin,
   VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions,
+  Wallet,
 } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
+import { InscriptionBuilder } from './inscriptionBuilder';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string;
@@ -37,5 +39,9 @@ export class Btc extends AbstractUtxoCoin {
 
   supportsLightning(): boolean {
     return true;
+  }
+
+  getInscriptionBuilder(wallet: Wallet): InscriptionBuilder {
+    return new InscriptionBuilder(wallet, this);
   }
 }

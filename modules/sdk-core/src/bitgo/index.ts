@@ -11,6 +11,7 @@ export * from './ecdh';
 export * from './enterprise';
 export * from './environments';
 export * from './errors';
+export * from './inscriptionBuilder';
 export * from './internal';
 export * from './keychain';
 export * as bitcoin from './legacyBitcoin';
