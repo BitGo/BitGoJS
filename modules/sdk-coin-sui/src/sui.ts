@@ -16,7 +16,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { TransactionBuilderFactory } from './lib';
+import { TransactionBuilderFactory, KeyPair as SuiKeyPair } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import * as sha3 from 'js-sha3';
@@ -192,7 +192,15 @@ export class Sui extends BaseCoin {
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
+    const keyPair = seed ? new SuiKeyPair({ seed }) : new SuiKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 
   isValidPub(pub: string): boolean {
