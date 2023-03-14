@@ -48,11 +48,18 @@ import {
   PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
 
-import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
-import { calculateForwarderV1Address, getProxyInitcode, KeyPair as KeyPairLib } from './lib';
+import {
+  calculateForwarderV1Address,
+  getProxyInitcode,
+  getToken,
+  KeyPair as KeyPairLib,
+  TransactionBuilder,
+  TransferBuilder,
+} from './lib';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
@@ -180,6 +187,11 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
 
 export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
 
+export interface FeesUsed {
+  gasPrice: number;
+  gasLimit: number;
+}
+
 interface PrecreateBitGoOptions {
   enterprise?: string;
   newFeeAddress?: string;
@@ -190,8 +202,8 @@ export interface OfflineVaultTxInfo {
   contractSequenceId?: string;
   tx?: string;
   txHex?: string;
-  userKey: string;
-  backupKey: string;
+  userKey?: string;
+  backupKey?: string;
   coin: string;
   gasPrice: number;
   gasLimit: number;
@@ -202,6 +214,10 @@ export interface OfflineVaultTxInfo {
   // For Eth Specific Coins
   eip1559?: EIP1559;
   replayProtectionOptions?: ReplayProtectionOptions;
+  // For Hot Wallet EvmBasedCrossChainRecovery Specific
+  halfSigned?: HalfSignedTransaction;
+  feesUsed?: FeesUsed;
+  isEvmBasedCrossChainRecovery?: boolean;
 }
 
 interface UnformattedTxInfo {
@@ -220,7 +236,15 @@ export interface RecoverOptions {
   eip1559?: EIP1559;
   replayProtectionOptions?: ReplayProtectionOptions;
   isTss?: boolean;
+  bitgoFeeAddress?: string;
+  bitgoDestinationAddress?: string;
+  tokenContractAddress?: string;
 }
+
+export type GetBatchExecutionInfoRT = {
+  values: [string[], string[]];
+  totalAmount: string;
+};
 
 export interface BuildTransactionParams {
   to: string;
@@ -1196,6 +1220,8 @@ export class Eth extends BaseCoin {
    * @param params.walletContractAddress {String} the ETH address of the wallet contract
    * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param params.recoveryDestination {String} target address to send recovered funds to
+   * @param params.bitgoFeeAddress {String} wrong chain wallet fee address for evm based cross chain recovery txn
+   * @param params.bitgoDestinationAddress {String} target bitgo address where fee will be sent for evm based cross chain recovery txn
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     if (params.isTss) {
@@ -1203,6 +1229,369 @@ export class Eth extends BaseCoin {
     }
     return this.recoverEthLike(params);
   }
+
+  /**
+   * Builds a unsigned (for cold, custody wallet) or
+   * half-signed (for hot wallet) evm cross chain recovery transaction with
+   * same expected arguments as recover method.
+   * This helps recover funds from evm based wrong chain.
+   */
+  protected async recoverEthLikeforEvmBasedRecovery(
+    params: RecoverOptions
+  ): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    this.validateEvmBasedRecoveryParams(params);
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const bitgoFeeAddress = params.bitgoFeeAddress?.replace(/\s/g, '') as string;
+    const bitgoDestinationAddress = params.bitgoDestinationAddress?.replace(/\s/g, '') as string;
+    const recoveryDestination = params.recoveryDestination?.replace(/\s/g, '') as string;
+    const walletContractAddress = params.walletContractAddress?.replace(/\s/g, '') as string;
+    const tokenContractAddress = params.tokenContractAddress?.replace(/\s/g, '') as string;
+
+    let userSigningKey;
+    let userKeyPrv;
+    if (params.walletPassphrase) {
+      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+        try {
+          userKeyPrv = this.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
+      }
+
+      const keyPair = new KeyPairLib({ prv: userKeyPrv });
+      userSigningKey = keyPair.getKeys().prv;
+      if (!userSigningKey) {
+        throw new Error('no private key');
+      }
+    }
+
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+
+    const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress);
+
+    // get balance of bitgoFeeAddress to ensure funds are available to pay fees
+    const bitgoFeeAddressBalance = await this.queryAddressBalance(bitgoFeeAddress);
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (bitgoFeeAddressBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Fee address ${bitgoFeeAddressBalance} has balance ${(bitgoFeeAddressBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ${this.getChain()} to this address then retry.`
+      );
+    }
+
+    if (tokenContractAddress) {
+      return this.recoverEthLikeTokenforEvmBasedRecovery(
+        params,
+        bitgoFeeAddressNonce,
+        gasLimit,
+        gasPrice,
+        userKey,
+        userSigningKey
+      );
+    }
+
+    // get balance of wallet
+    const txAmount = await this.queryAddressBalance(walletContractAddress);
+
+    const bitgoFeePercentage = 0; // TODO: BG-71912 can change the fee% here.
+    const bitgoFeeAmount = txAmount * (bitgoFeePercentage / 100);
+
+    // build recipients object
+    const recipients: Recipient[] = [
+      {
+        address: recoveryDestination,
+        amount: new BigNumber(txAmount).minus(bitgoFeeAmount).toFixed(),
+      },
+    ];
+
+    if (bitgoFeePercentage > 0) {
+      if (_.isUndefined(bitgoDestinationAddress) || !this.isValidAddress(bitgoDestinationAddress)) {
+        throw new Error('invalid bitgoDestinationAddress');
+      }
+
+      recipients.push({
+        address: bitgoDestinationAddress,
+        amount: bitgoFeeAmount.toString(10),
+      });
+    }
+
+    // calculate batch data
+    const BATCH_METHOD_NAME = 'batch';
+    const BATCH_METHOD_TYPES = ['address[]', 'uint256[]'];
+    const batchExecutionInfo = this.getBatchExecutionInfo(recipients);
+    const batchData = optionalDeps.ethUtil.addHexPrefix(
+      this.getMethodCallData(BATCH_METHOD_NAME, BATCH_METHOD_TYPES, batchExecutionInfo.values).toString('hex')
+    );
+
+    // Get sequence ID using contract call
+    // we need to wait between making two polygonscan calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(walletContractAddress);
+
+    const txInfo = {
+      recipients: recipients,
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      gasLimit: gasLimit.toString(10),
+      isEvmBasedCrossChainRecovery: true,
+    };
+
+    const network = this.getNetwork();
+    const batcherContractAddress = network?.batcherContractAddress as string;
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    txBuilder.counter(bitgoFeeAddressNonce);
+    txBuilder.contract(walletContractAddress);
+    let txFee;
+    if (params.eip1559) {
+      txFee = {
+        eip1559: {
+          maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+          maxFeePerGas: params.eip1559.maxFeePerGas,
+        },
+      };
+    } else {
+      txFee = { fee: gasPrice.toString() };
+    }
+    txBuilder.fee({
+      ...txFee,
+      gasLimit: gasLimit.toString(),
+    });
+
+    const transferBuilder = txBuilder.transfer() as TransferBuilder;
+
+    transferBuilder
+      .amount(batchExecutionInfo.totalAmount)
+      .contractSequenceId(sequenceId)
+      .expirationTime(this.getDefaultExpireTime())
+      .to(batcherContractAddress)
+      .data(batchData);
+
+    if (params.walletPassphrase) {
+      txBuilder.transfer().key(userSigningKey);
+    }
+
+    const tx = await txBuilder.build();
+
+    const response: OfflineVaultTxInfo = {
+      txHex: tx.toBroadcastFormat(),
+      userKey,
+      coin: this.getChain(),
+      gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+      gasLimit,
+      recipients: txInfo.recipients,
+      walletContractAddress: tx.toJson().to,
+      amount: batchExecutionInfo.totalAmount,
+      backupKeyNonce: bitgoFeeAddressNonce,
+      eip1559: params.eip1559,
+    };
+    _.extend(response, txInfo);
+    response.nextContractSequenceId = response.contractSequenceId;
+
+    if (params.walletPassphrase) {
+      const halfSignedTxn: HalfSignedTransaction = {
+        halfSigned: {
+          txHex: tx.toBroadcastFormat(),
+          recipients: txInfo.recipients,
+          expireTime: txInfo.expireTime,
+        },
+      };
+      _.extend(response, halfSignedTxn);
+
+      const feesUsed: FeesUsed = {
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit: optionalDeps.ethUtil.bufferToInt(gasLimit).toFixed(),
+      };
+      response['feesUsed'] = feesUsed;
+    }
+
+    return response;
+  }
+
+  async recoverEthLikeTokenforEvmBasedRecovery(
+    params: RecoverOptions,
+    bitgoFeeAddressNonce: number,
+    gasLimit,
+    gasPrice,
+    userKey,
+    userSigningKey
+  ) {
+    // get token balance of wallet
+    const txAmount = await this.queryAddressTokenBalance(
+      params.tokenContractAddress as string,
+      params.walletContractAddress
+    );
+
+    // build recipients object
+    const recipients: Recipient[] = [
+      {
+        address: params.recoveryDestination,
+        amount: new BigNumber(txAmount).toFixed(),
+      },
+    ];
+
+    // Get sequence ID using contract call
+    // we need to wait between making two polygonscan calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+
+    const txInfo = {
+      recipients: recipients,
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      gasLimit: gasLimit.toString(10),
+      isEvmBasedCrossChainRecovery: true,
+    };
+
+    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    txBuilder.counter(bitgoFeeAddressNonce);
+    txBuilder.contract(params.walletContractAddress as string);
+    let txFee;
+    if (params.eip1559) {
+      txFee = {
+        eip1559: {
+          maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+          maxFeePerGas: params.eip1559.maxFeePerGas,
+        },
+      };
+    } else {
+      txFee = { fee: gasPrice.toString() };
+    }
+    txBuilder.fee({
+      ...txFee,
+      gasLimit: gasLimit.toString(),
+    });
+
+    const transferBuilder = txBuilder.transfer() as TransferBuilder;
+
+    const network = this.getNetwork();
+    const token = getToken(params.tokenContractAddress as string, network as EthereumNetwork)?.name as string;
+
+    transferBuilder
+      .amount(txAmount)
+      .contractSequenceId(sequenceId)
+      .expirationTime(this.getDefaultExpireTime())
+      .to(params.recoveryDestination)
+      .coin(token);
+
+    if (params.walletPassphrase) {
+      txBuilder.transfer().key(userSigningKey);
+    }
+
+    const tx = await txBuilder.build();
+
+    const response: OfflineVaultTxInfo = {
+      txHex: tx.toBroadcastFormat(),
+      userKey,
+      coin: token,
+      gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+      gasLimit,
+      recipients: txInfo.recipients,
+      walletContractAddress: tx.toJson().to,
+      amount: txAmount.toString(),
+      backupKeyNonce: bitgoFeeAddressNonce,
+      eip1559: params.eip1559,
+    };
+    _.extend(response, txInfo);
+    response.nextContractSequenceId = response.contractSequenceId;
+
+    if (params.walletPassphrase) {
+      const halfSignedTxn: HalfSignedTransaction = {
+        halfSigned: {
+          txHex: tx.toBroadcastFormat(),
+          recipients: txInfo.recipients,
+          expireTime: txInfo.expireTime,
+        },
+      };
+      _.extend(response, halfSignedTxn);
+
+      const feesUsed: FeesUsed = {
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit: optionalDeps.ethUtil.bufferToInt(gasLimit).toFixed(),
+      };
+      response['feesUsed'] = feesUsed;
+    }
+
+    return response;
+  }
+
+  validateEvmBasedRecoveryParams(params: RecoverOptions): void {
+    if (_.isUndefined(params.bitgoFeeAddress) || !this.isValidAddress(params.bitgoFeeAddress)) {
+      throw new Error('invalid bitgoFeeAddress');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+  }
+
+  /**
+   * Create a new transaction builder for the current chain
+   * @return a new transaction builder
+   */
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /**
+   * Get the base chain that the coin exists on.
+   */
+  getBaseChain(): string {
+    return this.getChain();
+  }
+
+  /**
+   * Return types, values, and total amount in wei to send in a batch transaction, using the method signature
+   * `distributeBatch(address[], uint256[])`
+   * @param {Recipient[]} recipients - transaction recipients
+   * @returns {GetBatchExecutionInfoRT} information needed to execute the batch transaction
+   */
+  getBatchExecutionInfo(recipients: Recipient[]): GetBatchExecutionInfoRT {
+    const addresses: string[] = [];
+    const amounts: string[] = [];
+    let sum = new BigNumber('0');
+    _.forEach(recipients, ({ address, amount }) => {
+      addresses.push(address);
+      amounts.push(amount);
+      sum = sum.plus(amount);
+    });
+
+    return {
+      values: [addresses, amounts],
+      totalAmount: sum.toFixed(),
+    };
+  }
+
+  /**
+   * Get the data required to make an ETH function call defined by the given types and values
+   *
+   * @param functionName The name of the function being called, e.g. transfer
+   * @param types The types of the function call in order
+   * @param values The values of the function call in order
+   * @return {Buffer} The combined data for the function call
+   */
+  getMethodCallData = (functionName, types, values) => {
+    return Buffer.concat([
+      // function signature
+      optionalDeps.ethAbi.methodID(functionName, types),
+      // function arguments
+      optionalDeps.ethAbi.rawEncode(types, values),
+    ]);
+  };
 
   /**
    * Recovers a tx with TSS key shares
@@ -1319,6 +1708,12 @@ export class Eth extends BaseCoin {
    * same expected arguments as recover method (original logic before adding TSS recover path)
    */
   protected async recoverEthLike(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    // bitgoFeeAddress is only defined when it is a evm cross chain recovery
+    // as we use fee from this wrong chain address for the recovery txn on the correct chain.
+    if (params.bitgoFeeAddress) {
+      return this.recoverEthLikeforEvmBasedRecovery(params);
+    }
+
     this.validateRecoveryParams(params);
     const isKrsRecovery = getIsKrsRecovery(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);

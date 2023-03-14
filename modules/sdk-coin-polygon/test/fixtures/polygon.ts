@@ -20,6 +20,16 @@ export function getBalanceRequest(address: string) {
   };
 }
 
+export function getTokenBalanceRequest(tokenContractAddress: string, address: string) {
+  return {
+    module: 'account',
+    action: 'tokenbalance',
+    contractaddress: tokenContractAddress,
+    address: address,
+    tag: 'latest',
+  };
+}
+
 export const getBalanceResponse = {
   status: '1',
   message: 'OK',
