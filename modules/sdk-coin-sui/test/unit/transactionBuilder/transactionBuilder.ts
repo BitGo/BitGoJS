@@ -300,7 +300,7 @@ describe('Sui Transaction Builder', async () => {
         Call: {
           package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
           module: ModulesNames.SuiSystem,
-          function: MethodNames.RequestAddDelegationMulCoin,
+          function: MethodNames.RequestAddStakeMulCoin,
           typeArguments: [],
           arguments: [
             SUI_SYSTEM_STATE_OBJECT,

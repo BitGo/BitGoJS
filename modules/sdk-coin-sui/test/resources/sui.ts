@@ -1,4 +1,4 @@
-import { RequestAddDelegation, RequestSwitchDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
+import { RequestAddDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 
 export const addresses = {
@@ -131,9 +131,6 @@ export const ADD_DELEGATION_TX_MUL_COIN =
 export const WITHDRAW_DELEGATION_TX =
   'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgpzdWlfc3lzdGVtG3JlcXVlc3Rfd2l0aGRyYXdfZGVsZWdhdGlvbgADAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEARAM3T3R0zR5VpiJwWH/tIBPS4kki8wgAAAAAACAgQBQ78f1HVQ9gqo71dbAMMQYofSkctz9h707a0YMHiQEACqyOuB212d+hSaFJV+YpFeQie8QVnQgAAAAAACBSeVp0b2dxLIM1Nb3AyB2yDY4bPUmE+fkpyU0gB24snY+lHUOqRSos7iwVBBfRw94tsnctNA1MeiJm+vLMZv1tDMYF7679zXddbQ8AAAAAACCWk/YTDWaCnw82ZvuAtSVF/zQ62s4l60jy58YQiTIS8Y+lHUOqRSos7iwVBBfRw94tsnctAQAAAAAAAABAQg8AAAAAAA==';
 
-export const SWITCH_DELEGATION_TX =
-  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgpzdWlfc3lzdGVtGXJlcXVlc3Rfc3dpdGNoX2RlbGVnYXRpb24ABAEBAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAEBAEQDN090dM0eVaYicFh/7SAT0uJJIvMIAAAAAAAgIEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4kBAAqsjrgdtdnfoUmhSVfmKRXkInvEFZ0IAAAAAAAgUnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0AFEj5yGYgRYBdnZj68+jVjWJRcYoij6UdQ6pFKizuLBUEF9HD3i2ydy00DUx6Imb68sxm/W0MxgXvrv3Nd11tDwAAAAAAIJaT9hMNZoKfDzZm+4C1JUX/NDraziXrSPLnxhCJMhLxj6UdQ6pFKizuLBUEF9HD3i2ydy0BAAAAAAAAAEBCDwAAAAAA';
-
 export const invalidPayTxs = [
   {
     coins: [
@@ -228,22 +225,5 @@ export const requestWithdrawDelegation: RequestWithdrawDelegation = {
     digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
     // type: '0x2::staking_pool::StakedSui',
   },
-  amount: STAKING_AMOUNT,
-};
-
-export const requestSwitchDelegation: RequestSwitchDelegation = {
-  delegationObjectId: {
-    objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
-    version: 586530,
-    digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
-    // type: '0x2::staking_pool::Delegation'
-  },
-  stakedSuiObjectId: {
-    objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
-    version: 564501,
-    digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
-    // type: '0x2::staking_pool::StakedSui',
-  },
-  newValidatorAddress: NEW_VALIDATOR_ADDRESS,
   amount: STAKING_AMOUNT,
 };

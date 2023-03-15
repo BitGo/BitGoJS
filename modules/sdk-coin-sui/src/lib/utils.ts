@@ -323,12 +323,10 @@ export class Utils implements BaseUtils {
    */
   getTransactionType(fctName: string): TransactionType {
     switch (fctName) {
-      case MethodNames.RequestAddDelegationMulCoin:
+      case MethodNames.RequestAddStakeMulCoin:
         return TransactionType.AddDelegator;
-      case MethodNames.RequestWithdrawDelegation:
+      case MethodNames.RequestWithdrawStake:
         return TransactionType.StakingWithdraw;
-      case MethodNames.RequestSwitchDelegation:
-        return TransactionType.StakingSwitch;
       default:
         throw new NotSupported(`Staking Transaction type with function ${fctName} not supported`);
     }
@@ -342,12 +340,10 @@ export class Utils implements BaseUtils {
    */
   getSuiTransactionType(fctName: string): SuiTransactionType {
     switch (fctName) {
-      case MethodNames.RequestAddDelegationMulCoin:
+      case MethodNames.RequestAddStakeMulCoin:
         return SuiTransactionType.AddDelegation;
-      case MethodNames.RequestWithdrawDelegation:
+      case MethodNames.RequestWithdrawStake:
         return SuiTransactionType.WithdrawDelegation;
-      case MethodNames.RequestSwitchDelegation:
-        return SuiTransactionType.SwitchDelegation;
       default:
         throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
     }

@@ -28,7 +28,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder(payTx);
         case SuiTransactionType.AddDelegation:
         case SuiTransactionType.WithdrawDelegation:
-        case SuiTransactionType.SwitchDelegation:
           const stakingTransaction = new StakingTransaction(this._coinConfig);
           stakingTransaction.fromRawTransaction(raw);
           return this.getStakingBuilder(stakingTransaction);

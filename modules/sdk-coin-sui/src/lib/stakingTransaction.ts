@@ -74,7 +74,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           Call: {
             package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestAddDelegationMulCoin,
+            function: suiTx.tx.function || MethodNames.RequestAddStakeMulCoin,
             typeArguments: suiTx.tx.typeArguments,
             arguments: suiTx.tx.arguments,
           },
@@ -85,18 +85,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           Call: {
             package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: suiTx.tx.arguments,
-          },
-        };
-        break;
-      case SuiTransactionType.SwitchDelegation:
-        txDetails = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestSwitchDelegation,
+            function: suiTx.tx.function || MethodNames.RequestWithdrawStake,
             typeArguments: suiTx.tx.typeArguments,
             arguments: suiTx.tx.arguments,
           },
@@ -147,8 +136,6 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
         return this.explainAddDelegationTransaction(result, explanationResult);
       case TransactionType.StakingWithdraw:
         return this.explainWithdrawDelegationTransaction(result, explanationResult);
-      case TransactionType.StakingSwitch:
-        return this.explainSwitchDelegationTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
@@ -204,22 +191,6 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           },
         ];
         break;
-      case SuiTransactionType.SwitchDelegation:
-        this._inputs = [
-          {
-            address: this.suiTransaction.sender,
-            value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-            coin: this._coinConfig.name,
-          },
-        ];
-        this._outputs = [
-          {
-            address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()), // validator address
-            value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-            coin: this._coinConfig.name,
-          },
-        ];
-        break;
       default:
         return;
     }
@@ -256,7 +227,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           Call: {
             package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestAddDelegationMulCoin,
+            function: suiTx.tx.function || MethodNames.RequestAddStakeMulCoin,
             typeArguments: suiTx.tx.typeArguments,
             arguments: [
               utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
@@ -272,28 +243,12 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
           Call: {
             package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
             module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestWithdrawDelegation,
+            function: suiTx.tx.function || MethodNames.RequestWithdrawStake,
             typeArguments: suiTx.tx.typeArguments,
             arguments: [
               utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
               utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
               utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
-            ],
-          },
-        };
-        break;
-      case SuiTransactionType.SwitchDelegation:
-        tx = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestSwitchDelegation,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
-              utils.mapAddressToCallArg(suiTx.tx.arguments[3].toString()),
             ],
           },
         };
@@ -354,33 +309,6 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       outputs: [
         {
           address: json.sender,
-          amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-        },
-      ],
-    };
-  }
-
-  /**
-   * Returns a complete explanation for a switch delegation transaction
-   *
-   * @param {TxData} json The transaction data in json format
-   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
-   * @returns {TransactionExplanation}
-   */
-  explainSwitchDelegationTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    return {
-      ...explanationResult,
-      fee: {
-        fee: this.suiTransaction.gasData.budget.toString(),
-      },
-      type: TransactionType.StakingSwitch,
-      outputs: [
-        {
-          address: json.sender,
-          amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-        },
-        {
-          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
           amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
         },
       ],

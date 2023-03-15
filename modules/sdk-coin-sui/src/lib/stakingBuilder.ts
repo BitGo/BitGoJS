@@ -6,7 +6,6 @@ import {
   MoveCallTx,
   MoveCallTxDetails,
   RequestAddDelegation,
-  RequestSwitchDelegation,
   RequestWithdrawDelegation,
   SuiObjectRef,
   SuiTransaction,
@@ -24,7 +23,6 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   protected _moveCallTx: MoveCallTx;
   protected _addDelegationTx: RequestAddDelegation;
   protected _withdrawDelegation: RequestWithdrawDelegation;
-  protected _switchDelegation: RequestSwitchDelegation;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -76,7 +74,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     this._moveCallTx = {
       package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
       module: ModulesNames.SuiSystem,
-      function: MethodNames.RequestAddDelegationMulCoin,
+      function: MethodNames.RequestAddStakeMulCoin,
       typeArguments: [],
       arguments: [SUI_SYSTEM_STATE_OBJECT, addDelegation.coins, addDelegation.amount, addDelegation.validatorAddress],
     };
@@ -96,39 +94,9 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     this._moveCallTx = {
       package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
       module: ModulesNames.SuiSystem,
-      function: MethodNames.RequestWithdrawDelegation,
+      function: MethodNames.RequestWithdrawStake,
       typeArguments: [],
       arguments: [SUI_SYSTEM_STATE_OBJECT, withdrawDelegation.delegationObjectId, withdrawDelegation.stakedSuiObjectId],
-    };
-    return this;
-  }
-
-  /**
-   * Create a new transaction for switching delegation ready to be signed
-   *
-   * @param {switchDelegation} switchDelegation
-   */
-  requestSwitchDelegation(switchDelegation: RequestSwitchDelegation): this {
-    this.validateSuiObjectRef(switchDelegation.delegationObjectId, 'switchDelegation.delegation');
-    this.validateSuiObjectRef(switchDelegation.stakedSuiObjectId, 'switchDelegation.stakedCoinId');
-    this.validateAddress({ address: switchDelegation.newValidatorAddress });
-
-    if (this._sender === switchDelegation.newValidatorAddress) {
-      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
-    }
-
-    this._switchDelegation = switchDelegation;
-    this._moveCallTx = {
-      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
-      module: ModulesNames.SuiSystem,
-      function: MethodNames.RequestSwitchDelegation,
-      typeArguments: [],
-      arguments: [
-        SUI_SYSTEM_STATE_OBJECT,
-        switchDelegation.delegationObjectId,
-        switchDelegation.stakedSuiObjectId,
-        switchDelegation.newValidatorAddress,
-      ],
     };
     return this;
   }
@@ -178,7 +146,7 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
     const txDetails = txData.kind.Single as MoveCallTxDetails;
     if (txDetails.hasOwnProperty('Call')) {
       switch (txDetails.Call.function) {
-        case MethodNames.RequestAddDelegationMulCoin:
+        case MethodNames.RequestAddStakeMulCoin:
           this.type(SuiTransactionType.AddDelegation);
           this.requestAddDelegation({
             coins: txDetails.Call.arguments[1] as SuiObjectRef[],
@@ -186,20 +154,11 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
             validatorAddress: txDetails.Call.arguments[3].toString(),
           });
           break;
-        case MethodNames.RequestWithdrawDelegation:
+        case MethodNames.RequestWithdrawStake:
           this.type(SuiTransactionType.WithdrawDelegation);
           this.requestWithdrawDelegation({
             delegationObjectId: txDetails.Call.arguments[1] as SuiObjectRef,
             stakedSuiObjectId: txDetails.Call.arguments[2] as SuiObjectRef,
-            amount: this._withdrawDelegation?.amount || 0,
-          });
-          break;
-        case MethodNames.RequestSwitchDelegation:
-          this.type(SuiTransactionType.SwitchDelegation);
-          this.requestSwitchDelegation({
-            delegationObjectId: txDetails.Call.arguments[1] as SuiObjectRef,
-            stakedSuiObjectId: txDetails.Call.arguments[2] as SuiObjectRef,
-            newValidatorAddress: txDetails.Call.arguments[3].toString(),
             amount: this._withdrawDelegation?.amount || 0,
           });
           break;

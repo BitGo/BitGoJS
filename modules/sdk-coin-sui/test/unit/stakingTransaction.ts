@@ -31,7 +31,7 @@ describe('Sui RequestAddDelegation Transaction', () => {
       tx.fromRawTransaction(testData.ADD_DELEGATION_TX_MUL_COIN);
       const json = tx.toJson();
       should.equal(json.sender, testData.STAKING_SENDER_ADDRESS);
-      should.equal(json.kind.Single['Call'].function, MethodNames.RequestAddDelegationMulCoin);
+      should.equal(json.kind.Single['Call'].function, MethodNames.RequestAddStakeMulCoin);
       should.equal(json.kind.Single['Call'].arguments.length, 4); // 4 required arguments
       should.equal(json.kind.Single['Call'].arguments[1].length, 2); // 2 coins
     });

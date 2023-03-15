@@ -81,7 +81,6 @@ const TypeTagSchema = joi
 const TypeArgumentsSchema = joi.array().items(TypeTagSchema).required();
 const RequestAddDelegationArgumentsSchema = joi.array().length(4).items(SuiJsonValueSchema).required();
 const RequestWithdrawArgumentsSchema = joi.array().length(3).items(SuiJsonValueSchema).required();
-const RequestSwitchArgumentsSchema = joi.array().length(4).items(SuiJsonValueSchema).required();
 
 export const RequestAddDelegationTransactionSchema = joi.object({
   package: joi.string().required(),
@@ -99,24 +98,12 @@ export const RequestWithdrawDelegationTransactionSchema = joi.object({
   arguments: RequestWithdrawArgumentsSchema.required(),
 });
 
-export const RequestSwitchDelegationTransactionSchema = joi.object({
-  package: joi.string().required(),
-  module: joi.string().required(),
-  function: joi.string().required(),
-  typeArguments: TypeArgumentsSchema.optional(),
-  arguments: RequestSwitchArgumentsSchema.required(),
-});
-
 export const StakeTransactionSchema = joi.alternatives(RequestAddDelegationTransactionSchema).match('one');
 export const SuiMoveCallTransactionSchema = joi.object({
   type: joi.string().required(),
   sender: joi.string().required(),
   tx: joi
-    .alternatives(
-      RequestAddDelegationTransactionSchema,
-      RequestWithdrawDelegationTransactionSchema,
-      RequestSwitchDelegationTransactionSchema
-    )
+    .alternatives(RequestAddDelegationTransactionSchema, RequestWithdrawDelegationTransactionSchema)
     .match('any')
     .required(),
   gasData: GasDataSchema.required(),

@@ -6,7 +6,6 @@ export enum SuiTransactionType {
   PayAllSui = 'PayAllSui',
   AddDelegation = 'AddDelegation',
   WithdrawDelegation = 'WithdrawDelegation',
-  SwitchDelegation = 'SwitchDelegation',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -168,41 +167,28 @@ export interface RequestWithdrawDelegation {
   amount: number;
 }
 
-export interface RequestSwitchDelegation {
-  delegationObjectId: SuiObjectRef;
-  stakedSuiObjectId: SuiObjectRef;
-  newValidatorAddress: SuiAddress;
-  amount: number;
-}
-
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'request_add_delegation_mul_coin' for the staking transaction
  */
 export enum MethodNames {
   /**
-   * Add delegated stake to a validator's staking pool.
+   * Add stake to a validator's staking pool.
    *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_delegation
+   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_stake
    */
-  RequestAddDelegation = 'request_add_delegation',
+  RequestAddStake = 'request_add_stake',
   /**
-   * Add delegated stake to a validator's staking pool using multiple coins.
+   * Add stake to a validator's staking pool using multiple coins..
    *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#0x2_sui_system_request_add_delegation_mul_coin
+   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_stake_mul_coin
    */
-  RequestAddDelegationMulCoin = 'request_add_delegation_mul_coin',
+  RequestAddStakeMulCoin = 'request_add_stake_mul_coin',
   /**
-   * Switch delegation from the current validator to a new one..
+   * Withdraw some portion of a stake from a validator's staking pool.
    *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#0x2_sui_system_request_switch_delegation
+   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_withdraw_stake
    */
-  RequestSwitchDelegation = 'request_switch_delegation',
-  /**
-   * Withdraw some portion of a delegation from a validator's staking pool..
-   *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_withdraw_delegation
-   */
-  RequestWithdrawDelegation = 'request_withdraw_delegation',
+  RequestWithdrawStake = 'request_withdraw_stake',
 }
 
 /**
