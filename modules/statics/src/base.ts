@@ -321,6 +321,7 @@ export enum UnderlyingAsset {
   BIRD = 'bird',
   BIT = 'bit',
   BLT = 'blt',
+  BLUR = 'blur',
   BNB = 'bnb',
   BNBBEAR = 'bnbbear',
   BNBBULL = 'bnbbull',
@@ -898,6 +899,7 @@ export enum UnderlyingAsset {
   SYN = 'syn',
   'SYNTH-SUSD' = 'synth-susd',
   THRESHOLD = 'threshold',
+  THEU = 'theu',
   TAUD = 'taud',
   TBTC1 = 'tbtc1',
   TCAD = 'tcad',
@@ -1164,6 +1166,8 @@ export enum UnderlyingAsset {
   'polygon:ape' = 'polygon:ape',
   'polygon:srm' = 'polygon:srm',
   'polygon:fly' = 'polygon:fly',
+  'polygon:gfc' = 'polygon:gfc',
+  'polygon:rbw' = 'polygon:rbw',
 
   // Polygon NFTs
   // generic NFTs

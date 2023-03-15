@@ -1466,6 +1466,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BIT
   ),
   erc20(
+    '83214bf2-eec7-4225-b398-41e065e23311',
+    'blur',
+    'Blur',
+    18,
+    '0x5283d291dbcf85356a21ba090e6db59121208b44',
+    UnderlyingAsset.BLUR
+  ),
+  erc20(
     '462e1878-68eb-4c2b-9346-cee992195cdc',
     'bnb',
     'BNB Token',
@@ -7444,6 +7452,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'c28caef6-1312-49ad-9aad-fff8fdb63c6c',
+    'theu',
+    'Goerli Test Himalaya Euro Token',
+    18,
+    '0xbd6bb9f5364fe1408233204b82c3acfb4ce2b9d5',
+    UnderlyingAsset.THEU,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     '7ac2ea4c-e856-4495-b727-0e0dde011cab',
     'terc18dp2',
     'Test ERC Token 18 Decimals',
@@ -9457,6 +9477,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x486ffaf06a681bf22b5209e9ffce722662a60e8c',
     UnderlyingAsset['polygon:fly']
+  ),
+  polygonErc20(
+    'a6824efa-ecd7-4d19-ab8d-6dc7de06e35b',
+    'polygon:gfc',
+    'Gcoin',
+    18,
+    '0x071ac29d569a47ebffb9e57517f855cb577dcc4c',
+    UnderlyingAsset['polygon:gfc']
+  ),
+  polygonErc20(
+    '5b3642ed-5260-4c5e-9934-b2c3ddf31d21',
+    'polygon:rbw',
+    'Rainbow Token',
+    18,
+    '0x431cd3c9ac9fc73644bf68bf5691f4b83f9e104f',
+    UnderlyingAsset['polygon:rbw']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
