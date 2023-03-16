@@ -40,7 +40,11 @@ function isPoint(p: Uint8Array, xOnly: boolean): boolean {
 }
 
 function toBigInt(b: Uint8Array | Buffer): bigint {
-  return Buffer.from(b).readBigUint64BE();
+  const buff = Buffer.from(b);
+  if (buff.length !== 32) {
+    throw new Error('Invalid size ${buff.length}');
+  }
+  return BigInt(`0x${buff.toString('hex')}`);
 }
 
 const ecc = {

@@ -162,8 +162,8 @@
       "options": {},
       "expected": {
         "name": "p2tr",
-        "output": "OP_1 ac541fcae42b0e657468fe3b93fbf4927b51550f3490fa30428e39e1f4366ede",
-        "address": "bcrt1p432pljhy9v8x2arglcae87l5jfa4z4g0xjg05vzz3cu7rapkdm0qxan0m6"
+        "output": "OP_1 e3b1994a8543d816d1d0e4f0ea3b042f18b8eee510c8884f2e4facb9bf5e6210",
+        "address": "bcrt1puwcejj59g0vpd5wsuncw5wcy9uvt3mh9zrygsnewf7ktn067vggqcdrltw"
       }
     },
     {
