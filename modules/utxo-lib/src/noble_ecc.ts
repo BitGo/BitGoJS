@@ -40,7 +40,7 @@ function isPoint(p: Uint8Array, xOnly: boolean): boolean {
 }
 
 function toBigInt(b: Uint8Array | Buffer): bigint {
-  return Buffer.from(b).readBigUint64BE();
+  return BigInt(`0x${Buffer.from(b).toString('hex')}`);
 }
 
 const ecc = {
