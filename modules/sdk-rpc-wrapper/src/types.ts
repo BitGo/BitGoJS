@@ -10,3 +10,11 @@ export interface EVMRPCResult {
   jsonrpc?: string;
   result: string;
 }
+
+export interface EVMRPCTransactionOptions {
+  to: string;
+  data?: string;
+  gasLimit: string;
+  value: string;
+  gasPrice: string;
+}
