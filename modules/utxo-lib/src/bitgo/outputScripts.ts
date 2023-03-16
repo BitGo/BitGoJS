@@ -214,6 +214,10 @@ export function checkTapMerkleRoot(b: Buffer): Buffer {
   return checkSize(b, 32, 'tap merkle root');
 }
 
+export function checkTxHash(b: Buffer): Buffer {
+  return checkSize(b, 32, 'tx hash');
+}
+
 function getTaptreeKeyCombinations(scriptType: 'p2tr' | 'p2trMusig2', keys: Triple<Buffer>): Tuple<Buffer>[] {
   const [userKey, backupKey, bitGoKey] = keys.map((k) => toXOnlyPublicKey(k));
   return scriptType === 'p2tr'

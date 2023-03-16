@@ -11,6 +11,7 @@ import {
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
+  Tuple,
   Unspent,
   unspentSum,
   UtxoPsbt,
@@ -34,6 +35,17 @@ const rootWalletKeys = getDefaultWalletKeys();
 
 export const dummyTapOutputKey = Buffer.allocUnsafe(32);
 export const dummyTapInputKey = Buffer.allocUnsafe(32);
+export const dummyParticipantPubKeys: Tuple<Buffer> = [Buffer.allocUnsafe(33), Buffer.allocUnsafe(33)];
+export const dummyPubNonce = Buffer.allocUnsafe(66);
+export const dummyAggNonce = Buffer.allocUnsafe(66);
+export const dummyPrivateKey = Buffer.allocUnsafe(32);
+export const dummyTweak = Buffer.allocUnsafe(32);
+
+export const invalidTapOutputKey = Buffer.allocUnsafe(1);
+export const invalidTapInputKey = Buffer.allocUnsafe(1);
+export const invalidTxHash = Buffer.allocUnsafe(1);
+export const invalidParticipantPubKeys: Tuple<Buffer> = [Buffer.allocUnsafe(1), Buffer.allocUnsafe(1)];
+export const invalidPartialSig = Buffer.allocUnsafe(1);
 
 export function constructPsbt(
   unspents: (Unspent<bigint> & { prevTx?: Buffer })[],
@@ -143,6 +155,33 @@ export function validateNoncesKeyVals(
   noncesKeyVals.forEach((kv) => {
     assert.strictEqual(kv.key.identifier, PSBT_PROPRIETARY_IDENTIFIER);
     assert.strictEqual(kv.value.length, 66);
+    assert.strictEqual(nonceKeydata.filter((kd) => kd.equals(kv.key.keydata)).length, 1);
+  });
+}
+
+export function validatePartialSigKeyVals(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  index: number,
+  unspent: WalletUnspent<bigint>
+): void {
+  const keyVals = psbt.getProprietaryKeyVals(index);
+  const inputWalletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
+  const { outputPubkey } = createKeyPathP2trMusig2(inputWalletKeys.publicKeys);
+  const derivedParticipantPubKeys = [inputWalletKeys.user.publicKey, inputWalletKeys.bitgo.publicKey];
+
+  const noncesKeyVals = keyVals.filter((kv) => kv.key.subtype === ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG);
+  assert.strictEqual(noncesKeyVals.length, 2);
+
+  const nonceKeydata = derivedParticipantPubKeys.map((p) => {
+    const keydata = Buffer.alloc(65);
+    p.copy(keydata);
+    outputPubkey.copy(keydata, 33);
+    return keydata;
+  });
+
+  noncesKeyVals.forEach((kv) => {
+    assert.strictEqual(kv.key.identifier, PSBT_PROPRIETARY_IDENTIFIER);
+    assert.strictEqual(kv.value.length, 32);
     assert.strictEqual(nonceKeydata.filter((kd) => kd.equals(kv.key.keydata)).length, 1);
   });
 }

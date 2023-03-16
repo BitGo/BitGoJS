@@ -24,11 +24,20 @@ import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import {
+  createAggregateNonce,
   createMusig2Nonce,
+  createMusig2SigningSession,
+  createTapTweak,
+  encodePsbtMusig2PartialSigKeyKeyValData,
   encodePsbtMusig2PubNonceKeyValData,
+  musig2PartialSign,
+  parsePsbtMusig2NoncesKeyValData,
   parsePsbtMusig2ParticipantsKeyValData,
+  PsbtMusig2ParticipantsKeyValueData,
+  validatePsbtMusig2NoncesKeyValData,
   validatePsbtMusig2ParticipantsKeyValData,
 } from './Musig2';
+import { isTuple, Tuple } from './types';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
 
@@ -52,9 +61,30 @@ export interface HDTaprootSigner extends HDSigner {
   signSchnorr(hash: Buffer): Buffer;
 }
 
+/**
+ * HD signer object for taproot p2tr musig2 key path sign
+ */
+export interface HDTaprootMusig2Signer extends HDSigner {
+  /**
+   * Musig2 requires signer's 32-bytes private key to be passed to it.
+   */
+  privateKey: Buffer;
+
+  /**
+   * The path string must match /^m(\/\d+'?)+$/
+   * ex. m/44'/0'/0'/1/23 levels with ' must be hard derivations
+   */
+  derivePath(path: string): HDTaprootMusig2Signer;
+}
+
 export interface SchnorrSigner {
   publicKey: Buffer;
   signSchnorr(hash: Buffer): Buffer;
+}
+
+export interface Musig2Signer {
+  publicKey: Buffer;
+  privateKey: Buffer;
 }
 
 export interface TaprootSigner {
@@ -393,7 +423,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
   signAllInputsHD(
-    hdKeyPair: HDTaprootSigner,
+    hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
@@ -424,7 +454,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   signTaprootInputHD(
     inputIndex: number,
-    hdKeyPair: HDTaprootSigner,
+    hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
@@ -445,7 +475,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('Need one tapBip32Derivation masterFingerprint to match the HDSigner fingerprint');
     }
 
-    function getDerivedNode(bipDv: TapBip32Derivation): HDTaprootSigner {
+    function getDerivedNode(bipDv: TapBip32Derivation): HDTaprootMusig2Signer | HDTaprootSigner {
       const node = hdKeyPair.derivePath(bipDv.path);
       if (!bipDv.pubkey.equals(node.publicKey.slice(1))) {
         throw new Error('pubkey did not match tapBip32Derivation');
@@ -456,10 +486,107 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (input.tapLeafScript?.length) {
       const signers: TaprootSigner[] = myDerivations.map((bipDv) => {
         const signer = getDerivedNode(bipDv);
+        if (!('signSchnorr' in signer)) {
+          throw new Error('signSchnorr function is required to sign p2tr');
+        }
         return { signer, leafHashes: bipDv.leafHashes };
       });
       signers.forEach(({ signer, leafHashes }) => this.signTaprootInput(inputIndex, signer, leafHashes, sighashTypes));
+    } else if (input.tapInternalKey?.length) {
+      const signers: Musig2Signer[] = myDerivations.map((bipDv) => {
+        const signer = getDerivedNode(bipDv);
+        if (!('privateKey' in signer) || !signer.privateKey) {
+          throw new Error('privateKey is required to sign p2tr musig2');
+        }
+        return signer;
+      });
+      signers.forEach((signer) => this.signTaprootMusig2Input(inputIndex, signer, sighashTypes));
     }
+    return this;
+  }
+
+  private getMusig2ParticipantsKeyValData(inputIndex: number, tapInternalKey: Buffer, tapMerkleRoot: Buffer) {
+    const participantsKeyValData = parsePsbtMusig2ParticipantsKeyValData(this, inputIndex);
+    if (!participantsKeyValData) {
+      throw new Error(`Found 0 matching participant key value instead of 1`);
+    }
+    validatePsbtMusig2ParticipantsKeyValData(participantsKeyValData, tapInternalKey, tapMerkleRoot);
+    return participantsKeyValData;
+  }
+
+  private getMusig2NoncesKeyValData(inputIndex: number, participantsKeyValData: PsbtMusig2ParticipantsKeyValueData) {
+    const noncesKeyValsData = parsePsbtMusig2NoncesKeyValData(this, inputIndex);
+    if (!noncesKeyValsData || !isTuple(noncesKeyValsData)) {
+      throw new Error(
+        `Found ${noncesKeyValsData?.length ? noncesKeyValsData.length : 0} matching nonce key value instead of 2`
+      );
+    }
+    validatePsbtMusig2NoncesKeyValData(noncesKeyValsData, participantsKeyValData);
+    return noncesKeyValsData;
+  }
+
+  /**
+   * Signs p2tr musig2 key path input with 2 aggregated keys.
+   * @param inputIndex
+   * @param signer - XY public key and private key are required
+   * @param sighashTypes
+   */
+  signTaprootMusig2Input(
+    inputIndex: number,
+    signer: Musig2Signer,
+    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+  ): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+
+    if (!input.tapInternalKey) {
+      throw new Error('tapInternalKey is required for p2tr musig2 key path signing');
+    }
+    if (!input.tapMerkleRoot) {
+      throw new Error('tapMerkleRoot is required for p2tr musig2 key path signing');
+    }
+
+    const participantsKeyValData = this.getMusig2ParticipantsKeyValData(
+      inputIndex,
+      input.tapInternalKey,
+      input.tapMerkleRoot
+    );
+    const { tapOutputKey, participantPubKeys } = participantsKeyValData;
+    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
+    if (!participantPubKey) {
+      throw new Error('participant plain pub key should match one signer pub key');
+    }
+
+    const noncesKeyValsData = this.getMusig2NoncesKeyValData(inputIndex, participantsKeyValData);
+    const pubNonces: Tuple<Buffer> = [noncesKeyValsData[0].pubNonce, noncesKeyValsData[1].pubNonce];
+    const aggNonce = createAggregateNonce(pubNonces);
+    const tweak = createTapTweak(input.tapInternalKey, input.tapMerkleRoot);
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
+    const sessionKey = createMusig2SigningSession(aggNonce, hash, participantPubKeys, tweak);
+
+    const nonceKeyValData = noncesKeyValsData.find((kv) => kv.participantPubKey.equals(participantPubKey));
+    if (!nonceKeyValData) {
+      throw new Error('pubNonce is missing. retry signing process');
+    }
+    const originalPubNonce = this.getOriginalMusig2PubNonce(
+      nonceKeyValData.participantPubKey,
+      nonceKeyValData.tapOutputKey
+    );
+    if (!originalPubNonce) {
+      throw new Error('original pubNonce object is missing. retry signing process');
+    }
+
+    let partialSig = musig2PartialSign(signer.privateKey, originalPubNonce, sessionKey);
+    this.deleteOriginalMusig2PubNonce(nonceKeyValData.participantPubKey, nonceKeyValData.tapOutputKey);
+    if (sighashType !== Transaction.SIGHASH_DEFAULT) {
+      partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
+    }
+
+    const partialSigKeyValData = encodePsbtMusig2PartialSigKeyKeyValData({
+      participantPubKey,
+      tapOutputKey,
+      partialSig,
+    });
+    this.addProprietaryKeyValToInput(inputIndex, partialSigKeyValData);
     return this;
   }
 
