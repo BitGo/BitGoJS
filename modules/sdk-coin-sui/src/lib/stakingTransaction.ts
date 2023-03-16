@@ -1,40 +1,30 @@
 import {
   BaseKey,
   InvalidTransactionError,
+  NotImplementedError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import {
-  MethodNames,
-  ModulesNames,
-  MoveCallTx,
-  SharedObjectRef,
-  SuiObjectRef,
-  SuiTransaction,
-  SuiTransactionType,
-  TransactionExplanation,
-  TxData,
-  TxDetails,
-} from './iface';
+import { BitGoSuiTransaction, SuiTransactionType, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { SUI_PACKAGE_FRAMEWORK_ADDRESS, TRANSFER_AMOUNT_UNKNOWN_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
+import { ProgrammableTransaction } from './mystenlab/types';
 
-export class StakingTransaction extends Transaction<MoveCallTx> {
+export class StakingTransaction extends Transaction<ProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  get suiTransaction(): SuiTransaction<MoveCallTx> {
+  get suiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: SuiTransaction<MoveCallTx>): void {
+  setSuiTransaction(tx: BitGoSuiTransaction<ProgrammableTransaction>): void {
     this._suiTransaction = tx;
   }
 
@@ -66,41 +56,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     if (!this._suiTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    const suiTx = this._suiTransaction;
-    let txDetails: TxDetails;
-    switch (suiTx.type) {
-      case SuiTransactionType.AddDelegation:
-        txDetails = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestAddStakeMulCoin,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: suiTx.tx.arguments,
-          },
-        };
-        break;
-      case SuiTransactionType.WithdrawDelegation:
-        txDetails = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestWithdrawStake,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: suiTx.tx.arguments,
-          },
-        };
-        break;
-      default:
-        throw new InvalidTransactionError('SuiTransactionType not supported');
-    }
-
-    return {
-      id: this._id,
-      kind: { Single: txDetails },
-      sender: suiTx.sender,
-      gasData: suiTx.gasData,
-    };
+    throw new NotImplementedError('Not implemented');
   }
 
   /** @inheritDoc */
@@ -158,38 +114,13 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
       return;
     }
     switch (this.suiTransaction.type) {
-      case SuiTransactionType.AddDelegation:
-        const staking_amount = this.suiTransaction.tx.arguments[2].toString();
-        this._inputs = [
-          {
-            address: this.suiTransaction.sender,
-            value: staking_amount, // staking_amount
-            coin: this._coinConfig.name,
-          },
-        ];
-        this._outputs = [
-          {
-            address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()), // validator address
-            value: staking_amount, // staking_amount
-            coin: this._coinConfig.name,
-          },
-        ];
+      case SuiTransactionType.AddStake:
+        this._inputs = [];
+        this._outputs = [];
         break;
-      case SuiTransactionType.WithdrawDelegation:
-        this._inputs = [
-          {
-            address: utils.normalizeHexId((this.suiTransaction.tx.arguments[1] as SuiObjectRef).objectId), // delegator address
-            value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-            coin: this._coinConfig.name,
-          },
-        ];
-        this._outputs = [
-          {
-            address: this.suiTransaction.sender,
-            value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-            coin: this._coinConfig.name,
-          },
-        ];
+      case SuiTransactionType.WithdrawStake:
+        this._inputs = [];
+        this._outputs = [];
         break;
       default:
         return;
@@ -204,9 +135,10 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
   fromRawTransaction(rawTransaction: string): void {
     try {
       utils.isValidRawTransaction(rawTransaction);
-      this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as SuiTransaction<MoveCallTx>;
-      this._type = utils.getTransactionType(this._suiTransaction.tx.function);
-      this.loadInputsAndOutputs();
+      throw new NotImplementedError('Not implemented');
+      // this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as BitGoSuiTransaction<MoveCallTx>;
+      // this._type = utils.getTransactionType(this._suiTransaction.tx.function);
+      // this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
     }
@@ -218,50 +150,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
    * @return {TxData}
    */
   getTxData(): TxData {
-    const suiTx = this._suiTransaction;
-    let tx: TxDetails;
-
-    switch (suiTx.type) {
-      case SuiTransactionType.AddDelegation:
-        tx = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestAddStakeMulCoin,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapCoinsToCallArg(suiTx.tx.arguments[1] as SuiObjectRef[]),
-              utils.mapAmountToCallArg(Number(suiTx.tx.arguments[2])),
-              utils.mapAddressToCallArg(suiTx.tx.arguments[3].toString()),
-            ],
-          },
-        };
-        break;
-      case SuiTransactionType.WithdrawDelegation:
-        tx = {
-          Call: {
-            package: suiTx.tx.package || SUI_PACKAGE_FRAMEWORK_ADDRESS,
-            module: suiTx.tx.module || ModulesNames.SuiSystem,
-            function: suiTx.tx.function || MethodNames.RequestWithdrawStake,
-            typeArguments: suiTx.tx.typeArguments,
-            arguments: [
-              utils.mapSharedObjectToCallArg(suiTx.tx.arguments[0] as SharedObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[1] as SuiObjectRef),
-              utils.mapSuiObjectRefToCallArg(suiTx.tx.arguments[2] as SuiObjectRef),
-            ],
-          },
-        };
-        break;
-      default:
-        throw new InvalidTransactionError(`Sui StakingTransaction type ${suiTx.type} not supported`);
-    }
-
-    return {
-      kind: { Single: tx },
-      sender: suiTx.sender,
-      gasData: suiTx.gasData,
-    };
+    throw new NotImplementedError('Not implemented');
   }
 
   /**
@@ -272,21 +161,7 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
    * @returns {TransactionExplanation}
    */
   explainAddDelegationTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const amount = this.suiTransaction.tx.arguments[2];
-    return {
-      ...explanationResult,
-      fee: {
-        fee: this.suiTransaction.gasData.budget.toString(),
-      },
-      type: TransactionType.AddDelegator,
-      outputs: [
-        {
-          address: utils.normalizeHexId(this.suiTransaction.tx.arguments[3].toString()),
-          amount: Number(amount),
-        },
-      ],
-      outputAmount: amount,
-    };
+    throw new NotImplementedError('Not implemented');
   }
 
   /**
@@ -300,18 +175,6 @@ export class StakingTransaction extends Transaction<MoveCallTx> {
     json: TxData,
     explanationResult: TransactionExplanation
   ): TransactionExplanation {
-    return {
-      ...explanationResult,
-      fee: {
-        fee: this.suiTransaction.gasData.budget.toString(),
-      },
-      type: TransactionType.StakingWithdraw,
-      outputs: [
-        {
-          address: json.sender,
-          amount: TRANSFER_AMOUNT_UNKNOWN_TEXT,
-        },
-      ],
-    };
+    throw new NotImplementedError('Not implemented');
   }
 }

@@ -42,13 +42,14 @@
   "dependencies": {
     "@bitgo/sdk-core": "^7.0.1",
     "@bitgo/statics": "^14.4.0",
-    "@mysten/bcs": "0.6.0",
+    "@mysten/bcs": "^0.0.0-experimental-20230315165552",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
     "joi": "^17.4.0",
     "js-sha3": "^0.8.0",
     "lodash": "^4.17.21",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "superstruct": "^1.0.3"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",

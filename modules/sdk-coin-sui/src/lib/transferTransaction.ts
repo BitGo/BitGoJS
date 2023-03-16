@@ -1,37 +1,31 @@
 import {
   BaseKey,
   InvalidTransactionError,
+  NotImplementedError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import {
-  PayTx,
-  SuiObjectRef,
-  SuiTransaction,
-  SuiTransactionType,
-  TransactionExplanation,
-  TxData,
-  TxDetails,
-} from './iface';
+import { PayTx, BitGoSuiTransaction, SuiTransactionType, TransactionExplanation, TxData, TxDetails } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
+import { ProgrammableTransaction, SuiObjectRef } from './mystenlab/types';
 
-export class TransferTransaction extends Transaction<PayTx> {
+export class TransferTransaction extends Transaction<ProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  get suiTransaction(): SuiTransaction<PayTx> {
+  get suiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: SuiTransaction<PayTx>): void {
+  setSuiTransaction(tx: BitGoSuiTransaction<ProgrammableTransaction>): void {
     this._suiTransaction = tx;
   }
 
@@ -51,7 +45,8 @@ export class TransferTransaction extends Transaction<PayTx> {
   }
 
   getInputCoins(): SuiObjectRef[] {
-    return this.suiTransaction.tx.coins;
+    throw new NotImplementedError('Not Implemented');
+    // return this.suiTransaction.tx.inputs;
   }
 
   /** @inheritdoc */
@@ -74,45 +69,16 @@ export class TransferTransaction extends Transaction<PayTx> {
     }
 
     const tx = this._suiTransaction;
-    let txDetails: TxDetails;
-
     switch (tx.type) {
       case SuiTransactionType.Pay:
-        txDetails = {
-          Pay: {
-            coins: tx.tx.coins,
-            recipients: tx.tx.recipients,
-            amounts: tx.tx.amounts,
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       case SuiTransactionType.PaySui:
-        txDetails = {
-          PaySui: {
-            coins: tx.tx.coins,
-            recipients: tx.tx.recipients,
-            amounts: tx.tx.amounts,
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       case SuiTransactionType.PayAllSui:
-        txDetails = {
-          PayAllSui: {
-            coins: tx.tx.coins,
-            recipient: tx.tx.recipients[0],
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
-
-    return {
-      id: this._id,
-      kind: { Single: txDetails },
-      sender: tx.sender,
-      gasData: tx.gasData,
-    };
   }
 
   /** @inheritDoc */
@@ -158,9 +124,8 @@ export class TransferTransaction extends Transaction<PayTx> {
     }
 
     const tx = this.suiTransaction;
-    const payTx = tx.tx;
-    const recipients = payTx.recipients;
-    const amounts = payTx.amounts;
+    const recipients = [];
+    const amounts = [];
     if (tx.type !== SuiTransactionType.PayAllSui && recipients.length !== amounts.length) {
       throw new Error(
         `The length of recipients ${recipients.length} does not equal to the length of amounts ${amounts.length}`
@@ -170,7 +135,7 @@ export class TransferTransaction extends Transaction<PayTx> {
     const isEmptyAmount = amounts.length === 0;
     this._outputs = recipients.map((recipient, index) => ({
       address: recipient,
-      value: isEmptyAmount ? '' : amounts[index].toString(),
+      value: isEmptyAmount ? '' : amounts[index],
       coin: this._coinConfig.name,
     }));
 
@@ -192,8 +157,9 @@ export class TransferTransaction extends Transaction<PayTx> {
   fromRawTransaction(rawTransaction: string): void {
     try {
       utils.isValidRawTransaction(rawTransaction);
-      this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as SuiTransaction<PayTx>;
-      this._type = TransactionType.Send;
+      throw new NotImplementedError('Not Implemented');
+      // this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as BitGoSuiTransaction<PayTx>;
+      // this._type = TransactionType.Send;
       this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
@@ -214,40 +180,14 @@ export class TransferTransaction extends Transaction<PayTx> {
 
     switch (suiTx.type) {
       case SuiTransactionType.Pay:
-        tx = {
-          Pay: {
-            coins: suiTx.tx.coins,
-            recipients: suiTx.tx.recipients,
-            amounts: suiTx.tx.amounts,
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       case SuiTransactionType.PaySui:
-        tx = {
-          PaySui: {
-            coins: suiTx.tx.coins,
-            recipients: suiTx.tx.recipients,
-            amounts: suiTx.tx.amounts,
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       case SuiTransactionType.PayAllSui:
-        tx = {
-          PayAllSui: {
-            coins: suiTx.tx.coins,
-            recipient: suiTx.tx.recipients[0],
-          },
-        };
-        break;
+        throw new NotImplementedError('Not Implemented');
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }
-
-    return {
-      kind: { Single: tx },
-      sender: suiTx.sender,
-      gasData: suiTx.gasData,
-    };
   }
 
   /**
@@ -257,12 +197,12 @@ export class TransferTransaction extends Transaction<PayTx> {
    * @returns {TransactionExplanation}
    */
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const recipients = this.suiTransaction.tx.recipients;
-    const amounts = this.suiTransaction.tx.amounts;
+    const recipients = [];
+    const amounts = [];
 
     const outputs: TransactionRecipient[] = recipients.map((recipient, index) => ({
       address: recipient,
-      amount: amounts.length === 0 ? '' : amounts[index].toString(),
+      amount: amounts.length === 0 ? '' : amounts[index],
     }));
     const outputAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
 

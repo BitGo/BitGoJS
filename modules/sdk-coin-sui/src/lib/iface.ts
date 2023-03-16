@@ -1,25 +1,18 @@
 import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
+import { SuiObjectRef } from './mystenlab/types';
+import { MoveCallCommand, Transaction as ProgrammableTransaction } from './mystenlab/builder';
 
 export enum SuiTransactionType {
   Pay = 'Pay',
   PaySui = 'PaySui',
   PayAllSui = 'PayAllSui',
-  AddDelegation = 'AddDelegation',
-  WithdrawDelegation = 'WithdrawDelegation',
+  AddStake = 'AddStake',
+  WithdrawStake = 'WithdrawStake',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
 }
-
-export type SuiObjectRef = {
-  /** Hex code as string representing the object id */
-  objectId: string;
-  /** Object version */
-  version: number;
-  /** Base64 string representing the object digest */
-  digest: string;
-};
 
 export type ObjectId = string;
 export type SuiAddress = string;
@@ -148,22 +141,22 @@ export interface MoveCallTx {
   arguments: SuiJsonValue[];
 }
 
-export interface SuiTransaction<T = PayTx | MoveCallTx> {
+export interface BitGoSuiTransaction<T = ProgrammableTransaction> {
   type: SuiTransactionType;
   sender: string;
   tx: T;
   gasData: GasData;
 }
+
 // Staking DTOs
-export interface RequestAddDelegation {
+export interface RequestAddStake {
   coins: SuiObjectRef[];
   amount: number;
   validatorAddress: SuiAddress;
 }
 
-export interface RequestWithdrawDelegation {
-  delegationObjectId: SuiObjectRef;
-  stakedSuiObjectId: SuiObjectRef;
+export interface RequestWithdrawStake {
+  stakedSuiObjectId: ObjectId;
   amount: number;
 }
 

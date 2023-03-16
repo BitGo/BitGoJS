@@ -2,6 +2,7 @@ import {
   BaseKey,
   BaseTransaction,
   InvalidTransactionError,
+  NotImplementedError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
@@ -11,24 +12,25 @@ import {
   MoveCallTx,
   MoveCallTxDetails,
   PayTx,
-  SuiObjectRef,
-  SuiTransaction,
+  BitGoSuiTransaction,
   SuiTransactionType,
   TxData,
   TxDetails,
 } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { bcs } from './bcs';
-import { SER_BUFFER_SIZE, SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
+import { bcs } from './mystenlab/types/sui-bcs';
+import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
 import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
+import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionData';
+import { ProgrammableTransaction, SuiObjectRef } from './mystenlab/types';
 
 export abstract class Transaction<T> extends BaseTransaction {
-  protected _suiTransaction: SuiTransaction<T>;
+  protected _suiTransaction: BitGoSuiTransaction<T>;
   protected _signature: Signature;
   private _serializedSig: Uint8Array;
 
@@ -36,11 +38,11 @@ export abstract class Transaction<T> extends BaseTransaction {
     super(_coinConfig);
   }
 
-  get suiTransaction(): SuiTransaction<T> {
+  get suiTransaction(): BitGoSuiTransaction<T> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: SuiTransaction<T>): void {
+  setSuiTransaction(tx: BitGoSuiTransaction<T>): void {
     this._suiTransaction = tx;
   }
 
@@ -136,8 +138,9 @@ export abstract class Transaction<T> extends BaseTransaction {
   abstract fromRawTransaction(rawTransaction: string): void;
 
   getDataBytes(): Uint8Array {
+    // TODO - check if util class can be used
     const txData = this.getTxData();
-    return bcs.ser('TransactionData', txData, SER_BUFFER_SIZE).toBytes();
+    return bcs.ser('TransactionData', txData, { maxSize: TRANSACTION_DATA_MAX_SIZE }).toBytes();
   }
 
   /** @inheritDoc */
@@ -173,83 +176,22 @@ export abstract class Transaction<T> extends BaseTransaction {
     return fromHEX(hash.hex());
   }
 
-  static deserializeSuiTransaction(serializedTx: string): SuiTransaction {
-    const data = fromB64(serializedTx);
-    const k = bcs.de('TransactionData', data);
-
-    let type: SuiTransactionType;
-    const txDetails: TxDetails = k.kind.Single;
-    if (txDetails.hasOwnProperty('Pay')) {
-      type = SuiTransactionType.Pay;
-    } else if (txDetails.hasOwnProperty('PaySui')) {
-      type = SuiTransactionType.PaySui;
-    } else if (txDetails.hasOwnProperty('PayAllSui')) {
-      type = SuiTransactionType.PayAllSui;
-    } else if (txDetails.hasOwnProperty('Call')) {
-      const moveCallTxDetail = txDetails as MoveCallTxDetails;
-      type = utils.getSuiTransactionType(moveCallTxDetail.Call.function);
-    } else {
-      throw new Error('Transaction type not supported: ' + txDetails);
-    }
-
-    const tx = this.getProperTxDetails(k, type);
-    const gasData = this.getProperGasData(k);
-
-    return {
-      type,
-      sender: utils.normalizeHexId(k.sender),
-      tx,
-      gasData,
-    };
+  static deserializeSuiTransaction(serializedTx: string): BitGoSuiTransaction {
+    throw new NotImplementedError('Not implemented');
   }
 
-  static getProperTxDetails(k: any, type: SuiTransactionType): PayTx | MoveCallTx {
+  static getProperTxDetails(k: any, type: SuiTransactionType): ProgrammableTransaction {
     switch (type) {
       case SuiTransactionType.Pay:
-        return {
-          coins: this.normalizeCoins(k.kind.Single.Pay.coins),
-          recipients: k.kind.Single.Pay.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
-          amounts: k.kind.Single.Pay.amounts.map((amount) => Number(amount)),
-        };
+        throw new NotImplementedError('Not implemented');
       case SuiTransactionType.PaySui:
-        return {
-          coins: this.normalizeCoins(k.kind.Single.PaySui.coins),
-          recipients: k.kind.Single.PaySui.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
-          amounts: k.kind.Single.PaySui.amounts.map((amount) => Number(amount)),
-        };
+        throw new NotImplementedError('Not implemented');
       case SuiTransactionType.PayAllSui:
-        return {
-          coins: this.normalizeCoins(k.kind.Single.PayAllSui.coins),
-          recipients: [k.kind.Single.PayAllSui.recipient].map((recipient) =>
-            utils.normalizeHexId(recipient)
-          ) as string[],
-          amounts: [], // PayAllSui deserialization doesn't return the amount
-        };
-      case SuiTransactionType.AddDelegation:
-        return {
-          package: k.kind.Single.Call.package,
-          module: k.kind.Single.Call.module,
-          function: k.kind.Single.Call.function,
-          typeArguments: k.kind.Single.Call.typeArguments,
-          arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeCoins(utils.mapCallArgToCoins(k.kind.Single.Call.arguments[1])),
-            utils.mapCallArgToAmount(k.kind.Single.Call.arguments[2]),
-            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])),
-          ],
-        };
-      case SuiTransactionType.WithdrawDelegation:
-        return {
-          package: k.kind.Single.Call.package,
-          module: k.kind.Single.Call.module,
-          function: k.kind.Single.Call.function,
-          typeArguments: k.kind.Single.Call.typeArguments,
-          arguments: [
-            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
-            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
-          ],
-        };
+        throw new NotImplementedError('Not implemented');
+      case SuiTransactionType.AddStake:
+        throw new NotImplementedError('Not implemented');
+      case SuiTransactionType.WithdrawStake:
+        throw new NotImplementedError('Not implemented');
       default:
         throw new InvalidTransactionError('SuiTransactionType not supported');
     }

@@ -1,27 +1,19 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import {
-  PayAllSuiTxDetails,
-  PaySuiTxDetails,
-  PayTx,
-  PayTxDetails,
-  SuiObjectRef,
-  SuiTransaction,
-  SuiTransactionType,
-  TxDetails,
-} from './iface';
+import { BuildTransactionError, NotImplementedError, TransactionType } from '@bitgo/sdk-core';
+import { BitGoSuiTransaction, PayTx, SuiTransactionType } from './iface';
 import { Transaction } from './transaction';
 import { TransferTransaction } from './transferTransaction';
 import utils from './utils';
 import assert from 'assert';
+import { ProgrammableTransaction, SuiObjectRef } from './mystenlab/types';
 
-export class TransferBuilder extends TransactionBuilder<PayTx> {
+export class TransferBuilder extends TransactionBuilder<ProgrammableTransaction> {
   protected _payTx: PayTx;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new TransferTransaction(_coinConfig);
+    // this._transaction = new TransferTransaction(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
@@ -72,7 +64,7 @@ export class TransferBuilder extends TransactionBuilder<PayTx> {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction<PayTx> {
+  protected fromImplementation(rawTransaction: string): Transaction<ProgrammableTransaction> {
     const tx = new TransferTransaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
     tx.fromRawTransaction(rawTransaction);
@@ -81,7 +73,7 @@ export class TransferBuilder extends TransactionBuilder<PayTx> {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction<PayTx>> {
+  protected async buildImplementation(): Promise<Transaction<ProgrammableTransaction>> {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     this.transaction.transactionType(this.transactionType);
 
@@ -102,47 +94,8 @@ export class TransferBuilder extends TransactionBuilder<PayTx> {
    *
    * @param {Transaction} tx the transaction data
    */
-  initBuilder(tx: TransferTransaction): void {
-    this._transaction = tx;
-
-    if (tx.signature && tx.signature.length > 0) {
-      this._signatures = [tx.suiSignature];
-    }
-
-    const txData = tx.toJson();
-    this.sender(txData.sender);
-    this.gasData(txData.gasData);
-
-    let payTx;
-    let txDetails: TxDetails = txData.kind.Single;
-    if (txDetails.hasOwnProperty('Pay')) {
-      this.type(SuiTransactionType.Pay);
-      txDetails = txDetails as PayTxDetails;
-      payTx = {
-        coins: txDetails.Pay.coins,
-        recipients: txDetails.Pay.recipients,
-        amounts: txDetails.Pay.amounts,
-      };
-    } else if (txDetails.hasOwnProperty('PaySui')) {
-      this.type(SuiTransactionType.PaySui);
-      txDetails = txDetails as PaySuiTxDetails;
-      payTx = {
-        coins: txDetails.PaySui.coins,
-        recipients: txDetails.PaySui.recipients,
-        amounts: txDetails.PaySui.amounts,
-      };
-    } else if (txDetails.hasOwnProperty('PayAllSui')) {
-      this.type(SuiTransactionType.PayAllSui);
-      txDetails = txDetails as PayAllSuiTxDetails;
-      payTx = {
-        coins: txDetails.PayAllSui.coins,
-        recipients: [txDetails.PayAllSui.recipient],
-        amounts: [], // PayAllSui deserialization doesn't return the amount
-      };
-    } else {
-      throw new Error('Transaction type not supported: ' + txDetails);
-    }
-    this.payTx(payTx);
+  initBuilder(tx: Transaction<ProgrammableTransaction>): void {
+    throw new NotImplementedError('TODO: Not implemented');
   }
 
   /**
@@ -183,7 +136,7 @@ export class TransferBuilder extends TransactionBuilder<PayTx> {
     return inputCoins;
   }
 
-  protected buildSuiTransaction(): SuiTransaction<PayTx> {
+  protected buildSuiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
     this.validateTransactionFields();
 
     let payTx, gasPayment;

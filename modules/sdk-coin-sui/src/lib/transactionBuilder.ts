@@ -12,11 +12,12 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { GasData, SuiObjectRef, SuiTransactionType } from './iface';
+import { GasData, SuiTransactionType } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
+import {ProgrammableTransaction, SuiObjectRef} from './mystenlab/types';
 
-export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
+export abstract class TransactionBuilder<T = ProgrammableTransaction> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
   protected _signatures: Signature[] = [];
   protected _signer: KeyPair;

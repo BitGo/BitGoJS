@@ -253,9 +253,9 @@ describe('Sui Transaction Builder', async () => {
   describe('staking transaction', async () => {
     it('should build and sign a staking requestAddDelegation tx ', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxMultipleCoins);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxMultipleCoins);
       txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.id, 'UNAVAILABLE');

@@ -4,12 +4,7 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
-import {
-  MoveCallTx,
-  RequestAddDelegation,
-  RequestWithdrawDelegation,
-  SuiTransactionType,
-} from '../../../src/lib/iface';
+import { MoveCallTx, RequestAddStake, RequestWithdrawStake, SuiTransactionType } from '../../../src/lib/iface';
 import { KeyPair } from '../../../src';
 import assert = require('assert');
 
@@ -19,9 +14,9 @@ describe('Sui Staking Builder', () => {
   describe('Succeed AddDelegation', () => {
     it('should build a staking addDelegation tx with one coin', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxOneCoin);
 
       txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
@@ -47,9 +42,9 @@ describe('Sui Staking Builder', () => {
 
     it('should build a staking addDelegation tx with multiple coins', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxMultipleCoins);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxMultipleCoins);
       txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.AddDelegator);
@@ -93,15 +88,15 @@ describe('Sui Staking Builder', () => {
       const prvKey = 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22';
       const keyPair = new KeyPair({ prv: prvKey });
       const senderAddress = keyPair.getAddress();
-      const addDelegation: RequestAddDelegation = {
+      const addDelegation: RequestAddStake = {
         coins: [testData.coinToStakeOne],
         amount: 20000000,
         validatorAddress: testData.VALIDATOR_ADDRESS,
       };
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(senderAddress);
-      txBuilder.requestAddDelegation(addDelegation);
+      txBuilder.requestAddStake(addDelegation);
       txBuilder.gasData(testData.stakingGasData);
 
       const unsignedTx = await txBuilder.build();
@@ -135,9 +130,9 @@ describe('Sui Staking Builder', () => {
   describe('Succeed WithdrawDelegation', () => {
     it('should build a staking WithdrawDelegation tx with one coin', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.WithdrawDelegation);
+      txBuilder.type(SuiTransactionType.WithdrawStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestWithdrawDelegation(testData.requestWithdrawDelegation);
+      txBuilder.requestWithdrawStake(testData.requestWithdrawDelegation);
 
       txBuilder.gasData(testData.stakingGasData);
       const tx = await txBuilder.build();
@@ -146,7 +141,6 @@ describe('Sui Staking Builder', () => {
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.requestWithdrawDelegation.delegationObjectId.objectId,
         value: 'TRANSFER_AMOUNT_UNKNOWN',
         coin: 'tsui',
       });
@@ -165,11 +159,11 @@ describe('Sui Staking Builder', () => {
       const prvKey = 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22';
       const keyPair = new KeyPair({ prv: prvKey });
       const senderAddress = keyPair.getAddress();
-      const requestWithdrawDelegation: RequestWithdrawDelegation = testData.requestWithdrawDelegation;
+      const requestWithdrawDelegation: RequestWithdrawStake = testData.requestWithdrawDelegation;
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.WithdrawDelegation);
+      txBuilder.type(SuiTransactionType.WithdrawStake);
       txBuilder.sender(senderAddress);
-      txBuilder.requestWithdrawDelegation(requestWithdrawDelegation);
+      txBuilder.requestWithdrawStake(requestWithdrawDelegation);
       txBuilder.gasData(testData.stakingGasData);
 
       const unsignedTx = await txBuilder.build();
@@ -208,16 +202,16 @@ describe('Sui Staking Builder', () => {
 
     it('should fail on missing gasData', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxOneCoin);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "gasData" is required');
     });
 
     it('should fail on missing sender', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
+      txBuilder.type(SuiTransactionType.AddStake);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxOneCoin);
       txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "sender" is required');
     });
@@ -225,14 +219,14 @@ describe('Sui Staking Builder', () => {
     it('should fail on missing type', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
-      txBuilder.requestAddDelegation(testData.requestAddDelegationTxOneCoin);
+      txBuilder.requestAddStake(testData.requestAddDelegationTxOneCoin);
       txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "type" is required');
     });
 
     it('should fail on missing tx', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       txBuilder.gasData(testData.stakingGasData);
       await txBuilder.build().should.rejectedWith('Stake Builder Transaction validation failed: "tx" is required');
@@ -240,14 +234,14 @@ describe('Sui Staking Builder', () => {
 
     it('should build not create staking AddDelegation tx with validator as sender', async function () {
       const txBuilder = factory.getStakingBuilder();
-      txBuilder.type(SuiTransactionType.AddDelegation);
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.STAKING_SENDER_ADDRESS);
       const requestAddDelegation = {
         ...testData.requestAddDelegationTxMultipleCoins,
         validatorAddress: testData.STAKING_SENDER_ADDRESS,
       };
       txBuilder.gasData(testData.stakingGasData);
-      assert.throws(() => txBuilder.requestAddDelegation(requestAddDelegation));
+      assert.throws(() => txBuilder.requestAddStake(requestAddDelegation));
     });
   });
 });

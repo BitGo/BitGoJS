@@ -1,44 +1,32 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, InvalidTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import {
-  MethodNames,
-  ModulesNames,
-  MoveCallTx,
-  MoveCallTxDetails,
-  RequestAddDelegation,
-  RequestWithdrawDelegation,
-  SuiObjectRef,
-  SuiTransaction,
-  SuiTransactionType,
-} from './iface';
+import { BuildTransactionError, NotImplementedError, TransactionType } from '@bitgo/sdk-core';
+import { BitGoSuiTransaction, MethodNames, RequestAddStake, RequestWithdrawStake, SuiTransactionType } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
-import { SUI_PACKAGE_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT } from './constants';
-import { SuiMoveCallTransactionSchema } from './txnSchema';
 import { StakingTransaction } from './stakingTransaction';
 import { Transaction } from './transaction';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
+import { Transaction as ProgrammableTransaction } from './mystenlab/builder';
+import { SuiSystemStateUtil } from './mystenlab/framework';
 
-export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
-  protected _moveCallTx: MoveCallTx;
-  protected _addDelegationTx: RequestAddDelegation;
-  protected _withdrawDelegation: RequestWithdrawDelegation;
+export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> {
+  protected _moveCallTx: ProgrammableTransaction;
+  protected _addStakeTx: RequestAddStake;
+  protected _withdrawDelegation: RequestWithdrawStake;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new StakingTransaction(_coinConfig);
+    // this._transaction = new StakingTransaction(_coinConfig);
   }
 
   /**
    * Build a MoveCall transaction ready to be signed and executed.
    *
-   * @returns {SuiTransaction} an unsigned Sui transaction
-   *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_delegation_mul_coin
+   * @returns {BitGoSuiTransaction} an unsigned Sui transaction
    */
-  protected buildStakeTransaction(): SuiTransaction<MoveCallTx> {
+  protected buildStakeTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
     return {
-      type: SuiTransactionType.AddDelegation,
+      type: SuiTransactionType.AddStake,
       sender: this._sender,
       tx: this._moveCallTx,
       gasData: this._gasData,
@@ -52,66 +40,56 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    * @protected
    */
   protected get transactionType(): TransactionType {
-    return utils.getTransactionType(this._moveCallTx.function);
+    // FIXME - find a way to get the TransactionType by method
+    return utils.getTransactionType(MethodNames.RequestAddStakeMulCoin);
+    // return utils.getTransactionType(this._moveCallTx.transactionData.commands[0].target!);
   }
 
   /**
-   * Create a new transaction for delegating coins ready to be signed and executed.
+   * Create a new transaction for staking coins ready to be signed and executed.
    *
-   * @param {RequestAddDelegation} addDelegation
+   * @param {RequestAddStake} request
    */
-  requestAddDelegation(addDelegation: RequestAddDelegation): this {
-    this.validateAddress({ address: addDelegation.validatorAddress });
-    this.validateValue(BigNumber(addDelegation.amount));
+  requestAddStake(request: RequestAddStake): this {
+    this.validateAddress({ address: request.validatorAddress });
+    this.validateValue(BigNumber(request.amount));
 
-    if (this._sender === addDelegation.validatorAddress) {
+    if (this._sender === request.validatorAddress) {
       throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
     }
-    for (const coin of addDelegation.coins) {
+    for (const coin of request.coins) {
       this.validateSuiObjectRef(coin, 'addDelegation.coins');
     }
-    this._addDelegationTx = addDelegation;
-    this._moveCallTx = {
-      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
-      module: ModulesNames.SuiSystem,
-      function: MethodNames.RequestAddStakeMulCoin,
-      typeArguments: [],
-      arguments: [SUI_SYSTEM_STATE_OBJECT, addDelegation.coins, addDelegation.amount, addDelegation.validatorAddress],
-    };
+    this._addStakeTx = request;
+    this._moveCallTx = SuiSystemStateUtil.newRequestAddStakeTxn(
+      request.coins,
+      request.amount,
+      request.validatorAddress
+    );
     return this;
   }
 
   /**
    * Create a new transaction for withdrawing coins ready to be signed
    *
-   * @param {RequestWithdrawDelegation} withdrawDelegation
+   * @param {RequestWithdrawStake} request
    */
-  requestWithdrawDelegation(withdrawDelegation: RequestWithdrawDelegation): this {
-    this.validateSuiObjectRef(withdrawDelegation.delegationObjectId, 'withdrawDelegation.delegation');
-    this.validateSuiObjectRef(withdrawDelegation.stakedSuiObjectId, 'withdrawDelegation.stakedCoinId');
+  requestWithdrawStake(request: RequestWithdrawStake): this {
+    // FIXME - add validation for staked objectID
+    // this.validateSuiObjectRef(request.stakedSuiObjectId, 'withdrawDelegation.stakedCoinId');
 
-    this._withdrawDelegation = withdrawDelegation;
-    this._moveCallTx = {
-      package: SUI_PACKAGE_FRAMEWORK_ADDRESS,
-      module: ModulesNames.SuiSystem,
-      function: MethodNames.RequestWithdrawStake,
-      typeArguments: [],
-      arguments: [SUI_SYSTEM_STATE_OBJECT, withdrawDelegation.delegationObjectId, withdrawDelegation.stakedSuiObjectId],
-    };
+    this._withdrawDelegation = request;
+    this._moveCallTx = SuiSystemStateUtil.newRequestWithdrawlStakeTxn(request.stakedSuiObjectId);
     return this;
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction<MoveCallTx> {
-    const tx = new StakingTransaction(this._coinConfig);
-    this.validateRawTransaction(rawTransaction);
-    tx.fromRawTransaction(rawTransaction);
-    this.initBuilder(tx);
-    return this.transaction;
+  protected fromImplementation(rawTransaction: string): Transaction<ProgrammableTransaction> {
+    throw new NotImplementedError('Not implemented');
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction<MoveCallTx>> {
+  protected async buildImplementation(): Promise<Transaction<ProgrammableTransaction>> {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     this.transaction.transactionType(this.transactionType);
 
@@ -132,46 +110,12 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
    *
    * @param {StakingTransaction} tx the transaction data
    */
-  initBuilder(tx: StakingTransaction): void {
-    this._transaction = tx;
-
-    if (tx.signature && tx.signature.length > 0) {
-      this._signatures = [tx.suiSignature];
-    }
-
-    const txData = tx.toJson();
-    this.sender(txData.sender);
-    this.gasData(txData.gasData);
-
-    const txDetails = txData.kind.Single as MoveCallTxDetails;
-    if (txDetails.hasOwnProperty('Call')) {
-      switch (txDetails.Call.function) {
-        case MethodNames.RequestAddStakeMulCoin:
-          this.type(SuiTransactionType.AddDelegation);
-          this.requestAddDelegation({
-            coins: txDetails.Call.arguments[1] as SuiObjectRef[],
-            amount: Number(txDetails.Call.arguments[2]),
-            validatorAddress: txDetails.Call.arguments[3].toString(),
-          });
-          break;
-        case MethodNames.RequestWithdrawStake:
-          this.type(SuiTransactionType.WithdrawDelegation);
-          this.requestWithdrawDelegation({
-            delegationObjectId: txDetails.Call.arguments[1] as SuiObjectRef,
-            stakedSuiObjectId: txDetails.Call.arguments[2] as SuiObjectRef,
-            amount: this._withdrawDelegation?.amount || 0,
-          });
-          break;
-        default:
-          throw new NotSupported(`${txDetails.Call.function} not supported`);
-      }
-    } else {
-      throw new Error('Transaction type not supported: ' + txDetails);
-    }
+  initBuilder(tx: Transaction<ProgrammableTransaction>): void {
+    throw new NotImplementedError('TODO: Not implemented');
   }
 
   /** @inheritdoc */
-  validateTransaction(tx: Transaction<MoveCallTx>): void {
+  validateTransaction(tx: Transaction<ProgrammableTransaction>): void {
     this.validateSchema({
       type: this._type,
       sender: this._sender,
@@ -183,25 +127,20 @@ export class StakingBuilder extends TransactionBuilder<MoveCallTx> {
   /**
    * Validate transaction schema
    *
-   * @param {SuiTransaction<MoveCallTx>} tx
+   * @param {BitGoSuiTransaction<MoveCallTx>} tx
    * @private
    */
-  private validateSchema(tx: SuiTransaction<MoveCallTx>): void {
-    const validationResult = SuiMoveCallTransactionSchema.validate(tx);
-    if (validationResult.error) {
-      throw new InvalidTransactionError(
-        `Stake Builder Transaction validation failed: ${validationResult.error.message}`
-      );
-    }
+  private validateSchema(tx: BitGoSuiTransaction<ProgrammableTransaction>): void {
+    throw new NotImplementedError('Not implemented');
   }
 
   /**
    * Build SuiTransaction
    *
-   * @return {SuiTransaction<MoveCallTx>}
+   * @return {BitGoSuiTransaction<MoveCallTx>}
    * @protected
    */
-  protected buildSuiTransaction(): SuiTransaction<MoveCallTx> {
+  protected buildSuiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
     this.validateTransaction(this._transaction);
     return {
       type: this._type,

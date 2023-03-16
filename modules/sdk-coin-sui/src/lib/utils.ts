@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
-import { bcs } from './bcs';
+import { bcs } from './mystenlab/types/sui-bcs';
 import { fromB64 } from '@mysten/bcs';
 import {
   CallArg,
@@ -19,10 +19,11 @@ import {
   ObjVecArg,
   SharedObjectRef,
   SuiAddress,
-  SuiObjectRef,
   SuiTransactionType,
 } from './iface';
 import { Buffer } from 'buffer';
+import { create as superstructCreate, Struct } from 'superstruct';
+import { SuiObjectRef } from './mystenlab/types';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -139,8 +140,8 @@ export class Utils implements BaseUtils {
    * @param {number} amounts - the amount to validate
    * @returns {boolean} - the validation result
    */
-  isValidAmount(amount: number): boolean {
-    const bigNumberAmount = new BigNumber(amount);
+  isValidAmount(amount: bigint | number): boolean {
+    const bigNumberAmount = new BigNumber(Number(amount));
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
       return false;
     }
@@ -324,7 +325,7 @@ export class Utils implements BaseUtils {
   getTransactionType(fctName: string): TransactionType {
     switch (fctName) {
       case MethodNames.RequestAddStakeMulCoin:
-        return TransactionType.AddDelegator;
+        return TransactionType.StakingAdd;
       case MethodNames.RequestWithdrawStake:
         return TransactionType.StakingWithdraw;
       default:
@@ -341,9 +342,9 @@ export class Utils implements BaseUtils {
   getSuiTransactionType(fctName: string): SuiTransactionType {
     switch (fctName) {
       case MethodNames.RequestAddStakeMulCoin:
-        return SuiTransactionType.AddDelegation;
+        return SuiTransactionType.AddStake;
       case MethodNames.RequestWithdrawStake:
-        return SuiTransactionType.WithdrawDelegation;
+        return SuiTransactionType.WithdrawStake;
       default:
         throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
     }
@@ -353,3 +354,19 @@ export class Utils implements BaseUtils {
 const utils = new Utils();
 
 export default utils;
+export const COMMAND_TYPE = Symbol('command-argument-type');
+export type WellKnownEncoding =
+  | {
+      kind: 'object';
+    }
+  | {
+      kind: 'pure';
+      type: string;
+    };
+export function create<T, S>(value: T, struct: Struct<T, S>): T {
+  return superstructCreate(value, struct);
+}
+
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};

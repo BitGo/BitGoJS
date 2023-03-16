@@ -5,7 +5,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
-import { MoveCallTx, PayTx, SuiTransaction, SuiTransactionType } from './iface';
+import { MoveCallTx, PayTx, BitGoSuiTransaction, SuiTransactionType } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
 
@@ -26,8 +26,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const payTx = new TransferTransaction(this._coinConfig);
           payTx.fromRawTransaction(raw);
           return this.getTransferBuilder(payTx);
-        case SuiTransactionType.AddDelegation:
-        case SuiTransactionType.WithdrawDelegation:
+        case SuiTransactionType.AddStake:
+        case SuiTransactionType.WithdrawStake:
           const stakingTransaction = new StakingTransaction(this._coinConfig);
           stakingTransaction.fromRawTransaction(raw);
           return this.getStakingBuilder(stakingTransaction);
@@ -76,7 +76,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {string} rawTransaction - the raw tx
    * @returns {Transaction} parsedtransaction
    */
-  private parseTransaction(rawTransaction: string): SuiTransaction<PayTx | MoveCallTx> {
+  private parseTransaction(rawTransaction: string): BitGoSuiTransaction<PayTx | MoveCallTx> {
     return Transaction.deserializeSuiTransaction(rawTransaction);
   }
 }

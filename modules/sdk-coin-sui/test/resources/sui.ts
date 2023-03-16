@@ -1,4 +1,4 @@
-import { RequestAddDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
+import { RequestAddStake, RequestWithdrawStake } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 
 export const addresses = {
@@ -200,19 +200,19 @@ export const stakingGasDataWithoutGasPayment = {
 export const VALIDATOR_ADDRESS = '0x5d06f37654f11cdd27179088fcfeadaab21e13ef';
 export const NEW_VALIDATOR_ADDRESS = '0x48f9c8662045805d9d98faf3e8d58d6251718a22';
 
-export const requestAddDelegationTxOneCoin: RequestAddDelegation = {
+export const requestAddDelegationTxOneCoin: RequestAddStake = {
   coins: [coinToStakeOne],
   amount: STAKING_AMOUNT,
   validatorAddress: VALIDATOR_ADDRESS,
 };
 
-export const requestAddDelegationTxMultipleCoins: RequestAddDelegation = {
+export const requestAddDelegationTxMultipleCoins: RequestAddStake = {
   coins: [coinToStakeOne, coinToStakeTwo],
   amount: STAKING_AMOUNT,
   validatorAddress: VALIDATOR_ADDRESS,
 };
 
-export const requestWithdrawDelegation: RequestWithdrawDelegation = {
+export const requestWithdrawDelegation: RequestWithdrawStake = {
   delegationObjectId: {
     objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
     version: 586530,

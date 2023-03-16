@@ -108,5 +108,7 @@
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@mysten/bcs": "0.0.0-experimental-20230315165552"
+  }
 }
