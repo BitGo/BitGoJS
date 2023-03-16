@@ -148,12 +148,12 @@
       "chain": 40
     },
     {
-      "address": "tb1pqct65j8u6rdxd0elcyqps70zcs9le6fk5elxs4kk07uvnjtdxypqns2wz2",
+      "address": "tb1pxgs4mpuymvtr7hsx3u0efx5yvjd2nark5qgsg89s8p0jcdzvukgq35t4u7",
       "chain": 40,
       "index": 0,
       "coin": "tbtc",
       "coinSpecific": {
-        "outputScript": "51200617aa48fcd0da66bf3fc1001879e2c40bfce936a67e6856d67fb8c9c96d3102"
+        "outputScript": "512032215d8784db163f5e068f1f949a84649aa9f476a011041cb0385f2c344ce590"
       },
       "addressType": "p2trMusig2"
     }
@@ -163,12 +163,12 @@
       "chain": 41
     },
     {
-      "address": "tb1pq3ujl9n3d0fhu8rsajaafu28s6ue7c9tqkfp5k979c52k0v6snnqml3qvy",
+      "address": "tb1p8qdlmtsw6ehy9u4w8lpw4xw6shg7jknu7fhrlaclpdaqtfp0puesgpm4xs",
       "chain": 41,
       "index": 0,
       "coin": "tbtc",
       "coinSpecific": {
-        "outputScript": "512004792f96716bd37e1c70ecbbd4f14786b99f60ab05921a58be2e28ab3d9a84e6"
+        "outputScript": "5120381bfdae0ed66e42f2ae3fc2ea99da85d1e95a7cf26e3ff71f0b7a05a42f0f33"
       },
       "addressType": "p2trMusig2"
     }
