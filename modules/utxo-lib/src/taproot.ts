@@ -116,7 +116,7 @@ export function hashTapBranch(child1: Buffer, child2: Buffer): Buffer {
 }
 
 export function calculateTapTweak(pubkey: Uint8Array, taptreeRoot?: Uint8Array): Uint8Array {
-  if (!pubkey.length) {
+  if (pubkey.length !== 32) {
     throw new Error(`Invalid pubkey size ${pubkey.length}.`);
   }
   if (taptreeRoot) {
