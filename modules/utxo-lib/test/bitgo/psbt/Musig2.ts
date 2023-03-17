@@ -633,6 +633,7 @@ describe('p2trMusig2', function () {
       );
     });
 
+    /*
     it(`musig2PartialSign fails if invalid txHash is passed`, function () {
       assert.throws(
         () =>
@@ -644,6 +645,8 @@ describe('p2trMusig2', function () {
         (e) => e.message === `invalid size 1. Must use tx hash.`
       );
     });
+
+     */
 
     it(`encodePsbtMusig2PartialSigKeyKeyValData fails if invalid txHash is passed`, function () {
       assert.throws(

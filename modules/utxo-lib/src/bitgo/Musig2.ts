@@ -10,6 +10,7 @@ import { ecc, musig } from '../noble_ecc';
 import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
 import { SessionKey } from '@brandonblack/musig';
+import { Buffer } from 'buffer';
 
 /**
  *  Participant key value object.
@@ -170,19 +171,6 @@ export function createTapTweak(tapInternalKey: Buffer, tapMerkleRoot: Buffer): B
   return Buffer.from(calculateTapTweak(checkXOnlyPublicKey(tapInternalKey), checkTapMerkleRoot(tapMerkleRoot)));
 }
 
-export function createMusig2Nonce(
-  privateKey: Uint8Array,
-  publicKey: Uint8Array,
-  xOnlyPublicKey: Uint8Array,
-  txHash: Uint8Array,
-  sessionId?: Buffer
-): Uint8Array {
-  if (txHash.length != 32) {
-    throw new Error(`Invalid txHash size ${txHash}`);
-  }
-  return musig.nonceGen({ secretKey: privateKey, publicKey, xOnlyPublicKey, msg: txHash, sessionId });
-}
-
 export function createMusig2SigningSession(
   aggNonce: Buffer,
   hash: Buffer,
@@ -192,15 +180,57 @@ export function createMusig2SigningSession(
   return musig.startSigningSession(aggNonce, checkTxHash(hash), musig.keySort(publicKeys), { tweak, xOnly: true });
 }
 
-export function musig2PartialSign(privateKey: Buffer, publicNonce: Uint8Array, sessionKey: SessionKey): Buffer {
+export function musig2PartialSign(
+  privateKey: Buffer,
+  publicNonce: Uint8Array,
+  sessionKey: SessionKey,
+  nonceStore: Musig2NonceStore
+): Buffer {
   checkTxHash(Buffer.from(sessionKey.msg));
   return Buffer.from(
     musig.partialSign({
       secretKey: privateKey,
-      publicNonce,
+      publicNonce: nonceStore.getRef(publicNonce),
       sessionKey,
     })
   );
+}
+
+/**
+ * Because musig uses reference-equal buffers to cache nonces, we wrap it here to allow using
+ * nonces that are byte-equal but not reference-equal.
+ */
+export class Musig2NonceStore {
+  private nonces: Uint8Array[] = [];
+
+  /**
+   * Get original Buffer instance for nonce (which may be a copy).
+   * If no existing buffer is found, stores the nonce object.
+   * @return byte-equal buffer that is reference-equal to what was stored earlier with save()
+   */
+  getRef(nonce: Uint8Array): Uint8Array {
+    for (const b of this.nonces) {
+      if (Buffer.from(b).equals(nonce)) {
+        return b;
+      }
+    }
+    throw new Error(`unknown nonce`);
+  }
+
+  createMusig2Nonce(
+    privateKey: Uint8Array,
+    publicKey: Uint8Array,
+    xOnlyPublicKey: Uint8Array,
+    txHash: Uint8Array,
+    sessionId?: Buffer
+  ): Uint8Array {
+    if (txHash.length != 32) {
+      throw new Error(`Invalid txHash size ${txHash}`);
+    }
+    const buf = musig.nonceGen({ secretKey: privateKey, publicKey, xOnlyPublicKey, msg: txHash, sessionId });
+    this.nonces.push(buf);
+    return buf;
+  }
 }
 
 export function parsePsbtMusig2ParticipantsKeyValData(

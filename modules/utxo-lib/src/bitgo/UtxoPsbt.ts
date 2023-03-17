@@ -18,18 +18,18 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { checkPlainPublicKey, checkXOnlyPublicKey, toXOnlyPublicKey } from './outputScripts';
+import { toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import {
   createAggregateNonce,
-  createMusig2Nonce,
   createMusig2SigningSession,
   createTapTweak,
   encodePsbtMusig2PartialSigKeyKeyValData,
   encodePsbtMusig2PubNonceKeyValData,
+  Musig2NonceStore,
   musig2PartialSign,
   parsePsbtMusig2NoncesKeyValData,
   parsePsbtMusig2ParticipantsKeyValData,
@@ -123,10 +123,7 @@ export interface ProprietaryKeySearch {
 // `setVersion`. Our inputs could have tapscriptsigs (or in future tapkeysigs)
 // and not fail that check. Do we want to do anything about that?
 export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigint>> extends Psbt {
-  // musig-js uses WeakMap internally for secure nonce caching.
-  // So, the caller requires to use the original pubNonce object for reference.
-  // The scope of the values of the map should be assured to be within the psbt object to avoid misuse of nonce.
-  private MUSIG2_PUB_NONCE_CACHE = new Map<string, Uint8Array>();
+  private nonceStore = new Musig2NonceStore();
 
   protected static transactionFromBuffer(buffer: Buffer, network: Network): UtxoTransaction<bigint> {
     return UtxoTransaction.fromBuffer<bigint>(buffer, false, 'bigint', network);
@@ -162,20 +159,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
   toHex(): string {
     return this.toBuffer().toString('hex');
-  }
-
-  private createMusig2PubNonceCacheKey(participantPubKey: Buffer, tapOutputKey: Buffer) {
-    return Buffer.concat([checkPlainPublicKey(participantPubKey), checkXOnlyPublicKey(tapOutputKey)]).toString('hex');
-  }
-
-  private getOriginalMusig2PubNonce(participantPubKey: Buffer, tapOutputKey: Buffer): Uint8Array | undefined {
-    return this.MUSIG2_PUB_NONCE_CACHE.get(this.createMusig2PubNonceCacheKey(participantPubKey, tapOutputKey));
-  }
-  private setOriginalMusig2PubNonce(participantPubKey: Buffer, tapOutputKey: Buffer, pubNonce: Uint8Array): void {
-    this.MUSIG2_PUB_NONCE_CACHE.set(this.createMusig2PubNonceCacheKey(participantPubKey, tapOutputKey), pubNonce);
-  }
-  private deleteOriginalMusig2PubNonce(participantPubKey: Buffer, tapOutputKey: Buffer): void {
-    this.MUSIG2_PUB_NONCE_CACHE.delete(this.createMusig2PubNonceCacheKey(participantPubKey, tapOutputKey));
   }
 
   /**
@@ -545,44 +528,42 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('tapMerkleRoot is required for p2tr musig2 key path signing');
     }
 
+    const tweak = createTapTweak(input.tapInternalKey, input.tapMerkleRoot);
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
+
     const participantsKeyValData = this.getMusig2ParticipantsKeyValData(
       inputIndex,
       input.tapInternalKey,
       input.tapMerkleRoot
     );
     const { tapOutputKey, participantPubKeys } = participantsKeyValData;
-    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
-    if (!participantPubKey) {
+    const signerPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
+    if (!signerPubKey) {
       throw new Error('participant plain pub key should match one signer pub key');
     }
 
     const noncesKeyValsData = this.getMusig2NoncesKeyValData(inputIndex, participantsKeyValData);
     const pubNonces: Tuple<Buffer> = [noncesKeyValsData[0].pubNonce, noncesKeyValsData[1].pubNonce];
     const aggNonce = createAggregateNonce(pubNonces);
-    const tweak = createTapTweak(input.tapInternalKey, input.tapMerkleRoot);
-    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
     const sessionKey = createMusig2SigningSession(aggNonce, hash, participantPubKeys, tweak);
 
-    const nonceKeyValData = noncesKeyValsData.find((kv) => kv.participantPubKey.equals(participantPubKey));
-    if (!nonceKeyValData) {
+    const signerNonceKeyValueData = noncesKeyValsData.find((kv) => kv.participantPubKey.equals(signerPubKey));
+    if (!signerNonceKeyValueData) {
       throw new Error('pubNonce is missing. retry signing process');
     }
-    const originalPubNonce = this.getOriginalMusig2PubNonce(
-      nonceKeyValData.participantPubKey,
-      nonceKeyValData.tapOutputKey
-    );
-    if (!originalPubNonce) {
-      throw new Error('original pubNonce object is missing. retry signing process');
-    }
 
-    let partialSig = musig2PartialSign(signer.privateKey, originalPubNonce, sessionKey);
-    this.deleteOriginalMusig2PubNonce(nonceKeyValData.participantPubKey, nonceKeyValData.tapOutputKey);
+    let partialSig = musig2PartialSign(
+      signer.privateKey,
+      signerNonceKeyValueData.pubNonce,
+      sessionKey,
+      this.nonceStore
+    );
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
     }
 
     const partialSigKeyValData = encodePsbtMusig2PartialSigKeyKeyValData({
-      participantPubKey,
+      participantPubKey: signerPubKey,
       tapOutputKey,
       partialSig,
     });
@@ -832,7 +813,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
 
     const { hash } = this.getTaprootHashForSigChecked(inputIndex);
-    const pubNonce = createMusig2Nonce(derivedWalletKey.privateKey, participantPubKey, tapOutputKey, hash, sessionId);
+    const pubNonce = this.nonceStore.createMusig2Nonce(
+      derivedWalletKey.privateKey,
+      participantPubKey,
+      tapOutputKey,
+      hash,
+      sessionId
+    );
 
     return { tapOutputKey, participantPubKey, pubNonce };
   }
@@ -842,7 +829,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * tapInternalkey, tapMerkleRoot, tapBip32Derivation for rootWalletKey are required per p2trMusig2 key path input.
    * Also participant keys are required from psbt proprietary key values.
    * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param psbt
    * @param rootWalletKey
    * @param sessionId If provided it must either be a counter unique to this secret key,
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
@@ -859,14 +845,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!nonce) {
         return;
       }
-      const { tapOutputKey, participantPubKey, pubNonce } = nonce;
+      const { tapOutputKey, participantPubKey } = nonce;
       const nonceKeyValData = encodePsbtMusig2PubNonceKeyValData({
         tapOutputKey,
         participantPubKey,
         pubNonce: Buffer.from(nonce.pubNonce),
       });
       this.addOrUpdateProprietaryKeyValToInput(inputIndex, nonceKeyValData);
-      this.setOriginalMusig2PubNonce(participantPubKey, tapOutputKey, pubNonce);
     });
   }
 
