@@ -1,7 +1,13 @@
 import { Psbt as PsbtBase } from 'bip174';
-import { TapBip32Derivation, Transaction as ITransaction, TransactionFromBuffer } from 'bip174/src/lib/interfaces';
+import {
+  Bip32Derivation,
+  TapBip32Derivation,
+  Transaction as ITransaction,
+  TransactionFromBuffer,
+} from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
+import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
 
 import {
   taproot,
@@ -20,7 +26,7 @@ import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
 import { toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
-import { BIP32Factory } from 'bip32';
+import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
@@ -347,12 +353,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
     }
     return this.data.globalMap.globalXpub.map((xpub) => {
-      // const bip32 = ECPair.fromPublicKey(xpub.extendedPubkey, { network: (this as any).opts.network });
       const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
       try {
         return isP2tr
           ? this.validateTaprootSignaturesOfInput(inputIndex, bip32.publicKey)
-          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), bip32.publicKey);
+          : this.validateSignaturesOfInputHD(inputIndex, (p, m, s) => eccLib.verify(m, p, s), bip32);
       } catch (err) {
         // Not an elegant solution. Might need upstream changes like custom error types.
         if (noSigErrorMessages.includes(err.message)) {
@@ -361,6 +366,32 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         throw err;
       }
     });
+  }
+
+  validateSignaturesOfInputHD(inputIndex: number, validator: ValidateSigFunction, bip32: BIP32Interface): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.bip32Derivation || input.bip32Derivation.length === 0) {
+      return this.validateSignaturesOfInput(inputIndex, validator, bip32.publicKey);
+    }
+    const myDerivations = input.bip32Derivation
+      .map((bipDv) => {
+        if (bipDv.masterFingerprint.equals(bip32.fingerprint)) {
+          return bipDv;
+        }
+      })
+      .filter((v) => !!v) as Bip32Derivation[];
+
+    if (myDerivations.length === 0) {
+      throw new Error('Need one bip32Derivation masterFingerprint to match the xpub fingerprint');
+    }
+    const pubKeys = myDerivations.map((bipDv) => {
+      const node = bip32.derivePath(bipDv.path);
+      if (!bipDv.pubkey.equals(node.publicKey)) {
+        throw new Error('pubkey did not match bip32Derivation');
+      }
+      return node.publicKey;
+    });
+    return pubKeys.map((pubKey) => this.validateSignaturesOfInput(inputIndex, validator, pubKey)).includes(true);
   }
 
   /**
