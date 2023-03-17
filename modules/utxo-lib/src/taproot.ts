@@ -115,7 +115,10 @@ export function hashTapBranch(child1: Buffer, child2: Buffer): Buffer {
   return bcrypto.taggedHash('TapBranch', Buffer.concat(sortedChildren));
 }
 
-function calculateTapTweak(pubkey: Uint8Array, taptreeRoot?: Uint8Array): Uint8Array {
+export function calculateTapTweak(pubkey: Uint8Array, taptreeRoot?: Uint8Array): Uint8Array {
+  if (pubkey.length !== 32) {
+    throw new Error(`Invalid pubkey size ${pubkey.length}.`);
+  }
   if (taptreeRoot) {
     return bcrypto.taggedHash('TapTweak', Buffer.concat([pubkey, taptreeRoot]));
   }
