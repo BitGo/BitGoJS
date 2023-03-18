@@ -2,6 +2,7 @@ import * as assert from 'assert';
 
 import {
   getInternalChainCode,
+  isSegwit,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
@@ -569,19 +570,34 @@ describe('p2trMusig2', function () {
     });
   });
 
-  describe('Psbt musig2 util functions', function () {
-    it(`getTaprootHashForSigChecked throws error if used for p2tr* input types`, function () {
+  describe('Psbt musig2 common functions', function () {
+    it('output script should match the scriptPubKey in the prevout', function () {
+      const myRootWalletKeys = new RootWalletKeys(getKeyTriple('dummy'));
       const unspents = getUnspents(
-        scriptTypes2Of3.filter((t) => t !== 'p2trMusig2' && t !== 'p2tr'),
-        rootWalletKeys
+        scriptTypes2Of3.map((t) => t),
+        myRootWalletKeys
       );
+
       const psbt = constructPsbt(unspents, rootWalletKeys, 'user', 'bitgo', outputType);
-      unspents.forEach((unspent, index) => {
+      unspents.forEach((u, index) => {
+        const scriptType = scriptTypeForChain(u.chain);
         assert.throws(
-          () => psbt.getTaprootHashForSigChecked(index),
-          (e) => e.message === `${index} input is not a taproot type to take taproot tx hash`
+          () =>
+            scriptType === 'p2trMusig2' || scriptType === 'p2tr'
+              ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
+              : psbt.signInputHD(index, rootWalletKeys.user),
+          (e) =>
+            isSegwit(u.chain) && scriptType !== 'p2shP2wsh'
+              ? e.message === `Witness script for input #${index} doesn't match the scriptPubKey in the prevout`
+              : e.message === `Redeem script for input #${index} doesn't match the scriptPubKey in the prevout`
         );
       });
+
+      const p2trMusig2ScriptPathPsbt = constructPsbt([unspents[4]], rootWalletKeys, 'user', 'backup', outputType);
+      assert.throws(
+        () => p2trMusig2ScriptPathPsbt.signTaprootInputHD(0, rootWalletKeys.user),
+        (e) => e.message === `Witness script for input #0 doesn't match the scriptPubKey in the prevout`
+      );
     });
 
     it(`decodePsbtMusig2ParticipantsKeyValData fails if invalid subtype or identifier is passed`, function () {

@@ -8,22 +8,12 @@ import {
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
-import {
-  taproot,
-  HDSigner,
-  Psbt,
-  PsbtTransaction,
-  Transaction,
-  TxOutput,
-  Network,
-  ecc as eccLib,
-  p2trPayments,
-} from '..';
+import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { toXOnlyPublicKey } from './outputScripts';
+import { createTaprootOutputScript, toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
@@ -642,6 +632,22 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this;
   }
 
+  private getTaprootOutputScript(inputIndex: number) {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (input.tapLeafScript?.length) {
+      return createTaprootOutputScript(
+        { controlBlock: input.tapLeafScript[0].controlBlock, leafScript: input.tapLeafScript[0].script },
+        this.network
+      );
+    } else if (input.tapInternalKey && input.tapMerkleRoot) {
+      return createTaprootOutputScript(
+        { internalPubKey: input.tapInternalKey, taptreeRoot: input.tapMerkleRoot },
+        this.network
+      );
+    }
+    throw new Error('not a taproot input');
+  }
+
   private getTaprootHashForSig(
     inputIndex: number,
     sighashTypes?: number[],
@@ -688,48 +694,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
     });
+    const outputScript = this.getTaprootOutputScript(inputIndex);
+    if (!outputScript.equals(prevoutScripts[inputIndex])) {
+      throw new Error(`Witness script for input #${inputIndex} doesn't match the scriptPubKey in the prevout`);
+    }
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
-  }
-
-  /**
-   * @retuns true iff the input is taproot.
-   */
-  isTaprootInput(inputIndex: number): boolean {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    function isP2tr(output: Buffer): boolean {
-      try {
-        p2trPayments.p2tr({ output }, { eccLib });
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
-    return !!(
-      input.tapInternalKey ||
-      input.tapMerkleRoot ||
-      (input.tapLeafScript && input.tapLeafScript.length) ||
-      (input.tapBip32Derivation && input.tapBip32Derivation.length) ||
-      (input.witnessUtxo && isP2tr(input.witnessUtxo.script))
-    );
-  }
-
-  /**
-   * @returns hash and hashType for taproot input at inputIndex
-   * @throws error if input at inputIndex is not a taproot input
-   */
-  getTaprootHashForSigChecked(
-    inputIndex: number,
-    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL],
-    leafHash?: Buffer
-  ): {
-    hash: Buffer;
-    sighashType: number;
-  } {
-    if (!this.isTaprootInput(inputIndex)) {
-      throw new Error(`${inputIndex} input is not a taproot type to take taproot tx hash`);
-    }
-    return this.getTaprootHashForSig(inputIndex, sighashTypes, leafHash);
   }
 
   /**
@@ -818,7 +788,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('participant plain pub key should match one bip32Derivation plain pub key');
     }
 
-    const { hash } = this.getTaprootHashForSigChecked(inputIndex);
+    const { hash } = this.getTaprootHashForSig(inputIndex);
     const pubNonce = this.nonceStore.createMusig2Nonce(
       derivedWalletKey.privateKey,
       participantPubKey,
