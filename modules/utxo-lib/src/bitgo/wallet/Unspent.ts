@@ -17,7 +17,7 @@ import { Triple, Tuple } from '../types';
 import { toOutput, UnspentWithPrevTx, Unspent, isUnspentWithPrevTx, toPrevOutput } from '../Unspent';
 import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
-import { encodePsbtMusig2ParticipantsKeyValData } from '../Musig2';
+import { encodePsbtMusig2Participants } from '../Musig2';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -188,7 +188,7 @@ export function addWalletUnspentToPsbt(
       taptreeRoot,
     } = createKeyPathP2trMusig2(walletKeys.publicKeys);
     const participantPubKeys: Tuple<Buffer> = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
-    const participantsKeyValData = encodePsbtMusig2ParticipantsKeyValData({
+    const participantsKeyValData = encodePsbtMusig2Participants({
       tapOutputKey,
       tapInternalKey,
       participantPubKeys,

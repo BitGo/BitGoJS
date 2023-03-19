@@ -11,15 +11,14 @@ import {
 
 import { getDefaultWalletKeys, getKeyTriple } from '../../../src/testutil';
 import {
-  createMusig2SigningSession,
   createTapInternalKey,
   createTapOutputKey,
   createTapTweak,
-  decodePsbtMusig2NonceKeyValData,
-  decodePsbtMusig2ParticipantsKeyValData,
-  encodePsbtMusig2PartialSigKeyKeyValData,
+  decodePsbtMusig2Nonce,
+  decodePsbtMusig2Participants,
+  encodePsbtMusig2PartialSig,
   musig2PartialSign,
-  assertPsbtMusig2NoncesKeyValData,
+  assertPsbtMusig2Nonces,
   Musig2NonceStore,
 } from '../../../src/bitgo/Musig2';
 import { scriptTypes2Of3, toXOnlyPublicKey } from '../../../src/bitgo/outputScripts';
@@ -42,7 +41,6 @@ import {
   dummyPubNonce,
   dummyTapInputKey,
   dummyTapOutputKey,
-  dummyTweak,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -583,7 +581,9 @@ describe('p2trMusig2', function () {
         const scriptType = scriptTypeForChain(u.chain);
         assert.throws(
           () =>
-            scriptType === 'p2trMusig2' || scriptType === 'p2tr'
+            scriptType === 'p2trMusig2'
+              ? psbt.setMusig2Nonces(rootWalletKeys.user)
+              : scriptType === 'p2tr'
               ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
               : psbt.signInputHD(index, rootWalletKeys.user),
           (e) =>
@@ -611,14 +611,14 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => decodePsbtMusig2ParticipantsKeyValData(kv),
+        () => decodePsbtMusig2Participants(kv),
         (e) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
-        () => decodePsbtMusig2ParticipantsKeyValData(kv),
+        () => decodePsbtMusig2Participants(kv),
         (e) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
@@ -635,13 +635,13 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => decodePsbtMusig2NonceKeyValData(kv),
+        () => decodePsbtMusig2Nonce(kv),
         (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
-        () => decodePsbtMusig2NonceKeyValData(kv),
+        () => decodePsbtMusig2Nonce(kv),
         (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
     });
@@ -660,7 +660,7 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `invalid size 1. Must use x-only key.`
       );
 
@@ -670,7 +670,7 @@ describe('p2trMusig2', function () {
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `invalid size 1. Must use plain key.`
       );
 
@@ -680,7 +680,7 @@ describe('p2trMusig2', function () {
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `Duplicate participant pub keys found`
       );
     });
@@ -694,13 +694,6 @@ describe('p2trMusig2', function () {
       assert.throws(
         () => createTapTweak(dummyTapInputKey, invalidTapOutputKey),
         (e) => e.message === `invalid size 1. Must use tap merkle root.`
-      );
-    });
-
-    it(`createMusig2SigningSession fails if invalid txHash is passed`, function () {
-      assert.throws(
-        () => createMusig2SigningSession(dummyAggNonce, invalidTxHash, dummyParticipantPubKeys, dummyTweak),
-        (e) => e.message === `invalid size 1. Must use tx hash.`
       );
     });
 
@@ -724,7 +717,7 @@ describe('p2trMusig2', function () {
     it(`encodePsbtMusig2PartialSigKeyKeyValData fails if invalid txHash is passed`, function () {
       assert.throws(
         () =>
-          encodePsbtMusig2PartialSigKeyKeyValData({
+          encodePsbtMusig2PartialSig({
             partialSig: invalidPartialSig,
             participantPubKey: dummyParticipantPubKeys[0],
             tapOutputKey: dummyTapOutputKey,
