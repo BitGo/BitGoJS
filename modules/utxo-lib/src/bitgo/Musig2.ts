@@ -257,6 +257,21 @@ export function musig2PartialSign(
   );
 }
 
+export function musig2PartialSigVerify(
+  sig: Buffer,
+  publicKey: Buffer,
+  publicNonce: Buffer,
+  sessionKey: SessionKey
+): boolean {
+  checkTxHash(Buffer.from(sessionKey.msg));
+  return musig.partialVerify({ sig, publicKey, publicNonce, sessionKey });
+}
+
+export function musig2AggregateSigs(sigs: Buffer[], sessionKey: SessionKey): Buffer {
+  return Buffer.from(musig.signAgg(sigs, sessionKey));
+}
+
+/** @return session key that can be used to reference the session later */
 export function createMusig2SigningSession(sessionArgs: {
   pubNonces: Tuple<Buffer>;
   txHash: Buffer;
@@ -310,6 +325,27 @@ export function parsePsbtMusig2Nonces(psbt: UtxoPsbt, inputIndex: number): PsbtM
   }
 
   return nonceKeyVals.map((kv) => decodePsbtMusig2Nonce(kv));
+}
+
+/**
+ * @returns psbt proprietary key for musig2 partial sig key value data
+ * If no key value exists, undefined is returned.
+ */
+export function parsePsbtMusig2PartialSigs(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2PartialSig[] | undefined {
+  const sigKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
+    identifier: PSBT_PROPRIETARY_IDENTIFIER,
+    subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+  });
+
+  if (!sigKeyVals.length) {
+    return undefined;
+  }
+
+  if (sigKeyVals.length > 2) {
+    throw new Error(`Found ${sigKeyVals.length} matching partial signature key value instead of 1 or 2`);
+  }
+
+  return sigKeyVals.map((kv) => decodePsbtMusig2PartialSig(kv));
 }
 
 /**

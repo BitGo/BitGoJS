@@ -393,12 +393,8 @@ function createTaprootScript2of3(scriptType: 'p2tr' | 'p2trMusig2', pubkeys: Tri
  * & leafScript OR key path input internalPubKey & taptreeRoot
  */
 export function createTaprootOutputScript(
-  p2trArgs: { internalPubKey: Buffer; taptreeRoot: Buffer } | { controlBlock: Buffer; leafScript: Buffer },
-  network: Network
+  p2trArgs: { internalPubKey: Buffer; taptreeRoot: Buffer } | { controlBlock: Buffer; leafScript: Buffer }
 ): Buffer {
-  if (!network.bech32) {
-    throw new Error('bech32 prefix is required');
-  }
   let internalPubKey: Buffer | undefined;
   let taptreeRoot: Buffer | undefined;
   if ('internalPubKey' in p2trArgs) {

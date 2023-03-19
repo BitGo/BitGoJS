@@ -39,6 +39,7 @@ export const dummyParticipantPubKeys: Tuple<Buffer> = [Buffer.allocUnsafe(33), B
 export const dummyPubNonce = Buffer.allocUnsafe(66);
 export const dummyAggNonce = Buffer.allocUnsafe(66);
 export const dummyPrivateKey = Buffer.allocUnsafe(32);
+export const dummyPartialSig = Buffer.allocUnsafe(32);
 
 export const invalidTapOutputKey = Buffer.allocUnsafe(1);
 export const invalidTapInputKey = Buffer.allocUnsafe(1);
