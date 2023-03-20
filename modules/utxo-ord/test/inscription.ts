@@ -1,6 +1,36 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import * as assert from 'assert';
-import { inscriptions } from '../src';
-import { address, networks, ECPair } from '@bitgo/utxo-lib';
+import { inscriptions, WalletInputBuilder } from '../src';
+import { address, networks, ECPair, testutil, bitgo } from '@bitgo/utxo-lib';
+
+function createCommitTransactionPsbt(commitAddress: string, walletKeys: utxolib.bitgo.RootWalletKeys) {
+  const commitTransactionOutputScript = utxolib.address.toOutputScript(commitAddress, networks.testnet);
+  const commitTransactionPsbt = utxolib.bitgo.createPsbtForNetwork({ network: networks.testnet });
+
+  commitTransactionPsbt.addOutput({
+    script: commitTransactionOutputScript,
+    value: BigInt(42),
+  });
+
+  const walletUnspent = testutil.mockWalletUnspent(networks.testnet, BigInt(20_000), { keys: walletKeys });
+  const inputBuilder: WalletInputBuilder = {
+    walletKeys,
+    signer: 'user',
+    cosigner: 'bitgo',
+  };
+
+  [walletUnspent].forEach((u) =>
+    bitgo.addWalletUnspentToPsbt(
+      commitTransactionPsbt,
+      u,
+      inputBuilder.walletKeys,
+      inputBuilder.signer,
+      inputBuilder.cosigner,
+      commitTransactionPsbt.network
+    )
+  );
+  return commitTransactionPsbt;
+}
 
 describe('inscriptions', () => {
   const contentType = 'text/plain';
@@ -35,30 +65,28 @@ describe('inscriptions', () => {
     });
   });
 
-  // TODO: update method with valid data. failing since we need a unsigned commit txn
-  // with valid outs matching commit output
   xdescribe('Inscription Reveal Data', () => {
     it('should sign reveal transaction and validate reveal size', () => {
-      const ecPair = ECPair.makeRandom();
+      const walletKeys = testutil.getDefaultWalletKeys();
       const inscriptionData = Buffer.from('And Desert You', 'ascii');
       const { revealTransactionVSize, tapLeafScript, address } = inscriptions.createInscriptionRevealData(
-        ecPair.publicKey,
+        walletKeys.user.publicKey,
         contentType,
         inscriptionData,
         networks.testnet
       );
 
+      const commitTransactionPsbt = createCommitTransactionPsbt(address, walletKeys);
       const fullySignedRevealTransaction = inscriptions.signRevealTransaction(
-        ecPair.privateKey as Buffer,
+        walletKeys.user.privateKey as Buffer,
         tapLeafScript,
         address,
         '2N9R3mMCv6UfVbWEUW3eXJgxDeg4SCUVsu9',
-        Buffer.from(
-          '01000000014b3ea9504d1909063ef15f8b3dbe3dc4c5a129a6d0e31d7ab79a2e9e1bbe38ba0100000000ffffffff02a18601000000000022512087daa0f42694fd0536d3413cb0eff2fa63068c37a312695d92b76a0da2dd8ef55df2100000000000220020857ba44c62320fc9ed0e8a89c4dcdcb211934bcecb8f9778088a482978d77c0000000000',
-          'hex'
-        ),
+        commitTransactionPsbt.getUnsignedTx().toBuffer(),
         networks.testnet
       );
+
+      fullySignedRevealTransaction.finalizeTapInputWithSingleLeafScriptAndSignature(0);
       const actualVirtualSize = fullySignedRevealTransaction.extractTransaction(true).virtualSize();
 
       assert.strictEqual(revealTransactionVSize, actualVirtualSize);
