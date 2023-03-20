@@ -34,7 +34,6 @@ import { Ed25519Curve } from '../../curves';
 import Shamir from '../../shamir';
 import HDTree from '../../hdTree';
 import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE, clamp } from '../../util';
-import { hexToBigInt } from '../../../util/crypto';
 import {
   KeyShare,
   UShare,
@@ -313,8 +312,8 @@ export default class Eddsa {
     otherPlayerRShare: RShare,
     yShare: YShare
   ): GShare {
-    const c = Eddsa.curve.basePointMult(hexToBigInt(otherPlayerRShare.r));
-    if (c !== hexToBigInt(otherPlayerCommitment.c)) {
+    const c = Eddsa.curve.basePointMult(bigIntFromBufferLE(Buffer.from(otherPlayerRShare.r, 'hex')));
+    if (c !== bigIntFromBufferLE(Buffer.from(otherPlayerCommitment.c, 'hex'))) {
       throw new Error('Could not verify other player share');
     }
 
