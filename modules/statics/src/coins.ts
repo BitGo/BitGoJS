@@ -9273,6 +9273,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
+    '6dcb8ff8-be59-471f-9e57-c3b68735d71e',
+    'tsol:usdcv2',
+    'USD Coin V2',
+    6,
+    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+    UnderlyingAsset.USDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
     '476582b6-1b18-471d-bdfd-ff29b8cdfd39',
     'tsol:ray',
     'Raydium',
