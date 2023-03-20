@@ -42,7 +42,8 @@
   "dependencies": {
     "@bitgo/abstract-utxo": "^2.0.1",
     "@bitgo/sdk-core": "^7.0.1",
-    "@bitgo/utxo-lib": "^7.7.0"
+    "@bitgo/utxo-lib": "^7.7.0",
+    "@bitgo/utxo-ord": "^1.0.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",
