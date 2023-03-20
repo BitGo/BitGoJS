@@ -291,7 +291,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   finalizeAllInputs(): this {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     this.data.inputs.map((input, idx) => {
-      return input.tapScriptSig?.length ? this.finalizeTaprootInput(idx) : this.finalizeInput(idx);
+      try {
+        return input.tapScriptSig?.length ? this.finalizeTaprootInput(idx) : this.finalizeInput(idx);
+      } catch (e) {
+        // Likely a single leaf script and single sig reveal txn, try finalizing with the respective method
+        return this.finalizeTapInputWithSingleLeafScriptAndSignature(0);
+      }
     });
     return this;
   }
