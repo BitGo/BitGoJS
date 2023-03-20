@@ -1,4 +1,4 @@
-import { PSBT_PROPRIETARY_IDENTIFIER, ProprietaryKeyValueData, UtxoPsbt, ProprietaryKeySubtype } from './UtxoPsbt';
+import { PSBT_PROPRIETARY_IDENTIFIER, ProprietaryKeyValue, UtxoPsbt, ProprietaryKeySubtype } from './UtxoPsbt';
 import {
   checkPlainPublicKey,
   checkTapMerkleRoot,
@@ -14,7 +14,7 @@ import { SessionKey } from '@brandonblack/musig';
 /**
  *  Participant key value object.
  */
-export interface PsbtMusig2ParticipantsKeyValueData {
+export interface PsbtMusig2Participants {
   tapOutputKey: Buffer;
   tapInternalKey: Buffer;
   participantPubKeys: Tuple<Buffer>;
@@ -23,7 +23,7 @@ export interface PsbtMusig2ParticipantsKeyValueData {
 /**
  *  Nonce key value object.
  */
-export interface PsbtMusig2PubNonceKeyValueData {
+export interface PsbtMusig2PubNonce {
   participantPubKey: Buffer;
   tapOutputKey: Buffer;
   pubNonce: Buffer;
@@ -32,7 +32,7 @@ export interface PsbtMusig2PubNonceKeyValueData {
 /**
  *  Partial signature key value object.
  */
-export interface PsbtMusig2PartialSigKeyValueData {
+export interface PsbtMusig2PartialSig {
   participantPubKey: Buffer;
   tapOutputKey: Buffer;
   partialSig: Buffer;
@@ -90,13 +90,9 @@ export class Musig2NonceStore {
  * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
  * @return x-only tapOutputKey||tapInternalKey as sub keydata, plain sigining participant keys as valuedata
  */
-export function encodePsbtMusig2ParticipantsKeyValData(
-  participantsKeyValData: PsbtMusig2ParticipantsKeyValueData
-): ProprietaryKeyValueData {
-  const keydata = [participantsKeyValData.tapOutputKey, participantsKeyValData.tapInternalKey].map((pubkey) =>
-    checkXOnlyPublicKey(pubkey)
-  );
-  const value = participantsKeyValData.participantPubKeys.map((pubkey) => checkPlainPublicKey(pubkey));
+export function encodePsbtMusig2Participants(participants: PsbtMusig2Participants): ProprietaryKeyValue {
+  const keydata = [participants.tapOutputKey, participants.tapInternalKey].map((pubkey) => checkXOnlyPublicKey(pubkey));
+  const value = participants.participantPubKeys.map((pubkey) => checkPlainPublicKey(pubkey));
   const key = {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
@@ -110,49 +106,43 @@ export function encodePsbtMusig2ParticipantsKeyValData(
  * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
  * @return plain-participantPubKey||x-only-tapOutputKey as sub keydata, 66 bytes of 2 pub nonces as valuedata
  */
-export function encodePsbtMusig2PubNonceKeyValData(
-  noncesKeyValueData: PsbtMusig2PubNonceKeyValueData
-): ProprietaryKeyValueData {
-  if (noncesKeyValueData.pubNonce.length !== 66) {
-    throw new Error(`Invalid pubNonces length ${noncesKeyValueData.pubNonce.length}`);
+export function encodePsbtMusig2PubNonce(nonce: PsbtMusig2PubNonce): ProprietaryKeyValue {
+  if (nonce.pubNonce.length !== 66) {
+    throw new Error(`Invalid pubNonces length ${nonce.pubNonce.length}`);
   }
   const keydata = Buffer.concat([
-    checkPlainPublicKey(noncesKeyValueData.participantPubKey),
-    checkXOnlyPublicKey(noncesKeyValueData.tapOutputKey),
+    checkPlainPublicKey(nonce.participantPubKey),
+    checkXOnlyPublicKey(nonce.tapOutputKey),
   ]);
   const key = {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
     keydata,
   };
-  return { key, value: noncesKeyValueData.pubNonce };
+  return { key, value: nonce.pubNonce };
 }
 
-export function encodePsbtMusig2PartialSigKeyKeyValData(
-  partialSigKeyValueData: PsbtMusig2PartialSigKeyValueData
-): ProprietaryKeyValueData {
-  if (partialSigKeyValueData.partialSig.length !== 32) {
-    throw new Error(`Invalid partialSig length ${partialSigKeyValueData.partialSig.length}`);
+export function encodePsbtMusig2PartialSig(partialSig: PsbtMusig2PartialSig): ProprietaryKeyValue {
+  if (partialSig.partialSig.length !== 32 && partialSig.partialSig.length !== 33) {
+    throw new Error(`Invalid partialSig length ${partialSig.partialSig.length}`);
   }
   const keydata = Buffer.concat([
-    checkPlainPublicKey(partialSigKeyValueData.participantPubKey),
-    checkXOnlyPublicKey(partialSigKeyValueData.tapOutputKey),
+    checkPlainPublicKey(partialSig.participantPubKey),
+    checkXOnlyPublicKey(partialSig.tapOutputKey),
   ]);
   const key = {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
     keydata,
   };
-  return { key, value: partialSigKeyValueData.partialSig };
+  return { key, value: partialSig.partialSig };
 }
 
 /**
  * Decodes proprietary key value data for participant pub keys
  * @param kv
  */
-export function decodePsbtMusig2ParticipantsKeyValData(
-  kv: ProprietaryKeyValueData
-): PsbtMusig2ParticipantsKeyValueData {
+export function decodePsbtMusig2Participants(kv: ProprietaryKeyValue): PsbtMusig2Participants {
   if (
     kv.key.identifier !== PSBT_PROPRIETARY_IDENTIFIER ||
     kv.key.subtype !== ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS
@@ -181,7 +171,7 @@ export function decodePsbtMusig2ParticipantsKeyValData(
  * Decodes proprietary key value data for musig2 nonce
  * @param kv
  */
-export function decodePsbtMusig2NonceKeyValData(kv: ProprietaryKeyValueData): PsbtMusig2PubNonceKeyValueData {
+export function decodePsbtMusig2Nonce(kv: ProprietaryKeyValue): PsbtMusig2PubNonce {
   if (kv.key.identifier !== PSBT_PROPRIETARY_IDENTIFIER || kv.key.subtype !== ProprietaryKeySubtype.MUSIG2_PUB_NONCE) {
     throw new Error(`Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`);
   }
@@ -197,6 +187,31 @@ export function decodePsbtMusig2NonceKeyValData(kv: ProprietaryKeyValueData): Ps
   }
 
   return { participantPubKey: key.subarray(0, 33), tapOutputKey: key.subarray(33), pubNonce: value };
+}
+
+/**
+ * Decodes proprietary key value data for musig2 partial sig
+ * @param kv
+ */
+export function decodePsbtMusig2PartialSig(kv: ProprietaryKeyValue): PsbtMusig2PartialSig {
+  if (
+    kv.key.identifier !== PSBT_PROPRIETARY_IDENTIFIER ||
+    kv.key.subtype !== ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG
+  ) {
+    throw new Error(`Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for partial sig`);
+  }
+
+  const key = kv.key.keydata;
+  if (key.length !== 65) {
+    throw new Error(`Invalid keydata size ${key.length} for partial sig`);
+  }
+
+  const value = kv.value;
+  if (value.length !== 32 && value.length !== 33) {
+    throw new Error(`Invalid valuedata size ${value.length} for partial sig`);
+  }
+
+  return { participantPubKey: key.subarray(0, 33), tapOutputKey: key.subarray(33), partialSig: value };
 }
 
 export function createTapInternalKey(plainPubKeys: Buffer[]): Buffer {
@@ -217,13 +232,13 @@ export function createTapTweak(tapInternalKey: Buffer, tapMerkleRoot: Buffer): B
   return Buffer.from(calculateTapTweak(checkXOnlyPublicKey(tapInternalKey), checkTapMerkleRoot(tapMerkleRoot)));
 }
 
-export function createMusig2SigningSession(
+function startMusig2SigningSession(
   aggNonce: Buffer,
   hash: Buffer,
   publicKeys: Tuple<Buffer>,
   tweak: Buffer
 ): SessionKey {
-  return musig.startSigningSession(aggNonce, checkTxHash(hash), musig.keySort(publicKeys), { tweak, xOnly: true });
+  return musig.startSigningSession(aggNonce, hash, musig.keySort(publicKeys), { tweak, xOnly: true });
 }
 
 export function musig2PartialSign(
@@ -242,14 +257,39 @@ export function musig2PartialSign(
   );
 }
 
+export function musig2PartialSigVerify(
+  sig: Buffer,
+  publicKey: Buffer,
+  publicNonce: Buffer,
+  sessionKey: SessionKey
+): boolean {
+  checkTxHash(Buffer.from(sessionKey.msg));
+  return musig.partialVerify({ sig, publicKey, publicNonce, sessionKey });
+}
+
+export function musig2AggregateSigs(sigs: Buffer[], sessionKey: SessionKey): Buffer {
+  return Buffer.from(musig.signAgg(sigs, sessionKey));
+}
+
+/** @return session key that can be used to reference the session later */
+export function createMusig2SigningSession(sessionArgs: {
+  pubNonces: Tuple<Buffer>;
+  txHash: Buffer;
+  pubKeys: Tuple<Buffer>;
+  internalPubKey: Buffer;
+  tapTreeRoot: Buffer;
+}): SessionKey {
+  checkTxHash(sessionArgs.txHash);
+  const aggNonce = createAggregateNonce(sessionArgs.pubNonces);
+  const tweak = createTapTweak(sessionArgs.internalPubKey, sessionArgs.tapTreeRoot);
+  return startMusig2SigningSession(aggNonce, sessionArgs.txHash, sessionArgs.pubKeys, tweak);
+}
+
 /**
  * @returns psbt proprietary key for musig2 participant key value data
  * If no key value exists, undefined is returned.
  */
-export function parsePsbtMusig2ParticipantsKeyValData(
-  psbt: UtxoPsbt,
-  inputIndex: number
-): PsbtMusig2ParticipantsKeyValueData | undefined {
+export function parsePsbtMusig2Participants(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2Participants | undefined {
   const participantsKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
@@ -263,17 +303,14 @@ export function parsePsbtMusig2ParticipantsKeyValData(
     throw new Error(`Found ${participantsKeyVals.length} matching participant key value instead of 1`);
   }
 
-  return decodePsbtMusig2ParticipantsKeyValData(participantsKeyVals[0]);
+  return decodePsbtMusig2Participants(participantsKeyVals[0]);
 }
 
 /**
  * @returns psbt proprietary key for musig2 public nonce key value data
  * If no key value exists, undefined is returned.
  */
-export function parsePsbtMusig2NoncesKeyValData(
-  psbt: UtxoPsbt,
-  inputIndex: number
-): PsbtMusig2PubNonceKeyValueData[] | undefined {
+export function parsePsbtMusig2Nonces(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2PubNonce[] | undefined {
   const nonceKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
@@ -287,7 +324,28 @@ export function parsePsbtMusig2NoncesKeyValData(
     throw new Error(`Found ${nonceKeyVals.length} matching nonce key value instead of 1 or 2`);
   }
 
-  return nonceKeyVals.map((kv) => decodePsbtMusig2NonceKeyValData(kv));
+  return nonceKeyVals.map((kv) => decodePsbtMusig2Nonce(kv));
+}
+
+/**
+ * @returns psbt proprietary key for musig2 partial sig key value data
+ * If no key value exists, undefined is returned.
+ */
+export function parsePsbtMusig2PartialSigs(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2PartialSig[] | undefined {
+  const sigKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
+    identifier: PSBT_PROPRIETARY_IDENTIFIER,
+    subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+  });
+
+  if (!sigKeyVals.length) {
+    return undefined;
+  }
+
+  if (sigKeyVals.length > 2) {
+    throw new Error(`Found ${sigKeyVals.length} matching partial signature key value instead of 1 or 2`);
+  }
+
+  return sigKeyVals.map((kv) => decodePsbtMusig2PartialSig(kv));
 }
 
 /**
@@ -296,8 +354,8 @@ export function parsePsbtMusig2NoncesKeyValData(
  * Using tapMerkleRoot and 2 participant keys, the tapInputKey is validated and using tapMerkleRoot and tapInputKey,
  * the tapOutputKey is validated.
  */
-export function assertPsbtMusig2ParticipantsKeyValData(
-  participantKeyValData: PsbtMusig2ParticipantsKeyValueData,
+export function assertPsbtMusig2Participants(
+  participantKeyValData: PsbtMusig2Participants,
   tapInternalKey: Buffer,
   tapMerkleRoot: Buffer
 ): void {
@@ -328,9 +386,9 @@ export function assertPsbtMusig2ParticipantsKeyValData(
  * <participantKey2><tapOutputKey> => <pubNonce2>
  * Checks against participant keys and tapOutputKey
  */
-export function assertPsbtMusig2NoncesKeyValData(
-  noncesKeyValData: PsbtMusig2PubNonceKeyValueData[],
-  participantKeyValData: PsbtMusig2ParticipantsKeyValueData
+export function assertPsbtMusig2Nonces(
+  noncesKeyValData: PsbtMusig2PubNonce[],
+  participantKeyValData: PsbtMusig2Participants
 ): void {
   checkXOnlyPublicKey(participantKeyValData.tapOutputKey);
   participantKeyValData.participantPubKeys.forEach((kv) => checkPlainPublicKey(kv));

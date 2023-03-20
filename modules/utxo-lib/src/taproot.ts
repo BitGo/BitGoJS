@@ -120,6 +120,9 @@ export function calculateTapTweak(pubkey: Uint8Array, taptreeRoot?: Uint8Array):
     throw new Error(`Invalid pubkey size ${pubkey.length}.`);
   }
   if (taptreeRoot) {
+    if (taptreeRoot.length !== 32) {
+      throw new Error(`Invalid taptreeRoot size ${taptreeRoot.length}.`);
+    }
     return bcrypto.taggedHash('TapTweak', Buffer.concat([pubkey, taptreeRoot]));
   }
   // If the spending conditions do not require a script path, the output key should commit to an

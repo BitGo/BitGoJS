@@ -8,42 +8,33 @@ import {
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 
-import {
-  taproot,
-  HDSigner,
-  Psbt,
-  PsbtTransaction,
-  Transaction,
-  TxOutput,
-  Network,
-  ecc as eccLib,
-  p2trPayments,
-} from '..';
+import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { toXOnlyPublicKey } from './outputScripts';
+import { checkPlainPublicKey, createTaprootOutputScript, toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import {
-  createAggregateNonce,
   createMusig2SigningSession,
-  createTapTweak,
-  encodePsbtMusig2PartialSigKeyKeyValData,
-  encodePsbtMusig2PubNonceKeyValData,
+  encodePsbtMusig2PartialSig,
+  encodePsbtMusig2PubNonce,
   musig2PartialSign,
-  parsePsbtMusig2NoncesKeyValData,
-  parsePsbtMusig2ParticipantsKeyValData,
-  PsbtMusig2ParticipantsKeyValueData,
-  assertPsbtMusig2NoncesKeyValData,
-  assertPsbtMusig2ParticipantsKeyValData,
+  parsePsbtMusig2Nonces,
+  parsePsbtMusig2Participants,
+  PsbtMusig2Participants,
+  assertPsbtMusig2Nonces,
+  assertPsbtMusig2Participants,
   Musig2NonceStore,
-  PsbtMusig2PubNonceKeyValueData,
+  PsbtMusig2PubNonce,
+  parsePsbtMusig2PartialSigs,
+  musig2PartialSigVerify,
+  musig2AggregateSigs,
 } from './Musig2';
-import { isTuple, Tuple } from './types';
+import { isTuple } from './types';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
 
@@ -109,7 +100,7 @@ export interface PsbtOpts {
  * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
  * => <bytes valuedata>
  */
-export interface ProprietaryKeyValueData {
+export interface ProprietaryKeyValue {
   key: ProprietaryKey;
   value: Buffer;
 }
@@ -358,11 +349,89 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   validateSignaturesOfAllInputs(): boolean {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     const results = this.data.inputs.map((input, idx) => {
-      return input.tapScriptSig?.length
-        ? this.validateTaprootSignaturesOfInput(idx)
-        : this.validateSignaturesOfInput(idx, (p, m, s) => eccLib.verify(m, p, s));
+      if (input.tapScriptSig?.length) {
+        return this.validateTaprootSignaturesOfInput(idx);
+      } else if (input.partialSig?.length) {
+        return this.validateSignaturesOfInput(idx, (p, m, s) => eccLib.verify(m, p, s));
+      } else if (input.tapInternalKey && input.tapMerkleRoot) {
+        return this.validateTaprootMusig2SignaturesOfInput(idx);
+      }
+      throw new Error('invalid psbt input to validate signature');
     });
     return results.reduce((final, res) => res && final, true);
+  }
+
+  /**
+   * @returns true for following cases.
+   * If valid musig2 partial signatures exists for both 2 keys, it will also verifies aggregated sig
+   * for aggregated tweaked key (output key), otherwise only verifies partial sig.
+   * If pubkey is passed in input, it will check sig only for that pubkey,
+   * if no sig exits for such key, throws error.
+   * For invalid state of input data, it will throw errors.
+   */
+  validateTaprootMusig2SignaturesOfInput(inputIndex: number, pubkey?: Buffer): boolean {
+    const partialSigs = parsePsbtMusig2PartialSigs(this, inputIndex);
+    if (!partialSigs) {
+      throw new Error(`No signatures to validate`);
+    }
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.tapInternalKey || !input.tapMerkleRoot) {
+      throw new Error('Both tapInternalKey and tapMerkleRoot are required to validate');
+    }
+
+    let myPartialSigs = partialSigs;
+    if (pubkey) {
+      checkPlainPublicKey(pubkey);
+      myPartialSigs = partialSigs.filter((kv) => kv.participantPubKey.equals(pubkey));
+      if (myPartialSigs?.length < 1) {
+        throw new Error('No signatures for this pubkey');
+      }
+    }
+
+    const mySigs = myPartialSigs.map((kv) => {
+      const { partialSig: sig, participantPubKey: pubKey } = kv;
+      return sig.length === 33
+        ? { sig: sig.slice(0, 32), sigHashType: sig[32], pubKey }
+        : { sig, sigHashType: Transaction.SIGHASH_DEFAULT, pubKey };
+    });
+
+    if (!mySigs.every((mySig) => mySig.sigHashType === mySigs[0].sigHashType)) {
+      throw new Error('signatures must use same sig hash type');
+    }
+
+    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
+    const nonces = this.getMusig2Nonces(inputIndex, participants);
+
+    const { hash } = this.getTaprootHashForSig(inputIndex, [mySigs[0].sigHashType]);
+
+    const sessionKey = createMusig2SigningSession({
+      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+      pubKeys: participants.participantPubKeys,
+      txHash: hash,
+      internalPubKey: input.tapInternalKey,
+      tapTreeRoot: input.tapMerkleRoot,
+    });
+
+    const results = mySigs.map((mySig) => {
+      const myNonce = nonces.find((kv) => kv.participantPubKey.equals(mySig.pubKey));
+      if (!myNonce) {
+        throw new Error('Found no pub nonce for pubkey');
+      }
+      return musig2PartialSigVerify(mySig.sig, mySig.pubKey, myNonce.pubNonce, sessionKey);
+    });
+
+    // For valid single sig or 1 or 2 failure sigs, no need to validate aggregated sig. So skip.
+    const result = results.every((res) => res);
+    if (!result || mySigs.length < 2) {
+      return result;
+    }
+
+    const aggSig = musig2AggregateSigs(
+      mySigs.map((mySig) => mySig.sig),
+      sessionKey
+    );
+
+    return eccLib.verifySchnorr(hash, participants.tapOutputKey, aggSig);
   }
 
   validateTaprootSignaturesOfInput(inputIndex: number, pubkey?: Buffer): boolean {
@@ -517,23 +586,23 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this;
   }
 
-  private getMusig2ParticipantsKeyValData(inputIndex: number, tapInternalKey: Buffer, tapMerkleRoot: Buffer) {
-    const participantsKeyValData = parsePsbtMusig2ParticipantsKeyValData(this, inputIndex);
+  private getMusig2Participants(inputIndex: number, tapInternalKey: Buffer, tapMerkleRoot: Buffer) {
+    const participantsKeyValData = parsePsbtMusig2Participants(this, inputIndex);
     if (!participantsKeyValData) {
       throw new Error(`Found 0 matching participant key value instead of 1`);
     }
-    assertPsbtMusig2ParticipantsKeyValData(participantsKeyValData, tapInternalKey, tapMerkleRoot);
+    assertPsbtMusig2Participants(participantsKeyValData, tapInternalKey, tapMerkleRoot);
     return participantsKeyValData;
   }
 
-  private getMusig2NoncesKeyValData(inputIndex: number, participantsKeyValData: PsbtMusig2ParticipantsKeyValueData) {
-    const noncesKeyValsData = parsePsbtMusig2NoncesKeyValData(this, inputIndex);
+  private getMusig2Nonces(inputIndex: number, participantsKeyValData: PsbtMusig2Participants) {
+    const noncesKeyValsData = parsePsbtMusig2Nonces(this, inputIndex);
     if (!noncesKeyValsData || !isTuple(noncesKeyValsData)) {
       throw new Error(
         `Found ${noncesKeyValsData?.length ? noncesKeyValsData.length : 0} matching nonce key value instead of 2`
       );
     }
-    assertPsbtMusig2NoncesKeyValData(noncesKeyValsData, participantsKeyValData);
+    assertPsbtMusig2Nonces(noncesKeyValsData, participantsKeyValData);
     return noncesKeyValsData;
   }
 
@@ -557,46 +626,40 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('tapMerkleRoot is required for p2tr musig2 key path signing');
     }
 
-    const tweak = createTapTweak(input.tapInternalKey, input.tapMerkleRoot);
-    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
-
-    const participantsKeyValData = this.getMusig2ParticipantsKeyValData(
-      inputIndex,
-      input.tapInternalKey,
-      input.tapMerkleRoot
-    );
-    const { tapOutputKey, participantPubKeys } = participantsKeyValData;
+    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
+    const { tapOutputKey, participantPubKeys } = participants;
     const signerPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
     if (!signerPubKey) {
       throw new Error('signer pub key should match one of participant pub keys');
     }
 
-    const noncesKeyValsData = this.getMusig2NoncesKeyValData(inputIndex, participantsKeyValData);
-    const pubNonces: Tuple<Buffer> = [noncesKeyValsData[0].pubNonce, noncesKeyValsData[1].pubNonce];
-    const aggNonce = createAggregateNonce(pubNonces);
-    const sessionKey = createMusig2SigningSession(aggNonce, hash, participantPubKeys, tweak);
+    const nonces = this.getMusig2Nonces(inputIndex, participants);
+    const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
 
-    const signerNonceKeyValueData = noncesKeyValsData.find((kv) => kv.participantPubKey.equals(signerPubKey));
-    if (!signerNonceKeyValueData) {
+    const sessionKey = createMusig2SigningSession({
+      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+      pubKeys: participantPubKeys,
+      txHash: hash,
+      internalPubKey: input.tapInternalKey,
+      tapTreeRoot: input.tapMerkleRoot,
+    });
+
+    const signerNonce = nonces.find((kv) => kv.participantPubKey.equals(signerPubKey));
+    if (!signerNonce) {
       throw new Error('pubNonce is missing. retry signing process');
     }
 
-    let partialSig = musig2PartialSign(
-      signer.privateKey,
-      signerNonceKeyValueData.pubNonce,
-      sessionKey,
-      this.nonceStore
-    );
+    let partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
     }
 
-    const partialSigKeyValData = encodePsbtMusig2PartialSigKeyKeyValData({
+    const sig = encodePsbtMusig2PartialSig({
       participantPubKey: signerPubKey,
       tapOutputKey,
-      partialSig,
+      partialSig: partialSig,
     });
-    this.addProprietaryKeyValToInput(inputIndex, partialSigKeyValData);
+    this.addProprietaryKeyValToInput(inputIndex, sig);
     return this;
   }
 
@@ -640,6 +703,19 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       ],
     });
     return this;
+  }
+
+  private getTaprootOutputScript(inputIndex: number) {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (input.tapLeafScript?.length) {
+      return createTaprootOutputScript({
+        controlBlock: input.tapLeafScript[0].controlBlock,
+        leafScript: input.tapLeafScript[0].script,
+      });
+    } else if (input.tapInternalKey && input.tapMerkleRoot) {
+      return createTaprootOutputScript({ internalPubKey: input.tapInternalKey, taptreeRoot: input.tapMerkleRoot });
+    }
+    throw new Error('not a taproot input');
   }
 
   private getTaprootHashForSig(
@@ -688,55 +764,19 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       prevoutScripts.push(prevout.script);
       prevoutValues.push(prevout.value);
     });
+    const outputScript = this.getTaprootOutputScript(inputIndex);
+    if (!outputScript.equals(prevoutScripts[inputIndex])) {
+      throw new Error(`Witness script for input #${inputIndex} doesn't match the scriptPubKey in the prevout`);
+    }
     const hash = this.tx.hashForWitnessV1(inputIndex, prevoutScripts, prevoutValues, sighashType, leafHash);
     return { hash, sighashType };
-  }
-
-  /**
-   * @retuns true iff the input is taproot.
-   */
-  isTaprootInput(inputIndex: number): boolean {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    function isP2tr(output: Buffer): boolean {
-      try {
-        p2trPayments.p2tr({ output }, { eccLib });
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
-    return !!(
-      input.tapInternalKey ||
-      input.tapMerkleRoot ||
-      (input.tapLeafScript && input.tapLeafScript.length) ||
-      (input.tapBip32Derivation && input.tapBip32Derivation.length) ||
-      (input.witnessUtxo && isP2tr(input.witnessUtxo.script))
-    );
-  }
-
-  /**
-   * @returns hash and hashType for taproot input at inputIndex
-   * @throws error if input at inputIndex is not a taproot input
-   */
-  getTaprootHashForSigChecked(
-    inputIndex: number,
-    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL],
-    leafHash?: Buffer
-  ): {
-    hash: Buffer;
-    sighashType: number;
-  } {
-    if (!this.isTaprootInput(inputIndex)) {
-      throw new Error(`${inputIndex} input is not a taproot type to take taproot tx hash`);
-    }
-    return this.getTaprootHashForSig(inputIndex, sighashTypes, leafHash);
   }
 
   /**
    * Adds proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
-  addProprietaryKeyValToInput(inputIndex: number, keyValueData: ProprietaryKeyValueData): this {
+  addProprietaryKeyValToInput(inputIndex: number, keyValueData: ProprietaryKeyValue): this {
     return this.addUnknownKeyValToInput(inputIndex, {
       key: encodeProprietaryKey(keyValueData.key),
       value: keyValueData.value,
@@ -747,7 +787,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * Adds or updates (if exists) proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
-  addOrUpdateProprietaryKeyValToInput(inputIndex: number, keyValueData: ProprietaryKeyValueData): this {
+  addOrUpdateProprietaryKeyValToInput(inputIndex: number, keyValueData: ProprietaryKeyValue): this {
     const input = checkForInput(this.data.inputs, inputIndex);
     const key = encodeProprietaryKey(keyValueData.key);
     const { value } = keyValueData;
@@ -769,7 +809,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * To search any data from proprietary key value againts keydata.
    * Default identifierEncoding is utf-8 for identifier.
    */
-  getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValueData[] {
+  getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
     const input = checkForInput(this.data.inputs, inputIndex);
     if (!input.unknownKeyVals || input.unknownKeyVals.length === 0) {
       return [];
@@ -787,11 +827,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     });
   }
 
-  private getMusig2Nonce(
+  private createMusig2NonceForInput(
     inputIndex: number,
     rootWalletKey: BIP32Interface,
     sessionId?: Buffer
-  ): PsbtMusig2PubNonceKeyValueData {
+  ): PsbtMusig2PubNonce {
     const input = this.data.inputs[inputIndex];
     if (!input.tapInternalKey) {
       throw new Error('tapInternalKey is required to create nonce');
@@ -806,19 +846,19 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!derivedWalletKey.privateKey) {
       throw new Error('privateKey is required to create nonce');
     }
-    const participantsKeyValData = parsePsbtMusig2ParticipantsKeyValData(this, inputIndex);
-    if (!participantsKeyValData) {
+    const participants = parsePsbtMusig2Participants(this, inputIndex);
+    if (!participants) {
       throw new Error(`Found 0 matching participant key value instead of 1`);
     }
-    assertPsbtMusig2ParticipantsKeyValData(participantsKeyValData, input.tapInternalKey, input.tapMerkleRoot);
-    const { tapOutputKey, participantPubKeys } = participantsKeyValData;
+    assertPsbtMusig2Participants(participants, input.tapInternalKey, input.tapMerkleRoot);
+    const { tapOutputKey, participantPubKeys } = participants;
     const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedWalletKey.publicKey));
 
     if (!Buffer.isBuffer(participantPubKey)) {
       throw new Error('participant plain pub key should match one bip32Derivation plain pub key');
     }
 
-    const { hash } = this.getTaprootHashForSigChecked(inputIndex);
+    const { hash } = this.getTaprootHashForSig(inputIndex);
     const pubNonce = this.nonceStore.createMusig2Nonce(
       derivedWalletKey.privateKey,
       participantPubKey,
@@ -852,9 +892,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         // Not a p2trMusig2 key path input, so skip it.
         return;
       }
-      const nonce = this.getMusig2Nonce(inputIndex, rootWalletKey, sessionId);
-      const nonceKeyValData = encodePsbtMusig2PubNonceKeyValData(nonce);
-      this.addOrUpdateProprietaryKeyValToInput(inputIndex, nonceKeyValData);
+      const nonce = this.createMusig2NonceForInput(inputIndex, rootWalletKey, sessionId);
+      this.addOrUpdateProprietaryKeyValToInput(inputIndex, encodePsbtMusig2PubNonce(nonce));
     });
   }
 

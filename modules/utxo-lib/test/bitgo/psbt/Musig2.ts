@@ -2,6 +2,7 @@ import * as assert from 'assert';
 
 import {
   getInternalChainCode,
+  isSegwit,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
@@ -10,15 +11,14 @@ import {
 
 import { getDefaultWalletKeys, getKeyTriple } from '../../../src/testutil';
 import {
-  createMusig2SigningSession,
   createTapInternalKey,
   createTapOutputKey,
   createTapTweak,
-  decodePsbtMusig2NonceKeyValData,
-  decodePsbtMusig2ParticipantsKeyValData,
-  encodePsbtMusig2PartialSigKeyKeyValData,
+  decodePsbtMusig2Nonce,
+  decodePsbtMusig2Participants,
+  encodePsbtMusig2PartialSig,
   musig2PartialSign,
-  assertPsbtMusig2NoncesKeyValData,
+  assertPsbtMusig2Nonces,
   Musig2NonceStore,
 } from '../../../src/bitgo/Musig2';
 import { scriptTypes2Of3, toXOnlyPublicKey } from '../../../src/bitgo/outputScripts';
@@ -41,7 +41,7 @@ import {
   dummyPubNonce,
   dummyTapInputKey,
   dummyTapOutputKey,
-  dummyTweak,
+  dummyPartialSig,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -63,6 +63,8 @@ describe('p2trMusig2', function () {
 
       psbt.signAllInputsHD(rootWalletKeys.user);
       psbt.signAllInputsHD(rootWalletKeys.bitgo);
+
+      assert.ok(psbt.validateSignaturesOfAllInputs());
 
       unspents.forEach((unspent, index) => {
         if (scriptTypeForChain(unspent.chain) !== 'p2trMusig2') {
@@ -569,19 +571,158 @@ describe('p2trMusig2', function () {
     });
   });
 
-  describe('Psbt musig2 util functions', function () {
-    it(`getTaprootHashForSigChecked throws error if used for p2tr* input types`, function () {
-      const unspents = getUnspents(
-        scriptTypes2Of3.filter((t) => t !== 'p2trMusig2' && t !== 'p2tr'),
-        rootWalletKeys
+  describe('validate p2tr Musig2 signatures', function () {
+    it(`validate with pubkey`, function () {
+      const walletKeys = rootWalletKeys.deriveForChainAndIndex(p2trMusig2Unspent[0].chain, p2trMusig2Unspent[0].index);
+      let psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      assert.ok(psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.user.publicKey));
+
+      psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      assert.ok(psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.user.publicKey));
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+      assert.ok(psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey));
+    });
+
+    it(`fails if no sig`, function () {
+      const walletKeys = rootWalletKeys.deriveForChainAndIndex(p2trMusig2Unspent[0].chain, p2trMusig2Unspent[0].index);
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      assert.throws(
+        () => psbt.validateSignaturesOfAllInputs(),
+        (e) => e.message === `No signatures to validate`
       );
+
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+
+      psbt.signAllInputsHD(rootWalletKeys.user);
+
+      assert.throws(
+        () => psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey),
+        (e) => e.message === `No signatures for this pubkey`
+      );
+    });
+
+    it(`fails if no tapInternalKey and tapMerkleRoot`, function () {
+      const walletKeys = rootWalletKeys.deriveForChainAndIndex(p2trMusig2Unspent[0].chain, p2trMusig2Unspent[0].index);
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+
+      const tapInternalKey = psbt.data.inputs[0].tapInternalKey;
+      psbt.data.inputs[0].tapInternalKey = undefined;
+      assert.throws(
+        () => psbt.validateTaprootMusig2SignaturesOfInput(0),
+        (e) => e.message === `Both tapInternalKey and tapMerkleRoot are required to validate`
+      );
+
+      psbt.data.inputs[0].tapInternalKey = tapInternalKey;
+      psbt.data.inputs[0].tapMerkleRoot = undefined;
+      assert.throws(
+        () => psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey),
+        (e) => e.message === `Both tapInternalKey and tapMerkleRoot are required to validate`
+      );
+    });
+
+    it(`fails if no nonce and sig pub key match`, function () {
+      let psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+
+      const partialSigs = psbt.getProprietaryKeyVals(0, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+      });
+
+      const myRootWalletKeys = new RootWalletKeys(getKeyTriple('dummy'));
+      const myUnspents = getUnspents(['p2trMusig2'], myRootWalletKeys);
+      psbt = constructPsbt(myUnspents, myRootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(myRootWalletKeys.user);
+      psbt.setMusig2Nonces(myRootWalletKeys.bitgo);
+      psbt.signAllInputsHD(myRootWalletKeys.user);
+      psbt.signAllInputsHD(myRootWalletKeys.bitgo);
+
+      const participants = psbt.getProprietaryKeyVals(0, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
+      });
+
+      const nonces = psbt.getProprietaryKeyVals(0, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+      });
+
+      psbt.data.inputs[0].unknownKeyVals = undefined;
+      psbt.addProprietaryKeyValToInput(0, participants[0]);
+      psbt.addProprietaryKeyValToInput(0, nonces[0]);
+      psbt.addProprietaryKeyValToInput(0, nonces[1]);
+      psbt.addProprietaryKeyValToInput(0, partialSigs[0]);
+      psbt.addProprietaryKeyValToInput(0, partialSigs[1]);
+
+      assert.throws(
+        () => psbt.validateSignaturesOfAllInputs(),
+        (e) => e.message === `Found no pub nonce for pubkey`
+      );
+    });
+
+    it(`fails if no valid sig`, function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+
+      const partialSigs = psbt.getProprietaryKeyVals(0, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+      });
+
+      partialSigs[1].value = dummyPartialSig;
+      psbt.addOrUpdateProprietaryKeyValToInput(0, partialSigs[1]);
+
+      assert.ok(!psbt.validateSignaturesOfAllInputs());
+    });
+  });
+
+  describe('Psbt musig2 common functions', function () {
+    it('output script should match the scriptPubKey in the prevout', function () {
+      const myRootWalletKeys = new RootWalletKeys(getKeyTriple('dummy'));
+      const unspents = getUnspents(
+        scriptTypes2Of3.map((t) => t),
+        myRootWalletKeys
+      );
+
       const psbt = constructPsbt(unspents, rootWalletKeys, 'user', 'bitgo', outputType);
-      unspents.forEach((unspent, index) => {
+      unspents.forEach((u, index) => {
+        const scriptType = scriptTypeForChain(u.chain);
         assert.throws(
-          () => psbt.getTaprootHashForSigChecked(index),
-          (e) => e.message === `${index} input is not a taproot type to take taproot tx hash`
+          () =>
+            scriptType === 'p2trMusig2'
+              ? psbt.setMusig2Nonces(rootWalletKeys.user)
+              : scriptType === 'p2tr'
+              ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
+              : psbt.signInputHD(index, rootWalletKeys.user),
+          (e) =>
+            isSegwit(u.chain) && scriptType !== 'p2shP2wsh'
+              ? e.message === `Witness script for input #${index} doesn't match the scriptPubKey in the prevout`
+              : e.message === `Redeem script for input #${index} doesn't match the scriptPubKey in the prevout`
         );
       });
+
+      const p2trMusig2ScriptPathPsbt = constructPsbt([unspents[4]], rootWalletKeys, 'user', 'backup', outputType);
+      assert.throws(
+        () => p2trMusig2ScriptPathPsbt.signTaprootInputHD(0, rootWalletKeys.user),
+        (e) => e.message === `Witness script for input #0 doesn't match the scriptPubKey in the prevout`
+      );
     });
 
     it(`decodePsbtMusig2ParticipantsKeyValData fails if invalid subtype or identifier is passed`, function () {
@@ -595,14 +736,14 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => decodePsbtMusig2ParticipantsKeyValData(kv),
+        () => decodePsbtMusig2Participants(kv),
         (e) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
-        () => decodePsbtMusig2ParticipantsKeyValData(kv),
+        () => decodePsbtMusig2Participants(kv),
         (e) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
@@ -619,13 +760,13 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => decodePsbtMusig2NonceKeyValData(kv),
+        () => decodePsbtMusig2Nonce(kv),
         (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
-        () => decodePsbtMusig2NonceKeyValData(kv),
+        () => decodePsbtMusig2Nonce(kv),
         (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
     });
@@ -644,7 +785,7 @@ describe('p2trMusig2', function () {
       };
 
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `invalid size 1. Must use x-only key.`
       );
 
@@ -654,7 +795,7 @@ describe('p2trMusig2', function () {
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `invalid size 1. Must use plain key.`
       );
 
@@ -664,7 +805,7 @@ describe('p2trMusig2', function () {
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
-        () => assertPsbtMusig2NoncesKeyValData(nonceKeyValData, participantKeyValData),
+        () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
         (e) => e.message === `Duplicate participant pub keys found`
       );
     });
@@ -678,13 +819,6 @@ describe('p2trMusig2', function () {
       assert.throws(
         () => createTapTweak(dummyTapInputKey, invalidTapOutputKey),
         (e) => e.message === `invalid size 1. Must use tap merkle root.`
-      );
-    });
-
-    it(`createMusig2SigningSession fails if invalid txHash is passed`, function () {
-      assert.throws(
-        () => createMusig2SigningSession(dummyAggNonce, invalidTxHash, dummyParticipantPubKeys, dummyTweak),
-        (e) => e.message === `invalid size 1. Must use tx hash.`
       );
     });
 
@@ -708,7 +842,7 @@ describe('p2trMusig2', function () {
     it(`encodePsbtMusig2PartialSigKeyKeyValData fails if invalid txHash is passed`, function () {
       assert.throws(
         () =>
-          encodePsbtMusig2PartialSigKeyKeyValData({
+          encodePsbtMusig2PartialSig({
             partialSig: invalidPartialSig,
             participantPubKey: dummyParticipantPubKeys[0],
             tapOutputKey: dummyTapOutputKey,

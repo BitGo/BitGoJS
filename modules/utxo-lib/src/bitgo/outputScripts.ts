@@ -7,6 +7,7 @@ import { isTriple, Triple, Tuple } from './types';
 
 import { ecc as eccLib } from '../noble_ecc';
 import { getDepthFirstTaptree, getTweakedOutputKey } from '../taproot';
+import { script as bscript } from 'bitcoinjs-lib';
 
 export { scriptTypeForChain } from './wallet/chains';
 
@@ -385,4 +386,24 @@ function createTaprootScript2of3(scriptType: 'p2tr' | 'p2trMusig2', pubkeys: Tri
   return {
     scriptPubKey: output,
   };
+}
+
+/**
+ * @returns output script for either script path input controlBlock
+ * & leafScript OR key path input internalPubKey & taptreeRoot
+ */
+export function createTaprootOutputScript(
+  p2trArgs: { internalPubKey: Buffer; taptreeRoot: Buffer } | { controlBlock: Buffer; leafScript: Buffer }
+): Buffer {
+  let internalPubKey: Buffer | undefined;
+  let taptreeRoot: Buffer | undefined;
+  if ('internalPubKey' in p2trArgs) {
+    internalPubKey = p2trArgs.internalPubKey;
+    taptreeRoot = p2trArgs.taptreeRoot;
+  } else {
+    internalPubKey = taproot.parseControlBlock(eccLib, p2trArgs.controlBlock).internalPubkey;
+    taptreeRoot = taproot.getTaptreeRoot(eccLib, p2trArgs.controlBlock, p2trArgs.leafScript);
+  }
+  const outputKey = taproot.tapTweakPubkey(eccLib, internalPubKey, taptreeRoot).xOnlyPubkey;
+  return bscript.compile([bscript.OPS.OP_1, Buffer.from(outputKey)]);
 }

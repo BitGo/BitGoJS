@@ -237,7 +237,7 @@ describe('Psbt from transaction using wallet unspents', function () {
       if (signatureTarget === 'unsigned' && containsP2trInput) {
         assert.throws(
           () => psbt.validateSignaturesOfAllInputs(),
-          (e) => e.message === 'No signatures to validate'
+          (e) => e.message === 'invalid psbt input to validate signature'
         );
       } else {
         assert.deepStrictEqual(psbt.validateSignaturesOfAllInputs(), true);
