@@ -11,6 +11,7 @@ import {
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
+  scriptTypeForChain,
   Tuple,
   Unspent,
   unspentSum,
@@ -210,4 +211,18 @@ export function validateParticipantsKeyVals(
     return pks.equals(kv.value);
   });
   assert.ok(valueMatch);
+}
+
+export function validateFinalizedInput(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  index: number,
+  unspent: WalletUnspent<bigint>,
+  spendType?: 'keyPath' | 'scriptPath'
+): void {
+  assert.ok(psbt.isInputFinalized(index));
+  const input = psbt.data.inputs[index];
+  if (scriptTypeForChain(unspent.chain) === 'p2trMusig2' && spendType === 'keyPath') {
+    assert.strictEqual(input.finalScriptWitness?.length, 66);
+  }
+  assert.strictEqual(input.unknownKeyVals?.length, 0);
 }

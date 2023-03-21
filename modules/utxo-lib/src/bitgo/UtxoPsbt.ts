@@ -290,6 +290,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
           : this.finalizeTaprootInput(idx);
       } else if (input.partialSig?.length) {
         return this.finalizeInput(idx);
+      } else if (input.tapInternalKey && input.tapMerkleRoot) {
+        return this.finalizeTaprootMusig2Input(idx);
       }
       throw new Error('invalid psbt input to finalize');
     });
@@ -322,6 +324,37 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     this.data.updateInput(inputIndex, { finalScriptWitness });
     this.data.clearFinalizedInput(inputIndex);
 
+    return this;
+  }
+
+  /**
+   * Finalizes a taproot musig2 input by aggregating all partial sigs.
+   * IMPORTANT: Always call validate* function before finalizing.
+   */
+  finalizeTaprootMusig2Input(inputIndex: number): this {
+    const partialSigs = parsePsbtMusig2PartialSigs(this, inputIndex);
+    if (partialSigs?.length !== 2) {
+      throw new Error(`invalid number of partial signatures ${partialSigs ? partialSigs.length : 0} to finalize`);
+    }
+    const { partialSigs: pSigs, sigHashType } = getSigHashTypeFromSigs(partialSigs);
+    const { sessionKey } = this.getMusig2SessionKey(inputIndex, sigHashType);
+
+    const aggSig = musig2AggregateSigs(
+      pSigs.map((pSig) => pSig.partialSig),
+      sessionKey
+    );
+
+    const sig = sigHashType === Transaction.SIGHASH_DEFAULT ? aggSig : Buffer.concat([aggSig, Buffer.of(sigHashType)]);
+
+    // single signature with 64/65 bytes size is script witness for key path spend
+    const bufferWriter = BufferWriter.withCapacity(1 + varuint.encodingLength(sig.length) + sig.length);
+    bufferWriter.writeVector([sig]);
+    const finalScriptWitness = bufferWriter.end();
+
+    this.data.updateInput(inputIndex, { finalScriptWitness });
+    this.data.clearFinalizedInput(inputIndex);
+    // deleting only BitGo proprietary key values.
+    this.deleteProprietaryKeyVals(inputIndex, { identifier: PSBT_PROPRIETARY_IDENTIFIER });
     return this;
   }
 
@@ -842,6 +875,31 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
               (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
       );
     });
+  }
+
+  /**
+   * To delete any data from proprietary key value.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  deleteProprietaryKeyVals(inputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.unknownKeyVals?.length) {
+      return this;
+    }
+    if (keysToDelete && keysToDelete.subtype === undefined && Buffer.isBuffer(keysToDelete.keydata)) {
+      throw new Error('invalid proprietary key search filter combination. subtype is required');
+    }
+    input.unknownKeyVals = input.unknownKeyVals.filter((keyValue, i) => {
+      const key = decodeProprietaryKey(keyValue.key);
+      return !(
+        keysToDelete === undefined ||
+        (keysToDelete.identifier === key.identifier &&
+          (keysToDelete.subtype === undefined ||
+            (keysToDelete.subtype === key.subtype &&
+              (!Buffer.isBuffer(keysToDelete.keydata) || keysToDelete.keydata.equals(key.keydata)))))
+      );
+    });
+    return this;
   }
 
   private createMusig2NonceForInput(

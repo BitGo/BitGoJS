@@ -42,6 +42,7 @@ import {
   dummyTapInternalKey,
   dummyTapOutputKey,
   dummyPartialSig,
+  validateFinalizedInput,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -77,6 +78,12 @@ describe('p2trMusig2', function () {
       });
 
       assert.ok(psbt.validateSignaturesOfAllInputs());
+      psbt.finalizeAllInputs();
+      unspents.forEach((unspent, index) => {
+        validateFinalizedInput(psbt, index, unspent);
+      });
+      const tx = psbt.extractTransaction();
+      assert.ok(tx);
     });
 
     describe('create nonce', function () {
@@ -558,6 +565,9 @@ describe('p2trMusig2', function () {
       validatePsbtP2trMusig2Input(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       validatePsbtP2trMusig2Output(psbt, 0);
       assert.ok(psbt.validateSignaturesOfAllInputs());
+      psbt.finalizeAllInputs();
+      validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
+      psbt.extractTransaction();
 
       psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'backup', outputType);
       psbt.setMusig2Nonces(rootWalletKeys.bitgo);
@@ -568,6 +578,9 @@ describe('p2trMusig2', function () {
       validatePsbtP2trMusig2Input(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       validatePsbtP2trMusig2Output(psbt, 0);
       assert.ok(psbt.validateSignaturesOfAllInputs());
+      psbt.finalizeAllInputs();
+      validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
+      psbt.extractTransaction();
     });
   });
 
@@ -690,6 +703,20 @@ describe('p2trMusig2', function () {
       psbt.addOrUpdateProprietaryKeyValToInput(0, partialSigs[1]);
 
       assert.ok(!psbt.validateSignaturesOfAllInputs());
+    });
+  });
+
+  describe('finalizeTaprootMusig2Input', function () {
+    it('fails if invalid number for sigs', function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+
+      assert.throws(
+        () => psbt.finalizeAllInputs(),
+        (e) => e.message === `invalid number of partial signatures 1 to finalize`
+      );
     });
   });
 
@@ -849,6 +876,22 @@ describe('p2trMusig2', function () {
           }),
         (e) => e.message === `Invalid partialSig length 1`
       );
+    });
+
+    it(`deleteProprietaryKeyVals`, function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      const key = {
+        identifier: 'DUMMY',
+        subtype: 100,
+        keydata: dummyTapOutputKey,
+      };
+      psbt.addProprietaryKeyValToInput(0, { key, value: dummyTapInternalKey });
+      psbt.deleteProprietaryKeyVals(0, { identifier: PSBT_PROPRIETARY_IDENTIFIER });
+      const keyVal = psbt.getProprietaryKeyVals(0);
+      assert.strictEqual(keyVal.length, 1);
+      assert.strictEqual(keyVal[0].key.identifier, 'DUMMY');
     });
   });
 });
