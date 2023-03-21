@@ -282,7 +282,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   finalizeAllInputs(): this {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     this.data.inputs.map((input, idx) => {
-      return input.tapScriptSig?.length ? this.finalizeTaprootInput(idx) : this.finalizeInput(idx);
+      if (input.tapScriptSig) {
+        return input.tapScriptSig.length === 1
+          ? this.finalizeTapInputWithSingleLeafScriptAndSignature(idx)
+          : this.finalizeTaprootInput(idx);
+      } else {
+        return this.finalizeInput(idx);
+      }
     });
     return this;
   }
