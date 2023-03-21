@@ -63,7 +63,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       tapLeafScript,
       commitAddress,
       recipientAddress,
-      unsignedCommitTx,
+      Buffer.from(halfSignedCommitTransaction.txHex, 'hex'),
       this.coin.network
     );
 
