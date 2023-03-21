@@ -1,5 +1,5 @@
-import { TransactionType } from '@bitgo/sdk-core';
-import { fromBase64, toHex } from '@cosmjs/encoding';
+import { toHex, TransactionType } from '@bitgo/sdk-core';
+import { fromBase64 } from '@cosmjs/encoding';
 import axios from 'axios';
 import should from 'should';
 
@@ -8,11 +8,11 @@ import { Transaction as AtomTransaction } from '../../../src/lib/transaction';
 import * as testData from '../../resources/atom';
 import { getBuilderFactory } from '../getBuilderFactory';
 
-describe('Atom Transfer Builder', () => {
+describe('Atom Delegate txn Builder', () => {
   const factory = getBuilderFactory('tatom');
-  const testTx = testData.TEST_SEND_TX;
-  it('should build a Transfer tx with signature', async function () {
-    const txBuilder = factory.getTransferBuilder();
+  const testTx = testData.TEST_DELEGATE_TX;
+  it('should build a WithdrawRewards tx with signature', async function () {
+    const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
     txBuilder.messages([testTx.sendMessage.value]);
@@ -20,21 +20,21 @@ describe('Atom Transfer Builder', () => {
     txBuilder.addSignature({ pub: toHex(fromBase64(testTx.pubKey)) }, Buffer.from(testTx.signature, 'base64'));
 
     const tx = await txBuilder.build();
-    should.equal(tx.type, TransactionType.Send);
+    should.equal(tx.type, TransactionType.StakingActivate);
     (tx as AtomTransaction).atomTransaction.gasBudget.should.deepEqual(testTx.gasBudget);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
   });
 
-  it('should build a Transfer tx without signature', async function () {
-    const txBuilder = factory.getTransferBuilder();
+  it('should build a WithdrawRewards tx without signature', async function () {
+    const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
     txBuilder.messages([testTx.sendMessage.value]);
     txBuilder.publicKey(toHex(fromBase64(testTx.pubKey)));
     const tx = await txBuilder.build();
     const json = await (await txBuilder.build()).toJson();
-    should.equal(tx.type, TransactionType.Send);
+    should.equal(tx.type, TransactionType.StakingActivate);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
     should.deepEqual(json.sendMessages, [testTx.sendMessage]);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
@@ -42,8 +42,8 @@ describe('Atom Transfer Builder', () => {
     tx.toBroadcastFormat();
   });
 
-  it('should sign a Transfer tx', async function () {
-    const txBuilder = factory.getTransferBuilder();
+  it('should sign a WithdrawRewards tx', async function () {
+    const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
     txBuilder.messages([testTx.sendMessage.value]);
@@ -52,7 +52,7 @@ describe('Atom Transfer Builder', () => {
     txBuilder.sign({ key: toHex(fromBase64(testTx.privateKey)) });
     const tx = await txBuilder.build();
     const json = await (await txBuilder.build()).toJson();
-    should.equal(tx.type, TransactionType.Send);
+    should.equal(tx.type, TransactionType.StakingActivate);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
     should.deepEqual(json.sendMessages, [testTx.sendMessage]);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
@@ -71,8 +71,8 @@ describe('Atom Transfer Builder', () => {
       timeout: 10000,
     };
 
-    const txBuilder = factory.getTransferBuilder();
-    txBuilder.sequence(9);
+    const txBuilder = factory.getStakingActivateBuilder();
+    txBuilder.sequence(10);
     txBuilder.gasBudget(testTx.gasBudget);
     txBuilder.messages([testTx.sendMessage.value]);
     txBuilder.accountNumber(testTx.accountNumber);

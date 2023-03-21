@@ -1,5 +1,6 @@
 import {
   BaseCoin,
+  BaseTransaction,
   BitGoBase,
   ExplanationResult,
   KeyPair,
@@ -7,15 +8,18 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
+  SigningError,
   SignTransactionOptions,
+  TransactionType,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
+import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 
-import { Transaction } from './lib';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
 
@@ -35,21 +39,22 @@ export class Atom extends BaseCoin {
     return new Atom(bitgo, staticsCoin);
   }
 
-  /**
-   * Factor between the coin's base unit and its smallest subdivison
-   */
+  /** @inheritDoc **/
   getBaseFactor(): string | number {
     return 1e6;
   }
 
+  /** @inheritDoc **/
   getChain(): string {
     return this._staticsCoin.name;
   }
 
+  /** @inheritDoc **/
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
 
+  /** @inheritDoc **/
   getFullName(): string {
     return this._staticsCoin.fullName;
   }
@@ -59,21 +64,36 @@ export class Atom extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc **/
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }
 
+  /** @inheritDoc **/
+  isValidPub(pub: string): boolean {
+    return utils.isValidPublicKey(pub);
+  }
+
+  /** @inheritDoc **/
+  isValidPrv(prv: string): boolean {
+    return utils.isValidPrivateKey(prv);
+  }
+
+  /** @inheritDoc **/
+  isValidAddress(address: string): boolean {
+    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
+  }
+
+  /** @inheritDoc **/
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild, txParams } = params;
-    const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
-
-    transaction.enrichTransactionDetailsFromRawTransaction(rawTx);
+    const transaction = await new TransactionBuilderFactory(coinConfig).from(rawTx).build();
     const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients && txParams.recipients.length > 0) {
@@ -83,20 +103,20 @@ export class Atom extends BaseCoin {
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
-      for (const recipients of txParams.recipients) {
-        totalAmount = totalAmount.plus(recipients.amount);
-      }
-      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
-        throw new Error('Tx total amount does not match with expected total amount field');
+      // WithdrawDelegatorRewards transaction doesn't have amount
+      if (transaction.type !== TransactionType.StakingWithdraw) {
+        for (const recipients of txParams.recipients) {
+          totalAmount = totalAmount.plus(recipients.amount);
+        }
+        if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+          throw new Error('Tx total amount does not match with expected total amount field');
+        }
       }
     }
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-
+  /** @inheritDoc **/
   async parseTransaction(params: ParseTransactionOptions & { txHex: string }): Promise<ParsedTransaction> {
     const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
     if (!transactionExplanation) {
@@ -129,26 +149,7 @@ export class Atom extends BaseCoin {
     };
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
-  }
-
-  isValidPub(pub: string): boolean {
-    return utils.isValidPublicKey(pub);
-  }
-
-  isValidPrv(prv: string): boolean {
-    return utils.isValidPrivateKey(prv);
-  }
-
-  isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address);
-  }
-
-  signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    throw new Error('Method not implemented.');
-  }
-
+  /** @inheritDoc **/
   async explainTransaction(options: { txHex: string }): Promise<ExplanationResult> {
     if (!options.txHex) {
       throw new Error('missing required txHex parameter');
@@ -158,7 +159,55 @@ export class Atom extends BaseCoin {
       const transaction = await transactionBuilder.build();
       return transaction.explainTransaction();
     } catch (e) {
-      throw new Error('Invalid transaction');
+      throw new Error('Invalid transaction: ' + e.message);
     }
+  }
+
+  /** @inheritDoc **/
+  generateKeyPair(seed?: Buffer): KeyPair {
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256
+      // bit chain code, both of which must be random. 512 bits is therefore the
+      // maximum entropy and gives us maximum security against cracking.
+      seed = randomBytes(512 / 8);
+    }
+    const extendedKey = bip32.fromSeed(seed);
+    return {
+      pub: extendedKey.neutered().toBase58(),
+      prv: extendedKey.toBase58(),
+    };
+  }
+
+  /**
+   * Sign a transaction with a single private key
+   * @param params parameters in the form of { txPrebuild: {txHex}, prv }
+   * @returns signed transaction in the form of { txHex }
+   */
+  async signTransaction(
+    params: SignTransactionOptions & { txPrebuild: { txHex: string }; prv: string }
+  ): Promise<SignedTransaction> {
+    const txHex = params?.txPrebuild?.txHex;
+    const privateKey = params?.prv;
+    if (!txHex) {
+      throw new SigningError('missing required txPrebuild parameter: params.txPrebuild.txHex');
+    }
+    if (!privateKey) {
+      throw new SigningError('missing required prv parameter: params.prv');
+    }
+    const txBuilder = new TransactionBuilderFactory(coins.get(this.getChain())).from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
+    const transaction: BaseTransaction = await txBuilder.build();
+    if (!transaction) {
+      throw new SigningError('Failed to build signed transaction');
+    }
+    const serializedTx = transaction.toBroadcastFormat();
+    return {
+      txHex: serializedTx,
+    };
+  }
+
+  /** @inheritDoc **/
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
+    throw new Error('Method not implemented.');
   }
 }
