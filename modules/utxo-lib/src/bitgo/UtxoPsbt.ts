@@ -33,8 +33,10 @@ import {
   parsePsbtMusig2PartialSigs,
   musig2PartialSigVerify,
   musig2AggregateSigs,
+  getSigHashTypeFromSigs,
 } from './Musig2';
-import { isTuple } from './types';
+import { isTuple, Tuple } from './types';
+import { SessionKey } from '@brandonblack/musig';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
 
@@ -111,7 +113,7 @@ export interface ProprietaryKeyValue {
  */
 export interface ProprietaryKeySearch {
   identifier: string;
-  subtype: number;
+  subtype?: number;
   keydata?: Buffer;
   identifierEncoding?: BufferEncoding;
 }
@@ -282,13 +284,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   finalizeAllInputs(): this {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     this.data.inputs.map((input, idx) => {
-      if (input.tapScriptSig) {
+      if (input.tapScriptSig?.length) {
         return input.tapScriptSig.length === 1
           ? this.finalizeTapInputWithSingleLeafScriptAndSignature(idx)
           : this.finalizeTaprootInput(idx);
-      } else {
+      } else if (input.partialSig?.length) {
         return this.finalizeInput(idx);
       }
+      throw new Error('invalid psbt input to finalize');
     });
     return this;
   }
@@ -367,6 +370,35 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return results.reduce((final, res) => res && final, true);
   }
 
+  private getMusig2SessionKey(
+    inputIndex: number,
+    sigHashType: number
+  ): {
+    participants: PsbtMusig2Participants;
+    nonces: Tuple<PsbtMusig2PubNonce>;
+    hash: Buffer;
+    sessionKey: SessionKey;
+  } {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.tapInternalKey || !input.tapMerkleRoot) {
+      throw new Error('both tapInternalKey and tapMerkleRoot are required');
+    }
+
+    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
+    const nonces = this.getMusig2Nonces(inputIndex, participants);
+
+    const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType]);
+
+    const sessionKey = createMusig2SigningSession({
+      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+      pubKeys: participants.participantPubKeys,
+      txHash: hash,
+      internalPubKey: input.tapInternalKey,
+      tapTreeRoot: input.tapMerkleRoot,
+    });
+    return { participants, nonces, hash, sessionKey };
+  }
+
   /**
    * @returns true for following cases.
    * If valid musig2 partial signatures exists for both 2 keys, it will also verifies aggregated sig
@@ -380,10 +412,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!partialSigs) {
       throw new Error(`No signatures to validate`);
     }
-    const input = checkForInput(this.data.inputs, inputIndex);
-    if (!input.tapInternalKey || !input.tapMerkleRoot) {
-      throw new Error('Both tapInternalKey and tapMerkleRoot are required to validate');
-    }
 
     let myPartialSigs = partialSigs;
     if (pubkey) {
@@ -394,36 +422,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       }
     }
 
-    const mySigs = myPartialSigs.map((kv) => {
-      const { partialSig: sig, participantPubKey: pubKey } = kv;
-      return sig.length === 33
-        ? { sig: sig.slice(0, 32), sigHashType: sig[32], pubKey }
-        : { sig, sigHashType: Transaction.SIGHASH_DEFAULT, pubKey };
-    });
-
-    if (!mySigs.every((mySig) => mySig.sigHashType === mySigs[0].sigHashType)) {
-      throw new Error('signatures must use same sig hash type');
-    }
-
-    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
-    const nonces = this.getMusig2Nonces(inputIndex, participants);
-
-    const { hash } = this.getTaprootHashForSig(inputIndex, [mySigs[0].sigHashType]);
-
-    const sessionKey = createMusig2SigningSession({
-      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
-      pubKeys: participants.participantPubKeys,
-      txHash: hash,
-      internalPubKey: input.tapInternalKey,
-      tapTreeRoot: input.tapMerkleRoot,
-    });
+    const { partialSigs: mySigs, sigHashType } = getSigHashTypeFromSigs(myPartialSigs);
+    const { participants, nonces, hash, sessionKey } = this.getMusig2SessionKey(inputIndex, sigHashType);
 
     const results = mySigs.map((mySig) => {
-      const myNonce = nonces.find((kv) => kv.participantPubKey.equals(mySig.pubKey));
+      const myNonce = nonces.find((kv) => kv.participantPubKey.equals(mySig.participantPubKey));
       if (!myNonce) {
         throw new Error('Found no pub nonce for pubkey');
       }
-      return musig2PartialSigVerify(mySig.sig, mySig.pubKey, myNonce.pubNonce, sessionKey);
+      return musig2PartialSigVerify(mySig.partialSig, mySig.participantPubKey, myNonce.pubNonce, sessionKey);
     });
 
     // For valid single sig or 1 or 2 failure sigs, no need to validate aggregated sig. So skip.
@@ -433,7 +440,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
 
     const aggSig = musig2AggregateSigs(
-      mySigs.map((mySig) => mySig.sig),
+      mySigs.map((mySig) => mySig.partialSig),
       sessionKey
     );
 
@@ -812,13 +819,16 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * To search any data from proprietary key value againts keydata.
+   * To search any data from proprietary key value against keydata.
    * Default identifierEncoding is utf-8 for identifier.
    */
   getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
     const input = checkForInput(this.data.inputs, inputIndex);
-    if (!input.unknownKeyVals || input.unknownKeyVals.length === 0) {
+    if (!input.unknownKeyVals?.length) {
       return [];
+    }
+    if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
+      throw new Error('invalid proprietary key search filter combination. subtype is required');
     }
     const keyVals = input.unknownKeyVals.map(({ key, value }, i) => {
       return { key: decodeProprietaryKey(key), value };
@@ -827,8 +837,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       return (
         keySearch === undefined ||
         (keySearch.identifier === keyVal.key.identifier &&
-          keySearch.subtype === keyVal.key.subtype &&
-          (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))
+          (keySearch.subtype === undefined ||
+            (keySearch.subtype === keyVal.key.subtype &&
+              (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
       );
     });
   }
