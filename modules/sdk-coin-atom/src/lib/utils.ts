@@ -575,6 +575,10 @@ export class Utils implements BaseUtils {
     }
     this.validateAmountData(sendMessage.amount);
   }
+
+  isValidHexString(hexString: string): boolean {
+    return /^[0-9A-Fa-f]*$/.test(hexString);
+  }
 }
 
 const utils = new Utils();

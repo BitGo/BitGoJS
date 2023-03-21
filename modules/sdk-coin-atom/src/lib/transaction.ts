@@ -7,7 +7,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { toBase64 } from '@cosmjs/encoding';
+import { fromHex, toBase64 } from '@cosmjs/encoding';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 
@@ -130,7 +130,11 @@ export class Transaction extends BaseTransaction {
    * @param rawTransaction raw transaction in base64 encoded string
    */
   enrichTransactionDetailsFromRawTransaction(rawTransaction: string): void {
-    this.atomTransaction = utils.deserializeAtomTransaction(rawTransaction);
+    if (utils.isValidHexString(rawTransaction)) {
+      this.atomTransaction = utils.deserializeAtomTransaction(toBase64(fromHex(rawTransaction)));
+    } else {
+      this.atomTransaction = utils.deserializeAtomTransaction(rawTransaction);
+    }
     if (this.atomTransaction.signature) {
       this.addSignature(Buffer.from(this.atomTransaction.signature).toString('hex'));
     }
