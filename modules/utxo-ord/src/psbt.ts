@@ -25,9 +25,14 @@ export type InscriptionOutputs = {
 export type InscriptionTransactionConstraints = {
   feeRateSatKB: number;
   minChangeOutput?: bigint;
-  maxChangeOutput?: bigint;
   minInscriptionOutput?: bigint;
   maxInscriptionOutput?: bigint;
+};
+
+export const DefaultInscriptionConstraints = {
+  minChangeOutput: BigInt(10_000),
+  minInscriptionOutput: BigInt(10_000),
+  maxInscriptionOutput: BigInt(20_000),
 };
 
 export function createPsbtFromOutputLayout(
@@ -110,9 +115,9 @@ export function findOutputLayoutForWalletUnspents(
   }
 
   const {
-    minChangeOutput = BigInt(10_000),
-    minInscriptionOutput = BigInt(10_000),
-    maxInscriptionOutput = BigInt(20_000),
+    minChangeOutput = DefaultInscriptionConstraints.minChangeOutput,
+    minInscriptionOutput = DefaultInscriptionConstraints.minInscriptionOutput,
+    maxInscriptionOutput = DefaultInscriptionConstraints.maxInscriptionOutput,
   } = constraints;
 
   const [input] = inputs;

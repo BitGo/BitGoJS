@@ -1,4 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { PrebuildTransactionResult } from '../wallet';
 
 export interface SubmitTransactionResponse {
   transfer: Transfer;
@@ -37,6 +38,8 @@ interface Transfer {
   vSize: number;
 }
 
+type SatPoint = `${string}:${number}:${bigint}`;
+
 export type PreparedInscriptionRevealData = {
   address: string;
   revealTransactionVSize: number;
@@ -46,6 +49,27 @@ export type PreparedInscriptionRevealData = {
 export interface IInscriptionBuilder {
   prepareReveal(inscriptionData: Buffer, contentType: string): Promise<PreparedInscriptionRevealData>;
 
+  prepareTransfer(
+    satPoint: SatPoint,
+    recipient: string,
+    feeRateSatKB: number,
+    {
+      signer,
+      cosigner,
+      inscriptionConstraints,
+      changeAddressType,
+    }: {
+      signer: utxolib.bitgo.KeyName;
+      cosigner: utxolib.bitgo.KeyName;
+      inscriptionConstraints: {
+        minChangeOutput?: bigint;
+        minInscriptionOutput?: bigint;
+        maxInscriptionOutput?: bigint;
+      };
+      changeAddressType: utxolib.bitgo.outputScripts.ScriptType2Of3;
+    }
+  ): Promise<PrebuildTransactionResult>;
+
   // same response as wallet.submitTransaction`
   signAndSendReveal(
     walletPassphrase: string,
@@ -54,5 +78,10 @@ export interface IInscriptionBuilder {
     unsignedCommitTx: Buffer,
     commitTransactionUnspents: utxolib.bitgo.WalletUnspent[],
     recipientAddress: string
+  ): Promise<SubmitTransactionResponse>;
+
+  signAndSendTransfer(
+    walletPassphrase: string,
+    txPrebuild: PrebuildTransactionResult
   ): Promise<SubmitTransactionResponse>;
 }
