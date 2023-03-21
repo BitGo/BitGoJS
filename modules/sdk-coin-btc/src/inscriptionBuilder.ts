@@ -17,7 +17,7 @@ import {
   InscriptionOutputs,
   inscriptions,
   parseSatPoint,
-  SatPoint,
+  isSatPoint,
 } from '@bitgo/utxo-ord';
 import assert from 'assert';
 
@@ -51,7 +51,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
    * @param changeAddressType Address type of the change address
    */
   async prepareTransfer(
-    satPoint: SatPoint,
+    satPoint: string,
     recipient: string,
     feeRateSatKB: number,
     {
@@ -70,6 +70,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       changeAddressType: utxolib.bitgo.outputScripts.ScriptType2Of3;
     }
   ): Promise<PrebuildTransactionResult> {
+    assert(isSatPoint(satPoint));
     const wk = (await this.wallet.baseCoin.keychains().list()).keys;
     assert(wk.length === 3);
     const rootWalletKeys = new utxolib.bitgo.RootWalletKeys(
