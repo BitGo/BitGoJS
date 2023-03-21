@@ -213,16 +213,16 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
 class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   name = 'BinanceSmartChain';
   family = CoinFamily.BSC;
-  explorerUrl = 'https://www.bscscan.com/';
-  accountExplorerUrl = 'https://www.bscscan.com/';
+  explorerUrl = 'https://www.bscscan.com/tx/';
+  accountExplorerUrl = 'https://www.bscscan.com/address/';
   chainId = 56;
 }
 
 class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BinanceSmartChainTestnet';
   family = CoinFamily.BSC;
-  explorerUrl = 'https://testnet.bscscan.com/';
-  accountExplorerUrl = 'https://testnet.bscscan.com/';
+  explorerUrl = 'https://testnet.bscscan.com/tx/';
+  accountExplorerUrl = 'https://testnet.bscscan.com/address/';
   chainId = 97;
 }
 
