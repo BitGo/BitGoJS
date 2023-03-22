@@ -40,6 +40,24 @@ describe('Atom Transaction', () => {
       should.equal(tx.type, TransactionType.Send);
     });
 
+    it('should build a transfer from raw signed hex', function () {
+      tx.enrichTransactionDetailsFromRawTransaction(toHex(fromBase64(testData.TEST_SEND_TX.signedTxBase64)));
+      const json = tx.toJson();
+      should.equal(json.sequence, testData.TEST_SEND_TX.sequence);
+      should.deepEqual(json.gasBudget, testData.TEST_SEND_TX.gasBudget);
+      should.equal(json.publicKey, toHex(fromBase64(testData.TEST_SEND_TX.pubKey)));
+      should.equal(
+        (json.sendMessages[0].value as SendMessage).toAddress,
+        testData.TEST_SEND_TX.sendMessage.value.toAddress
+      );
+      should.deepEqual(
+        (json.sendMessages[0].value as SendMessage).amount,
+        testData.TEST_SEND_TX.sendMessage.value.amount
+      );
+      should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_SEND_TX.signature);
+      should.equal(tx.type, TransactionType.Send);
+    });
+
     it('should build a delegate txn from raw signed base64', function () {
       tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_DELEGATE_TX.signedTxBase64);
       const json = tx.toJson();
