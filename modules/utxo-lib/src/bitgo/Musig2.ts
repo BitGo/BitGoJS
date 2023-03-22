@@ -10,6 +10,7 @@ import { ecc, musig } from '../noble_ecc';
 import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
 import { SessionKey } from '@brandonblack/musig';
+import { Transaction } from '../index';
 
 /**
  *  Participant key value object.
@@ -412,4 +413,30 @@ export function assertPsbtMusig2Nonces(
       throw new Error('Invalid nonce keydata tapOutputKey');
     }
   });
+}
+
+/**
+ * @returns Input object but sig hash type data is taken out from partialSig field.
+ * If sig hash type is not common for all sigs, error out, otherwise returns the modified object and single hash type.
+ */
+export function getSigHashTypeFromSigs(partialSigs: PsbtMusig2PartialSig[]): {
+  partialSigs: PsbtMusig2PartialSig[];
+  sigHashType: number;
+} {
+  if (!partialSigs.length) {
+    throw new Error('partialSigs array can not be empty');
+  }
+  const pSigsWithHashType = partialSigs.map((kv) => {
+    const { partialSig, participantPubKey, tapOutputKey } = kv;
+    return partialSig.length === 33
+      ? { pSig: { partialSig: partialSig.slice(0, 32), participantPubKey, tapOutputKey }, sigHashType: partialSig[32] }
+      : { pSig: { partialSig, participantPubKey, tapOutputKey }, sigHashType: Transaction.SIGHASH_DEFAULT };
+  });
+
+  const sigHashType = pSigsWithHashType[0].sigHashType;
+  if (!pSigsWithHashType.every((pSig) => pSig.sigHashType === sigHashType)) {
+    throw new Error('signatures must use same sig hash type');
+  }
+
+  return { partialSigs: pSigsWithHashType.map(({ pSig }) => pSig), sigHashType };
 }
