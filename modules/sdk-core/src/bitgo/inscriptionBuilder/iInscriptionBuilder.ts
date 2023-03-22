@@ -38,8 +38,6 @@ interface Transfer {
   vSize: number;
 }
 
-type SatPoint = `${string}:${number}:${bigint}`;
-
 export type PreparedInscriptionRevealData = {
   address: string;
   revealTransactionVSize: number;
@@ -50,7 +48,7 @@ export interface IInscriptionBuilder {
   prepareReveal(inscriptionData: Buffer, contentType: string): Promise<PreparedInscriptionRevealData>;
 
   prepareTransfer(
-    satPoint: SatPoint,
+    satPoint: string,
     recipient: string,
     feeRateSatKB: number,
     {
