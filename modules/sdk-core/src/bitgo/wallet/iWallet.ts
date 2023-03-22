@@ -105,6 +105,7 @@ export interface PrebuildTransactionOptions {
   eip1559?: EIP1559;
   gasLimit?: number;
   lowFeeTxid?: string;
+  receiveAddress?: string;
   isTss?: boolean;
   custodianTransactionId?: string;
   apiVersion?: ApiVersion;

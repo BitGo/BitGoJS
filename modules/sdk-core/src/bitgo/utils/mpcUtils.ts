@@ -155,11 +155,13 @@ export abstract class MpcUtils {
             isTss: params.isTss,
             nonce: params.nonce,
             custodianTransactionId: params.custodianTransactionId,
+            receiveAddress: params.receiveAddress,
           };
         case 'acceleration':
           return {
             ...baseIntent,
             txid: params.lowFeeTxid,
+            receiveAddress: params.receiveAddress,
             feeOptions: params.feeOptions,
           };
         default:
