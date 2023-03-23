@@ -1,6 +1,7 @@
 import {
   BaseKey,
   BaseTransaction,
+  Entry,
   InvalidTransactionError,
   ParseTransactionError,
   TransactionRecipient,
@@ -121,7 +122,7 @@ export class Transaction extends BaseTransaction {
    * Set the transaction type.
    * @param {TransactionType} transactionType The transaction type to be set.
    */
-  transactionType(transactionType: TransactionType): void {
+  set transactionType(transactionType: TransactionType) {
     this._type = transactionType;
   }
 
@@ -138,7 +139,12 @@ export class Transaction extends BaseTransaction {
     if (this.atomTransaction.signature) {
       this.addSignature(Buffer.from(this.atomTransaction.signature).toString('hex'));
     }
-    this._type = utils.getTransactionTypeFromTypeUrl(this._atomTransaction.sendMessages[0].typeUrl);
+    const typeUrl = this.atomTransaction.sendMessages[0].typeUrl;
+    const transactionType = utils.getTransactionTypeFromTypeUrl(typeUrl);
+    if (transactionType === undefined) {
+      throw new Error('Transaction type is not supported ' + typeUrl);
+    }
+    this.transactionType = transactionType;
   }
 
   /**
@@ -231,5 +237,60 @@ export class Transaction extends BaseTransaction {
       outputAmount,
       outputs,
     };
+  }
+
+  loadInputsAndOutputs(): void {
+    if (this.type === undefined || !this.atomTransaction) {
+      throw new InvalidTransactionError('Transaction type or atomTransaction is not set');
+    }
+
+    const outputs: Entry[] = [];
+    const inputs: Entry[] = [];
+    switch (this.type) {
+      case TransactionType.Send:
+        const message = this.atomTransaction.sendMessages[0].value as SendMessage;
+        inputs.push({
+          address: message.fromAddress,
+          value: message.amount[0].amount,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: message.toAddress,
+          value: message.amount[0].amount,
+          coin: this._coinConfig.name,
+        });
+        break;
+      case TransactionType.StakingActivate:
+      case TransactionType.StakingDeactivate:
+        const delegateMessage = this.atomTransaction.sendMessages[0].value as DelegateOrUndelegeteMessage;
+        inputs.push({
+          address: delegateMessage.delegatorAddress,
+          value: delegateMessage.amount.amount,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: delegateMessage.validatorAddress,
+          value: delegateMessage.amount.amount,
+          coin: this._coinConfig.name,
+        });
+        break;
+      case TransactionType.StakingWithdraw:
+        const withdrawMessage = this.atomTransaction.sendMessages[0].value as WithdrawDelegatorRewardsMessage;
+        inputs.push({
+          address: withdrawMessage.delegatorAddress,
+          value: UNAVAILABLE_TEXT,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: withdrawMessage.validatorAddress,
+          value: UNAVAILABLE_TEXT,
+          coin: this._coinConfig.name,
+        });
+        break;
+      default:
+        throw new InvalidTransactionError('Transaction type not supported');
+    }
+    this._inputs = inputs;
+    this._outputs = outputs;
   }
 }

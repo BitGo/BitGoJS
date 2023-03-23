@@ -4,14 +4,13 @@ import axios from 'axios';
 import should from 'should';
 
 import { KeyPair } from '../../../src';
-import { Transaction as AtomTransaction } from '../../../src/lib/transaction';
 import * as testData from '../../resources/atom';
 import { getBuilderFactory } from '../getBuilderFactory';
 
 describe('Atom Delegate txn Builder', () => {
   const factory = getBuilderFactory('tatom');
   const testTx = testData.TEST_DELEGATE_TX;
-  it('should build a WithdrawRewards tx with signature', async function () {
+  it('should build a Delegate tx with signature', async function () {
     const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
@@ -20,13 +19,31 @@ describe('Atom Delegate txn Builder', () => {
     txBuilder.addSignature({ pub: toHex(fromBase64(testTx.pubKey)) }, Buffer.from(testTx.signature, 'base64'));
 
     const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.StakingActivate);
-    (tx as AtomTransaction).atomTransaction.gasBudget.should.deepEqual(testTx.gasBudget);
+    should.deepEqual(json.gasBudget, testTx.gasBudget);
+    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
+    should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
-  it('should build a WithdrawRewards tx without signature', async function () {
+  it('should build a Delegate tx without signature', async function () {
     const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
@@ -40,9 +57,23 @@ describe('Atom Delegate txn Builder', () => {
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     tx.toBroadcastFormat();
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
-  it('should sign a WithdrawRewards tx', async function () {
+  it('should sign a Delegate tx', async function () {
     const txBuilder = factory.getStakingActivateBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
@@ -60,6 +91,20 @@ describe('Atom Delegate txn Builder', () => {
     const rawTx = tx.toBroadcastFormat();
     should.equal(tx.signature[0], toHex(fromBase64(testTx.signature)));
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   xit('should submit a send transaction', async () => {

@@ -4,7 +4,6 @@ import axios from 'axios';
 import should from 'should';
 
 import { KeyPair } from '../../../src';
-import { Transaction as AtomTransaction } from '../../../src/lib/transaction';
 import * as testData from '../../resources/atom';
 import { getBuilderFactory } from '../getBuilderFactory';
 
@@ -20,10 +19,28 @@ describe('Atom Transfer Builder', () => {
     txBuilder.addSignature({ pub: toHex(fromBase64(testTx.pubKey)) }, Buffer.from(testTx.signature, 'base64'));
 
     const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.Send);
-    (tx as AtomTransaction).atomTransaction.gasBudget.should.deepEqual(testTx.gasBudget);
+    should.deepEqual(json.gasBudget, testTx.gasBudget);
+    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
+    should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testData.TEST_SEND_TX.sender,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   it('should build a Transfer tx without signature', async function () {
@@ -40,6 +57,20 @@ describe('Atom Transfer Builder', () => {
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     tx.toBroadcastFormat();
+    should.deepEqual(tx.inputs, [
+      {
+        address: testData.TEST_SEND_TX.sender,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   it('should sign a Transfer tx', async function () {
@@ -60,6 +91,20 @@ describe('Atom Transfer Builder', () => {
     const rawTx = tx.toBroadcastFormat();
     should.equal(tx.signature[0], toHex(fromBase64(testTx.signature)));
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testData.TEST_SEND_TX.sender,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   xit('should submit a send transaction', async () => {
