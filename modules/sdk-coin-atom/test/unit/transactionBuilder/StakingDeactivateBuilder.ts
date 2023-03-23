@@ -23,6 +23,20 @@ describe('Atom Undelegate txn Builder', () => {
     should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   it('should build undelegate tx without signature', async function () {
@@ -39,6 +53,20 @@ describe('Atom Undelegate txn Builder', () => {
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     tx.toBroadcastFormat();
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 
   it('should sign undelegate tx', async function () {
@@ -59,5 +87,19 @@ describe('Atom Undelegate txn Builder', () => {
     const rawTx = tx.toBroadcastFormat();
     should.equal(tx.signature[0], toHex(fromBase64(testTx.signature)));
     should.equal(rawTx, testTx.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTx.delegator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTx.validator,
+        value: testTx.sendMessage.value.amount.amount,
+        coin: 'tatom',
+      },
+    ]);
   });
 });

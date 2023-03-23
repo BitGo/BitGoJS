@@ -1,10 +1,11 @@
 import { toHex, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
-import { DelegateOrUndelegeteMessage, SendMessage, WithdrawDelegatorRewardsMessage } from '../../src/lib/iface';
-import should from 'should';
-import { Transaction } from '../../src';
-import * as testData from '../resources/atom';
 import { fromBase64 } from '@cosmjs/encoding';
+import should from 'should';
+
+import { Transaction } from '../../src';
+import { DelegateOrUndelegeteMessage, SendMessage, WithdrawDelegatorRewardsMessage } from '../../src/lib/iface';
+import * as testData from '../resources/atom';
 
 describe('Atom Transaction', () => {
   let tx: Transaction;
@@ -38,6 +39,21 @@ describe('Atom Transaction', () => {
       );
       should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_SEND_TX.signature);
       should.equal(tx.type, TransactionType.Send);
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_SEND_TX.sender,
+          value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+          coin: 'tatom',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+          value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+          coin: 'tatom',
+        },
+      ]);
     });
 
     it('should build a transfer from raw signed hex', function () {
@@ -56,6 +72,21 @@ describe('Atom Transaction', () => {
       );
       should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_SEND_TX.signature);
       should.equal(tx.type, TransactionType.Send);
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_SEND_TX.sender,
+          value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+          coin: 'tatom',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+          value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+          coin: 'tatom',
+        },
+      ]);
     });
 
     it('should build a delegate txn from raw signed base64', function () {
@@ -74,6 +105,21 @@ describe('Atom Transaction', () => {
       );
       should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_DELEGATE_TX.signature);
       should.equal(tx.type, TransactionType.StakingActivate);
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_DELEGATE_TX.delegator,
+          value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tatom',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_DELEGATE_TX.validator,
+          value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tatom',
+        },
+      ]);
     });
 
     it('should build a undelegate txn from raw signed base64', function () {
@@ -92,6 +138,21 @@ describe('Atom Transaction', () => {
       );
       should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_UNDELEGATE_TX.signature);
       should.equal(tx.type, TransactionType.StakingDeactivate);
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_UNDELEGATE_TX.delegator,
+          value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tatom',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_UNDELEGATE_TX.validator,
+          value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tatom',
+        },
+      ]);
     });
 
     it('should build a withdraw rewards from raw signed base64', function () {
@@ -109,6 +170,22 @@ describe('Atom Transaction', () => {
       );
       should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_WITHDRAW_REWARDS_TX.signature);
       should.equal(tx.type, TransactionType.StakingWithdraw);
+
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
+          value: 'UNAVAILABLE',
+          coin: 'tatom',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
+          value: 'UNAVAILABLE',
+          coin: 'tatom',
+        },
+      ]);
     });
     it('should fail to build a transfer from incorrect raw hex', function () {
       should.throws(

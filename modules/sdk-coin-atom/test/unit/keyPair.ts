@@ -1,5 +1,6 @@
 import assert from 'assert';
 import should from 'should';
+
 import { KeyPair } from '../../src/lib';
 import { TEST_ACCOUNT } from '../resources/atom';
 

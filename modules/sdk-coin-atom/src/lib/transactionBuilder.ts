@@ -143,7 +143,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.transactionType(this.transactionType);
+    this.transaction.transactionType = this.transactionType;
     if (this._accountNumber) {
       this.transaction.accountNumber = this._accountNumber;
     }
@@ -176,6 +176,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this._signature
       );
     }
+    this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
 
