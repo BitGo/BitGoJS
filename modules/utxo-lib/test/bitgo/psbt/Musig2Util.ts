@@ -11,7 +11,6 @@ import {
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
-  scriptTypeForChain,
   Tuple,
   Unspent,
   unspentSum,
@@ -33,16 +32,14 @@ const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
 const rootWalletKeys = getDefaultWalletKeys();
-const dummyKey1 = rootWalletKeys.deriveForChainAndIndex(50, 200);
-const dummyKey2 = rootWalletKeys.deriveForChainAndIndex(60, 201);
 
-export const dummyTapOutputKey = dummyKey1.user.publicKey.subarray(1, 33);
-export const dummyTapInternalKey = dummyKey1.bitgo.publicKey.subarray(1, 33);
-export const dummyParticipantPubKeys: Tuple<Buffer> = [dummyKey1.user.publicKey, dummyKey1.backup.publicKey];
-export const dummyPubNonce = Buffer.concat([dummyKey2.user.publicKey, dummyKey2.bitgo.publicKey]);
-export const dummyAggNonce = Buffer.concat([dummyKey2.backup.publicKey, dummyKey2.bitgo.publicKey]);
-export const dummyPrivateKey = dummyKey2.user.privateKey!;
-export const dummyPartialSig = dummyKey2.backup.privateKey!;
+export const dummyTapOutputKey = Buffer.allocUnsafe(32);
+export const dummyTapInputKey = Buffer.allocUnsafe(32);
+export const dummyParticipantPubKeys: Tuple<Buffer> = [Buffer.allocUnsafe(33), Buffer.allocUnsafe(33)];
+export const dummyPubNonce = Buffer.allocUnsafe(66);
+export const dummyAggNonce = Buffer.allocUnsafe(66);
+export const dummyPrivateKey = Buffer.allocUnsafe(32);
+export const dummyPartialSig = Buffer.allocUnsafe(32);
 
 export const invalidTapOutputKey = Buffer.allocUnsafe(1);
 export const invalidTapInputKey = Buffer.allocUnsafe(1);
@@ -211,18 +208,4 @@ export function validateParticipantsKeyVals(
     return pks.equals(kv.value);
   });
   assert.ok(valueMatch);
-}
-
-export function validateFinalizedInput(
-  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
-  index: number,
-  unspent: WalletUnspent<bigint>,
-  spendType?: 'keyPath' | 'scriptPath'
-): void {
-  assert.ok(psbt.isInputFinalized(index));
-  const input = psbt.data.inputs[index];
-  if (scriptTypeForChain(unspent.chain) === 'p2trMusig2' && spendType === 'keyPath') {
-    assert.strictEqual(input.finalScriptWitness?.length, 66);
-  }
-  assert.strictEqual(input.unknownKeyVals?.length, 0);
 }

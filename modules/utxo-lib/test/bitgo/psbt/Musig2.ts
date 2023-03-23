@@ -39,10 +39,9 @@ import {
   dummyParticipantPubKeys,
   dummyPrivateKey,
   dummyPubNonce,
-  dummyTapInternalKey,
+  dummyTapInputKey,
   dummyTapOutputKey,
   dummyPartialSig,
-  validateFinalizedInput,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -65,6 +64,8 @@ describe('p2trMusig2', function () {
       psbt.signAllInputsHD(rootWalletKeys.user);
       psbt.signAllInputsHD(rootWalletKeys.bitgo);
 
+      assert.ok(psbt.validateSignaturesOfAllInputs());
+
       unspents.forEach((unspent, index) => {
         if (scriptTypeForChain(unspent.chain) !== 'p2trMusig2') {
           assert.strictEqual(psbt.getProprietaryKeyVals(index).length, 0);
@@ -76,14 +77,6 @@ describe('p2trMusig2', function () {
         validateNoncesKeyVals(psbt, index, unspent);
         validatePartialSigKeyVals(psbt, index, unspent);
       });
-
-      assert.ok(psbt.validateSignaturesOfAllInputs());
-      psbt.finalizeAllInputs();
-      unspents.forEach((unspent, index) => {
-        validateFinalizedInput(psbt, index, unspent);
-      });
-      const tx = psbt.extractTransaction();
-      assert.ok(tx);
     });
 
     describe('create nonce', function () {
@@ -155,7 +148,7 @@ describe('p2trMusig2', function () {
 
       it(`skipped if tapInternalKey doesn't match participant pub keys agg`, function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
-        psbt.data.inputs[0].tapInternalKey = dummyTapInternalKey;
+        psbt.data.inputs[0].tapInternalKey = dummyTapInputKey;
         assert.throws(
           () => psbt.setMusig2Nonces(rootWalletKeys.user),
           (e) => e.message === 'tapInternalKey and aggregated participant pub keys does not match'
@@ -230,7 +223,7 @@ describe('p2trMusig2', function () {
       it(`fails if participant keydata tapInternalKey in invalid`, function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         const keyVals = psbt.getProprietaryKeyVals(0);
-        keyVals[0].key.keydata = Buffer.concat([keyVals[0].key.keydata.subarray(0, 32), dummyTapInternalKey]);
+        keyVals[0].key.keydata = Buffer.concat([keyVals[0].key.keydata.subarray(0, 32), dummyTapInputKey]);
         psbt.data.inputs[0].unknownKeyVals = [];
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
@@ -560,27 +553,21 @@ describe('p2trMusig2', function () {
       psbt.setMusig2Nonces(rootWalletKeys.user);
       psbt.setMusig2Nonces(rootWalletKeys.backup);
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 0);
+
       psbt.signAllInputsHD(rootWalletKeys.user);
       psbt.signAllInputsHD(rootWalletKeys.backup);
+
+      assert.ok(psbt.validateSignaturesOfAllInputs());
+
       validatePsbtP2trMusig2Input(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       validatePsbtP2trMusig2Output(psbt, 0);
-      assert.ok(psbt.validateSignaturesOfAllInputs());
-      psbt.finalizeAllInputs();
-      validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
-      psbt.extractTransaction();
 
       psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'backup', outputType);
       psbt.setMusig2Nonces(rootWalletKeys.bitgo);
       psbt.setMusig2Nonces(rootWalletKeys.backup);
-      psbt.signAllInputsHD(rootWalletKeys.bitgo);
-      psbt.signAllInputsHD(rootWalletKeys.backup);
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 0);
       validatePsbtP2trMusig2Input(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       validatePsbtP2trMusig2Output(psbt, 0);
-      assert.ok(psbt.validateSignaturesOfAllInputs());
-      psbt.finalizeAllInputs();
-      validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
-      psbt.extractTransaction();
     });
   });
 
@@ -633,14 +620,14 @@ describe('p2trMusig2', function () {
       psbt.data.inputs[0].tapInternalKey = undefined;
       assert.throws(
         () => psbt.validateTaprootMusig2SignaturesOfInput(0),
-        (e) => e.message === `both tapInternalKey and tapMerkleRoot are required`
+        (e) => e.message === `Both tapInternalKey and tapMerkleRoot are required to validate`
       );
 
       psbt.data.inputs[0].tapInternalKey = tapInternalKey;
       psbt.data.inputs[0].tapMerkleRoot = undefined;
       assert.throws(
         () => psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey),
-        (e) => e.message === `both tapInternalKey and tapMerkleRoot are required`
+        (e) => e.message === `Both tapInternalKey and tapMerkleRoot are required to validate`
       );
     });
 
@@ -703,20 +690,6 @@ describe('p2trMusig2', function () {
       psbt.addOrUpdateProprietaryKeyValToInput(0, partialSigs[1]);
 
       assert.ok(!psbt.validateSignaturesOfAllInputs());
-    });
-  });
-
-  describe('finalizeTaprootMusig2Input', function () {
-    it('fails if invalid number for sigs', function () {
-      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
-      psbt.setMusig2Nonces(rootWalletKeys.user);
-      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
-      psbt.signAllInputsHD(rootWalletKeys.user);
-
-      assert.throws(
-        () => psbt.finalizeAllInputs(),
-        (e) => e.message === `invalid number of partial signatures 1 to finalize`
-      );
     });
   });
 
@@ -807,7 +780,7 @@ describe('p2trMusig2', function () {
 
       let participantKeyValData = {
         participantPubKeys: dummyParticipantPubKeys,
-        tapInternalKey: dummyTapInternalKey,
+        tapInternalKey: dummyTapInputKey,
         tapOutputKey: invalidTapOutputKey,
       };
 
@@ -818,7 +791,7 @@ describe('p2trMusig2', function () {
 
       participantKeyValData = {
         participantPubKeys: [invalidParticipantPubKeys[0], dummyParticipantPubKeys[0]],
-        tapInternalKey: dummyTapInternalKey,
+        tapInternalKey: dummyTapInputKey,
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
@@ -828,7 +801,7 @@ describe('p2trMusig2', function () {
 
       participantKeyValData = {
         participantPubKeys: [dummyParticipantPubKeys[0], dummyParticipantPubKeys[0]],
-        tapInternalKey: dummyTapInternalKey,
+        tapInternalKey: dummyTapInputKey,
         tapOutputKey: dummyTapOutputKey,
       };
       assert.throws(
@@ -844,7 +817,7 @@ describe('p2trMusig2', function () {
       );
 
       assert.throws(
-        () => createTapTweak(dummyTapInternalKey, invalidTapOutputKey),
+        () => createTapTweak(dummyTapInputKey, invalidTapOutputKey),
         (e) => e.message === `invalid size 1. Must use tap merkle root.`
       );
     });
@@ -876,22 +849,6 @@ describe('p2trMusig2', function () {
           }),
         (e) => e.message === `Invalid partialSig length 1`
       );
-    });
-
-    it(`deleteProprietaryKeyVals`, function () {
-      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
-      psbt.setMusig2Nonces(rootWalletKeys.user);
-      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
-      const key = {
-        identifier: 'DUMMY',
-        subtype: 100,
-        keydata: dummyTapOutputKey,
-      };
-      psbt.addProprietaryKeyValToInput(0, { key, value: dummyTapInternalKey });
-      psbt.deleteProprietaryKeyVals(0, { identifier: PSBT_PROPRIETARY_IDENTIFIER });
-      const keyVal = psbt.getProprietaryKeyVals(0);
-      assert.strictEqual(keyVal.length, 1);
-      assert.strictEqual(keyVal[0].key.identifier, 'DUMMY');
     });
   });
 });
