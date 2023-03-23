@@ -75,7 +75,8 @@ export interface IInscriptionBuilder {
     commitAddress: string,
     unsignedCommitTx: Buffer,
     commitTransactionUnspents: utxolib.bitgo.WalletUnspent[],
-    recipientAddress: string
+    recipientAddress: string,
+    inscriptionData: Buffer
   ): Promise<SubmitTransactionResponse>;
 
   signAndSendTransfer(

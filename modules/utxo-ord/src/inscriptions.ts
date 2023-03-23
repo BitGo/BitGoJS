@@ -58,7 +58,7 @@ function createPaymentForInscription(pubkey: Buffer, contentType: string, inscri
     Buffer.from(contentType, 'ascii'),
     OPS.OP_0,
     ...dataPushBuffers,
-    OPS.ENDIF,
+    OPS.OP_ENDIF,
   ];
 
   const compiledScript = bscript.compile(uncompiledScript);
@@ -118,11 +118,11 @@ function getInscriptionRevealSize(
 }
 
 /**
- * @returns PreparedInscriptionRevealData
  * @param pubkey
  * @param contentType
  * @param inscriptionData
  * @param network
+ * @returns PreparedInscriptionRevealData
  */
 export function createInscriptionRevealData(
   pubkey: Buffer,
@@ -199,7 +199,7 @@ export function signRevealTransaction(
   psbt.addInput({
     hash,
     index: vout,
-    witnessUtxo: { script: commitOutput, value: BigInt(100_000) },
+    witnessUtxo: { script: commitOutput, value: BigInt(unserCommitTxn.outs[vout].value) },
     tapLeafScript: [tapLeafScript],
   });
 

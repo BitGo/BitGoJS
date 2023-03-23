@@ -7,16 +7,33 @@ import { ExtendedKeys } from '../baseCoin/iface';
 import bs58 from 'bs58';
 
 /**
- * @param {string} xpub - a base-58 encoded extended public key (BIP32)
- * @returns {string} the uncompressed public key in hexadecimal
+ * @param xpub - a base-58 encoded extended public key (BIP32)
+ * @param compressed flag to determine if return key should be compressed/uncompressed
+ * @return a compressed or an uncompresseed public key in hexadecimal
  */
-export function xpubToUncompressedPub(xpub: string): string {
+function xPubToPub(xpub: string, compressed: boolean) {
   if (!isValidXpub(xpub)) {
     throw new Error('invalid xpub');
   }
   return ECPair.fromPublicKey(bip32.fromBase58(xpub, networks.bitcoin).publicKey, {
-    compressed: false,
+    compressed,
   }).publicKey.toString('hex');
+}
+
+/**
+ * @param {string} xpub - a base-58 encoded extended public key (BIP32)
+ * @returns {string} the uncompressed public key in hexadecimal
+ */
+export function xpubToUncompressedPub(xpub: string): string {
+  return xPubToPub(xpub, false);
+}
+
+/**
+ * @param {string} xpub - a base-58 encoded extended public key (BIP32)
+ * @returns {string} the uncompressed public key in hexadecimal
+ */
+export function xpubToCompressedPub(xpub: string): string {
+  return xPubToPub(xpub, true);
 }
 
 /**

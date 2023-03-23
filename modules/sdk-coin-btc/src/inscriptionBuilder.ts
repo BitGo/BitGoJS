@@ -9,6 +9,7 @@ import {
   SubmitTransactionResponse,
   Triple,
   xprvToRawPrv,
+  xpubToCompressedPub,
 } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
@@ -33,9 +34,12 @@ export class InscriptionBuilder implements IInscriptionBuilder {
   async prepareReveal(inscriptionData: Buffer, contentType: string): Promise<PreparedInscriptionRevealData> {
     const user = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     assert(user.pub);
-    const pubkey = Buffer.from(user.pub, 'hex');
 
-    return inscriptions.createInscriptionRevealData(pubkey, contentType, inscriptionData, this.coin.network);
+    const derived = this.coin.deriveKeyWithSeed({ key: user.pub, seed: inscriptionData.toString() });
+    const compressedPublicKey = xpubToCompressedPub(derived.key);
+    const xOnlyPublicKey = utxolib.bitgo.outputScripts.toXOnlyPublicKey(Buffer.from(compressedPublicKey, 'hex'));
+
+    return inscriptions.createInscriptionRevealData(xOnlyPublicKey, contentType, inscriptionData, this.coin.network);
   }
 
   /**
@@ -126,6 +130,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
    * @param unsignedCommitTx
    * @param commitTransactionUnspents
    * @param recipientAddress
+   * @param inscriptionData
    */
   async signAndSendReveal(
     walletPassphrase: string,
@@ -133,11 +138,11 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     commitAddress: string,
     unsignedCommitTx: Buffer,
     commitTransactionUnspents: utxolib.bitgo.WalletUnspent[],
-    recipientAddress: string
+    recipientAddress: string,
+    inscriptionData: Buffer
   ): Promise<SubmitTransactionResponse> {
     const userKeychain = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     const xprv = await this.wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-    const prv = xprvToRawPrv(xprv);
 
     const halfSignedCommitTransaction = (await this.wallet.signTransaction({
       prv: xprv,
@@ -146,6 +151,9 @@ export class InscriptionBuilder implements IInscriptionBuilder {
         txInfo: { unspents: commitTransactionUnspents },
       },
     })) as HalfSignedUtxoTransaction;
+
+    const derived = this.coin.deriveKeyWithSeed({ key: xprv, seed: inscriptionData.toString() });
+    const prv = xprvToRawPrv(derived.key);
 
     const fullySignedRevealTransaction = await inscriptions.signRevealTransaction(
       Buffer.from(prv, 'hex'),
