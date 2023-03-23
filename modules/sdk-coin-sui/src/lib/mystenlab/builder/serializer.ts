@@ -1,6 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 import {
   extractMutableReference,
   extractStructTag,
@@ -44,8 +41,7 @@ const RESOLVED_STD_OPTION = {
   name: STD_OPTION_STRUCT_NAME,
 };
 
-const isSameStruct = (a: any, b: any) =>
-  a.address === b.address && a.module === b.module && a.name === b.name;
+const isSameStruct = (a: any, b: any) => a.address === b.address && a.module === b.module && a.name === b.name;
 
 export function isTxContext(param: SuiMoveNormalizedType): boolean {
   const struct = extractStructTag(param)?.Struct;
@@ -62,31 +58,17 @@ function expectType(typeName: string, argVal?: SuiJsonValue) {
     return;
   }
   if (typeof argVal !== typeName) {
-    throw new Error(
-      `Expect ${argVal} to be ${typeName}, received ${typeof argVal}`,
-    );
+    throw new Error(`Expect ${argVal} to be ${typeName}, received ${typeof argVal}`);
   }
 }
 
-const allowedTypes = [
-  'Address',
-  'Bool',
-  'U8',
-  'U16',
-  'U32',
-  'U64',
-  'U128',
-  'U256',
-];
+const allowedTypes = ['Address', 'Bool', 'U8', 'U16', 'U32', 'U64', 'U128', 'U256'];
 
 export function getPureSerializationType(
   normalizedType: SuiMoveNormalizedType,
-  argVal: SuiJsonValue | undefined,
+  argVal: SuiJsonValue | undefined
 ): string | undefined {
-  if (
-    typeof normalizedType === 'string' &&
-    allowedTypes.includes(normalizedType)
-  ) {
+  if (typeof normalizedType === 'string' && allowedTypes.includes(normalizedType)) {
     if (normalizedType in ['U8', 'U16', 'U32', 'U64', 'U128', 'U256']) {
       expectType('number', argVal);
     } else if (normalizedType === 'Bool') {
@@ -99,29 +81,22 @@ export function getPureSerializationType(
     }
     return normalizedType.toLowerCase();
   } else if (typeof normalizedType === 'string') {
-    throw new Error(
-      `Unknown pure normalized type ${JSON.stringify(normalizedType, null, 2)}`,
-    );
+    throw new Error(`Unknown pure normalized type ${JSON.stringify(normalizedType, null, 2)}`);
   }
 
   if ('Vector' in normalizedType) {
-    if (
-      (argVal === undefined || typeof argVal === 'string') &&
-      normalizedType.Vector === 'U8'
-    ) {
+    if ((argVal === undefined || typeof argVal === 'string') && normalizedType.Vector === 'U8') {
       return 'string';
     }
 
     if (argVal !== undefined && !Array.isArray(argVal)) {
-      throw new Error(
-        `Expect ${argVal} to be a array, received ${typeof argVal}`,
-      );
+      throw new Error(`Expect ${argVal} to be a array, received ${typeof argVal}`);
     }
 
     const innerType = getPureSerializationType(
       normalizedType.Vector,
       // undefined when argVal is empty
-      argVal ? argVal[0] : undefined,
+      argVal ? argVal[0] : undefined
     );
 
     if (innerType === undefined) {

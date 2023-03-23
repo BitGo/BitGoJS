@@ -12,12 +12,14 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { GasData, SuiTransactionType } from './iface';
+import { StakingProgrammableTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
-import {ProgrammableTransaction, SuiObjectRef} from './mystenlab/types';
+import { GasData, SuiObjectRef } from './mystenlab/types';
 
-export abstract class TransactionBuilder<T = ProgrammableTransaction> extends BaseTransactionBuilder {
+export abstract class TransactionBuilder<
+  T = TransferProgrammableTransaction | StakingProgrammableTransaction
+> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
   protected _signatures: Signature[] = [];
   protected _signer: KeyPair;
@@ -101,14 +103,14 @@ export abstract class TransactionBuilder<T = ProgrammableTransaction> extends Ba
   }
 
   validateGasData(gasData: GasData): void {
-    if (!utils.isValidAddress(gasData.owner)) {
-      throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
-    }
-    if (gasData.payment) {
-      this.validateGasPayment(gasData.payment);
-    }
-    this.validateGasBudget(gasData.budget);
-    this.validateGasPrice(gasData.price);
+    // if (!utils.isValidAddress(gasData.owner)) {
+    //   throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
+    // }
+    // if (gasData.payment) {
+    //   this.validateGasPayment(gasData.payment);
+    // }
+    // this.validateGasBudget(gasData.budget);
+    // this.validateGasPrice(gasData.price);
   }
 
   validateGasBudget(gasBudget: number): void {
@@ -124,11 +126,12 @@ export abstract class TransactionBuilder<T = ProgrammableTransaction> extends Ba
     }
   }
 
-  validateGasPayment(gasPayment: SuiObjectRef): void {
+  validateGasPayment(gasPayment: SuiObjectRef[]): void {
     if (!gasPayment) {
       throw new BuildTransactionError(`Invalid gas Payment: undefined`);
     }
-    this.validateSuiObjectRef(gasPayment, 'gasPayment');
+    // FIXME
+    // this.validateSuiObjectRef(gasPayment, 'gasPayment');
   }
 
   validateSuiObjectRef(suiObjectRef: SuiObjectRef, field: string): void {

@@ -6,24 +6,16 @@ import {
   InvalidParameterValueError,
   TransactionType,
   NotSupported,
+  NotImplementedError,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
-import { bcs } from './mystenlab/types/sui-bcs';
+import { bcs, CallArg, SharedObjectRef } from './mystenlab/types/sui-bcs';
 import { fromB64 } from '@mysten/bcs';
-import {
-  CallArg,
-  ImmOrOwnedArg,
-  MethodNames,
-  ObjectArg,
-  ObjVecArg,
-  SharedObjectRef,
-  SuiAddress,
-  SuiTransactionType,
-} from './iface';
+import { MethodNames, SuiTransactionType } from './iface';
 import { Buffer } from 'buffer';
-import { create as superstructCreate, Struct } from 'superstruct';
-import { SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiObjectId, SuiAddress, SuiObjectRef } from './mystenlab/types';
+import { builder, TransactionInput } from './mystenlab/builder';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -60,8 +52,8 @@ export class Utils implements BaseUtils {
   isValidRawTransaction(rawTransaction: string): boolean {
     try {
       const data = fromB64(rawTransaction);
-      const deserialized = bcs.de('TransactionData', data);
-      bcs.ser('TransactionData', deserialized);
+      const deserialized = builder.de('TransactionData', data);
+      builder.ser('TransactionData', deserialized);
       return true;
     } catch (e) {
       return false;
@@ -101,9 +93,9 @@ export class Utils implements BaseUtils {
    * @param {string} fieldName Name of the field to validate, its needed to return which field is failing on case of error.
    */
   validateAddress(address: string, fieldName: string): void {
-    if (!address || !this.isValidAddress(address)) {
-      throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
-    }
+    // if (!address || !this.isValidAddress(address)) {
+    //   throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
+    // }
   }
 
   /** @inheritdoc */
@@ -202,23 +194,8 @@ export class Utils implements BaseUtils {
    * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
    */
   mapCoinsToCallArg(coins: SuiObjectRef[]): CallArg {
-    return {
-      ObjVec: coins.map((coin) => {
-        return { ImmOrOwned: coin };
-      }),
-    };
-  }
-
-  /**
-   * Map CallArg object to Coins
-   *
-   * @param {ObjVecArg} callArg
-   * @return {SuiObjectRef[]}
-   */
-  mapCallArgToCoins(callArg: ObjVecArg): SuiObjectRef[] {
-    return Array.from(callArg.ObjVec).map((it: ObjectArg) => {
-      return (it as ImmOrOwnedArg).ImmOrOwned;
-    });
+    //  FIXME
+    throw new NotImplementedError('Not impl');
   }
 
   /**
@@ -232,16 +209,6 @@ export class Utils implements BaseUtils {
     return {
       Object: { ImmOrOwned: suiObjectRef },
     };
-  }
-
-  /**
-   * Map CallArg object to SuiObjectRef
-   *
-   * @param {ObjVecArg} callArg
-   * @return {SuiObjectRef}
-   */
-  mapCallArgToSuiObjectRef(callArg: CallArg): SuiObjectRef {
-    return ((callArg as { Object: ObjectArg }).Object as ImmOrOwnedArg).ImmOrOwned;
   }
 
   /**
@@ -283,9 +250,9 @@ export class Utils implements BaseUtils {
   /**
    * Map staking validator address to CallArg
    *
-   * @param {SuiAddress} suiAddress
    * @return {CallArg}
    * example: { Pure: bcs.ser('address', VALIDATOR_ADDRESS).toBytes() };
+   * @param address
    */
   mapAddressToCallArg(address: SuiAddress): CallArg {
     try {
@@ -349,24 +316,30 @@ export class Utils implements BaseUtils {
         throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
     }
   }
+
+  normalizeCoins(coins: any[]): SuiObjectRef[] {
+    return coins.map((coin) => {
+      return utils.normalizeSuiObjectRef(coin);
+    });
+  }
+
+  normalizeSuiObjectRef(obj: SuiObjectRef): SuiObjectRef {
+    return {
+      objectId: normalizeSuiObjectId(obj.objectId),
+      version: Number(obj.version),
+      digest: obj.digest,
+    };
+  }
+
+  transactionInput(type: 'object' | 'pure', index = 0, value?: unknown): TransactionInput {
+    return {
+      kind: 'Input',
+      value: typeof value === 'bigint' ? String(value) : value,
+      index,
+      type,
+    };
+  }
 }
 
 const utils = new Utils();
-
 export default utils;
-export const COMMAND_TYPE = Symbol('command-argument-type');
-export type WellKnownEncoding =
-  | {
-      kind: 'object';
-    }
-  | {
-      kind: 'pure';
-      type: string;
-    };
-export function create<T, S>(value: T, struct: Struct<T, S>): T {
-  return superstructCreate(value, struct);
-}
-
-export type DeepReadonly<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};

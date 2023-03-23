@@ -1,16 +1,19 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotImplementedError, TransactionType } from '@bitgo/sdk-core';
-import { BitGoSuiTransaction, MethodNames, RequestAddStake, RequestWithdrawStake, SuiTransactionType } from './iface';
+import {
+  SuiTransaction,
+  MethodNames,
+  RequestAddStake,
+  RequestWithdrawStake,
+  SuiTransactionType,
+  StakingProgrammableTransaction,
+} from './iface';
 import { TransactionBuilder } from './transactionBuilder';
-import { StakingTransaction } from './stakingTransaction';
 import { Transaction } from './transaction';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
-import { Transaction as ProgrammableTransaction } from './mystenlab/builder';
-import { SuiSystemStateUtil } from './mystenlab/framework';
 
-export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> {
-  protected _moveCallTx: ProgrammableTransaction;
+export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransaction> {
   protected _addStakeTx: RequestAddStake;
   protected _withdrawDelegation: RequestWithdrawStake;
 
@@ -24,11 +27,14 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
    *
    * @returns {BitGoSuiTransaction} an unsigned Sui transaction
    */
-  protected buildStakeTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
+  protected buildStakeTransaction(): SuiTransaction<StakingProgrammableTransaction> {
     return {
       type: SuiTransactionType.AddStake,
       sender: this._sender,
-      tx: this._moveCallTx,
+      tx: {
+        inputs: [],
+        commands: [],
+      },
       gasData: this._gasData,
     };
   }
@@ -61,11 +67,6 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
       this.validateSuiObjectRef(coin, 'addDelegation.coins');
     }
     this._addStakeTx = request;
-    this._moveCallTx = SuiSystemStateUtil.newRequestAddStakeTxn(
-      request.coins,
-      request.amount,
-      request.validatorAddress
-    );
     return this;
   }
 
@@ -77,19 +78,17 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
   requestWithdrawStake(request: RequestWithdrawStake): this {
     // FIXME - add validation for staked objectID
     // this.validateSuiObjectRef(request.stakedSuiObjectId, 'withdrawDelegation.stakedCoinId');
-
     this._withdrawDelegation = request;
-    this._moveCallTx = SuiSystemStateUtil.newRequestWithdrawlStakeTxn(request.stakedSuiObjectId);
     return this;
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction<ProgrammableTransaction> {
+  protected fromImplementation(rawTransaction: string): Transaction<StakingProgrammableTransaction> {
     throw new NotImplementedError('Not implemented');
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction<ProgrammableTransaction>> {
+  protected async buildImplementation(): Promise<Transaction<StakingProgrammableTransaction>> {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     this.transaction.transactionType(this.transactionType);
 
@@ -110,16 +109,19 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
    *
    * @param {StakingTransaction} tx the transaction data
    */
-  initBuilder(tx: Transaction<ProgrammableTransaction>): void {
+  initBuilder(tx: Transaction<StakingProgrammableTransaction>): void {
     throw new NotImplementedError('TODO: Not implemented');
   }
 
   /** @inheritdoc */
-  validateTransaction(tx: Transaction<ProgrammableTransaction>): void {
+  validateTransaction(tx: Transaction<StakingProgrammableTransaction>): void {
     this.validateSchema({
       type: this._type,
       sender: this._sender,
-      tx: this._moveCallTx,
+      tx: {
+        inputs: [],
+        commands: [],
+      },
       gasData: this._gasData,
     });
   }
@@ -130,7 +132,7 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
    * @param {BitGoSuiTransaction<MoveCallTx>} tx
    * @private
    */
-  private validateSchema(tx: BitGoSuiTransaction<ProgrammableTransaction>): void {
+  private validateSchema(tx: SuiTransaction<StakingProgrammableTransaction>): void {
     throw new NotImplementedError('Not implemented');
   }
 
@@ -140,12 +142,16 @@ export class StakingBuilder extends TransactionBuilder<ProgrammableTransaction> 
    * @return {BitGoSuiTransaction<MoveCallTx>}
    * @protected
    */
-  protected buildSuiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
-    this.validateTransaction(this._transaction);
+  protected buildSuiTransaction(): SuiTransaction<StakingProgrammableTransaction> {
+    // FIXME
+    // this.validateTransaction(this._transaction);
     return {
       type: this._type,
       sender: this._sender,
-      tx: this._moveCallTx,
+      tx: {
+        inputs: [],
+        commands: [],
+      },
       gasData: this._gasData,
     };
   }

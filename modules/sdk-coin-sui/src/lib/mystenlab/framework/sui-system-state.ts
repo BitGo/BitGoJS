@@ -1,6 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 import { MoveCallCommand, Transaction } from '../builder';
 import { normalizeSuiObjectId, ObjectId, SuiAddress, SUI_FRAMEWORK_ADDRESS, SuiObjectRef } from '../types';
 

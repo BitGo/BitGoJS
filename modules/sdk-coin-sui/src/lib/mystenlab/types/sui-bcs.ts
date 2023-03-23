@@ -9,9 +9,9 @@ function registerUTF8String(bcs: BCS) {
       return writer.writeVec(bytes, (writer, el) => writer.write8(el));
     },
     (reader) => {
-      const bytes = reader.readVec((reader) => reader.read8());
+      let bytes = reader.readVec((reader) => reader.read8());
       return new TextDecoder().decode(new Uint8Array(bytes));
-    }
+    },
   );
 }
 
@@ -23,7 +23,7 @@ export type SharedObjectRef = {
   objectId: string;
 
   /** The version the object was shared at */
-  initialSharedVersion: number | bigint;
+  initialSharedVersion: number | string;
 
   /** Whether reference is mutable */
   mutable: boolean;
@@ -32,7 +32,9 @@ export type SharedObjectRef = {
 /**
  * An object argument.
  */
-export type ObjectArg = { ImmOrOwned: SuiObjectRef } | { Shared: SharedObjectRef };
+export type ObjectArg =
+  | { ImmOrOwned: SuiObjectRef }
+  | { Shared: SharedObjectRef };
 
 /**
  * A pure argument.

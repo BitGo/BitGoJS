@@ -65,8 +65,25 @@ interface BuildOptions {
 export class Transaction {
   /** Returns `true` if the object is an instance of the Transaction builder class. */
   static is(obj: unknown): obj is Transaction {
-    return !!obj && typeof obj === 'object';
-    // return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
+    return (
+      !!obj && typeof obj === 'object'
+      // &&
+      // (obj as any)[TRANSACTION_BRAND] === true
+    );
+  }
+
+  /**
+   * Converts from a serialize transaction kind (built with `build({ onlyTransactionKind: true })`) to a `Transaction` class.
+   * Supports either a byte array, or base64-encoded bytes.
+   */
+  static fromKind(serialized: string | Uint8Array) {
+    const tx = new Transaction();
+
+    tx.#transactionData = TransactionDataBuilder.fromKindBytes(
+      typeof serialized === 'string' ? fromB64(serialized) : serialized
+    );
+
+    return tx;
   }
 
   /**
@@ -103,17 +120,35 @@ export class Transaction {
   setSender(sender: string) {
     this.#transactionData.sender = sender;
   }
+
+  /**
+   * Sets the sender only if it has not already been set.
+   * This is useful for sponsored transaction flows where the sender may not be the same as the signer address.
+   */
+  setSenderIfNotSet(sender: string) {
+    if (!this.#transactionData.sender) {
+      this.#transactionData.sender = sender;
+    }
+  }
+
   setExpiration(expiration?: TransactionExpiration) {
     this.#transactionData.expiration = expiration;
   }
+
   setGasPrice(price: number | bigint) {
     this.#transactionData.gasConfig.price = String(price);
   }
+
   setGasBudget(budget: number | bigint) {
     this.#transactionData.gasConfig.budget = String(budget);
   }
+
+  setGasOwner(owner: string) {
+    this.#transactionData.gasConfig.owner = owner;
+  }
+
   setGasPayment(payments: SuiObjectRef[]) {
-    if (payments.length > MAX_GAS_OBJECTS) {
+    if (payments.length >= MAX_GAS_OBJECTS) {
       throw new Error(`Payment objects exceed maximum amount ${MAX_GAS_OBJECTS}`);
     }
     this.#transactionData.gasConfig.payment = payments.map((payment) => mask(payment, SuiObjectRef));
@@ -173,6 +208,10 @@ export class Transaction {
    * Add a new non-object input to the transaction.
    */
   pure(
+    /**
+     * The pure value that will be used as the input value. If this is a Uint8Array, then the value
+     * is assumed to be raw bytes, and will be used directly.
+     */
     value: unknown,
     /**
      * The BCS type to serialize the value into. If not provided, the type will automatically be determined
@@ -181,7 +220,10 @@ export class Transaction {
     type?: string
   ) {
     // TODO: we can also do some deduplication here
-    return this.input('pure', type ? Inputs.Pure(type, value) : value);
+    return this.input(
+      'pure',
+      value instanceof Uint8Array ? Inputs.Pure(value) : type ? Inputs.Pure(value, type) : value
+    );
   }
 
   /** Add a command to the transaction. */
@@ -193,21 +235,26 @@ export class Transaction {
 
   // Method shorthands:
 
-  splitCoin(...args: Parameters<typeof Commands['SplitCoin']>) {
-    return this.add(Commands.SplitCoin(...args));
+  splitCoins(...args: Parameters<typeof Commands['SplitCoins']>) {
+    return this.add(Commands.SplitCoins(...args));
   }
+
   mergeCoins(...args: Parameters<typeof Commands['MergeCoins']>) {
     return this.add(Commands.MergeCoins(...args));
   }
+
   publish(...args: Parameters<typeof Commands['Publish']>) {
     return this.add(Commands.Publish(...args));
   }
+
   moveCall(...args: Parameters<typeof Commands['MoveCall']>) {
     return this.add(Commands.MoveCall(...args));
   }
+
   transferObjects(...args: Parameters<typeof Commands['TransferObjects']>) {
     return this.add(Commands.TransferObjects(...args));
   }
+
   makeMoveVec(...args: Parameters<typeof Commands['MakeMoveVec']>) {
     return this.add(Commands.MakeMoveVec(...args));
   }

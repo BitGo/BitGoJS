@@ -1,6 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 import { define, Infer, literal, number, object, string, union } from 'superstruct';
 import { CallArg } from './sui-bcs';
 import { fromB58 } from '@mysten/bcs';

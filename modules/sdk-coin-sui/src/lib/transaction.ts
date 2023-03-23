@@ -7,30 +7,27 @@ import {
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
-import {
-  GasData,
-  MoveCallTx,
-  MoveCallTxDetails,
-  PayTx,
-  BitGoSuiTransaction,
-  SuiTransactionType,
-  TxData,
-  TxDetails,
-} from './iface';
+import { SuiTransaction, SuiTransactionType, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { bcs } from './mystenlab/types/sui-bcs';
+import {
+  GasData,
+  normalizeSuiAddress,
+  normalizeSuiObjectId,
+  ProgrammableTransaction,
+  SuiObjectRef,
+} from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import sha3 from 'js-sha3';
-import { fromB64, fromHEX } from '@mysten/bcs';
+import { fromB64, fromHEX, toB64 } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
-import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionData';
-import { ProgrammableTransaction, SuiObjectRef } from './mystenlab/types';
+import { TRANSACTION_DATA_MAX_SIZE, TransactionDataBuilder } from './mystenlab/builder/TransactionData';
+import { builder } from './mystenlab/builder';
 
 export abstract class Transaction<T> extends BaseTransaction {
-  protected _suiTransaction: BitGoSuiTransaction<T>;
+  protected _suiTransaction: SuiTransaction<T>;
   protected _signature: Signature;
   private _serializedSig: Uint8Array;
 
@@ -38,11 +35,11 @@ export abstract class Transaction<T> extends BaseTransaction {
     super(_coinConfig);
   }
 
-  get suiTransaction(): BitGoSuiTransaction<T> {
+  get suiTransaction(): SuiTransaction<T> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: BitGoSuiTransaction<T>): void {
+  setSuiTransaction(tx: SuiTransaction<T>): void {
     this._suiTransaction = tx;
   }
 
@@ -140,7 +137,8 @@ export abstract class Transaction<T> extends BaseTransaction {
   getDataBytes(): Uint8Array {
     // TODO - check if util class can be used
     const txData = this.getTxData();
-    return bcs.ser('TransactionData', txData, { maxSize: TRANSACTION_DATA_MAX_SIZE }).toBytes();
+    const txSer = builder.ser('TransactionData', { V1: txData }, { maxSize: TRANSACTION_DATA_MAX_SIZE });
+    return txSer.toBytes();
   }
 
   /** @inheritDoc */
@@ -159,7 +157,7 @@ export abstract class Transaction<T> extends BaseTransaction {
       const hash = this.getSha256Hash('TransactionData', dataBytes);
       this._id = bs58.encode(hash);
     }
-    return Buffer.from(dataBytes).toString('base64');
+    return toB64(dataBytes);
   }
 
   private getSha256Hash(typeTag: string, data: Uint8Array): Uint8Array {
@@ -176,17 +174,31 @@ export abstract class Transaction<T> extends BaseTransaction {
     return fromHEX(hash.hex());
   }
 
-  static deserializeSuiTransaction(serializedTx: string): BitGoSuiTransaction {
-    throw new NotImplementedError('Not implemented');
+  static deserializeSuiTransaction(serializedTx: string): SuiTransaction<ProgrammableTransaction> {
+    const data = fromB64(serializedTx);
+    const transaction = TransactionDataBuilder.fromBytes(data);
+    const inputs = transaction.inputs.map((txInput) => txInput.value);
+    // FIXME - get tx type PayAll or Pay
+    const txType = SuiTransactionType.Transfer;
+    return {
+      type: txType,
+      sender: normalizeSuiAddress(transaction.sender!),
+      tx: {
+        inputs: inputs,
+        commands: transaction.commands,
+      },
+      gasData: {
+        payment: this.normalizeCoins(transaction.gasConfig.payment!),
+        owner: normalizeSuiAddress(transaction.gasConfig.owner!),
+        price: Number(transaction.gasConfig.price as string),
+        budget: Number(transaction.gasConfig.budget as string),
+      },
+    };
   }
 
   static getProperTxDetails(k: any, type: SuiTransactionType): ProgrammableTransaction {
     switch (type) {
-      case SuiTransactionType.Pay:
-        throw new NotImplementedError('Not implemented');
-      case SuiTransactionType.PaySui:
-        throw new NotImplementedError('Not implemented');
-      case SuiTransactionType.PayAllSui:
+      case SuiTransactionType.Transfer:
         throw new NotImplementedError('Not implemented');
       case SuiTransactionType.AddStake:
         throw new NotImplementedError('Not implemented');
@@ -199,7 +211,7 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   static getProperGasData(k: any): GasData {
     return {
-      payment: this.normalizeSuiObjectRef(k.gasData.payment),
+      payment: [this.normalizeSuiObjectRef(k.gasData.payment)],
       owner: utils.normalizeHexId(k.gasData.owner),
       price: Number(k.gasData.price),
       budget: Number(k.gasData.budget),
@@ -214,7 +226,7 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   private static normalizeSuiObjectRef(obj: SuiObjectRef): SuiObjectRef {
     return {
-      objectId: utils.normalizeHexId(obj.objectId),
+      objectId: normalizeSuiObjectId(obj.objectId),
       version: Number(obj.version),
       digest: obj.digest,
     };

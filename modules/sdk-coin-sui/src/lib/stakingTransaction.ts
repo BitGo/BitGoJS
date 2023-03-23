@@ -8,23 +8,28 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { BitGoSuiTransaction, SuiTransactionType, TransactionExplanation, TxData } from './iface';
+import {
+  StakingProgrammableTransaction,
+  SuiTransaction,
+  SuiTransactionType,
+  TransactionExplanation,
+  TxData,
+} from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
-import { ProgrammableTransaction } from './mystenlab/types';
 
-export class StakingTransaction extends Transaction<ProgrammableTransaction> {
+export class StakingTransaction extends Transaction<StakingProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  get suiTransaction(): BitGoSuiTransaction<ProgrammableTransaction> {
+  get suiTransaction(): SuiTransaction<StakingProgrammableTransaction> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: BitGoSuiTransaction<ProgrammableTransaction>): void {
+  setSuiTransaction(tx: SuiTransaction<StakingProgrammableTransaction>): void {
     this._suiTransaction = tx;
   }
 

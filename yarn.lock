@@ -3117,10 +3117,10 @@
     tweetnacl "^1.0.3"
     tweetnacl-util "^0.15.1"
 
-"@mysten/bcs@0.0.0-experimental-20230315165552", "@mysten/bcs@^0.0.0-experimental-20230315165552":
-  version "0.0.0-experimental-20230315165552"
-  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.0.0-experimental-20230315165552.tgz#61434dc68e12236f9b3860b0d6ccb47e108402aa"
-  integrity sha512-GbomwWj+INdeFXpdD2LT/vZD1QBYPholoGvO5YKahDRj9NLxwyHMrCwqh6uqz4Y1XAh3ZPR8mnkxGxc2pSEpnA==
+"@mysten/bcs@^0.0.0-experimental-20230322224140":
+  version "0.0.0-experimental-20230324133816"
+  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.0.0-experimental-20230324133816.tgz#517e30029327c9983cafe365bef5b6cb3cabad26"
+  integrity sha512-jTKaJtfmMYSPBGafb/XvknbMGoMm+Fof3fEw2apBs8qXFC+jyK+sZLpyRQO4/0pBSl7uzlP1CkcoNtOuvbaC9w==
   dependencies:
     bs58 "^5.0.0"
 

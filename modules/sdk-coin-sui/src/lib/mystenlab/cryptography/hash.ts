@@ -1,6 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 import { blake2b } from '@noble/hashes/blake2b';
 
 /**

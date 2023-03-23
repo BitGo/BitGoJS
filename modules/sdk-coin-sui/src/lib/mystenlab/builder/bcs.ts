@@ -1,6 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 import { BCS, TypeName } from '@mysten/bcs';
 import { bcs, TypeTag } from '../types/sui-bcs';
 import { normalizeSuiAddress } from '../types/common';
@@ -66,7 +63,7 @@ export const builder = new BCS(bcs)
     /**
      * Split `amount` from a `coin`.
      */
-    SplitCoin: { coin: ARGUMENT, amount: ARGUMENT },
+    SplitCoins: { coin: ARGUMENT, amounts: [VECTOR, ARGUMENT] },
     /**
      * Merge Vector of Coins (`sources`) into a `destination`.
      */
@@ -74,7 +71,10 @@ export const builder = new BCS(bcs)
     /**
      * Publish a Move module.
      */
-    Publish: { modules: [VECTOR, [VECTOR, BCS.U8]] },
+    Publish: {
+      modules: [VECTOR, [VECTOR, BCS.U8]],
+      dependencies: [VECTOR, BCS.ADDRESS],
+    },
     /**
      * Build a vector of objects using the input arguments.
      * It is impossible to construct a `vector<T: key>` otherwise,

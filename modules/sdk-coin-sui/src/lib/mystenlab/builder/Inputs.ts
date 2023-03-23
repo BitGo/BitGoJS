@@ -1,7 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
-import { array, bigint, boolean, Infer, integer, object, string, union } from 'superstruct';
+import { array, boolean, Infer, integer, object, string, union } from 'superstruct';
 import { ObjectId, SharedObjectRef, SuiObjectRef } from '../types';
 import { builder } from './bcs';
 
@@ -10,7 +7,7 @@ const ObjectArg = union([
   object({
     Shared: object({
       objectId: string(),
-      initialSharedVersion: union([bigint(), integer()]),
+      initialSharedVersion: union([integer(), string()]),
       mutable: boolean(),
     }),
   }),
@@ -25,8 +22,10 @@ export const BuilderCallArg = union([PureCallArg, ObjectCallArg]);
 export type BuilderCallArg = Infer<typeof BuilderCallArg>;
 
 export const Inputs = {
-  Pure(type: string, data: unknown): PureCallArg {
-    return { Pure: Array.from(builder.ser(type, data).toBytes()) };
+  Pure(data: unknown, type?: string): PureCallArg {
+    return {
+      Pure: Array.from(data instanceof Uint8Array ? data : builder.ser(type!, data).toBytes()),
+    };
   },
   ObjectRef(ref: SuiObjectRef): ObjectCallArg {
     return { Object: { ImmOrOwned: ref } };

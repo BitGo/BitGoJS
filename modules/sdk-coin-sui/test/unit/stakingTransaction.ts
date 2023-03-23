@@ -2,7 +2,7 @@
 // import should from 'should';
 // import { Transaction } from '../../src';
 // import * as testData from '../resources/sui';
-// import { MethodNames, MoveCallTx } from '../../src/lib/iface';
+// import { MethodNames } from '../../src/lib/iface';
 // import { StakingTransaction } from '../../src/lib/stakingTransaction';
 // import { TransactionType } from '@bitgo/sdk-core';
 //
