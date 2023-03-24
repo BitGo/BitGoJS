@@ -70,32 +70,49 @@ describe('OutputLayout to PSBT conversion', function () {
     testInscriptionTxWithLayout(toParameters(BigInt(1_000), BigInt(17_800), BigInt(1_000), BigInt(200)), 3);
   });
 
-  function testWithUnspents(unspents: bitgo.WalletUnspent<bigint>[], expectedResult: OutputLayout | undefined) {
-    const values = unspents.map((u) => u.value);
-    it(`finds layout for unspents [${values}]`, function () {
-      const satPoint = unspents[0].id + ':0';
+  function testWithUnspents(
+    inscriptionUnspent: bitgo.WalletUnspent<bigint>,
+    supplementaryUnspents: bitgo.WalletUnspent<bigint>[],
+    expectedUnspentSelection: bitgo.WalletUnspent<bigint>[],
+    expectedResult: OutputLayout | undefined,
+    { minimizeInputs }: { minimizeInputs?: boolean } = {}
+  ) {
+    const values = [inscriptionUnspent, ...supplementaryUnspents].map((u) => u.value);
+    it(`finds layout for unspents [${values}, {minimizeInputs=${minimizeInputs}]`, function () {
+      const satPoint = inscriptionUnspent.id + ':0';
       assert(isSatPoint(satPoint));
-      const layout = findOutputLayoutForWalletUnspents(unspents, satPoint, outputs, {
-        feeRateSatKB: 1000,
-      });
-      assert.deepStrictEqual(layout, expectedResult);
-      if (!layout) {
+      const f = () =>
+        createPsbtForSingleInscriptionPassingTransaction(
+          network,
+          inputBuilder,
+          [inscriptionUnspent],
+          satPoint,
+          outputs,
+          {
+            feeRateSatKB: 1000,
+          },
+          {
+            supplementaryUnspents,
+            minimizeInputs,
+          }
+        );
+      if (expectedResult === undefined) {
+        assert.throws(f);
         return;
       }
-      assert(expectedResult);
-      const expectedOutputs = toArray(expectedResult).filter((v) => v !== BigInt(0)).length - 1;
-      const psbt = createPsbtFromOutputLayout(network, inputBuilder, unspents, outputs, layout);
-      assertValidPsbt(psbt, signer, expectedOutputs, expectedResult.feeOutput);
-      const psbt1 = createPsbtForSingleInscriptionPassingTransaction(
-        network,
-        inputBuilder,
-        unspents,
-        satPoint,
-        outputs,
-        {
-          feeRateSatKB: 1000,
-        }
+      const psbt1 = f();
+      assert.deepStrictEqual(
+        psbt1.txInputs.map((i) => bitgo.formatOutputId(bitgo.getOutputIdForInput(i))),
+        expectedUnspentSelection.map((u) => u.id)
       );
+      const result = findOutputLayoutForWalletUnspents(expectedUnspentSelection, satPoint, outputs, {
+        feeRateSatKB: 1000,
+      });
+      assert(result);
+      assert.deepStrictEqual(result.layout, expectedResult);
+      const expectedOutputs = toArray(expectedResult).filter((v) => v !== BigInt(0)).length - 1;
+      const psbt = createPsbtFromOutputLayout(network, inputBuilder, expectedUnspentSelection, outputs, result.layout);
+      assertValidPsbt(psbt, signer, expectedOutputs, expectedResult.feeOutput);
       assertValidPsbt(psbt1, signer, expectedOutputs, expectedResult.feeOutput);
       assert.strictEqual(
         psbt.extractTransaction().toBuffer().toString('hex'),
@@ -104,20 +121,42 @@ describe('OutputLayout to PSBT conversion', function () {
     });
   }
 
-  testWithUnspents([testutil.mockWalletUnspent(network, BigInt(20_000))], {
+  let nUnspent = 0;
+  function unspent(v: number): bitgo.WalletUnspent<bigint> {
+    return testutil.mockWalletUnspent(network, BigInt(v), { vout: nUnspent++ });
+  }
+
+  const u1k = unspent(1_000);
+  const u5k1 = unspent(5_000);
+  const u5k2 = unspent(5_000);
+  const u10k = unspent(10_000);
+  const u20k = unspent(20_000);
+  const u100m1 = unspent(100_000_000);
+  const u100m2 = unspent(100_000_000);
+
+  testWithUnspents(u20k, [], [u20k], {
     firstChangeOutput: BigInt(0),
     inscriptionOutput: BigInt(19659),
     secondChangeOutput: BigInt(0),
     feeOutput: BigInt(341),
   });
-  testWithUnspents([testutil.mockWalletUnspent(network, BigInt(1_000))], undefined);
+  testWithUnspents(u1k, [], [u1k], undefined);
   testWithUnspents(
-    [testutil.mockWalletUnspent(network, BigInt(1_000)), testutil.mockWalletUnspent(network, BigInt(100_000_000))],
+    u1k,
+    [u100m1, u100m2],
+    [u1k, u100m1, u100m2],
     {
       firstChangeOutput: BigInt(0),
       inscriptionOutput: BigInt(10_000),
-      secondChangeOutput: BigInt(99990329),
-      feeOutput: BigInt(671),
-    }
+      secondChangeOutput: BigInt(199990031),
+      feeOutput: BigInt(969),
+    },
+    { minimizeInputs: false }
   );
+  testWithUnspents(u1k, [u5k1, u5k2, u10k], [u1k, u10k], {
+    firstChangeOutput: BigInt(0),
+    inscriptionOutput: BigInt(10_361),
+    secondChangeOutput: BigInt(0),
+    feeOutput: BigInt(639),
+  });
 });
