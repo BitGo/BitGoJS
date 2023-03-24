@@ -27,37 +27,25 @@ export class TypeTagSerializer {
     const vectorMatch = str.match(VECTOR_REGEX);
     if (vectorMatch) {
       return {
-        vector: TypeTagSerializer.parseFromStr(
-          vectorMatch[1],
-          normalizeAddress,
-        ),
+        vector: TypeTagSerializer.parseFromStr(vectorMatch[1], normalizeAddress),
       };
     }
 
     const structMatch = str.match(STRUCT_REGEX);
     if (structMatch) {
-      const address = normalizeAddress
-        ? normalizeSuiAddress(structMatch[1])
-        : structMatch[1];
+      const address = normalizeAddress ? normalizeSuiAddress(structMatch[1]) : structMatch[1];
       return {
         struct: {
           address,
           module: structMatch[2],
           name: structMatch[3],
           typeParams:
-            structMatch[5] === undefined
-              ? []
-              : TypeTagSerializer.parseStructTypeArgs(
-                  structMatch[5],
-                  normalizeAddress,
-                ),
+            structMatch[5] === undefined ? [] : TypeTagSerializer.parseStructTypeArgs(structMatch[5], normalizeAddress),
         },
       };
     }
 
-    throw new Error(
-      `Encountered unexpected token when parsing type args for ${str}`,
-    );
+    throw new Error(`Encountered unexpected token when parsing type args for ${str}`);
   }
 
   static parseStructTypeArgs(str: string, normalizeAddress = false): TypeTag[] {
@@ -83,9 +71,7 @@ export class TypeTagSerializer {
 
     tok.push(word.trim());
 
-    return tok.map((tok) =>
-      TypeTagSerializer.parseFromStr(tok, normalizeAddress),
-    );
+    return tok.map((tok) => TypeTagSerializer.parseFromStr(tok, normalizeAddress));
   }
 
   static tagToString(tag: TypeTag): string {
@@ -121,12 +107,8 @@ export class TypeTagSerializer {
     }
     if ('struct' in tag) {
       const struct = tag.struct;
-      const typeParams = struct.typeParams
-        .map(TypeTagSerializer.tagToString)
-        .join(', ');
-      return `${struct.address}::${struct.module}::${struct.name}${
-        typeParams ? `<${typeParams}>` : ''
-      }`;
+      const typeParams = struct.typeParams.map(TypeTagSerializer.tagToString).join(', ');
+      return `${struct.address}::${struct.module}::${struct.name}${typeParams ? `<${typeParams}>` : ''}`;
     }
     throw new Error('Invalid TypeTag');
   }

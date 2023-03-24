@@ -12,6 +12,7 @@ import {
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
 import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -20,8 +21,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(raw: string): TransactionBuilder<TransferProgrammableTransaction | StakingProgrammableTransaction> {
-    // FIXME
-    // utils.validateRawTransaction(raw);
+    utils.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     try {
       switch (tx.type) {

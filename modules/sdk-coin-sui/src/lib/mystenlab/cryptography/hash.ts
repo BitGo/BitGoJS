@@ -1,4 +1,4 @@
-import { blake2b } from '@noble/hashes/blake2b';
+import blake2b from '@bitgo/blake2b';
 
 /**
  * Generates a Blake2b hash of typed data as a base64 string.
@@ -13,5 +13,5 @@ export function hashTypedData(typeTag: string, data: Uint8Array): Uint8Array {
   dataWithTag.set(typeTagBytes);
   dataWithTag.set(data, typeTagBytes.length);
 
-  return blake2b(dataWithTag, { dkLen: 32 });
+  return blake2b(32).update(dataWithTag).digest('binary');
 }

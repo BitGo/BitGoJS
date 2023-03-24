@@ -21,12 +21,7 @@ describe('SUI:', function () {
   };
 
   const txParams = {
-    recipients: [
-      {
-        address: testData.recipients[0],
-        amount: testData.AMOUNT.toString(),
-      },
-    ],
+    recipients: testData.recipients,
   };
 
   before(function () {
@@ -43,7 +38,7 @@ describe('SUI:', function () {
     };
   });
 
-  xit('should retun the right info', function () {
+  it('should retun the right info', function () {
     const sui = bitgo.coin('sui');
     const tsui = bitgo.coin('tsui');
 
@@ -59,7 +54,7 @@ describe('SUI:', function () {
   });
 
   describe('Verify transaction: ', () => {
-    xit('should succeed to verify transaction', async function () {
+    it('should succeed to verify transaction', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const verification = {};
@@ -67,7 +62,7 @@ describe('SUI:', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    xit('should fail to verify transaction with invalid param', async function () {
+    it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = newTxParams();
       txParams.recipients = undefined;
@@ -81,20 +76,24 @@ describe('SUI:', function () {
   });
 
   describe('Explain Transaction: ', () => {
-    xit('should explain a transfer transaction', async function () {
+    it('should explain a transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
         txHex: testData.TRANSFER,
       });
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
-        id: 'UNAVAILABLE',
+        id: 'Dc6ofSWTtQMUPrqZ5NqXsGgF2Cyom6H6Kze5T3tUv8Ut',
         outputs: [
           {
-            address: testData.recipients[0],
-            amount: testData.AMOUNT.toString(),
+            address: testData.recipients[0].address,
+            amount: testData.recipients[0].amount,
+          },
+          {
+            address: testData.recipients[1].address,
+            amount: testData.recipients[1].amount,
           },
         ],
-        outputAmount: testData.AMOUNT,
+        outputAmount: testData.AMOUNT * 2,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.gasData.budget.toString() },
@@ -102,7 +101,7 @@ describe('SUI:', function () {
       });
     });
 
-    xit('should fail to explain transaction with missing params', async function () {
+    it('should fail to explain transaction with missing params', async function () {
       try {
         await basecoin.explainTransaction({});
       } catch (error) {
@@ -110,7 +109,7 @@ describe('SUI:', function () {
       }
     });
 
-    xit('should fail to explain transaction with invalid params', async function () {
+    it('should fail to explain transaction with invalid params', async function () {
       try {
         await basecoin.explainTransaction({ txHex: 'randomString' });
       } catch (error) {
@@ -120,61 +119,37 @@ describe('SUI:', function () {
   });
 
   describe('Parse Transactions: ', () => {
-    const transferInputsResponse = {
-      address: testData.recipients[0],
-      amount: new BigNumber(testData.AMOUNT).plus(testData.gasData.budget).toFixed(),
-    };
+    const transferInputsResponse = [
+      {
+        address: testData.recipients[0].address,
+        amount: new BigNumber(testData.AMOUNT).plus(testData.AMOUNT).plus(testData.gasData.budget).toFixed(),
+      },
+    ];
 
-    const transferOutputsResponse = {
-      address: testData.recipients[0],
-      amount: testData.AMOUNT.toString(),
-    };
+    const transferOutputsResponse = [
+      {
+        address: testData.recipients[0].address,
+        amount: testData.recipients[0].amount,
+      },
+      {
+        address: testData.recipients[1].address,
+        amount: testData.recipients[1].amount,
+      },
+    ];
 
-    xit('should parse a transfer transaction', async function () {
+    it('should parse a transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER });
 
       parsedTransaction.should.deepEqual({
-        inputs: [transferInputsResponse],
-        outputs: [transferOutputsResponse],
+        inputs: transferInputsResponse,
+        outputs: transferOutputsResponse,
       });
     });
 
-    xit('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
+    it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
       const stub = sinon.stub(Sui.prototype, 'explainTransaction');
       stub.resolves(undefined);
-      await basecoin
-        .parseTransaction({ txHex: testData.TRANSFER })
-        .should.be.rejectedWith('Invalid transaction');
-      stub.restore();
-    });
-  });
-
-  describe('Parse Staking Transactions: ', () => {
-    const transferInputsResponse = {
-      address: testData.VALIDATOR_ADDRESS,
-      amount: new BigNumber(testData.STAKING_AMOUNT).plus(testData.STAKING_GAS_BUDGET).toFixed(),
-    };
-
-    const transferOutputsResponse = {
-      address: testData.VALIDATOR_ADDRESS,
-      amount: testData.STAKING_AMOUNT.toString(),
-    };
-
-    xit('should parse a staking requestAddDelegation transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN });
-
-      parsedTransaction.should.deepEqual({
-        inputs: [transferInputsResponse],
-        outputs: [transferOutputsResponse],
-      });
-    });
-
-    xit('should fail to parse a staking requestAddDelegation transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Sui.prototype, 'explainTransaction');
-      stub.resolves(undefined);
-      await basecoin
-        .parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN })
-        .should.be.rejectedWith('Invalid transaction');
+      await basecoin.parseTransaction({ txHex: testData.TRANSFER }).should.be.rejectedWith('Invalid transaction');
       stub.restore();
     });
   });
@@ -214,23 +189,28 @@ describe('SUI:', function () {
       ];
     });
 
-    xit('should return true when validating a well formatted address', async function () {
-      const address = '0xd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
+    it('should return true when validating a well formatted address', async function () {
+      const address = 'f941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
       basecoin.isValidAddress(address).should.equal(true);
     });
 
-    xit('should return true when validating a well formatted address prefixed with 0x', async function () {
-      const address = '0xd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
+    it('should return true when validating a well formatted address prefixed with 0x', async function () {
+      const address = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
       basecoin.isValidAddress(address).should.equal(true);
     });
 
-    xit('should return false when validating an incorrectly formatted', async function () {
+    it('should return false when validating an old address', async function () {
+      const address = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
+      basecoin.isValidAddress(address).should.equal(false);
+    });
+
+    it('should return false when validating an incorrectly formatted', async function () {
       const address = 'wrongaddress';
       basecoin.isValidAddress(address).should.equal(false);
     });
 
     xit('should return true for isWalletAddress with valid address for index 4', async function () {
-      const newAddress = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
+      const newAddress = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
       const index = 4;
 
       const params = { commonKeychain, address: newAddress, index, keychains };

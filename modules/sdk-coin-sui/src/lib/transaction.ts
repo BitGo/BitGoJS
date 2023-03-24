@@ -2,7 +2,6 @@ import {
   BaseKey,
   BaseTransaction,
   InvalidTransactionError,
-  NotImplementedError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
@@ -17,14 +16,14 @@ import {
   ProgrammableTransaction,
   SuiObjectRef,
 } from './mystenlab/types';
-import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
+import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES } from './constants';
 import { Buffer } from 'buffer';
-import sha3 from 'js-sha3';
-import { fromB64, fromHEX, toB64 } from '@mysten/bcs';
+import { fromB64, toB64 } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 import { TRANSACTION_DATA_MAX_SIZE, TransactionDataBuilder } from './mystenlab/builder/TransactionData';
-import { builder } from './mystenlab/builder';
+import { builder, TransactionCommand } from './mystenlab/builder';
+import { hashTypedData } from './mystenlab/cryptography/hash';
 
 export abstract class Transaction<T> extends BaseTransaction {
   protected _suiTransaction: SuiTransaction<T>;
@@ -45,12 +44,10 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   /** @inheritDoc **/
   get id(): string {
-    if (this._signature !== undefined) {
-      const dataBytes = this.getDataBytes();
-      const hash = this.getSha256Hash('TransactionData', dataBytes);
-      this._id = bs58.encode(hash);
-    }
-    return this._id || UNAVAILABLE_TEXT;
+    const dataBytes = this.getDataBytes();
+    const hash = hashTypedData('TransactionData', dataBytes);
+    this._id = bs58.encode(hash);
+    return this._id;
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
@@ -135,7 +132,6 @@ export abstract class Transaction<T> extends BaseTransaction {
   abstract fromRawTransaction(rawTransaction: string): void;
 
   getDataBytes(): Uint8Array {
-    // TODO - check if util class can be used
     const txData = this.getTxData();
     const txSer = builder.ser('TransactionData', { V1: txData }, { maxSize: TRANSACTION_DATA_MAX_SIZE });
     return txSer.toBytes();
@@ -153,39 +149,24 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   serialize(): string {
     const dataBytes = this.getDataBytes();
-    if (this._signature !== undefined) {
-      const hash = this.getSha256Hash('TransactionData', dataBytes);
-      this._id = bs58.encode(hash);
-    }
+    this._id = bs58.encode(hashTypedData('TransactionData', dataBytes));
     return toB64(dataBytes);
-  }
-
-  private getSha256Hash(typeTag: string, data: Uint8Array): Uint8Array {
-    const hash = sha3.sha3_256.create();
-
-    const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
-
-    const dataWithTag = new Uint8Array(typeTagBytes.length + data.length);
-    dataWithTag.set(typeTagBytes);
-    dataWithTag.set(data, typeTagBytes.length);
-
-    hash.update(dataWithTag);
-
-    return fromHEX(hash.hex());
   }
 
   static deserializeSuiTransaction(serializedTx: string): SuiTransaction<ProgrammableTransaction> {
     const data = fromB64(serializedTx);
     const transaction = TransactionDataBuilder.fromBytes(data);
     const inputs = transaction.inputs.map((txInput) => txInput.value);
-    // FIXME - get tx type PayAll or Pay
+    const commands: TransactionCommand[] = transaction.commands;
+    // TODO: FIXME - get tx type Transfer or AddStake, for now only Transfer
     const txType = SuiTransactionType.Transfer;
     return {
+      id: transaction.getDigest(),
       type: txType,
       sender: normalizeSuiAddress(transaction.sender!),
       tx: {
         inputs: inputs,
-        commands: transaction.commands,
+        commands: commands,
       },
       gasData: {
         payment: this.normalizeCoins(transaction.gasConfig.payment!),
@@ -194,19 +175,6 @@ export abstract class Transaction<T> extends BaseTransaction {
         budget: Number(transaction.gasConfig.budget as string),
       },
     };
-  }
-
-  static getProperTxDetails(k: any, type: SuiTransactionType): ProgrammableTransaction {
-    switch (type) {
-      case SuiTransactionType.Transfer:
-        throw new NotImplementedError('Not implemented');
-      case SuiTransactionType.AddStake:
-        throw new NotImplementedError('Not implemented');
-      case SuiTransactionType.WithdrawStake:
-        throw new NotImplementedError('Not implemented');
-      default:
-        throw new InvalidTransactionError('SuiTransactionType not supported');
-    }
   }
 
   static getProperGasData(k: any): GasData {

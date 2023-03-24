@@ -46,9 +46,8 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
    * @protected
    */
   protected get transactionType(): TransactionType {
-    // FIXME - find a way to get the TransactionType by method
+    // TODO: FIXME - find a way to get the TransactionType by method
     return utils.getTransactionType(MethodNames.RequestAddStakeMulCoin);
-    // return utils.getTransactionType(this._moveCallTx.transactionData.commands[0].target!);
   }
 
   /**
@@ -76,8 +75,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
    * @param {RequestWithdrawStake} request
    */
   requestWithdrawStake(request: RequestWithdrawStake): this {
-    // FIXME - add validation for staked objectID
-    // this.validateSuiObjectRef(request.stakedSuiObjectId, 'withdrawDelegation.stakedCoinId');
+    // TODO: FIXME  - add validation for staked objectID
     this._withdrawDelegation = request;
     return this;
   }
@@ -143,7 +141,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
    * @protected
    */
   protected buildSuiTransaction(): SuiTransaction<StakingProgrammableTransaction> {
-    // FIXME
+    // TODO: FIXME - validate transaction
     // this.validateTransaction(this._transaction);
     return {
       type: this._type,

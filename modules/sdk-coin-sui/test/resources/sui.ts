@@ -19,7 +19,8 @@ export const addresses = {
 export const sender = {
   address: '0x9882188ba3e8070a9bb06ae9446cf607914ee8ee58ed8306a3e3afff5a1bbb71',
   publicKey: 'AQIDBAUGBwgJAAECAwQFBgcICQABFwQFBk4BAgMEBQY=',
-  signatureHex: '6JD68SxFyiEOdEVFHDuxEHtq9NO9zmC2glSJf/XswlY2yp7HWnmVT1sMNz2YTzmatIROKqsh8dAHkjoHd3cvDg==',
+  signatureHex:
+    'AETvicGY1HwWjQokRg2HgbQeu+QQZP4ejZQGjmfWvPUd2WkzBudVlaSzjiS1btS2/34Laf6rfkNKYD540crafAxzTVAmV/9J1skZyoX4AWkJM/R4Y1FfV36atFLbCwUVqQ==',
 };
 
 export const recipients: Recipient[] = [
@@ -66,6 +67,94 @@ export const coinsWithoutGasPayment = [
   },
 ];
 
+export const txInputs = [
+  {
+    kind: 'Input',
+    value: AMOUNT,
+    index: 0,
+    type: 'pure',
+  },
+  {
+    kind: 'Input',
+    value: recipients[0].address,
+    index: 1,
+    type: 'object',
+  },
+  {
+    kind: 'Input',
+    value: AMOUNT,
+    index: 2,
+    type: 'pure',
+  },
+  {
+    kind: 'Input',
+    value: recipients[1].address,
+    index: 3,
+    type: 'object',
+  },
+];
+
+export const txCommands = [
+  {
+    kind: 'SplitCoins',
+    coin: {
+      kind: 'GasCoin',
+    },
+    amounts: [
+      {
+        kind: 'Input',
+        value: AMOUNT,
+        index: 0,
+        type: 'pure',
+      },
+    ],
+  },
+  {
+    kind: 'TransferObjects',
+    objects: [
+      {
+        kind: 'Result',
+        index: 0,
+      },
+    ],
+    address: {
+      kind: 'Input',
+      value: recipients[0].address,
+      index: 1,
+      type: 'object',
+    },
+  },
+  {
+    kind: 'SplitCoins',
+    coin: {
+      kind: 'GasCoin',
+    },
+    amounts: [
+      {
+        kind: 'Input',
+        value: AMOUNT,
+        index: 2,
+        type: 'pure',
+      },
+    ],
+  },
+  {
+    kind: 'TransferObjects',
+    objects: [
+      {
+        kind: 'Result',
+        index: 2,
+      },
+    ],
+    address: {
+      kind: 'Input',
+      value: recipients[1].address,
+      index: 3,
+      type: 'object',
+    },
+  },
+];
+
 export const GAS_BUDGET = 10000000;
 
 export const gasData = {
@@ -82,12 +171,14 @@ export const gasDataWithoutGasPayment = {
 };
 
 export const invalidGasOwner = {
+  payment: coinsWithGasPayment,
   owner: addresses.invalidAddresses[0],
   price: DUMMY_SUI_GAS_PRICE,
   budget: GAS_BUDGET,
 };
 
 export const invalidGasBudget = {
+  payment: coinsWithGasPayment,
   owner: sender.address,
   price: DUMMY_SUI_GAS_PRICE,
   budget: -1,
@@ -140,32 +231,14 @@ export const ADD_DELEGATION_TX_MUL_COIN =
 export const WITHDRAW_DELEGATION_TX =
   'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgpzdWlfc3lzdGVtG3JlcXVlc3Rfd2l0aGRyYXdfZGVsZWdhdGlvbgADAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEARAM3T3R0zR5VpiJwWH/tIBPS4kki8wgAAAAAACAgQBQ78f1HVQ9gqo71dbAMMQYofSkctz9h707a0YMHiQEACqyOuB212d+hSaFJV+YpFeQie8QVnQgAAAAAACBSeVp0b2dxLIM1Nb3AyB2yDY4bPUmE+fkpyU0gB24snY+lHUOqRSos7iwVBBfRw94tsnctNA1MeiJm+vLMZv1tDMYF7679zXddbQ8AAAAAACCWk/YTDWaCnw82ZvuAtSVF/zQ62s4l60jy58YQiTIS8Y+lHUOqRSos7iwVBBfRw94tsnctAQAAAAAAAABAQg8AAAAAAA==';
 
-export const invalidPayTxs = [
+export const invalidRecipients: Recipient[] = [
   {
-    coins: [
-      {
-        objectId: '',
-        version: -1,
-        digest: '',
-      },
-    ],
-    recipients,
-    amounts: [AMOUNT],
+    address: addresses.invalidAddresses[0],
+    amount: AMOUNT.toString(),
   },
   {
-    coins: coinsWithGasPayment,
-    recipients: [addresses.invalidAddresses[0]],
-    amounts: [AMOUNT],
-  },
-  {
-    coins: coinsWithGasPayment,
-    recipients: addresses.invalidAddresses,
-    amounts: [AMOUNT],
-  },
-  {
-    coins: coinsWithGasPayment,
-    recipients,
-    amounts: [0],
+    address: addresses.validAddresses[0],
+    amount: 'NAN',
   },
 ];
 

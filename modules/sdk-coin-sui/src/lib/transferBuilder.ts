@@ -1,17 +1,14 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
-import { TransferTx, SuiTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
+import { SuiTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
 import { Transaction } from './transaction';
 import { TransferTransaction } from './transferTransaction';
 import assert from 'assert';
-import { normalizeSuiAddress } from './mystenlab/types';
-import { builder, Commands, Transaction as ProgrammingTransactionBuilder } from './mystenlab/builder';
-import { BCS } from '@mysten/bcs';
-import { Buffer } from 'buffer';
+import { Commands, Transaction as ProgrammingTransactionBuilder } from './mystenlab/builder';
+import utils from './utils';
 
 export class TransferBuilder extends TransactionBuilder<TransferProgrammableTransaction> {
-  protected _payTx: TransferTx;
   protected _recipients: Recipient[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -24,27 +21,17 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
   }
 
   send(recipients: Recipient[]): this {
-    // TODO validate
+    this.validateRecipients(recipients);
     this._recipients = recipients;
     return this;
   }
-
-  // input(coins: SuiObjectRef[]): this {
-  //   // TODO validate
-  //   if (this._gasData === undefined) {
-  //     this._gasData = {};
-  //   }
-  //   this._gasData.payment = coins;
-  //   return this;
-  // }
 
   /** @inheritdoc */
   validateTransaction(transaction: TransferTransaction): void {
     if (!transaction.suiTransaction) {
       return;
     }
-    // FIXME
-    // this.validateTransactionFields();
+    this.validateTransactionFields();
   }
 
   /** @inheritdoc */
@@ -69,7 +56,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
       this.transaction.addSignature(signature.publicKey, signature.signature);
     });
 
-    // this.transaction.loadInputsAndOutputs();
+    this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
 
@@ -89,24 +76,8 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     this.type(SuiTransactionType.Transfer);
     this.sender(txData.sender);
     this.gasData(txData.gasData);
-    const amounts: string[] = [];
-    const addresses: string[] = [];
 
-    txData.kind.ProgrammableTransaction.inputs.forEach((input, index) => {
-      if (index % 2 === 0) {
-        amounts.push(builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64'));
-      } else {
-        addresses.push(
-          normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
-        );
-      }
-    });
-    const recipients = addresses.map((address, index) => {
-      return {
-        address: address,
-        amount: Number(amounts[index]).toString(),
-      } as Recipient;
-    });
+    const recipients = utils.getRecipients(txData.kind.ProgrammableTransaction.inputs);
     this.send(recipients);
   }
 
@@ -116,19 +87,29 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
   private validateTransactionFields(): void {
     assert(this._type, new BuildTransactionError('type is required before building'));
     assert(this._sender, new BuildTransactionError('sender is required before building'));
-    assert(this._payTx, new BuildTransactionError('payTx is required before building'));
+    assert(
+      this._recipients && this._recipients.length > 0,
+      new BuildTransactionError('at least one recipient is required before building')
+    );
     assert(this._gasData, new BuildTransactionError('gasData is required before building'));
+    this.validateGasData(this._gasData);
   }
 
+  /**
+   * Build transfer programmable transaction
+   *
+   * @protected
+   */
   protected buildSuiTransaction(): SuiTransaction<TransferProgrammableTransaction> {
-    const txBuilder = new ProgrammingTransactionBuilder();
-    // FIXME
-    // this.validateTransactionFields();
+    this.validateTransactionFields();
+    const programmableTxBuilder = new ProgrammingTransactionBuilder();
     this._recipients.forEach((recipient) => {
-      const coin = txBuilder.add(Commands.SplitCoins(txBuilder.gas, [txBuilder.pure(Number(recipient.amount))]));
-      txBuilder.add(Commands.TransferObjects([coin], txBuilder.object(recipient.address)));
+      const coin = programmableTxBuilder.add(
+        Commands.SplitCoins(programmableTxBuilder.gas, [programmableTxBuilder.pure(Number(recipient.amount))])
+      );
+      programmableTxBuilder.add(Commands.TransferObjects([coin], programmableTxBuilder.object(recipient.address)));
     });
-    const txData = txBuilder.transactionData;
+    const txData = programmableTxBuilder.transactionData;
     return {
       type: this._type,
       sender: this._sender,

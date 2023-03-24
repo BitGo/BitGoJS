@@ -3,7 +3,6 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
-  Recipient,
   Signature,
   TransactionRecipient,
   TransactionType,
@@ -13,9 +12,9 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
-import { CallArg, SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiAddress, SuiJsonValue, SuiObjectRef } from './mystenlab/types';
 import utils from './utils';
-import { Inputs } from './mystenlab/builder';
+import { builder, Inputs, TransactionInput } from './mystenlab/builder';
 import { BCS } from '@mysten/bcs';
 
 export class TransferTransaction extends Transaction<TransferProgrammableTransaction> {
@@ -121,9 +120,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       return;
     }
 
-    const tx = this.suiTransaction;
-    const recipients: Recipient[] = [];
-
+    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
     const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
     this._outputs = recipients.map((recipient, index) => ({
       address: recipient.address,
@@ -132,7 +129,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     }));
     this._inputs = [
       {
-        address: tx.sender,
+        address: this.suiTransaction.sender,
         value: totalAmount.toString(),
         coin: this._coinConfig.name,
       },
@@ -146,13 +143,13 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    */
   fromRawTransaction(rawTransaction: string): void {
     try {
-      // FIXME
-      // utils.isValidRawTransaction(rawTransaction);
+      utils.isValidRawTransaction(rawTransaction);
       this._suiTransaction = Transaction.deserializeSuiTransaction(
         rawTransaction
       ) as SuiTransaction<TransferProgrammableTransaction>;
       this._type = TransactionType.Send;
-      // this.loadInputsAndOutputs();
+      this._id = this._suiTransaction.id;
+      this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
     }
@@ -167,8 +164,20 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     if (!this._suiTransaction) {
       throw new InvalidTransactionError('empty transaction');
     }
-    const inputs: CallArg[] = this._suiTransaction.tx.inputs.map((input) => {
-      return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
+    const inputs: SuiJsonValue[] | TransactionInput[] = this._suiTransaction.tx.inputs.map((input, index) => {
+      if (input.hasOwnProperty('Pure')) {
+        if (index % 2 === 0) {
+          const amount = builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64');
+          return Inputs.Pure(amount, BCS.U64);
+        } else {
+          const address = normalizeSuiAddress(
+            builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64')
+          );
+          return Inputs.Pure(address, BCS.ADDRESS);
+        }
+      } else {
+        return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
+      }
     });
 
     return {
@@ -191,14 +200,9 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    * @returns {TransactionExplanation}
    */
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const recipients = [];
-    const amounts = [];
-
-    const outputs: TransactionRecipient[] = recipients.map((recipient, index) => ({
-      address: recipient,
-      amount: amounts.length === 0 ? '' : amounts[index],
-    }));
-    const outputAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
+    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
+    const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
+    const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
 
     return {
       ...explanationResult,

@@ -2,7 +2,6 @@ import {
   any,
   array,
   assign,
-  bigint,
   boolean,
   Infer,
   literal,
@@ -18,7 +17,6 @@ import { ObjectId, ObjectOwner, SequenceNumber, TransactionDigest } from './comm
 import { OwnedObjectRef } from './transactions';
 
 export const ObjectType = union([string(), literal('package')]);
-// eslint-disable-next-line no-redeclare
 export type ObjectType = Infer<typeof ObjectType>;
 
 export const SuiObjectRef = object({
@@ -27,9 +25,8 @@ export const SuiObjectRef = object({
   /** Hex code as string representing the object id */
   objectId: string(),
   /** Object version */
-  version: union([bigint(), number()]),
+  version: union([number(), string()]),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiObjectRef = Infer<typeof SuiObjectRef>;
 
 export const SuiGasData = object({
@@ -39,7 +36,6 @@ export const SuiGasData = object({
   price: number(),
   budget: number(),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiGasData = Infer<typeof SuiGasData>;
 
 export const SuiObjectInfo = assign(
@@ -50,15 +46,12 @@ export const SuiObjectInfo = assign(
     previousTransaction: TransactionDigest,
   })
 );
-// eslint-disable-next-line no-redeclare
 export type SuiObjectInfo = Infer<typeof SuiObjectInfo>;
 
 export const ObjectContentFields = record(string(), any());
-// eslint-disable-next-line no-redeclare
 export type ObjectContentFields = Infer<typeof ObjectContentFields>;
 
 export const MovePackageContent = record(string(), string());
-// eslint-disable-next-line no-redeclare
 export type MovePackageContent = Infer<typeof MovePackageContent>;
 
 export const SuiMoveObject = object({
@@ -68,21 +61,18 @@ export const SuiMoveObject = object({
   fields: ObjectContentFields,
   hasPublicTransfer: boolean(),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiMoveObject = Infer<typeof SuiMoveObject>;
 
 export const SuiMovePackage = object({
   /** A mapping from module name to disassembled Move bytecode */
   disassembled: MovePackageContent,
 });
-// eslint-disable-next-line no-redeclare
 export type SuiMovePackage = Infer<typeof SuiMovePackage>;
 
 export const SuiParsedData = union([
   assign(SuiMoveObject, object({ dataType: literal('moveObject') })),
   assign(SuiMovePackage, object({ dataType: literal('package') })),
 ]);
-// eslint-disable-next-line no-redeclare
 export type SuiParsedData = Infer<typeof SuiParsedData>;
 
 export const SuiRawMoveObject = object({
@@ -92,7 +82,6 @@ export const SuiRawMoveObject = object({
   version: SequenceNumber,
   bcsBytes: array(number()),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiRawMoveObject = Infer<typeof SuiRawMoveObject>;
 
 export const SuiRawMovePackage = object({
@@ -100,7 +89,6 @@ export const SuiRawMovePackage = object({
   /** A mapping from module name to Move bytecode enocded in base64*/
   moduleMap: record(string(), string()),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiRawMovePackage = Infer<typeof SuiRawMovePackage>;
 
 // TODO(chris): consolidate SuiRawParsedData and SuiRawObject using generics
@@ -108,13 +96,11 @@ export const SuiRawData = union([
   assign(SuiMoveObject, object({ dataType: literal('moveObject') })),
   assign(SuiRawMovePackage, object({ dataType: literal('package') })),
 ]);
-// eslint-disable-next-line no-redeclare
 export type SuiRawData = Infer<typeof SuiRawData>;
 
 export const MIST_PER_SUI = BigInt(1000000000);
 
 export const ObjectDigest = string();
-// eslint-disable-next-line no-redeclare
 export type ObjectDigest = Infer<typeof ObjectDigest>;
 
 export const SuiObjectData = object({
@@ -156,7 +142,6 @@ export const SuiObjectData = object({
    */
   display: optional(record(string(), string())),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiObjectData = Infer<typeof SuiObjectData>;
 
 /**
@@ -178,22 +163,26 @@ export const SuiObjectDataOptions = object({
   /* Whether to fetch the display metadata, default to be false */
   showDisplay: optional(boolean()),
 });
-// eslint-disable-next-line no-redeclare
 export type SuiObjectDataOptions = Infer<typeof SuiObjectDataOptions>;
 
 export const ObjectStatus = union([literal('Exists'), literal('NotExists'), literal('Deleted')]);
-// eslint-disable-next-line no-redeclare
 export type ObjectStatus = Infer<typeof ObjectStatus>;
 
 export const GetOwnedObjectsResponse = array(SuiObjectInfo);
-// eslint-disable-next-line no-redeclare
 export type GetOwnedObjectsResponse = Infer<typeof GetOwnedObjectsResponse>;
 
-export const SuiObjectResponse = object({
-  status: ObjectStatus,
-  details: union([SuiObjectData, ObjectId, SuiObjectRef]),
+export const SuiObjectResponseError = object({
+  tag: string(),
+  object_id: optional(ObjectId),
+  version: optional(SequenceNumber),
+  digest: optional(ObjectDigest),
 });
-// eslint-disable-next-line no-redeclare
+export type SuiObjectResponseError = Infer<typeof SuiObjectResponseError>;
+
+export const SuiObjectResponse = object({
+  data: optional(SuiObjectData),
+  error: optional(SuiObjectResponseError),
+});
 export type SuiObjectResponse = Infer<typeof SuiObjectResponse>;
 
 export type Order = 'ascending' | 'descending';
@@ -205,15 +194,28 @@ export type Order = 'ascending' | 'descending';
 /* -------------------------- SuiObjectResponse ------------------------- */
 
 export function getSuiObjectData(resp: SuiObjectResponse): SuiObjectData | undefined {
-  return resp.status !== 'Exists' ? undefined : (resp.details as SuiObjectData);
+  return resp.data;
 }
 
 export function getObjectDeletedResponse(resp: SuiObjectResponse): SuiObjectRef | undefined {
-  return resp.status !== 'Deleted' ? undefined : (resp.details as SuiObjectRef);
+  if (resp.error && 'object_id' in resp.error && 'version' in resp.error && 'digest' in resp.error) {
+    const error = resp.error as SuiObjectResponseError;
+    return {
+      objectId: error.object_id,
+      version: error.version,
+      digest: error.digest,
+    } as SuiObjectRef;
+  }
+
+  return undefined;
 }
 
 export function getObjectNotExistsResponse(resp: SuiObjectResponse): ObjectId | undefined {
-  return resp.status !== 'NotExists' ? undefined : (resp.details as ObjectId);
+  if (resp.error && 'object_id' in resp.error && !('version' in resp.error) && !('digest' in resp.error)) {
+    return (resp.error as SuiObjectResponseError).object_id as ObjectId;
+  }
+
+  return undefined;
 }
 
 export function getObjectReference(resp: SuiObjectResponse | OwnedObjectRef): SuiObjectRef | undefined {
@@ -240,7 +242,7 @@ export function getObjectId(data: SuiObjectResponse | SuiObjectRef | OwnedObject
   return getObjectReference(data)?.objectId ?? getObjectNotExistsResponse(data as SuiObjectResponse)!;
 }
 
-export function getObjectVersion(data: SuiObjectResponse | SuiObjectRef | SuiObjectData): bigint | number | undefined {
+export function getObjectVersion(data: SuiObjectResponse | SuiObjectRef | SuiObjectData): string | number | undefined {
   if ('version' in data) {
     return data.version;
   }
@@ -249,15 +251,19 @@ export function getObjectVersion(data: SuiObjectResponse | SuiObjectRef | SuiObj
 
 /* -------------------------------- SuiObject ------------------------------- */
 
+export function isSuiObjectResponse(resp: SuiObjectResponse | SuiObjectData): resp is SuiObjectResponse {
+  return (resp as SuiObjectResponse).data !== undefined;
+}
+
 /**
  * Deriving the object type from the object response
  * @returns 'package' if the object is a package, move object type(e.g., 0x2::coin::Coin<0x2::sui::SUI>)
  * if the object is a move object
  */
 export function getObjectType(resp: SuiObjectResponse | SuiObjectData): ObjectType | undefined {
-  const data = 'status' in resp ? getSuiObjectData(resp) : resp;
+  const data = isSuiObjectResponse(resp) ? resp.data : resp;
 
-  if (!data?.type && 'status' in resp) {
+  if (!data?.type && 'data' in resp) {
     if (data?.content?.dataType === 'package') {
       return 'package';
     }
@@ -313,11 +319,21 @@ export function getObjectFields(
   return getMoveObject(resp)?.fields;
 }
 
+export interface SuiObjectDataWithContent extends SuiObjectData {
+  content: SuiParsedData;
+}
+
+function isSuiObjectDataWithContent(data: SuiObjectData): data is SuiObjectDataWithContent {
+  return data.content !== undefined;
+}
+
 export function getMoveObject(data: SuiObjectResponse | SuiObjectData): SuiMoveObject | undefined {
-  const suiObject = 'status' in data ? getSuiObjectData(data) : data;
-  if (suiObject?.content?.dataType !== 'moveObject') {
+  const suiObject = 'data' in data ? getSuiObjectData(data) : (data as SuiObjectData);
+
+  if (!suiObject || !isSuiObjectDataWithContent(suiObject) || suiObject.content.dataType !== 'moveObject') {
     return undefined;
   }
+
   return suiObject.content as SuiMoveObject;
 }
 
@@ -335,3 +351,21 @@ export function getMovePackageContent(data: SuiObjectResponse | SuiMovePackage):
   }
   return (suiObject.content as SuiMovePackage).disassembled;
 }
+
+export const PaginatedObjectsResponse = object({
+  data: array(SuiObjectResponse),
+  nextCursor: union([ObjectId, literal(null)]),
+  hasNextPage: boolean(),
+});
+export type PaginatedObjectsResponse = Infer<typeof PaginatedObjectsResponse>;
+
+// mirrors sui_json_rpc_types:: SuiObjectDataFilter
+export type SuiObjectDataFilter =
+  | { Package: ObjectId }
+  | { MoveModule: { package: ObjectId; module: string } }
+  | { StructType: string };
+
+export type SuiObjectResponseQuery = {
+  filter?: SuiObjectDataFilter;
+  options?: SuiObjectDataOptions;
+};

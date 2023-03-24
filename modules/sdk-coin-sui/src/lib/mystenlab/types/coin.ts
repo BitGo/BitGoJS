@@ -1,15 +1,4 @@
-import {
-  array,
-  boolean,
-  Infer,
-  literal,
-  nullable,
-  number,
-  object,
-  optional,
-  string,
-  union,
-} from 'superstruct';
+import { array, boolean, Infer, literal, nullable, number, object, optional, string, union } from 'superstruct';
 import { ObjectId, TransactionDigest } from './common';
 
 export const CoinStruct = object({

@@ -1,25 +1,8 @@
-import {
-  array,
-  Infer,
-  object,
-  string,
-  union,
-  boolean,
-  define,
-  number,
-  literal,
-  record,
-  is,
-} from 'superstruct';
+import { array, Infer, object, string, union, boolean, define, number, literal, record, is } from 'superstruct';
 
-export type SuiMoveFunctionArgTypesResponse = Infer<
-  typeof SuiMoveFunctionArgType
->[];
+export type SuiMoveFunctionArgTypesResponse = Infer<typeof SuiMoveFunctionArgType>[];
 
-export const SuiMoveFunctionArgType = union([
-  string(),
-  object({ Object: string() }),
-]);
+export const SuiMoveFunctionArgType = union([string(), object({ Object: string() })]);
 
 export const SuiMoveFunctionArgTypes = array(SuiMoveFunctionArgType);
 export type SuiMoveFunctionArgTypes = Infer<typeof SuiMoveFunctionArgTypes>;
@@ -30,11 +13,7 @@ export const SuiMoveModuleId = object({
 });
 export type SuiMoveModuleId = Infer<typeof SuiMoveModuleId>;
 
-export const SuiMoveVisibility = union([
-  literal('Private'),
-  literal('Public'),
-  literal('Friend'),
-]);
+export const SuiMoveVisibility = union([literal('Private'), literal('Public'), literal('Friend')]);
 export type SuiMoveVisibility = Infer<typeof SuiMoveVisibility>;
 
 export const SuiMoveAbilitySet = object({
@@ -46,16 +25,12 @@ export const SuiMoveStructTypeParameter = object({
   constraints: SuiMoveAbilitySet,
   isPhantom: boolean(),
 });
-export type SuiMoveStructTypeParameter = Infer<
-  typeof SuiMoveStructTypeParameter
->;
+export type SuiMoveStructTypeParameter = Infer<typeof SuiMoveStructTypeParameter>;
 
 export const SuiMoveNormalizedTypeParameterType = object({
   TypeParameter: number(),
 });
-export type SuiMoveNormalizedTypeParameterType = Infer<
-  typeof SuiMoveNormalizedTypeParameterType
->;
+export type SuiMoveNormalizedTypeParameterType = Infer<typeof SuiMoveNormalizedTypeParameterType>;
 
 export type SuiMoveNormalizedType =
   | string
@@ -65,9 +40,7 @@ export type SuiMoveNormalizedType =
   | { Vector: SuiMoveNormalizedType }
   | SuiMoveNormalizedStructType;
 
-function isSuiMoveNormalizedType(
-  value: unknown,
-): value is SuiMoveNormalizedType {
+function isSuiMoveNormalizedType(value: unknown): value is SuiMoveNormalizedType {
   if (!value) return false;
   if (typeof value === 'string') return true;
   if (is(value, SuiMoveNormalizedTypeParameterType)) return true;
@@ -81,10 +54,7 @@ function isSuiMoveNormalizedType(
   return false;
 }
 
-export const SuiMoveNormalizedType = define<SuiMoveNormalizedType>(
-  'SuiMoveNormalizedType',
-  isSuiMoveNormalizedType,
-);
+export const SuiMoveNormalizedType = define<SuiMoveNormalizedType>('SuiMoveNormalizedType', isSuiMoveNormalizedType);
 
 export type SuiMoveNormalizedStructType = {
   Struct: {
@@ -95,14 +65,13 @@ export type SuiMoveNormalizedStructType = {
   };
 };
 
-function isSuiMoveNormalizedStructType(
-  value: unknown,
-): value is SuiMoveNormalizedStructType {
+function isSuiMoveNormalizedStructType(value: unknown): value is SuiMoveNormalizedStructType {
   if (!value || typeof value !== 'object') return false;
 
   const valueProperties = value as Record<string, unknown>;
-  if (!valueProperties.Struct || typeof valueProperties.Struct !== 'object')
+  if (!valueProperties.Struct || typeof valueProperties.Struct !== 'object') {
     return false;
+  }
 
   const structProperties = valueProperties.Struct as Record<string, unknown>;
   if (
@@ -110,9 +79,7 @@ function isSuiMoveNormalizedStructType(
     typeof structProperties.module !== 'string' ||
     typeof structProperties.name !== 'string' ||
     !Array.isArray(structProperties.typeArguments) ||
-    !structProperties.typeArguments.every((value) =>
-      isSuiMoveNormalizedType(value),
-    )
+    !structProperties.typeArguments.every((value) => isSuiMoveNormalizedType(value))
   ) {
     return false;
   }
@@ -123,7 +90,7 @@ function isSuiMoveNormalizedStructType(
 // NOTE: This type is recursive, so we need to manually implement it:
 export const SuiMoveNormalizedStructType = define<SuiMoveNormalizedStructType>(
   'SuiMoveNormalizedStructType',
-  isSuiMoveNormalizedStructType,
+  isSuiMoveNormalizedStructType
 );
 
 export const SuiMoveNormalizedFunction = object({
@@ -158,32 +125,20 @@ export const SuiMoveNormalizedModule = object({
 });
 export type SuiMoveNormalizedModule = Infer<typeof SuiMoveNormalizedModule>;
 
-export const SuiMoveNormalizedModules = record(
-  string(),
-  SuiMoveNormalizedModule,
-);
+export const SuiMoveNormalizedModules = record(string(), SuiMoveNormalizedModule);
 export type SuiMoveNormalizedModules = Infer<typeof SuiMoveNormalizedModules>;
 
-export function extractMutableReference(
-  normalizedType: SuiMoveNormalizedType,
-): SuiMoveNormalizedType | undefined {
-  return typeof normalizedType === 'object' &&
-    'MutableReference' in normalizedType
+export function extractMutableReference(normalizedType: SuiMoveNormalizedType): SuiMoveNormalizedType | undefined {
+  return typeof normalizedType === 'object' && 'MutableReference' in normalizedType
     ? normalizedType.MutableReference
     : undefined;
 }
 
-export function extractReference(
-  normalizedType: SuiMoveNormalizedType,
-): SuiMoveNormalizedType | undefined {
-  return typeof normalizedType === 'object' && 'Reference' in normalizedType
-    ? normalizedType.Reference
-    : undefined;
+export function extractReference(normalizedType: SuiMoveNormalizedType): SuiMoveNormalizedType | undefined {
+  return typeof normalizedType === 'object' && 'Reference' in normalizedType ? normalizedType.Reference : undefined;
 }
 
-export function extractStructTag(
-  normalizedType: SuiMoveNormalizedType,
-): SuiMoveNormalizedStructType | undefined {
+export function extractStructTag(normalizedType: SuiMoveNormalizedType): SuiMoveNormalizedStructType | undefined {
   if (typeof normalizedType === 'object' && 'Struct' in normalizedType) {
     return normalizedType;
   }

@@ -5,9 +5,11 @@ import {
   BuildTransactionError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
+  Recipient,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
+import assert from 'assert';
 import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
@@ -102,15 +104,24 @@ export abstract class TransactionBuilder<
     }
   }
 
+  validateRecipients(recipients: Recipient[]): void {
+    assert(
+      recipients && recipients.length > 0,
+      new BuildTransactionError('at least one recipient is required before building')
+    );
+    recipients.forEach((recipient) => {
+      utils.validateAddress(recipient.address, 'address');
+      assert(utils.isValidAmount(recipient.amount), 'Invalid recipient amount');
+    });
+  }
+
   validateGasData(gasData: GasData): void {
-    // if (!utils.isValidAddress(gasData.owner)) {
-    //   throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
-    // }
-    // if (gasData.payment) {
-    //   this.validateGasPayment(gasData.payment);
-    // }
-    // this.validateGasBudget(gasData.budget);
-    // this.validateGasPrice(gasData.price);
+    if (!utils.isValidAddress(gasData.owner)) {
+      throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
+    }
+    this.validateGasPayment(gasData.payment);
+    this.validateGasBudget(gasData.budget);
+    this.validateGasPrice(gasData.price);
   }
 
   validateGasBudget(gasBudget: number): void {
@@ -126,12 +137,11 @@ export abstract class TransactionBuilder<
     }
   }
 
-  validateGasPayment(gasPayment: SuiObjectRef[]): void {
-    if (!gasPayment) {
-      throw new BuildTransactionError(`Invalid gas Payment: undefined`);
-    }
-    // FIXME
-    // this.validateSuiObjectRef(gasPayment, 'gasPayment');
+  validateGasPayment(payments: SuiObjectRef[]): void {
+    assert(payments && payments.length > 0, new BuildTransactionError('gas payment is required before building'));
+    payments.forEach((payment) => {
+      this.validateSuiObjectRef(payment, 'payment');
+    });
   }
 
   validateSuiObjectRef(suiObjectRef: SuiObjectRef, field: string): void {

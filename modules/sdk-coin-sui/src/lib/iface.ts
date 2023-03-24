@@ -35,6 +35,7 @@ export type StakingProgrammableTransaction =
     };
 
 export interface SuiTransaction<T = TransferProgrammableTransaction | StakingProgrammableTransaction> {
+  id?: string;
   type: SuiTransactionType;
   sender: string;
   tx: T;
