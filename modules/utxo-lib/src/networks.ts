@@ -257,7 +257,7 @@ export const networks: Record<NetworkName, Network> = {
     wif: 0xef,
     coin: coins.BCHA,
     cashAddr: {
-      prefix: 'ecashtest',
+      prefix: 'ectest',
       pubKeyHash: 0x00,
       scriptHash: 0x08,
     },
