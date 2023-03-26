@@ -17,7 +17,17 @@ import {
   signInput2Of3,
   TxOutPoint,
   UtxoTransaction,
+  createPsbtForNetwork,
+  ChainCode,
+  RootWalletKeys,
+  addWalletUnspentToPsbt,
+  fromOutputWithPrevTx,
+  WalletUnspent,
+  KeyName,
+  addWalletOutputToPsbt,
+  Tuple,
 } from '../../../src/bitgo';
+import { scriptTypeForChain } from '../../../src/bitgo';
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
@@ -157,4 +167,93 @@ export function createSpendTransaction<TNumber extends number | bigint = number>
     version,
     amountType,
   });
+}
+
+export function createPsbtSpendTransactionFromPrevTx(
+  rootWalletKeys: RootWalletKeys,
+  unspents: WalletUnspent<bigint>[],
+  network: Network,
+  signers: Tuple<KeyName> = ['user', 'bitgo'],
+  version?: number
+): UtxoTransaction<bigint> {
+  const psbt = createPsbtForNetwork({ network }, { version });
+
+  unspents.forEach((u, index) => {
+    addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signers[0], signers[1]);
+  });
+
+  const inputSum = unspents.reduce((sum, { value }) => sum + BigInt(value), BigInt(0));
+  const fee = network === utxolib.networks.dogecoinTest ? BigInt(1_000_000) : BigInt(1_000);
+  const outputValue = inputSum - fee;
+
+  addWalletOutputToPsbt(psbt, rootWalletKeys, unspents[0].chain, unspents[0].index, outputValue);
+
+  signers.forEach((keyName) => {
+    psbt.setMusig2Nonces(rootWalletKeys[keyName]);
+  });
+
+  signers.forEach((keyName) => {
+    psbt.signAllInputsHD(rootWalletKeys[keyName]);
+  });
+
+  if (!psbt.validateSignaturesOfAllInputs()) {
+    throw new Error('psbt sig validation fails');
+  }
+
+  psbt.finalizeAllInputs();
+  return psbt.extractTransaction() as UtxoTransaction<bigint>;
+}
+
+export function createPsbtSpendTransaction<TNumber extends number | bigint = number>({
+  rootWalletKeys,
+  signers,
+  chain,
+  index,
+  inputTxs,
+  network,
+  version,
+  amountType,
+}: {
+  rootWalletKeys: RootWalletKeys;
+  signers: Tuple<KeyName>;
+  chain: ChainCode;
+  index: number;
+  inputTxs: Buffer[];
+  network: Network;
+  version?: number;
+  amountType?: 'number' | 'bigint';
+}): Transaction<TNumber> {
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
+  const { scriptPubKey } = createOutputScript2of3(walletKeys.publicKeys, scriptTypeForChain(chain));
+
+  const matches = inputTxs
+    .map((inputTxBuffer): WalletUnspent<bigint>[] => {
+      const inputTx = createTransactionFromBuffer<bigint>(inputTxBuffer, network, { amountType: 'bigint' });
+
+      return inputTx.outs
+        .map((o, vout): WalletUnspent<bigint> | undefined => {
+          if (!scriptPubKey.equals(o.script)) {
+            return;
+          }
+          return { chain, index, ...fromOutputWithPrevTx<bigint>(inputTx, vout) };
+        })
+        .filter((v): v is WalletUnspent<bigint> => v !== undefined);
+    })
+    .reduce((all, matches) => [...all, ...matches]);
+
+  if (!matches.length) {
+    throw new Error(`could not find matching outputs in funding transaction`);
+  }
+
+  const tx = createPsbtSpendTransactionFromPrevTx(rootWalletKeys, matches, network, signers, version);
+  return tx.clone(amountType) as Transaction<TNumber>;
+}
+
+/**
+ * @returns BIP32 hardcoded index for p2trMusig2 spend type. 0 for key path and 100 for script path.
+ * For same fixture key triple and script type (p2trMusig2),
+ * we need 2 different deposit and spend tx fixtures.
+ */
+export function getP2trMusig2Index(spendType: 'keyPath' | 'scriptPath'): number {
+  return spendType === 'keyPath' ? 0 : 100;
 }
