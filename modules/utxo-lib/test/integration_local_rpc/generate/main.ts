@@ -8,9 +8,11 @@ import { getRegtestNode, getRegtestNodeUrl, Node, getRegtestNodeHelp } from './r
 import {
   createScriptPubKey,
   createSpendTransaction,
+  createPsbtSpendTransaction,
   isSupportedDepositType,
   ScriptType,
   scriptTypes,
+  getP2trMusig2Index,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
 import {
@@ -20,14 +22,14 @@ import {
   wipeFixtures,
   writeTransactionFixtureWithInputs,
 } from './fixtures';
-import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outputScripts';
+import { isScriptType2Of3, isSupportedScriptType, ScriptType2Of3 } from '../../../src/bitgo/outputScripts';
 import { sendFromFaucet, generateToFaucet } from './faucet';
-import { ZcashTransaction } from '../../../src/bitgo';
+import { getInternalChainCode, KeyName, RootWalletKeys, Tuple, ZcashTransaction } from '../../../src/bitgo';
 
 function getScriptTypes() {
   // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
   //  because the test suite is written with TransactionBuilder
-  return scriptTypes.filter((scriptType) => scriptType !== 'p2trMusig2');
+  return scriptTypes.filter((scriptType) => scriptType);
 }
 
 async function printRpcHelp(rpc: RpcClient, network: Network): Promise<void> {
@@ -81,7 +83,7 @@ async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void>
 }
 
 function toRegtestAddress(network: { bech32?: string }, scriptType: ScriptType, script: Buffer): string {
-  if (scriptType === 'p2wsh' || scriptType === 'p2wkh' || scriptType === 'p2tr') {
+  if (scriptType === 'p2wsh' || scriptType === 'p2wkh' || scriptType === 'p2tr' || scriptType === 'p2trMusig2') {
     switch (network) {
       case utxolib.networks.testnet:
         network = { bech32: 'bcrt' };
@@ -97,23 +99,73 @@ function toRegtestAddress(network: { bech32?: string }, scriptType: ScriptType, 
   return utxolib.address.fromOutputScript(script, network);
 }
 
+function getSpendTx(
+  scriptType: ScriptType2Of3,
+  inputTxs: Buffer[],
+  script,
+  protocol: Protocol,
+  amountType: 'number' | 'bigint',
+  p2trMusig2SpendType?: 'keyPath' | 'scriptPath'
+) {
+  if (scriptType === 'p2trMusig2') {
+    if (!p2trMusig2SpendType) {
+      throw new Error('Invalid p2tr spend type');
+    }
+    const index = getP2trMusig2Index(p2trMusig2SpendType);
+    const signers: Tuple<KeyName> = p2trMusig2SpendType === 'keyPath' ? ['user', 'bitgo'] : ['user', 'backup'];
+    const rootWalletKeys = new RootWalletKeys(fixtureKeys);
+    return createPsbtSpendTransaction({
+      rootWalletKeys,
+      chain: getInternalChainCode(scriptType),
+      index,
+      signers,
+      inputTxs,
+      network: protocol.network,
+      version: protocol.version,
+      amountType,
+    });
+  } else {
+    return createSpendTransaction(
+      fixtureKeys,
+      scriptType,
+      inputTxs,
+      script,
+      protocol.network,
+      protocol.version,
+      amountType
+    );
+  }
+}
+
 async function createTransactionsForScriptType(
   rpc: RpcClient,
   scriptType: ScriptType,
-  protocol: Protocol
+  protocol: Protocol,
+  p2trMusig2SpendType?: 'keyPath' | 'scriptPath'
 ): Promise<void> {
-  const logTag = `createTransaction ${scriptType} ${getNetworkName(protocol.network)} v=${protocol.version}`;
+  const fullScriptType = `${scriptType}${p2trMusig2SpendType ? p2trMusig2SpendType : ''}`;
+  const logTag = `createTransaction ${fullScriptType} ${getNetworkName(protocol.network)} v=${protocol.version}`;
   if (!isSupportedDepositType(protocol.network, scriptType)) {
     console.log(logTag + ': not supported, skipping');
     return;
   }
   console.log(logTag);
 
-  const script = createScriptPubKey(fixtureKeys, scriptType, protocol.network);
+  let keys = fixtureKeys;
+  if (scriptType === 'p2trMusig2') {
+    if (!p2trMusig2SpendType) {
+      throw new Error('Invalid p2tr spend type');
+    }
+    const index = getP2trMusig2Index(p2trMusig2SpendType);
+    const rootWalletKeys = new RootWalletKeys(fixtureKeys);
+    keys = rootWalletKeys.deriveForChainAndIndex(getInternalChainCode(scriptType), index).triple;
+  }
+
+  const script = createScriptPubKey(keys, scriptType, protocol.network);
   const address = toRegtestAddress(protocol.network as { bech32: string }, scriptType, script);
   const deposit1Txid = await sendFromFaucet(rpc, address, 1);
   const deposit1Tx = await rpc.getRawTransaction(deposit1Txid);
-  await writeTransactionFixtureWithInputs(rpc, protocol, `deposit_${scriptType}.json`, deposit1Txid);
+  await writeTransactionFixtureWithInputs(rpc, protocol, `deposit_${fullScriptType}.json`, deposit1Txid);
   if (!isScriptType2Of3(scriptType) || !isSupportedScriptType(protocol.network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
@@ -131,35 +183,25 @@ async function createTransactionsForScriptType(
   let spendTx;
   switch (protocol.network) {
     case utxolib.networks.dogecoinTest:
-      spendTx = createSpendTransaction<bigint>(
-        fixtureKeys,
-        scriptType,
-        [deposit1Tx, deposit2Tx],
-        script,
-        protocol.network,
-        protocol.version,
-        'bigint'
-      );
+      spendTx = getSpendTx(scriptType, [deposit1Tx, deposit2Tx], script, protocol, 'bigint');
       break;
     default:
-      spendTx = createSpendTransaction(
-        fixtureKeys,
-        scriptType,
-        [deposit1Tx, deposit2Tx],
-        script,
-        protocol.network,
-        protocol.version
-      );
+      spendTx = getSpendTx(scriptType, [deposit1Tx, deposit2Tx], script, protocol, 'number', p2trMusig2SpendType);
       break;
   }
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
-  await writeTransactionFixtureWithInputs(rpc, protocol, `spend_${scriptType}.json`, spendTxid);
+  await writeTransactionFixtureWithInputs(rpc, protocol, `spend_${fullScriptType}.json`, spendTxid);
 }
 
 async function createTransactions(rpc: RpcClient, protocol: Protocol) {
   for (const scriptType of getScriptTypes()) {
-    await createTransactionsForScriptType(rpc, scriptType, protocol);
+    if (scriptType === 'p2trMusig2') {
+      await createTransactionsForScriptType(rpc, scriptType, protocol, 'keyPath');
+      await createTransactionsForScriptType(rpc, scriptType, protocol, 'scriptPath');
+    } else {
+      await createTransactionsForScriptType(rpc, scriptType, protocol);
+    }
   }
 }
 
