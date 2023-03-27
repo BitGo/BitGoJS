@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/developer-relations-team
+*   @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -61,31 +61,31 @@ modules/sdk-coin-xtz/ @BitGo/altcoins
 
 
 # Core Modules
-modules/bitgo/ @BitGo/developer-relations-team
-modules/blake2b-wasm/ @BitGo/developer-relations-team
-modules/blake2b/ @BitGo/developer-relations-team
-modules/express/ @BitGo/developer-relations-team
+modules/bitgo/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/blake2b-wasm/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/blake2b/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/express/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
 modules/key-card/ @BitGo/wallets
-modules/sdk-api/ @BitGo/developer-relations-team
-modules/sdk-core/ @BitGo/developer-relations-team
+modules/sdk-api/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/sdk-core/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
 modules/sdk-rpc-wrapper @BitGo/defi-team
-modules/sdk-test/ @BitGo/developer-relations-team
+modules/sdk-test/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
 modules/sdk-unified-wallet @BitGo/defi-team
-modules/sjcl/ @BitGo/developer-relations-team
-modules/statics/ @BitGo/developer-relations-team
-modules/web-demo/ @BitGo/developer-relations-team
-scripts/ @BitGo/developer-relations-team
-types/ @BitGo/developer-relations-team
-webpack/ @BitGo/developer-relations-team
+modules/sjcl/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/statics/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+modules/web-demo/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+scripts/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+types/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+webpack/ @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
 
-.eslintrc.json @BitGo/developer-relations-team
-.prettierrc.yml @BitGo/developer-relations-team
-check-package-versions.js @BitGo/developer-relations-team
-CODEOWNERS @BitGo/developer-relations-team
-DEVELOPERS.md @BitGo/developer-relations-team
-commitlint.config.js @BitGo/developer-relations-team
-Dockerfile @BitGo/developer-relations-team
-lerna.json @BitGo/developer-relations-team
-package.json @BitGo/developer-relations-team
-tsconfig.json @BitGo/developer-relations-team
-tsconfig.packages.json @BitGo/developer-relations-team
+.eslintrc.json @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+.prettierrc.yml @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+check-package-versions.js @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+CODEOWNERS @BitGo/git-admins
+DEVELOPERS.md @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+commitlint.config.js @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+Dockerfile @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+lerna.json @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+package.json @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+tsconfig.json @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
+tsconfig.packages.json @BitGo/coins @BitGo/platform-applications-client @BitGo/wallets
