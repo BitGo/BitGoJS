@@ -28,7 +28,7 @@ import {
 import { getDefaultWalletKeys, mockWalletUnspent } from '../../../src/testutil';
 import { networks } from '../../../src';
 
-const network = networks.bitcoin;
+export const network = networks.bitcoin;
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -141,21 +141,21 @@ export function validateNoncesKeyVals(
   unspent: WalletUnspent<bigint>
 ): void {
   const keyVals = psbt.getProprietaryKeyVals(index);
-  const inputWalletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
-  const { outputPubkey } = createKeyPathP2trMusig2(inputWalletKeys.publicKeys);
-  const derivedParticipantPubKeys = [inputWalletKeys.user.publicKey, inputWalletKeys.bitgo.publicKey];
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
+  const { outputPubkey } = createKeyPathP2trMusig2(walletKeys.publicKeys);
+  const participantPubKeys = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
 
-  const noncesKeyVals = keyVals.filter((kv) => kv.key.subtype === ProprietaryKeySubtype.MUSIG2_PUB_NONCE);
-  assert.strictEqual(noncesKeyVals.length, 2);
+  const nonces = keyVals.filter((kv) => kv.key.subtype === ProprietaryKeySubtype.MUSIG2_PUB_NONCE);
+  assert.strictEqual(nonces.length, 2);
 
-  const nonceKeydata = derivedParticipantPubKeys.map((p) => {
+  const nonceKeydata = participantPubKeys.map((p) => {
     const keydata = Buffer.alloc(65);
     p.copy(keydata);
     outputPubkey.copy(keydata, 33);
     return keydata;
   });
 
-  noncesKeyVals.forEach((kv) => {
+  nonces.forEach((kv) => {
     assert.strictEqual(kv.key.identifier, PSBT_PROPRIETARY_IDENTIFIER);
     assert.strictEqual(kv.value.length, 66);
     assert.strictEqual(nonceKeydata.filter((kd) => kd.equals(kv.key.keydata)).length, 1);
@@ -170,22 +170,22 @@ export function validatePartialSigKeyVals(
   const keyVals = psbt.getProprietaryKeyVals(index);
   const inputWalletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
   const { outputPubkey } = createKeyPathP2trMusig2(inputWalletKeys.publicKeys);
-  const derivedParticipantPubKeys = [inputWalletKeys.user.publicKey, inputWalletKeys.bitgo.publicKey];
+  const participantPubKeys = [inputWalletKeys.user.publicKey, inputWalletKeys.bitgo.publicKey];
 
-  const noncesKeyVals = keyVals.filter((kv) => kv.key.subtype === ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG);
-  assert.strictEqual(noncesKeyVals.length, 2);
+  const partialSigs = keyVals.filter((kv) => kv.key.subtype === ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG);
+  assert.strictEqual(partialSigs.length, 2);
 
-  const nonceKeydata = derivedParticipantPubKeys.map((p) => {
+  const partialSigKeydata = participantPubKeys.map((p) => {
     const keydata = Buffer.alloc(65);
     p.copy(keydata);
     outputPubkey.copy(keydata, 33);
     return keydata;
   });
 
-  noncesKeyVals.forEach((kv) => {
+  partialSigs.forEach((kv) => {
     assert.strictEqual(kv.key.identifier, PSBT_PROPRIETARY_IDENTIFIER);
     assert.strictEqual(kv.value.length, 32);
-    assert.strictEqual(nonceKeydata.filter((kd) => kd.equals(kv.key.keydata)).length, 1);
+    assert.strictEqual(partialSigKeydata.filter((kd) => kd.equals(kv.key.keydata)).length, 1);
   });
 }
 
@@ -224,5 +224,5 @@ export function validateFinalizedInput(
   if (scriptTypeForChain(unspent.chain) === 'p2trMusig2' && spendType === 'keyPath') {
     assert.strictEqual(input.finalScriptWitness?.length, 66);
   }
-  assert.strictEqual(input.unknownKeyVals?.length, 0);
+  assert.ok(!input.unknownKeyVals?.length);
 }
