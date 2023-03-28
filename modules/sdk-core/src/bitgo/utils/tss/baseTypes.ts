@@ -93,6 +93,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   hopParams?: HopParams;
   lowFeeTxid?: string;
   custodianTransactionId?: string;
+  receiveAddress?: string;
 }
 export interface IntentRecipient {
   address: {
@@ -135,6 +136,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   feeOptions?: FeeOption | EIP1559FeeOptions;
   hopParams?: HopParams;
   txid?: string;
+  receiveAddress?: string;
   custodianTransactionId?: string;
   custodianMessageId?: string;
 }

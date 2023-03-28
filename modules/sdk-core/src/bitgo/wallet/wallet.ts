@@ -188,6 +188,7 @@ export class Wallet implements IWallet {
       'numBlocks',
       'nonce',
       'preview',
+      'receiveAddress',
       'recipients',
       'reservation',
       'sequenceId',
@@ -1758,6 +1759,12 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    if (params.recipients && (params.type === 'fillNonce' || params.type === 'acceleration')) {
+      const error: any = new Error(`cannot provide recipients for transaction type ${params.type}`);
+      error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';
+      throw error;
+    }
+
     // call prebuildTransaction and keychains-get in parallel
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
@@ -2690,6 +2697,7 @@ export class Wallet implements IWallet {
             intentType: 'acceleration',
             comment: params.comment,
             lowFeeTxid: params.lowFeeTxid,
+            receiveAddress: params.receiveAddress,
             feeOptions,
           },
           apiVersion,
@@ -2703,6 +2711,7 @@ export class Wallet implements IWallet {
             intentType: 'fillNonce',
             comment: params.comment,
             nonce: params.nonce,
+            receiveAddress: params.receiveAddress,
             feeOptions,
           },
           apiVersion,

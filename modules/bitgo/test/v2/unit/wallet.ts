@@ -326,6 +326,10 @@ describe('V2 Wallet:', function () {
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
     });
 
+    afterEach(async function() {
+      nock.cleanAll();
+    });
+
     it('should error eip1559 and gasPrice are passed', async function () {
       const params = {
         gasPrice: 100,
@@ -435,6 +439,22 @@ describe('V2 Wallet:', function () {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
+    });
+
+    it('should not pass recipients in sendMany when transaction type is fillNonce', async function () {
+      const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const recipients = [{
+        address: recipientAddress,
+        amount: 0,
+      }];
+      const sendManyParams = { recipients, type: 'fillNonce', isTss: true, nonce: '13' };
+
+      try {
+        await ethWallet.sendMany(sendManyParams);
+      } catch (e) {
+        e.message.should.equal('cannot provide recipients for transaction type fillNonce');
+        // test is successful if nock is consumed, HMAC errors expected
+      }
     });
 
     it('should use a custom signing function if provided', async function () {
@@ -1983,6 +2003,43 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for eth accelerations for receive address', async function () {
+        const recipients = [{
+          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+          amount: '1000',
+          tokenName: 'gterc18dp',
+        }];
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
+        const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'acceleration',
+          feeOptions,
+          lowFeeTxid,
+          receiveAddress,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.lowFeeTxid!.should.equal(lowFeeTxid);
+        args[0]!.receiveAddress!.should.equal(receiveAddress);
+        args[0]!.intentType.should.equal('acceleration');
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct params for eth fillNonce', async function () {
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2010,6 +2067,39 @@ describe('V2 Wallet:', function () {
         args[0]!.nonce!.should.equal(nonce);
         args[0]!.intentType.should.equal('fillNonce');
         args[0]!.comment!.should.equal(comment);
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for eth fillNonce for receive address nonce filling tx', async function () {
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        const nonce = '1';
+        const comment = 'fillNonce comment';
+        const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'fillNonce',
+          feeOptions,
+          nonce,
+          receiveAddress,
+          comment,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.nonce!.should.equal(nonce);
+        args[0]!.intentType.should.equal('fillNonce');
+        args[0]!.comment!.should.equal(comment);
+        args[0]!.receiveAddress!.should.equal(receiveAddress);
         args[1]!.should.equal('full');
       });
 
@@ -2065,6 +2155,31 @@ describe('V2 Wallet:', function () {
         intent.intentType.should.equal('acceleration');
       });
 
+      it('populate intent should return valid eth acceleration intent for receive address', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
+        const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          reqId,
+          intentType: 'acceleration',
+          lowFeeTxid,
+          receiveAddress,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.txid!.should.equal(lowFeeTxid);
+        intent.receiveAddress!.should.equal(receiveAddress);
+        intent.intentType.should.equal('acceleration');
+      });
+
       it('populate intent should return valid eth fillNonce intent', async function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
         const feeOptions = {
@@ -2083,6 +2198,30 @@ describe('V2 Wallet:', function () {
         intent.should.have.property('recipients', undefined);
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.nonce!.should.equal(nonce);
+        intent.intentType.should.equal('fillNonce');
+      });
+
+      it('populate intent should return valid eth fillNonce intent for receive address nonce filling tx', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const nonce = '1';
+        const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+          reqId,
+          intentType: 'fillNonce',
+          nonce,
+          receiveAddress,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.nonce!.should.equal(nonce);
+        intent.receiveAddress!.should.equal(receiveAddress);
         intent.intentType.should.equal('fillNonce');
       });
 
