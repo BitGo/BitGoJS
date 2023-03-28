@@ -1,11 +1,13 @@
-import { RequestAddDelegation, RequestSwitchDelegation, RequestWithdrawDelegation } from '../../src/lib/iface';
+import { RequestAddStake, RequestWithdrawStake } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
+import { Recipient } from '@bitgo/sdk-core';
+
+export const AMOUNT = 100;
 
 export const addresses = {
   validAddresses: [
-    '0xcba4a48bb0f8b586c167e5dcefaa1c5e96ab3f08',
-    '0xc4173a804406a365e69dfb297d4eaaf002546ebd',
-    '0x111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
+    '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304',
+    '0x77c3b5b21129793c4a5602220a4b970007c54d4a996de941e5b713719a42f8fe',
   ],
   invalidAddresses: [
     'randomString',
@@ -15,50 +17,148 @@ export const addresses = {
 };
 
 export const sender = {
-  address: addresses.validAddresses[0],
-  publicKey: 'ISHc0JgGmuU1aX3QGc/YZ3ynq6CtrB0ZWcvObcVLElk=',
-  signatureHex: '6JD68SxFyiEOdEVFHDuxEHtq9NO9zmC2glSJf/XswlY2yp7HWnmVT1sMNz2YTzmatIROKqsh8dAHkjoHd3cvDg==',
+  address: '0x9882188ba3e8070a9bb06ae9446cf607914ee8ee58ed8306a3e3afff5a1bbb71',
+  publicKey: 'AQIDBAUGBwgJAAECAwQFBgcICQABFwQFBk4BAgMEBQY=',
+  signatureHex:
+    'AETvicGY1HwWjQokRg2HgbQeu+QQZP4ejZQGjmfWvPUd2WkzBudVlaSzjiS1btS2/34Laf6rfkNKYD540crafAxzTVAmV/9J1skZyoX4AWkJM/R4Y1FfV36atFLbCwUVqQ==',
 };
 
-export const recipients = [addresses.validAddresses[1]];
+export const recipients: Recipient[] = [
+  {
+    address: addresses.validAddresses[0],
+    amount: AMOUNT.toString(),
+  },
+  {
+    address: addresses.validAddresses[1],
+    amount: AMOUNT.toString(),
+  },
+];
 
 export const gasPayment = {
-  objectId: '0x36d6ca08f2081732944d1e5b6b406a4a462e39b8',
-  version: 3,
-  digest: 'uUkO3mMhUmLENOA/YG2XmfO6cEUjztoYSzhtR6of+B8=',
+  objectId: '0x27883af1cedf4b31b39bd4386ab48d0e74478579b8b2a03f72d61eae37c476f5',
+  version: 32,
+  digest: '99nxt9LtNZW4PxkGMVq2oCKAhrMr1ntU8yZirZNiPQNR',
 };
 
 export const coinsWithGasPayment = [
   {
-    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
-    version: 3,
-    digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsT2NcFYE=',
+    objectId: '0x57bedec931e87beebebd5a375fae5e969965dba710e3c8652814ab1750b9e301',
+    version: 32,
+    digest: '82LZWnJwxRpZPLyFvPdLWBTyEu9J5aEZQFrTva9QPLzJ',
   },
   {
-    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6462e39b8',
-    version: 2,
-    digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsR6of+B8=',
+    objectId: '0xa90fdca6a9b7e8363d5825fb41c0456fc85ab3f47ddf5bbc19f320c82acbc62a',
+    version: 32,
+    digest: 'EFcXPoBtcHKZK3NhBHULZASAu61aZb5ab9JCXKEb5eMC',
   },
   gasPayment,
 ];
 
 export const coinsWithoutGasPayment = [
   {
-    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6547ee9b4',
-    version: 3,
-    digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsT2NcFYE=',
+    objectId: '0x57bedec931e87beebebd5a375fae5e969965dba710e3c8652814ab1750b9e301',
+    version: 32,
+    digest: '82LZWnJwxRpZPLyFvPdLWBTyEu9J5aEZQFrTva9QPLzJ',
   },
   {
-    objectId: '0x111b8a49f67370bc4a58e500b9e64cb6462e39b8',
-    version: 2,
-    digest: 'ZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsR6of+B8=',
+    objectId: '0xa90fdca6a9b7e8363d5825fb41c0456fc85ab3f47ddf5bbc19f320c82acbc62a',
+    version: 32,
+    digest: 'EFcXPoBtcHKZK3NhBHULZASAu61aZb5ab9JCXKEb5eMC',
   },
 ];
 
-export const GAS_BUDGET = 1000000;
+export const txInputs = [
+  {
+    kind: 'Input',
+    value: AMOUNT,
+    index: 0,
+    type: 'pure',
+  },
+  {
+    kind: 'Input',
+    value: recipients[0].address,
+    index: 1,
+    type: 'object',
+  },
+  {
+    kind: 'Input',
+    value: AMOUNT,
+    index: 2,
+    type: 'pure',
+  },
+  {
+    kind: 'Input',
+    value: recipients[1].address,
+    index: 3,
+    type: 'object',
+  },
+];
+
+export const txCommands = [
+  {
+    kind: 'SplitCoins',
+    coin: {
+      kind: 'GasCoin',
+    },
+    amounts: [
+      {
+        kind: 'Input',
+        value: AMOUNT,
+        index: 0,
+        type: 'pure',
+      },
+    ],
+  },
+  {
+    kind: 'TransferObjects',
+    objects: [
+      {
+        kind: 'Result',
+        index: 0,
+      },
+    ],
+    address: {
+      kind: 'Input',
+      value: recipients[0].address,
+      index: 1,
+      type: 'object',
+    },
+  },
+  {
+    kind: 'SplitCoins',
+    coin: {
+      kind: 'GasCoin',
+    },
+    amounts: [
+      {
+        kind: 'Input',
+        value: AMOUNT,
+        index: 2,
+        type: 'pure',
+      },
+    ],
+  },
+  {
+    kind: 'TransferObjects',
+    objects: [
+      {
+        kind: 'Result',
+        index: 2,
+      },
+    ],
+    address: {
+      kind: 'Input',
+      value: recipients[1].address,
+      index: 3,
+      type: 'object',
+    },
+  },
+];
+
+export const GAS_BUDGET = 10000000;
 
 export const gasData = {
-  payment: gasPayment,
+  payment: coinsWithGasPayment,
   owner: sender.address,
   price: DUMMY_SUI_GAS_PRICE,
   budget: GAS_BUDGET,
@@ -71,18 +171,18 @@ export const gasDataWithoutGasPayment = {
 };
 
 export const invalidGasOwner = {
+  payment: coinsWithGasPayment,
   owner: addresses.invalidAddresses[0],
   price: DUMMY_SUI_GAS_PRICE,
   budget: GAS_BUDGET,
 };
 
 export const invalidGasBudget = {
+  payment: coinsWithGasPayment,
   owner: sender.address,
   price: DUMMY_SUI_GAS_PRICE,
   budget: -1,
 };
-
-export const AMOUNT = 100;
 
 export const payTxWithGasPayment = {
   coins: coinsWithGasPayment,
@@ -100,8 +200,8 @@ export const txIds = {
   id1: 'rAraxzR2QeTU/bULpEUWjv+oCY/8YnHS9Oc/IhkoaCM=',
 };
 
-export const TRANSFER_PAY_TX =
-  'AAQCERuKSfZzcLxKWOUAueZMtlR+6bQDAAAAAAAAACBkuh+y8vvSk4o1ABXWAfTbic1+jiNw0N2a46xPY1wVgREbikn2c3C8SljlALnmTLZGLjm4AgAAAAAAAAAgZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsR6of+B8BxBc6gEQGo2XmnfspfU6q8AJUbr0BZAAAAAAAAADLpKSLsPi1hsFn5dzvqhxelqs/CDbWygjyCBcylE0eW2tAakpGLjm4AwAAAAAAAAAguUkO3mMhUmLENOA/YG2XmfO6cEUjztoYSzhtR6of+B/LpKSLsPi1hsFn5dzvqhxelqs/CAEAAAAAAAAAQEIPAAAAAAA=';
+export const TRANSFER =
+  'AAAEAAhkAAAAAAAAAAAg+UGuPL5WRdzMFdqDRrUz9/kfICCJpVIWU8Bisv8QswQACGQAAAAAAAAAACB3w7WyESl5PEpWAiIKS5cAB8VNSplt6UHltxNxmkL4/gQCAAEBAAABAQIAAAEBAAIAAQECAAEBAgIAAQMAmIIYi6PoBwqbsGrpRGz2B5FO6O5Y7YMGo+Ov/1obu3EDV77eyTHoe+6+vVo3X65elpll26cQ48hlKBSrF1C54wEgAAAAAAAAACBoWYGqiuavMCUv2GwrPvNLd0D2AaDTQotdoUj5nj2eR6kP3Kapt+g2PVgl+0HARW/IWrP0fd9bvBnzIMgqy8YqIAAAAAAAAAAgxOY6f0nZPSkxTFoKXduBYv7z1a04aU8kk/f0SN7/uScniDrxzt9LMbOb1DhqtI0OdEeFebiyoD9y1h6uN8R29SAAAAAAAAAAIHkeHOqeAdLkLM8jGKOxs7QHn8qVjVkWykGi5qlc7Au2mIIYi6PoBwqbsGrpRGz2B5FO6O5Y7YMGo+Ov/1obu3HoAwAAAAAAAICWmAAAAAAAAA==';
 export const TRANSFER_PAY_SUI_TX_WITH_GAS_PAYMENT_AND_IN_PAYTX =
   'AAUDNtbKCPIIFzKUTR5ba0BqSkYuObgDAAAAAAAAACC5SQ7eYyFSYsQ04D9gbZeZ87pwRSPO2hhLOG1Hqh/4HxEbikn2c3C8SljlALnmTLZGLjm4AgAAAAAAAAAgZLofsvL70pOKNQAV1gH024nNfo4jcNDdmuOsR6of+B8RG4pJ9nNwvEpY5QC55ky2VH7ptAMAAAAAAAAAIGS6H7Ly+9KTijUAFdYB9NuJzX6OI3DQ3ZrjrE9jXBWBAcQXOoBEBqNl5p37KX1OqvACVG69AWQAAAAAAAAAy6Ski7D4tYbBZ+Xc76ocXparPwg21soI8ggXMpRNHltrQGpKRi45uAMAAAAAAAAAILlJDt5jIVJixDTgP2Btl5nzunBFI87aGEs4bUeqH/gfy6Ski7D4tYbBZ+Xc76ocXparPwgBAAAAAAAAAEBCDwAAAAAA';
 export const TRANSFER_PAY_SUI_TX_WITH_GAS_PAYMENT_AND_NOT_IN_PAYTX =
@@ -131,35 +231,14 @@ export const ADD_DELEGATION_TX_MUL_COIN =
 export const WITHDRAW_DELEGATION_TX =
   'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgpzdWlfc3lzdGVtG3JlcXVlc3Rfd2l0aGRyYXdfZGVsZWdhdGlvbgADAQEAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEARAM3T3R0zR5VpiJwWH/tIBPS4kki8wgAAAAAACAgQBQ78f1HVQ9gqo71dbAMMQYofSkctz9h707a0YMHiQEACqyOuB212d+hSaFJV+YpFeQie8QVnQgAAAAAACBSeVp0b2dxLIM1Nb3AyB2yDY4bPUmE+fkpyU0gB24snY+lHUOqRSos7iwVBBfRw94tsnctNA1MeiJm+vLMZv1tDMYF7679zXddbQ8AAAAAACCWk/YTDWaCnw82ZvuAtSVF/zQ62s4l60jy58YQiTIS8Y+lHUOqRSos7iwVBBfRw94tsnctAQAAAAAAAABAQg8AAAAAAA==';
 
-export const SWITCH_DELEGATION_TX =
-  'AAIAAAAAAAAAAAAAAAAAAAAAAAAAAgpzdWlfc3lzdGVtGXJlcXVlc3Rfc3dpdGNoX2RlbGVnYXRpb24ABAEBAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAEBAEQDN090dM0eVaYicFh/7SAT0uJJIvMIAAAAAAAgIEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4kBAAqsjrgdtdnfoUmhSVfmKRXkInvEFZ0IAAAAAAAgUnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0AFEj5yGYgRYBdnZj68+jVjWJRcYoij6UdQ6pFKizuLBUEF9HD3i2ydy00DUx6Imb68sxm/W0MxgXvrv3Nd11tDwAAAAAAIJaT9hMNZoKfDzZm+4C1JUX/NDraziXrSPLnxhCJMhLxj6UdQ6pFKizuLBUEF9HD3i2ydy0BAAAAAAAAAEBCDwAAAAAA';
-
-export const invalidPayTxs = [
+export const invalidRecipients: Recipient[] = [
   {
-    coins: [
-      {
-        objectId: '',
-        version: -1,
-        digest: '',
-      },
-    ],
-    recipients,
-    amounts: [AMOUNT],
+    address: addresses.invalidAddresses[0],
+    amount: AMOUNT.toString(),
   },
   {
-    coins: coinsWithGasPayment,
-    recipients: [addresses.invalidAddresses[0]],
-    amounts: [AMOUNT],
-  },
-  {
-    coins: coinsWithGasPayment,
-    recipients: addresses.invalidAddresses,
-    amounts: [AMOUNT],
-  },
-  {
-    coins: coinsWithGasPayment,
-    recipients,
-    amounts: [0],
+    address: addresses.validAddresses[0],
+    amount: 'NAN',
   },
 ];
 
@@ -203,47 +282,23 @@ export const stakingGasDataWithoutGasPayment = {
 export const VALIDATOR_ADDRESS = '0x5d06f37654f11cdd27179088fcfeadaab21e13ef';
 export const NEW_VALIDATOR_ADDRESS = '0x48f9c8662045805d9d98faf3e8d58d6251718a22';
 
-export const requestAddDelegationTxOneCoin: RequestAddDelegation = {
+export const requestAddDelegationTxOneCoin: RequestAddStake = {
   coins: [coinToStakeOne],
   amount: STAKING_AMOUNT,
   validatorAddress: VALIDATOR_ADDRESS,
 };
 
-export const requestAddDelegationTxMultipleCoins: RequestAddDelegation = {
+export const requestAddDelegationTxMultipleCoins: RequestAddStake = {
   coins: [coinToStakeOne, coinToStakeTwo],
   amount: STAKING_AMOUNT,
   validatorAddress: VALIDATOR_ADDRESS,
 };
 
-export const requestWithdrawDelegation: RequestWithdrawDelegation = {
-  delegationObjectId: {
-    objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
-    version: 586530,
-    digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
-    // type: '0x2::staking_pool::Delegation'
-  },
+export const requestWithdrawDelegation: RequestWithdrawStake = {
   stakedSuiObjectId: {
     objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
     version: 564501,
     digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
-    // type: '0x2::staking_pool::StakedSui',
   },
-  amount: STAKING_AMOUNT,
-};
-
-export const requestSwitchDelegation: RequestSwitchDelegation = {
-  delegationObjectId: {
-    objectId: '0x4403374f7474cd1e55a62270587fed2013d2e249',
-    version: 586530,
-    digest: 'IEAUO/H9R1UPYKqO9XWwDDEGKH0pHLc/Ye9O2tGDB4k=',
-    // type: '0x2::staking_pool::Delegation'
-  },
-  stakedSuiObjectId: {
-    objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
-    version: 564501,
-    digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
-    // type: '0x2::staking_pool::StakedSui',
-  },
-  newValidatorAddress: NEW_VALIDATOR_ADDRESS,
   amount: STAKING_AMOUNT,
 };

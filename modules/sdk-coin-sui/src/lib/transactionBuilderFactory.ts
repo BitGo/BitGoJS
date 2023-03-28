@@ -1,13 +1,18 @@
 import { BaseTransactionBuilderFactory, InvalidTransactionError } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
 import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
-import { MoveCallTx, PayTx, SuiTransaction, SuiTransactionType } from './iface';
+import {
+  StakingProgrammableTransaction,
+  SuiTransaction,
+  SuiTransactionType,
+  TransferProgrammableTransaction,
+} from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
+import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -15,20 +20,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder<PayTx | MoveCallTx> {
+  from(raw: string): TransactionBuilder<TransferProgrammableTransaction | StakingProgrammableTransaction> {
     utils.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     try {
       switch (tx.type) {
-        case SuiTransactionType.Pay:
-        case SuiTransactionType.PaySui:
-        case SuiTransactionType.PayAllSui:
-          const payTx = new TransferTransaction(this._coinConfig);
-          payTx.fromRawTransaction(raw);
-          return this.getTransferBuilder(payTx);
-        case SuiTransactionType.AddDelegation:
-        case SuiTransactionType.WithdrawDelegation:
-        case SuiTransactionType.SwitchDelegation:
+        case SuiTransactionType.Transfer:
+          const transferTx = new TransferTransaction(this._coinConfig);
+          transferTx.fromRawTransaction(raw);
+          return this.getTransferBuilder(transferTx);
+        case SuiTransactionType.AddStake:
+        case SuiTransactionType.WithdrawStake:
           const stakingTransaction = new StakingTransaction(this._coinConfig);
           stakingTransaction.fromRawTransaction(raw);
           return this.getStakingBuilder(stakingTransaction);
@@ -41,12 +43,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: Transaction<PayTx>): TransferBuilder {
+  getTransferBuilder(tx?: Transaction<TransferProgrammableTransaction>): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
-  getStakingBuilder(tx?: Transaction<MoveCallTx>): StakingBuilder {
+  getStakingBuilder(tx?: Transaction<StakingProgrammableTransaction>): StakingBuilder {
     return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
   }
 
@@ -62,10 +64,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends TransactionBuilder<PayTx | MoveCallTx>>(
-    tx: Transaction<PayTx | MoveCallTx> | undefined,
-    builder: T
-  ): T {
+  private initializeBuilder<
+    T extends TransactionBuilder<TransferProgrammableTransaction | StakingProgrammableTransaction>
+  >(tx: Transaction<TransferProgrammableTransaction | StakingProgrammableTransaction> | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }
@@ -77,7 +78,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {string} rawTransaction - the raw tx
    * @returns {Transaction} parsedtransaction
    */
-  private parseTransaction(rawTransaction: string): SuiTransaction<PayTx | MoveCallTx> {
+  private parseTransaction(
+    rawTransaction: string
+  ): SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction> {
     return Transaction.deserializeSuiTransaction(rawTransaction);
   }
 }
