@@ -8,6 +8,8 @@ import {
   isWalletUnspent,
   KeyName,
   outputScripts,
+  parsePsbtInput,
+  parseSignatureScript2Of3,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
@@ -225,4 +227,86 @@ export function validateFinalizedInput(
     assert.strictEqual(input.finalScriptWitness?.length, 66);
   }
   assert.ok(!input.unknownKeyVals?.length);
+}
+
+export function validateParsedP2trMusig2KeyPathPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  index: number,
+  signature: 'unsigned' | 'halfsigned' | 'fullysigned'
+): void {
+  const parsed = parsePsbtInput(psbt, 0);
+  assert.ok(parsed);
+  assert.ok(parsed.scriptType === 'p2trMusig2Kp');
+  assert.strictEqual(parsed.pubScript.length, 34);
+  assert.strictEqual(parsed.publicKeys.length, 1);
+  assert.strictEqual(parsed.publicKeys[0].length, 32);
+
+  if (signature === 'unsigned') {
+    assert.strictEqual(parsed.signatures, undefined);
+    assert.strictEqual(parsed.participantPublicKeys, undefined);
+  } else {
+    const expected = signature === 'halfsigned' ? 1 : 2;
+    assert.strictEqual(parsed.signatures?.length, expected);
+    parsed.signatures.forEach((sig) => {
+      assert.strictEqual(sig.length, 32);
+    });
+    assert.strictEqual(parsed.participantPublicKeys?.length, expected);
+    parsed.participantPublicKeys.forEach((pk) => {
+      assert.strictEqual(pk.length, 33);
+    });
+  }
+}
+
+export function validateParsedP2trMusig2ScriptPathPsbt(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  index: number,
+  signature: 'unsigned' | 'halfsigned' | 'fullysigned'
+): void {
+  const input = psbt.data.inputs[index];
+  const parsed = parsePsbtInput(psbt, 0);
+  assert.ok(parsed);
+  assert.ok(parsed.scriptType === 'p2trOrP2trMusig2Sp');
+  assert.ok(input.tapLeafScript);
+  assert.ok(parsed.pubScript.equals(input.tapLeafScript[0].script));
+  assert.ok(parsed.controlBlock.equals(input.tapLeafScript[0].controlBlock));
+  assert.strictEqual(parsed.scriptPathLevel, 1);
+  assert.strictEqual(parsed.leafVersion, input.tapLeafScript[0].leafVersion);
+  parsed.publicKeys.forEach((pk) => {
+    assert.strictEqual(pk.length, 32);
+  });
+  if (signature === 'unsigned') {
+    assert.strictEqual(parsed.signatures, undefined);
+  } else {
+    const expected = signature === 'halfsigned' ? 1 : 2;
+    assert.strictEqual(parsed.signatures?.length, expected);
+    parsed.signatures.forEach((sig) => {
+      assert.strictEqual(sig.length, 64);
+    });
+  }
+}
+
+export function validateParsedSigScriptP2trMusig2ScriptPath(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  tx: UtxoTransaction<bigint>,
+  index: number
+): void {
+  const input = psbt.data.inputs[index];
+
+  const parsedSigScript = parseSignatureScript2Of3(tx.ins[0]);
+
+  assert.ok(parsedSigScript);
+  assert.ok(parsedSigScript.scriptType === 'p2trOrP2trMusig2Sp');
+  assert.ok(input.tapLeafScript);
+  assert.ok(parsedSigScript.pubScript.equals(input.tapLeafScript[0].script));
+  assert.ok(parsedSigScript.controlBlock.equals(input.tapLeafScript[0].controlBlock));
+  assert.strictEqual(parsedSigScript.scriptPathLevel, 1);
+  assert.strictEqual(parsedSigScript.leafVersion, input.tapLeafScript[0].leafVersion);
+  parsedSigScript.publicKeys.forEach((pk) => {
+    assert.strictEqual(pk.length, 32);
+  });
+
+  assert.strictEqual(parsedSigScript.signatures?.length, 2);
+  parsedSigScript.signatures.forEach((sig) => {
+    assert.strictEqual(sig.length, 64);
+  });
 }

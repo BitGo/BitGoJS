@@ -15,6 +15,7 @@ import { Triple } from './types';
 import { getMainnet, Network, networks } from '../networks';
 import { ecc as eccLib } from '../noble_ecc';
 import { parseSignatureScript2Of3 } from './parseInput';
+import { getTaprootOutputKey } from '../taproot';
 
 /**
  * Constraints for signature verifications.
@@ -79,16 +80,38 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
 
   const parsedScript = parseSignatureScript2Of3(input);
 
+  if (parsedScript.scriptType === 'p2trMusig2Kp' || parsedScript.scriptType === 'p2trOrP2trMusig2Sp') {
+    if (verificationSettings.signatureIndex !== undefined) {
+      throw new Error(`signatureIndex parameter not supported for p2tr`);
+    }
+
+    if (!prevOutputs) {
+      throw new Error(`prevOutputs not set`);
+    }
+
+    if (prevOutputs.length !== transaction.ins.length) {
+      throw new Error(`prevOutputs length ${prevOutputs.length}, expected ${transaction.ins.length}`);
+    }
+  }
+
+  let publicKeys: Buffer[];
+  if (parsedScript.scriptType === 'p2trMusig2Kp') {
+    if (!prevOutputs) {
+      throw new Error(`prevOutputs not set`);
+    }
+    publicKeys = [getTaprootOutputKey(prevOutputs[inputIndex].script)];
+  } else {
+    publicKeys = parsedScript.publicKeys.filter(
+      (buf) =>
+        verificationSettings.publicKey === undefined ||
+        verificationSettings.publicKey.equals(buf) ||
+        verificationSettings.publicKey.slice(1).equals(buf)
+    );
+  }
+
   const signatures = parsedScript.signatures
     .filter((s) => s && s.length)
     .filter((s, i) => verificationSettings.signatureIndex === undefined || verificationSettings.signatureIndex === i);
-
-  const publicKeys = parsedScript.publicKeys.filter(
-    (buf) =>
-      verificationSettings.publicKey === undefined ||
-      verificationSettings.publicKey.equals(buf) ||
-      verificationSettings.publicKey.slice(1).equals(buf)
-  );
 
   return signatures.map((signatureBuffer): SignatureVerification => {
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
@@ -102,21 +125,9 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       signatureBuffer = signatureBuffer.slice(0, -1);
     }
 
-    if (parsedScript.scriptType === 'p2tr') {
-      if (verificationSettings.signatureIndex !== undefined) {
-        throw new Error(`signatureIndex parameter not supported for p2tr`);
-      }
-
+    if (parsedScript.scriptType === 'p2trOrP2trMusig2Sp') {
       if (!prevOutputs) {
         throw new Error(`prevOutputs not set`);
-      }
-
-      if (prevOutputs.length !== transaction.ins.length) {
-        throw new Error(`prevOutputs length ${prevOutputs.length}, expected ${transaction.ins.length}`);
-      }
-
-      if (!('controlBlock' in parsedScript)) {
-        throw new Error('expected controlBlock');
       }
       const { controlBlock, pubScript } = parsedScript;
       const leafHash = taproot.getTapleafHash(eccLib, controlBlock, pubScript);
@@ -139,6 +150,20 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
         return { signedBy: signedBy[0], signature: signatureBuffer };
       }
       throw new Error(`illegal state: signed by multiple public keys`);
+    } else if (parsedScript.scriptType === 'p2trMusig2Kp') {
+      if (!prevOutputs) {
+        throw new Error(`prevOutputs not set`);
+      }
+      const signatureHash = transaction.hashForWitnessV1(
+        inputIndex,
+        prevOutputs.map(({ script }) => script),
+        prevOutputs.map(({ value }) => value),
+        hashType
+      );
+      const result = eccLib.verifySchnorr(signatureHash, publicKeys[0], signatureBuffer);
+      return result
+        ? { signedBy: publicKeys[0], signature: signatureBuffer }
+        : { signedBy: undefined, signature: undefined };
     } else {
       // slice the last byte from the signature hash input because it's the hash type
       const { signature, hashType } = ScriptSignature.decode(signatureBuffer);

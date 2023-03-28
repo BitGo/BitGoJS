@@ -11,7 +11,7 @@ import {
   createTransactionFromBuffer,
   getDefaultTransactionVersion,
   getOutputIdForInput,
-  ParsedSignatureScript2Of3,
+  ParsedSignatureScriptP2msBased,
   parseSignatureScript,
   parseSignatureScript2Of3,
   signInput2Of3,
@@ -201,7 +201,7 @@ function runTestParse<TNumber extends number | bigint>(
       }
 
       parsedTx.ins.forEach((input, i) => {
-        const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
+        const result = parseSignatureScript(input) as ParsedSignatureScriptP2msBased;
 
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
@@ -215,18 +215,19 @@ function runTestParse<TNumber extends number | bigint>(
     it(`verifySignatures for original transaction`, function () {
       parsedTx.ins.forEach((input, i) => {
         const prevOutValue = getPrevOutputValue(input);
-        const { publicKeys } = parseSignatureScript2Of3(input);
-        if (!publicKeys) {
+        const result = parseSignatureScript2Of3(input);
+        assert.ok(result.scriptType !== 'p2trMusig2Kp');
+        if (!result.publicKeys) {
           throw new Error(`expected publicKeys`);
         }
-        assert.strictEqual(publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
+        assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
 
         if (scriptType === 'p2tr') {
           // TODO implement verifySignature for p2tr
           this.skip();
         }
 
-        publicKeys.forEach((publicKey, publicKeyIndex) => {
+        result.publicKeys.forEach((publicKey, publicKeyIndex) => {
           assert.strictEqual(
             verifySignature(parsedTx, i, prevOutValue, {
               publicKey,

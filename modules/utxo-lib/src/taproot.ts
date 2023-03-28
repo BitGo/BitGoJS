@@ -491,3 +491,23 @@ export function getTweakedOutputKey(payment: bpayments.Payment): Buffer {
   }
   throw new Error(`invalid p2tr tweaked output key size ${payment.output.length}`);
 }
+
+/**
+ * @returns x-only taproot output key (tapOutputKey)
+ */
+export function getTaprootOutputKey(outputScript: Buffer | (number | Buffer)[]): Buffer {
+  const outputDecompiled = bscript.decompile(outputScript);
+  if (outputDecompiled?.length !== 2) {
+    throw new Error('invalid taproot output script');
+  }
+  const [op1, outputKey] = outputDecompiled;
+  if (
+    !Number.isSafeInteger(op1) ||
+    op1 !== bscript.OPS.OP_1 ||
+    !Buffer.isBuffer(outputKey) ||
+    outputKey.length !== 32
+  ) {
+    throw new Error('invalid taproot output script');
+  }
+  return outputKey;
+}

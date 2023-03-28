@@ -94,7 +94,7 @@ export class InputOutputParser extends Parser {
     return this.node('witness', type, this.params.parseScriptData ? this.parseScriptParts(type, script) : undefined);
   }
 
-  parsePubkeys(parsed: utxolib.bitgo.ParsedSignatureScript2Of3): ParserNode {
+  parsePubkeys(parsed: utxolib.bitgo.ParsedSignatureScriptP2msBased): ParserNode {
     return this.node(
       'pubkeys',
       parsed.publicKeys.length,
@@ -103,7 +103,7 @@ export class InputOutputParser extends Parser {
   }
 
   parseSignatureBuffer(
-    type: utxolib.bitgo.outputScripts.ScriptType2Of3,
+    type: utxolib.bitgo.outputScripts.ScriptTypeAll2Of3,
     buf: Buffer | 0,
     signerIndex: number
   ): ParserNode[] {
@@ -116,7 +116,7 @@ export class InputOutputParser extends Parser {
       nodes.push(this.node('signedBy', ['user', 'backup', 'bitgo'][signerIndex]));
     }
 
-    if (type === 'p2tr') {
+    if (type === 'p2trOrP2trMusig2Sp') {
       // TODO
     } else {
       const { signature, hashType } = ScriptSignature.decode(buf);
@@ -140,7 +140,7 @@ export class InputOutputParser extends Parser {
   }
 
   parseSignatures(
-    parsed: utxolib.bitgo.ParsedSignatureScript2Of3,
+    parsed: utxolib.bitgo.ParsedSignatureScriptP2msBased,
     tx: utxolib.bitgo.UtxoTransaction,
     inputIndex: number,
     prevOutputs?: utxolib.TxOutput[]
@@ -174,10 +174,16 @@ export class InputOutputParser extends Parser {
     parsed: utxolib.bitgo.ParsedSignatureScript | HollowSegwitSpend,
     prevOutputs?: utxolib.TxOutput[]
   ): ParserNode {
-    if (parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)) {
-      return this.node('sigScript', parsed.scriptType, [
-        this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
-        this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
+    if (
+      parsed.scriptType &&
+      (utxolib.bitgo.outputScripts.isScriptTypeP2msBased(parsed.scriptType) ||
+        utxolib.bitgo.outputScripts.isScriptTypeTaprootVirtual(parsed.scriptType))
+    ) {
+      const parsedScriptTypeFixed =
+        parsed.scriptType === 'p2trOrP2trMusig2Sp' ? { ...parsed, scriptType: 'p2tr' } : parsed;
+      return this.node('sigScript', parsedScriptTypeFixed.scriptType, [
+        this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScriptP2msBased),
+        this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScriptP2msBased, tx, inputIndex, prevOutputs),
       ]);
     }
 

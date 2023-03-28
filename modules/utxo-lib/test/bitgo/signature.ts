@@ -141,10 +141,17 @@ function runTestParseScript<TNumber extends number | bigint = number>(
     { expectedPlaceholderSignatures }: { expectedPlaceholderSignatures: number }
   ) {
     const parsed = parseSignatureScript(tx.ins[0]);
-    assert.strictEqual(parsed.scriptType, expectedScriptType);
+    assert.ok(parsed.scriptType !== 'p2trMusig2Kp');
+    assert.strictEqual(parsed.scriptType, expectedScriptType === 'p2tr' ? 'p2trOrP2trMusig2Sp' : expectedScriptType);
+    const parsedScriptTypeFixed = { ...parsed, scriptType: expectedScriptType };
     fixtureUtil.assertEqualJSON(
-      parsed,
-      await readFixture(network, scriptType, ['parsed', keyName(k1), keyName(k2), name].join('-'), parsed)
+      parsedScriptTypeFixed,
+      await readFixture(
+        network,
+        scriptType,
+        ['parsed', keyName(k1), keyName(k2), name].join('-'),
+        parsedScriptTypeFixed
+      )
     );
 
     if (!parsed.scriptType) {
@@ -158,7 +165,7 @@ function runTestParseScript<TNumber extends number | bigint = number>(
       case 'p2sh':
       case 'p2shP2wsh':
       case 'p2wsh':
-      case 'p2tr':
+      case 'p2trOrP2trMusig2Sp':
         assert.strictEqual(
           parsed.signatures.filter((s) => isPlaceholderSignature(s)).length,
           expectedPlaceholderSignatures

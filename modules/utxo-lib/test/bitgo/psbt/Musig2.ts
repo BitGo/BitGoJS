@@ -6,10 +6,13 @@ import {
   getExternalChainCode,
   getInternalChainCode,
   isSegwit,
+  parsePsbtInput,
+  parseSignatureScript2Of3,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
   scriptTypeForChain,
+  UtxoTransaction,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys, getKeyTriple } from '../../../src/testutil';
@@ -47,6 +50,9 @@ import {
   dummyPartialSig,
   validateFinalizedInput,
   network,
+  validateParsedP2trMusig2KeyPathPsbt,
+  validateParsedP2trMusig2ScriptPathPsbt,
+  validateParsedSigScriptP2trMusig2ScriptPath,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -109,6 +115,32 @@ describe('p2trMusig2', function () {
       });
       const tx = psbt.extractTransaction();
       assert.ok(tx);
+    });
+
+    it(`parse psbt and tx`, function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'user', outputType);
+      validateParsedP2trMusig2KeyPathPsbt(psbt, 0, 'unsigned');
+
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      validateParsedP2trMusig2KeyPathPsbt(psbt, 0, 'halfsigned');
+
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+      validateParsedP2trMusig2KeyPathPsbt(psbt, 0, 'fullysigned');
+
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
+      const parsedSigScript = parseSignatureScript2Of3(tx.ins[0]);
+      assert.ok(parsedSigScript.scriptType === 'p2trMusig2Kp');
+      assert.strictEqual(parsedSigScript.signatures.length, 1);
+      assert.strictEqual(parsedSigScript.signatures[0].length, 64);
+
+      assert.throws(
+        () => parsePsbtInput(psbt, 0),
+        (e) => e.message === 'Finalized PSBT parsing is not supported'
+      );
     });
 
     describe('create nonce', function () {
@@ -607,6 +639,23 @@ describe('p2trMusig2', function () {
       validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       psbt.extractTransaction();
     });
+  });
+
+  it(`psbt parse and tx`, function () {
+    const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
+    validateParsedP2trMusig2ScriptPathPsbt(psbt, 0, 'unsigned');
+
+    psbt.signAllInputsHD(rootWalletKeys.user);
+    validateParsedP2trMusig2ScriptPathPsbt(psbt, 0, 'halfsigned');
+
+    psbt.signAllInputsHD(rootWalletKeys.backup);
+    validateParsedP2trMusig2ScriptPathPsbt(psbt, 0, 'fullysigned');
+
+    psbt.finalizeAllInputs();
+    const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
+    const psbtDuplicate = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
+    validateParsedSigScriptP2trMusig2ScriptPath(psbtDuplicate, tx, 0);
   });
 
   describe('validate p2tr Musig2 signatures', function () {

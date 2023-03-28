@@ -190,6 +190,7 @@ export class Dimensions {
     switch (scriptTypeForChain(chain)) {
       case 'p2wsh':
       case 'p2tr':
+      case 'p2trMusig2':
         return 34;
       default:
         return 23;
@@ -221,7 +222,7 @@ export class Dimensions {
    * @return
    */
   static fromScriptType(
-    scriptType: utxolib.bitgo.outputScripts.ScriptType | 'p2pkh',
+    scriptType: utxolib.bitgo.outputScripts.ScriptTypeAll | 'p2pkh',
     params: {
       scriptPathLevel?: number;
     } = {}
@@ -234,6 +235,8 @@ export class Dimensions {
         return Dimensions.SingleInput[scriptType];
       case 'p2tr':
       case 'p2trMusig2':
+      case 'p2trMusig2Kp':
+      case 'p2trOrP2trMusig2Sp':
         switch (params.scriptPathLevel) {
           case undefined:
             return Dimensions.SingleInput.p2trKeypath;
@@ -265,9 +268,7 @@ export class Dimensions {
   static fromInput(input: utxolib.TxInput, params: FromInputParams = {}): Dimensions {
     if (input.script?.length || input.witness?.length) {
       const parsed = utxolib.bitgo.parseSignatureScript(input);
-      if (parsed.scriptType) {
-        return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
-      }
+      return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
     }
 
     const { assumeUnsigned } = params;

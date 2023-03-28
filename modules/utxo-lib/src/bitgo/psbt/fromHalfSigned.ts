@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { PsbtInputUpdate, PartialSig } from 'bip174/src/lib/interfaces';
 import { ecc as eccLib, TxOutput, taproot, getMainnet, networks } from '../..';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -21,8 +22,10 @@ export function getInputUpdate(
   }
 
   const parsedInput = parseSignatureScript(tx.ins[vin]);
+  assert.ok(parsedInput.scriptType !== 'p2trMusig2Kp');
 
   function getPartialSigs(): PartialSig[] {
+    assert.ok(parsedInput.scriptType !== 'p2trMusig2Kp');
     return getSignaturesWithPublicKeys(tx, vin, prevOuts, parsedInput.publicKeys).flatMap((signature, i) =>
       signature
         ? [
@@ -56,10 +59,7 @@ export function getInputUpdate(
         redeemScript: parsedInput.redeemScript,
         witnessScript: parsedInput.witnessScript,
       });
-    case 'p2tr':
-      if (!('controlBlock' in parsedInput)) {
-        throw new Error(`keypath not implemented`);
-      }
+    case 'p2trOrP2trMusig2Sp':
       const leafHash = taproot.getTapleafHash(eccLib, parsedInput.controlBlock, parsedInput.pubScript);
       return {
         tapLeafScript: [

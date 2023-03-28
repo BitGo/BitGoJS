@@ -1,7 +1,14 @@
 import * as opcodes from 'bitcoin-ops';
 import { TxInput, script as bscript } from 'bitcoinjs-lib';
 
-import { isScriptType2Of3, ScriptType, ScriptType2Of3 } from './outputScripts';
+import {
+  ScriptTypeP2msBased,
+  ScriptTypeTaprootVirtual,
+  ScriptTypeVirtual2Of3,
+  ScriptTypeP2shP2pk,
+  isScriptTypeTaprootVirtual,
+  isScriptTypeP2msBased,
+} from './outputScripts';
 import { isTriple } from './types';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
@@ -38,7 +45,7 @@ export function calculateScriptPathLevel(controlBlock: Buffer): number {
 /**
  * @return leaf version for P2TR control block.
  */
-export function getScriptPathLevel(controlBlock: Buffer): number {
+export function getLeafVersion(controlBlock: Buffer): number {
   if (Buffer.isBuffer(controlBlock) && controlBlock.length > 0) {
     return controlBlock[0] & 0xfe;
   }
@@ -46,10 +53,9 @@ export function getScriptPathLevel(controlBlock: Buffer): number {
 }
 
 interface ParsedScript {
-  scriptType: ScriptType;
+  scriptType: ScriptTypeP2shP2pk | ScriptTypeP2msBased | ScriptTypeTaprootVirtual;
 }
 
-export type ParsedPubScript = ParsedScript;
 export type ParsedSignatureScript = ParsedScript;
 
 export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
@@ -58,21 +64,7 @@ export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
   signatures: [Buffer];
 }
 
-export interface ParsedPubScriptTaprootScriptPath extends ParsedPubScript {
-  scriptType: 'p2tr';
-  publicKeys: [Buffer, Buffer];
-  pubScript: Buffer;
-}
-
-export interface ParsedPubScript2Of3 extends ParsedPubScript {
-  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
-  publicKeys: [Buffer, Buffer, Buffer];
-  pubScript: Buffer;
-  redeemScript: Buffer | undefined;
-  witnessScript: Buffer | undefined;
-}
-
-export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
+export interface ParsedSignatureScriptP2msBased extends ParsedSignatureScript {
   scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
   publicKeys: [Buffer, Buffer, Buffer];
   signatures:
@@ -86,21 +78,22 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
 }
 
 /**
- * Keypath spends only have a single pubkey and single signature
+ * To hold parsed data from taproot key path witness (only a 64/65 bytes signature).
+ * Virtual script type p2trMusig2Kp is used to hint unambiguous key path spending type for p2trMusig2.
  */
 export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScript {
-  scriptType: 'p2tr';
-  publicKeys: [Buffer];
+  scriptType: 'p2trMusig2Kp';
   signatures: [Buffer];
-  pubScript: Buffer;
 }
 
 /**
- * Taproot Scriptpath spends are more similar to regular p2ms spends and have two public keys and
- * two signatures
+ * Taproot script path spends are more similar to regular p2ms spends and have two public keys and
+ * two signatures.
+ * To hold parsed data from taproot script path spend witness for both p2tr or p2trMusig2 script path.
+ * Virtual script type p2trOrP2trMusig2Sp is used as it is not possible to find actual type from leaf script.
  */
 export interface ParsedSignatureScriptTaprootScriptPath extends ParsedSignatureScript {
-  scriptType: 'p2tr';
+  scriptType: 'p2trOrP2trMusig2Sp';
   publicKeys: [Buffer, Buffer];
   signatures: [Buffer, Buffer];
   controlBlock: Buffer;
@@ -111,6 +104,43 @@ export interface ParsedSignatureScriptTaprootScriptPath extends ParsedSignatureS
 }
 
 export type ParsedSignatureScriptTaproot = ParsedSignatureScriptTaprootKeyPath | ParsedSignatureScriptTaprootScriptPath;
+
+interface ParsedPubScript {
+  scriptType: ScriptTypeVirtual2Of3;
+}
+
+/**
+ * To hold parsed data from p2ms pub script - p2sh, p2wsh and p2shP2wsh.
+ * Virtual script type p2ms is used as it is not possible to find actual type from pub script.
+ */
+export interface ParsedPubScriptP2ms extends ParsedPubScript {
+  scriptType: 'p2ms';
+  publicKeys: [Buffer, Buffer, Buffer];
+  pubScript: Buffer;
+}
+
+/**
+ * To hold parsed data from taproot pub script (34-byte scriptPubkey).
+ * Virtual script type p2trMusig2Kp is used to hint unambiguous key path spending type for p2trMusig2.
+ */
+export interface ParsedPubScriptTaprootKeyPath extends ParsedPubScript {
+  scriptType: 'p2trMusig2Kp';
+  // tapOutputKey
+  publicKeys: [Buffer];
+  pubScript: Buffer;
+}
+
+/**
+ * To hold parsed data from taproot leaf script of both p2tr or p2trMusig2 script path.
+ * Virtual script type p2trOrP2trMusig2Sp is used as it is not possible to find actual type from leaf script.
+ */
+export interface ParsedPubScriptTaprootScriptPath extends ParsedPubScript {
+  scriptType: 'p2trOrP2trMusig2Sp';
+  publicKeys: [Buffer, Buffer];
+  pubScript: Buffer;
+}
+
+export type ParsedPubScriptTaproot = ParsedPubScriptTaprootKeyPath | ParsedPubScriptTaprootScriptPath;
 
 type DecompiledScript = Array<Buffer | number>;
 
@@ -287,16 +317,13 @@ type InputScriptsNativeSegwit = InputScripts<null, Buffer[]>;
 
 type InputScriptsUnknown = InputScripts<DecompiledScript | null, Buffer[] | null>;
 
-type InputParser<T extends ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot> = (
-  p: InputScriptsUnknown
-) => T | MatchError;
+type InputParser<
+  T extends ParsedSignatureScriptP2shP2pk | ParsedSignatureScriptP2msBased | ParsedSignatureScriptTaproot
+> = (p: InputScriptsUnknown) => T | MatchError;
 
 export type InputPubScript = Buffer;
 
-type PubScriptParser<T extends ParsedPubScriptTaprootScriptPath | ParsedPubScript2Of3> = (
-  p: InputPubScript,
-  ScriptType2Of3
-) => T | MatchError;
+type PubScriptParser<T extends ParsedPubScriptP2ms | ParsedPubScriptTaproot> = (p: InputPubScript) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
   return Boolean(p.script && !p.witness);
@@ -325,10 +352,28 @@ const parseP2shP2pk: InputParser<ParsedSignatureScriptP2shP2pk> = (p) => {
   };
 };
 
+const parseTaprootKeyPath: InputParser<ParsedSignatureScriptTaprootKeyPath> = (p) => {
+  if (!isNativeSegwit(p)) {
+    return new MatchError(`expected native segwit`);
+  }
+  const match = matchScript(p.witness, [':signature']);
+  if (match instanceof MatchError) {
+    return match;
+  }
+  const signatures = match[':signature'] as [Buffer];
+  if (isPlaceholderSignature(signatures[0])) {
+    throw new Error(`invalid p2trMusig2 key path signature`);
+  }
+  return {
+    scriptType: 'p2trMusig2Kp',
+    signatures,
+  };
+};
+
 function parseP2ms(
   decScript: DecompiledScript,
   scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
-): ParsedSignatureScript2Of3 | MatchError {
+): ParsedSignatureScriptP2msBased | MatchError {
   const pattern2Of3: ScriptPatternElement[] = ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'];
 
   const match = matchScriptSome(decScript, [
@@ -351,34 +396,34 @@ function parseP2ms(
     scriptType,
     publicKeys: redeemScript.match[':pubkey'],
     pubScript: redeemScript.buffer,
-    signatures: match[':signature'] as ParsedSignatureScript2Of3['signatures'],
+    signatures: match[':signature'] as ParsedSignatureScriptP2msBased['signatures'],
     redeemScript: scriptType === 'p2sh' ? redeemScript.buffer : undefined,
     witnessScript: scriptType === 'p2shP2wsh' || scriptType === 'p2wsh' ? redeemScript.buffer : undefined,
   };
 }
 
-const parseP2sh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
+const parseP2sh: InputParser<ParsedSignatureScriptP2msBased> = (p) => {
   if (!isLegacy(p)) {
     return new MatchError(`expected legacy input`);
   }
   return parseP2ms(p.script, 'p2sh');
 };
 
-const parseP2shP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
+const parseP2shP2wsh: InputParser<ParsedSignatureScriptP2msBased> = (p) => {
   if (!isWrappedSegwit(p)) {
     return new MatchError(`expected wrapped segwit input`);
   }
   return { ...parseP2ms(p.witness, 'p2shP2wsh'), redeemScript: p.script[0] as Buffer };
 };
 
-const parseP2wsh2Of3: InputParser<ParsedSignatureScript2Of3> = (p) => {
+const parseP2wsh: InputParser<ParsedSignatureScriptP2msBased> = (p) => {
   if (!isNativeSegwit(p)) {
     return new MatchError(`expected native segwit`);
   }
   return parseP2ms(p.witness, 'p2wsh');
 };
 
-const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
+const parseTaprootScriptPath: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   if (!isNativeSegwit(p)) {
     return new MatchError(`expected native segwit`);
   }
@@ -395,10 +440,10 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   const [controlBlock] = match[':control-block'];
   const scriptPathLevel = calculateScriptPathLevel(controlBlock);
 
-  const leafVersion = getScriptPathLevel(controlBlock);
+  const leafVersion = getLeafVersion(controlBlock);
 
   return {
-    scriptType: 'p2tr',
+    scriptType: 'p2trOrP2trMusig2Sp',
     pubScript: match[':script'][0].buffer,
     publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
     signatures: match[':signature'] as [Buffer, Buffer],
@@ -419,9 +464,16 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScriptP2shP2pk | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
+): ParsedSignatureScriptP2shP2pk | ParsedSignatureScriptP2msBased | ParsedSignatureScriptTaproot {
   const decScript = bscript.decompile(input.script);
-  const parsers = [parseP2sh2Of3, parseP2shP2wsh2Of3, parseP2wsh2Of3, parseP2tr2Of3, parseP2shP2pk] as const;
+  const parsers = [
+    parseP2shP2pk,
+    parseP2sh,
+    parseP2wsh,
+    parseP2shP2wsh,
+    parseTaprootKeyPath,
+    parseTaprootScriptPath,
+  ] as const;
   for (const f of parsers) {
     const parsed = f({
       script: decScript?.length === 0 ? null : decScript,
@@ -435,27 +487,30 @@ export function parseSignatureScript(
   throw new Error(`could not parse input`);
 }
 
-export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
+export function parseSignatureScript2Of3(
+  input: TxInput
+): ParsedSignatureScriptP2msBased | ParsedSignatureScriptTaproot {
   const result = parseSignatureScript(input);
 
-  if (!isScriptType2Of3(result.scriptType)) {
+  if (!isScriptTypeP2msBased(result.scriptType) && !isScriptTypeTaprootVirtual(result.scriptType)) {
     throw new Error(`invalid script type`);
   }
 
   if (!result.signatures) {
     throw new Error(`missing signatures`);
   }
-  if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
+  if (
+    result.scriptType !== 'p2trMusig2Kp' &&
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.scriptType !== 'p2trOrP2trMusig2Sp')
+  ) {
     throw new Error(`unexpected pubkey count`);
   }
 
-  return result as ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot;
+  return result as ParsedSignatureScriptP2msBased | ParsedSignatureScriptTaproot;
 }
 
-const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (
-  pubScript,
-  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
-) => {
+const parsePubScriptP2ms: PubScriptParser<ParsedPubScriptP2ms> = (pubScript) => {
   const match = matchScript(
     [pubScript],
     [{ ':script': ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'] }]
@@ -471,15 +526,28 @@ const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (
   }
 
   return {
-    scriptType,
+    scriptType: 'p2ms',
     publicKeys: redeemScript.match[':pubkey'],
     pubScript: redeemScript.buffer,
-    redeemScript: scriptType === 'p2sh' ? redeemScript.buffer : undefined,
-    witnessScript: scriptType === 'p2shP2wsh' || scriptType === 'p2wsh' ? redeemScript.buffer : undefined,
   };
 };
 
-const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> = (pubScript, scriptType: 'p2tr') => {
+const parsePubScriptTaprootKeyPath: PubScriptParser<ParsedPubScriptTaprootKeyPath> = (pubScript) => {
+  const match = matchScript([pubScript], [{ ':script': ['OP_1', ':pubkey-xonly'] }]);
+  if (match instanceof MatchError) {
+    return match;
+  }
+
+  const [script] = match[':script'];
+
+  return {
+    scriptType: 'p2trMusig2Kp',
+    publicKeys: script.match[':pubkey-xonly'] as [Buffer],
+    pubScript: pubScript,
+  };
+};
+
+const parsePubScriptTaprootScriptPath: PubScriptParser<ParsedPubScriptTaprootScriptPath> = (pubScript) => {
   const match = matchScript(
     [pubScript],
     [{ ':script': [':pubkey-xonly', 'OP_CHECKSIGVERIFY', ':pubkey-xonly', 'OP_CHECKSIG'] }]
@@ -488,36 +556,43 @@ const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> 
     return match;
   }
 
+  const [leafScript] = match[':script'];
+
   return {
-    scriptType: 'p2tr',
-    pubScript: match[':script'][0].buffer,
-    publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
+    scriptType: 'p2trOrP2trMusig2Sp',
+    publicKeys: leafScript.match[':pubkey-xonly'] as [Buffer, Buffer],
+    pubScript: leafScript.buffer,
   };
 };
 
+function parsePubScript(inputPubScript: InputPubScript): ParsedPubScriptP2ms | ParsedPubScriptTaproot {
+  const parsers = [parsePubScriptP2ms, parsePubScriptTaprootScriptPath, parsePubScriptTaprootKeyPath] as const;
+  for (const f of parsers) {
+    const parsed = f(inputPubScript);
+    if (parsed instanceof MatchError) {
+      continue;
+    }
+    return parsed;
+  }
+  throw new Error(`could not parse input`);
+}
+
 /**
  * @return pubScript (scriptPubKey/redeemScript/witnessScript) is parsed.
- * P2SH => scriptType, pubScript (redeemScript), redeemScript, public keys
- * PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
- * P2SH-PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
- * P2TR => scriptType, pubScript, controlBlock, scriptPathLevel, leafVersion, pub keys, signatures.
+ * P2SH => scriptType (p2ms), pubScript (redeemScript) public keys
+ * PW2SH => scriptType (p2ms), pubScript (witnessScript), public keys.
+ * P2SH-PW2SH => scriptType (p2ms), pubScript (witnessScript), public keys.
+ * P2TR or P2trMusig2 script path => scriptType (p2trOrP2trMusig2Sp), pubScript, pub keys
+ * P2trMusig2 key path => scriptType (p2trMusig2Kp), pubScript, pub key (x-only tapOutputKey)
  */
-export function parsePubScript(
-  inputPubScript: InputPubScript,
-  scriptType: ScriptType2Of3
-): ParsedPubScript2Of3 | ParsedPubScriptTaprootScriptPath {
-  const result =
-    scriptType === 'p2tr'
-      ? parseP2tr2Of3PubScript(inputPubScript, scriptType)
-      : parseP2msPubScript(inputPubScript, scriptType);
-
-  if (result instanceof MatchError) {
-    throw new Error(result.message);
-  }
-
-  if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
+export function parsePubScript2Of3(inputPubScript: InputPubScript): ParsedPubScriptP2ms | ParsedPubScriptTaproot {
+  const result = parsePubScript(inputPubScript);
+  if (
+    result.scriptType !== 'p2trMusig2Kp' &&
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.scriptType !== 'p2trOrP2trMusig2Sp')
+  ) {
     throw new Error('unexpected pubkey count');
   }
-
   return result;
 }

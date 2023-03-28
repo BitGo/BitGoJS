@@ -14,20 +14,56 @@ export { scriptTypeForChain } from './wallet/chains';
 export const scriptTypeP2shP2pk = 'p2shP2pk';
 export type ScriptTypeP2shP2pk = typeof scriptTypeP2shP2pk;
 
-export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'] as const;
+export const scriptTypesP2msBased = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
+export const scriptTypesTaproot = ['p2tr', 'p2trMusig2'] as const;
+export const scriptTypes2Of3 = [...scriptTypesP2msBased, ...scriptTypesTaproot] as const;
+
+// p2trOrP2trMusig2Sp is a virtual script path script type. To represent script path spending type when actual type is unknown.
+// p2trMusig2Kp is a virtual key path script type to represent key path spending type of p2trMusig2.
+export const scriptTypesTaprootVirtual = ['p2trOrP2trMusig2Sp', 'p2trMusig2Kp'] as const;
+
+// p2ms is a virtual script type that represents non-taproot 3-of-2 multi sig input types - p2sh, p2wsh and p2shP2wsh.
+// Useful when actual p2ms script type is unknown.
+export const scriptTypesVirtual2Of3 = ['p2ms', ...scriptTypesTaprootVirtual] as const;
+
+export const scriptTypesAll2Of3 = [...scriptTypes2Of3, ...scriptTypesVirtual2Of3] as const;
+
+export type ScriptTypeP2msBased = typeof scriptTypesP2msBased[number];
+export type ScriptTypeTaproot = typeof scriptTypesTaproot[number];
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
+
+export type ScriptTypeTaprootVirtual = typeof scriptTypesTaprootVirtual[number];
+export type ScriptTypeVirtual2Of3 = typeof scriptTypesVirtual2Of3[number];
+
+export type ScriptTypeAll2Of3 = typeof scriptTypesAll2Of3[number];
+
+export function isScriptTypeP2msBased(t: string): t is ScriptTypeP2msBased {
+  return scriptTypesP2msBased.includes(t as ScriptTypeP2msBased);
+}
+
+export function isScriptTypeTaproot(t: string): t is ScriptTypeTaproot {
+  return scriptTypesTaproot.includes(t as ScriptTypeTaproot);
+}
 
 export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
   return scriptTypes2Of3.includes(t as ScriptType2Of3);
 }
 
+export function isScriptTypeTaprootVirtual(t: string): t is ScriptTypeTaprootVirtual {
+  return scriptTypesTaprootVirtual.includes(t as ScriptTypeTaprootVirtual);
+}
+
 export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
+
+export type ScriptTypeAll = ScriptTypeP2shP2pk | ScriptTypeAll2Of3;
 
 /**
  * @return true iff scriptType requires witness data
  */
-export function hasWitnessData(scriptType: ScriptType): scriptType is 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2' {
-  return ['p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'].includes(scriptType);
+export function hasWitnessData(
+  scriptType: ScriptTypeAll
+): scriptType is 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2' | ScriptTypeTaprootVirtual {
+  return ['p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2', ...scriptTypesTaprootVirtual].includes(scriptType);
 }
 
 /**
@@ -35,7 +71,7 @@ export function hasWitnessData(scriptType: ScriptType): scriptType is 'p2shP2wsh
  * @param scriptType
  * @return true iff script type is supported for network
  */
-export function isSupportedScriptType(network: Network, scriptType: ScriptType): boolean {
+export function isSupportedScriptType(network: Network, scriptType: ScriptTypeAll): boolean {
   switch (scriptType) {
     case 'p2sh':
     case 'p2shP2pk':
@@ -45,6 +81,8 @@ export function isSupportedScriptType(network: Network, scriptType: ScriptType):
       return supportsSegwit(network);
     case 'p2tr':
     case 'p2trMusig2':
+    case 'p2trOrP2trMusig2Sp':
+    case 'p2trMusig2Kp':
       return supportsTaproot(network);
   }
 

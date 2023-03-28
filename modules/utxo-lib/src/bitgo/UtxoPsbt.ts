@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { Psbt as PsbtBase } from 'bip174';
 import {
   Bip32Derivation,
@@ -14,7 +15,7 @@ import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
 import { checkPlainPublicKey, createTaprootOutputScript, toXOnlyPublicKey } from './outputScripts';
-import { parsePubScript } from './parseInput';
+import { parsePubScript2Of3 } from './parseInput';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
@@ -199,9 +200,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('Input is already finalized');
     }
     const input = checkForInput(this.data.inputs, inputIndex);
+    const tapMusig2PartialSig = this.getProprietaryKeyVals(inputIndex, {
+      identifier: PSBT_PROPRIETARY_IDENTIFIER,
+      subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+    });
     return Math.max(
       Array.isArray(input.partialSig) ? input.partialSig.length : 0,
-      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0
+      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0,
+      tapMusig2PartialSig.length
     );
   }
 
@@ -306,7 +312,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const [pubkey1, pubkey2] = parsePubScript(script, 'p2tr').publicKeys;
+    const result = parsePubScript2Of3(script);
+    assert.ok(result.scriptType === 'p2trOrP2trMusig2Sp');
+    const [pubkey1, pubkey2] = result.publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {
