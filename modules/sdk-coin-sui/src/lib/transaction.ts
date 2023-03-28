@@ -4,25 +4,25 @@ import {
   InvalidTransactionError,
   PublicKey as BasePublicKey,
   Signature,
-  TransactionType,
+  TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import { SuiTransaction, SuiTransactionType, TxData } from './iface';
+import {
+  StakingProgrammableTransaction,
+  SuiTransaction,
+  SuiTransactionType,
+  TransferProgrammableTransaction,
+  TxData,
+} from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import {
-  GasData,
-  normalizeSuiAddress,
-  normalizeSuiObjectId,
-  ProgrammableTransaction,
-  SuiObjectRef,
-} from './mystenlab/types';
+import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES } from './constants';
 import { Buffer } from 'buffer';
 import { fromB64, toB64 } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
-import { TRANSACTION_DATA_MAX_SIZE, TransactionDataBuilder } from './mystenlab/builder/TransactionData';
-import { builder, TransactionCommand } from './mystenlab/builder';
+import { TRANSACTION_DATA_MAX_SIZE, TransactionBlockDataBuilder } from './mystenlab/builder/TransactionDataBlock';
+import { builder } from './mystenlab/builder';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
 export abstract class Transaction<T> extends BaseTransaction {
@@ -110,7 +110,7 @@ export abstract class Transaction<T> extends BaseTransaction {
    *
    * @param {TransactionType} transactionType The transaction type to be set.
    */
-  transactionType(transactionType: TransactionType): void {
+  transactionType(transactionType: BitGoTransactionType): void {
     this._type = transactionType;
   }
 
@@ -153,26 +153,28 @@ export abstract class Transaction<T> extends BaseTransaction {
     return toB64(dataBytes);
   }
 
-  static deserializeSuiTransaction(serializedTx: string): SuiTransaction<ProgrammableTransaction> {
+  static deserializeSuiTransaction(
+    serializedTx: string
+  ): SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction> {
     const data = fromB64(serializedTx);
-    const transaction = TransactionDataBuilder.fromBytes(data);
-    const inputs = transaction.inputs.map((txInput) => txInput.value);
-    const commands: TransactionCommand[] = transaction.commands;
+    const transactionBlock = TransactionBlockDataBuilder.fromBytes(data);
+    const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
+    const transactions = transactionBlock.transactions;
     // TODO: FIXME - get tx type Transfer or AddStake, for now only Transfer
     const txType = SuiTransactionType.Transfer;
     return {
-      id: transaction.getDigest(),
+      id: transactionBlock.getDigest(),
       type: txType,
-      sender: normalizeSuiAddress(transaction.sender!),
+      sender: normalizeSuiAddress(transactionBlock.sender!),
       tx: {
         inputs: inputs,
-        commands: commands,
+        transactions: transactions,
       },
       gasData: {
-        payment: this.normalizeCoins(transaction.gasConfig.payment!),
-        owner: normalizeSuiAddress(transaction.gasConfig.owner!),
-        price: Number(transaction.gasConfig.price as string),
-        budget: Number(transaction.gasConfig.budget as string),
+        payment: this.normalizeCoins(transactionBlock.gasConfig.payment!),
+        owner: normalizeSuiAddress(transactionBlock.gasConfig.owner!),
+        price: Number(transactionBlock.gasConfig.price as string),
+        budget: Number(transactionBlock.gasConfig.budget as string),
       },
     };
   }

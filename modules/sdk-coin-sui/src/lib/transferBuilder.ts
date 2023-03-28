@@ -5,7 +5,10 @@ import { SuiTransaction, SuiTransactionType, TransferProgrammableTransaction } f
 import { Transaction } from './transaction';
 import { TransferTransaction } from './transferTransaction';
 import assert from 'assert';
-import { Commands, Transaction as ProgrammingTransactionBuilder } from './mystenlab/builder';
+import {
+  Transactions as TransactionsConstructor,
+  TransactionBlock as ProgrammingTransactionBlockBuilder,
+} from './mystenlab/builder';
 import utils from './utils';
 
 export class TransferBuilder extends TransactionBuilder<TransferProgrammableTransaction> {
@@ -102,20 +105,24 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
    */
   protected buildSuiTransaction(): SuiTransaction<TransferProgrammableTransaction> {
     this.validateTransactionFields();
-    const programmableTxBuilder = new ProgrammingTransactionBuilder();
+    const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
     this._recipients.forEach((recipient) => {
       const coin = programmableTxBuilder.add(
-        Commands.SplitCoins(programmableTxBuilder.gas, [programmableTxBuilder.pure(Number(recipient.amount))])
+        TransactionsConstructor.SplitCoins(programmableTxBuilder.gas, [
+          programmableTxBuilder.pure(Number(recipient.amount)),
+        ])
       );
-      programmableTxBuilder.add(Commands.TransferObjects([coin], programmableTxBuilder.object(recipient.address)));
+      programmableTxBuilder.add(
+        TransactionsConstructor.TransferObjects([coin], programmableTxBuilder.object(recipient.address))
+      );
     });
-    const txData = programmableTxBuilder.transactionData;
+    const txData = programmableTxBuilder.blockData;
     return {
       type: this._type,
       sender: this._sender,
       tx: {
         inputs: [...txData.inputs],
-        commands: [...txData.commands],
+        transactions: [...txData.transactions],
       },
       gasData: {
         ...this._gasData,

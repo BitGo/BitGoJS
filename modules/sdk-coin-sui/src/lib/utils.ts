@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
-import { isPureArg } from './mystenlab/types/sui-bcs';
+import { isPureArg, CallArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
 import { MethodNames } from './iface';
 import { Buffer } from 'buffer';
@@ -17,10 +17,11 @@ import {
   isValidSuiAddress,
   normalizeSuiAddress,
   normalizeSuiObjectId,
+  SuiCallArg,
   SuiJsonValue,
   SuiObjectRef,
 } from './mystenlab/types';
-import { builder, TransactionInput } from './mystenlab/builder';
+import { builder, TransactionBlockInput } from './mystenlab/builder';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -173,7 +174,7 @@ export class Utils implements BaseUtils {
     }
   }
 
-  getRecipients(inputs: SuiJsonValue[] | TransactionInput[]): Recipient[] {
+  getRecipients(inputs: CallArg[] | SuiCallArg[] | TransactionBlockInput[]): Recipient[] {
     const amounts: string[] = [];
     const addresses: string[] = [];
     inputs.forEach((input, index) => {
@@ -191,16 +192,16 @@ export class Utils implements BaseUtils {
     });
   }
 
-  getRecipientAmount(input: SuiJsonValue | TransactionInput): string {
+  getRecipientAmount(input: SuiJsonValue | TransactionBlockInput): string {
     return isPureArg(input)
       ? builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64')
-      : (input as TransactionInput).value;
+      : (input as TransactionBlockInput).value;
   }
 
-  getRecipientAddress(input: SuiJsonValue | TransactionInput): string {
+  getRecipientAddress(input: SuiJsonValue | TransactionBlockInput): string {
     return isPureArg(input)
       ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
-      : (input as TransactionInput).value;
+      : (input as TransactionBlockInput).value;
   }
 
   normalizeCoins(coins: any[]): SuiObjectRef[] {
@@ -217,7 +218,7 @@ export class Utils implements BaseUtils {
     };
   }
 
-  transactionInput(type: 'object' | 'pure', index = 0, value?: unknown): TransactionInput {
+  transactionInput(type: 'object' | 'pure', index = 0, value?: unknown): TransactionBlockInput {
     return {
       kind: 'Input',
       value: typeof value === 'bigint' ? String(value) : value,

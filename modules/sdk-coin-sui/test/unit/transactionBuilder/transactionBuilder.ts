@@ -130,7 +130,7 @@ describe('Sui Transaction Builder', async () => {
     jsonTx.gasData.should.deepEqual(testData.gasData);
     jsonTx.kind.ProgrammableTransaction.should.deepEqual({
       inputs: testData.txInputs,
-      commands: testData.txCommands,
+      transactions: testData.txCommands,
     });
     jsonTx.sender.should.equal(testData.sender.address);
     jsonTx.gasData.should.deepEqual(testData.gasData);

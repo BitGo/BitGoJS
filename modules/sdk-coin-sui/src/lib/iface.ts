@@ -1,6 +1,17 @@
-import { Recipient, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
-import { GasData, ProgrammableTransaction, SuiAddress, SuiObjectRef, TransactionExpiration } from './mystenlab/types';
-import { TransactionCommand, TransactionInput } from './mystenlab/builder';
+import {
+  Recipient,
+  TransactionExplanation as BaseTransactionExplanation,
+  TransactionType as BitGoTransactionType,
+} from '@bitgo/sdk-core';
+import {
+  GasData,
+  ProgrammableTransaction,
+  CallArg,
+  SuiAddress,
+  SuiObjectRef,
+  TransactionExpiration,
+} from './mystenlab/types';
+import { TransactionType, TransactionBlockInput } from './mystenlab/builder';
 
 export enum SuiTransactionType {
   Transfer = 'Transfer',
@@ -9,7 +20,7 @@ export enum SuiTransactionType {
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
-  type: TransactionType;
+  type: BitGoTransactionType;
 }
 
 export interface TxData {
@@ -23,15 +34,15 @@ export interface TxData {
 export type TransferProgrammableTransaction =
   | ProgrammableTransaction
   | {
-      inputs: TransactionInput[];
-      commands: TransactionCommand[];
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
     };
 
 export type StakingProgrammableTransaction =
   | ProgrammableTransaction
   | {
-      inputs: TransactionInput[];
-      commands: TransactionCommand[];
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
     };
 
 export interface SuiTransaction<T = TransferProgrammableTransaction | StakingProgrammableTransaction> {

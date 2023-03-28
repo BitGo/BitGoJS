@@ -352,9 +352,15 @@ export function getMovePackageContent(data: SuiObjectResponse | SuiMovePackage):
   return (suiObject.content as SuiMovePackage).disassembled;
 }
 
+export const CheckpointedObjectId = object({
+  objectId: ObjectId,
+  atCheckpoint: optional(number()),
+});
+export type CheckpointedObjectId = Infer<typeof CheckpointedObjectId>;
+
 export const PaginatedObjectsResponse = object({
   data: array(SuiObjectResponse),
-  nextCursor: union([ObjectId, literal(null)]),
+  nextCursor: optional(CheckpointedObjectId),
   hasNextPage: boolean(),
 });
 export type PaginatedObjectsResponse = Infer<typeof PaginatedObjectsResponse>;
