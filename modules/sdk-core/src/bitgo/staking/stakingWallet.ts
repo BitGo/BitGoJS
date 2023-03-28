@@ -14,6 +14,7 @@ import {
   SwitchValidatorOptions,
   TransactionsReadyToSign,
   UnstakeOptions,
+  EthUnstakeOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
@@ -56,7 +57,7 @@ export class StakingWallet implements IStakingWallet {
    * @param options - unstake options
    * @return StakingRequest
    */
-  async unstake(options: UnstakeOptions): Promise<StakingRequest> {
+  async unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'UNSTAKE');
   }
 
@@ -224,7 +225,7 @@ export class StakingWallet implements IStakingWallet {
   }
 
   private async createStakingRequest(
-    options: StakeOptions | UnstakeOptions | SwitchValidatorOptions,
+    options: StakeOptions | UnstakeOptions | EthUnstakeOptions | SwitchValidatorOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
