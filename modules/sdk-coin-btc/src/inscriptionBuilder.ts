@@ -80,6 +80,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const transaction = await this.wallet.getTransaction({ txHash: parsedSatPoint.txid });
     // TODO(BG-70900): allow supplemental unspents
     const unspents = [transaction.outputs[parsedSatPoint.vout]];
+    unspents[0].value = BigInt(unspents[0].value);
     const txInfo = { unspents };
 
     const changeAddress = await this.wallet.createAddress({
