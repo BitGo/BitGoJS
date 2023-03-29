@@ -5,23 +5,18 @@ import {
   BuildTransactionError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
-  Recipient,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
-import assert from 'assert';
 import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { StakingProgrammableTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
+import { GasData, SuiObjectRef, SuiTransactionType } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
-import { GasData, SuiObjectRef } from './mystenlab/types';
 
-export abstract class TransactionBuilder<
-  T = TransferProgrammableTransaction | StakingProgrammableTransaction
-> extends BaseTransactionBuilder {
+export abstract class TransactionBuilder<T> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
   protected _signatures: Signature[] = [];
   protected _signer: KeyPair;
@@ -104,22 +99,13 @@ export abstract class TransactionBuilder<
     }
   }
 
-  validateRecipients(recipients: Recipient[]): void {
-    assert(
-      recipients && recipients.length > 0,
-      new BuildTransactionError('at least one recipient is required before building')
-    );
-    recipients.forEach((recipient) => {
-      utils.validateAddress(recipient.address, 'address');
-      assert(utils.isValidAmount(recipient.amount), 'Invalid recipient amount');
-    });
-  }
-
   validateGasData(gasData: GasData): void {
     if (!utils.isValidAddress(gasData.owner)) {
       throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
     }
-    this.validateGasPayment(gasData.payment);
+    if (gasData.payment) {
+      this.validateGasPayment(gasData.payment);
+    }
     this.validateGasBudget(gasData.budget);
     this.validateGasPrice(gasData.price);
   }
@@ -137,11 +123,11 @@ export abstract class TransactionBuilder<
     }
   }
 
-  validateGasPayment(payments: SuiObjectRef[]): void {
-    assert(payments && payments.length > 0, new BuildTransactionError('gas payment is required before building'));
-    payments.forEach((payment) => {
-      this.validateSuiObjectRef(payment, 'payment');
-    });
+  validateGasPayment(gasPayment: SuiObjectRef): void {
+    if (!gasPayment) {
+      throw new BuildTransactionError(`Invalid gas Payment: undefined`);
+    }
+    this.validateSuiObjectRef(gasPayment, 'gasPayment');
   }
 
   validateSuiObjectRef(suiObjectRef: SuiObjectRef, field: string): void {

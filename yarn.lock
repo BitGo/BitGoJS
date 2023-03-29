@@ -3117,10 +3117,10 @@
     tweetnacl "^1.0.3"
     tweetnacl-util "^0.15.1"
 
-"@mysten/bcs@^0.0.0-experimental-20230322224140":
-  version "0.0.0-experimental-20230324133816"
-  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.0.0-experimental-20230324133816.tgz#517e30029327c9983cafe365bef5b6cb3cabad26"
-  integrity sha512-jTKaJtfmMYSPBGafb/XvknbMGoMm+Fof3fEw2apBs8qXFC+jyK+sZLpyRQO4/0pBSl7uzlP1CkcoNtOuvbaC9w==
+"@mysten/bcs@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@mysten/bcs/-/bcs-0.6.0.tgz#a7c19a1fce441b5b1c2c9abade588542b723cd38"
+  integrity sha512-kw5GVjtonq7+CU8M2E2N3ndvWhSltDsMzXjy6WECAib1kr+FL9wn7dTmsw84QQjRslspKt1BGhNb+/CpLZp1cQ==
   dependencies:
     bs58 "^5.0.0"
 
@@ -16900,11 +16900,6 @@ superstruct@^0.14.2:
   version "0.14.2"
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-0.14.2.tgz#0dbcdf3d83676588828f1cf5ed35cda02f59025b"
   integrity sha512-nPewA6m9mR3d6k7WkZ8N8zpTWfenFH3q9pA2PkuiZxINr9DKB2+40wEQf0ixn8VaGuJ78AB6iWOtStI+/4FKZQ==
-
-superstruct@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-1.0.3.tgz#de626a5b49c6641ff4d37da3c7598e7a87697046"
-  integrity sha512-8iTn3oSS8nRGn+C2pgXSKPI3jmpm6FExNazNpjvqS6ZUJQCej3PUXEKM8NjHBOs54ExM+LPW/FBRhymrdcCiSg==
 
 "supertest-as-promised@https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz":
   version "1.0.0"

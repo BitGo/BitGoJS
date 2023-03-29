@@ -1,14 +1,8 @@
 import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, toUint8Array } from '@bitgo/sdk-core';
-import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from './mystenlab/types';
+import * as sha3 from 'js-sha3';
 import utils from './utils';
 import bs58 from 'bs58';
 import * as nacl from 'tweetnacl';
-import blake2b from '@bitgo/blake2b';
-
-export const SIGNATURE_SCHEME_TO_FLAG = {
-  ED25519: 0x00,
-  Secp256k1: 0x01,
-};
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -50,14 +44,10 @@ export class KeyPair extends Ed25519KeyPair {
     const PUBLIC_KEY_SIZE = 32;
     const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
     const pubBuf = Buffer.from(this.keyPair.pub, 'hex');
-    tmp.set([SIGNATURE_SCHEME_TO_FLAG['ED25519']]); // ED25519: 0x00,
+    tmp.set([0x00]);
     tmp.set(pubBuf, 1);
-    return normalizeSuiAddress(
-      blake2b(PUBLIC_KEY_SIZE)
-        .update(tmp)
-        .digest('hex')
-        .slice(0, SUI_ADDRESS_LENGTH * 2)
-    );
+    // prefix with 0x to normalize address
+    return '0x'.concat(sha3.sha3_256(tmp).slice(0, 40));
   }
 
   /**

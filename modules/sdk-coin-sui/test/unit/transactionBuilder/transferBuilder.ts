@@ -4,44 +4,149 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
-import { SuiTransactionType, TransferProgrammableTransaction } from '../../../src/lib/iface';
+import { PayTx, SuiTransactionType } from '../../../src/lib/iface';
 
 describe('Sui Transfer Builder', () => {
   const factory = getBuilderFactory('tsui');
 
   describe('Succeed', () => {
-    it('should build a transfer tx', async function () {
+    it('should build a transfer pay tx', async function () {
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.type(SuiTransactionType.Pay);
       txBuilder.sender(testData.sender.address);
-      txBuilder.send(testData.recipients);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
-        testData.coinsWithGasPayment
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.gasPayment);
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0],
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSFER_PAY_TX);
+    });
+
+    it('should build a transfer paySui tx with gasPayment', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.PaySui);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.gasPayment);
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0],
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX_WITH_GAS_PAYMENT_AND_NOT_IN_PAYTX);
+    });
+
+    it('should build a transfer paySui tx without passing gasPayment', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.PaySui);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx(testData.payTxWithGasPayment);
+      txBuilder.gasData(testData.gasDataWithoutGasPayment);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasData.payment!.should.deepEqual(
+        testData.payTxWithoutGasPayment.coins[0]
       );
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: testData.sender.address,
-        value: (testData.AMOUNT * 2).toString(),
+        value: testData.AMOUNT.toString(),
         coin: 'tsui',
       });
-      tx.outputs.length.should.equal(2);
+      tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
-        address: testData.recipients[0].address,
-        value: testData.recipients[0].amount,
-        coin: 'tsui',
-      });
-      tx.outputs[1].should.deepEqual({
-        address: testData.recipients[1].address,
-        value: testData.recipients[1].amount,
+        address: testData.recipients[0],
+        value: testData.AMOUNT.toString(),
         coin: 'tsui',
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.TRANSFER);
+      should.equal(rawTx, testData.TRANSFER_PAY_SUI_TX_WITHOUT_GAS_PAYMENT_AND_IN_PAYTX);
+    });
+
+    it('should build a transfer payAllSui tx with gasPayment', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.PayAllSui);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasData.payment!.should.deepEqual(testData.gasPayment);
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0],
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX_WITH_GAS_PAYMENT_AND_NOT_IN_PAYTX);
+    });
+
+    it('should build a transfer payAllSui tx without passing gasPayment', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.PayAllSui);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.payTx(testData.payTxWithoutGasPayment);
+      txBuilder.gasData(testData.gasDataWithoutGasPayment);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<PayTx>).suiTransaction.gasData.payment!.should.deepEqual(
+        testData.payTxWithoutGasPayment.coins[0]
+      );
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0],
+        value: testData.AMOUNT.toString(),
+        coin: 'tsui',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSFER_PAY_ALL_SUI_TX_WITHOUT_GAS_PAYMENT_AND_NOT_IN_PAYTX);
     });
   });
 
@@ -53,10 +158,16 @@ describe('Sui Transfer Builder', () => {
 
     it('should fail for invalid payTx', async function () {
       const builder = factory.getTransferBuilder();
-      should(() => builder.send([testData.invalidRecipients[0]])).throwError(
-        'Invalid or missing address, got: randomString'
+      should(() => builder.payTx(testData.invalidPayTxs[0])).throwError(
+        'Invalid payTx.coin, invalid or missing version'
       );
-      should(() => builder.send([testData.invalidRecipients[1]])).throwError('Invalid recipient amount');
+      should(() => builder.payTx(testData.invalidPayTxs[1])).throwError(
+        'Invalid or missing payTx.recipient, got: randomString'
+      );
+      should(() => builder.payTx(testData.invalidPayTxs[2])).throwError(
+        'recipients length 3 must equal to amounts length 1'
+      );
+      should(() => builder.payTx(testData.invalidPayTxs[3])).throwError('Invalid or missing amounts, got: 0');
     });
 
     it('should fail for invalid gasData', function () {
@@ -75,15 +186,13 @@ describe('Sui Transfer Builder', () => {
       const builder = factory.getTransferBuilder();
       const invalidGasPayment = {
         ...testData.gasDataWithoutGasPayment,
-        payment: [
-          {
-            objectId: '',
-            version: -1,
-            digest: '',
-          },
-        ],
+        payment: {
+          objectId: '',
+          version: -1,
+          digest: '',
+        },
       };
-      should(() => builder.gasData(invalidGasPayment)).throwError('Invalid payment, invalid or missing version');
+      should(() => builder.gasData(invalidGasPayment)).throwError('Invalid gasPayment, invalid or missing version');
     });
   });
 });

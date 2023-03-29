@@ -6,8 +6,7 @@ import { Ed25519BIP32, Eddsa, HDTree } from '@bitgo/sdk-core';
 import bs58 from 'bs58';
 
 describe('SUI KeyPair', function () {
-  let rootKeychain;
-  let rootPublicKey;
+  let derivedPublickey;
   let MPC: Eddsa;
   let hdTree: HDTree;
 
@@ -21,8 +20,7 @@ describe('SUI KeyPair', function () {
     const A_combine = MPC.keyCombine(A.uShare, [B.yShares[1], C.yShares[1]]);
 
     const commonKeychain = A_combine.pShare.y + A_combine.pShare.chaincode;
-    rootKeychain = MPC.deriveUnhardened(commonKeychain, 'm/0');
-    rootPublicKey = Buffer.from(rootKeychain, 'hex').slice(0, 32).toString('hex');
+    derivedPublickey = MPC.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
   });
 
   describe('should create a valid KeyPair', () => {
@@ -35,8 +33,8 @@ describe('SUI KeyPair', function () {
 
   describe('Keypair from derived Public Key', () => {
     it('should create keypair with just derived public key', () => {
-      const keyPair = new KeyPair({ pub: rootPublicKey });
-      keyPair.getKeys().pub.should.equal(rootPublicKey);
+      const keyPair = new KeyPair({ pub: derivedPublickey });
+      keyPair.getKeys().pub.should.equal(derivedPublickey);
     });
 
     it('should create keypair with base58 public key', () => {
@@ -51,17 +49,17 @@ describe('SUI KeyPair', function () {
     });
 
     it('should derived ed25519 public key should be valid', () => {
-      utils.isValidPublicKey(rootPublicKey).should.be.true();
+      utils.isValidPublicKey(derivedPublickey).should.be.true();
     });
 
     it('should return sui address from derived public key', () => {
-      const keyPair = new KeyPair({ pub: rootPublicKey });
+      const keyPair = new KeyPair({ pub: derivedPublickey });
       const address = keyPair.getAddress();
       utils.isValidAddress(address).should.be.true();
     });
 
     it('should return noramlize address from derived public key', () => {
-      const keyPair = new KeyPair({ pub: rootPublicKey });
+      const keyPair = new KeyPair({ pub: derivedPublickey });
       const address = keyPair.getAddress();
       address.should.startWith('0x');
     });

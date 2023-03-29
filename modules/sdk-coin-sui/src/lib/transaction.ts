@@ -6,24 +6,26 @@ import {
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { SuiTransaction, SuiTransactionType, TxData } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
 import {
   GasData,
-  normalizeSuiAddress,
-  normalizeSuiObjectId,
-  ProgrammableTransaction,
+  MoveCallTx,
+  MoveCallTxDetails,
+  PayTx,
   SuiObjectRef,
-} from './mystenlab/types';
-import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES } from './constants';
+  SuiTransaction,
+  SuiTransactionType,
+  TxData,
+  TxDetails,
+} from './iface';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import utils from './utils';
+import { bcs } from './bcs';
+import { SER_BUFFER_SIZE, SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
-import { fromB64, toB64 } from '@mysten/bcs';
+import sha3 from 'js-sha3';
+import { fromB64, fromHEX } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
-import { TRANSACTION_DATA_MAX_SIZE, TransactionDataBuilder } from './mystenlab/builder/TransactionData';
-import { builder, TransactionCommand } from './mystenlab/builder';
-import { hashTypedData } from './mystenlab/cryptography/hash';
 
 export abstract class Transaction<T> extends BaseTransaction {
   protected _suiTransaction: SuiTransaction<T>;
@@ -44,10 +46,12 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   /** @inheritDoc **/
   get id(): string {
-    const dataBytes = this.getDataBytes();
-    const hash = hashTypedData('TransactionData', dataBytes);
-    this._id = bs58.encode(hash);
-    return this._id;
+    if (this._signature !== undefined) {
+      const dataBytes = this.getDataBytes();
+      const hash = this.getSha256Hash('TransactionData', dataBytes);
+      this._id = bs58.encode(hash);
+    }
+    return this._id || UNAVAILABLE_TEXT;
   }
 
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
@@ -133,8 +137,7 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   getDataBytes(): Uint8Array {
     const txData = this.getTxData();
-    const txSer = builder.ser('TransactionData', { V1: txData }, { maxSize: TRANSACTION_DATA_MAX_SIZE });
-    return txSer.toBytes();
+    return bcs.ser('TransactionData', txData, SER_BUFFER_SIZE).toBytes();
   }
 
   /** @inheritDoc */
@@ -149,37 +152,125 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   serialize(): string {
     const dataBytes = this.getDataBytes();
-    this._id = bs58.encode(hashTypedData('TransactionData', dataBytes));
-    return toB64(dataBytes);
+    if (this._signature !== undefined) {
+      const hash = this.getSha256Hash('TransactionData', dataBytes);
+      this._id = bs58.encode(hash);
+    }
+    return Buffer.from(dataBytes).toString('base64');
   }
 
-  static deserializeSuiTransaction(serializedTx: string): SuiTransaction<ProgrammableTransaction> {
+  private getSha256Hash(typeTag: string, data: Uint8Array): Uint8Array {
+    const hash = sha3.sha3_256.create();
+
+    const typeTagBytes = Array.from(`${typeTag}::`).map((e) => e.charCodeAt(0));
+
+    const dataWithTag = new Uint8Array(typeTagBytes.length + data.length);
+    dataWithTag.set(typeTagBytes);
+    dataWithTag.set(data, typeTagBytes.length);
+
+    hash.update(dataWithTag);
+
+    return fromHEX(hash.hex());
+  }
+
+  static deserializeSuiTransaction(serializedTx: string): SuiTransaction {
     const data = fromB64(serializedTx);
-    const transaction = TransactionDataBuilder.fromBytes(data);
-    const inputs = transaction.inputs.map((txInput) => txInput.value);
-    const commands: TransactionCommand[] = transaction.commands;
-    // TODO: FIXME - get tx type Transfer or AddStake, for now only Transfer
-    const txType = SuiTransactionType.Transfer;
+    const k = bcs.de('TransactionData', data);
+
+    let type: SuiTransactionType;
+    const txDetails: TxDetails = k.kind.Single;
+    if (txDetails.hasOwnProperty('Pay')) {
+      type = SuiTransactionType.Pay;
+    } else if (txDetails.hasOwnProperty('PaySui')) {
+      type = SuiTransactionType.PaySui;
+    } else if (txDetails.hasOwnProperty('PayAllSui')) {
+      type = SuiTransactionType.PayAllSui;
+    } else if (txDetails.hasOwnProperty('Call')) {
+      const moveCallTxDetail = txDetails as MoveCallTxDetails;
+      type = utils.getSuiTransactionType(moveCallTxDetail.Call.function);
+    } else {
+      throw new Error('Transaction type not supported: ' + txDetails);
+    }
+
+    const tx = this.getProperTxDetails(k, type);
+    const gasData = this.getProperGasData(k);
+
     return {
-      id: transaction.getDigest(),
-      type: txType,
-      sender: normalizeSuiAddress(transaction.sender!),
-      tx: {
-        inputs: inputs,
-        commands: commands,
-      },
-      gasData: {
-        payment: this.normalizeCoins(transaction.gasConfig.payment!),
-        owner: normalizeSuiAddress(transaction.gasConfig.owner!),
-        price: Number(transaction.gasConfig.price as string),
-        budget: Number(transaction.gasConfig.budget as string),
-      },
+      type,
+      sender: utils.normalizeHexId(k.sender),
+      tx,
+      gasData,
     };
+  }
+
+  static getProperTxDetails(k: any, type: SuiTransactionType): PayTx | MoveCallTx {
+    switch (type) {
+      case SuiTransactionType.Pay:
+        return {
+          coins: this.normalizeCoins(k.kind.Single.Pay.coins),
+          recipients: k.kind.Single.Pay.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
+          amounts: k.kind.Single.Pay.amounts.map((amount) => Number(amount)),
+        };
+      case SuiTransactionType.PaySui:
+        return {
+          coins: this.normalizeCoins(k.kind.Single.PaySui.coins),
+          recipients: k.kind.Single.PaySui.recipients.map((recipient) => utils.normalizeHexId(recipient)) as string[],
+          amounts: k.kind.Single.PaySui.amounts.map((amount) => Number(amount)),
+        };
+      case SuiTransactionType.PayAllSui:
+        return {
+          coins: this.normalizeCoins(k.kind.Single.PayAllSui.coins),
+          recipients: [k.kind.Single.PayAllSui.recipient].map((recipient) =>
+            utils.normalizeHexId(recipient)
+          ) as string[],
+          amounts: [], // PayAllSui deserialization doesn't return the amount
+        };
+      case SuiTransactionType.AddDelegation:
+        return {
+          package: k.kind.Single.Call.package,
+          module: k.kind.Single.Call.module,
+          function: k.kind.Single.Call.function,
+          typeArguments: k.kind.Single.Call.typeArguments,
+          arguments: [
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
+            this.normalizeCoins(utils.mapCallArgToCoins(k.kind.Single.Call.arguments[1])),
+            utils.mapCallArgToAmount(k.kind.Single.Call.arguments[2]),
+            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])),
+          ],
+        };
+      case SuiTransactionType.WithdrawDelegation:
+        return {
+          package: k.kind.Single.Call.package,
+          module: k.kind.Single.Call.module,
+          function: k.kind.Single.Call.function,
+          typeArguments: k.kind.Single.Call.typeArguments,
+          arguments: [
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
+          ],
+        };
+      case SuiTransactionType.SwitchDelegation:
+        return {
+          package: k.kind.Single.Call.package,
+          module: k.kind.Single.Call.module,
+          function: k.kind.Single.Call.function,
+          typeArguments: k.kind.Single.Call.typeArguments,
+          arguments: [
+            utils.mapCallArgToSharedObject(k.kind.Single.Call.arguments[0]),
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[1])), // delegation
+            this.normalizeSuiObjectRef(utils.mapCallArgToSuiObjectRef(k.kind.Single.Call.arguments[2])), // stake sui
+            utils.normalizeHexId(utils.mapCallArgToAddress(k.kind.Single.Call.arguments[3])), // new validator address
+          ],
+        };
+      default:
+        throw new InvalidTransactionError('SuiTransactionType not supported');
+    }
   }
 
   static getProperGasData(k: any): GasData {
     return {
-      payment: [this.normalizeSuiObjectRef(k.gasData.payment)],
+      payment: this.normalizeSuiObjectRef(k.gasData.payment),
       owner: utils.normalizeHexId(k.gasData.owner),
       price: Number(k.gasData.price),
       budget: Number(k.gasData.budget),
@@ -194,7 +285,7 @@ export abstract class Transaction<T> extends BaseTransaction {
 
   private static normalizeSuiObjectRef(obj: SuiObjectRef): SuiObjectRef {
     return {
-      objectId: normalizeSuiObjectId(obj.objectId),
+      objectId: utils.normalizeHexId(obj.objectId),
       version: Number(obj.version),
       digest: obj.digest,
     };

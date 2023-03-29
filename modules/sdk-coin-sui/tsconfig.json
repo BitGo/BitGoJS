@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*", "src/lib/iface.ts", "src/lib/bcs.ts", "src/lib/mystenlab/types/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {

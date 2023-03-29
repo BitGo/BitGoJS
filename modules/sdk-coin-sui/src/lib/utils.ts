@@ -3,24 +3,26 @@ import {
   BuildTransactionError,
   ParseTransactionError,
   isValidEd25519PublicKey,
+  InvalidParameterValueError,
   TransactionType,
   NotSupported,
-  Recipient,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
-import { isPureArg } from './mystenlab/types/sui-bcs';
-import { BCS, fromB64 } from '@mysten/bcs';
-import { MethodNames } from './iface';
-import { Buffer } from 'buffer';
+import { bcs } from './bcs';
+import { fromB64 } from '@mysten/bcs';
 import {
-  isValidSuiAddress,
-  normalizeSuiAddress,
-  normalizeSuiObjectId,
-  SuiJsonValue,
+  CallArg,
+  ImmOrOwnedArg,
+  MethodNames,
+  ObjectArg,
+  ObjVecArg,
+  SharedObjectRef,
+  SuiAddress,
   SuiObjectRef,
-} from './mystenlab/types';
-import { builder, TransactionInput } from './mystenlab/builder';
+  SuiTransactionType,
+} from './iface';
+import { Buffer } from 'buffer';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -57,8 +59,8 @@ export class Utils implements BaseUtils {
   isValidRawTransaction(rawTransaction: string): boolean {
     try {
       const data = fromB64(rawTransaction);
-      const deserialized = builder.de('TransactionData', data);
-      builder.ser('TransactionData', deserialized);
+      const deserialized = bcs.de('TransactionData', data);
+      bcs.ser('TransactionData', deserialized);
       return true;
     } catch (e) {
       return false;
@@ -98,7 +100,7 @@ export class Utils implements BaseUtils {
    * @param {string} fieldName Name of the field to validate, its needed to return which field is failing on case of error.
    */
   validateAddress(address: string, fieldName: string): void {
-    if (!address || !isValidSuiAddress(normalizeSuiAddress(address))) {
+    if (!address || !this.isValidAddress(address)) {
       throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
     }
   }
@@ -113,7 +115,6 @@ export class Utils implements BaseUtils {
   }
 
   getHexByteLength(value: string): number {
-    // return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
     return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
   }
 
@@ -138,8 +139,8 @@ export class Utils implements BaseUtils {
    * @param {number} amounts - the amount to validate
    * @returns {boolean} - the validation result
    */
-  isValidAmount(amount: string | number): boolean {
-    const bigNumberAmount = new BigNumber(Number(amount));
+  isValidAmount(amount: number): boolean {
+    const bigNumberAmount = new BigNumber(amount);
     if (!bigNumberAmount.isInteger() || bigNumberAmount.isLessThanOrEqualTo(0)) {
       return false;
     }
@@ -157,6 +158,164 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Map Shared object to CallArg
+   *
+   * @param {SharedObjectRef} obj
+   * @return { Object: ObjectArg }
+   *
+   * example: { Object: { Shared: SUI_SYSTEM_STATE_OBJECT } };
+   */
+  mapSharedObjectToCallArg(obj: SharedObjectRef): CallArg {
+    return { Object: { Shared: utils.normalizeObject(obj) } };
+  }
+
+  /**
+   * Normalize ObjectId and version
+   *
+   * @param {SharedObjectRef} obj
+   * @return {SharedObjectRef}
+   */
+  normalizeObject(obj: SharedObjectRef): SharedObjectRef {
+    return {
+      objectId: utils.normalizeHexId(obj.objectId),
+      initialSharedVersion: Number(obj.initialSharedVersion),
+      mutable: obj.mutable,
+    };
+  }
+
+  /**
+   * Map CallArg object to Shared
+   *
+   * @param {CallArg} callArg
+   * @return {SharedObjectRef}
+   */
+  mapCallArgToSharedObject(callArg: CallArg): SharedObjectRef {
+    return callArg['Object'].Shared;
+  }
+
+  /**
+   * Map coins objects to CallArg
+   *
+   * @param {SuiObjectRef[]} coins
+   * @return {CallArg}
+   * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
+   */
+  mapCoinsToCallArg(coins: SuiObjectRef[]): CallArg {
+    return {
+      ObjVec: coins.map((coin) => {
+        return { ImmOrOwned: coin };
+      }),
+    };
+  }
+
+  /**
+   * Map CallArg object to Coins
+   *
+   * @param {ObjVecArg} callArg
+   * @return {SuiObjectRef[]}
+   */
+  mapCallArgToCoins(callArg: ObjVecArg): SuiObjectRef[] {
+    return Array.from(callArg.ObjVec).map((it: ObjectArg) => {
+      return (it as ImmOrOwnedArg).ImmOrOwned;
+    });
+  }
+
+  /**
+   * Map SuiObjectRef object to CallArg
+   *
+   * @param {SuiObjectRef[]} coins
+   * @return {CallArg}
+   * example: { ObjVec: [{ ImmOrOwned: coin_to_stake }] }
+   */
+  mapSuiObjectRefToCallArg(suiObjectRef: SuiObjectRef): CallArg {
+    return {
+      Object: { ImmOrOwned: suiObjectRef },
+    };
+  }
+
+  /**
+   * Map CallArg object to SuiObjectRef
+   *
+   * @param {ObjVecArg} callArg
+   * @return {SuiObjectRef}
+   */
+  mapCallArgToSuiObjectRef(callArg: CallArg): SuiObjectRef {
+    return ((callArg as { Object: ObjectArg }).Object as ImmOrOwnedArg).ImmOrOwned;
+  }
+
+  /**
+   * Map staking amount to CallArg
+   *
+   * @param {number} amount
+   * @return {CallArg}
+   * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
+   */
+  mapAmountToCallArg(amount: number): CallArg {
+    try {
+      return {
+        Pure: bcs.ser('vector<u64>', [String(amount)]).toBytes(),
+      };
+    } catch (e) {
+      throw new BuildTransactionError('Failed to serialize amount to call argument');
+    }
+  }
+
+  /**
+   * Map CallArg to staking amount
+   *
+   * @param {CallArg} callArg
+   * @return {number}
+   * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
+   */
+  mapCallArgToAmount(callArg: CallArg): number {
+    try {
+      if ('Pure' in callArg && callArg.Pure.length) {
+        return Number(bcs.de('vector<u64>', Buffer.from(callArg.Pure).toString('base64'), 'base64'));
+      } else {
+        throw new InvalidParameterValueError('Not a valid amount CallArg');
+      }
+    } catch (e) {
+      throw new BuildTransactionError('Failed to deserialize amount from call argument');
+    }
+  }
+
+  /**
+   * Map staking validator address to CallArg
+   *
+   * @param {SuiAddress} suiAddress
+   * @return {CallArg}
+   * example: { Pure: bcs.ser('address', VALIDATOR_ADDRESS).toBytes() };
+   */
+  mapAddressToCallArg(address: SuiAddress): CallArg {
+    try {
+      return {
+        Pure: bcs.ser('address', address).toBytes(),
+      };
+    } catch (e) {
+      throw new BuildTransactionError('Failed to serialize address to call argument');
+    }
+  }
+
+  /**
+   * Map CallArg to staking amount
+   *
+   * @param {CallArg} callArg
+   * @return {string}
+   * example: { Pure: bcs.ser('vector<u64>', [AMOUNT]).toBytes() };
+   */
+  mapCallArgToAddress(callArg: CallArg): string {
+    try {
+      if ('Pure' in callArg && callArg.Pure.length) {
+        return String(bcs.de('address', Buffer.from(callArg.Pure).toString('base64'), 'base64'));
+      } else {
+        throw new InvalidParameterValueError('Not a valid address CallArg');
+      }
+    } catch (e) {
+      throw new BuildTransactionError('Failed to deserialize address from call argument');
+    }
+  }
+
+  /**
    * Get transaction type by function name
    *
    * @param {MethodNames} fctName
@@ -164,68 +323,37 @@ export class Utils implements BaseUtils {
    */
   getTransactionType(fctName: string): TransactionType {
     switch (fctName) {
-      case MethodNames.RequestAddStakeMulCoin:
-        return TransactionType.StakingAdd;
-      case MethodNames.RequestWithdrawStake:
+      case MethodNames.RequestAddDelegationMulCoin:
+        return TransactionType.AddDelegator;
+      case MethodNames.RequestWithdrawDelegation:
         return TransactionType.StakingWithdraw;
+      case MethodNames.RequestSwitchDelegation:
+        return TransactionType.StakingSwitch;
       default:
         throw new NotSupported(`Staking Transaction type with function ${fctName} not supported`);
     }
   }
 
-  getRecipients(inputs: SuiJsonValue[] | TransactionInput[]): Recipient[] {
-    const amounts: string[] = [];
-    const addresses: string[] = [];
-    inputs.forEach((input, index) => {
-      if (index % 2 === 0) {
-        amounts.push(this.getRecipientAmount(input));
-      } else {
-        addresses.push(this.getRecipientAddress(input));
-      }
-    });
-    return addresses.map((address, index) => {
-      return {
-        address: address,
-        amount: Number(amounts[index]).toString(),
-      } as Recipient;
-    });
-  }
-
-  getRecipientAmount(input: SuiJsonValue | TransactionInput): string {
-    return isPureArg(input)
-      ? builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64')
-      : (input as TransactionInput).value;
-  }
-
-  getRecipientAddress(input: SuiJsonValue | TransactionInput): string {
-    return isPureArg(input)
-      ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
-      : (input as TransactionInput).value;
-  }
-
-  normalizeCoins(coins: any[]): SuiObjectRef[] {
-    return coins.map((coin) => {
-      return utils.normalizeSuiObjectRef(coin);
-    });
-  }
-
-  normalizeSuiObjectRef(obj: SuiObjectRef): SuiObjectRef {
-    return {
-      objectId: normalizeSuiObjectId(obj.objectId),
-      version: Number(obj.version),
-      digest: obj.digest,
-    };
-  }
-
-  transactionInput(type: 'object' | 'pure', index = 0, value?: unknown): TransactionInput {
-    return {
-      kind: 'Input',
-      value: typeof value === 'bigint' ? String(value) : value,
-      index,
-      type,
-    };
+  /**
+   * Get SUI transaction type by function name
+   *
+   * @param {MethodNames} fctName
+   * @return {SuiTransactionType}
+   */
+  getSuiTransactionType(fctName: string): SuiTransactionType {
+    switch (fctName) {
+      case MethodNames.RequestAddDelegationMulCoin:
+        return SuiTransactionType.AddDelegation;
+      case MethodNames.RequestWithdrawDelegation:
+        return SuiTransactionType.WithdrawDelegation;
+      case MethodNames.RequestSwitchDelegation:
+        return SuiTransactionType.SwitchDelegation;
+      default:
+        throw new NotSupported(`Sui staking transaction type with function ${fctName} not supported`);
+    }
   }
 }
 
 const utils = new Utils();
+
 export default utils;

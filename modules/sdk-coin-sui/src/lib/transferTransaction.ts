@@ -7,26 +7,31 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { SuiTransaction, TransactionExplanation, TransferProgrammableTransaction, TxData } from './iface';
+import {
+  PayTx,
+  SuiObjectRef,
+  SuiTransaction,
+  SuiTransactionType,
+  TransactionExplanation,
+  TxData,
+  TxDetails,
+} from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import utils from './utils';
 import { UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
-import { normalizeSuiAddress, SuiJsonValue, SuiObjectRef } from './mystenlab/types';
-import utils from './utils';
-import { builder, Inputs, TransactionInput } from './mystenlab/builder';
-import { BCS } from '@mysten/bcs';
 
-export class TransferTransaction extends Transaction<TransferProgrammableTransaction> {
+export class TransferTransaction extends Transaction<PayTx> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  get suiTransaction(): SuiTransaction<TransferProgrammableTransaction> {
+  get suiTransaction(): SuiTransaction<PayTx> {
     return this._suiTransaction;
   }
 
-  setSuiTransaction(tx: SuiTransaction<TransferProgrammableTransaction>): void {
+  setSuiTransaction(tx: SuiTransaction<PayTx>): void {
     this._suiTransaction = tx;
   }
 
@@ -46,7 +51,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
   }
 
   getInputCoins(): SuiObjectRef[] {
-    return utils.normalizeCoins(this.suiTransaction.tx.inputs);
+    return this.suiTransaction.tx.coins;
   }
 
   /** @inheritdoc */
@@ -69,12 +74,44 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     }
 
     const tx = this._suiTransaction;
+    let txDetails: TxDetails;
+
+    switch (tx.type) {
+      case SuiTransactionType.Pay:
+        txDetails = {
+          Pay: {
+            coins: tx.tx.coins,
+            recipients: tx.tx.recipients,
+            amounts: tx.tx.amounts,
+          },
+        };
+        break;
+      case SuiTransactionType.PaySui:
+        txDetails = {
+          PaySui: {
+            coins: tx.tx.coins,
+            recipients: tx.tx.recipients,
+            amounts: tx.tx.amounts,
+          },
+        };
+        break;
+      case SuiTransactionType.PayAllSui:
+        txDetails = {
+          PayAllSui: {
+            coins: tx.tx.coins,
+            recipient: tx.tx.recipients[0],
+          },
+        };
+        break;
+      default:
+        throw new InvalidTransactionError('SuiTransactionType not supported');
+    }
+
     return {
       id: this._id,
+      kind: { Single: txDetails },
       sender: tx.sender,
-      kind: { ProgrammableTransaction: tx.tx },
       gasData: tx.gasData,
-      expiration: { None: null },
     };
   }
 
@@ -120,16 +157,27 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       return;
     }
 
-    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
-    const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const tx = this.suiTransaction;
+    const payTx = tx.tx;
+    const recipients = payTx.recipients;
+    const amounts = payTx.amounts;
+    if (tx.type !== SuiTransactionType.PayAllSui && recipients.length !== amounts.length) {
+      throw new Error(
+        `The length of recipients ${recipients.length} does not equal to the length of amounts ${amounts.length}`
+      );
+    }
+
+    const isEmptyAmount = amounts.length === 0;
     this._outputs = recipients.map((recipient, index) => ({
-      address: recipient.address,
-      value: recipient.amount,
+      address: recipient,
+      value: isEmptyAmount ? '' : amounts[index].toString(),
       coin: this._coinConfig.name,
     }));
+
+    const totalAmount = isEmptyAmount ? '' : amounts.reduce((accumulator, current) => accumulator + current, 0);
     this._inputs = [
       {
-        address: this.suiTransaction.sender,
+        address: tx.sender,
         value: totalAmount.toString(),
         coin: this._coinConfig.name,
       },
@@ -144,11 +192,8 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
   fromRawTransaction(rawTransaction: string): void {
     try {
       utils.isValidRawTransaction(rawTransaction);
-      this._suiTransaction = Transaction.deserializeSuiTransaction(
-        rawTransaction
-      ) as SuiTransaction<TransferProgrammableTransaction>;
+      this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as SuiTransaction<PayTx>;
       this._type = TransactionType.Send;
-      this._id = this._suiTransaction.id;
       this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
@@ -164,32 +209,44 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     if (!this._suiTransaction) {
       throw new InvalidTransactionError('empty transaction');
     }
-    const inputs: SuiJsonValue[] | TransactionInput[] = this._suiTransaction.tx.inputs.map((input, index) => {
-      if (input.hasOwnProperty('Pure')) {
-        if (index % 2 === 0) {
-          const amount = builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64');
-          return Inputs.Pure(amount, BCS.U64);
-        } else {
-          const address = normalizeSuiAddress(
-            builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64')
-          );
-          return Inputs.Pure(address, BCS.ADDRESS);
-        }
-      } else {
-        return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
-      }
-    });
+    const suiTx = this._suiTransaction;
+    let tx: TxDetails;
+
+    switch (suiTx.type) {
+      case SuiTransactionType.Pay:
+        tx = {
+          Pay: {
+            coins: suiTx.tx.coins,
+            recipients: suiTx.tx.recipients,
+            amounts: suiTx.tx.amounts,
+          },
+        };
+        break;
+      case SuiTransactionType.PaySui:
+        tx = {
+          PaySui: {
+            coins: suiTx.tx.coins,
+            recipients: suiTx.tx.recipients,
+            amounts: suiTx.tx.amounts,
+          },
+        };
+        break;
+      case SuiTransactionType.PayAllSui:
+        tx = {
+          PayAllSui: {
+            coins: suiTx.tx.coins,
+            recipient: suiTx.tx.recipients[0],
+          },
+        };
+        break;
+      default:
+        throw new InvalidTransactionError('SuiTransactionType not supported');
+    }
 
     return {
-      sender: this._suiTransaction.sender,
-      expiration: { None: null },
-      gasData: this._suiTransaction.gasData,
-      kind: {
-        ProgrammableTransaction: {
-          inputs: inputs,
-          commands: this._suiTransaction.tx.commands,
-        },
-      },
+      kind: { Single: tx },
+      sender: suiTx.sender,
+      gasData: suiTx.gasData,
     };
   }
 
@@ -200,9 +257,14 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    * @returns {TransactionExplanation}
    */
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
-    const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
-    const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const recipients = this.suiTransaction.tx.recipients;
+    const amounts = this.suiTransaction.tx.amounts;
+
+    const outputs: TransactionRecipient[] = recipients.map((recipient, index) => ({
+      address: recipient,
+      amount: amounts.length === 0 ? '' : amounts[index].toString(),
+    }));
+    const outputAmount = amounts.reduce((accumulator, current) => accumulator + current, 0);
 
     return {
       ...explanationResult,

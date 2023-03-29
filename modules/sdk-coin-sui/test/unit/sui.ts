@@ -16,12 +16,17 @@ describe('SUI:', function () {
   let newTxParams;
 
   const txPrebuild = {
-    txHex: testData.TRANSFER,
+    txHex: testData.TRANSFER_PAY_TX,
     txInfo: {},
   };
 
   const txParams = {
-    recipients: testData.recipients,
+    recipients: [
+      {
+        address: testData.recipients[0],
+        amount: testData.AMOUNT.toString(),
+      },
+    ],
   };
 
   before(function () {
@@ -78,22 +83,18 @@ describe('SUI:', function () {
   describe('Explain Transaction: ', () => {
     it('should explain a transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
-        txHex: testData.TRANSFER,
+        txHex: testData.TRANSFER_PAY_TX,
       });
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
-        id: 'Dc6ofSWTtQMUPrqZ5NqXsGgF2Cyom6H6Kze5T3tUv8Ut',
+        id: 'UNAVAILABLE',
         outputs: [
           {
-            address: testData.recipients[0].address,
-            amount: testData.recipients[0].amount,
-          },
-          {
-            address: testData.recipients[1].address,
-            amount: testData.recipients[1].amount,
+            address: testData.recipients[0],
+            amount: testData.AMOUNT.toString(),
           },
         ],
-        outputAmount: testData.AMOUNT * 2,
+        outputAmount: testData.AMOUNT,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.gasData.budget.toString() },
@@ -119,37 +120,61 @@ describe('SUI:', function () {
   });
 
   describe('Parse Transactions: ', () => {
-    const transferInputsResponse = [
-      {
-        address: testData.recipients[0].address,
-        amount: new BigNumber(testData.AMOUNT).plus(testData.AMOUNT).plus(testData.gasData.budget).toFixed(),
-      },
-    ];
+    const transferInputsResponse = {
+      address: testData.recipients[0],
+      amount: new BigNumber(testData.AMOUNT).plus(testData.gasData.budget).toFixed(),
+    };
 
-    const transferOutputsResponse = [
-      {
-        address: testData.recipients[0].address,
-        amount: testData.recipients[0].amount,
-      },
-      {
-        address: testData.recipients[1].address,
-        amount: testData.recipients[1].amount,
-      },
-    ];
+    const transferOutputsResponse = {
+      address: testData.recipients[0],
+      amount: testData.AMOUNT.toString(),
+    };
 
     it('should parse a transfer transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER });
+      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER_PAY_TX });
 
       parsedTransaction.should.deepEqual({
-        inputs: transferInputsResponse,
-        outputs: transferOutputsResponse,
+        inputs: [transferInputsResponse],
+        outputs: [transferOutputsResponse],
       });
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
       const stub = sinon.stub(Sui.prototype, 'explainTransaction');
       stub.resolves(undefined);
-      await basecoin.parseTransaction({ txHex: testData.TRANSFER }).should.be.rejectedWith('Invalid transaction');
+      await basecoin
+        .parseTransaction({ txHex: testData.TRANSFER_PAY_TX })
+        .should.be.rejectedWith('Invalid transaction');
+      stub.restore();
+    });
+  });
+
+  describe('Parse Staking Transactions: ', () => {
+    const transferInputsResponse = {
+      address: testData.VALIDATOR_ADDRESS,
+      amount: new BigNumber(testData.STAKING_AMOUNT).plus(testData.STAKING_GAS_BUDGET).toFixed(),
+    };
+
+    const transferOutputsResponse = {
+      address: testData.VALIDATOR_ADDRESS,
+      amount: testData.STAKING_AMOUNT.toString(),
+    };
+
+    it('should parse a staking requestAddDelegation transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [transferInputsResponse],
+        outputs: [transferOutputsResponse],
+      });
+    });
+
+    it('should fail to parse a staking requestAddDelegation transaction when explainTransaction response is undefined', async function () {
+      const stub = sinon.stub(Sui.prototype, 'explainTransaction');
+      stub.resolves(undefined);
+      await basecoin
+        .parseTransaction({ txHex: testData.ADD_DELEGATION_TX_ONE_COIN })
+        .should.be.rejectedWith('Invalid transaction');
       stub.restore();
     });
   });
@@ -190,18 +215,13 @@ describe('SUI:', function () {
     });
 
     it('should return true when validating a well formatted address', async function () {
-      const address = 'f941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
+      const address = '0xd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
       basecoin.isValidAddress(address).should.equal(true);
     });
 
     it('should return true when validating a well formatted address prefixed with 0x', async function () {
-      const address = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
+      const address = '0xd4f6d75cf725f5931ba62b5b554c2d7efa709f66';
       basecoin.isValidAddress(address).should.equal(true);
-    });
-
-    it('should return false when validating an old address', async function () {
-      const address = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
-      basecoin.isValidAddress(address).should.equal(false);
     });
 
     it('should return false when validating an incorrectly formatted', async function () {
@@ -209,15 +229,15 @@ describe('SUI:', function () {
       basecoin.isValidAddress(address).should.equal(false);
     });
 
-    xit('should return true for isWalletAddress with valid address for index 4', async function () {
-      const newAddress = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
+    it('should return true for isWalletAddress with valid address for index 4', async function () {
+      const newAddress = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
       const index = 4;
 
       const params = { commonKeychain, address: newAddress, index, keychains };
       (await basecoin.isWalletAddress(params)).should.equal(true);
     });
 
-    xit('should return false for isWalletAddress with valid address for index 5 and address is for a different index', async function () {
+    it('should return false for isWalletAddress with valid address for index 5 and address is for a different index', async function () {
       const wrongAddressForIndex5 = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
       const index = 5;
 
@@ -225,7 +245,7 @@ describe('SUI:', function () {
       (await basecoin.isWalletAddress(params)).should.equal(false);
     });
 
-    xit('should throw error for isWalletAddress when keychains is missing', async function () {
+    it('should throw error for isWalletAddress when keychains is missing', async function () {
       const address = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
       const index = 0;
 
@@ -233,7 +253,7 @@ describe('SUI:', function () {
       await assert.rejects(async () => basecoin.isWalletAddress(params));
     });
 
-    xit('should throw error for isWalletAddress when new address is invalid', async function () {
+    it('should throw error for isWalletAddress when new address is invalid', async function () {
       const wrongAddress = 'badAddress';
       const index = 0;
 

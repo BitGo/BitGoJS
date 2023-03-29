@@ -2,5 +2,4 @@ node_modules
 .idea
 public
 dist
-src/lib/mystenlab/
 
