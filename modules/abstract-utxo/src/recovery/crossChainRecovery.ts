@@ -84,7 +84,10 @@ export async function getWallet(
  * @param wallet
  * @return wallet pubkeys
  */
-async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | WalletV1): Promise<RootWalletKeys> {
+export async function getWalletKeys(
+  recoveryCoin: AbstractUtxoCoin,
+  wallet: IWallet | WalletV1
+): Promise<RootWalletKeys> {
   let xpubs: Triple<string>;
 
   if (wallet instanceof Wallet) {
