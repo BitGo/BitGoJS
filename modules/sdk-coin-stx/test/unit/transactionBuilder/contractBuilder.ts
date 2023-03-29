@@ -374,7 +374,7 @@ describe('Stacks: Contract Builder', function () {
         });
         it('a contract call with an invalid contract name', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('test'), /Only pox and send-many-memo contracts supported/);
+          assert.throws(() => builder.contractName('test'), /Only pox-2 and send-many-memo contracts supported/);
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();
