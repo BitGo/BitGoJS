@@ -18,6 +18,7 @@ import {
   inscriptions,
   parseSatPoint,
   isSatPoint,
+  findOutputLayoutForWalletUnspents,
 } from '@bitgo/utxo-ord';
 import assert from 'assert';
 
@@ -106,12 +107,19 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       outputs,
       { feeRateSatKB, ...inscriptionConstraints }
     );
+    const layout = findOutputLayoutForWalletUnspents(unspents, satPoint, outputs, {
+      feeRateSatKB,
+      ...inscriptionConstraints,
+    });
+    if (!layout) {
+      throw new Error(`could not output layout for inscription passing transaction`);
+    }
 
     return {
       walletId: this.wallet.id(),
       txHex: psbt.getUnsignedTx().toHex(),
       txInfo,
-      feeInfo: { fee: feeRateSatKB, feeString: feeRateSatKB.toString() },
+      feeInfo: { fee: Number(layout.feeOutput), feeString: layout.feeOutput.toString() },
     };
   }
 
