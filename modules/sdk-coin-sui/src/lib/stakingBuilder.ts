@@ -33,7 +33,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
       sender: this._sender,
       tx: {
         inputs: [],
-        commands: [],
+        transactions: [],
       },
       gasData: this._gasData,
     };
@@ -118,7 +118,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
       sender: this._sender,
       tx: {
         inputs: [],
-        commands: [],
+        transactions: [],
       },
       gasData: this._gasData,
     });
@@ -148,7 +148,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
       sender: this._sender,
       tx: {
         inputs: [],
-        commands: [],
+        transactions: [],
       },
       gasData: this._gasData,
     };

@@ -1,18 +1,18 @@
 import { fromB64 } from '@mysten/bcs';
-import { mask } from 'superstruct';
+import { is, mask } from 'superstruct';
 import { ObjectId, SuiObjectRef } from '../types';
-import { CommandArgument, Commands, TransactionCommand, TransactionInput } from './Commands';
-import { getIdFromCallArg, Inputs, ObjectCallArg } from './Inputs';
-import { TransactionDataBuilder, TransactionExpiration } from './TransactionData';
+import { Transactions, TransactionArgument, TransactionType, TransactionBlockInput } from './Transactions';
+import { BuilderCallArg, getIdFromCallArg, Inputs, ObjectCallArg } from './Inputs';
+import { TransactionBlockDataBuilder, TransactionExpiration } from './TransactionDataBlock';
 import { create } from './utils';
 
-type TransactionResult = CommandArgument & CommandArgument[];
+type TransactionResult = TransactionArgument & TransactionArgument[];
 
 function createTransactionResult(index: number): TransactionResult {
-  const baseResult: CommandArgument = { kind: 'Result', index };
+  const baseResult: TransactionArgument = { kind: 'Result', index };
 
-  const nestedResults: CommandArgument[] = [];
-  const nestedResultFor = (resultIndex: number): CommandArgument =>
+  const nestedResults: TransactionArgument[] = [];
+  const nestedResultFor = (resultIndex: number): TransactionArgument =>
     (nestedResults[resultIndex] ??= {
       kind: 'NestedResult',
       index,
@@ -52,8 +52,17 @@ function createTransactionResult(index: number): TransactionResult {
   }) as TransactionResult;
 }
 
+const TRANSACTION_BRAND = Symbol.for('@mysten/transaction');
+
 // The maximum number of gas objects that can be selected for one transaction.
 const MAX_GAS_OBJECTS = 256;
+
+// The maximum gas that is allowed.
+const MAX_GAS = 1000000000;
+
+// A guess about how much overhead each coin provides for gas calculations.
+// @ts-ignore
+const GAS_OVERHEAD_PER_COIN = 10n;
 
 interface BuildOptions {
   onlyTransactionKind?: boolean;
@@ -62,14 +71,10 @@ interface BuildOptions {
 /**
  * Transaction Builder
  */
-export class Transaction {
+export class TransactionBlock {
   /** Returns `true` if the object is an instance of the Transaction builder class. */
-  static is(obj: unknown): obj is Transaction {
-    return (
-      !!obj && typeof obj === 'object'
-      // &&
-      // (obj as any)[TRANSACTION_BRAND] === true
-    );
+  static is(obj: unknown): obj is TransactionBlock {
+    return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
   }
 
   /**
@@ -77,9 +82,9 @@ export class Transaction {
    * Supports either a byte array, or base64-encoded bytes.
    */
   static fromKind(serialized: string | Uint8Array) {
-    const tx = new Transaction();
+    const tx = new TransactionBlock();
 
-    tx.#transactionData = TransactionDataBuilder.fromKindBytes(
+    tx.#blockData = TransactionBlockDataBuilder.fromKindBytes(
       typeof serialized === 'string' ? fromB64(serialized) : serialized
     );
 
@@ -93,23 +98,23 @@ export class Transaction {
    * - A byte array (or base64-encoded bytes) containing BCS transaction data.
    */
   static from(serialized: string | Uint8Array) {
-    const tx = new Transaction();
+    const tx = new TransactionBlock();
 
     // Check for bytes:
     if (typeof serialized !== 'string' || !serialized.startsWith('{')) {
-      tx.#transactionData = TransactionDataBuilder.fromBytes(
+      tx.#blockData = TransactionBlockDataBuilder.fromBytes(
         typeof serialized === 'string' ? fromB64(serialized) : serialized
       );
     } else {
-      tx.#transactionData = TransactionDataBuilder.restore(JSON.parse(serialized));
+      tx.#blockData = TransactionBlockDataBuilder.restore(JSON.parse(serialized));
     }
 
     return tx;
   }
 
-  /** A helper to retrieve the Transaction builder `Commands` */
-  static get Commands() {
-    return Commands;
+  /** A helper to retrieve the Transaction builder `Transactions` */
+  static get Transactions() {
+    return Transactions;
   }
 
   /** A helper to retrieve the Transaction builder `Inputs` */
@@ -118,54 +123,54 @@ export class Transaction {
   }
 
   setSender(sender: string) {
-    this.#transactionData.sender = sender;
+    this.#blockData.sender = sender;
   }
-
   /**
    * Sets the sender only if it has not already been set.
    * This is useful for sponsored transaction flows where the sender may not be the same as the signer address.
    */
   setSenderIfNotSet(sender: string) {
-    if (!this.#transactionData.sender) {
-      this.#transactionData.sender = sender;
+    if (!this.#blockData.sender) {
+      this.#blockData.sender = sender;
     }
   }
-
   setExpiration(expiration?: TransactionExpiration) {
-    this.#transactionData.expiration = expiration;
+    this.#blockData.expiration = expiration;
   }
-
   setGasPrice(price: number | bigint) {
-    this.#transactionData.gasConfig.price = String(price);
+    this.#blockData.gasConfig.price = String(price);
   }
-
   setGasBudget(budget: number | bigint) {
-    this.#transactionData.gasConfig.budget = String(budget);
+    this.#blockData.gasConfig.budget = String(budget);
   }
-
   setGasOwner(owner: string) {
-    this.#transactionData.gasConfig.owner = owner;
+    this.#blockData.gasConfig.owner = owner;
   }
-
   setGasPayment(payments: SuiObjectRef[]) {
     if (payments.length >= MAX_GAS_OBJECTS) {
       throw new Error(`Payment objects exceed maximum amount ${MAX_GAS_OBJECTS}`);
     }
-    this.#transactionData.gasConfig.payment = payments.map((payment) => mask(payment, SuiObjectRef));
+    this.#blockData.gasConfig.payment = payments.map((payment) => mask(payment, SuiObjectRef));
   }
 
-  #transactionData: TransactionDataBuilder;
+  #blockData: TransactionBlockDataBuilder;
   /** Get a snapshot of the transaction data, in JSON form: */
-  get transactionData() {
-    return this.#transactionData.snapshot();
+  get blockData() {
+    return this.#blockData.snapshot();
   }
 
-  constructor(transaction?: Transaction) {
-    this.#transactionData = new TransactionDataBuilder(transaction ? transaction.#transactionData : undefined);
+  // Used to brand transaction classes so that they can be identified, even between multiple copies
+  // of the builder.
+  get [TRANSACTION_BRAND]() {
+    return true;
+  }
+
+  constructor(transaction?: TransactionBlock) {
+    this.#blockData = new TransactionBlockDataBuilder(transaction ? transaction.#blockData : undefined);
   }
 
   /** Returns an argument for the gas coin, to be used in a transaction. */
-  get gas(): CommandArgument {
+  get gas(): TransactionArgument {
     return { kind: 'GasCoin' };
   }
 
@@ -178,8 +183,8 @@ export class Transaction {
    * is the format required for custom serialization.
    *
    */
-  private input(type: 'object' | 'pure', value?: unknown) {
-    const index = this.#transactionData.inputs.length;
+  input(type: 'object' | 'pure', value?: unknown) {
+    const index = this.#blockData.inputs.length;
     const input = create(
       {
         kind: 'Input',
@@ -188,9 +193,9 @@ export class Transaction {
         index,
         type,
       },
-      TransactionInput
+      TransactionBlockInput
     );
-    this.#transactionData.inputs.push(input);
+    this.#blockData.inputs.push(input);
     return input;
   }
 
@@ -200,7 +205,7 @@ export class Transaction {
   object(value: ObjectId | ObjectCallArg) {
     const id = getIdFromCallArg(value);
     // deduplicate
-    const inserted = this.#transactionData.inputs.find((i) => i.type === 'object' && id === getIdFromCallArg(i.value));
+    const inserted = this.#blockData.inputs.find((i) => i.type === 'object' && id === getIdFromCallArg(i.value));
     return inserted ?? this.input('object', value);
   }
 
@@ -226,37 +231,31 @@ export class Transaction {
     );
   }
 
-  /** Add a command to the transaction. */
-  add(command: TransactionCommand) {
-    // TODO: This should also look at the command arguments and add any referenced commands that are not present in this transaction.
-    const index = this.#transactionData.commands.push(command);
+  /** Add a transaction to the transaction block. */
+  add(transaction: TransactionType) {
+    const index = this.#blockData.transactions.push(transaction);
     return createTransactionResult(index - 1);
   }
 
   // Method shorthands:
 
-  splitCoins(...args: Parameters<typeof Commands['SplitCoins']>) {
-    return this.add(Commands.SplitCoins(...args));
+  splitCoins(...args: Parameters<typeof Transactions['SplitCoins']>) {
+    return this.add(Transactions.SplitCoins(...args));
   }
-
-  mergeCoins(...args: Parameters<typeof Commands['MergeCoins']>) {
-    return this.add(Commands.MergeCoins(...args));
+  mergeCoins(...args: Parameters<typeof Transactions['MergeCoins']>) {
+    return this.add(Transactions.MergeCoins(...args));
   }
-
-  publish(...args: Parameters<typeof Commands['Publish']>) {
-    return this.add(Commands.Publish(...args));
+  publish(...args: Parameters<typeof Transactions['Publish']>) {
+    return this.add(Transactions.Publish(...args));
   }
-
-  moveCall(...args: Parameters<typeof Commands['MoveCall']>) {
-    return this.add(Commands.MoveCall(...args));
+  moveCall(...args: Parameters<typeof Transactions['MoveCall']>) {
+    return this.add(Transactions.MoveCall(...args));
   }
-
-  transferObjects(...args: Parameters<typeof Commands['TransferObjects']>) {
-    return this.add(Commands.TransferObjects(...args));
+  transferObjects(...args: Parameters<typeof Transactions['TransferObjects']>) {
+    return this.add(Transactions.TransferObjects(...args));
   }
-
-  makeMoveVec(...args: Parameters<typeof Commands['MakeMoveVec']>) {
-    return this.add(Commands.MakeMoveVec(...args));
+  makeMoveVec(...args: Parameters<typeof Transactions['MakeMoveVec']>) {
+    return this.add(Transactions.MakeMoveVec(...args));
   }
 
   /**
@@ -272,16 +271,16 @@ export class Transaction {
    * and performing a dry run).
    */
   serialize() {
-    return JSON.stringify(this.#transactionData.snapshot());
+    return JSON.stringify(this.#blockData.snapshot());
   }
 
   /** Build the transaction to BCS bytes. */
   async build({ onlyTransactionKind }: BuildOptions = {}): Promise<Uint8Array> {
-    return this.#transactionData.build({ onlyTransactionKind });
+    return this.#blockData.build({ onlyTransactionKind });
   }
 
   /** Derive transaction digest */
   async getDigest(): Promise<string> {
-    return this.#transactionData.getDigest();
+    return this.#blockData.getDigest();
   }
 }

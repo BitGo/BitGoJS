@@ -3,27 +3,21 @@ import { CallArg } from './sui-bcs';
 import { fromB58 } from '@mysten/bcs';
 
 export const TransactionDigest = string();
-
 export type TransactionDigest = Infer<typeof TransactionDigest>;
 
 export const TransactionEffectsDigest = string();
-
 export type TransactionEffectsDigest = Infer<typeof TransactionEffectsDigest>;
 
 export const TransactionEventDigest = string();
-
 export type TransactionEventDigest = Infer<typeof TransactionEventDigest>;
 
 export const ObjectId = string();
-
 export type ObjectId = Infer<typeof ObjectId>;
 
 export const SuiAddress = string();
-
 export type SuiAddress = Infer<typeof SuiAddress>;
 
 export const SequenceNumber = number();
-
 export type SequenceNumber = Infer<typeof SequenceNumber>;
 
 export const ObjectOwner = union([
@@ -40,11 +34,9 @@ export const ObjectOwner = union([
   }),
   literal('Immutable'),
 ]);
-
 export type ObjectOwner = Infer<typeof ObjectOwner>;
 
 export type SuiJsonValue = boolean | number | string | CallArg | Array<SuiJsonValue>;
-
 export const SuiJsonValue = define<SuiJsonValue>('SuiJsonValue', () => true);
 
 // source of truth is
@@ -87,7 +79,7 @@ export function isValidSuiObjectId(value: string): boolean {
  * setting `forceAdd0x` to true
  *
  */
-export function normalizeSuiAddress(value: string, forceAdd0x = false): SuiAddress {
+export function normalizeSuiAddress(value: string, forceAdd0x: boolean = false): SuiAddress {
   let address = value.toLowerCase();
   if (!forceAdd0x && address.startsWith('0x')) {
     address = address.slice(2);
@@ -95,7 +87,7 @@ export function normalizeSuiAddress(value: string, forceAdd0x = false): SuiAddre
   return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
 }
 
-export function normalizeSuiObjectId(value: string, forceAdd0x = false): ObjectId {
+export function normalizeSuiObjectId(value: string, forceAdd0x: boolean = false): ObjectId {
   return normalizeSuiAddress(value, forceAdd0x);
 }
 

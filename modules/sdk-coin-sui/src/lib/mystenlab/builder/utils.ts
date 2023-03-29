@@ -13,8 +13,4 @@ export type WellKnownEncoding =
       type: string;
     };
 
-export const COMMAND_TYPE = Symbol('command-argument-type');
-
-export type DeepReadonly<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};
+export const TRANSACTION_TYPE = Symbol('transaction-argument-type');

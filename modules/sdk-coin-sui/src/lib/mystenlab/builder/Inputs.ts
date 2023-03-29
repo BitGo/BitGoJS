@@ -1,5 +1,5 @@
 import { array, boolean, Infer, integer, object, string, union } from 'superstruct';
-import { ObjectId, SharedObjectRef, SuiObjectRef } from '../types';
+import { normalizeSuiAddress, ObjectId, SharedObjectRef, SuiObjectRef } from '../types';
 import { builder } from './bcs';
 
 const ObjectArg = union([
@@ -37,7 +37,7 @@ export const Inputs = {
 
 export function getIdFromCallArg(arg: ObjectId | ObjectCallArg) {
   if (typeof arg === 'string') {
-    return arg;
+    return normalizeSuiAddress(arg);
   }
   if ('ImmOrOwned' in arg.Object) {
     return arg.Object.ImmOrOwned.objectId;
@@ -50,7 +50,7 @@ export function getSharedObjectInput(arg: BuilderCallArg): SharedObjectRef | und
 }
 
 export function isSharedObjectInput(arg: BuilderCallArg): boolean {
-  return getSharedObjectInput(arg) !== undefined;
+  return !!getSharedObjectInput(arg);
 }
 
 export function isMutableSharedObjectInput(arg: BuilderCallArg): boolean {

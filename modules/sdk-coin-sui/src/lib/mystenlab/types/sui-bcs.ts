@@ -1,5 +1,6 @@
 import { BCS, EnumTypeDefinition, getSuiMoveConfig, StructTypeDefinition } from '@mysten/bcs';
 import { SuiObjectRef } from './objects';
+import { PureCallArg } from '../builder';
 
 function registerUTF8String(bcs: BCS) {
   bcs.registerType(
@@ -9,7 +10,7 @@ function registerUTF8String(bcs: BCS) {
       return writer.writeVec(bytes, (writer, el) => writer.write8(el));
     },
     (reader) => {
-      const bytes = reader.readVec((reader) => reader.read8());
+      let bytes = reader.readVec((reader) => reader.read8());
       return new TextDecoder().decode(new Uint8Array(bytes));
     }
   );
@@ -53,8 +54,9 @@ export function isPureArg(arg: any): arg is PureArg {
  * let arg1: CallArg = { Object: { Shared: {
  *   objectId: '5460cf92b5e3e7067aaace60d88324095fd22944',
  *   initialSharedVersion: 1,
+ *   mutable: true,
  * } } };
- * let arg2: CallArg = { Pure: bcs.set(bcs.STRING, 100000).toBytes() };
+ * let arg2: CallArg = { Pure: bcs.ser(BCS.STRING, 100000).toBytes() };
  * let arg3: CallArg = { Object: { ImmOrOwned: {
  *   objectId: '4047d2e25211d87922b6650233bd0503a6734279',
  *   version: 1,

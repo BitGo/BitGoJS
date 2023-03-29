@@ -1,5 +1,4 @@
 import {
-  extractMutableReference,
   extractStructTag,
   ID_STRUCT_NAME,
   isValidSuiAddress,
@@ -45,12 +44,7 @@ const isSameStruct = (a: any, b: any) => a.address === b.address && a.module ===
 
 export function isTxContext(param: SuiMoveNormalizedType): boolean {
   const struct = extractStructTag(param)?.Struct;
-  return (
-    extractMutableReference(param) != null &&
-    struct?.address === '0x2' &&
-    struct?.module === 'tx_context' &&
-    struct?.name === 'TxContext'
-  );
+  return struct?.address === '0x2' && struct?.module === 'tx_context' && struct?.name === 'TxContext';
 }
 
 function expectType(typeName: string, argVal?: SuiJsonValue) {

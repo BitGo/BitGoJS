@@ -69,9 +69,7 @@ function isSuiMoveNormalizedStructType(value: unknown): value is SuiMoveNormaliz
   if (!value || typeof value !== 'object') return false;
 
   const valueProperties = value as Record<string, unknown>;
-  if (!valueProperties.Struct || typeof valueProperties.Struct !== 'object') {
-    return false;
-  }
+  if (!valueProperties.Struct || typeof valueProperties.Struct !== 'object') return false;
 
   const structProperties = valueProperties.Struct as Record<string, unknown>;
   if (

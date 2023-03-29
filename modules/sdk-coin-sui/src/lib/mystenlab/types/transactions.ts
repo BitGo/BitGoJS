@@ -13,8 +13,7 @@ import {
   assign,
   nullable,
 } from 'superstruct';
-import { SuiEvent } from './events';
-import { ObjectDigest, SuiGasData, SuiMovePackage, SuiObjectRef } from './objects';
+
 import {
   ObjectId,
   ObjectOwner,
@@ -24,9 +23,10 @@ import {
   TransactionDigest,
   TransactionEventDigest,
 } from './common';
+import { SuiEvent } from './events';
+import { ObjectDigest, SuiGasData, SuiMovePackage, SuiObjectRef } from './objects';
 
-// TODO: support u64
-export const EpochId = number();
+export const EpochId = string();
 
 export const SuiChangeEpoch = object({
   epoch: EpochId,
@@ -35,7 +35,6 @@ export const SuiChangeEpoch = object({
   storage_rebate: number(),
   epoch_start_timestamp_ms: optional(number()),
 });
-
 export type SuiChangeEpoch = Infer<typeof SuiChangeEpoch>;
 
 export const SuiConsensusCommitPrologue = object({
@@ -43,13 +42,11 @@ export const SuiConsensusCommitPrologue = object({
   round: number(),
   commit_timestamp_ms: number(),
 });
-
 export type SuiConsensusCommitPrologue = Infer<typeof SuiConsensusCommitPrologue>;
 
 export const Genesis = object({
   objects: array(ObjectId),
 });
-
 export type Genesis = Infer<typeof Genesis>;
 
 export const SuiArgument = union([
@@ -58,30 +55,55 @@ export const SuiArgument = union([
   object({ Result: number() }),
   object({ NestedResult: tuple([number(), number()]) }),
 ]);
+export type SuiArgument = Infer<typeof SuiArgument>;
 
-export const SuiCommand = union([
-  object({
-    MoveCall: object({
-      arguments: array(SuiArgument),
-      type_arguments: array(string()),
-      package: ObjectId,
-      module: string(),
-      function: string(),
-    }),
-  }),
+export const MoveCallSuiTransaction = object({
+  arguments: optional(array(SuiArgument)),
+  type_arguments: optional(array(string())),
+  package: ObjectId,
+  module: string(),
+  function: string(),
+});
+export type MoveCallSuiTransaction = Infer<typeof MoveCallSuiTransaction>;
+
+export const SuiTransaction = union([
+  object({ MoveCall: MoveCallSuiTransaction }),
   object({ TransferObjects: tuple([array(SuiArgument), SuiArgument]) }),
-  object({ SplitCoin: tuple([SuiArgument, SuiAddress]) }),
+  object({ SplitCoins: tuple([SuiArgument, array(SuiArgument)]) }),
   object({ MergeCoins: tuple([SuiArgument, array(SuiArgument)]) }),
   object({ Publish: SuiMovePackage }),
   object({ MakeMoveVec: tuple([nullable(string()), array(SuiArgument)]) }),
 ]);
 
-export const ProgrammableTransaction = object({
-  inputs: array(SuiJsonValue),
-  commands: array(),
-});
+export const SuiCallArg = union([
+  object({
+    type: literal('pure'),
+    valueType: optional(string()),
+    value: SuiJsonValue,
+  }),
+  object({
+    type: literal('object'),
+    objectType: literal('immOrOwnedObject'),
+    objectId: ObjectId,
+    version: SequenceNumber,
+    digest: ObjectDigest,
+  }),
+  object({
+    type: literal('object'),
+    objectType: literal('sharedObject'),
+    objectId: ObjectId,
+    initialSharedVersion: SequenceNumber,
+    mutable: boolean(),
+  }),
+]);
+export type SuiCallArg = Infer<typeof SuiCallArg>;
 
+export const ProgrammableTransaction = object({
+  transactions: array(SuiTransaction),
+  inputs: array(SuiCallArg),
+});
 export type ProgrammableTransaction = Infer<typeof ProgrammableTransaction>;
+export type SuiTransaction = Infer<typeof SuiTransaction>;
 
 /**
  * 1. WaitForEffectsCert: waits for TransactionEffectsCert and then returns to the client.
@@ -96,7 +118,7 @@ export type ExecuteTransactionRequestType = 'WaitForEffectsCert' | 'WaitForLocal
 
 export type TransactionKindName = 'ChangeEpoch' | 'ConsensusCommitPrologue' | 'Genesis' | 'ProgrammableTransaction';
 
-export const SuiTransactionKind = union([
+export const SuiTransactionBlockKind = union([
   assign(SuiChangeEpoch, object({ kind: literal('ChangeEpoch') })),
   assign(
     SuiConsensusCommitPrologue,
@@ -107,16 +129,16 @@ export const SuiTransactionKind = union([
   assign(Genesis, object({ kind: literal('Genesis') })),
   assign(ProgrammableTransaction, object({ kind: literal('ProgrammableTransaction') })),
 ]);
-export type SuiTransactionKind = Infer<typeof SuiTransactionKind>;
+export type SuiTransactionBlockKind = Infer<typeof SuiTransactionBlockKind>;
 
-export const SuiTransactionData = object({
+export const SuiTransactionBlockData = object({
   // Eventually this will become union(literal('v1'), literal('v2'), ...)
   messageVersion: literal('v1'),
-  transaction: SuiTransactionKind,
+  transaction: SuiTransactionBlockKind,
   sender: SuiAddress,
   gasData: SuiGasData,
 });
-export type SuiTransactionData = Infer<typeof SuiTransactionData>;
+export type SuiTransactionBlockData = Infer<typeof SuiTransactionBlockData>;
 
 export const AuthoritySignature = string();
 export const GenericAuthoritySignature = union([AuthoritySignature, array(AuthoritySignature)]);
@@ -126,34 +148,34 @@ export const AuthorityQuorumSignInfo = object({
   signature: GenericAuthoritySignature,
   signers_map: array(number()),
 });
-
 export type AuthorityQuorumSignInfo = Infer<typeof AuthorityQuorumSignInfo>;
 
 export const GasCostSummary = object({
-  computationCost: number(),
-  storageCost: number(),
-  storageRebate: number(),
+  computationCost: string(),
+  storageCost: string(),
+  storageRebate: string(),
+  nonRefundableStorageFee: string(),
 });
-
 export type GasCostSummary = Infer<typeof GasCostSummary>;
 
 export const ExecutionStatusType = union([literal('success'), literal('failure')]);
-
 export type ExecutionStatusType = Infer<typeof ExecutionStatusType>;
 
 export const ExecutionStatus = object({
   status: ExecutionStatusType,
   error: optional(string()),
 });
-
 export type ExecutionStatus = Infer<typeof ExecutionStatus>;
 
 export const OwnedObjectRef = object({
   owner: ObjectOwner,
   reference: SuiObjectRef,
 });
-
 export type OwnedObjectRef = Infer<typeof OwnedObjectRef>;
+export const TransactionEffectsModifiedAtVersions = object({
+  objectId: ObjectId,
+  sequenceNumber: SequenceNumber,
+});
 
 export const TransactionEffects = object({
   // Eventually this will become union(literal('v1'), literal('v2'), ...)
@@ -163,6 +185,8 @@ export const TransactionEffects = object({
   status: ExecutionStatus,
   /** The epoch when this transaction was executed */
   executedEpoch: EpochId,
+  /** The version that every modified (mutated or deleted) object had before it was modified by this transaction. **/
+  modifiedAtVersions: optional(array(TransactionEffectsModifiedAtVersions)),
   gasUsed: GasCostSummary,
   /** The object references of the shared objects used in this transaction. Empty if no shared objects were used. */
   sharedObjects: optional(array(SuiObjectRef)),
@@ -194,19 +218,10 @@ export const TransactionEffects = object({
   /** The set of transaction digests this transaction depends on */
   dependencies: optional(array(TransactionDigest)),
 });
-
 export type TransactionEffects = Infer<typeof TransactionEffects>;
 
 export const TransactionEvents = array(SuiEvent);
-
 export type TransactionEvents = Infer<typeof TransactionEvents>;
-
-export const DryRunTransactionResponse = object({
-  effects: TransactionEffects,
-  events: TransactionEvents,
-});
-
-export type DryRunTransactionResponse = Infer<typeof DryRunTransactionResponse>;
 
 const ReturnValueType = tuple([array(number()), string()]);
 const MutableReferenceOutputType = tuple([SuiArgument, array(number()), string()]);
@@ -215,25 +230,17 @@ const ExecutionResultType = object({
   returnValues: optional(array(ReturnValueType)),
 });
 
-const DevInspectResultsType = union([object({ Ok: array(ExecutionResultType) }), object({ Err: string() })]);
-
 export const DevInspectResults = object({
   effects: TransactionEffects,
   events: TransactionEvents,
-  results: DevInspectResultsType,
+  results: optional(array(ExecutionResultType)),
+  error: optional(string()),
 });
-
 export type DevInspectResults = Infer<typeof DevInspectResults>;
 
-export type GatewayTxSeqNumber = number;
-
-export const GetTxnDigestsResponse = array(TransactionDigest);
-
-export type GetTxnDigestsResponse = Infer<typeof GetTxnDigestsResponse>;
-
-export type SuiTransactionResponseQuery = {
+export type SuiTransactionBlockResponseQuery = {
   filter?: TransactionFilter;
-  options?: SuiTransactionResponseOptions;
+  options?: SuiTransactionBlockResponseOptions;
 };
 
 export type TransactionFilter =
@@ -245,20 +252,19 @@ export type TransactionFilter =
       };
     }
   | { InputObject: ObjectId }
-  | { MutatedObject: ObjectId }
+  | { ChangedObject: ObjectId }
   | { FromAddress: SuiAddress }
   | { ToAddress: SuiAddress };
 
+export type EmptySignInfo = object;
 export type AuthorityName = Infer<typeof AuthorityName>;
-
 export const AuthorityName = string();
 
-export const SuiTransaction = object({
-  data: SuiTransactionData,
+export const SuiTransactionBlock = object({
+  data: SuiTransactionBlockData,
   txSignatures: array(string()),
 });
-
-export type SuiTransaction = Infer<typeof SuiTransaction>;
+export type SuiTransactionBlock = Infer<typeof SuiTransactionBlock>;
 
 export const SuiObjectChangePublished = object({
   type: literal('published'),
@@ -287,6 +293,7 @@ export const SuiObjectChangeMutated = object({
   objectType: string(),
   objectId: ObjectId,
   version: SequenceNumber,
+  previousVersion: SequenceNumber,
   digest: ObjectDigest,
 });
 export type SuiObjectChangeMutated = Infer<typeof SuiObjectChangeMutated>;
@@ -330,117 +337,133 @@ export const SuiObjectChange = union([
 ]);
 export type SuiObjectChange = Infer<typeof SuiObjectChange>;
 
-export const SuiTransactionResponse = object({
+export const BalanceChange = object({
+  owner: ObjectOwner,
+  coinType: string(),
+  /* Coin balance change(positive means receive, negative means send) */
+  amount: string(),
+});
+
+export const SuiTransactionBlockResponse = object({
   digest: TransactionDigest,
-  transaction: optional(SuiTransaction),
+  transaction: optional(SuiTransactionBlock),
   effects: optional(TransactionEffects),
   events: optional(TransactionEvents),
   timestampMs: optional(number()),
   checkpoint: optional(number()),
   confirmedLocalExecution: optional(boolean()),
   objectChanges: optional(array(SuiObjectChange)),
+  balanceChanges: optional(array(BalanceChange)),
   /* Errors that occurred in fetching/serializing the transaction. */
   errors: optional(array(string())),
 });
-export type SuiTransactionResponse = Infer<typeof SuiTransactionResponse>;
+export type SuiTransactionBlockResponse = Infer<typeof SuiTransactionBlockResponse>;
 
-export const SuiTransactionResponseOptions = object({
+export const SuiTransactionBlockResponseOptions = object({
   /* Whether to show transaction input data. Default to be false. */
   showInput: optional(boolean()),
   /* Whether to show transaction effects. Default to be false. */
   showEffects: optional(boolean()),
   /* Whether to show transaction events. Default to be false. */
   showEvents: optional(boolean()),
-  /* Whether to show transaction events. Default to be false. */
+  /* Whether to show object changes. Default to be false. */
   showObjectChanges: optional(boolean()),
-  // MUSTFIX(chris): add showBalanceChanges
+  /* Whether to show coin balance changes. Default to be false. */
+  showBalanceChanges: optional(boolean()),
 });
 
-export type SuiTransactionResponseOptions = Infer<typeof SuiTransactionResponseOptions>;
+export type SuiTransactionBlockResponseOptions = Infer<typeof SuiTransactionBlockResponseOptions>;
 
 export const PaginatedTransactionResponse = object({
-  data: array(SuiTransactionResponse),
+  data: array(SuiTransactionBlockResponse),
   nextCursor: union([TransactionDigest, literal(null)]),
   hasNextPage: boolean(),
 });
 export type PaginatedTransactionResponse = Infer<typeof PaginatedTransactionResponse>;
+export const DryRunTransactionBlockResponse = object({
+  effects: TransactionEffects,
+  events: TransactionEvents,
+  objectChanges: array(SuiObjectChange),
+  balanceChanges: array(BalanceChange),
+});
+export type DryRunTransactionBlockResponse = Infer<typeof DryRunTransactionBlockResponse>;
 
 /* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
 
-export function getTransaction(tx: SuiTransactionResponse): SuiTransaction | undefined {
+export function getTransaction(tx: SuiTransactionBlockResponse): SuiTransactionBlock | undefined {
   return tx.transaction;
 }
 
-export function getTransactionDigest(tx: SuiTransactionResponse): TransactionDigest {
+export function getTransactionDigest(tx: SuiTransactionBlockResponse): TransactionDigest {
   return tx.digest;
 }
 
-export function getTransactionSignature(tx: SuiTransactionResponse): string[] | undefined {
+export function getTransactionSignature(tx: SuiTransactionBlockResponse): string[] | undefined {
   return tx.transaction?.txSignatures;
 }
 
 /* ----------------------------- TransactionData ---------------------------- */
 
-export function getTransactionSender(tx: SuiTransactionResponse): SuiAddress | undefined {
+export function getTransactionSender(tx: SuiTransactionBlockResponse): SuiAddress | undefined {
   return tx.transaction?.data.sender;
 }
 
-export function getGasData(tx: SuiTransactionResponse): SuiGasData | undefined {
+export function getGasData(tx: SuiTransactionBlockResponse): SuiGasData | undefined {
   return tx.transaction?.data.gasData;
 }
 
-export function getTransactionGasObject(tx: SuiTransactionResponse): SuiObjectRef[] | undefined {
+export function getTransactionGasObject(tx: SuiTransactionBlockResponse): SuiObjectRef[] | undefined {
   return getGasData(tx)?.payment;
 }
 
-export function getTransactionGasPrice(tx: SuiTransactionResponse) {
+export function getTransactionGasPrice(tx: SuiTransactionBlockResponse) {
   return getGasData(tx)?.price;
 }
 
-export function getTransactionGasBudget(tx: SuiTransactionResponse) {
+export function getTransactionGasBudget(tx: SuiTransactionBlockResponse) {
   return getGasData(tx)?.budget;
 }
 
-export function getChangeEpochTransaction(data: SuiTransactionKind): SuiChangeEpoch | undefined {
+export function getChangeEpochTransaction(data: SuiTransactionBlockKind): SuiChangeEpoch | undefined {
   return data.kind === 'ChangeEpoch' ? data : undefined;
 }
 
 export function getConsensusCommitPrologueTransaction(
-  data: SuiTransactionKind
+  data: SuiTransactionBlockKind
 ): SuiConsensusCommitPrologue | undefined {
   return data.kind === 'ConsensusCommitPrologue' ? data : undefined;
 }
 
-export function getTransactionKind(data: SuiTransactionResponse): SuiTransactionKind | undefined {
+export function getTransactionKind(data: SuiTransactionBlockResponse): SuiTransactionBlockKind | undefined {
   return data.transaction?.data.transaction;
 }
 
-export function getTransactionKindName(data: SuiTransactionKind): TransactionKindName {
+export function getTransactionKindName(data: SuiTransactionBlockKind): TransactionKindName {
   return data.kind;
 }
 
-export function getProgrammableTransaction(data: SuiTransactionKind): ProgrammableTransaction | undefined {
+export function getProgrammableTransaction(data: SuiTransactionBlockKind): ProgrammableTransaction | undefined {
   return data.kind === 'ProgrammableTransaction' ? data : undefined;
 }
 
 /* ----------------------------- ExecutionStatus ---------------------------- */
 
-export function getExecutionStatusType(data: SuiTransactionResponse): ExecutionStatusType | undefined {
+export function getExecutionStatusType(data: SuiTransactionBlockResponse): ExecutionStatusType | undefined {
   return getExecutionStatus(data)?.status;
 }
 
-export function getExecutionStatus(data: SuiTransactionResponse): ExecutionStatus | undefined {
+export function getExecutionStatus(data: SuiTransactionBlockResponse): ExecutionStatus | undefined {
   return getTransactionEffects(data)?.status;
 }
 
-export function getExecutionStatusError(data: SuiTransactionResponse): string | undefined {
+export function getExecutionStatusError(data: SuiTransactionBlockResponse): string | undefined {
   return getExecutionStatus(data)?.error;
 }
 
 export function getExecutionStatusGasSummary(
-  data: SuiTransactionResponse | TransactionEffects
+  data: SuiTransactionBlockResponse | TransactionEffects
 ): GasCostSummary | undefined {
   if (is(data, TransactionEffects)) {
     return data.gasUsed;
@@ -448,47 +471,49 @@ export function getExecutionStatusGasSummary(
   return getTransactionEffects(data)?.gasUsed;
 }
 
-export function getTotalGasUsed(data: SuiTransactionResponse | TransactionEffects): number | undefined {
+export function getTotalGasUsed(data: SuiTransactionBlockResponse | TransactionEffects): bigint | undefined {
   const gasSummary = getExecutionStatusGasSummary(data);
-  return gasSummary ? gasSummary.computationCost + gasSummary.storageCost - gasSummary.storageRebate : undefined;
+  return gasSummary
+    ? BigInt(gasSummary.computationCost) + BigInt(gasSummary.storageCost) - BigInt(gasSummary.storageRebate)
+    : undefined;
 }
 
-export function getTotalGasUsedUpperBound(data: SuiTransactionResponse | TransactionEffects): number | undefined {
+export function getTotalGasUsedUpperBound(data: SuiTransactionBlockResponse | TransactionEffects): bigint | undefined {
   const gasSummary = getExecutionStatusGasSummary(data);
-  return gasSummary ? gasSummary.computationCost + gasSummary.storageCost : undefined;
+  return gasSummary ? BigInt(gasSummary.computationCost) + BigInt(gasSummary.storageCost) : undefined;
 }
 
-export function getTransactionEffects(data: SuiTransactionResponse): TransactionEffects | undefined {
+export function getTransactionEffects(data: SuiTransactionBlockResponse): TransactionEffects | undefined {
   return data.effects;
 }
 
 /* ---------------------------- Transaction Effects --------------------------- */
 
-export function getEvents(data: SuiTransactionResponse): SuiEvent[] | undefined {
+export function getEvents(data: SuiTransactionBlockResponse): SuiEvent[] | undefined {
   return data.events;
 }
 
-export function getCreatedObjects(data: SuiTransactionResponse): OwnedObjectRef[] | undefined {
+export function getCreatedObjects(data: SuiTransactionBlockResponse): OwnedObjectRef[] | undefined {
   return getTransactionEffects(data)?.created;
 }
 
 /* --------------------------- TransactionResponse -------------------------- */
 
-export function getTimestampFromTransactionResponse(data: SuiTransactionResponse): number | undefined {
+export function getTimestampFromTransactionResponse(data: SuiTransactionBlockResponse): number | undefined {
   return data.timestampMs ?? undefined;
 }
 
 /**
  * Get the newly created coin refs after a split.
  */
-export function getNewlyCreatedCoinRefsAfterSplit(data: SuiTransactionResponse): SuiObjectRef[] | undefined {
+export function getNewlyCreatedCoinRefsAfterSplit(data: SuiTransactionBlockResponse): SuiObjectRef[] | undefined {
   return getTransactionEffects(data)?.created?.map((c) => c.reference);
 }
 
-export function getObjectChanges(data: SuiTransactionResponse): SuiObjectChange[] | undefined {
+export function getObjectChanges(data: SuiTransactionBlockResponse): SuiObjectChange[] | undefined {
   return data.objectChanges;
 }
 
-export function getPublishedObjectChanges(data: SuiTransactionResponse): SuiObjectChangePublished[] {
+export function getPublishedObjectChanges(data: SuiTransactionBlockResponse): SuiObjectChangePublished[] {
   return (data.objectChanges?.filter((a) => is(a, SuiObjectChangePublished)) as SuiObjectChangePublished[]) ?? [];
 }

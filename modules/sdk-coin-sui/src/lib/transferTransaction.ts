@@ -12,9 +12,9 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
-import { normalizeSuiAddress, SuiJsonValue, SuiObjectRef } from './mystenlab/types';
+import { CallArg, normalizeSuiAddress, SuiObjectRef } from './mystenlab/types';
 import utils from './utils';
-import { builder, Inputs, TransactionInput } from './mystenlab/builder';
+import { builder, Inputs } from './mystenlab/builder';
 import { BCS } from '@mysten/bcs';
 
 export class TransferTransaction extends Transaction<TransferProgrammableTransaction> {
@@ -164,7 +164,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     if (!this._suiTransaction) {
       throw new InvalidTransactionError('empty transaction');
     }
-    const inputs: SuiJsonValue[] | TransactionInput[] = this._suiTransaction.tx.inputs.map((input, index) => {
+    const inputs: CallArg[] = this._suiTransaction.tx.inputs.map((input, index) => {
       if (input.hasOwnProperty('Pure')) {
         if (index % 2 === 0) {
           const amount = builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64');
@@ -180,15 +180,17 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       }
     });
 
+    const programmableTx: TransferProgrammableTransaction = {
+      inputs: inputs,
+      transactions: this._suiTransaction.tx.transactions,
+    } as TransferProgrammableTransaction;
+
     return {
       sender: this._suiTransaction.sender,
       expiration: { None: null },
       gasData: this._suiTransaction.gasData,
       kind: {
-        ProgrammableTransaction: {
-          inputs: inputs,
-          commands: this._suiTransaction.tx.commands,
-        },
+        ProgrammableTransaction: programmableTx,
       },
     };
   }
