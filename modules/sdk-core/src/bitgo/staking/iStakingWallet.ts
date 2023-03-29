@@ -31,6 +31,11 @@ export interface UnstakeOptions {
   delegationId?: string;
 }
 
+export interface EthUnstakeOptions {
+  clientId?: string;
+  delegationIds?: string[];
+}
+
 export interface SwitchValidatorOptions {
   amount: string;
   clientId?: string;
@@ -112,7 +117,7 @@ export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
   stake(options: StakeOptions): Promise<StakingRequest>;
-  unstake(options: UnstakeOptions): Promise<StakingRequest>;
+  unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;
