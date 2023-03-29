@@ -1,6 +1,6 @@
 export const FUNCTION_NAME_SENDMANY = 'send-many';
 export const CONTRACT_NAME_SENDMANY = 'send-many-memo';
-export const CONTRACT_NAME_STAKING = 'pox';
+export const CONTRACT_NAME_STAKING = 'pox-2';
 
 export const VALID_CONTRACT_FUNCTION_NAMES = [
   'stack-stx',

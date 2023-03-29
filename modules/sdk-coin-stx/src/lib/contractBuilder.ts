@@ -61,7 +61,7 @@ export class ContractBuilder extends AbstractContractBuilder {
       throw new InvalidParameterValueError('Invalid name');
     }
     if (name !== CONTRACT_NAME_STAKING && name !== CONTRACT_NAME_SENDMANY) {
-      throw new InvalidParameterValueError('Only pox and send-many-memo contracts supported');
+      throw new InvalidParameterValueError('Only pox-2 and send-many-memo contracts supported');
     }
     this._contractName = name;
     return this;
