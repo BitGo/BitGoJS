@@ -35,6 +35,7 @@ describe('Binance Smart Chain', function () {
       tbsc.getFullName().should.equal('Testnet Binance Smart Chain');
       tbsc.getBaseFactor().should.equal(1e18);
       tbsc.supportsTss().should.equal(true);
+      tbsc.allowsAccountConsolidations().should.equal(true);
     });
   });
 });
