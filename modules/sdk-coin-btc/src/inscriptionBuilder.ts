@@ -1,4 +1,4 @@
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getWalletKeys } from '@bitgo/abstract-utxo';
 import {
   HalfSignedUtxoTransaction,
   IInscriptionBuilder,
@@ -7,7 +7,6 @@ import {
   PrebuildTransactionResult,
   PreparedInscriptionRevealData,
   SubmitTransactionResponse,
-  Triple,
   xprvToRawPrv,
   xpubToCompressedPub,
 } from '@bitgo/sdk-core';
@@ -75,15 +74,8 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     }
   ): Promise<PrebuildTransactionResult> {
     assert(isSatPoint(satPoint));
-    const wk = (await this.wallet.baseCoin.keychains().list()).keys;
-    assert(wk.length === 3);
-    const rootWalletKeys = new utxolib.bitgo.RootWalletKeys(
-      wk.map((k) => {
-        assert(k.pub);
-        return utxolib.bip32.fromBase58(k.pub);
-      }) as Triple<utxolib.BIP32Interface>
-    );
 
+    const rootWalletKeys = await getWalletKeys(this.coin, this.wallet);
     const parsedSatPoint = parseSatPoint(satPoint);
     const transaction = await this.wallet.getTransaction({ txHash: parsedSatPoint.txid });
     // TODO(BG-70900): allow supplemental unspents
