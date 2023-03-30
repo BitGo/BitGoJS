@@ -107,11 +107,11 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       outputs,
       { feeRateSatKB, ...inscriptionConstraints }
     );
-    const layout = findOutputLayoutForWalletUnspents(unspents, satPoint, outputs, {
+    const outputLayout = findOutputLayoutForWalletUnspents(unspents, satPoint, outputs, {
       feeRateSatKB,
       ...inscriptionConstraints,
     });
-    if (!layout) {
+    if (!outputLayout) {
       throw new Error(`could not output layout for inscription passing transaction`);
     }
 
@@ -119,7 +119,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       walletId: this.wallet.id(),
       txHex: psbt.getUnsignedTx().toHex(),
       txInfo,
-      feeInfo: { fee: Number(layout.feeOutput), feeString: layout.feeOutput.toString() },
+      feeInfo: { fee: Number(outputLayout.layout.feeOutput), feeString: outputLayout.layout.feeOutput.toString() },
     };
   }
 
