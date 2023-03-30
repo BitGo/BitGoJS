@@ -6,13 +6,7 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import {
-  StakingProgrammableTransaction,
-  SuiTransaction,
-  SuiTransactionType,
-  TransferProgrammableTransaction,
-  TxData,
-} from './iface';
+import { StakingProgrammableTransaction, SuiTransaction, TransferProgrammableTransaction, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
@@ -161,7 +155,7 @@ export abstract class Transaction<T> extends BaseTransaction {
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
     const transactions = transactionBlock.transactions;
     // TODO: FIXME - get tx type Transfer or AddStake, for now only Transfer
-    const txType = SuiTransactionType.Transfer;
+    const txType = utils.getSuiTransactionType(transactions[1]);
     return {
       id: transactionBlock.getDigest(),
       type: txType,
