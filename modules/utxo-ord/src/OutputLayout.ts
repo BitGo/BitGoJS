@@ -272,7 +272,7 @@ export function findOutputLayout(
   search: Omit<Constraints, 'satPos' | 'total'>
 ): OutputLayout | undefined {
   if (inscriptionInput.ordinals.length !== 1) {
-    throw new Error(`unexpected ordinal count`);
+    throw new Error(`unexpected ordinal count ${inscriptionInput.ordinals.length}`);
   }
   if (inscriptionInput.ordinals[0].size() !== ONE) {
     throw new Error(`only single-satoshi inscriptions are supported`);
