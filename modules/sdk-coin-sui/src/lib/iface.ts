@@ -1,5 +1,4 @@
 import {
-  Recipient,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
@@ -53,13 +52,7 @@ export interface SuiTransaction<T = TransferProgrammableTransaction | StakingPro
   gasData: GasData;
 }
 
-export interface TransferTx {
-  coins: SuiObjectRef[];
-  recipients: Recipient[];
-}
-
 export interface RequestAddStake {
-  coins: SuiObjectRef[];
   amount: number;
   validatorAddress: SuiAddress;
 }
@@ -79,12 +72,6 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_stake
    */
   RequestAddStake = 'request_add_stake',
-  /**
-   * Add stake to a validator's staking pool using multiple coins..
-   *
-   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_add_stake_mul_coin
-   */
-  RequestAddStakeMulCoin = 'request_add_stake_mul_coin',
   /**
    * Withdraw some portion of a stake from a validator's staking pool.
    *

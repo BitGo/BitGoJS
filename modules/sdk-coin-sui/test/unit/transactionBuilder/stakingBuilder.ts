@@ -4,44 +4,39 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
-import { SuiTransactionType, TransferProgrammableTransaction } from '../../../src/lib/iface';
+import { StakingProgrammableTransaction, SuiTransactionType } from '../../../src/lib/iface';
 
-describe('Sui Transfer Builder', () => {
+describe('Sui Staking Builder', () => {
   const factory = getBuilderFactory('tsui');
 
   describe('Succeed', () => {
-    it('should build a transfer tx', async function () {
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.type(SuiTransactionType.Transfer);
+    it('should build a staking tx', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.sender.address);
-      txBuilder.send(testData.recipients);
+      txBuilder.stake(testData.requestAddStake);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
-      should.equal(tx.type, TransactionType.Send);
-      (tx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
+      should.equal(tx.type, TransactionType.StakingAdd);
+      (tx as SuiTransaction<StakingProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
         testData.coinsGasPayment
       );
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: testData.sender.address,
-        value: (testData.AMOUNT * 2).toString(),
+        value: testData.STAKING_AMOUNT.toString(),
         coin: 'tsui',
       });
-      tx.outputs.length.should.equal(2);
+      tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
-        address: testData.recipients[0].address,
-        value: testData.recipients[0].amount,
-        coin: 'tsui',
-      });
-      tx.outputs[1].should.deepEqual({
-        address: testData.recipients[1].address,
-        value: testData.recipients[1].amount,
+        address: testData.requestAddStake.validatorAddress,
+        value: testData.requestAddStake.amount.toString(),
         coin: 'tsui',
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.TRANSFER);
+      should.equal(rawTx, testData.ADD_STAKE);
     });
   });
 

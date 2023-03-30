@@ -1,24 +1,27 @@
 import {
   BaseKey,
   InvalidTransactionError,
-  NotImplementedError,
   ParseTransactionError,
   PublicKey as BasePublicKey,
   Signature,
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import {
-  StakingProgrammableTransaction,
-  SuiTransaction,
-  SuiTransactionType,
-  TransactionExplanation,
-  TxData,
-} from './iface';
+import { StakingProgrammableTransaction, SuiTransaction, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
+import {
+  builder,
+  Inputs,
+  MoveCallTransaction,
+  SplitCoinsTransaction,
+  TransactionBlockInput,
+} from './mystenlab/builder';
+import { CallArg, normalizeSuiAddress } from './mystenlab/types';
+import { BCS } from '@mysten/bcs';
+import { SUI_ADDRESS_LENGTH } from './constants';
 
 export class StakingTransaction extends Transaction<StakingProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -61,7 +64,15 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     if (!this._suiTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    throw new NotImplementedError('Not implemented');
+
+    const tx = this._suiTransaction;
+    return {
+      id: this._id,
+      sender: tx.sender,
+      kind: { ProgrammableTransaction: tx.tx },
+      gasData: tx.gasData,
+      expiration: { None: null },
+    };
   }
 
   /** @inheritDoc */
@@ -95,8 +106,6 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     switch (this.type) {
       case TransactionType.AddDelegator:
         return this.explainAddDelegationTransaction(result, explanationResult);
-      case TransactionType.StakingWithdraw:
-        return this.explainWithdrawDelegationTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
@@ -118,18 +127,33 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     if (!this.suiTransaction) {
       return;
     }
-    switch (this.suiTransaction.type) {
-      case SuiTransactionType.AddStake:
-        this._inputs = [];
-        this._outputs = [];
-        break;
-      case SuiTransactionType.WithdrawStake:
-        this._inputs = [];
-        this._outputs = [];
-        break;
-      default:
-        return;
-    }
+
+    const amountInputIdx = (
+      (this.suiTransaction.tx.transactions[0] as SplitCoinsTransaction).amounts[0] as TransactionBlockInput
+    ).index;
+    const amount = utils.getAmount(this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput);
+
+    const validatorAddressInputIdx = (
+      (this.suiTransaction.tx.transactions[1] as MoveCallTransaction).arguments[2] as TransactionBlockInput
+    ).index;
+    const validatorAddress = utils.getAddress(
+      this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput
+    );
+
+    this._outputs = [
+      {
+        address: validatorAddress,
+        value: Number(amount).toString(),
+        coin: this._coinConfig.name,
+      },
+    ];
+    this._inputs = [
+      {
+        address: this.suiTransaction.sender,
+        value: Number(amount).toString(),
+        coin: this._coinConfig.name,
+      },
+    ];
   }
 
   /**
@@ -140,10 +164,12 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
   fromRawTransaction(rawTransaction: string): void {
     try {
       utils.isValidRawTransaction(rawTransaction);
-      throw new NotImplementedError('Not implemented');
-      // this._suiTransaction = Transaction.deserializeSuiTransaction(rawTransaction) as BitGoSuiTransaction<MoveCallTx>;
-      // this._type = utils.getTransactionType(this._suiTransaction.tx.function);
-      // this.loadInputsAndOutputs();
+      this._suiTransaction = Transaction.deserializeSuiTransaction(
+        rawTransaction
+      ) as SuiTransaction<StakingProgrammableTransaction>;
+      this._type = utils.getTransactionType(this._suiTransaction.type);
+      this._id = this._suiTransaction.id;
+      this.loadInputsAndOutputs();
     } catch (e) {
       throw e;
     }
@@ -155,31 +181,77 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
    * @return {TxData}
    */
   getTxData(): TxData {
-    throw new NotImplementedError('Not implemented');
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('empty transaction');
+    }
+    const inputs: CallArg[] | TransactionBlockInput[] = this._suiTransaction.tx.inputs.map((input, index) => {
+      if (input.hasOwnProperty('Object')) {
+        return input;
+      }
+      if (input.hasOwnProperty('Pure')) {
+        if (input.Pure.length === SUI_ADDRESS_LENGTH) {
+          const address = normalizeSuiAddress(
+            builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64')
+          );
+          return Inputs.Pure(address, BCS.ADDRESS);
+        } else {
+          const amount = builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64');
+          return Inputs.Pure(amount, BCS.U64);
+        }
+      }
+      if (input.kind === 'Input' && (input.value.hasOwnProperty('Object') || input.value.hasOwnProperty('Pure'))) {
+        return input.value;
+      }
+
+      // what's left is the pure number or address string
+      return Inputs.Pure(input.value, input.type === 'pure' ? BCS.U64 : BCS.ADDRESS);
+    });
+
+    const programmableTx = {
+      inputs: inputs,
+      transactions: this._suiTransaction.tx.transactions,
+    } as StakingProgrammableTransaction;
+
+    return {
+      sender: this._suiTransaction.sender,
+      expiration: { None: null },
+      gasData: this._suiTransaction.gasData,
+      kind: {
+        ProgrammableTransaction: programmableTx,
+      },
+    };
   }
 
   /**
-   * Returns a complete explanation for a transfer transaction
+   * Returns a complete explanation for a staking transaction
    *
    * @param {TxData} json The transaction data in json format
    * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
    * @returns {TransactionExplanation}
    */
   explainAddDelegationTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    throw new NotImplementedError('Not implemented');
-  }
+    const amountInputIdx = (
+      (this.suiTransaction.tx.transactions[0] as MoveCallTransaction).arguments[1] as TransactionBlockInput
+    ).index;
+    const amount = (this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput).value;
 
-  /**
-   * Returns a complete explanation for a withdraw delegation transaction
-   *
-   * @param {TxData} json The transaction data in json format
-   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
-   * @returns {TransactionExplanation}
-   */
-  explainWithdrawDelegationTransaction(
-    json: TxData,
-    explanationResult: TransactionExplanation
-  ): TransactionExplanation {
-    throw new NotImplementedError('Not implemented');
+    const validatorAddressInputIdx = (
+      (this.suiTransaction.tx.transactions[0] as MoveCallTransaction).arguments[2] as TransactionBlockInput
+    ).index;
+    const validatorAddress = (this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput).value;
+
+    const outputs: TransactionRecipient[] = [
+      {
+        address: validatorAddress,
+        amount: Number(amount).toString(),
+      },
+    ];
+    const outputAmount = amount;
+
+    return {
+      ...explanationResult,
+      outputAmount,
+      outputs,
+    };
   }
 }

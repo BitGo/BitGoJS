@@ -4,14 +4,14 @@ import {
   ParseTransactionError,
   isValidEd25519PublicKey,
   TransactionType,
-  NotSupported,
   Recipient,
+  InvalidTransactionError,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
 import { isPureArg, CallArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
-import { MethodNames } from './iface';
+import { MethodNames, SuiTransactionType } from './iface';
 import { Buffer } from 'buffer';
 import {
   isValidSuiAddress,
@@ -21,7 +21,7 @@ import {
   SuiJsonValue,
   SuiObjectRef,
 } from './mystenlab/types';
-import { builder, TransactionBlockInput } from './mystenlab/builder';
+import { builder, TransactionBlockInput, TransactionType as TransactionCommandType } from './mystenlab/builder';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -163,25 +163,48 @@ export class Utils implements BaseUtils {
    * @param {MethodNames} fctName
    * @return {TransactionType}
    */
-  getTransactionType(fctName: string): TransactionType {
-    switch (fctName) {
-      case MethodNames.RequestAddStakeMulCoin:
+  getTransactionType(suiTransactionType: SuiTransactionType): TransactionType {
+    switch (suiTransactionType) {
+      case SuiTransactionType.Transfer:
+        return TransactionType.Send;
+      case SuiTransactionType.AddStake:
         return TransactionType.StakingAdd;
-      case MethodNames.RequestWithdrawStake:
+      case SuiTransactionType.WithdrawStake:
         return TransactionType.StakingWithdraw;
+    }
+  }
+
+  /**
+   * Get SUI transaction type
+   *
+   * @param {MethodNames} fctName
+   * @return {TransactionType}
+   */
+  getSuiTransactionType(command: TransactionCommandType): SuiTransactionType {
+    switch (command.kind) {
+      case 'TransferObjects':
+        return SuiTransactionType.Transfer;
+      case 'MoveCall':
+        if (command.target.endsWith(MethodNames.RequestAddStake)) {
+          return SuiTransactionType.AddStake;
+        } else if (command.target.endsWith(MethodNames.RequestWithdrawStake)) {
+          return SuiTransactionType.WithdrawStake;
+        } else {
+          throw new InvalidTransactionError(`unsupported target method`);
+        }
       default:
-        throw new NotSupported(`Staking Transaction type with function ${fctName} not supported`);
+        throw new InvalidTransactionError(`unsupported transaction kind`);
     }
   }
 
   getRecipients(inputs: CallArg[] | SuiCallArg[] | TransactionBlockInput[]): Recipient[] {
-    const amounts: string[] = [];
+    const amounts: number[] = [];
     const addresses: string[] = [];
     inputs.forEach((input, index) => {
       if (index % 2 === 0) {
-        amounts.push(this.getRecipientAmount(input));
+        amounts.push(this.getAmount(input));
       } else {
-        addresses.push(this.getRecipientAddress(input));
+        addresses.push(this.getAddress(input));
       }
     });
     return addresses.map((address, index) => {
@@ -192,16 +215,22 @@ export class Utils implements BaseUtils {
     });
   }
 
-  getRecipientAmount(input: SuiJsonValue | TransactionBlockInput): string {
+  getAmount(input: SuiJsonValue | TransactionBlockInput): number {
     return isPureArg(input)
       ? builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64')
       : (input as TransactionBlockInput).value;
   }
 
-  getRecipientAddress(input: SuiJsonValue | TransactionBlockInput): string {
-    return isPureArg(input)
-      ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
-      : (input as TransactionBlockInput).value;
+  getAddress(input: TransactionBlockInput): string {
+    if (input.hasOwnProperty('value')) {
+      return isPureArg(input.value)
+        ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input?.value.Pure).toString('base64'), 'base64'))
+        : (input as TransactionBlockInput).value;
+    } else {
+      return isPureArg(input)
+        ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
+        : (input as TransactionBlockInput).value;
+    }
   }
 
   normalizeCoins(coins: any[]): SuiObjectRef[] {

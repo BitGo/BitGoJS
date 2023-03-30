@@ -82,7 +82,7 @@ describe('SUI:', function () {
       });
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
-        id: 'Dc6ofSWTtQMUPrqZ5NqXsGgF2Cyom6H6Kze5T3tUv8Ut',
+        id: 'BxoeGXbBCuw6VFEcgwHHUAKrCoAsGanPB39kdVVKZZcR',
         outputs: [
           {
             address: testData.recipients[0].address,

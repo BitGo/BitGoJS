@@ -180,7 +180,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       }
     });
 
-    const programmableTx: TransferProgrammableTransaction = {
+    const programmableTx = {
       inputs: inputs,
       transactions: this._suiTransaction.tx.transactions,
     } as TransferProgrammableTransaction;
