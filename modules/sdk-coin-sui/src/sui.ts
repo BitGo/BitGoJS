@@ -19,7 +19,6 @@ import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory, KeyPair as SuiKeyPair } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import * as sha3 from 'js-sha3';
 import { TransferTransaction } from './lib/transferTransaction';
 
 export interface ExplainTransactionOptions {
@@ -243,12 +242,7 @@ export class Sui extends BaseCoin {
 
   private getAddressFromPublicKey(derivedPublicKey: string) {
     // TODO(BG-59016) replace with account lib implementation
-    const PUBLIC_KEY_SIZE = 32;
-    const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
-    const pubBuf = Buffer.from(derivedPublicKey, 'hex');
-    tmp.set([0x00]);
-    tmp.set(pubBuf, 1);
-    return '0x' + sha3.sha3_256(tmp).slice(0, 40);
+    return utils.getAddressFromPublicKey(derivedPublicKey);
   }
 
   /** @inheritDoc */

@@ -22,6 +22,8 @@ import {
   SuiObjectRef,
 } from './mystenlab/types';
 import { builder, TransactionBlockInput, TransactionType as TransactionCommandType } from './mystenlab/builder';
+import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
+import blake2b from '@bitgo/blake2b';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -254,6 +256,20 @@ export class Utils implements BaseUtils {
       index,
       type,
     };
+  }
+
+  getAddressFromPublicKey(publicKey: string): string {
+    const PUBLIC_KEY_SIZE = 32;
+    const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
+    const pubBuf = Buffer.from(publicKey, 'hex');
+    tmp.set([SIGNATURE_SCHEME_TO_FLAG['ED25519']]); // ED25519: 0x00,
+    tmp.set(pubBuf, 1);
+    return normalizeSuiAddress(
+      blake2b(PUBLIC_KEY_SIZE)
+        .update(tmp)
+        .digest('hex')
+        .slice(0, SUI_ADDRESS_LENGTH * 2)
+    );
   }
 }
 
