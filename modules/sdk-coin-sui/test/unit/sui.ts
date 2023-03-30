@@ -100,6 +100,37 @@ describe('SUI:', function () {
         type: 0,
       });
     });
+    it('should explain a staking transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: testData.ADD_STAKE,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'outputs',
+          'outputAmount',
+          'changeOutputs',
+          'changeAmount',
+          'fee',
+          'type',
+          'module',
+          'function',
+          'validatorAddress',
+        ],
+        id: 'bP78boZ48sDdJsg2V1tJahpGyBwaC9GSTL2rvyADnsh',
+        outputs: [
+          {
+            address: testData.requestAddStake.validatorAddress,
+            amount: testData.requestAddStake.amount.toString(),
+          },
+        ],
+        outputAmount: testData.STAKING_AMOUNT.toString(),
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: testData.gasData.budget.toString() },
+        type: 25,
+      });
+    });
 
     it('should fail to explain transaction with missing params', async function () {
       try {
