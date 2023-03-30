@@ -104,7 +104,7 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     };
 
     switch (this.type) {
-      case TransactionType.AddDelegator:
+      case TransactionType.StakingAdd:
         return this.explainAddDelegationTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
@@ -231,14 +231,16 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
    */
   explainAddDelegationTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     const amountInputIdx = (
-      (this.suiTransaction.tx.transactions[0] as MoveCallTransaction).arguments[1] as TransactionBlockInput
+      (this.suiTransaction.tx.transactions[0] as SplitCoinsTransaction).amounts[0] as TransactionBlockInput
     ).index;
     const amount = (this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput).value;
 
     const validatorAddressInputIdx = (
-      (this.suiTransaction.tx.transactions[0] as MoveCallTransaction).arguments[2] as TransactionBlockInput
+      (this.suiTransaction.tx.transactions[1] as MoveCallTransaction).arguments[2] as TransactionBlockInput
     ).index;
-    const validatorAddress = (this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput).value;
+    const validatorAddress = utils.getAddress(
+      this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput
+    );
 
     const outputs: TransactionRecipient[] = [
       {
