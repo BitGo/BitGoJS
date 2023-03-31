@@ -13,7 +13,7 @@ import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
-import { checkPlainPublicKey, createTaprootOutputScript, toXOnlyPublicKey } from './outputScripts';
+import { checkPlainPublicKey, toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
@@ -754,12 +754,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   private getTaprootOutputScript(inputIndex: number) {
     const input = checkForInput(this.data.inputs, inputIndex);
     if (input.tapLeafScript?.length) {
-      return createTaprootOutputScript({
+      return taproot.createTaprootOutputScript({
         controlBlock: input.tapLeafScript[0].controlBlock,
         leafScript: input.tapLeafScript[0].script,
       });
     } else if (input.tapInternalKey && input.tapMerkleRoot) {
-      return createTaprootOutputScript({ internalPubKey: input.tapInternalKey, taptreeRoot: input.tapMerkleRoot });
+      return taproot.createTaprootOutputScript({
+        internalPubKey: input.tapInternalKey,
+        taptreeRoot: input.tapMerkleRoot,
+      });
     }
     throw new Error('not a taproot input');
   }

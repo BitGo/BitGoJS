@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { ECPairAPI, ECPairFactory } from 'ecpair';
 import { ecc, taproot } from '../src';
+import { createTaprootOutputScript, getTaprootOutputKey } from '../src/taproot';
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);
 
@@ -49,7 +50,7 @@ describe('taproot utils', () => {
     // examples provided by the Bitcoin Optech taproot workshop exercises:
     // https://github.com/bitcoinops/taproot-workshop
 
-    const internalPubkey = Buffer.from('af455f4989d122e9185f8c351dbaecd13adca3eef8a9d38ef8ffed6867e342e3', 'hex');
+    const internalPubKey = Buffer.from('af455f4989d122e9185f8c351dbaecd13adca3eef8a9d38ef8ffed6867e342e3', 'hex');
 
     it('serializes script size', () => {
       const u8 = Buffer.allocUnsafe(0x01);
@@ -95,14 +96,18 @@ describe('taproot utils', () => {
     });
 
     it('taptweaks a pubkey', () => {
-      const tapTreeRoot = Buffer.from('dde870346c0f5f1f1c2341041520baa4e252723474c6969f432c2af98251ac01', 'hex');
+      const taptreeRoot = Buffer.from('dde870346c0f5f1f1c2341041520baa4e252723474c6969f432c2af98251ac01', 'hex');
 
-      const taprootPubkey = taproot.tapTweakPubkey(ecc, internalPubkey, tapTreeRoot);
+      const taprootPubkey = taproot.tapTweakPubkey(ecc, internalPubKey, taptreeRoot);
 
       assert.strictEqual(
         Buffer.from(taprootPubkey.xOnlyPubkey).toString('hex'),
         'b23960be1cb56ed0f9044ded73d758f466493cf9e2a6ce139a04fac8d630a601'
       );
+
+      const outputScript = createTaprootOutputScript({ internalPubKey, taptreeRoot });
+      const outputKey = getTaprootOutputKey(outputScript);
+      assert.ok(outputKey.equals(taprootPubkey.xOnlyPubkey));
     });
 
     it('builds a weighted taptree from scripts and tweaks a pubkey with it', () => {
@@ -113,7 +118,7 @@ describe('taproot utils', () => {
       const tapTree = taproot.getHuffmanTaptree([scriptA, scriptB, scriptC], [1, 1, 2]);
       const tapTreeRoot = tapTree.root;
 
-      const taprootPubkey = taproot.tapTweakPubkey(ecc, internalPubkey, tapTreeRoot);
+      const taprootPubkey = taproot.tapTweakPubkey(ecc, internalPubKey, tapTreeRoot);
 
       assert.strictEqual(
         Buffer.from(taprootPubkey.xOnlyPubkey).toString('hex'),

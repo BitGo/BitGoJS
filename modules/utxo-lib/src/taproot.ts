@@ -6,6 +6,7 @@ import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/i
 import assert = require('assert');
 import FastPriorityQueue = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
+import { ecc as eccLib } from './noble_ecc';
 const varuint = require('varuint-bitcoin');
 
 /**
@@ -490,4 +491,39 @@ export function getTweakedOutputKey(payment: bpayments.Payment): Buffer {
     return payment.output?.subarray(2);
   }
   throw new Error(`invalid p2tr tweaked output key size ${payment.output.length}`);
+}
+
+/**
+ * @returns output script for either script path input controlBlock
+ * & leafScript OR key path input internalPubKey & taptreeRoot
+ */
+export function createTaprootOutputScript(
+  p2trArgs: { internalPubKey: Buffer; taptreeRoot: Buffer } | { controlBlock: Buffer; leafScript: Buffer }
+): Buffer {
+  let internalPubKey: Buffer | undefined;
+  let taptreeRoot: Buffer | undefined;
+  if ('internalPubKey' in p2trArgs) {
+    internalPubKey = p2trArgs.internalPubKey;
+    taptreeRoot = p2trArgs.taptreeRoot;
+  } else {
+    internalPubKey = parseControlBlock(eccLib, p2trArgs.controlBlock).internalPubkey;
+    taptreeRoot = getTaptreeRoot(eccLib, p2trArgs.controlBlock, p2trArgs.leafScript);
+  }
+  const outputKey = tapTweakPubkey(eccLib, internalPubKey, taptreeRoot).xOnlyPubkey;
+  return bscript.compile([bscript.OPS.OP_1, Buffer.from(outputKey)]);
+}
+
+/**
+ * @returns x-only taproot output key (tapOutputKey)
+ */
+export function getTaprootOutputKey(outputScript: Buffer | (number | Buffer)[]): Buffer {
+  const outputDecompiled = bscript.decompile(outputScript);
+  if (outputDecompiled?.length !== 2) {
+    throw new Error('invalid taproot output script');
+  }
+  const [op1, outputKey] = outputDecompiled;
+  if (op1 !== bscript.OPS.OP_1 || !Buffer.isBuffer(outputKey) || outputKey.length !== 32) {
+    throw new Error('invalid taproot output script');
+  }
+  return outputKey;
 }
