@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { PsbtInputUpdate, PartialSig } from 'bip174/src/lib/interfaces';
 import { ecc as eccLib, TxOutput, taproot, getMainnet, networks } from '../..';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -21,8 +22,10 @@ export function getInputUpdate(
   }
 
   const parsedInput = parseSignatureScript(tx.ins[vin]);
+  assert.ok(parsedInput.scriptType !== 'taprootKeyPathSpend');
 
   function getPartialSigs(): PartialSig[] {
+    assert.ok(parsedInput.scriptType !== 'taprootKeyPathSpend');
     return getSignaturesWithPublicKeys(tx, vin, prevOuts, parsedInput.publicKeys).flatMap((signature, i) =>
       signature
         ? [
@@ -39,7 +42,6 @@ export function getInputUpdate(
   // segwit transactions
   if (
     parsedInput.scriptType !== 'taprootScriptPathSpend' &&
-    parsedInput.scriptType !== 'taprootKeyPathSpend' &&
     !hasWitnessData(parsedInput.scriptType) &&
     !nonWitnessUtxo &&
     getMainnet(tx.network) !== networks.zcash
@@ -63,9 +65,6 @@ export function getInputUpdate(
         witnessScript: parsedInput.witnessScript,
       });
     case 'taprootScriptPathSpend':
-      if (!('controlBlock' in parsedInput)) {
-        throw new Error(`keypath not implemented`);
-      }
       const leafHash = taproot.getTapleafHash(eccLib, parsedInput.controlBlock, parsedInput.pubScript);
       return {
         tapLeafScript: [
@@ -77,8 +76,6 @@ export function getInputUpdate(
         ],
         tapScriptSig: getPartialSigs().map((obj) => ({ ...obj, leafHash })),
       };
-    default:
-      throw new Error(`parsedInput.scriptType not supported ${parsedInput.scriptType}`);
   }
 }
 

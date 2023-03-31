@@ -10,6 +10,7 @@ import {
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
   scriptTypeForChain,
+  UtxoTransaction,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys, getKeyTriple } from '../../../src/testutil';
@@ -47,6 +48,8 @@ import {
   dummyPartialSig,
   validateFinalizedInput,
   network,
+  validateParsedTaprootKeyPath,
+  validateParsedTaprootScriptPath,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -109,6 +112,17 @@ describe('p2trMusig2', function () {
       });
       const tx = psbt.extractTransaction();
       assert.ok(tx);
+    });
+
+    it(`parse tx`, function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'user', outputType);
+      psbt.setMusig2Nonces(rootWalletKeys.user);
+      psbt.setMusig2Nonces(rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      psbt.signAllInputsHD(rootWalletKeys.bitgo);
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      validateParsedTaprootKeyPath(psbt, tx);
     });
 
     describe('create nonce', function () {
@@ -606,6 +620,16 @@ describe('p2trMusig2', function () {
       psbt.finalizeAllInputs();
       validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
       psbt.extractTransaction();
+    });
+
+    it(`parse tx`, function () {
+      const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
+      psbt.signAllInputsHD(rootWalletKeys.user);
+      psbt.signAllInputsHD(rootWalletKeys.backup);
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      const psbtDuplicate = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
+      validateParsedTaprootScriptPath(psbtDuplicate, tx, 0);
     });
   });
 
