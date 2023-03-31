@@ -37,7 +37,13 @@ export function getInputUpdate(
   // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
-  if (!hasWitnessData(parsedInput.scriptType) && !nonWitnessUtxo && getMainnet(tx.network) !== networks.zcash) {
+  if (
+    parsedInput.scriptType !== 'taprootScriptPathSpend' &&
+    parsedInput.scriptType !== 'taprootKeyPathSpend' &&
+    !hasWitnessData(parsedInput.scriptType) &&
+    !nonWitnessUtxo &&
+    getMainnet(tx.network) !== networks.zcash
+  ) {
     throw new Error(`scriptType ${parsedInput.scriptType} requires prevTx Buffer`);
   }
 
@@ -56,7 +62,7 @@ export function getInputUpdate(
         redeemScript: parsedInput.redeemScript,
         witnessScript: parsedInput.witnessScript,
       });
-    case 'p2tr':
+    case 'taprootScriptPathSpend':
       if (!('controlBlock' in parsedInput)) {
         throw new Error(`keypath not implemented`);
       }
@@ -71,6 +77,8 @@ export function getInputUpdate(
         ],
         tapScriptSig: getPartialSigs().map((obj) => ({ ...obj, leafHash })),
       };
+    default:
+      throw new Error(`parsedInput.scriptType not supported ${parsedInput.scriptType}`);
   }
 }
 

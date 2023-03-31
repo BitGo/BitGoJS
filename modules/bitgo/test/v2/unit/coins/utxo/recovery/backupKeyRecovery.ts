@@ -209,7 +209,7 @@ function run(
             case 'p2sh':
             case 'p2shP2wsh':
             case 'p2wsh':
-            case 'p2tr':
+            case 'taprootScriptPathSpend':
               parsed.signatures.forEach((signature, i) => {
                 if (utxolib.bitgo.isPlaceholderSignature(signature)) {
                   throw new Error(`placeholder signature at index ${i}`);

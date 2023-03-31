@@ -102,7 +102,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
       signatureBuffer = signatureBuffer.slice(0, -1);
     }
 
-    if (parsedScript.scriptType === 'p2tr') {
+    if (parsedScript.scriptType === 'taprootScriptPathSpend') {
       if (verificationSettings.signatureIndex !== undefined) {
         throw new Error(`signatureIndex parameter not supported for p2tr`);
       }

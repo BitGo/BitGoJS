@@ -9,7 +9,7 @@ import {
   isValidControlBock,
   isWalletUnspent,
   outputScripts,
-  ParsedSignatureScript2Of3,
+  ParsedSignatureScriptP2ms,
   ParsedSignatureScriptTaproot,
   ParsedSignatureScriptTaprootScriptPath,
   parseSignatureScript2Of3,
@@ -33,7 +33,7 @@ import { Network } from '../../../src';
 
 function validateScript(
   psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
-  txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
+  txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
     assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.pubScript), true);
@@ -47,7 +47,7 @@ function validateScript(
     } else if (psbtParsed.scriptType === 'p2shP2wsh') {
       assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.redeemScript), true);
       assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.witnessScript), true);
-    } else if (psbtParsed.scriptType === 'p2tr') {
+    } else if (psbtParsed.scriptType === 'taprootScriptPathSpend') {
       assert.deepStrictEqual(isValidControlBock(psbtParsed.controlBlock), true);
       assert.deepStrictEqual(psbtParsed.scriptPathLevel, calculateScriptPathLevel(psbtParsed.controlBlock));
       assert.deepStrictEqual(psbtParsed.leafVersion, getLeafVersion(psbtParsed.controlBlock));
@@ -63,7 +63,7 @@ function validateScript(
     ) {
       assert.deepStrictEqual(txParsed.redeemScript, psbtParsed.redeemScript);
       assert.deepStrictEqual(txParsed.witnessScript, psbtParsed.witnessScript);
-    } else if (txParsed.scriptType === 'p2tr' && psbtParsed.scriptType === 'p2tr') {
+    } else if (txParsed.scriptType === 'taprootScriptPathSpend' && psbtParsed.scriptType === 'taprootScriptPathSpend') {
       // To ensure script path p2tr
       assert.deepStrictEqual(txParsed.publicKeys, psbtParsed.publicKeys);
       const txParsedP2trScriptPath = txParsed as ParsedSignatureScriptTaprootScriptPath;
@@ -76,7 +76,7 @@ function validateScript(
 
 function validatePublicKeys(
   psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
-  txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
+  txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
     assert.deepStrictEqual(psbtParsed.publicKeys.length, 3);
@@ -94,7 +94,7 @@ function validatePublicKeys(
 
 function validateSignature(
   psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
-  txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
+  txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
     assert.deepStrictEqual(psbtParsed.signatures, undefined);
@@ -138,8 +138,8 @@ export function validatePsbtParsing(
       }
     } else {
       assert.ok(psbtParsed);
+      assert.strictEqual(psbtParsed.scriptType, scriptType === 'p2tr' ? 'taprootScriptPathSpend' : scriptType);
       const txParsed = parseSignatureScript2Of3(tx.ins[i]);
-      assert.deepStrictEqual(psbtParsed.scriptType, scriptType);
       validateScript(psbtParsed, txParsed);
       validatePublicKeys(psbtParsed, txParsed);
       validateSignature(psbtParsed, txParsed);

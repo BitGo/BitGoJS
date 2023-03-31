@@ -221,7 +221,7 @@ export class Dimensions {
    * @return
    */
   static fromScriptType(
-    scriptType: utxolib.bitgo.outputScripts.ScriptType | 'p2pkh',
+    scriptType: utxolib.bitgo.outputScripts.ScriptType | utxolib.bitgo.ParsedScriptType2Of3 | 'p2pkh',
     params: {
       scriptPathLevel?: number;
     } = {}
@@ -234,6 +234,7 @@ export class Dimensions {
         return Dimensions.SingleInput[scriptType];
       case 'p2tr':
       case 'p2trMusig2':
+      case 'taprootScriptPathSpend':
         switch (params.scriptPathLevel) {
           case undefined:
             return Dimensions.SingleInput.p2trKeypath;
