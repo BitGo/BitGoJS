@@ -62,16 +62,16 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       signer = 'user',
       cosigner = 'bitgo',
       inscriptionConstraints = DefaultInscriptionConstraints,
-      changeAddressType = 'p2tr',
+      changeAddressType = 'p2wsh',
     }: {
-      signer: utxolib.bitgo.KeyName;
-      cosigner: utxolib.bitgo.KeyName;
-      inscriptionConstraints: {
+      signer?: utxolib.bitgo.KeyName;
+      cosigner?: utxolib.bitgo.KeyName;
+      inscriptionConstraints?: {
         minChangeOutput?: bigint;
         minInscriptionOutput?: bigint;
         maxInscriptionOutput?: bigint;
       };
-      changeAddressType: utxolib.bitgo.outputScripts.ScriptType2Of3;
+      changeAddressType?: utxolib.bitgo.outputScripts.ScriptType2Of3;
     }
   ): Promise<PrebuildTransactionResult> {
     assert(isSatPoint(satPoint));
@@ -85,7 +85,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const txInfo = { unspents };
 
     const changeAddress = await this.wallet.createAddress({
-      chain: utxolib.bitgo.getExternalChainCode(changeAddressType),
+      chain: utxolib.bitgo.getInternalChainCode(changeAddressType),
     });
     const outputs: InscriptionOutputs = {
       inscriptionRecipient: recipient,
