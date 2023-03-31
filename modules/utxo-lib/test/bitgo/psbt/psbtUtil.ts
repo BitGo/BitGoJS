@@ -32,82 +32,82 @@ import { SignatureTargetType } from './Psbt';
 import { Network } from '../../../src';
 
 function validateScript(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR | undefined,
+  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
   txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
-    assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.pubScript), true);
+    assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.pubScript), true);
 
-    if (psbtParsed?.scriptType === 'p2sh') {
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.redeemScript), true);
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.witnessScript), false);
-    } else if (psbtParsed?.scriptType === 'p2wsh') {
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.redeemScript), false);
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.witnessScript), true);
-    } else if (psbtParsed?.scriptType === 'p2shP2wsh') {
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.redeemScript), true);
-      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed?.witnessScript), true);
-    } else if (psbtParsed?.scriptType === 'p2tr') {
-      assert.deepStrictEqual(isValidControlBock(psbtParsed?.controlBlock), true);
-      assert.deepStrictEqual(psbtParsed?.scriptPathLevel, calculateScriptPathLevel(psbtParsed?.controlBlock));
-      assert.deepStrictEqual(psbtParsed?.leafVersion, getLeafVersion(psbtParsed?.controlBlock));
+    if (psbtParsed.scriptType === 'p2sh') {
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.redeemScript), true);
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.witnessScript), false);
+    } else if (psbtParsed.scriptType === 'p2wsh') {
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.redeemScript), false);
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.witnessScript), true);
+    } else if (psbtParsed.scriptType === 'p2shP2wsh') {
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.redeemScript), true);
+      assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.witnessScript), true);
+    } else if (psbtParsed.scriptType === 'p2tr') {
+      assert.deepStrictEqual(isValidControlBock(psbtParsed.controlBlock), true);
+      assert.deepStrictEqual(psbtParsed.scriptPathLevel, calculateScriptPathLevel(psbtParsed.controlBlock));
+      assert.deepStrictEqual(psbtParsed.leafVersion, getLeafVersion(psbtParsed.controlBlock));
     }
   } else {
-    assert.deepStrictEqual(txParsed.scriptType, psbtParsed?.scriptType);
-    assert.deepStrictEqual(txParsed.pubScript, psbtParsed?.pubScript);
+    assert.deepStrictEqual(txParsed.scriptType, psbtParsed.scriptType);
+    assert.deepStrictEqual(txParsed.pubScript, psbtParsed.pubScript);
 
     if (
-      (txParsed.scriptType === 'p2sh' && psbtParsed?.scriptType === 'p2sh') ||
-      (txParsed.scriptType === 'p2wsh' && psbtParsed?.scriptType === 'p2wsh') ||
-      (txParsed.scriptType === 'p2shP2wsh' && psbtParsed?.scriptType === 'p2shP2wsh')
+      (txParsed.scriptType === 'p2sh' && psbtParsed.scriptType === 'p2sh') ||
+      (txParsed.scriptType === 'p2wsh' && psbtParsed.scriptType === 'p2wsh') ||
+      (txParsed.scriptType === 'p2shP2wsh' && psbtParsed.scriptType === 'p2shP2wsh')
     ) {
-      assert.deepStrictEqual(txParsed.redeemScript, psbtParsed?.redeemScript);
-      assert.deepStrictEqual(txParsed.witnessScript, psbtParsed?.witnessScript);
-    } else if (txParsed.scriptType === 'p2tr' && psbtParsed?.scriptType === 'p2tr') {
+      assert.deepStrictEqual(txParsed.redeemScript, psbtParsed.redeemScript);
+      assert.deepStrictEqual(txParsed.witnessScript, psbtParsed.witnessScript);
+    } else if (txParsed.scriptType === 'p2tr' && psbtParsed.scriptType === 'p2tr') {
       // To ensure script path p2tr
       assert.deepStrictEqual(txParsed.publicKeys, psbtParsed.publicKeys);
       const txParsedP2trScriptPath = txParsed as ParsedSignatureScriptTaprootScriptPath;
-      assert.deepStrictEqual(txParsedP2trScriptPath.controlBlock, psbtParsed?.controlBlock);
-      assert.deepStrictEqual(txParsedP2trScriptPath.scriptPathLevel, psbtParsed?.scriptPathLevel);
-      assert.deepStrictEqual(txParsedP2trScriptPath.leafVersion, psbtParsed?.leafVersion);
+      assert.deepStrictEqual(txParsedP2trScriptPath.controlBlock, psbtParsed.controlBlock);
+      assert.deepStrictEqual(txParsedP2trScriptPath.scriptPathLevel, psbtParsed.scriptPathLevel);
+      assert.deepStrictEqual(txParsedP2trScriptPath.leafVersion, psbtParsed.leafVersion);
     }
   }
 }
 
 function validatePublicKeys(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR | undefined,
+  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
   txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
-    assert.deepStrictEqual(psbtParsed?.publicKeys.length, 3);
-    psbtParsed?.publicKeys.forEach((publicKey) => {
+    assert.deepStrictEqual(psbtParsed.publicKeys.length, 3);
+    psbtParsed.publicKeys.forEach((publicKey) => {
       assert.deepStrictEqual(Buffer.isBuffer(publicKey), true);
     });
   } else {
-    assert.deepStrictEqual(txParsed.publicKeys.length, psbtParsed?.publicKeys?.length);
+    assert.deepStrictEqual(txParsed.publicKeys.length, psbtParsed.publicKeys?.length);
     const pubKeyMatch = txParsed.publicKeys.every((txPubKey) =>
-      psbtParsed?.publicKeys?.some((psbtPubKey) => psbtPubKey.equals(txPubKey))
+      psbtParsed.publicKeys?.some((psbtPubKey) => psbtPubKey.equals(txPubKey))
     );
     assert.deepStrictEqual(pubKeyMatch, true);
   }
 }
 
 function validateSignature(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR | undefined,
+  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
   txParsed: ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
-    assert.deepStrictEqual(psbtParsed?.signatures, undefined);
+    assert.deepStrictEqual(psbtParsed.signatures, undefined);
   } else {
     const txSignatures = txParsed.signatures.filter(
       (txSig) => Buffer.isBuffer(txSig) && !isPlaceholderSignature(txSig)
     );
-    assert.deepStrictEqual(txSignatures.length, psbtParsed?.signatures?.length);
+    assert.deepStrictEqual(txSignatures.length, psbtParsed.signatures?.length);
     if (txSignatures.length < 1) {
       return;
     }
     const sigMatch = txSignatures.every((txSig) =>
-      Buffer.isBuffer(txSig) ? psbtParsed?.signatures?.some((psbtSig) => psbtSig.equals(txSig)) : true
+      Buffer.isBuffer(txSig) ? psbtParsed.signatures?.some((psbtSig) => psbtSig.equals(txSig)) : true
     );
     assert.deepStrictEqual(sigMatch, true);
   }
@@ -131,7 +131,7 @@ export function validatePsbtParsing(
         assert.deepStrictEqual(psbtParsed, undefined);
       } else {
         assert.ok(psbtParsed);
-        assert.deepStrictEqual(psbtParsed?.scriptType, scriptType);
+        assert.deepStrictEqual(psbtParsed.scriptType, scriptType);
         validateScript(psbtParsed, undefined);
         validatePublicKeys(psbtParsed, undefined);
         validateSignature(psbtParsed, undefined);
@@ -139,7 +139,7 @@ export function validatePsbtParsing(
     } else {
       assert.ok(psbtParsed);
       const txParsed = parseSignatureScript2Of3(tx.ins[i]);
-      assert.deepStrictEqual(psbtParsed?.scriptType, scriptType);
+      assert.deepStrictEqual(psbtParsed.scriptType, scriptType);
       validateScript(psbtParsed, txParsed);
       validatePublicKeys(psbtParsed, txParsed);
       validateSignature(psbtParsed, txParsed);
