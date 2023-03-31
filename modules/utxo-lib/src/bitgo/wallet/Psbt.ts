@@ -15,7 +15,7 @@ import { isWalletUnspent, WalletUnspent } from './Unspent';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { PsbtInput } from 'bip174/src/lib/interfaces';
 import {
-  getScriptPathLevel,
+  getLeafVersion,
   calculateScriptPathLevel,
   isValidControlBock,
   ParsedPubScript2Of3,
@@ -247,7 +247,7 @@ function parseInputMetadata(input: PsbtInput, scriptType: ScriptType2Of3): Parse
       throw new Error('Invalid PSBT p2tr script path controlBlock.');
     }
     const scriptPathLevel = calculateScriptPathLevel(controlBlock);
-    const leafVersion = getScriptPathLevel(controlBlock);
+    const leafVersion = getLeafVersion(controlBlock);
     return {
       ...parsedPubScript,
       signatures,

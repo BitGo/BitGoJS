@@ -1,6 +1,6 @@
 import {
   addToTransactionBuilder,
-  getScriptPathLevel,
+  getLeafVersion,
   calculateScriptPathLevel,
   createTransactionBuilderForNetwork,
   getInternalChainCode,
@@ -50,7 +50,7 @@ function validateScript(
     } else if (psbtParsed?.scriptType === 'p2tr') {
       assert.deepStrictEqual(isValidControlBock(psbtParsed?.controlBlock), true);
       assert.deepStrictEqual(psbtParsed?.scriptPathLevel, calculateScriptPathLevel(psbtParsed?.controlBlock));
-      assert.deepStrictEqual(psbtParsed?.leafVersion, getScriptPathLevel(psbtParsed?.controlBlock));
+      assert.deepStrictEqual(psbtParsed?.leafVersion, getLeafVersion(psbtParsed?.controlBlock));
     }
   } else {
     assert.deepStrictEqual(txParsed.scriptType, psbtParsed?.scriptType);
