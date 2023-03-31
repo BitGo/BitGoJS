@@ -38,7 +38,7 @@ export function calculateScriptPathLevel(controlBlock: Buffer): number {
 /**
  * @return leaf version for P2TR control block.
  */
-export function getScriptPathLevel(controlBlock: Buffer): number {
+export function getLeafVersion(controlBlock: Buffer): number {
   if (Buffer.isBuffer(controlBlock) && controlBlock.length > 0) {
     return controlBlock[0] & 0xfe;
   }
@@ -395,7 +395,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   const [controlBlock] = match[':control-block'];
   const scriptPathLevel = calculateScriptPathLevel(controlBlock);
 
-  const leafVersion = getScriptPathLevel(controlBlock);
+  const leafVersion = getLeafVersion(controlBlock);
 
   return {
     scriptType: 'p2tr',
