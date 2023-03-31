@@ -259,3 +259,20 @@ export class Utils implements BaseUtils {
 
 const utils = new Utils();
 export default utils;
+
+export enum AppId {
+  Sui = 0,
+}
+
+export enum IntentVersion {
+  V0 = 0,
+}
+
+export enum IntentScope {
+  TransactionData = 0,
+  TransactionEffects = 1,
+  CheckpointSummary = 2,
+  PersonalMessage = 3,
+}
+
+export type Intent = [IntentScope, IntentVersion, AppId];

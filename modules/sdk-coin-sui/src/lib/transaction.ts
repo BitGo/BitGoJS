@@ -8,7 +8,7 @@ import {
 } from '@bitgo/sdk-core';
 import { StakingProgrammableTransaction, SuiTransaction, TransferProgrammableTransaction, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
+import utils, { AppId, Intent, IntentScope, IntentVersion } from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES, SUI_INTENT_BYTES } from './constants';
 import { Buffer } from 'buffer';
@@ -17,6 +17,7 @@ import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 import { TRANSACTION_DATA_MAX_SIZE, TransactionBlockDataBuilder } from './mystenlab/builder/TransactionDataBlock';
 import { builder } from './mystenlab/builder';
+import blake2b from '@bitgo/blake2b';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
 export abstract class Transaction<T> extends BaseTransaction {
@@ -83,7 +84,9 @@ export abstract class Transaction<T> extends BaseTransaction {
       throw new InvalidTransactionError('empty transaction to sign');
     }
 
-    const signature = signer.signMessageinUint8Array(this.signablePayload);
+    const intentMessage = this.signablePayload;
+    const signature = signer.signMessageinUint8Array(intentMessage);
+
     this.setSerializedSig({ pub: signer.getKeys().pub }, Buffer.from(signature));
     this.addSignature({ pub: signer.getKeys().pub }, Buffer.from(signature));
   }
@@ -135,10 +138,20 @@ export abstract class Transaction<T> extends BaseTransaction {
   get signablePayload(): Buffer {
     const dataBytes = this.getDataBytes();
 
-    const intentMessage = new Uint8Array(SUI_INTENT_BYTES.length + dataBytes.length);
-    intentMessage.set(SUI_INTENT_BYTES);
-    intentMessage.set(dataBytes, SUI_INTENT_BYTES.length);
+    const intentMessage = this.messageWithIntent(IntentScope.TransactionData, dataBytes);
     return Buffer.from(intentMessage);
+  }
+
+  private messageWithIntent(scope: IntentScope, message: Uint8Array) {
+    const intent = this.intentWithScope(scope);
+    const intentMessage = new Uint8Array(intent.length + message.length);
+    intentMessage.set(intent);
+    intentMessage.set(message, intent.length);
+    return intentMessage;
+  }
+
+  private intentWithScope(scope: IntentScope): Intent {
+    return [scope, IntentVersion.V0, AppId.Sui];
   }
 
   serialize(): string {

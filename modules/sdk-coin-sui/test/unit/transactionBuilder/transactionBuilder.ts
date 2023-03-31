@@ -4,6 +4,12 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { SuiTransactionType } from '../../../src/lib/iface';
 import { recipients, STAKING_AMOUNT } from '../../resources/sui';
+import { KeyPair } from '../../../src/lib/keyPair';
+import { GasData } from '../../../src/lib/mystenlab/types';
+import axios from 'axios';
+import { TransferTransaction } from '../../../src';
+import { test } from 'mocha';
+import {toB58, toB64} from '@mysten/bcs';
 
 describe('Sui Transaction Builder', async () => {
   let builders;
@@ -55,6 +61,77 @@ describe('Sui Transaction Builder', async () => {
 
       reserialized.should.be.deepEqual(signedTx);
       reserialized.toBroadcastFormat().should.equal(rawSignedTx);
+    });
+
+    it('should submit a transaction with private keys', async () => {
+      const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+      // const keyPair2 = new KeyPair({ prv: testData.privateKeys.prvKey2 });
+      const senderAddress = keyPair.getAddress();
+      // const receiveAddress = keyPair2.getAddress();
+      const receiveAddress = '0x900742bb923ea906a56f325a17597752ecd3ac3026bba96e0edff45de8db33ab';
+      console.log(senderAddress);
+
+      const coinsRes = await axios.post('https://rpc.testnet.sui.io:443', {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'suix_getCoins',
+        params: [senderAddress],
+      });
+      const coins = coinsRes.data.result.data.map((r) => ({
+        digest: r.digest,
+        objectId: r.coinObjectId,
+        version: r.version,
+      }));
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(senderAddress);
+      txBuilder.send([{ address: receiveAddress, amount: '100000000' }]);
+      const gasData: GasData = {
+        payment: coins,
+        owner: senderAddress,
+        budget: testData.GAS_BUDGET,
+        price: 1000,
+      };
+      txBuilder.gasData(gasData);
+      // txBuilder.sign({ key: keyPair.getKeys().prv });
+      txBuilder.sign({ key: testData.privateKeys.prvKey1 });
+      const tx = await txBuilder.build() as TransferTransaction;
+
+      const signable = tx.signablePayload.toString('hex');
+      should.equal(signable, '27fb674cf584e4a1c44f9ab0ec9d186ef90401eca373a3b303d1214bd8311de5');
+
+      const rawTx = tx.toBroadcastFormat();
+      const rawSig = toB64(tx.serializedSig);
+      // txBuilder.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signature));
+      // const signedtx = (await txBuilder.build()) as TransferTransaction;
+      // const txHex = signedtx.toBroadcastFormat();
+
+      // const sig = Buffer.from(rawTx.serializedSig).toString('base64');
+      // console.log(txHex);
+      // console.log(sig);
+
+      should.equal(
+        rawTx,
+        'AAACAAgA4fUFAAAAAAAgkAdCu5I+qQalbzJaF1l3UuzTrDAmu6luDt/0XejbM6sCAgABAQAAAQECAAABAQCQB0K7kj6pBqVvMloXWXdS7NOsMCa7qW4O3/Rd6NszqwKcygOUfJcKNBI9ljXgFAHbfDNvwz4UYEm3dYYH1Tt7jWQEAAAAAAAAIG7h+bmoAO1WrNm6n83PnBoQLU87y6T1X4pLmY/9PHN0re30UDCFIItAssvAa8KsUfKeiXYSz9MwPZ7rx2aHV7JjBAAAAAAAACB46n1hO1ub4NYXPGakbh/guyTGsLuQhsiQYqf9Tvxz/5AHQruSPqkGpW8yWhdZd1Ls06wwJrupbg7f9F3o2zOr6AMAAAAAAACAlpgAAAAAAAA='
+      );
+      should.equal(
+        rawSig,
+        'AGhC/bmEKZ5oTb1Z91CnYEHrrzbrWV9RidxP0Tv3U/lgd5/egej0gJgDmeHmmP55Y44QtnAuy7L/NPjThY6NzQulzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw=='
+      );
+      // const submitRes = await axios.post('https://rpc.testnet.sui.io:443', {
+      //   jsonrpc: '2.0',
+      //   id: 1,
+      //   method: 'sui_executeTransactionBlock',
+      //   params: [
+      //     rawTx,
+      //     [rawSig],
+      //     {
+      //       showEffects: true,
+      //     },
+      //     'WaitForEffectsCert',
+      //   ],
+      // });
+      // console.log(submitRes.data);
     });
 
     it('should fail to build if missing type', async function () {

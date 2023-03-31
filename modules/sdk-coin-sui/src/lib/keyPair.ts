@@ -71,6 +71,7 @@ export class KeyPair extends Ed25519KeyPair {
     if (!prv) {
       throw new Error('Missing private key');
     }
+    // const digest = blake2b(32).update(message).digest('binary');
     return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }

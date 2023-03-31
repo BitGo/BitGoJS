@@ -4,6 +4,14 @@ import { Recipient } from '@bitgo/sdk-core';
 
 export const AMOUNT = 100;
 
+export const privateKeys = {
+  prvKey1: '43e8594854cb53947c4a1a2fab926af11e123f6251dcd5bd0dfb100604186430',
+  prvKey2: 'c0c3b9dc09932121ee351b2448c50a3ae2571b12951245c85f3bd95d5e7a06f8',
+  prvKey3: '3d6822bf14115f47a5724b68c85160221eacbe664e892a4a9dd3b4dd64016ece',
+  prvKey4: 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22',
+  prvKey5: 'fdb9ea1bb7f0120ce6eb7b047ac6744c4298f277756330e18dbd5419590a1ef2',
+};
+
 export const addresses = {
   validAddresses: [
     '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304',
@@ -233,7 +241,7 @@ export const txTransactionsAddStake = [
   },
 ];
 
-export const GAS_BUDGET = 20000000;
+export const GAS_BUDGET = 10000000;
 
 export const gasData = {
   payment: coinsGasPayment,
