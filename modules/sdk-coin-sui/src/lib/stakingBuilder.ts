@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   SuiTransaction,
   RequestAddStake,
@@ -70,6 +70,12 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
       return;
     }
     this.validateTransactionFields();
+  }
+
+  /** @inheritdoc */
+  sign(key: BaseKey) {
+    this.transaction.setSuiTransaction(this.buildSuiTransaction());
+    super.sign(key);
   }
 
   /**
