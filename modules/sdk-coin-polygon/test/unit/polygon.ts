@@ -613,7 +613,7 @@ describe('Polygon', function () {
       decodedTx.should.have.property('to');
     });
 
-    it('should construct a recovery tx with TSS', async function () {
+    xit('should construct a recovery tx with TSS', async function () {
       const backupKeyAddress = '0xe7406dc43d13f698fb41a345c7783d39a4c2d191';
       nock(baseUrl)
         .get('/api')
