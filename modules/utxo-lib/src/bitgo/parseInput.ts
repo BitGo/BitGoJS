@@ -3,6 +3,7 @@ import * as opcodes from 'bitcoin-ops';
 import { TxInput, script as bscript } from 'bitcoinjs-lib';
 
 import { isTriple } from './types';
+import { isScriptType2Of3 } from './outputScripts';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
   if (Buffer.isBuffer(v)) {
@@ -96,13 +97,11 @@ export interface ParsedSignatureScriptP2ms extends ParsedSignatureScript {
 }
 
 /**
- * Keypath spends only have a single pubkey and single signature
+ * Keypath spends only have a single signature
  */
 export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScript {
   scriptType: 'taprootKeyPathSpend';
-  publicKeys: [Buffer];
   signatures: [Buffer];
-  pubScript: Buffer;
 }
 
 /**
@@ -388,6 +387,24 @@ const parseP2wsh2Of3: InputParser<ParsedSignatureScriptP2ms> = (p) => {
   return parseP2ms(p.witness, 'p2wsh');
 };
 
+const parseTaprootKeyPath2Of3: InputParser<ParsedSignatureScriptTaprootKeyPath> = (p) => {
+  if (!isNativeSegwit(p)) {
+    return new MatchError(`expected native segwit`);
+  }
+  const match = matchScript(p.witness, [':signature']);
+  if (match instanceof MatchError) {
+    return match;
+  }
+  const signatures = match[':signature'] as [Buffer];
+  if (isPlaceholderSignature(signatures[0])) {
+    throw new Error(`invalid taproot key path signature`);
+  }
+  return {
+    scriptType: 'taprootKeyPathSpend',
+    signatures,
+  };
+};
+
 const parseTaprootScriptPath2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   if (!isNativeSegwit(p)) {
     return new MatchError(`expected native segwit`);
@@ -435,6 +452,7 @@ export function parseSignatureScript(
     parseP2sh2Of3,
     parseP2shP2wsh2Of3,
     parseP2wsh2Of3,
+    parseTaprootKeyPath2Of3,
     parseTaprootScriptPath2Of3,
     parseP2shP2pk,
   ] as const;
@@ -454,10 +472,19 @@ export function parseSignatureScript(
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot {
   const result = parseSignatureScript(input);
 
+  if (
+    !isScriptType2Of3(result.scriptType) &&
+    result.scriptType !== 'taprootKeyPathSpend' &&
+    result.scriptType !== 'taprootScriptPathSpend'
+  ) {
+    throw new Error(`invalid script type`);
+  }
+
   if (!result.signatures) {
     throw new Error(`missing signatures`);
   }
   if (
+    result.scriptType !== 'taprootKeyPathSpend' &&
     result.publicKeys.length !== 3 &&
     (result.publicKeys.length !== 2 || result.scriptType !== 'taprootScriptPathSpend')
   ) {

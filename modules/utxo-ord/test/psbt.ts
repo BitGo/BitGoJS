@@ -136,9 +136,9 @@ describe('OutputLayout to PSBT conversion', function () {
 
   testWithUnspents(u20k, [], [u20k], {
     firstChangeOutput: BigInt(0),
-    inscriptionOutput: BigInt(19659),
+    inscriptionOutput: BigInt(19648),
     secondChangeOutput: BigInt(0),
-    feeOutput: BigInt(341),
+    feeOutput: BigInt(352),
   });
   testWithUnspents(u1k, [], [u1k], undefined);
   testWithUnspents(
@@ -148,15 +148,15 @@ describe('OutputLayout to PSBT conversion', function () {
     {
       firstChangeOutput: BigInt(0),
       inscriptionOutput: BigInt(10_000),
-      secondChangeOutput: BigInt(199990031),
-      feeOutput: BigInt(969),
+      secondChangeOutput: BigInt(199990009),
+      feeOutput: BigInt(991),
     },
     { minimizeInputs: false }
   );
   testWithUnspents(u1k, [u5k1, u5k2, u10k], [u1k, u10k], {
     firstChangeOutput: BigInt(0),
-    inscriptionOutput: BigInt(10_361),
+    inscriptionOutput: BigInt(10_350),
     secondChangeOutput: BigInt(0),
-    feeOutput: BigInt(639),
+    feeOutput: BigInt(650),
   });
 });

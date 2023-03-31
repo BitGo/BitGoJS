@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { BIP32Interface } from 'bip32';
 
 import { Transaction, taproot, TxOutput, ScriptSignature } from 'bitcoinjs-lib';
@@ -78,6 +79,7 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
   }
 
   const parsedScript = parseSignatureScript2Of3(input);
+  assert.ok(parsedScript.scriptType !== 'taprootKeyPathSpend');
 
   const signatures = parsedScript.signatures
     .filter((s) => s && s.length)

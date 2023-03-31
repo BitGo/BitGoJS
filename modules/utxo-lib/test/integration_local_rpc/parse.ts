@@ -215,18 +215,19 @@ function runTestParse<TNumber extends number | bigint>(
     it(`verifySignatures for original transaction`, function () {
       parsedTx.ins.forEach((input, i) => {
         const prevOutValue = getPrevOutputValue(input);
-        const { publicKeys } = parseSignatureScript2Of3(input);
-        if (!publicKeys) {
+        const result = parseSignatureScript2Of3(input);
+        assert.ok(result.scriptType !== 'taprootKeyPathSpend');
+        if (!result.publicKeys) {
           throw new Error(`expected publicKeys`);
         }
-        assert.strictEqual(publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
+        assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
 
         if (scriptType === 'p2tr') {
           // TODO implement verifySignature for p2tr
           this.skip();
         }
 
-        publicKeys.forEach((publicKey, publicKeyIndex) => {
+        result.publicKeys.forEach((publicKey, publicKeyIndex) => {
           assert.strictEqual(
             verifySignature(parsedTx, i, prevOutValue, {
               publicKey,

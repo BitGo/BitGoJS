@@ -8,6 +8,7 @@ import {
   isWalletUnspent,
   KeyName,
   outputScripts,
+  parseSignatureScript2Of3,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
@@ -225,4 +226,37 @@ export function validateFinalizedInput(
     assert.strictEqual(input.finalScriptWitness?.length, 66);
   }
   assert.ok(!input.unknownKeyVals?.length);
+}
+
+export function validateParsedTaprootKeyPath(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  tx: UtxoTransaction<bigint>
+): void {
+  const parsed = parseSignatureScript2Of3(tx.ins[0]);
+  assert.ok(parsed.scriptType === 'taprootKeyPathSpend');
+  assert.strictEqual(parsed.signatures.length, 1);
+  assert.strictEqual(parsed.signatures[0].length, 64);
+}
+
+export function validateParsedTaprootScriptPath(
+  psbt: UtxoPsbt<UtxoTransaction<bigint>>,
+  tx: UtxoTransaction<bigint>,
+  index: number
+): void {
+  const input = psbt.data.inputs[index];
+  const parsed = parseSignatureScript2Of3(tx.ins[0]);
+  assert.ok(parsed);
+  assert.ok(parsed.scriptType === 'taprootScriptPathSpend');
+  assert.ok(input.tapLeafScript);
+  assert.ok(parsed.pubScript.equals(input.tapLeafScript[0].script));
+  assert.ok(parsed.controlBlock.equals(input.tapLeafScript[0].controlBlock));
+  assert.strictEqual(parsed.scriptPathLevel, 1);
+  assert.strictEqual(parsed.leafVersion, input.tapLeafScript[0].leafVersion);
+  parsed.publicKeys.forEach((pk) => {
+    assert.strictEqual(pk.length, 32);
+  });
+  assert.strictEqual(parsed.signatures?.length, 2);
+  parsed.signatures.forEach((sig) => {
+    assert.strictEqual(sig.length, 64);
+  });
 }
