@@ -306,7 +306,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const [pubkey1, pubkey2] = parsePubScript(script, 'p2tr').publicKeys;
+    const [pubkey1, pubkey2] = parsePubScript(script, 'taprootScriptPathSpend').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {

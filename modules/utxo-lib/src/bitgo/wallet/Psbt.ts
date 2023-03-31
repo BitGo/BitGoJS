@@ -1,12 +1,6 @@
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
-import {
-  createOutputScript2of3,
-  getLeafHash,
-  ScriptType2Of3,
-  scriptTypeForChain,
-  toXOnlyPublicKey,
-} from '../outputScripts';
+import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromTransaction } from '../transaction';
@@ -18,14 +12,15 @@ import {
   getLeafVersion,
   calculateScriptPathLevel,
   isValidControlBock,
-  ParsedPubScript2Of3,
+  ParsedPubScriptP2ms,
   ParsedPubScriptTaprootScriptPath,
   parsePubScript,
+  ParsedScriptType2Of3,
 } from '../parseInput';
 
 type Signatures = [Buffer] | [Buffer, Buffer] | undefined;
 
-export interface ParsedPsbt2Of3 extends ParsedPubScript2Of3 {
+export interface ParsedPsbt2Of3 extends ParsedPubScriptP2ms {
   signatures: Signatures;
 }
 
@@ -43,7 +38,7 @@ interface WalletSigner {
 }
 
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
-  const parsedPublicKeys = parsePubScript(script, 'p2tr').publicKeys;
+  const parsedPublicKeys = parsePubScript(script, 'taprootScriptPathSpend').publicKeys;
   const walletSigners = parsedPublicKeys.map((publicKey) => {
     const index = walletKeys.publicKeys.findIndex((walletPublicKey) =>
       toXOnlyPublicKey(walletPublicKey).equals(publicKey)
@@ -159,8 +154,8 @@ export function signWalletPsbt(
   }
 }
 
-function classifyScriptType(input: PsbtInput): ScriptType2Of3 | undefined {
-  let scriptType: ScriptType2Of3 | undefined;
+function classifyScriptType(input: PsbtInput): ParsedScriptType2Of3 | undefined {
+  let scriptType: ParsedScriptType2Of3 | undefined;
   if (Buffer.isBuffer(input.redeemScript) && Buffer.isBuffer(input.witnessScript)) {
     scriptType = 'p2shP2wsh';
   } else if (Buffer.isBuffer(input.redeemScript)) {
@@ -175,12 +170,12 @@ function classifyScriptType(input: PsbtInput): ScriptType2Of3 | undefined {
     if (input.tapLeafScript.length > 1) {
       throw new Error('Bitgo only supports a single tap leaf script per input.');
     }
-    scriptType = 'p2tr';
+    scriptType = 'taprootScriptPathSpend';
   }
   return scriptType;
 }
 
-function parseSignatures(input: PsbtInput, scriptType: ScriptType2Of3): Signatures {
+function parseSignatures(input: PsbtInput, scriptType: ParsedScriptType2Of3): Signatures {
   const validate = (sig: Buffer): Buffer => {
     if (Buffer.isBuffer(sig)) {
       return sig;
@@ -188,7 +183,7 @@ function parseSignatures(input: PsbtInput, scriptType: ScriptType2Of3): Signatur
     throw new Error('Invalid signature type');
   };
 
-  if (scriptType === 'p2tr') {
+  if (scriptType === 'taprootScriptPathSpend') {
     if (input.partialSig && input.partialSig.length > 0) {
       throw new Error('Invalid PSBT signature state');
     }
@@ -218,8 +213,8 @@ function parseSignatures(input: PsbtInput, scriptType: ScriptType2Of3): Signatur
 
 function parseScript(
   input: PsbtInput,
-  scriptType: ScriptType2Of3
-): ParsedPubScript2Of3 | ParsedPubScriptTaprootScriptPath {
+  scriptType: ParsedScriptType2Of3
+): ParsedPubScriptP2ms | ParsedPubScriptTaprootScriptPath {
   let pubScript: Buffer | undefined;
   if (scriptType === 'p2sh') {
     pubScript = input.redeemScript;
@@ -234,11 +229,11 @@ function parseScript(
   return parsePubScript(pubScript, scriptType);
 }
 
-function parseInputMetadata(input: PsbtInput, scriptType: ScriptType2Of3): ParsedPsbt2Of3 | ParsedPsbtP2TR {
+function parseInputMetadata(input: PsbtInput, scriptType: ParsedScriptType2Of3): ParsedPsbt2Of3 | ParsedPsbtP2TR {
   const parsedPubScript = parseScript(input, scriptType);
   const signatures = parseSignatures(input, scriptType);
 
-  if (parsedPubScript.scriptType === 'p2tr') {
+  if (parsedPubScript.scriptType === 'taprootScriptPathSpend') {
     if (!input.tapLeafScript) {
       throw new Error('Invalid PSBT state for p2tr. Missing required fields.');
     }

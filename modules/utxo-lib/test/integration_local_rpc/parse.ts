@@ -11,7 +11,7 @@ import {
   createTransactionFromBuffer,
   getDefaultTransactionVersion,
   getOutputIdForInput,
-  ParsedSignatureScript2Of3,
+  ParsedSignatureScriptP2ms,
   parseSignatureScript,
   parseSignatureScript2Of3,
   signInput2Of3,
@@ -201,7 +201,7 @@ function runTestParse<TNumber extends number | bigint>(
       }
 
       parsedTx.ins.forEach((input, i) => {
-        const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
+        const result = parseSignatureScript(input) as ParsedSignatureScriptP2ms;
 
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
