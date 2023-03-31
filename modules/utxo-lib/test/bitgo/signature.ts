@@ -158,7 +158,7 @@ function runTestParseScript<TNumber extends number | bigint = number>(
       case 'p2sh':
       case 'p2shP2wsh':
       case 'p2wsh':
-      case 'p2tr':
+      case 'taprootScriptPathSpend':
         assert.strictEqual(
           parsed.signatures.filter((s) => isPlaceholderSignature(s)).length,
           expectedPlaceholderSignatures

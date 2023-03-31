@@ -1,7 +1,8 @@
+/* eslint no-redeclare: 0 */
 import * as opcodes from 'bitcoin-ops';
 import { TxInput, script as bscript } from 'bitcoinjs-lib';
 
-import { isScriptType2Of3, ScriptType, ScriptType2Of3 } from './outputScripts';
+import { ScriptType } from './outputScripts';
 import { isTriple } from './types';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
@@ -45,12 +46,21 @@ export function getLeafVersion(controlBlock: Buffer): number {
   throw new Error('unexpected leafVersion.');
 }
 
-interface ParsedScript {
-  scriptType: ScriptType;
-}
+export type ParsedScriptType =
+  | 'p2sh'
+  | 'p2shP2wsh'
+  | 'p2wsh'
+  | 'p2shP2pk'
+  | 'taprootKeyPathSpend' // can be for either p2tr or p2trMusig2 output script
+  | 'taprootScriptPathSpend'; // can be for either p2tr or p2trMusig2 output script
 
-export type ParsedPubScript = ParsedScript;
-export type ParsedSignatureScript = ParsedScript;
+export type ParsedPubScript = {
+  scriptType: ScriptType | 'taprootScriptPathSpend';
+};
+
+export type ParsedSignatureScript = {
+  scriptType: ParsedScriptType;
+};
 
 export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
   scriptType: 'p2shP2pk';
@@ -59,7 +69,7 @@ export interface ParsedSignatureScriptP2shP2pk extends ParsedSignatureScript {
 }
 
 export interface ParsedPubScriptTaprootScriptPath extends ParsedPubScript {
-  scriptType: 'p2tr';
+  scriptType: 'taprootScriptPathSpend';
   publicKeys: [Buffer, Buffer];
   pubScript: Buffer;
 }
@@ -89,7 +99,7 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
  * Keypath spends only have a single pubkey and single signature
  */
 export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScript {
-  scriptType: 'p2tr';
+  scriptType: 'taprootKeyPathSpend';
   publicKeys: [Buffer];
   signatures: [Buffer];
   pubScript: Buffer;
@@ -100,7 +110,7 @@ export interface ParsedSignatureScriptTaprootKeyPath extends ParsedSignatureScri
  * two signatures
  */
 export interface ParsedSignatureScriptTaprootScriptPath extends ParsedSignatureScript {
-  scriptType: 'p2tr';
+  scriptType: 'taprootScriptPathSpend';
   publicKeys: [Buffer, Buffer];
   signatures: [Buffer, Buffer];
   controlBlock: Buffer;
@@ -295,7 +305,7 @@ export type InputPubScript = Buffer;
 
 type PubScriptParser<T extends ParsedPubScriptTaprootScriptPath | ParsedPubScript2Of3> = (
   p: InputPubScript,
-  ScriptType2Of3
+  t: ParsedScriptType
 ) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
@@ -398,7 +408,7 @@ const parseP2tr2Of3: InputParser<ParsedSignatureScriptTaproot> = (p) => {
   const leafVersion = getLeafVersion(controlBlock);
 
   return {
-    scriptType: 'p2tr',
+    scriptType: 'taprootScriptPathSpend',
     pubScript: match[':script'][0].buffer,
     publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
     signatures: match[':signature'] as [Buffer, Buffer],
@@ -438,24 +448,23 @@ export function parseSignatureScript(
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const result = parseSignatureScript(input);
 
-  if (!isScriptType2Of3(result.scriptType)) {
-    throw new Error(`invalid script type`);
-  }
-
   if (!result.signatures) {
     throw new Error(`missing signatures`);
   }
-  if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
+  if (
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.scriptType !== 'taprootScriptPathSpend')
+  ) {
     throw new Error(`unexpected pubkey count`);
   }
 
   return result as ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot;
 }
 
-const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (
-  pubScript,
-  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
-) => {
+const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (pubScript, scriptType) => {
+  if (scriptType === 'p2shP2pk' || scriptType === 'taprootScriptPathSpend' || scriptType === 'taprootKeyPathSpend') {
+    throw new Error();
+  }
   const match = matchScript(
     [pubScript],
     [{ ':script': ['OP_2', ':pubkey', ':pubkey', ':pubkey', 'OP_3', 'OP_CHECKMULTISIG'] }]
@@ -479,7 +488,7 @@ const parseP2msPubScript: PubScriptParser<ParsedPubScript2Of3> = (
   };
 };
 
-const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> = (pubScript, scriptType: 'p2tr') => {
+const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> = (pubScript, scriptType) => {
   const match = matchScript(
     [pubScript],
     [{ ':script': [':pubkey-xonly', 'OP_CHECKSIGVERIFY', ':pubkey-xonly', 'OP_CHECKSIG'] }]
@@ -489,7 +498,7 @@ const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> 
   }
 
   return {
-    scriptType: 'p2tr',
+    scriptType: 'taprootScriptPathSpend',
     pubScript: match[':script'][0].buffer,
     publicKeys: match[':script'][0].match[':pubkey-xonly'] as [Buffer, Buffer],
   };
@@ -504,10 +513,22 @@ const parseP2tr2Of3PubScript: PubScriptParser<ParsedPubScriptTaprootScriptPath> 
  */
 export function parsePubScript(
   inputPubScript: InputPubScript,
-  scriptType: ScriptType2Of3
+  scriptType: 'taprootScriptPathSpend'
+): ParsedPubScriptTaprootScriptPath;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2shP2pk'
+): ParsedPubScript2Of3;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: ParsedScriptType
+): ParsedPubScript2Of3 | ParsedPubScriptTaprootScriptPath;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: ParsedScriptType
 ): ParsedPubScript2Of3 | ParsedPubScriptTaprootScriptPath {
   const result =
-    scriptType === 'p2tr'
+    scriptType === 'taprootKeyPathSpend' || scriptType === 'taprootScriptPathSpend'
       ? parseP2tr2Of3PubScript(inputPubScript, scriptType)
       : parseP2msPubScript(inputPubScript, scriptType);
 
@@ -515,7 +536,10 @@ export function parsePubScript(
     throw new Error(result.message);
   }
 
-  if (result.publicKeys.length !== 3 && (result.publicKeys.length !== 2 || result.scriptType !== 'p2tr')) {
+  if (
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.scriptType !== 'taprootScriptPathSpend')
+  ) {
     throw new Error('unexpected pubkey count');
   }
 

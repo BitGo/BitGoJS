@@ -47,7 +47,7 @@ function validateScript(
     } else if (psbtParsed.scriptType === 'p2shP2wsh') {
       assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.redeemScript), true);
       assert.deepStrictEqual(Buffer.isBuffer(psbtParsed.witnessScript), true);
-    } else if (psbtParsed.scriptType === 'p2tr') {
+    } else if (psbtParsed.scriptType === 'taprootScriptPathSpend') {
       assert.deepStrictEqual(isValidControlBock(psbtParsed.controlBlock), true);
       assert.deepStrictEqual(psbtParsed.scriptPathLevel, calculateScriptPathLevel(psbtParsed.controlBlock));
       assert.deepStrictEqual(psbtParsed.leafVersion, getLeafVersion(psbtParsed.controlBlock));
@@ -63,7 +63,7 @@ function validateScript(
     ) {
       assert.deepStrictEqual(txParsed.redeemScript, psbtParsed.redeemScript);
       assert.deepStrictEqual(txParsed.witnessScript, psbtParsed.witnessScript);
-    } else if (txParsed.scriptType === 'p2tr' && psbtParsed.scriptType === 'p2tr') {
+    } else if (txParsed.scriptType === 'taprootScriptPathSpend' && psbtParsed.scriptType === 'taprootScriptPathSpend') {
       // To ensure script path p2tr
       assert.deepStrictEqual(txParsed.publicKeys, psbtParsed.publicKeys);
       const txParsedP2trScriptPath = txParsed as ParsedSignatureScriptTaprootScriptPath;
