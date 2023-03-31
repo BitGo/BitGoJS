@@ -30,6 +30,7 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
     // We don't use private keys for SUI since it's implemented for TSS.
+    console.log(prv);
     throw new Error('Method not implemented.');
   }
 

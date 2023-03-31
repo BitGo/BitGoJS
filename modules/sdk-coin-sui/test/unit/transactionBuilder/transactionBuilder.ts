@@ -36,6 +36,7 @@ describe('Sui Transaction Builder', async () => {
       txBuilder.sender(testData.sender.address);
       txBuilder.send(recipients);
       txBuilder.gasData(testData.gasData);
+
       const tx = await txBuilder.build();
       should.equal(tx.id, 'UNAVAILABLE');
       const rawTx = tx.toBroadcastFormat();

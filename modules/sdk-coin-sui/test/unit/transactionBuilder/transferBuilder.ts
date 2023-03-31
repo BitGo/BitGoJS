@@ -5,6 +5,10 @@ import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { SuiTransactionType, TransferProgrammableTransaction } from '../../../src/lib/iface';
+import { KeyPair } from '../../../src/lib/keyPair';
+import axios from 'axios';
+import { GasData } from '../../../src/lib/mystenlab/types';
+import { TransferTransaction } from '../../../src';
 
 describe('Sui Transfer Builder', () => {
   const factory = getBuilderFactory('tsui');
@@ -85,5 +89,120 @@ describe('Sui Transfer Builder', () => {
       };
       should(() => builder.gasData(invalidGasPayment)).throwError('Invalid payment, invalid or missing version');
     });
+
+    it('should submit a transaction', async () => {
+      const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+      const keyPair2 = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+      const senderAddress = keyPair.getAddress();
+      const receiveAddress = keyPair2.getAddress();
+      console.log(senderAddress);
+
+      const coinsRes = await axios.post('https://rpc.testnet.sui.io:443', {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'suix_getCoins',
+        params: [senderAddress],
+      });
+      const coins = coinsRes.data.result.data.map((r) => ({
+        digest: r.digest,
+        objectId: r.coinObjectId,
+        version: r.version,
+      }));
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(senderAddress);
+      txBuilder.send([{ address: receiveAddress, amount: '100000000' }]);
+      const gasData: GasData = {
+        payment: coins,
+        owner: senderAddress,
+        budget: 10000000,
+        price: 1000,
+      };
+      txBuilder.gasData(gasData);
+      //     txBuilder.sign({ key: keyPair.getKeys().prv});
+      const tx = await txBuilder.build();
+      const signable = tx.signablePayload;
+      const signature = keyPair.signMessageinUint8Array(signable);
+      txBuilder.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signature));
+      const signedtx = (await txBuilder.build()) as TransferTransaction;
+      const txHex = signedtx.toBroadcastFormat();
+      const sig = Buffer.from(signedtx.serializedSig).toString('base64');
+      console.log(txHex);
+      console.log(sig);
+      const submitRes = await axios.post('https://rpc.testnet.sui.io:443', {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'sui_executeTransactionBlock',
+        params: [txHex, [sig], {}, 'WaitForEffectsCert'],
+      });
+      console.log(submitRes.data);
+    });
+
+    //
+    //   txBuilder.output({
+    //     address:
+    //       'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp',
+    //     amount: '5000000',
+    //   });
+    //
+    //   txBuilder.ttl(800000000);
+    //   txBuilder.sign({ key: keyPair.getKeys().prv });
+    //
+    //   const tx = await txBuilder.build();
+    //   const serializedTx = tx.toBroadcastFormat();
+    //   const bytes = Uint8Array.from(Buffer.from(serializedTx, 'hex'));
+    //
+    //   try {
+    //     const res = await axios.post('https://testnet.koios.rest/api/v0/submittx', bytes, axiosConfig);
+    //     console.log(res.data);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
+    //
+    // xit('should submit a transaction using signature interface', async () => {
+    //   const keyPair = new KeyPair({ prv: testData.privateKeys.prvKey4 });
+    //   const senderAddress = keyPair.getAddress(AddressFormat.testnet);
+    //   const axiosConfig = {
+    //     headers: {
+    //       'Content-Type': 'application/cbor',
+    //     },
+    //     timeout: 10000,
+    //   };
+    //   const txBuilder = factory.getTransferBuilder();
+    //   const utxoData = await await axios.get('https://testnet.koios.rest/api/v0/address_info?_address=' + senderAddress);
+    //   const senderBalance = utxoData.data[0].balance;
+    //   txBuilder.changeAddress(senderAddress, senderBalance);
+    //   const utxoSet = utxoData.data[0].utxo_set;
+    //   for (const utxo of utxoSet) {
+    //     txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
+    //   }
+    //   txBuilder.output({
+    //     address:
+    //       'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp',
+    //     amount: '5000000',
+    //   });
+    //
+    //   txBuilder.ttl(800000000);
+    //
+    //   const unsignedTx = await txBuilder.build();
+    //   const serializedTx = unsignedTx.toBroadcastFormat();
+    //
+    //   const txBuilder2 = factory.from(serializedTx);
+    //   const tx = await txBuilder2.build();
+    //   const signableHex = tx.signablePayload.toString('hex');
+    //   const signature = keyPair.signMessage(signableHex);
+    //   txBuilder2.addSignature({ pub: keyPair.getKeys().pub }, Buffer.from(signature));
+    //   const signedTransaction = await txBuilder2.build();
+    //   const serializedTransaction = signedTransaction.toBroadcastFormat();
+    //   const bytes = Uint8Array.from(Buffer.from(serializedTransaction, 'hex'));
+    //
+    //   try {
+    //     const res = await axios.post('https://testnet.koios.rest/api/v0/submittx', bytes, axiosConfig);
+    //     console.log(res.data);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
   });
 });

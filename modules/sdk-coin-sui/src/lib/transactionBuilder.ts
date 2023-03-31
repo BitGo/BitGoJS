@@ -159,6 +159,7 @@ export abstract class TransactionBuilder<
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
     try {
+      console.log(key);
       new KeyPair({ prv: key.key });
     } catch {
       throw new BuildTransactionError(`Key validation failed`);
