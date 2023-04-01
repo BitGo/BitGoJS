@@ -177,7 +177,8 @@ export class InputOutputParser extends Parser {
     if (
       parsed.scriptType &&
       (utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType) ||
-        parsed.scriptType === 'taprootScriptPathSpend')
+        parsed.scriptType === 'taprootScriptPathSpend' ||
+        parsed.scriptType === 'taprootKeyPathSpend')
     ) {
       const parsed2Of3 = parsed.scriptType === 'taprootScriptPathSpend' ? { ...parsed, scriptType: 'p2tr' } : parsed;
       return this.node('sigScript', parsed2Of3.scriptType, [

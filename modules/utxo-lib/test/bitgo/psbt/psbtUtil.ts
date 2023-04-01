@@ -84,6 +84,7 @@ function validatePublicKeys(
       assert.deepStrictEqual(Buffer.isBuffer(publicKey), true);
     });
   } else {
+    assert.ok(txParsed.scriptType !== 'taprootKeyPathSpend');
     assert.deepStrictEqual(txParsed.publicKeys.length, psbtParsed.publicKeys?.length);
     const pubKeyMatch = txParsed.publicKeys.every((txPubKey) =>
       psbtParsed.publicKeys?.some((psbtPubKey) => psbtPubKey.equals(txPubKey))
