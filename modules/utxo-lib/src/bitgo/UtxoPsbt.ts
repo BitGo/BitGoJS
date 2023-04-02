@@ -201,7 +201,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const input = checkForInput(this.data.inputs, inputIndex);
     return Math.max(
       Array.isArray(input.partialSig) ? input.partialSig.length : 0,
-      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0
+      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0,
+      this.getProprietaryKeyVals(inputIndex, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+      }).length
     );
   }
 
