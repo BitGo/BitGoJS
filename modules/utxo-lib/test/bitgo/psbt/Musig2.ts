@@ -6,6 +6,7 @@ import {
   getExternalChainCode,
   getInternalChainCode,
   isSegwit,
+  parsePsbtInput,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
@@ -48,8 +49,10 @@ import {
   dummyPartialSig,
   validateFinalizedInput,
   network,
-  validateParsedTaprootKeyPath,
-  validateParsedTaprootScriptPath,
+  validateParsedTaprootKeyPathTxInput,
+  validateParsedTaprootScriptPathTxInput,
+  validateParsedTaprootKeyPathPsbt,
+  validateParsedTaprootScriptPathPsbt,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -116,13 +119,24 @@ describe('p2trMusig2', function () {
 
     it(`parse tx`, function () {
       const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'user', outputType);
+      validateParsedTaprootKeyPathPsbt(psbt, 0, 'unsigned');
+
       psbt.setMusig2Nonces(rootWalletKeys.user);
       psbt.setMusig2Nonces(rootWalletKeys.bitgo);
       psbt.signAllInputsHD(rootWalletKeys.user);
+      validateParsedTaprootKeyPathPsbt(psbt, 0, 'halfsigned');
+
       psbt.signAllInputsHD(rootWalletKeys.bitgo);
+      validateParsedTaprootKeyPathPsbt(psbt, 0, 'fullysigned');
+
       psbt.finalizeAllInputs();
+      assert.throws(
+        () => parsePsbtInput(psbt, 0),
+        (e) => e.message === 'Finalized PSBT parsing is not supported'
+      );
+
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
-      validateParsedTaprootKeyPath(psbt, tx);
+      validateParsedTaprootKeyPathTxInput(psbt, tx);
     });
 
     describe('create nonce', function () {
@@ -624,12 +638,19 @@ describe('p2trMusig2', function () {
 
     it(`parse tx`, function () {
       const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
+      validateParsedTaprootScriptPathPsbt(psbt, 0, 'unsigned');
+
       psbt.signAllInputsHD(rootWalletKeys.user);
+      validateParsedTaprootScriptPathPsbt(psbt, 0, 'halfsigned');
+
       psbt.signAllInputsHD(rootWalletKeys.backup);
+      validateParsedTaprootScriptPathPsbt(psbt, 0, 'fullysigned');
+
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
       const psbtDuplicate = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'backup', outputType);
-      validateParsedTaprootScriptPath(psbtDuplicate, tx, 0);
+      validateParsedTaprootScriptPathTxInput(psbtDuplicate, tx, 0);
     });
   });
 

@@ -25,14 +25,16 @@ import {
   WalletUnspent,
   WalletUnspentSigner,
   KeyName,
+  ParsedPsbtP2ms,
+  ParsedPsbtTaproot,
 } from '../../../src/bitgo';
-import { ParsedPsbt2Of3, ParsedPsbtP2TR, parsePsbtInput, signWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
+import { parsePsbtInput, signWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
 import * as assert from 'assert';
 import { SignatureTargetType } from './Psbt';
 import { Network } from '../../../src';
 
 function validateScript(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
+  psbtParsed: ParsedPsbtP2ms | ParsedPsbtTaproot,
   txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
@@ -53,6 +55,7 @@ function validateScript(
       assert.deepStrictEqual(psbtParsed.leafVersion, getLeafVersion(psbtParsed.controlBlock));
     }
   } else {
+    assert.ok(txParsed.scriptType !== 'taprootKeyPathSpend');
     assert.deepStrictEqual(txParsed.scriptType, psbtParsed.scriptType);
     assert.deepStrictEqual(txParsed.pubScript, psbtParsed.pubScript);
 
@@ -75,7 +78,7 @@ function validateScript(
 }
 
 function validatePublicKeys(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
+  psbtParsed: ParsedPsbtP2ms | ParsedPsbtTaproot,
   txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {
@@ -94,7 +97,7 @@ function validatePublicKeys(
 }
 
 function validateSignature(
-  psbtParsed: ParsedPsbt2Of3 | ParsedPsbtP2TR,
+  psbtParsed: ParsedPsbtP2ms | ParsedPsbtTaproot,
   txParsed: ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot | undefined
 ) {
   if (txParsed === undefined) {

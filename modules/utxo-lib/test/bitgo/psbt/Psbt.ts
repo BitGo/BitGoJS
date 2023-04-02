@@ -89,7 +89,7 @@ describe('Parse PSBT', function () {
 
     assert.throws(
       () => parsePsbtInput(psbtP2tr, 0),
-      (e) => e.message === 'Found both p2sh and p2tr PSBT metadata.'
+      (e) => e.message === 'Found both p2sh and taprootScriptPath PSBT metadata.'
     );
   });
 
