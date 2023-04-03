@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { SuiTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
 import { Transaction } from './transaction';
 import { TransferTransaction } from './transferTransaction';
@@ -35,6 +35,12 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
       return;
     }
     this.validateTransactionFields();
+  }
+
+  /** @inheritdoc */
+  sign(key: BaseKey) {
+    this.transaction.setSuiTransaction(this.buildSuiTransaction());
+    super.sign(key);
   }
 
   /** @inheritdoc */
