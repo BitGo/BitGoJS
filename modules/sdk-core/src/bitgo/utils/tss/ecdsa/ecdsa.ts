@@ -24,6 +24,7 @@ import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 import { getTxRequestChallenge } from '../../../tss/common';
+import { createHash } from 'crypto';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -730,7 +731,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
       bitgoToUserDShare,
-      signablePayload
+      signablePayload,
+      createHash('sha256')
     );
 
     // signing stage three with SShare send to bitgo and receives SShare

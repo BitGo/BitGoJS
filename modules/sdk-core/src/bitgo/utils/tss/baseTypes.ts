@@ -5,6 +5,7 @@ import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
+import { Hash } from 'crypto';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -254,6 +255,7 @@ export type TSSParams = {
   prv: string;
   reqId: IRequestTracer;
   apiVersion?: ApiVersion;
+  hash?: Hash;
 };
 
 export type TSSParamsForMessage = TSSParams & {

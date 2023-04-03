@@ -1,40 +1,42 @@
+import { bip32, ecc } from '@bitgo/utxo-lib';
+import assert from 'assert';
+import bs58 from 'bs58';
+import { Hash } from 'crypto';
+import createKeccakHash from 'keccak';
+import * as pgp from 'openpgp';
+
+import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
+import { BitGoBase } from '../../bitgoBase';
+import { ApiKeyShare } from '../../keychain';
+import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
+import { ShareKeyPosition } from '../types';
 import { Ecdsa } from './../../../account-lib/mpc/tss';
+import { createShareProof, RequestType, SignatureShareRecord, SignatureShareType } from './../../utils';
 import {
-  DecryptableNShare,
-  CombinedKey,
-  SigningMaterial,
-  EncryptedNShare,
   AShare,
+  BShare,
+  CombinedKey,
   CreateUserGammaAndMuShareRT,
   CreateUserOmicronAndDeltaShareRT,
+  DecryptableNShare,
   DShare,
+  EncryptedNShare,
   GShare,
   KeyShare,
   NShare,
   OShare,
+  ReceivedShareType,
+  SendShareToBitgoRT,
   SendShareType,
+  Signature,
   SignatureShare,
+  SigningMaterial,
   SignShare,
-  XShare,
   WShare,
+  XShare,
   XShareWithNTilde,
   YShareWithNTilde,
-  SendShareToBitgoRT,
-  ReceivedShareType,
-  BShare,
-  Signature,
 } from './types';
-import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from './../../utils';
-import { ShareKeyPosition } from '../types';
-import { BitGoBase } from '../../bitgoBase';
-import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
-import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
-import createKeccakHash from 'keccak';
-import assert from 'assert';
-import { bip32, ecc } from '@bitgo/utxo-lib';
-import * as pgp from 'openpgp';
-import bs58 from 'bs58';
-import { ApiKeyShare } from '../../keychain';
 
 const MPC = new Ecdsa();
 
@@ -165,7 +167,8 @@ export async function createUserOmicronAndDeltaShare(gShare: GShare): Promise<Cr
 export async function createUserSignatureShare(
   oShare: OShare,
   dShare: DShare,
-  message: Buffer
+  message: Buffer,
+  hash: Hash = createKeccakHash('keccak256')
 ): Promise<SignatureShare> {
   if (oShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid OShare, doesn't belong to the User`);
@@ -174,7 +177,7 @@ export async function createUserSignatureShare(
   if (dShare.i !== ShareKeyPosition.USER || dShare.j !== ShareKeyPosition.BITGO) {
     throw new Error(`Invalid DShare, doesn't seem to be from BitGo`);
   }
-  return MPC.sign(message, oShare, dShare, createKeccakHash('keccak256'));
+  return MPC.sign(message, oShare, dShare, hash);
 }
 
 export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition };

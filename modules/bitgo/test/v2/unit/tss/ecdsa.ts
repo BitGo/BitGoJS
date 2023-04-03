@@ -1,21 +1,35 @@
 import {
-  Ecdsa,
   ECDSA,
-  ECDSAMethodTypes,
-  Wallet,
-  SignatureShareRecord,
-  getTxRequest,
+  Ecdsa,
   ECDSAMethods,
+  ECDSAMethodTypes,
+  getTxRequest,
   RequestType,
+  SignatureShareRecord,
   SignatureShareType,
+  Wallet,
 } from '@bitgo/sdk-core';
+import { TestBitGo } from '@bitgo/sdk-test';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
-import { TestBitGo } from '@bitgo/sdk-test';
+
 import { BitGo } from '../../../../src/bitgo';
+import {
+  createUserSignatureParams,
+  gammaAndMuShareCreationParams,
+  keyShares,
+  mockAShare,
+  mockDShare,
+  mockDShareToBitgo,
+  mockedBitgoBShare,
+  mockedBitgoOAndDShare,
+  mockMuShare,
+  mockSignRT,
+  mockSShare,
+  mockSShareFromUser,
+  omicronAndDeltaShareCreationParams,
+} from '../../fixtures/tss/ecdsaFixtures';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
-import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
-import nock = require('nock');
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;

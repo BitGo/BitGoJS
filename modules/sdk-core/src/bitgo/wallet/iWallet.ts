@@ -184,6 +184,7 @@ export interface WalletCoinSpecific {
   rootAddress?: string;
   customChangeWalletId: string;
   walletVersion?: number;
+  hashAlgorithm?: string;
 }
 
 export interface PaginationOptions {

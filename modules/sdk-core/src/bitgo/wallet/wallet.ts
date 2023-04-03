@@ -88,6 +88,8 @@ import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
+import { createHash, Hash } from 'crypto';
+import createKeccakHash from 'keccak';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2804,11 +2806,15 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign transactions with TSS');
     }
     try {
+      const hash: Hash = this.coinSpecific()?.hashAlgorithm?.startsWith('sha')
+        ? createHash('sha256')
+        : createKeccakHash('keccak256');
       const signedTxRequest = await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
+        hash,
       });
       return {
         txRequestId: signedTxRequest.txRequestId,
