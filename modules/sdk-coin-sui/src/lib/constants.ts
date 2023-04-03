@@ -1,5 +1,5 @@
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
-export const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
+export const AMOUNT_UNKNOWN_TEXT = 'AMOUNT_UNKNOWN';
 
 // Refer to
 // https://github.com/MystenLabs/sui/blob/main/crates/sui-types/src/messages.rs#L50

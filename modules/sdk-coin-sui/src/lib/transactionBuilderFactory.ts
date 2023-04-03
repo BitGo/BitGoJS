@@ -8,11 +8,14 @@ import {
   SuiTransaction,
   SuiTransactionType,
   TransferProgrammableTransaction,
+  UnstakingProgrammableTransaction,
 } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
+import { UnstakingBuilder } from './unstakingBuilder';
+import { UnstakingTransaction } from './unstakingTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -30,10 +33,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           transferTx.fromRawTransaction(raw);
           return this.getTransferBuilder(transferTx);
         case SuiTransactionType.AddStake:
-        case SuiTransactionType.WithdrawStake:
           const stakingTransaction = new StakingTransaction(this._coinConfig);
           stakingTransaction.fromRawTransaction(raw);
           return this.getStakingBuilder(stakingTransaction);
+        case SuiTransactionType.WithdrawStake:
+          const unstakingTransaction = new UnstakingTransaction(this._coinConfig);
+          unstakingTransaction.fromRawTransaction(raw);
+          return this.getUnstakingBuilder(unstakingTransaction);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -50,6 +56,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getStakingBuilder(tx?: Transaction<StakingProgrammableTransaction>): StakingBuilder {
     return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getUnstakingBuilder(tx?: Transaction<UnstakingProgrammableTransaction>): UnstakingBuilder {
+    return this.initializeBuilder(tx, new UnstakingBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

@@ -1,9 +1,9 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   SuiTransaction,
   RequestAddStake,
-  RequestWithdrawStake,
+  RequestWithdrawStakedSui,
   SuiTransactionType,
   StakingProgrammableTransaction,
 } from './iface';
@@ -24,12 +24,13 @@ import {
   SUI_SYSTEM_ADDRESS,
   SUI_SYSTEM_MODULE_NAME,
   SUI_SYSTEM_STATE_OBJECT,
+  WITHDRAW_STAKE_FUN_NAME,
 } from './mystenlab/framework';
 import { BCS } from '@mysten/bcs';
 
 export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransaction> {
   protected _addStakeTx: RequestAddStake;
-  protected _withdrawDelegation: RequestWithdrawStake;
+  protected _withdrawDelegation: RequestWithdrawStakedSui;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -60,7 +61,6 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
    * @protected
    */
   protected get transactionType(): TransactionType {
-    // TODO: FIXME - find a way to get the TransactionType by method
     return TransactionType.StakingAdd;
   }
 
@@ -98,10 +98,10 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
   /**
    * Create a new transaction for withdrawing coins ready to be signed
    *
-   * @param {RequestWithdrawStake} request
+   * @param {RequestWithdrawStakedSui} request
    */
-  requestWithdrawStake(request: RequestWithdrawStake): this {
-    // TODO: FIXME  - add validation for staked objectID
+  unstake(request: RequestWithdrawStakedSui): this {
+    this.validateSuiObjectRef(request.stakedSui, 'stakedSui');
     this._withdrawDelegation = request;
     return this;
   }
@@ -189,21 +189,37 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     this.validateTransactionFields();
 
     const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
-    // Create a new coin with staking balance, based on the coins used as gas payment.
-    const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
-      programmableTxBuilder.pure(this._addStakeTx.amount),
-    ]);
-    // Stake the split coin to a specific validator address.
-    programmableTxBuilder.moveCall({
-      target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${ADD_STAKE_FUN_NAME}`,
-      arguments: [
-        programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
-        coin,
-        programmableTxBuilder.pure(Inputs.Pure(this._addStakeTx.validatorAddress, BCS.ADDRESS)),
-      ],
-    } as MoveCallTransaction);
-    const txData = programmableTxBuilder.blockData;
+    switch (this._type) {
+      case SuiTransactionType.AddStake:
+        // Create a new coin with staking balance, based on the coins used as gas payment.
+        const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
+          programmableTxBuilder.pure(this._addStakeTx.amount),
+        ]);
+        // Stake the split coin to a specific validator address.
+        programmableTxBuilder.moveCall({
+          target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${ADD_STAKE_FUN_NAME}`,
+          arguments: [
+            programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
+            coin,
+            programmableTxBuilder.pure(Inputs.Pure(this._addStakeTx.validatorAddress, BCS.ADDRESS)),
+          ],
+        } as MoveCallTransaction);
+        break;
+      case SuiTransactionType.WithdrawStake:
+        // Unstake staked object.
+        programmableTxBuilder.moveCall({
+          target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${WITHDRAW_STAKE_FUN_NAME}`,
+          arguments: [
+            programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
+            programmableTxBuilder.pure(Inputs.ObjectRef(this._withdrawDelegation.stakedSui)),
+          ],
+        } as MoveCallTransaction);
+        break;
+      default:
+        throw new InvalidTransactionError(`unsupported target method`);
+    }
 
+    const txData = programmableTxBuilder.blockData;
     return {
       type: this._type,
       sender: this._sender,

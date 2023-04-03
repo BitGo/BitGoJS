@@ -1,4 +1,4 @@
-import { RequestAddStake, RequestWithdrawStake } from '../../src/lib/iface';
+import { RequestAddStake, RequestWithdrawStakedSui } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 import { Recipient } from '@bitgo/sdk-core';
 
@@ -241,6 +241,74 @@ export const txTransactionsAddStake = [
   },
 ];
 
+export const txInputWithdrawStaked = [
+  {
+    kind: 'Input',
+    value: {
+      Object: {
+        Shared: {
+          objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+          initialSharedVersion: 1,
+          mutable: true,
+        },
+      },
+    },
+    index: 0,
+    type: 'object',
+  },
+  {
+    kind: 'Input',
+    value: {
+      Object: {
+        ImmOrOwned: {
+          objectId: 'ee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+          version: '1121',
+          digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+        },
+      },
+    },
+    index: 1,
+    type: 'pure',
+  },
+];
+export const txTransactionsWithdrawStaked = [
+  {
+    kind: 'MoveCall',
+    target: '0x3::sui_system::request_withdraw_stake',
+    arguments: [
+      {
+        kind: 'Input',
+        value: {
+          Object: {
+            Shared: {
+              objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+              initialSharedVersion: 1,
+              mutable: true,
+            },
+          },
+        },
+        index: 0,
+        type: 'object',
+      },
+      {
+        kind: 'Input',
+        value: {
+          Object: {
+            ImmOrOwned: {
+              objectId: 'ee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+              version: '1121',
+              digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+            },
+          },
+        },
+        index: 1,
+        type: 'pure',
+      },
+    ],
+    typeArguments: [],
+  },
+];
+
 export const GAS_BUDGET = 20000000;
 
 export const gasData = {
@@ -292,6 +360,8 @@ export const INVALID_RAW_TX =
   'AAAAAAAAAAAAA6e7361637469bc4a58e500b9e64cb6547ee9b403000000000000002064ba1fb2f2fbd2938a350015d601f4db89cd7e8e2370d0dd9ae3ac4f635c1581111b8a49f67370bc4a58e500b9e64cb6462e39b802000000000000002064ba1fb2f2fbd2938a350015d601f4db89cd7e8e2370d0dd9ae3ac47aa1ff81f01c4173a804406a365e69dfb297d4eaaf002546ebd016400000000000000cba4a48bb0f8b586c167e5dcefaa1c5e96ab3f0836d6ca08f2081732944d1e5b6b406a4a462e39b8030000000000000020b9490ede63215262c434e03f606d9799f3ba704523ceda184b386d47aa1ff81f01000000000000006400000000000000';
 export const ADD_STAKE =
   'AAADAAgALTEBAAAAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAEAIESxsxniNJWZX8g32v0o/Gr4tkXt3f8PwUZ/GtYxNiwjAgIAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwpzdWlfc3lzdGVtEXJlcXVlc3RfYWRkX3N0YWtlAAMBAQACAAABAgCYghiLo+gHCpuwaulEbPYHkU7o7ljtgwaj46//Whu7cQIJxAUirtVLzs+kg2BcXaWCGxcawaobYVlx+43+J+0T/VEEAAAAAAAAILZEZ8lcLtxXB9dIMp0rBAH+s8LT/e12XMNKiaW4bnuyJ90A5/zNyHtNlbY4S3ORGbkfKoGha67ep/TgBo5SlDfZAAAAAAAAACC+KT7TKlmOYLySRsTgG25Ck38WiZCIOmogUHrCwU0nJ5iCGIuj6AcKm7Bq6URs9geRTujuWO2DBqPjr/9aG7tx6AMAAAAAAAAALTEBAAAAAAA=';
+export const WITHDRAW_STAKED_SUI =
+  'AAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEA7m38PaMuIVQaKurfzSUPigoju3q9qciYhAf8MgaMN0ZhBAAAAAAAACDJYCWUFis6HawzxGyErvRT03pYayRliLki0kYsV0XCBAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMKc3VpX3N5c3RlbRZyZXF1ZXN0X3dpdGhkcmF3X3N0YWtlAAIBAAABAQCYghiLo+gHCpuwaulEbPYHkU7o7ljtgwaj46//Whu7cQIJxAUirtVLzs+kg2BcXaWCGxcawaobYVlx+43+J+0T/VEEAAAAAAAAILZEZ8lcLtxXB9dIMp0rBAH+s8LT/e12XMNKiaW4bnuyJ90A5/zNyHtNlbY4S3ORGbkfKoGha67ep/TgBo5SlDfZAAAAAAAAACC+KT7TKlmOYLySRsTgG25Ck38WiZCIOmogUHrCwU0nJ5iCGIuj6AcKm7Bq6URs9geRTujuWO2DBqPjr/9aG7tx6AMAAAAAAAAALTEBAAAAAAA=';
 
 export const invalidRecipients: Recipient[] = [
   {
@@ -313,11 +383,10 @@ export const requestAddStake: RequestAddStake = {
   validatorAddress: VALIDATOR_ADDRESS,
 };
 
-export const requestWithdrawDelegation: RequestWithdrawStake = {
-  stakedSuiObjectId: {
-    objectId: '0x0aac8eb81db5d9dfa149a14957e62915e4227bc4',
-    version: 564501,
-    digest: 'UnladG9ncSyDNTW9wMgdsg2OGz1JhPn5KclNIAduLJ0=',
+export const requestWithdrawStakedSui: RequestWithdrawStakedSui = {
+  stakedSui: {
+    objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+    version: 1121,
+    digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
   },
-  amount: STAKING_AMOUNT,
 };

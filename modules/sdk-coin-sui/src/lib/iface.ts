@@ -44,6 +44,13 @@ export type StakingProgrammableTransaction =
       transactions: TransactionType[];
     };
 
+export type UnstakingProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
 export interface SuiTransaction<T = TransferProgrammableTransaction | StakingProgrammableTransaction> {
   id?: string;
   type: SuiTransactionType;
@@ -57,9 +64,8 @@ export interface RequestAddStake {
   validatorAddress: SuiAddress;
 }
 
-export interface RequestWithdrawStake {
-  stakedSuiObjectId: SuiObjectRef;
-  amount: number;
+export interface RequestWithdrawStakedSui {
+  stakedSui: SuiObjectRef;
 }
 
 /**
