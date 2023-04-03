@@ -7,7 +7,7 @@ import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
-import { NTilde, RangeProof, RangeProofWithCheck } from './types';
+import { NTilde, NtildeProof, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 
 export async function generateSafePrime(bitlength: number): Promise<bigint> {
@@ -55,6 +55,47 @@ export async function generateNTilde(bitlength: number): Promise<NTilde> {
   const h1 = modPow(f1, BigInt(2), ntilde);
   const h2 = modPow(f2, BigInt(2), ntilde);
   return { ntilde, h1, h2 };
+}
+
+/**
+ * Generate iterations of Ntilde, h1, h2 discrete log proofs.
+ * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {bigint} x Either alpha or beta depending on whether it is a discrete log proof of
+ * h1 w.r.t h2 or h2 w.r.t h1.
+ * @param {bigint} q1 The Sophie Germain prime associated with the first safe prime p1 used to generate Ntilde.
+ * @param {bigint} q2 The Sophie Germain prime associated with the second safe prime p2 used to generate Ntilde.
+ * @param {number} iterations Number of iterations of the ZK proof
+ * (default is 128 as recommened by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction)
+ * @returns {NTildeProof} The generated NTilde Proofs.
+ */
+export async function generateNTildeProof(
+  ntilde: NTilde,
+  x: bigint,
+  q1: bigint,
+  q2: bigint,
+  iterations = 128
+): Promise<NtildeProof> {
+  const q1MulQ2 = q1 * q2;
+  const a = BigInt[iterations];
+  const alpha = BigInt[iterations];
+  let msgToHash: Buffer = Buffer.concat([
+    bigIntToBufferBE(ntilde.h1),
+    bigIntToBufferBE(ntilde.h2),
+    bigIntToBufferBE(ntilde.ntilde),
+  ]);
+  for (let i = 0; i < iterations; i++) {
+    a[i] = randBetween(q1MulQ2);
+    alpha[i] = modPow(ntilde.h1, a[i], ntilde.ntilde);
+    msgToHash = Buffer.concat([msgToHash, bigIntToBufferBE(alpha[i])]);
+  }
+  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  const t = BigInt[iterations];
+  for (let i = 0; i < iterations; i++) {
+    // Get the ith bit from a buffer of bytes.
+    const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
+    t[i] = (a[i] + ((BigInt(ithBit) * x) % q1MulQ2)) % q1MulQ2;
+  }
+  return { alpha, t };
 }
 
 /**
