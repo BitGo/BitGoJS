@@ -5,6 +5,12 @@ export interface NTilde {
   h2: bigint;
 }
 
+// NTilde Proof
+export interface NtildeProof {
+  alpha: bigint[];
+  t: bigint[];
+}
+
 // String-serialized NTilde values.
 export interface NTildeShare {
   ntilde: string;
