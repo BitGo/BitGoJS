@@ -35,6 +35,7 @@ import { bip32, ecc } from '@bitgo/utxo-lib';
 import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
+import { Hash } from 'crypto';
 
 const MPC = new Ecdsa();
 
@@ -165,7 +166,8 @@ export async function createUserOmicronAndDeltaShare(gShare: GShare): Promise<Cr
 export async function createUserSignatureShare(
   oShare: OShare,
   dShare: DShare,
-  message: Buffer
+  message: Buffer,
+  hash: Hash = createKeccakHash('keccak256')
 ): Promise<SignatureShare> {
   if (oShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid OShare, doesn't belong to the User`);
@@ -174,7 +176,7 @@ export async function createUserSignatureShare(
   if (dShare.i !== ShareKeyPosition.USER || dShare.j !== ShareKeyPosition.BITGO) {
     throw new Error(`Invalid DShare, doesn't seem to be from BitGo`);
   }
-  return MPC.sign(message, oShare, dShare, createKeccakHash('keccak256'));
+  return MPC.sign(message, oShare, dShare, hash);
 }
 
 export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition };
