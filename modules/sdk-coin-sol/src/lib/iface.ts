@@ -104,3 +104,8 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   durableNonce?: DurableNonceParams;
   memo?: string;
 }
+
+export class TokenAssociateRecipient {
+  ownerAddress: string;
+  tokenName: string;
+}

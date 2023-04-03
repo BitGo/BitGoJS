@@ -299,6 +299,22 @@ describe('SOL util library', function () {
     });
   });
 
+  describe('getAssociatedTokenAccountAddress', function () {
+    const usdcMintAddress = testData.tokenTransfers.mintUSDC;
+    const tokenAddress = '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU';
+    it('should succeed for native address as owner address', async function () {
+      const ownerAddress = testData.authAccount.pub;
+      const result = await Utils.getAssociatedTokenAccountAddress(usdcMintAddress, ownerAddress);
+      result.should.be.equal(tokenAddress);
+    });
+    it('should fail for token address as owner address', async function () {
+      const invalidOwnerAddress = tokenAddress;
+      await Utils.getAssociatedTokenAccountAddress(usdcMintAddress, invalidOwnerAddress).should.be.rejectedWith(
+        'Invalid ownerAddress - address off ed25519 curve, got: ' + invalidOwnerAddress
+      );
+    });
+  });
+
   describe('matchTransactionTypeByInstructionsOrder', function () {
     describe('Activate stake instructions', function () {
       it('should match staking activate instructions', function () {

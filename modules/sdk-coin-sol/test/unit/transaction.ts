@@ -583,15 +583,10 @@ describe('Sol Transaction', () => {
         type: 'AssociatedTokenAccountInitialization',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '10000',
-        outputs: [
-          {
-            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
-            amount: '10000',
-          },
-        ],
+        outputAmount: '0',
+        outputs: [],
         fee: {
-          fee: '5000',
+          fee: '15000',
           feeRate: 5000,
         },
         memo: undefined,

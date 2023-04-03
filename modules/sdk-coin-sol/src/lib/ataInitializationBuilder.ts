@@ -2,23 +2,16 @@ import { TransactionBuilder } from './transactionBuilder';
 import { BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
-import { AtaInit } from './iface';
+import { AtaInit, TokenAssociateRecipient } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromTokenName,
-  isValidAddress,
-  isValidAmount,
-  isValidPublicKey,
+  validateMintAddress,
+  validateOwnerAddress,
 } from './utils';
 import assert from 'assert';
-import { AtaInitializationTransaction } from './ataInitializationTransaction';
 import * as _ from 'lodash';
-
-export class TokenAssociateRecipient {
-  ownerAddress: string;
-  tokenName: string;
-}
 
 export class AtaInitializationBuilder extends TransactionBuilder {
   // @deprecated - Use the _tokenAssociateRecipients field instead
@@ -27,13 +20,11 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   private _mint: string;
   // @deprecated - Use the _tokenAssociateRecipients field instead
   private _owner: string;
-  private _rentExemptAmount: string;
   private _tokenAssociateRecipients: TokenAssociateRecipient[];
-  protected _transaction: AtaInitializationTransaction;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new AtaInitializationTransaction(_coinConfig);
+    this._transaction = new Transaction(_coinConfig);
     this._tokenAssociateRecipients = [];
   }
 
@@ -72,14 +63,8 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     }
     this._mint = token.tokenAddress;
     this._tokenName = token.name;
-    this.validateMintOrThrow(this._mint);
+    validateMintAddress(this._mint);
     return this;
-  }
-
-  private validateMintOrThrow(mint: string) {
-    if (!mint || !isValidPublicKey(mint)) {
-      throw new BuildTransactionError('Invalid transaction: invalid or missing mint, got: ' + mint);
-    }
   }
 
   /**
@@ -93,32 +78,18 @@ export class AtaInitializationBuilder extends TransactionBuilder {
       throw new DuplicateMethodError('Invalid method: enableToken already used');
     }
     this._owner = owner;
-    this.validateOwnerOrThrow(owner);
+    validateOwnerAddress(owner);
     return this;
   }
 
-  private validateOwnerOrThrow(owner: string) {
-    if (!owner || !isValidAddress(owner)) {
-      throw new BuildTransactionError('Invalid transaction: invalid owner, got: ' + owner);
-    }
-  }
-
   /**
+   * @deprecated - Use the associatedTokenAccountRent method instead
    * Used to set the minimum rent exempt amount
    *
    * @param rentExemptAmount minimum rent exempt amount in lamports
    */
   rentExemptAmount(rentExemptAmount: string): this {
-    this._rentExemptAmount = rentExemptAmount;
-    this.validateRentExemptAmountOrThrow(rentExemptAmount);
-    return this;
-  }
-
-  private validateRentExemptAmountOrThrow(rentExemptAmount: string) {
-    // _rentExemptAmount is allowed to be undefined or a valid amount if it's defined
-    if (rentExemptAmount && !isValidAmount(rentExemptAmount)) {
-      throw new BuildTransactionError('Invalid transaction: invalid rentExemptAmount, got: ' + rentExemptAmount);
-    }
+    return super.associatedTokenAccountRent(rentExemptAmount);
   }
 
   /**
@@ -129,7 +100,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
    *  @param TokenAssociateRecipient token associate recipient info
    */
 
-  enableToken(recipient: TokenAssociateRecipient) {
+  enableToken(recipient: TokenAssociateRecipient): this {
     if (this._tokenAssociateRecipients.some((tokenAssociate) => _.isEqual(tokenAssociate, recipient))) {
       throw new BuildTransactionError(
         'Invalid transaction: invalid duplicate recipients, got: owner ' +
@@ -142,27 +113,21 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     if (this._tokenName || this._mint) {
       throw new DuplicateMethodError('Invalid method: single mint already used');
     }
-    this.validateOwnerOrThrow(recipient.ownerAddress);
+    validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
     if (!token) {
       throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
     }
-    this.validateMintOrThrow(token.tokenAddress);
+    validateMintAddress(token.tokenAddress);
 
     this._tokenAssociateRecipients.push(recipient);
     return this;
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    super.validateTransaction(transaction);
-    this.validateRentExemptAmountOrThrow(this._rentExemptAmount);
-  }
-
-  /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    if (this._tokenAssociateRecipients.length == 0) {
+    if (this._tokenAssociateRecipients.length === 0) {
       assert(this._mint && this._tokenName, 'Mint must be set before building the transaction');
       this._owner = this._owner || this._sender;
       this._tokenAssociateRecipients.push({
@@ -186,13 +151,12 @@ export class AtaInitializationBuilder extends TransactionBuilder {
             ataAddress: ataPk,
             ownerAddress: recipient.ownerAddress,
             payerAddress: this._sender,
-            tokenName: recipient.tokenName!,
+            tokenName: recipient.tokenName,
           },
         });
       })
     );
 
-    this._transaction.tokenAccountRentExemptAmount = this._rentExemptAmount;
     return await super.buildImplementation();
   }
 }

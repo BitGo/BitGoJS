@@ -233,7 +233,8 @@ export function matchTransactionTypeByInstructionsOrder(
 
   // Check instructions by order using the index.
   for (const keyName of instructionsKeys) {
-    if (getInstructionType(instructionsCopy[instructionIndexes[keyName]]) !== keyName) {
+    const result = getInstructionType(instructionsCopy[instructionIndexes[keyName]]);
+    if (result !== keyName) {
       return false;
     }
   }
@@ -387,8 +388,27 @@ export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> |
  * Get the solana associated token account address
  * @param tokenAddress The token address
  * @param ownerAddress The owner of the associated token account
+ * @returns The associated token account address
  * */
 export async function getAssociatedTokenAccountAddress(tokenAddress: string, ownerAddress: string): Promise<string> {
-  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenAddress), new PublicKey(ownerAddress));
+  const ownerPublicKey = new PublicKey(ownerAddress);
+
+  // tokenAddress are not on ed25519 curve, so they can't be used as ownerAddress
+  if (!PublicKey.isOnCurve(ownerPublicKey.toBuffer())) {
+    throw new UtilsError('Invalid ownerAddress - address off ed25519 curve, got: ' + ownerAddress);
+  }
+  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenAddress), ownerPublicKey);
   return ataAddress.toString();
+}
+
+export function validateMintAddress(mintAddress: string) {
+  if (!mintAddress || !isValidAddress(mintAddress)) {
+    throw new BuildTransactionError('Invalid or missing mintAddress, got: ' + mintAddress);
+  }
+}
+
+export function validateOwnerAddress(ownerAddress: string) {
+  if (!ownerAddress || !isValidAddress(ownerAddress)) {
+    throw new BuildTransactionError('Invalid or missing ownerAddress, got: ' + ownerAddress);
+  }
 }

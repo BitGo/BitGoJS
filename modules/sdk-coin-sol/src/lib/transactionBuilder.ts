@@ -13,7 +13,14 @@ import {
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
-import { isValidAddress, isValidBlockId, isValidMemo, validateAddress, validateRawTransaction } from './utils';
+import {
+  isValidAddress,
+  isValidAmount,
+  isValidBlockId,
+  isValidMemo,
+  validateAddress,
+  validateRawTransaction,
+} from './utils';
 import { KeyPair } from '.';
 import { InstructionBuilderTypes } from './constants';
 import { solInstructionFactory } from './solInstructionFactory';
@@ -25,6 +32,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
   private _lamportsPerSignature: number;
+  private _tokenAccountRentExemptAmount: string;
 
   protected _sender: string;
   protected _recentBlockhash: Blockhash;
@@ -95,6 +103,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.solTransaction = this.buildSolTransaction();
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.loadInputsAndOutputs();
+    this._transaction.tokenAccountRentExemptAmount = this._tokenAccountRentExemptAmount;
     return this.transaction;
   }
 
@@ -241,6 +250,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /**
+   * Used to set the minimum rent exempt amount for an ATA
+   *
+   * @param tokenAccountRentExemptAmount minimum rent exempt amount in lamports
+   */
+  associatedTokenAccountRent(tokenAccountRentExemptAmount: string): this {
+    this.validateRentExemptAmount(tokenAccountRentExemptAmount);
+    this._tokenAccountRentExemptAmount = tokenAccountRentExemptAmount;
+    return this;
+  }
+
+  private validateRentExemptAmount(tokenAccountRentExemptAmount: string) {
+    // _tokenAccountRentExemptAmount is allowed to be undefined or a valid amount if it's defined
+    if (tokenAccountRentExemptAmount && !isValidAmount(tokenAccountRentExemptAmount)) {
+      throw new BuildTransactionError('Invalid tokenAccountRentExemptAmount, got: ' + tokenAccountRentExemptAmount);
+    }
+  }
+
   // endregion
 
   // region Validators
@@ -274,6 +301,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   validateTransaction(transaction?: Transaction): void {
     this.validateSender();
     this.validateNonce();
+    this.validateRentExemptAmount(this._tokenAccountRentExemptAmount);
   }
 
   /** @inheritdoc */

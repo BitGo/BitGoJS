@@ -1152,15 +1152,10 @@ describe('SOL:', function () {
         type: 'AssociatedTokenAccountInitialization',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: rentExemptAmount,
-        outputs: [
-          {
-            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
-            amount: rentExemptAmount,
-          },
-        ],
+        outputAmount: '0',
+        outputs: [],
         fee: {
-          fee: '5000',
+          fee: '3005000',
           feeRate: 5000,
         },
         memo: 'test memo',
@@ -1216,19 +1211,10 @@ describe('SOL:', function () {
         type: 'AssociatedTokenAccountInitialization',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '6000000',
-        outputs: [
-          {
-            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
-            amount: rentExemptAmount,
-          },
-          {
-            address: '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf',
-            amount: rentExemptAmount,
-          },
-        ],
+        outputAmount: '0',
+        outputs: [],
         fee: {
-          fee: '5000',
+          fee: '6005000',
           feeRate: 5000,
         },
         memo: 'test memo',

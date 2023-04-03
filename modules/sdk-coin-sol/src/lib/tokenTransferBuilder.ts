@@ -1,12 +1,19 @@
 import { BaseCoin as CoinConfig, SolCoin } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { getAssociatedTokenAccountAddress, getSolTokenFromTokenName, isValidAmount, validateAddress } from './utils';
+import {
+  getAssociatedTokenAccountAddress,
+  getSolTokenFromTokenName,
+  isValidAmount,
+  validateAddress,
+  validateMintAddress,
+  validateOwnerAddress,
+} from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { TokenTransfer } from './iface';
-
+import { AtaInit, TokenAssociateRecipient, TokenTransfer } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
+import _ from 'lodash';
 
 export interface SendParams {
   address: string;
@@ -18,9 +25,11 @@ const UNSIGNED_BIGINT_MAX = BigInt('18446744073709551615');
 
 export class TokenTransferBuilder extends TransactionBuilder {
   private _sendParams: SendParams[] = [];
+  private _createAtaParams: TokenAssociateRecipient[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._createAtaParams = [];
   }
 
   protected get transactionType(): TransactionType {
@@ -40,15 +49,23 @@ export class TokenTransferBuilder extends TransactionBuilder {
           tokenName: transferInstruction.params.tokenName,
         });
       }
+      if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
+        const ataInitInstruction: AtaInit = instruction;
+        this._createAtaParams.push({
+          ownerAddress: ataInitInstruction.params.ownerAddress,
+          tokenName: ataInitInstruction.params.tokenName,
+        });
+      }
     }
   }
 
   /**
    *  Set a transfer
    *
-   * @param {string} fromAddress - the sender address
-   * @param {string} amount - the amount sent
-   * @param {string} tokenName - name of token that is intended to send
+   * @param {SendParams} params - params for the transfer
+   * @param {string} params.address - the receiver token address
+   * @param {string} params.amount - the amount sent
+   * @param {string} params.tokenName - name of token that is intended to send
    * @returns {TransactionBuilder} This transaction builder
    */
   send({ address, amount, tokenName }: SendParams): this {
@@ -64,12 +81,31 @@ export class TokenTransferBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   *
+   * @param {TokenAssociateRecipient} recipient - recipient of the associated token account creation
+   * @param {string} recipient.ownerAddress - owner of the associated token account
+   * @param {string} recipient.tokenName - name of the token that is intended to associate
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  createAssociatedTokenAccount(recipient: TokenAssociateRecipient): this {
+    validateOwnerAddress(recipient.ownerAddress);
+    const token = getSolTokenFromTokenName(recipient.tokenName);
+    if (!token) {
+      throw new BuildTransactionError('Invalid token name, got: ' + recipient.tokenName);
+    }
+    validateMintAddress(token.tokenAddress);
+
+    this._createAtaParams.push(recipient);
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    this._instructionsData = await Promise.all(
+    const sendInstructions = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {
-        const coin = getSolTokenFromTokenName(sendParams.tokenName!);
+        const coin = getSolTokenFromTokenName(sendParams.tokenName);
         assert(coin instanceof SolCoin);
         const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
         return {
@@ -78,13 +114,33 @@ export class TokenTransferBuilder extends TransactionBuilder {
             fromAddress: this._sender,
             toAddress: sendParams.address,
             amount: sendParams.amount,
-            tokenName: coin?.name,
+            tokenName: coin.name,
             sourceAddress: sourceAddress,
           },
         };
       })
     );
-
+    const uniqueCreateAtaParams = _.uniqBy(this._createAtaParams, (recipient: TokenAssociateRecipient) => {
+      return recipient.ownerAddress + recipient.tokenName;
+    });
+    const createAtaInstructions = await Promise.all(
+      uniqueCreateAtaParams.map(async (recipient: TokenAssociateRecipient): Promise<AtaInit> => {
+        const coin = getSolTokenFromTokenName(recipient.tokenName);
+        assert(coin instanceof SolCoin);
+        const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
+        return {
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: {
+            ownerAddress: recipient.ownerAddress,
+            tokenName: coin.name,
+            mintAddress: coin.tokenAddress,
+            ataAddress: sourceAddress,
+            payerAddress: this._sender,
+          },
+        };
+      })
+    );
+    this._instructionsData = [...sendInstructions, ...createAtaInstructions];
     return await super.buildImplementation();
   }
 }

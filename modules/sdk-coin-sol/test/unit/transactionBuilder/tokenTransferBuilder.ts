@@ -21,6 +21,7 @@ describe('Sol Token Transfer Builder', () => {
   const amount = testData.tokenTransfers.amount.toString();
   const memo = testData.tokenTransfers.memo;
   const nameUSDC = testData.tokenTransfers.nameUSDC;
+  const mintUSDC = testData.tokenTransfers.mintUSDC;
   const owner = testData.tokenTransfers.owner;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
@@ -329,6 +330,243 @@ describe('Sol Token Transfer Builder', () => {
         },
       ]);
     });
+
+    it('build a token transfer tx unsigned with create ATA, memo and durable nonce', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
+      txBuilder.sender(walletPK);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.memo(memo);
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(3);
+      txJson.instructionsData[0].type.should.equal('TokenTransfer');
+      txJson.instructionsData[0].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[1].params.should.deepEqual({
+        mintAddress: mintUSDC,
+        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ownerAddress: otherAccount.pub,
+        payerAddress: walletPK,
+        tokenName: nameUSDC,
+      });
+      txJson.instructionsData[2].type.should.equal('Memo');
+      txJson.instructionsData[2].params.memo.should.equal(memo);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TOKEN_TRANSFER_UNSIGNED_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE);
+    });
+
+    it('build a multi token transfer tx unsigned with multi create ATA, memo and durable nonce', async () => {
+      const account1 = new KeyPair({ prv: testData.extraAccounts.prv1 }).getKeys();
+      const account2 = new KeyPair({ prv: testData.extraAccounts.prv2 }).getKeys();
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(walletPK);
+      txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: account2.pub, amount, tokenName: nameUSDC });
+      txBuilder.memo(memo);
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: account1.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: account2.pub, tokenName: nameUSDC });
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(3);
+      tx.inputs[0].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.inputs[1].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.inputs[2].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs.length.should.equal(3);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs[1].should.deepEqual({
+        address: account1.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs[2].should.deepEqual({
+        address: account2.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(7);
+      txJson.instructionsData[0].type.should.equal('TokenTransfer');
+      txJson.instructionsData[0].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[1].type.should.equal('TokenTransfer');
+      txJson.instructionsData[1].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: account1.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[2].type.should.equal('TokenTransfer');
+      txJson.instructionsData[2].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: account2.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[3].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[3].params.should.deepEqual({
+        mintAddress: mintUSDC,
+        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ownerAddress: otherAccount.pub,
+        payerAddress: walletPK,
+        tokenName: nameUSDC,
+      });
+      txJson.instructionsData[4].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[4].params.should.deepEqual({
+        mintAddress: mintUSDC,
+        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ownerAddress: account1.pub,
+        payerAddress: walletPK,
+        tokenName: nameUSDC,
+      });
+      txJson.instructionsData[5].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[5].params.should.deepEqual({
+        mintAddress: mintUSDC,
+        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ownerAddress: account2.pub,
+        payerAddress: walletPK,
+        tokenName: nameUSDC,
+      });
+      txJson.instructionsData[6].type.should.equal('Memo');
+      txJson.instructionsData[6].params.memo.should.equal(memo);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.MULTI_TOKEN_TRANSFER_UNSIGNED_WITH_MULTI_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE);
+    });
+
+    it('build a multi token transfer tx unsigned with unique create ATA, memo and durable nonce', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(walletPK);
+      txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.memo(memo);
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(3);
+      tx.inputs[0].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.inputs[1].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.inputs[2].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs.length.should.equal(3);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs[1].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      tx.outputs[2].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameUSDC,
+      });
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(5);
+      txJson.instructionsData[0].type.should.equal('TokenTransfer');
+      txJson.instructionsData[0].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[1].type.should.equal('TokenTransfer');
+      txJson.instructionsData[1].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[2].type.should.equal('TokenTransfer');
+      txJson.instructionsData[2].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[3].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[3].params.should.deepEqual({
+        mintAddress: mintUSDC,
+        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ownerAddress: otherAccount.pub,
+        payerAddress: walletPK,
+        tokenName: nameUSDC,
+      });
+      txJson.instructionsData[4].type.should.equal('Memo');
+      txJson.instructionsData[4].params.memo.should.equal(memo);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.MULTI_TOKEN_TRANSFER_UNSIGNED_WITH_UNIQUE_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE);
+    });
   });
   describe('Fail', () => {
     it('for invalid sender', () => {
@@ -362,6 +600,34 @@ describe('Sol Token Transfer Builder', () => {
           tokenName: nameUSDC,
         })
       ).throwError(`input amount ${excessiveAmount} exceeds big int limit 18446744073709551615`);
+    });
+
+    it('for invalid rent amount', () => {
+      const invalidAmount = 'randomstring';
+      const txBuilder = tokenTransferBuilder();
+      should(() => txBuilder.associatedTokenAccountRent(invalidAmount)).throwError(
+        'Invalid tokenAccountRentExemptAmount, got: ' + invalidAmount
+      );
+
+      const negativeAmount = '-111';
+      should(() => txBuilder.associatedTokenAccountRent(negativeAmount)).throwError(
+        'Invalid tokenAccountRentExemptAmount, got: ' + negativeAmount
+      );
+    });
+
+    it('for invalid ownerAddress', () => {
+      const txBuilder = tokenTransferBuilder();
+      should(() =>
+        txBuilder.createAssociatedTokenAccount({ ownerAddress: invalidPubKey, tokenName: nameUSDC })
+      ).throwError('Invalid or missing ownerAddress, got: ' + invalidPubKey);
+    });
+
+    it('for invalid tokenName', () => {
+      const invalidTokenName = 'tsol:random';
+      const txBuilder = tokenTransferBuilder();
+      should(() =>
+        txBuilder.createAssociatedTokenAccount({ ownerAddress: nonceAccount.pub, tokenName: invalidTokenName })
+      ).throwError('Invalid token name, got: ' + invalidTokenName);
     });
   });
 });

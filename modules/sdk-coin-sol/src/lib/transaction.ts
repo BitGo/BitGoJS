@@ -23,15 +23,14 @@ import {
   WalletInit,
 } from './iface';
 import base58 from 'bs58';
-import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import { getInstructionType, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
-import { InstructionBuilderTypes } from './constants';
-
-const UNAVAILABLE_TEXT = 'UNAVAILABLE';
+import { InstructionBuilderTypes, ValidInstructionTypesEnum, UNAVAILABLE_TEXT } from './constants';
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
   private _lamportsPerSignature: number | undefined;
+  private _tokenAccountRentExemptAmount: string | undefined;
   protected _type: TransactionType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -48,6 +47,12 @@ export class Transaction extends BaseTransaction {
 
   private get numberOfRequiredSignatures(): number {
     return this._solTransaction.compileMessage().header.numRequiredSignatures;
+  }
+
+  private get numberOfATACreationInstructions(): number {
+    return this._solTransaction.instructions.filter(
+      (instruction) => getInstructionType(instruction) === ValidInstructionTypesEnum.InitializeAssociatedTokenAccount
+    ).length;
   }
 
   /** @inheritDoc */
@@ -71,6 +76,14 @@ export class Transaction extends BaseTransaction {
 
   set lamportsPerSignature(lamportsPerSignature: number | undefined) {
     this._lamportsPerSignature = lamportsPerSignature;
+  }
+
+  get tokenAccountRentExemptAmount(): string | undefined {
+    return this._tokenAccountRentExemptAmount;
+  }
+
+  set tokenAccountRentExemptAmount(tokenAccountRentExemptAmount: string | undefined) {
+    this._tokenAccountRentExemptAmount = tokenAccountRentExemptAmount;
   }
 
   /** @inheritDoc */
@@ -309,7 +322,6 @@ export class Transaction extends BaseTransaction {
           });
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
-          // taken care of in subclass
           break;
       }
     }
@@ -376,7 +388,6 @@ export class Transaction extends BaseTransaction {
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
-          // taken care of in subclass
           break;
         default:
           continue;
@@ -397,15 +408,26 @@ export class Transaction extends BaseTransaction {
     return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce);
   }
 
+  private calculateFee(): string {
+    if (this.lamportsPerSignature || this.tokenAccountRentExemptAmount) {
+      const signatureFees = this.lamportsPerSignature
+        ? new BigNumber(this.lamportsPerSignature).multipliedBy(this.numberOfRequiredSignatures).toFixed(0)
+        : 0;
+      const rentFees = this.tokenAccountRentExemptAmount
+        ? new BigNumber(this.tokenAccountRentExemptAmount).multipliedBy(this.numberOfATACreationInstructions).toFixed(0)
+        : 0;
+      return new BigNumber(signatureFees).plus(rentFees).toFixed(0);
+    }
+    return UNAVAILABLE_TEXT;
+  }
+
   protected getExplainedTransaction(
     outputAmount: BigNumber,
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
     durableNonce: undefined | DurableNonceParams = undefined
   ): TransactionExplanation {
-    const feeString = this.lamportsPerSignature
-      ? new BigNumber(this.lamportsPerSignature).multipliedBy(this.numberOfRequiredSignatures).toFixed(0)
-      : UNAVAILABLE_TEXT;
+    const feeString = this.calculateFee();
     return {
       displayOrder: [
         'id',
