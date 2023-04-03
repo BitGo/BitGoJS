@@ -3,6 +3,20 @@ export interface NTilde {
   ntilde: bigint;
   h1: bigint;
   h2: bigint;
+  ntildeProof?: NtildeProof;
+}
+
+// NTilde Proof
+export interface NtildeProof {
+  alpha: bigint[];
+  t: bigint[];
+}
+
+export interface RSAModulus {
+  n: bigint;
+  // Sophie Germain primes.
+  q1: bigint;
+  q2: bigint;
 }
 
 // String-serialized NTilde values.
