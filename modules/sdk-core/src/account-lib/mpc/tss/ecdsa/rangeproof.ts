@@ -99,6 +99,45 @@ export async function generateNTildeProof(
 }
 
 /**
+ * Verify discrete log proofs of h1 and h2 mod Ntilde.
+ * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {NtildeProof} ntidleProof Ntilde Proofs
+ * @returns {boolean} true if proof is verified, false otherwise.
+ */
+export async function verifyNtildeProof(ntilde: NTilde, ntidleProof: NtildeProof): Promise<boolean> {
+  const h1ModNtilde = ntilde.h1 % ntilde.ntilde;
+  const h2ModNtilde = ntilde.h2 % ntilde.ntilde;
+  if (h1ModNtilde === BigInt(0) || h2ModNtilde === BigInt(0)) {
+    return false;
+  }
+  if (h1ModNtilde === BigInt(1) || h2ModNtilde === BigInt(1)) {
+    return false;
+  }
+  if (h1ModNtilde === h2ModNtilde) {
+    return false;
+  }
+  let msgToHash: Buffer = Buffer.concat([
+    bigIntToBufferBE(ntilde.h1),
+    bigIntToBufferBE(ntilde.h2),
+    bigIntToBufferBE(ntilde.ntilde),
+  ]);
+  for (let i = 0; i < ntidleProof.alpha.length; i++) {
+    msgToHash = Buffer.concat([msgToHash, bigIntToBufferBE(ntidleProof.alpha[i])]);
+  }
+  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  for (let i = 0; i < ntidleProof.alpha.length; i++) {
+    // Get the ith bit from a buffer of bytes.
+    const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
+    const h1PowTi = modPow(ntilde.h1, ntidleProof.t[i], ntilde.ntilde);
+    const h2PowCi = modPow(ntilde.h2, BigInt(ithBit), ntilde.ntilde);
+    const alphaMulh2PowCi = (ntidleProof.alpha[i] * h2PowCi) % ntilde.ntilde;
+    if (h1PowTi !== alphaMulh2PowCi) {
+      return false;
+    }
+  }
+  return true;
+}
+/**
  * Generate a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
