@@ -166,8 +166,7 @@ export abstract class Transaction<T> extends BaseTransaction {
     const transactionBlock = TransactionBlockDataBuilder.fromBytes(data);
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
     const transactions = transactionBlock.transactions;
-    // TODO: FIXME - get tx type Transfer or AddStake, for now only Transfer
-    const txType = utils.getSuiTransactionType(transactions[1]);
+    const txType = utils.getSuiTransactionType(transactions.length == 1 ? transactions[0] : transactions[1]);
     return {
       id: transactionBlock.getDigest(),
       type: txType,
