@@ -28,6 +28,8 @@ import {
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare, Commitment } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
+import { exchangeEddsaCommitments } from '../../../tss/common';
+import { createHash } from 'crypto';
 
 /**
  * Utility functions for TSS work flows.
@@ -454,6 +456,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const signerShare = signingKeyYShare.u + signingKeyYShare.chaincode;
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+
+    // TODO: need to fix this to work
     await offerUserToBitgoRShare(this.bitgo, this.wallet.id(), txRequestId, rShare, encryptedSignerShare, 'full');
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
     const gSignShareTransactionParams = {
@@ -477,9 +481,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   async signTxRequest(params: TSSParams): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
-
     const { txRequest, prv, apiVersion } = params;
-
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
       txRequestId = txRequestResolved.txRequestId;
@@ -487,10 +489,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestResolved = txRequest;
       txRequestId = txRequest.txRequestId;
     }
-
     const hdTree = await Ed25519BIP32.initialize();
     const MPC = await Eddsa.initialize(hdTree);
-
     const userSigningMaterial: SigningMaterial = JSON.parse(prv);
     if (!userSigningMaterial.backupYShare) {
       throw new Error('Invalid user key - missing backupYShare');
@@ -507,21 +507,30 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
       unsignedTx.derivationPath
     );
-
     const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
-
     const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
-
     const bitgoIndex = 3;
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
-
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.yShares[bitgoIndex].u, 'eddsa');
     const vssProof = signingKey.yShares[bitgoIndex].v;
     const userPublicGpgKey = userGpgKey.publicKey;
     const publicShare = signingKey.yShares[bitgoIndex].y + signingKey.yShares[bitgoIndex].chaincode;
+    const exchangeCommitmentResponse = await exchangeEddsaCommitments(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      userSignShare.commitment,
+      unsignedTx.serializedTxHex,
+      encryptedSignerShare
+    );
+
+    const bitgoToUserCommitment = {
+      c: exchangeCommitmentResponse.commitment,
+      z: createHash('sha256').update(unsignedTx.serializedTxHex).digest().toString('hex'),
+    } as Commitment;
 
     await offerUserToBitgoRShare(
       this.bitgo,
@@ -536,9 +545,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       publicShare
     );
 
-    const bitgoToUserCommitment = {} as Commitment; // TODO: Not sure where to source this from -JD
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
-
     const userToBitGoGShare = await createUserToBitGoGShare(
       userSignShare,
       bitgoToUserCommitment,
@@ -549,7 +556,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     );
 
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion);
-
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 

@@ -68,6 +68,10 @@ export interface Commitment {
   z: string; // A commitment of the message being signed, $m$, where $z = H(m)$ and $H$ is a hash.
 }
 
+export interface ExchangeCommitmentResponse {
+  commitment: string;
+}
+
 export interface SignShare {
   xShare: XShare;
   commitment: Commitment;

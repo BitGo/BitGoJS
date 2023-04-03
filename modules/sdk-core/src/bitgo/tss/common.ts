@@ -5,6 +5,7 @@ import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 import openpgp from 'openpgp';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { Commitment, ExchangeCommitmentResponse } from '../../account-lib/mpc/tss';
 
 /**
  * Gets the latest Tx Request by id
@@ -72,6 +73,29 @@ export async function sendSignatureShare(
       signerShare,
       userPublicGpgKey,
     })
+    .result();
+}
+
+/**
+ *
+ */
+export async function exchangeEddsaCommitments(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  commitment: Commitment,
+  unsignedTx: string,
+  encryptedSignerShare: string,
+  apiMode: 'full' | 'lite' = 'lite'
+): Promise<ExchangeCommitmentResponse> {
+  let addendum = '';
+  if (apiMode === 'full') {
+    addendum = '/transactions/0';
+  }
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
+  return await bitgo
+    .post(bitgo.url(urlPath, 2))
+    .send({ c: commitment.c, m: unsignedTx, u: encryptedSignerShare })
     .result();
 }
 
