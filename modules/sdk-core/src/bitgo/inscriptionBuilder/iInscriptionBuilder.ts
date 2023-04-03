@@ -57,14 +57,14 @@ export interface IInscriptionBuilder {
       inscriptionConstraints,
       changeAddressType,
     }: {
-      signer: utxolib.bitgo.KeyName;
-      cosigner: utxolib.bitgo.KeyName;
-      inscriptionConstraints: {
+      signer?: utxolib.bitgo.KeyName;
+      cosigner?: utxolib.bitgo.KeyName;
+      inscriptionConstraints?: {
         minChangeOutput?: bigint;
         minInscriptionOutput?: bigint;
         maxInscriptionOutput?: bigint;
       };
-      changeAddressType: utxolib.bitgo.outputScripts.ScriptType2Of3;
+      changeAddressType?: utxolib.bitgo.outputScripts.ScriptType2Of3;
     }
   ): Promise<PrebuildTransactionResult>;
 
