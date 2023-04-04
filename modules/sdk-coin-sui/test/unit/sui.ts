@@ -16,7 +16,7 @@ describe('SUI:', function () {
   let newTxParams;
 
   const txPrebuild = {
-    txHex: testData.TRANSFER,
+    txHex: Buffer.from(testData.TRANSFER, 'base64').toString('hex'),
     txInfo: {},
   };
 
@@ -78,7 +78,7 @@ describe('SUI:', function () {
   describe('Explain Transaction: ', () => {
     it('should explain a transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
-        txHex: testData.TRANSFER,
+        txHex: Buffer.from(testData.TRANSFER, 'base64').toString('hex'),
       });
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
@@ -102,7 +102,7 @@ describe('SUI:', function () {
     });
     it('should explain a staking transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
-        txHex: testData.ADD_STAKE,
+        txHex: Buffer.from(testData.ADD_STAKE, 'base64').toString('hex'),
       });
       explainedTransaction.should.deepEqual({
         displayOrder: [
@@ -169,7 +169,9 @@ describe('SUI:', function () {
     ];
 
     it('should parse a transfer transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({ txHex: testData.TRANSFER });
+      const parsedTransaction = await basecoin.parseTransaction({
+        txHex: Buffer.from(testData.TRANSFER, 'base64').toString('hex'),
+      });
 
       parsedTransaction.should.deepEqual({
         inputs: transferInputsResponse,
