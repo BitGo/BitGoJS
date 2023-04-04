@@ -730,7 +730,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       userOmicronAndDeltaShare.oShare,
       bitgoToUserDShare,
-      signablePayload
+      signablePayload,
+      params.hash
     );
 
     // signing stage three with SShare send to bitgo and receives SShare
