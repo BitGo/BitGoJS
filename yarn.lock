@@ -13768,6 +13768,11 @@ openpgp@5.1.0:
   dependencies:
     asn1.js "^5.0.0"
 
+openssl.js@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/openssl.js/-/openssl.js-1.2.0.tgz#6509f96156c1e1846608b0dd7d2eefa54c47025e"
+  integrity sha512-KpWqzJ1rC+lGmR95tLD4hCfPAC2ZKKZVTwf1xkgfJXPOBpeFGj+Fy+2oepksZ1Zv0cT4loXVcKcEU7cKmDcSvQ==
+
 optionator@^0.8.1:
   version "0.8.3"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.8.3.tgz#84fa1d036fe9d3c7e21d99884b601167ec8fb495"

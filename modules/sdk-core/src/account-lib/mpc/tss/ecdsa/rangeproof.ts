@@ -5,15 +5,40 @@
 import { createHash } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
+import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+const { OpenSSL } = require('openssl.js/dist/openssl.cjs');
+import { resolve } from 'path';
+import * as fs from 'fs';
+import { ChildProcess } from 'child_process';
+
+export async function generateSafePrime(bitlength: number): Promise<bigint> {
+  const rootDir = resolve(__dirname, './sandbox');
+  const openSSL = new OpenSSL({ fs, rootDir });
+  const result: ChildProcess = await openSSL.runCommand(`prime -bits ${bitlength} -generate -safe`);
+
+  let _stdout = '';
+
+  return new Promise<bigint>((resolveFunc) => {
+    result.stdout!.on('data', (d) => {
+      _stdout += d.toString();
+    });
+
+    result.on('exit', () => {
+      resolveFunc(BigInt(_stdout));
+    });
+  });
+}
 
 async function generateModulus(bitlength: number): Promise<bigint> {
   let n, p, q;
   do {
-    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
+    [p, q] = await Promise.all([
+      generateSafePrime(Math.floor(bitlength / 2)),
+      generateSafePrime(Math.floor(bitlength / 2)),
+    ]);
     n = p * q;
   } while (q === p || bitLength(n) !== bitlength);
   return n;
