@@ -305,7 +305,7 @@ describe('TSS ECDSA TESTS', function () {
         // and delta share received from the other signer
 
         const hashGenerator = (hashType?: string): Hash | undefined => {
-          return hashType === 'keccak256' ? createKeccakHash('keccak256') : undefined;
+          return hashType === 'keccak256' ? (createKeccakHash('keccak256') as unknown as Hash) : undefined;
         };
         const [signA, signB] = [
           MPC.sign(
