@@ -240,7 +240,7 @@ describe('HBAR Token Transfer Builder', () => {
       const builder = initTxBuilder();
       assert.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
-        (e) => e.message === 'Invalid private key'
+        (e: Error) => e.message === 'Invalid private key'
       );
     });
 
@@ -251,7 +251,7 @@ describe('HBAR Token Transfer Builder', () => {
       builder.sign({ key: testData.ACCOUNT_3.privateKey });
       assert.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
-        (e) => e.message === 'A maximum of 3 can sign the transaction.'
+        (e: Error) => e.message === 'A maximum of 3 can sign the transaction.'
       );
     });
 
@@ -260,7 +260,7 @@ describe('HBAR Token Transfer Builder', () => {
       builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       assert.throws(
         () => builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix }),
-        (e) =>
+        (e: Error) =>
           e.message ===
           'Repeated sign: 302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01'
       );
@@ -275,7 +275,7 @@ describe('HBAR Token Transfer Builder', () => {
             amount: '10',
             tokenName: TOKEN_NAME,
           }),
-        (e) => e.message === 'Invalid address'
+        (e: Error) => e.message === 'Invalid address'
       );
     });
 
@@ -288,7 +288,7 @@ describe('HBAR Token Transfer Builder', () => {
             amount: 'invalidamount',
             tokenName: TOKEN_NAME,
           }),
-        (e) => e.message === 'Invalid amount'
+        (e: Error) => e.message === 'Invalid amount'
       );
     });
 
@@ -301,7 +301,7 @@ describe('HBAR Token Transfer Builder', () => {
             amount: '-5',
             tokenName: TOKEN_NAME,
           }),
-        (e) => e.message === 'Invalid amount'
+        (e: Error) => e.message === 'Invalid amount'
       );
     });
 
@@ -312,7 +312,7 @@ describe('HBAR Token Transfer Builder', () => {
           txBuilder.memo(
             'This sentence has more than 100 bytes allowed for the memo, this should throw error -----------------'
           ),
-        (e) => e.message === 'Memo must not be longer than 100 bytes'
+        (e: Error) => e.message === 'Memo must not be longer than 100 bytes'
       );
     });
 
@@ -325,7 +325,7 @@ describe('HBAR Token Transfer Builder', () => {
             amount: '10',
             tokenName: 'invalidtokenname',
           }),
-        (e) => e.message === 'Invalid token name: invalidtokenname'
+        (e: Error) => e.message === 'Invalid token name: invalidtokenname'
       );
     });
 
@@ -337,7 +337,7 @@ describe('HBAR Token Transfer Builder', () => {
             address: testData.ACCOUNT_2.accountId,
             amount: '10',
           }),
-        (e) => e.message === 'Invalid missing token name'
+        (e: Error) => e.message === 'Invalid missing token name'
       );
     });
 
@@ -345,11 +345,11 @@ describe('HBAR Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       assert.throws(
         () => txBuilder.startTime('invalid start time'),
-        (e) => e.message === 'Invalid value for time parameter'
+        (e: Error) => e.message === 'Invalid value for time parameter'
       );
       assert.throws(
         () => txBuilder.startTime('-5'),
-        (e) => e.message === 'Invalid value for time parameter'
+        (e: Error) => e.message === 'Invalid value for time parameter'
       );
     });
 
@@ -357,7 +357,7 @@ describe('HBAR Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       assert.throws(
         () => txBuilder.node({ nodeId: 'invalid node' }),
-        (e) => e.message === 'Invalid Hedera node address'
+        (e: Error) => e.message === 'Invalid Hedera node address'
       );
     });
   });

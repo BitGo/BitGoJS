@@ -2811,7 +2811,7 @@ export class Wallet implements IWallet {
       if (hashAlgorithm && hashAlgorithm.startsWith('sha')) {
         hash = createHash(hashAlgorithm);
       } else {
-        hash = createKeccakHash('keccak256');
+        hash = createKeccakHash('keccak256') as unknown as Hash;
       }
 
       const signedTxRequest = await this.tssUtils!.signTxRequest({

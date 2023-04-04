@@ -51,7 +51,7 @@ Examples can be found in each of the modules specific to the module use cases. S
 BitGoJS currently provides support for the following Node versions per package.json engines policy:
 ```
 "engines": {
-  "node": ">=14.18.0 <17",
+  "node": ">=16.20.0 <17",
   "npm": ">=3.10.10"
 }
 ```
@@ -60,7 +60,6 @@ We specifically limit our support to these versions of Node, not because this pa
 
 As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test suite on the latest release of the following versions of node:
 
-* `>=14.18.0`
 * `16`
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.

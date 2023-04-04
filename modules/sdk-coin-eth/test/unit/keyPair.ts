@@ -97,7 +97,7 @@ describe('Eth KeyPair', function () {
       assert.throws(() => new KeyPair(source));
       assert.throws(
         () => new KeyPair({ prv: prv + pub }),
-        (e) => e.message === invalidPrivateKeyErrorMessage
+        (e: Error) => e.message === invalidPrivateKeyErrorMessage
       );
     });
   });
