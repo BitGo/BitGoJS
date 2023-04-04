@@ -6,7 +6,7 @@ import { createHash, generatePrime, GeneratePrimeOptions } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
-import { gcd, modPow } from 'bigint-mod-arith';
+import { gcd, modInv, modPow } from 'bigint-mod-arith';
 import { NTilde, NtildeProof, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 
@@ -22,7 +22,7 @@ export async function generateSafePrime(bitlength: number): Promise<bigint> {
   });
 }
 
-async function generateModulus(bitlength: number): Promise<bigint> {
+async function generateModulus(bitlength: number): Promise<{ ntilde: bigint; q1: bigint; q2: bigint }> {
   let n, p, q;
   do {
     [p, q] = await Promise.all([
@@ -31,7 +31,7 @@ async function generateModulus(bitlength: number): Promise<bigint> {
     ]);
     n = p * q;
   } while (q === p || bitLength(n) !== bitlength);
-  return n;
+  return { ntilde: n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
 }
 
 export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
@@ -50,11 +50,42 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
  * @returns {NTilde} The generated NTilde values.
  */
 export async function generateNTilde(bitlength: number): Promise<NTilde> {
-  const ntilde = await generateModulus(bitlength);
+  const { ntilde, q1, q2 } = await generateModulus(bitlength);
   const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
-  const h2 = modPow(f2, BigInt(2), ntilde);
-  return { ntilde, h1, h2 };
+  const h2 = modPow(h1, f2, ntilde);
+  const beta = modInv(f2, q1 * q2);
+  const [h1wrtH2Proofs, h2wrtH1Proofs] = await Promise.all([
+    generateNTildeProof(
+      {
+        h1: h1,
+        h2: h2,
+        ntilde: ntilde,
+      },
+      f2,
+      q1,
+      q2
+    ),
+    generateNTildeProof(
+      {
+        h1: h2,
+        h2: h1,
+        ntilde: ntilde,
+      },
+      beta,
+      q1,
+      q2
+    ),
+  ]);
+  return {
+    ntilde,
+    h1,
+    h2,
+    ntildeProof: {
+      alpha: h1wrtH2Proofs.alpha.concat(h2wrtH1Proofs.alpha),
+      t: h1wrtH2Proofs.t.concat(h2wrtH1Proofs.t),
+    },
+  };
 }
 
 /**
@@ -76,24 +107,24 @@ export async function generateNTildeProof(
   iterations = 128
 ): Promise<NtildeProof> {
   const q1MulQ2 = q1 * q2;
-  const a = BigInt[iterations];
-  const alpha = BigInt[iterations];
+  const a: bigint[] = [];
+  const alpha: bigint[] = [];
   let msgToHash: Buffer = Buffer.concat([
     bigIntToBufferBE(ntilde.h1),
     bigIntToBufferBE(ntilde.h2),
     bigIntToBufferBE(ntilde.ntilde),
   ]);
   for (let i = 0; i < iterations; i++) {
-    a[i] = randBetween(q1MulQ2);
-    alpha[i] = modPow(ntilde.h1, a[i], ntilde.ntilde);
+    a.push(randBetween(q1MulQ2));
+    alpha.push(modPow(ntilde.h1, a[i], ntilde.ntilde));
     msgToHash = Buffer.concat([msgToHash, bigIntToBufferBE(alpha[i])]);
   }
   const simulatedResponse = createHash('sha256').update(msgToHash).digest();
-  const t = BigInt[iterations];
+  const t: bigint[] = [];
   for (let i = 0; i < iterations; i++) {
     // Get the ith bit from a buffer of bytes.
     const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
-    t[i] = (a[i] + ((BigInt(ithBit) * x) % q1MulQ2)) % q1MulQ2;
+    t.push((a[i] + ((BigInt(ithBit) * x) % q1MulQ2)) % q1MulQ2);
   }
   return { alpha, t };
 }
