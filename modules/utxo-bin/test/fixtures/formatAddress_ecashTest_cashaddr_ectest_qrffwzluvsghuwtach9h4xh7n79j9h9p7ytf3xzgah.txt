@@ -1,6 +1,6 @@
-address: ecashtest:qrffwzluvsghuwtach9h4xh7n79j9h9p7y5zxe5r3a
+address: ectest:qrffwzluvsghuwtach9h4xh7n79j9h9p7ytf3xzgah
 ├─┬ cashaddr
-│ ├── prefix: ecashtest
+│ ├── prefix: ectest
 │ ├── version: pubkeyhash
 │ └── hash: d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
 ├── format: cashaddr

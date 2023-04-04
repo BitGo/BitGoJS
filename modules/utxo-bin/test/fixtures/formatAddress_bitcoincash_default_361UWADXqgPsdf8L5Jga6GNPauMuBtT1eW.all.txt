@@ -34,7 +34,7 @@ address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── ecash default: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── ecash cashaddr: ecash:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vwsflwuys
   ├── ecashTest default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
-  ├── ecashTest cashaddr: ecashtest:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vhsqql6tt
+  ├── ecashTest cashaddr: ectest:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vgmhlf38p
   ├── litecoin default: MCDcp3dVnoFJSAQEBBfuuucnubxM6uQRD5
   ├── litecoinTest default: QQvSgv1oUExJydWvNYLTnuo5we1tsV5DZ3
   ├── zcash default: t3Nt5WVdfp1BUEJBE1jVhE5UJqZYz1DCoRU
