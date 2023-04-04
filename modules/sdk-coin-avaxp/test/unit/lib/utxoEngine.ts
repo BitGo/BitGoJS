@@ -47,7 +47,7 @@ describe('AvaxP UTXO engine', () => {
       ];
       assert.throws(
         () => utxoToInput(utxos, sender),
-        (e) => e.message === 'Addresses are inconsistent: CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH'
+        (e: Error) => e.message === 'Addresses are inconsistent: CEbFa3hCDfMFu8ASZP9rT1s3X2X8wqoPAN258kkStk9JX3wsH'
       );
     });
 
@@ -68,7 +68,7 @@ describe('AvaxP UTXO engine', () => {
       ];
       assert.throws(
         () => utxoToInput(utxos, sender),
-        (e) => e.message === 'Threshold is inconsistent'
+        (e: Error) => e.message === 'Threshold is inconsistent'
       );
     });
   });
