@@ -3,6 +3,7 @@ export interface NTilde {
   ntilde: bigint;
   h1: bigint;
   h2: bigint;
+  ntildeProof?: NtildeProof;
 }
 
 // NTilde Proof
