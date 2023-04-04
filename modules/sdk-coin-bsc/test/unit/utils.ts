@@ -23,7 +23,7 @@ describe('Network Common Configuration', () => {
   it('getCommon for invalid network', () => {
     assert.throws(
       () => getCommon('invalidNetwork' as NetworkType),
-      (e) => e.message === 'Missing network common configuration'
+      (e: Error) => e.message === 'Missing network common configuration'
     );
   });
 });

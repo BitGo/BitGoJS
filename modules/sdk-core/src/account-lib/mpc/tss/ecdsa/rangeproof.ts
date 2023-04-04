@@ -2,32 +2,22 @@
  * Zero Knowledge Range Proofs as described in (Two-party generation of DSA signatures)[1].
  * [1]: https://reitermk.github.io/papers/2004/IJIS.pdf
  */
-import { createHash } from 'crypto';
+import { createHash, generatePrime, GeneratePrimeOptions } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
-const { OpenSSL } = require('openssl.js/dist/openssl.cjs');
-import { resolve } from 'path';
-import * as fs from 'fs';
-import { ChildProcess } from 'child_process';
 
 export async function generateSafePrime(bitlength: number): Promise<bigint> {
-  const rootDir = resolve(__dirname, './sandbox');
-  const openSSL = new OpenSSL({ fs, rootDir });
-  const result: ChildProcess = await openSSL.runCommand(`prime -bits ${bitlength} -generate -safe`);
-
-  let _stdout = '';
-
-  return new Promise<bigint>((resolveFunc) => {
-    result.stdout!.on('data', (d) => {
-      _stdout += d.toString();
-    });
-
-    result.on('exit', () => {
-      resolveFunc(BigInt(_stdout));
+  return new Promise<bigint>((resolve) => {
+    const options: GeneratePrimeOptions = {
+      safe: true,
+      bigint: true,
+    };
+    generatePrime(bitlength, options, (err, prime) => {
+      resolve(prime as bigint);
     });
   });
 }

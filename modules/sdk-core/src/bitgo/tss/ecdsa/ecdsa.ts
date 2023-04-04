@@ -176,7 +176,7 @@ export async function createUserSignatureShare(
   if (dShare.i !== ShareKeyPosition.USER || dShare.j !== ShareKeyPosition.BITGO) {
     throw new Error(`Invalid DShare, doesn't seem to be from BitGo`);
   }
-  return MPC.sign(message, oShare, dShare, hash);
+  return MPC.sign(message, oShare, dShare, createKeccakHash('keccak256') as unknown as Hash);
 }
 
 export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition };
