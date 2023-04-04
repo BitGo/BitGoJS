@@ -1,7 +1,3 @@
-import { randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
-import { pubkeyToAddress } from '@cosmjs/amino';
-import { toBase64 } from '@cosmjs/encoding';
 import {
   DefaultKeys,
   isPrivateKey,
@@ -10,6 +6,10 @@ import {
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo/utxo-lib';
+import { pubkeyToAddress } from '@cosmjs/amino';
+import { randomBytes } from 'crypto';
+
 import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 
 /**
@@ -54,12 +54,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    const PUBLIC_KEY_SIZE = 32;
-    const tmp = new Uint8Array(PUBLIC_KEY_SIZE + 1);
-    const pubBuf = Buffer.from(this.getKeys().pub.slice(0, 64), 'hex');
-    tmp.set(pubBuf, 1);
-    // convert to base64
-    const base64String = toBase64(tmp);
+    const base64String = Buffer.from(this.getKeys().pub.slice(0, 66), 'hex').toString('base64');
     return pubkeyToAddress(
       {
         type: 'tendermint/PubKeySecp256k1',

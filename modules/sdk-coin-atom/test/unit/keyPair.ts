@@ -1,8 +1,9 @@
+import { fromBase64, toHex } from '@cosmjs/encoding';
 import assert from 'assert';
 import should from 'should';
 
 import { KeyPair } from '../../src/lib';
-import { TEST_ACCOUNT } from '../resources/atom';
+import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/atom';
 
 describe('ATOM Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -20,14 +21,14 @@ describe('ATOM Key Pair', () => {
     });
 
     it('from a private key', () => {
-      const privateKey = TEST_ACCOUNT.privateKey;
-      const keyPairObj = new KeyPair({ prv: privateKey });
+      const privateKey = TEST_SEND_TX.privateKey;
+      const keyPairObj = new KeyPair({ prv: toHex(fromBase64(privateKey)) });
       const keys = keyPairObj.getKeys();
       should.exists(keys.prv);
       should.exists(keys.pub);
-      should.equal(keys.prv, TEST_ACCOUNT.privateKey);
-      should.equal(keys.pub, TEST_ACCOUNT.compressedPublicKey);
-      should.equal(keyPairObj.getAddress(), TEST_ACCOUNT.pubAddress);
+      should.equal(keys.prv, toHex(fromBase64(TEST_SEND_TX.privateKey)));
+      should.equal(keys.pub, toHex(fromBase64(TEST_SEND_TX.pubKey)));
+      should.equal(keyPairObj.getAddress(), TEST_SEND_TX.sender);
 
       assert.throws(() => keyPairObj.getExtendedKeys());
     });
@@ -100,13 +101,13 @@ describe('ATOM Key Pair', () => {
 
   describe('get unique address ', () => {
     it('from a private key', () => {
-      const keyPair = new KeyPair({ prv: TEST_ACCOUNT.privateKey });
-      should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
+      const keyPair = new KeyPair({ prv: toHex(fromBase64(TEST_SEND_TX.privateKey)) });
+      should.equal(keyPair.getAddress(), TEST_SEND_TX.sender);
     });
 
     it('from a compressed public key', () => {
-      const keyPair = new KeyPair({ pub: TEST_ACCOUNT.compressedPublicKey });
-      should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
+      const keyPair = new KeyPair({ pub: toHex(fromBase64(TEST_SEND_TX.pubKey)) });
+      should.equal(keyPair.getAddress(), TEST_SEND_TX.sender);
     });
 
     it('should be different for different public keys', () => {
