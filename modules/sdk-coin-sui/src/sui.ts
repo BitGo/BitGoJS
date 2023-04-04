@@ -104,7 +104,7 @@ export class Sui extends BaseCoin {
       throw new Error('missing required tx prebuild property txHex');
     }
 
-    transaction.fromRawTransaction(rawTx);
+    transaction.fromRawTransaction(Buffer.from(rawTx, 'hex').toString('base64'));
     const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients && txParams.recipients.length > 0) {
@@ -227,7 +227,7 @@ export class Sui extends BaseCoin {
     let rebuiltTransaction: BaseTransaction;
 
     try {
-      const transactionBuilder = factory.from(params.txHex);
+      const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
       rebuiltTransaction = await transactionBuilder.build();
     } catch {
       throw new Error('Invalid transaction');
