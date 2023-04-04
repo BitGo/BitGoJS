@@ -98,7 +98,7 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     };
 
     switch (this.type) {
-      case TransactionType.StakingWithdraw:
+      case TransactionType.StakingClaim:
         return this.explainWithdrawStakedSuiTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
