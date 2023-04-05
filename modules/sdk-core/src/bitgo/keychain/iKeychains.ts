@@ -116,6 +116,14 @@ export interface GetKeysForSigningOptions {
   wallet?: IWallet;
 }
 
+export interface GetSigningKeyApi {
+  userId: string;
+  userEmail: string;
+  pubkey: string;
+  path?: string;
+  ecdhKeychain?: string;
+}
+
 export enum KeyIndices {
   USER = 0,
   BACKUP = 1,
