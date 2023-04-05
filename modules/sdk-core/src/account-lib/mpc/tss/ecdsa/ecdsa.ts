@@ -2,35 +2,36 @@ import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
-import { randomBytes, createHash, Hash } from 'crypto';
+import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import { hexToBigInt } from '../../../util/crypto';
-import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
+import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
 import * as rangeProof from './rangeproof';
 import {
-  RangeProofWithCheck,
-  NShare,
-  PShare,
-  KeyShare,
+  AShare,
+  BShare,
+  DShare,
+  GShare,
   KeyCombined,
   KeyCombinedWithNTilde,
-  SubkeyShare,
-  BShare,
-  AShare,
-  Signature,
-  SignConvertRT,
-  SignConvert,
-  GShare,
+  KeyShare,
+  KShare,
   MUShare,
+  NShare,
+  NTilde,
+  OShare,
+  PShare,
+  RangeProofWithCheck,
+  Signature,
   SignCombine,
   SignCombineRT,
-  DShare,
-  OShare,
-  SShare,
+  SignConvert,
+  SignConvertRT,
   SignShareRT,
-  KShare,
+  SShare,
+  SubkeyShare,
   XShare,
   XShareWithNTilde,
   YShare,
@@ -285,20 +286,23 @@ export default class Ecdsa {
   }
 
   /**
-   * Generate a range proof challenge and add it to shares previously created
-   * by #keyCombine.
+   * Appends a given range proof challenge to the shares previously created
+   * by #keyCombine. Generates a new challenge if not provided.
    * @param {XShare} xShare Private xShare of signer
    * @param {YShare} yShare YShare of the other participant involved in
    * this signing operation
+   * @param challenge
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async signChallenge(xShare: XShare, yShare: YShare): Promise<KeyCombinedWithNTilde> {
-    const challenge = await rangeProof.generateNTilde(3072);
+  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: NTilde): Promise<KeyCombinedWithNTilde> {
+    if (!challenge) {
+      challenge = await rangeProof.generateNTilde(3072);
+    }
     const ntilde = bigIntToBufferBE(challenge.ntilde, 384).toString('hex');
     const h1 = bigIntToBufferBE(challenge.h1, 384).toString('hex');
     const h2 = bigIntToBufferBE(challenge.h2, 384).toString('hex');
-    const shares = {
+    return {
       xShare: { ...xShare, ntilde, h1, h2 },
       yShares: {
         [yShare.j]: {
@@ -311,7 +315,6 @@ export default class Ecdsa {
         },
       },
     };
-    return shares;
   }
 
   /**
@@ -326,7 +329,7 @@ export default class Ecdsa {
 
     // Generate a challenge if ntilde is not present in the xShare.
     if (!hasNTilde(xShare)) {
-      xShare = (await this.signChallenge(xShare, yShare)).xShare;
+      xShare = (await this.appendChallenge(xShare, yShare)).xShare;
     }
 
     const k = Ecdsa.curve.scalarRandom();
