@@ -9,6 +9,7 @@ import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo, createSharedDataProof } from '../../../../../src';
 import {
   common,
+  commonTssMethods,
   Keychain,
   Wallet,
   Ecdsa,
@@ -27,7 +28,7 @@ import {
 } from '@bitgo/sdk-core';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
-import { createWalletSignatures, nockGetChallenge, nockGetTxRequest } from '../../tss/helpers';
+import { createWalletSignatures, nockGetTxRequest } from '../../tss/helpers';
 import { ecc } from '@bitgo/utxo-lib';
 const createKeccakHash = require('keccak');
 import { Hash } from 'crypto';
@@ -577,14 +578,23 @@ describe('TSS Ecdsa Utils:', async function () {
         userKeyShare.nShares[3], backupKeyShare.nShares[3],
       ]);
 
+      const userChallenge = await rangeProof.generateNTilde(3072);
       const bitgoChallenge = await rangeProof.generateNTilde(3072);
-      await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
-        ntilde: bitgoChallenge.ntilde.toString(),
-        h1: bitgoChallenge.h1.toString(),
-        h2: bitgoChallenge.h2.toString(),
-      } });
 
-      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.signChallenge(userSigningKey.xShare, userSigningKey.yShares[3]), MPC.signChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1])]);
+      sinon.stub(commonTssMethods, 'getChallengesForEcdsaSigning').resolves({
+        enterpriseChallenge: {
+          nTilde: userChallenge.ntilde.toString(),
+          h1: userChallenge.ntilde.toString(),
+          h2: userChallenge.ntilde.toString(),
+        },
+        bitGoChallenge: {
+          nTilde: bitgoChallenge.ntilde.toString(),
+          h1: bitgoChallenge.ntilde.toString(),
+          h2: bitgoChallenge.ntilde.toString(),
+        },
+      });
+
+      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.appendChallenge(userSigningKey.xShare, userSigningKey.yShares[3], userChallenge), MPC.appendChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1], bitgoChallenge)]);
 
       /**
        * START STEP ONE

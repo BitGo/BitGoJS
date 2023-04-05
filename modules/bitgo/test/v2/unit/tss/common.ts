@@ -1,5 +1,11 @@
 import { createSharedDataProof, commonTssMethods } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
+import * as sinon from 'sinon';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src';
+import { nockGetChallenges } from './helpers';
+import { bip32 } from '@bitgo/utxo-lib';
+import * as should from 'should';
 
 openpgp.config.rejectCurves = new Set();
 
@@ -150,5 +156,108 @@ describe('commonVerifyWalletSignature', function () {
     for (let i = 0; i < rawNotations.length; i++) {
       Buffer.from(returnedRawNotations[i].value).toString().should.equal(rawNotations[i].value);
     }
+  });
+});
+
+describe('getChallengesForEcdsaSigning', function() {
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+  const rawEntChallenge = {
+    nTilde: 'ent ntilde',
+    h1: 'ent h1',
+    h2: 'ent h2',
+  };
+  const rawBitGoChallenge = {
+    nTilde: 'bitgo ntilde',
+    h1: 'bitgo h1',
+    h2: 'bitgo h2',
+  };
+  const walletId = 'walletId';
+  const entId = 'entId';
+  let adminEcdhKey;
+  let fakeAdminEcdhKey;
+
+  before(function() {
+
+    adminEcdhKey = bitgo.keychains().create();
+    fakeAdminEcdhKey = bitgo.keychains().create();
+
+    sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
+      userId: 'id',
+      userEmail: 'user@bitgo.com',
+      pubkey: adminEcdhKey.xpub,
+      path: 'm/0/0',
+      ecdhKeychain: 'my keychain',
+    });
+  });
+
+  it('Fetches the challenges and verifies the admin signatures correctly', async function() {
+    const adminSignatureEntChallenge = bip32.fromBase58(adminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawEntChallenge)));
+    const adminSignatureBitGoChallenge = bip32.fromBase58(adminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawBitGoChallenge)));
+    const mockChallengesResponse = {
+      enterpriseChallenge: {
+        ...rawEntChallenge,
+        verifiers: {
+          adminSignature: adminSignatureEntChallenge.toString('hex'),
+        },
+      },
+      bitGoChallenge: {
+        ...rawBitGoChallenge,
+        verifiers: {
+          adminSignature: adminSignatureBitGoChallenge.toString('hex'),
+        },
+      },
+      createdBy: 'id',
+    };
+    await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+    const apiChallenges = await commonTssMethods.getChallengesForEcdsaSigning(bitgo, walletId, entId);
+    should.exist(apiChallenges);
+    apiChallenges.enterpriseChallenge.should.deepEqual(rawEntChallenge);
+    apiChallenges.bitGoChallenge.should.deepEqual(rawBitGoChallenge);
+  });
+
+  it('Fails if the enterprise challenge signature is different from the admin ecdh key', async function() {
+    // Bad sign
+    const adminSignedEntChallenge = bip32.fromBase58(fakeAdminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawEntChallenge)));
+    const adminSignedBitGoChallenge = bip32.fromBase58(adminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawBitGoChallenge)));
+    const mockChallengesResponse = {
+      enterpriseChallenge: {
+        ...rawEntChallenge,
+        verifiers: {
+          adminSignature: adminSignedEntChallenge.toString('hex'),
+        },
+      },
+      bitGoChallenge: {
+        ...rawBitGoChallenge,
+        verifiers: {
+          adminSignature: adminSignedBitGoChallenge.toString('hex'),
+        },
+      },
+      createdBy: 'id',
+    };
+    await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+    await commonTssMethods.getChallengesForEcdsaSigning(bitgo, walletId, entId).should.be.rejectedWith('Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.');
+  });
+
+  it('Fails if the bitgo challenge signature is different from the admin ecdh key', async function() {
+    const adminSignedEntChallenge = bip32.fromBase58(adminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawEntChallenge)));
+    // Bad sign
+    const adminSignedBitGoChallenge = bip32.fromBase58(fakeAdminEcdhKey.xprv).sign(Buffer.from(JSON.stringify(rawBitGoChallenge)));
+    const mockChallengesResponse = {
+      enterpriseChallenge: {
+        ...rawEntChallenge,
+        verifiers: {
+          adminSignature: adminSignedEntChallenge.toString('hex'),
+        },
+      },
+      bitGoChallenge: {
+        ...rawBitGoChallenge,
+        verifiers: {
+          adminSignature: adminSignedBitGoChallenge.toString('hex'),
+        },
+      },
+      createdBy: 'id',
+    };
+    await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+    await commonTssMethods.getChallengesForEcdsaSigning(bitgo, walletId, entId).should.be.rejectedWith('Admin signature for BitGo\'s challenge is not valid. Please contact your enterprise admin.');
   });
 });

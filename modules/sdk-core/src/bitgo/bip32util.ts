@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 /**
  * bip32-aware wrapper around bitcoin-message package
  * @see {bitcoinMessage.sign}
@@ -47,4 +47,11 @@ export function verifyMessage(
     utxolib.networks.bitcoin
   );
   return bitcoinMessage.verify(message, address, signature, network.messagePrefix);
+}
+
+/**
+ Verifies if a message was signed using the given ecdh key
+ */
+export function verifyEcdhSignature(message: string, signature: string, ecdhXpub: string): boolean {
+  return bip32.fromBase58(ecdhXpub).verify(Buffer.from(message), Buffer.from(signature, 'hex'));
 }
