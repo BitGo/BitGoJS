@@ -54,7 +54,8 @@ function createPaymentForInscription(pubkey: Buffer, contentType: string, inscri
     OPS.OP_FALSE,
     OPS.OP_IF,
     Buffer.from('ord', 'ascii'),
-    OPS.OP_1,
+    1, // these two lines should be combined as a single OPS.OP_1,
+    1, // but `ord`'s decoder has a bug so it has to be like this
     Buffer.from(contentType, 'ascii'),
     OPS.OP_0,
     ...dataPushBuffers,
