@@ -30,6 +30,7 @@ import {
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
+  GetSigningKeyApi,
   GlobalCoinFactory,
   IRequestTracer,
   makeRandomKey,
@@ -1206,6 +1207,19 @@ export class BitGoAPI implements BitGoBase {
     }
 
     return this.post(this.url('/user/sharingkey')).send({ email }).result();
+  }
+
+  /**
+   * Users that want to sign with a key will use this api to fetch the keychain and the path.
+   * Users that want to verify a signature will use this api to fetch another users ecdh pubkey.
+   * @param bitgo
+   * @param userId
+   * @param enterpriseId
+   */
+  async getSigningKeyForUser(userId: string, enterpriseId: string): Promise<GetSigningKeyApi> {
+    return this.get(this.url(`enterprise/${enterpriseId}/user/${userId}/signingkey`, 2))
+      .query({})
+      .result();
   }
 
   /**

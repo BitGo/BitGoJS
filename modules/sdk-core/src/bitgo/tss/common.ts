@@ -1,8 +1,10 @@
 import assert from 'assert';
-import openpgp from 'openpgp';
+
 import { BitGoBase } from '../bitgoBase';
-import { Challenge, RequestType, TxRequest } from '../utils';
+import { RequestType, ApiChallenges, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
+import { verifyEcdhSignature } from '../bip32util';
+import openpgp from 'openpgp';
 
 /**
  * Gets the latest Tx Request by id
@@ -74,38 +76,64 @@ export async function sendSignatureShare(
 }
 
 /**
- * Gets challenge for a tx request from BitGo
- * supports Message and regular Transaction
+ * Get the challenge values for enterprise and BitGo in ECDSA signing
+ * Only returns the challenges if they are verified by the user's enterprise admin's ecdh key
  * @param bitgo
  * @param walletId
- * @param txRequestId
- * @param index
- * @param requestType
- * @param mpcAlgorithm
+ * @param enterpriseId
  */
-export async function getTxRequestChallenge(
+export async function getChallengesForEcdsaSigning(
   bitgo: BitGoBase,
   walletId: string,
-  txRequestId: string,
-  index: string,
-  requestType: RequestType,
-  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
-): Promise<Challenge> {
-  let addendum = '';
-  switch (requestType) {
-    case RequestType.tx:
-      if (mpcAlgorithm === 'ecdsa') {
-        addendum = '/transactions/' + index;
-      }
-      break;
-    case RequestType.message:
-      if (mpcAlgorithm === 'ecdsa') {
-        addendum = '/messages/' + index;
-      }
-      break;
+  enterpriseId: string
+): Promise<ApiChallenges> {
+  const urlPath = `/wallet/${walletId}/challenges`;
+  const result = await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
+  const enterpriseChallenge = result.enterpriseChallenge;
+  const bitGoChallenge = result.bitGoChallenge;
+
+  const challengeVerifierUserId = result.createdBy;
+  const adminSigningKeyResponse = await bitgo.getSigningKeyForUser(challengeVerifierUserId, enterpriseId);
+  const pubkeyOfAdminEcdhSigningKey: string = adminSigningKeyResponse.pubkey;
+
+  // Verify enterprise's challenge is signed by the respective admin's ecdh keychain
+  const enterpriseRawChallenge = {
+    nTilde: enterpriseChallenge.nTilde,
+    h1: enterpriseChallenge.h1,
+    h2: enterpriseChallenge.h2,
+  };
+  const adminSignatureOnEntChallenge: string = enterpriseChallenge.verifiers.adminSignature;
+  if (
+    !verifyEcdhSignature(
+      JSON.stringify(enterpriseRawChallenge),
+      adminSignatureOnEntChallenge,
+      pubkeyOfAdminEcdhSigningKey
+    )
+  ) {
+    throw new Error(`Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.`);
   }
-  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
-  return await bitgo.post(bitgo.url(urlPath, 2)).send({}).result();
+
+  // Verify that the BitGo challenge's ZK proofs have been verified by the admin
+  const bitGoRawChallenge = {
+    nTilde: bitGoChallenge.nTilde,
+    h1: bitGoChallenge.h1,
+    h2: bitGoChallenge.h2,
+  };
+  const adminVerificationSignatureForBitGoChallenge = bitGoChallenge.verifiers.adminSignature;
+  if (
+    !verifyEcdhSignature(
+      JSON.stringify(bitGoRawChallenge),
+      adminVerificationSignatureForBitGoChallenge,
+      pubkeyOfAdminEcdhSigningKey
+    )
+  ) {
+    throw new Error(`Admin signature for BitGo's challenge is not valid. Please contact your enterprise admin.`);
+  }
+
+  return {
+    enterpriseChallenge: enterpriseRawChallenge,
+    bitGoChallenge: bitGoRawChallenge,
+  };
 }
 
 /**
