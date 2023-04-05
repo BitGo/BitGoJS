@@ -371,12 +371,11 @@ class Casper extends Mainnet implements AccountNetwork {
   accountExplorerUrl = 'https://cspr.live/account/';
 }
 
-// TODO update explorerUrl STLX-1657
 class CasperTestnet extends Testnet implements AccountNetwork {
   name = 'CasperTestnet';
   family = CoinFamily.CSPR;
-  explorerUrl = 'https://testnet.cspr.live/deploy/';
-  accountExplorerUrl = 'https://testnet.cspr.live/account/';
+  explorerUrl = 'https://integration.cspr.live/deploy/';
+  accountExplorerUrl = 'https://integration.cspr.live/account/';
 }
 
 class Ethereum extends Mainnet implements EthereumNetwork {
