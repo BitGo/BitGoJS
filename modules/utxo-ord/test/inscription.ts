@@ -49,8 +49,8 @@ describe('inscriptions', () => {
 
       testInscriptionScript(
         inscriptionData,
-        '512044d2e55d99b3412c569e3769f4522f9a92cbef8e10ab54f9db1f01421a541574',
-        'tb1pgnfw2hvekdqjc457xa5lg530n2fvhmuwzz44f7wmruq5yxj5z46qenh5sy'
+        '5120dc8b12eec336e7215fd1213acf66fb0d5dd962813c0616988a12c08493831109',
+        'tb1pmj939mkrxmnjzh73yyav7ehmp4wajc5p8srpdxy2ztqgfyurzyys4sg9zx'
       );
     });
 
@@ -59,8 +59,8 @@ describe('inscriptions', () => {
 
       testInscriptionScript(
         inscriptionData,
-        '5120d5092e5a0107db36b1e16044057fd47dd8d3309ff4f878989d8b55bd9823a187',
-        'tb1p65yjukspqldndv0pvpzq2l750hvdxvyl7nu83xya3d2mmxpr5xrsj02kpf'
+        '5120ec90ba87f3e7c5462eb2173afdc50e00cea6fc69166677171d70f45dfb3a31b8',
+        'tb1pajgt4plnulz5vt4jzua0m3gwqr82dlrfzen8w9cawr69m7e6xxuq7dzypl'
       );
     });
   });
