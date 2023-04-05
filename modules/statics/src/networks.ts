@@ -695,6 +695,7 @@ class Polygon extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x5397d0869aba0d55e96d5716d383f6e1d8695ed7';
   walletFactoryAddress = '0xa7198f48c58e91f01317e70cd24c5cce475c1555';
   walletImplementationAddress = '0xe5dcdc13b628c2df813db1080367e929c1507ca0';
+  batcherContractAddress = '0x7adc9b3d7521710321bec7dd6897d337e53c2493';
 }
 
 class PolygonTestnet extends Testnet implements EthereumNetwork {
@@ -707,6 +708,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xaa2216d72d7c149dfe4c3dd2154cd00994216506';
   walletFactoryAddress = '0xe37c07faec87be075ce4002b5fedbde00a4fe9d5';
   walletImplementationAddress = '0x11f8d70a4ee9d0962bb1160d776d4a996cfdff40';
+  batcherContractAddress = '0xcdf01a31ea2a1d62951aac3a5743c4416f9da3fb';
 }
 
 export const Networks = {

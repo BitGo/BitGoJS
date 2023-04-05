@@ -323,9 +323,17 @@ export class Polygon extends Eth {
    * @param {String} params.walletContractAddress the Polygon address of the wallet contract
    * @param {String} params.krsProvider necessary if backup key is held by KRS
    * @param {String} params.recoveryDestination target address to send recovered funds to
+   * @param {String} params.bitgoFeeAddress wrong chain wallet fee address for evm based cross chain recovery txn
+   * @param {String} params.bitgoDestinationAddress target bitgo address where fee will be sent for evm based cross chain recovery txn
    * @returns {Promise<RecoveryInfo | OfflineVaultTxInfo>}
    */
   async recoverEthLike(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    // bitgoFeeAddress is only defined when it is a evm cross chain recovery
+    // as we use fee from this wrong chain address for the recovery txn on the correct chain.
+    if (params.bitgoFeeAddress) {
+      return this.recoverEthLikeforEvmBasedRecovery(params);
+    }
+
     this.validateRecoveryParams(params);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 

@@ -338,9 +338,9 @@ export interface HalfSignedAccountTransaction {
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
   halfSigned: {
     recipients: Recipient[];
-    expireTime: number;
-    contractSequenceId: number;
-    sequenceId: number;
+    expireTime?: number;
+    contractSequenceId?: number;
+    sequenceId?: number;
     txHex?: never;
   };
 }
