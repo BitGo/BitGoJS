@@ -6,6 +6,8 @@ export const SEED_LENGTH = 32;
 
 export const MAX_MEMO_LENGTH = 100;
 
+export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
+
 // Sdk instructions, mainly to check decoded types.
 export enum ValidInstructionTypesEnum {
   AdvanceNonceAccount = 'AdvanceNonceAccount',

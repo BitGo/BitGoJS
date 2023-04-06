@@ -10,18 +10,8 @@ describe('Sol Associated Token Account Builder', () => {
     rawTx: string,
     owner: { pubkey: string; ataPubkey: string } = sender
   ) {
-    tx.inputs.length.should.equal(1);
-    tx.inputs[0].should.deepEqual({
-      address: sender.pubkey,
-      value: rentAmount,
-      coin: 'sol',
-    });
-    tx.outputs.length.should.equal(1);
-    tx.outputs[0].should.deepEqual({
-      address: owner.ataPubkey,
-      value: rentAmount,
-      coin: 'sol',
-    });
+    tx.inputs.length.should.equal(0);
+    tx.outputs.length.should.equal(0);
     const instructions = tx.toJson().instructionsData;
     let ataInitInstruction;
     for (const instruction of instructions) {
@@ -234,14 +224,17 @@ describe('Sol Associated Token Account Builder', () => {
       it('build when rentExemptAmount is invalid', async () => {
         const txBuilder = ataInitBuilder();
         should(() => txBuilder.rentExemptAmount('invalid amount')).throwError(
-          'Invalid transaction: invalid rentExemptAmount, got: invalid amount'
+          'Invalid tokenAccountRentExemptAmount, got: invalid amount'
+        );
+        should(() => txBuilder.associatedTokenAccountRent('invalid amount')).throwError(
+          'Invalid tokenAccountRentExemptAmount, got: invalid amount'
         );
       });
 
       it('build when owner is invalid', async () => {
         const txBuilder = ataInitBuilder();
         should(() => txBuilder.owner('invalid owner')).throwError(
-          'Invalid transaction: invalid owner, got: invalid owner'
+          'Invalid or missing ownerAddress, got: invalid owner'
         );
       });
 
@@ -283,28 +276,8 @@ describe('Sol Associated Token Account Builder', () => {
         const rawTx = tx.toBroadcastFormat();
         const ownerRayATA = 'ACEuzYtR4gBFt6HLQTYisg2T7k8Vh4ss1SpnqmbVQSNy';
 
-        tx.inputs.length.should.equal(2);
-        tx.inputs[0].should.deepEqual({
-          address: sender.pubkey,
-          value: rentAmount,
-          coin: 'sol',
-        });
-        tx.inputs[1].should.deepEqual({
-          address: sender.pubkey,
-          value: rentAmount,
-          coin: 'sol',
-        });
-        tx.outputs.length.should.equal(2);
-        tx.outputs[0].should.deepEqual({
-          address: sender.ataPubkey,
-          value: rentAmount,
-          coin: 'sol',
-        });
-        tx.outputs[1].should.deepEqual({
-          address: ownerRayATA,
-          value: rentAmount,
-          coin: 'sol',
-        });
+        tx.inputs.length.should.equal(0);
+        tx.outputs.length.should.equal(0);
         const instructions = tx.toJson().instructionsData;
 
         instructions.length.should.equal(2);
@@ -410,7 +383,10 @@ describe('Sol Associated Token Account Builder', () => {
       it('build when rentExemptAmount is invalid', async () => {
         const txBuilder = multiAtaInitBuilder(recipients);
         should(() => txBuilder.rentExemptAmount('invalid amount')).throwError(
-          'Invalid transaction: invalid rentExemptAmount, got: invalid amount'
+          'Invalid tokenAccountRentExemptAmount, got: invalid amount'
+        );
+        should(() => txBuilder.associatedTokenAccountRent('invalid amount')).throwError(
+          'Invalid tokenAccountRentExemptAmount, got: invalid amount'
         );
       });
 
@@ -421,7 +397,7 @@ describe('Sol Associated Token Account Builder', () => {
         };
         const txBuilder = multiAtaInitBuilder(recipients);
         should(() => txBuilder.enableToken(invalidOwner)).throwError(
-          'Invalid transaction: invalid owner, got: invalid owner'
+          'Invalid or missing ownerAddress, got: invalid owner'
         );
       });
 

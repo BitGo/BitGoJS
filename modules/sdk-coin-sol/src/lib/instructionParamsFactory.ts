@@ -99,8 +99,10 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseSendInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | Transfer | TokenTransfer> {
-  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer> = [];
+function parseSendInstructions(
+  instructions: TransactionInstruction[]
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit> {
+  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -145,6 +147,22 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
           },
         };
         instructionData.push(tokenTransfer);
+        break;
+      case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
+        const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+        const mintTokenName = findTokenName(mintAddress);
+
+        const ataInit: AtaInit = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: {
+            mintAddress,
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName: mintTokenName,
+          },
+        };
+        instructionData.push(ataInit);
         break;
       default:
         throw new NotSupported(

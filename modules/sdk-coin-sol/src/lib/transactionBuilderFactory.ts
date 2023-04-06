@@ -9,7 +9,6 @@ import { Transaction } from './transaction';
 import { validateRawTransaction } from './utils';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
-import { AtaInitializationTransaction } from './ataInitializationTransaction';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TransferBuilderV2 } from './transferBuilderV2';
 
@@ -46,9 +45,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawBuilder(tx);
         case TransactionType.AssociatedTokenAccountInitialization:
-          const ataTx = new AtaInitializationTransaction(this._coinConfig);
-          ataTx.fromRawTransaction(raw);
-          return this.getAtaInitializationBuilder(ataTx);
+          return this.getAtaInitializationBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
