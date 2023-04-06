@@ -12,6 +12,8 @@ import {
   mockFKeyShare,
 } from '../fixtures/ecdsa';
 import { Hash, randomBytes } from 'crypto';
+import * as assert from 'assert';
+import { bitLength, isProbablyPrime } from 'bigint-crypto-utils';
 /**
  * @prettier
  */
@@ -79,6 +81,32 @@ describe('TSS ECDSA TESTS', function () {
     commonPublicKey = aKeyCombine.xShare.y;
     pallierMock.reset();
     pallierMock.restore();
+  });
+
+  describe('rangeproof tests', function () {
+    const NODE_MAJOR_VERSION = parseInt(process.versions.node.split('.')[0], 10);
+    it('should generate safe primes of a specified bitlength', async function () {
+      const bitlength = 128; // this should be small enough to be reasonably fast
+      if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+        await assert.rejects(rangeProof.generateSafePrime(bitlength));
+      } else {
+        const p = await rangeProof.generateSafePrime(bitlength);
+        (await isProbablyPrime(p)).should.be.true();
+        const q = (p - BigInt(1)) / BigInt(2);
+        (await isProbablyPrime(q)).should.be.true();
+        bitLength(p).should.equal(bitlength);
+      }
+    });
+
+    it('should generate an ntilde value of the appropriate bitlength', async function () {
+      const bitlength = 256;
+      if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+        await assert.rejects(rangeProof.generateNTilde(bitlength));
+      } else {
+        const ntilde = await rangeProof.generateNTilde(bitlength);
+        bitLength(ntilde.ntilde).should.equal(bitlength);
+      }
+    });
   });
 
   describe('Ecdsa Key Generation Test', function () {

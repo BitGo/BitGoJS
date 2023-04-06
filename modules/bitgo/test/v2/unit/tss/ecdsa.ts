@@ -16,6 +16,7 @@ import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
 import nock = require('nock');
+import * as assert from 'assert';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -26,6 +27,7 @@ type GpgKeypair = {
 };
 
 describe('Ecdsa tss helper functions tests', function () {
+  const NODE_MAJOR_VERSION = parseInt(process.versions.node.split('.')[0], 10);
   let mpc: Ecdsa;
 
   let userKeyShare: KeyShare;
@@ -279,53 +281,61 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNTilde = {
-          ...shares.xShare,
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
-        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
-          ...userKey.yShares[3],
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
-        const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
-        userSignShare.should.have.properties(['wShare', 'kShare']);
-        const { wShare, kShare } = userSignShare;
-        wShare.should.have.property('gamma').and.be.a.String();
-        wShare.should.have.property('w').and.be.a.String();
-        wShare.should.have.property('k').and.be.a.String();
-        wShare.should.have.property('ck').and.be.a.String();
-        wShare.should.have.property('h2').and.be.a.String();
-        wShare.should.have.property('h1').and.be.a.String();
-        wShare.should.have.property('ntilde').and.be.a.String();
-        wShare.should.have.property('y').and.be.a.String();
-        wShare.should.have.property('n').and.be.a.String();
-        wShare.should.have.property('m').and.be.a.String();
-        wShare.should.have.property('l').and.be.a.String();
-        wShare.should.have.property('i').and.be.a.Number();
-        kShare['i'].should.equal(3);
-        kShare['j'].should.equal(1);
-        kShare.should.have.property('n').and.be.a.String();
-        kShare.should.have.property('k').and.be.a.String();
-        kShare.should.have.property('ntilde').and.be.a.String();
-        kShare.should.have.property('h1').and.be.a.String();
-        kShare.should.have.property('h2').and.be.a.String();
+        if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+          await assert.rejects(mpc.signChallenge(userKey.xShare, userKey.yShares[3]));
+        } else {
+          const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+          const xShare: ECDSAMethodTypes.XShareWithNTilde = {
+            ...shares.xShare,
+            ntilde: shares.xShare.ntilde,
+            h1: shares.xShare.h1,
+            h2: shares.xShare.h2,
+          };
+          const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+            ...userKey.yShares[3],
+            ntilde: shares.xShare.ntilde,
+            h1: shares.xShare.h1,
+            h2: shares.xShare.h2,
+          };
+          const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
+          userSignShare.should.have.properties(['wShare', 'kShare']);
+          const { wShare, kShare } = userSignShare;
+          wShare.should.have.property('gamma').and.be.a.String();
+          wShare.should.have.property('w').and.be.a.String();
+          wShare.should.have.property('k').and.be.a.String();
+          wShare.should.have.property('ck').and.be.a.String();
+          wShare.should.have.property('h2').and.be.a.String();
+          wShare.should.have.property('h1').and.be.a.String();
+          wShare.should.have.property('ntilde').and.be.a.String();
+          wShare.should.have.property('y').and.be.a.String();
+          wShare.should.have.property('n').and.be.a.String();
+          wShare.should.have.property('m').and.be.a.String();
+          wShare.should.have.property('l').and.be.a.String();
+          wShare.should.have.property('i').and.be.a.Number();
+          kShare['i'].should.equal(3);
+          kShare['j'].should.equal(1);
+          kShare.should.have.property('n').and.be.a.String();
+          kShare.should.have.property('k').and.be.a.String();
+          kShare.should.have.property('ntilde').and.be.a.String();
+          kShare.should.have.property('h1').and.be.a.String();
+          kShare.should.have.property('h2').and.be.a.String();
+        }
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNTilde = { ...shares.xShare, i: 3 };
-        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
-          ...userKey.yShares[3],
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
-        await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
+        if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+          await assert.rejects(mpc.signChallenge(userKey.xShare, userKey.yShares[3]));
+        } else {
+          const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+          const xShare: ECDSAMethodTypes.XShareWithNTilde = { ...shares.xShare, i: 3 };
+          const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+            ...userKey.yShares[3],
+            ntilde: shares.xShare.ntilde,
+            h1: shares.xShare.h1,
+            h2: shares.xShare.h2,
+          };
+          await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
+        }
       });
     });
 

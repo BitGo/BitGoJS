@@ -2,18 +2,51 @@
  * Zero Knowledge Range Proofs as described in (Two-party generation of DSA signatures)[1].
  * [1]: https://reitermk.github.io/papers/2004/IJIS.pdf
  */
-import { createHash } from 'crypto';
+// TODO: BG-72343 when bgms is updated to use Node 16 and we EOL 14, refactor this
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { createHash, generatePrime, GeneratePrimeOptions } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
+import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 
+const NODE_MAJOR_VERSION = parseInt(process.versions.node.split('.')[0], 10);
+
+export async function generateSafePrime(bitlength: number): Promise<bigint> {
+  if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+    throw new Error(
+      `Safe prime generation is not supported on Node ${process.versions.node}. Please update to Node 16.`
+    );
+  }
+  return new Promise<bigint>((resolve, reject) => {
+    const options: GeneratePrimeOptions = {
+      safe: true,
+      bigint: true,
+    };
+    generatePrime(bitlength, options, (err, prime) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(prime as bigint);
+    });
+  });
+}
+
 async function generateModulus(bitlength: number): Promise<bigint> {
+  if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+    throw new Error(
+      `Safe prime generation is not supported on Node ${process.versions.node}. Please update to Node 16.`
+    );
+  }
   let n, p, q;
   do {
-    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
+    [p, q] = await Promise.all([
+      generateSafePrime(Math.floor(bitlength / 2)),
+      generateSafePrime(Math.floor(bitlength / 2)),
+    ]);
     n = p * q;
   } while (q === p || bitLength(n) !== bitlength);
   return n;

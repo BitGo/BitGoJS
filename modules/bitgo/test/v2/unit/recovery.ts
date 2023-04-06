@@ -11,6 +11,7 @@ import { ECDSAMethodTypes, krsProviders, Ecdsa } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
 import { TransactionFactory } from '@ethereumjs/tx';
 import { KeyPair } from '@bitgo/sdk-coin-eth';
+import * as assert from 'assert';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -18,6 +19,7 @@ nock.disableNetConnect();
 
 describe('Recovery:', function () {
   let bitgo;
+  const NODE_MAJOR_VERSION = parseInt(process.versions.node.split('.')[0], 10);
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
@@ -774,27 +776,30 @@ describe('Recovery:', function () {
         },
         isTss: true,
       };
+      if (NODE_MAJOR_VERSION === NaN || NODE_MAJOR_VERSION <= 14) {
+        await assert.rejects(basecoin.recover(recoveryParams));
+      } else {
+        const recovery = await basecoin.recover(recoveryParams);
 
-      const recovery = await basecoin.recover(recoveryParams);
+        should.exist(recovery);
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
 
-      should.exist(recovery);
-      recovery.should.have.property('id');
-      recovery.should.have.property('tx');
-
-      // verify data after signing is correct
-      const finalTx = TransactionFactory.fromSerializedData(
-        Buffer.from(
-          recovery.tx.substr(2),
-          'hex'
-        )
-      );
+        // verify data after signing is correct
+        const finalTx = TransactionFactory.fromSerializedData(
+          Buffer.from(
+            recovery.tx.substr(2),
+            'hex'
+          )
+        );
 
 
-      const senderAddress = finalTx.getSenderAddress().toString();
+        const senderAddress = finalTx.getSenderAddress().toString();
 
-      baseAddress.should.equal(senderAddress);
-      recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
-      Number(finalTx.value).should.equal(999999999990000000);
+        baseAddress.should.equal(senderAddress);
+        recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
+        Number(finalTx.value).should.equal(999999999990000000);
+      }
     });
 
     it('should construct an unsigned sweep tx with TSS', async function () {
