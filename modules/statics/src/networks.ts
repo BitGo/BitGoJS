@@ -551,13 +551,13 @@ class Sui extends Mainnet implements AccountNetwork {
   name = 'Sui';
   family = CoinFamily.SUI;
   //  TODO(BG-58364): mysten is still only in devnet update to mainnet url when it's live
-  explorerUrl = 'https://explorer.devnet.sui.io/transactions/';
+  explorerUrl = 'https://explorer.sui.io/txblock/?network=testnet';
 }
 
 class SuiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sui';
   family = CoinFamily.SUI;
-  explorerUrl = 'https://explorer.devnet.sui.io/transactions/';
+  explorerUrl = 'https://explorer.sui.io/txblock/?network=testnet';
 }
 
 class Atom extends Mainnet implements AccountNetwork {
