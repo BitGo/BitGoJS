@@ -7,6 +7,10 @@ import {
 } from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
+import { SessionKey } from '@brandonblack/musig';
+import { BIP32Factory, BIP32Interface } from 'bip32';
+import * as bs58check from 'bs58check';
+import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
 import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
@@ -15,9 +19,6 @@ import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
 import { checkPlainPublicKey, toXOnlyPublicKey } from './outputScripts';
 import { parsePubScript } from './parseInput';
-import { BIP32Factory, BIP32Interface } from 'bip32';
-import * as bs58check from 'bs58check';
-import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import {
   createMusig2SigningSession,
   encodePsbtMusig2PartialSig,
@@ -36,7 +37,6 @@ import {
   getSigHashTypeFromSigs,
 } from './Musig2';
 import { isTuple, Tuple } from './types';
-import { SessionKey } from '@brandonblack/musig';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
 
@@ -152,18 +152,23 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this.fromBuffer(Buffer.from(data, 'hex'), opts);
   }
 
-  static deriveWalletKey(rootWalletKey: BIP32Interface, bip32Derivations: Bip32Derivation[]): BIP32Interface {
+  static deriveWalletKey(
+    rootWalletKey: BIP32Interface,
+    bip32Derivations: Bip32Derivation[],
+    params: { keyFormat: 'plain' | 'xOnly' }
+  ): BIP32Interface | undefined {
     const myDerivations = bip32Derivations.filter((bipDv) => {
       return bipDv.masterFingerprint.equals(rootWalletKey.fingerprint);
     });
 
     if (!myDerivations.length) {
-      throw new Error('Need one bip32Derivation masterFingerprint to match the rootWalletKey fingerprint');
+      // No fingerprint match
+      return undefined;
     }
 
     const myDerivation = myDerivations.filter((bipDv) => {
       const node = rootWalletKey.derivePath(bipDv.path);
-      if (!bipDv.pubkey.equals(toXOnlyPublicKey(node.publicKey))) {
+      if (!bipDv.pubkey.equals(params.keyFormat === 'xOnly' ? toXOnlyPublicKey(node.publicKey) : node.publicKey)) {
         throw new Error('pubkey did not match bip32Derivation');
       }
       return node;
@@ -386,6 +391,25 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * Get derived public keys for the specified input.
+   *
+   * If no tapBip32Derivation or bip32Derivation is found, return the pubkey of the bip32Interface
+   *
+   * @param inputIndex
+   * @param bip32
+   * @private
+   */
+  private getBip32PublicKeyForInput(inputIndex: number, bip32: BIP32Interface): Buffer | undefined {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (input.tapBip32Derivation && input.tapBip32Derivation.length > 0) {
+      return UtxoPsbt.deriveWalletKey(bip32, input.tapBip32Derivation, { keyFormat: 'xOnly' })?.publicKey;
+    } else if (input.bip32Derivation && input.bip32Derivation.length > 0) {
+      return UtxoPsbt.deriveWalletKey(bip32, input.bip32Derivation, { keyFormat: 'plain' })?.publicKey;
+    }
+    return bip32.publicKey;
+  }
+
+  /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    *
    * Unlike the function it overrides, this does not take a validator. In BitGo
@@ -395,16 +419,22 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   validateSignaturesOfAllInputs(): boolean {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     const results = this.data.inputs.map((input, idx) => {
-      if (input.tapScriptSig?.length) {
-        return this.validateTaprootSignaturesOfInput(idx);
-      } else if (input.partialSig?.length) {
-        return this.validateSignaturesOfInput(idx, (p, m, s) => eccLib.verify(m, p, s));
-      } else if (input.tapInternalKey && input.tapMerkleRoot) {
-        return this.validateTaprootMusig2SignaturesOfInput(idx);
-      }
-      throw new Error('invalid psbt input to validate signature');
+      return this.validateSignaturesOfInputInner(idx);
     });
     return results.reduce((final, res) => res && final, true);
+  }
+
+  private validateSignaturesOfInputInner(inputIndex: number, pubkey?: Buffer): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+
+    if (input.tapScriptSig?.length) {
+      return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
+    } else if (input.partialSig?.length) {
+      return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), pubkey);
+    } else if (input.tapInternalKey && input.tapMerkleRoot) {
+      return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
+    }
+    throw new Error('invalid psbt input to validate signature');
   }
 
   private getMusig2SessionKey(
@@ -525,8 +555,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   getSignatureValidationArray(inputIndex: number): boolean[] {
     const noSigErrorMessages = ['No signatures to validate', 'No signatures for this pubkey'];
-    const input = checkForInput(this.data.inputs, inputIndex);
-    const isP2tr = input.tapScriptSig?.length;
     if (!this.data.globalMap.globalXpub) {
       throw new Error('Cannot get signature validation array without global xpubs');
     }
@@ -534,12 +562,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
     }
     return this.data.globalMap.globalXpub.map((xpub) => {
-      // const bip32 = ECPair.fromPublicKey(xpub.extendedPubkey, { network: (this as any).opts.network });
       const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
+      const pubKey = this.getBip32PublicKeyForInput(inputIndex, bip32);
+      if (!pubKey) {
+        return false;
+      }
       try {
-        return isP2tr
-          ? this.validateTaprootSignaturesOfInput(inputIndex, bip32.publicKey)
-          : this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), bip32.publicKey);
+        return this.validateSignaturesOfInputInner(inputIndex, pubKey);
       } catch (err) {
         // Not an elegant solution. Might need upstream changes like custom error types.
         if (noSigErrorMessages.includes(err.message)) {
@@ -564,11 +593,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const results: boolean[] = [];
     for (let i = 0; i < this.data.inputs.length; i++) {
       try {
-        if (this.data.inputs[i].tapBip32Derivation?.length) {
-          this.signTaprootInputHD(i, hdKeyPair, sighashTypes);
-        } else {
-          this.signInputHD(i, hdKeyPair, sighashTypes);
-        }
+        this.signInputHD(i, hdKeyPair, sighashTypes);
         results.push(true);
       } catch (err) {
         results.push(false);
@@ -634,6 +659,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       signers.forEach((signer) => this.signTaprootMusig2Input(inputIndex, signer, sighashTypes));
     }
     return this;
+  }
+
+  signInputHD(inputIndex: number, hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer, sighashTypes?: number[]): this {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (input.tapBip32Derivation?.length) {
+      return this.signTaprootInputHD(inputIndex, hdKeyPair, sighashTypes);
+    } else {
+      return super.signInputHD(inputIndex, hdKeyPair, sighashTypes);
+    }
   }
 
   private getMusig2Participants(inputIndex: number, tapInternalKey: Buffer, tapMerkleRoot: Buffer) {
@@ -924,7 +958,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!input.tapBip32Derivation?.length) {
       throw new Error('tapBip32Derivation is required to create nonce');
     }
-    const derivedWalletKey = UtxoPsbt.deriveWalletKey(rootWalletKey, input.tapBip32Derivation);
+    const derivedWalletKey = UtxoPsbt.deriveWalletKey(rootWalletKey, input.tapBip32Derivation, { keyFormat: 'xOnly' });
+    if (!derivedWalletKey) {
+      throw new Error('No bip32Derivation masterFingerprint matched the rootWalletKey fingerprint');
+    }
     if (!derivedWalletKey.privateKey) {
       throw new Error('privateKey is required to create nonce');
     }

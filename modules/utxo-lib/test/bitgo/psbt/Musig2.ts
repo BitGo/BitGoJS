@@ -357,7 +357,7 @@ describe('p2trMusig2', function () {
         psbt.data.inputs[0].tapBip32Derivation?.forEach((bv) => (bv.masterFingerprint = Buffer.allocUnsafe(4)));
         assert.throws(
           () => psbt.setMusig2Nonces(rootWalletKeys.user),
-          (e) => e.message === 'Need one bip32Derivation masterFingerprint to match the rootWalletKey fingerprint'
+          (e) => e.message === 'No bip32Derivation masterFingerprint matched the rootWalletKey fingerprint'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
