@@ -17,7 +17,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateNodeID(testData.INVALID_NODE_ID_MISSING_NODE_ID);
         },
-        (e) => e.message === errorMessage.ERROR_NODE_ID
+        (e: Error) => e.message === errorMessage.ERROR_NODE_ID
       );
     });
     it('should fail nodeID length incorrect', () => {
@@ -25,7 +25,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateNodeID(testData.INVALID_NODE_ID_LENGTH);
         },
-        (e) => e.message === errorMessage.ERROR_NODE_ID_LENGTH
+        (e: Error) => e.message === errorMessage.ERROR_NODE_ID_LENGTH
       );
     });
     it('should suucess nodeID length incorrect', () => {
@@ -36,7 +36,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateStakeDuration(testData.START_TIME, testData.START_TIME.add(testData.ONE_WEEK));
         },
-        (e) => e.message === errorMessage.ERROR_STAKE_DURATION_SHORT_TIME
+        (e: Error) => e.message === errorMessage.ERROR_STAKE_DURATION_SHORT_TIME
       );
     });
     it('should fail endTime greater than 1 year', () => {
@@ -44,7 +44,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateStakeDuration(testData.START_TIME, testData.START_TIME.add(testData.TWO_YEAR));
         },
-        (e) => e.message === errorMessage.ERROR_STAKE_DURATION_LONG_TIME
+        (e: Error) => e.message === errorMessage.ERROR_STAKE_DURATION_LONG_TIME
       );
     });
     it('should fail startTime too soon', () => {
@@ -52,7 +52,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateStakeDuration(new BN(Date.now()), testData.ONE_WEEK);
         },
-        (e) => e.message === errorMessage.ERROR_STAKE_START_TIME_TOO_SHORT
+        (e: Error) => e.message === errorMessage.ERROR_STAKE_START_TIME_TOO_SHORT
       );
     });
     it('should fail stake amount less than 2000', () => {
@@ -60,7 +60,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateStakeAmount(testData.INVALID_STAKE_AMOUNT);
         },
-        (e) => e.message === errorMessage.ERROR_STAKE_AMOUNT
+        (e: Error) => e.message === errorMessage.ERROR_STAKE_AMOUNT
       );
     });
     it('should fail delegationFeeRate too low', () => {
@@ -68,7 +68,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateDelegationFeeRate(testData.INVALID_DELEGATION_FEE);
         },
-        (e) => e.message === errorMessage.ERROR_DELEGATION_FEE
+        (e: Error) => e.message === errorMessage.ERROR_DELEGATION_FEE
       );
     });
 
@@ -77,7 +77,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_EMPTY
+        (e: Error) => e.message === errorMessage.ERROR_UTXOS_EMPTY
       );
     });
 
@@ -86,7 +86,7 @@ describe('AvaxP Validate Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([{ outputID: '' } as any as DecodedUtxoObj]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
+        (e: Error) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
       );
     });
   });

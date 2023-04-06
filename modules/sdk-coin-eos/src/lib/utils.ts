@@ -13,7 +13,7 @@ export class StringTextDecoder extends TextDecoder {
     const decoder = new StringDecoder('utf8');
 
     if (input) {
-      const decoded = decoder.end(Buffer.from(input));
+      const decoded = decoder.end(Buffer.from(input as unknown as string));
       return decoded;
     }
 

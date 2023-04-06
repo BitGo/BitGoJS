@@ -3,7 +3,7 @@
  */
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
-import { randomBytes } from 'crypto';
+import { randomBytes, Hash } from 'crypto';
 import debugLib from 'debug';
 import Keccak from 'keccak';
 import _ from 'lodash';
@@ -1076,8 +1076,8 @@ export class Eth extends BaseCoin {
     const MESSAGE = Buffer.from(txHex, 'hex');
 
     const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, Keccak('keccak256')),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, Keccak('keccak256') as unknown as Hash),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256') as unknown as Hash),
     ];
 
     const signature = MPC.constructSignature([signA, signB]);

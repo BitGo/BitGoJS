@@ -145,7 +145,7 @@ describe('HBAR Token Associate Builder', () => {
         const builder = initTxBuilder();
         assert.throws(
           () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
-          (e) => e.message === 'Invalid private key'
+          (e: Error) => e.message === 'Invalid private key'
         );
       });
 
@@ -156,7 +156,7 @@ describe('HBAR Token Associate Builder', () => {
         builder.sign({ key: testData.ACCOUNT_3.privateKey });
         assert.throws(
           () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
-          (e) => e.message === 'A maximum of 3 can sign the transaction.'
+          (e: Error) => e.message === 'A maximum of 3 can sign the transaction.'
         );
       });
 
@@ -165,7 +165,7 @@ describe('HBAR Token Associate Builder', () => {
         builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         assert.throws(
           () => builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix }),
-          (e) =>
+          (e: Error) =>
             e.message ===
             'Repeated sign: 302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01'
         );
@@ -175,7 +175,7 @@ describe('HBAR Token Associate Builder', () => {
         const txBuilder = factory.getTokenAssociateBuilder();
         assert.throws(
           () => txBuilder.account('invalidaccountId'),
-          (e) => e.message === 'Unsupported account address: invalidaccountId'
+          (e: Error) => e.message === 'Unsupported account address: invalidaccountId'
         );
       });
 
@@ -186,7 +186,7 @@ describe('HBAR Token Associate Builder', () => {
             txBuilder.memo(
               'This sentence has more than 100 bytes allowed for the memo, this should throw error -----------------'
             ),
-          (e) => e.message === 'Memo must not be longer than 100 bytes'
+          (e: Error) => e.message === 'Memo must not be longer than 100 bytes'
         );
       });
 
@@ -194,7 +194,7 @@ describe('HBAR Token Associate Builder', () => {
         const txBuilder = factory.getTokenAssociateBuilder();
         assert.throws(
           () => txBuilder.tokens('invalidtokenname'),
-          (e) => e.message === 'Unsupported token: invalidtokenname'
+          (e: Error) => e.message === 'Unsupported token: invalidtokenname'
         );
       });
 
@@ -203,7 +203,7 @@ describe('HBAR Token Associate Builder', () => {
         txBuilder.tokens('thbar:usdc');
         assert.throws(
           () => txBuilder.tokens('thbar:usdc'),
-          (e) => e.message === 'Repeated token ID: 0.0.2276691'
+          (e: Error) => e.message === 'Repeated token ID: 0.0.2276691'
         );
       });
 
@@ -211,11 +211,11 @@ describe('HBAR Token Associate Builder', () => {
         const txBuilder = factory.getTokenAssociateBuilder();
         assert.throws(
           () => txBuilder.startTime('invalid start time'),
-          (e) => e.message === 'Invalid value for time parameter'
+          (e: Error) => e.message === 'Invalid value for time parameter'
         );
         assert.throws(
           () => txBuilder.startTime('-5'),
-          (e) => e.message === 'Invalid value for time parameter'
+          (e: Error) => e.message === 'Invalid value for time parameter'
         );
       });
 
@@ -223,7 +223,7 @@ describe('HBAR Token Associate Builder', () => {
         const txBuilder = factory.getTokenAssociateBuilder();
         assert.throws(
           () => txBuilder.node({ nodeId: 'invalid node' }),
-          (e) => e.message === 'Invalid Hedera node address'
+          (e: Error) => e.message === 'Invalid Hedera node address'
         );
       });
     });
