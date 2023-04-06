@@ -279,7 +279,7 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+        const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
         const xShare: ECDSAMethodTypes.XShareWithNTilde = {
           ...shares.xShare,
           ntilde: shares.xShare.ntilde,
@@ -317,7 +317,7 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        const shares = await mpc.signChallenge(userKey.xShare, userKey.yShares[3]);
+        const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
         const xShare: ECDSAMethodTypes.XShareWithNTilde = { ...shares.xShare, i: 3 };
         const yShare: ECDSAMethodTypes.YShareWithNTilde = {
           ...userKey.yShares[3],
