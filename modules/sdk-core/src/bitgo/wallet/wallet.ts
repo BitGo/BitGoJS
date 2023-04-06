@@ -1885,7 +1885,7 @@ export class Wallet implements IWallet {
     // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
     const submitParams = Object.assign(params, await this.prebuildAndSignTransaction(params));
     delete (submitParams as any).wallet;
-    return await this.submitTransaction(submitParams);
+    return await this.submitTransaction({ ...submitParams, isCpfp: true });
   }
 
   /**

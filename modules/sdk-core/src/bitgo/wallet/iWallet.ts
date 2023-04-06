@@ -427,6 +427,7 @@ export interface SubmitTransactionOptions {
     txBase64?: string;
     signedChildPsbt?: string; // PSBT that has the output of txHex as input with a signature
   };
+  isCpfp?: boolean;
   comment?: string;
   txRequestId?: string;
 }
