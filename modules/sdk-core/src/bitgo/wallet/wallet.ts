@@ -1098,6 +1098,8 @@ export class Wallet implements IWallet {
         throw new Error('forwarderVersion has to be an integer 0, 1, 2 or 3');
       }
       addressParams.forwarderVersion = forwarderVersion;
+    } else if (this._wallet.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      addressParams.forwarderVersion = 3;
     }
 
     if (!_.isUndefined(label)) {
@@ -2380,6 +2382,15 @@ export class Wallet implements IWallet {
       debug('final consolidation transaction prebuild: %O', prebuild);
 
       consolidations.push(prebuild);
+    }
+
+    if (this._wallet.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      consolidations.forEach(async (unsignedConsolidation) => {
+        await this.sendAccountConsolidation({
+          walletPassphrase: params.walletPassphrase,
+          prebuildTx: unsignedConsolidation,
+        });
+      });
     }
 
     return consolidations;
