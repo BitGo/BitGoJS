@@ -112,7 +112,7 @@ export function addReplayProtectionUnspentToPsbt(
     throw new Error(`network parameter does not match psbt.network`);
   }
   const { txid, vout } = toPrevOutput(u, psbt.network);
-  const isZcash = getMainnet(psbt.network) !== networks.zcash;
+  const isZcash = getMainnet(psbt.network) === networks.zcash;
 
   // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
