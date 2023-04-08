@@ -1,20 +1,26 @@
 import should from 'should';
-
-import * as bitcoin from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
-
 import { Dimensions } from '../../src';
 
 import {
+  constructPsbt,
   getInputDimensionsForUnspentType,
   getOutputDimensionsForUnspentType,
   TestUnspentType,
-  UnspentTypeP2shP2pk,
   UnspentTypePubKeyHash,
   UnspentTypeScript2of3,
 } from '../testutils';
 
 import { runCombinations, TxCombo } from './txGen';
+import * as utxolib from '@bitgo/utxo-lib';
+import { Triple } from '@bitgo/sdk-core';
+
+export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType | 'taprootKeyPathSpend';
+
+const keys = [1, 2, 3].map((v) =>
+  utxolib.bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), utxolib.networks.bitcoin)
+) as Triple<utxolib.BIP32Interface>;
+
+const rootWalletKeys = new utxolib.bitgo.RootWalletKeys(keys);
 
 const testDimensionsFromTx = (txCombo: any) => {
   const { inputTypes, outputTypes, expectedDims } = txCombo;
@@ -59,19 +65,69 @@ const testDimensionsFromTx = (txCombo: any) => {
   });
 };
 
+const testDimensionsFromPsbt = (
+  keys: utxolib.bitgo.RootWalletKeys,
+  inputTypes: InputScriptType[],
+  outputTypes: TestUnspentType[],
+  expectedDims: Dimensions
+) => {
+  describe(`Psbt Combination inputs=${inputTypes}; outputs=${outputTypes}`, function () {
+    const nInputs = inputTypes.length;
+    const outputDims = Dimensions.sum(...outputTypes.map(getOutputDimensionsForUnspentType));
+
+    it(`calculates dimensions from unsigned psbt`, function () {
+      const unsignedPsbt = constructPsbt(keys, inputTypes, outputTypes, 'unsigned');
+
+      // does not work for unsigned transactions
+      should.throws(() => Dimensions.fromPsbt(unsignedPsbt));
+
+      // unless explicitly allowed
+      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2SH }).should.eql(
+        Dimensions.sum({ nP2shInputs: nInputs }, outputDims)
+      );
+
+      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2SH_P2WSH }).should.eql(
+        Dimensions.sum({ nP2shP2wshInputs: nInputs }, outputDims)
+      );
+
+      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2WSH }).should.eql(
+        Dimensions.sum({ nP2wshInputs: nInputs }, outputDims)
+      );
+    });
+
+    it(`calculates dimensions for signed psbt`, function () {
+      const dimensions = Dimensions.fromPsbt(constructPsbt(keys, inputTypes, outputTypes, 'fullysigned'));
+      dimensions.should.eql(expectedDims);
+    });
+
+    it(`calculates dimensions for signed input of psbt`, function () {
+      const signedPsbt = constructPsbt(keys, inputTypes, outputTypes, 'fullysigned');
+
+      // test Dimensions.fromInput()
+      inputTypes.forEach((input: any, i: number) =>
+        Dimensions.fromPsbtInput(signedPsbt, i).should.eql(Dimensions.sum(getInputDimensionsForUnspentType(input)))
+      );
+    });
+  });
+};
+
 describe(`Dimensions for transaction combinations`, function () {
   const params = {
-    inputTypes: [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk],
+    inputTypes: [
+      'p2sh',
+      'p2shP2wsh',
+      'p2wsh',
+      'p2tr',
+      utxolib.bitgo.outputScripts.scriptTypeP2shP2pk,
+    ] as InputScriptType[],
     maxNInputs: 2,
-    outputTypes: [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)],
+    outputTypes: ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', ...Object.keys(UnspentTypePubKeyHash)],
     maxNOutputs: 2,
   };
 
-  runCombinations(params, (inputTypeCombo: string[], outputTypeCombo: TestUnspentType[]) => {
+  runCombinations(params, (inputTypeCombo: InputScriptType[], outputTypeCombo: TestUnspentType[]) => {
     const expectedInputDims = Dimensions.sum(...inputTypeCombo.map(getInputDimensionsForUnspentType));
     const expectedOutputDims = Dimensions.sum(...outputTypeCombo.map(getOutputDimensionsForUnspentType));
-
-    const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), bitcoin.networks.bitcoin));
 
     testDimensionsFromTx(
       new TxCombo(keys, inputTypeCombo, outputTypeCombo, expectedInputDims.plus(expectedOutputDims))
@@ -95,6 +151,42 @@ describe(`Dimensions for transaction combinations`, function () {
         [...outputTypeCombo, ...outputTypeCombo],
         expectedInputDims.plus(expectedOutputDims).plus(expectedOutputDims)
       )
+    );
+  });
+});
+
+describe(`Dimensions for PSBT combinations`, function () {
+  const params = {
+    inputTypes: [
+      ...utxolib.bitgo.outputScripts.scriptTypes2Of3,
+      utxolib.bitgo.outputScripts.scriptTypeP2shP2pk,
+      'taprootKeyPathSpend',
+    ] as InputScriptType[],
+    maxNInputs: 2,
+    outputTypes: [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)],
+    maxNOutputs: 2,
+  };
+
+  runCombinations(params, (inputTypeCombo: InputScriptType[], outputTypeCombo: TestUnspentType[]) => {
+    const expectedInputDims = Dimensions.sum(...inputTypeCombo.map(getInputDimensionsForUnspentType));
+    const expectedOutputDims = Dimensions.sum(...outputTypeCombo.map(getOutputDimensionsForUnspentType));
+
+    testDimensionsFromPsbt(rootWalletKeys, inputTypeCombo, outputTypeCombo, expectedInputDims.plus(expectedOutputDims));
+
+    // Doubling the inputs should yield twice the input dims
+    testDimensionsFromPsbt(
+      rootWalletKeys,
+      [...inputTypeCombo, ...inputTypeCombo],
+      outputTypeCombo,
+      expectedInputDims.plus(expectedInputDims).plus(expectedOutputDims)
+    );
+
+    // Same for outputs
+    testDimensionsFromPsbt(
+      rootWalletKeys,
+      inputTypeCombo,
+      [...outputTypeCombo, ...outputTypeCombo],
+      expectedInputDims.plus(expectedOutputDims).plus(expectedOutputDims)
     );
   });
 });

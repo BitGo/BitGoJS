@@ -10,10 +10,14 @@ import {
   createPsbtFromHex,
   parsePsbtInput,
   toWalletPsbt,
+  createPsbtForNetwork,
+  addReplayProtectionUnspentToPsbt,
+  addWalletOutputToPsbt,
+  getInternalChainCode,
 } from '../../../src/bitgo';
-import { createOutputScript2of3 } from '../../../src/bitgo/outputScripts';
+import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
-import { getDefaultWalletKeys } from '../../../src/testutil';
+import { getDefaultWalletKeys, mockReplayProtectionUnspent } from '../../../src/testutil';
 
 import { defaultTestOutputAmount } from '../../transaction_util';
 import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
@@ -37,6 +41,35 @@ function getScriptTypes2Of3() {
 }
 
 describe('Parse PSBT', function () {
+  it('p2shP2pk parsing', function () {
+    const signer = rootWalletKeys['user'];
+    const psbt = createPsbtForNetwork({ network });
+    const unspent = mockReplayProtectionUnspent(network, BigInt(1e8), { key: signer });
+    const { redeemScript } = createOutputScriptP2shP2pk(signer.publicKey);
+    assert(redeemScript);
+    addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
+    addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode('p2sh'), 0, BigInt(1e8 - 10000));
+    let parsed = parsePsbtInput(psbt, 0);
+
+    assert.strictEqual(parsed?.scriptType, 'p2shP2pk');
+    assert.strictEqual(parsed?.signatures, undefined);
+    assert.strictEqual(parsed?.publicKeys.length, 1);
+    assert.ok(parsed?.publicKeys[0].length === 33);
+    assert.ok(parsed?.pubScript.equals(redeemScript));
+
+    psbt.signAllInputs(signer);
+    assert.ok(psbt.validateSignaturesOfAllInputs());
+
+    parsed = parsePsbtInput(psbt, 0);
+
+    assert.strictEqual(parsed?.scriptType, 'p2shP2pk');
+    assert.strictEqual(parsed?.signatures?.length, 1);
+    assert.strictEqual(parsed?.signatures[0].length, 72);
+    assert.strictEqual(parsed?.publicKeys.length, 1);
+    assert.ok(parsed?.publicKeys[0].length === 33);
+    assert.ok(parsed?.pubScript.equals(redeemScript));
+  });
+
   it('fail to parse finalized psbt', function () {
     const unspents = mockUnspents(
       rootWalletKeys,

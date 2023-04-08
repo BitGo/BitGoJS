@@ -15,14 +15,18 @@ import {
   isValidControlBock,
   ParsedPubScriptP2ms,
   ParsedPubScriptTaprootScriptPath,
-  parsePubScript,
+  parsePubScript2Of3,
   ParsedPubScriptTaproot,
   ParsedPubScriptTaprootKeyPath,
-  ParsedScriptType2Of3,
+  parsePubScript,
+  ParsedPubScriptP2shP2pk,
+  ParsedScriptType,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
 import { isTuple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
+import { script as bscript } from 'bitcoinjs-lib';
+import { opcodes } from '../../index';
 
 // only used for building `SignatureContainer`
 type BaseSignatureContainer<T> = {
@@ -77,13 +81,17 @@ export type ParsedPsbtTaprootScriptPath = ParsedPubScriptTaprootScriptPath &
 
 export type ParsedPsbtTaproot = ParsedPsbtTaprootKeyPath | ParsedPsbtTaprootScriptPath;
 
+type P2shP2pkSignatureContainer = UnsignedSignatureContainer | HalfSignedSignatureContainer;
+
+export type ParsedPsbtP2shP2pk = ParsedPubScriptP2shP2pk & P2shP2pkSignatureContainer;
+
 interface WalletSigner {
   walletKey: BIP32Interface;
   rootKey: BIP32Interface;
 }
 
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
-  const parsedPublicKeys = parsePubScript(script, 'taprootScriptPathSpend').publicKeys;
+  const parsedPublicKeys = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
   const walletSigners = parsedPublicKeys.map((publicKey) => {
     const index = walletKeys.publicKeys.findIndex((walletPublicKey) =>
       toXOnlyPublicKey(walletPublicKey).equals(publicKey)
@@ -203,12 +211,25 @@ export function signWalletPsbt(
   }
 }
 
-function getScriptType(input: PsbtInput): ParsedScriptType2Of3 | undefined {
-  let scriptType: ParsedScriptType2Of3 | undefined;
+function getScriptType(input: PsbtInput): ParsedScriptType | undefined {
+  const isP2pk = (script: Buffer) => {
+    try {
+      const chunks = bscript.decompile(script);
+      return (
+        chunks?.length === 2 &&
+        Buffer.isBuffer(chunks[0]) &&
+        bscript.isCanonicalPubKey(chunks[0]) &&
+        chunks[1] === opcodes.OP_CHECKSIG
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+  let scriptType: ParsedScriptType | undefined;
   if (Buffer.isBuffer(input.redeemScript) && Buffer.isBuffer(input.witnessScript)) {
     scriptType = 'p2shP2wsh';
   } else if (Buffer.isBuffer(input.redeemScript)) {
-    scriptType = 'p2sh';
+    scriptType = isP2pk(input.redeemScript) ? 'p2shP2pk' : 'p2sh';
   } else if (Buffer.isBuffer(input.witnessScript)) {
     scriptType = 'p2wsh';
   }
@@ -256,7 +277,7 @@ function parsePartialOrTapScriptSignatures(sig: PartialSig[] | TapScriptSig[] | 
 function parseSignatures(
   psbt: UtxoPsbt,
   inputIndex: number,
-  scriptType: ParsedScriptType2Of3
+  scriptType: ParsedScriptType
 ): SignatureContainer | TaprootKeyPathSignatureContainer {
   const input = checkForInput(psbt.data.inputs, inputIndex);
   return scriptType === 'taprootKeyPathSpend'
@@ -266,9 +287,12 @@ function parseSignatures(
     : parsePartialOrTapScriptSignatures(input.partialSig);
 }
 
-function parseScript(input: PsbtInput, scriptType: ParsedScriptType2Of3): ParsedPubScriptP2ms | ParsedPubScriptTaproot {
+function parseScript(
+  input: PsbtInput,
+  scriptType: ParsedScriptType
+): ParsedPubScriptP2ms | ParsedPubScriptTaproot | ParsedPubScriptP2shP2pk {
   let pubScript: Buffer | undefined;
-  if (scriptType === 'p2sh') {
+  if (scriptType === 'p2sh' || scriptType === 'p2shP2pk') {
     pubScript = input.redeemScript;
   } else if (scriptType === 'p2wsh' || scriptType === 'p2shP2wsh') {
     pubScript = input.witnessScript;
@@ -290,8 +314,8 @@ function parseScript(input: PsbtInput, scriptType: ParsedScriptType2Of3): Parsed
 function parseInputMetadata(
   psbt: UtxoPsbt,
   inputIndex: number,
-  scriptType: ParsedScriptType2Of3
-): ParsedPsbtP2ms | ParsedPsbtTaproot {
+  scriptType: ParsedScriptType
+): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk {
   const input = checkForInput(psbt.data.inputs, inputIndex);
   const parsedPubScript = parseScript(input, scriptType);
   const signatures = parseSignatures(psbt, inputIndex, scriptType);
@@ -333,6 +357,12 @@ function parseInputMetadata(
       ...signatures,
     };
   }
+  if (parsedPubScript.scriptType === 'p2shP2pk' && (!signatures.signatures || !isTuple(signatures.signatures))) {
+    return {
+      ...parsedPubScript,
+      signatures: signatures.signatures,
+    };
+  }
   throw new Error('invalid pub script');
 }
 
@@ -349,7 +379,10 @@ function parseInputMetadata(
  * public key (tapOutputkey), signatures (partial signer sigs).
  * Any unsigned PSBT and without required metadata is returned with undefined.
  */
-export function parsePsbtInput(psbt: UtxoPsbt, inputIndex: number): ParsedPsbtP2ms | ParsedPsbtTaproot | undefined {
+export function parsePsbtInput(
+  psbt: UtxoPsbt,
+  inputIndex: number
+): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk | undefined {
   const input = checkForInput(psbt.data.inputs, inputIndex);
   if (psbt.isInputFinalized(inputIndex)) {
     throw new Error('Finalized PSBT parsing is not supported');

@@ -6,6 +6,7 @@ import _ from 'lodash';
 import 'lodash.combinations';
 import { Dimensions } from '../../src';
 import {
+  InputScriptType,
   TestUnspentType,
   UnspentTypeOpReturn,
   UnspentTypeP2shP2pk,
@@ -23,18 +24,19 @@ interface IUnspent {
 
 function createUnspent(pubkeys: Buffer[], inputType: string, value: number): IUnspent {
   let spendableScript;
-  if (inputType === UnspentTypeP2shP2pk) {
+  const scriptType = inputType === 'taprootKeyPathSpend' ? 'p2trMusig2' : inputType;
+  if (scriptType === UnspentTypeP2shP2pk) {
     spendableScript = utxolib.bitgo.outputScripts.createOutputScriptP2shP2pk(pubkeys[0]);
-  } else if (utxolib.bitgo.outputScripts.isScriptType2Of3(inputType)) {
-    spendableScript = utxolib.bitgo.outputScripts.createOutputScript2of3(pubkeys, inputType);
+  } else if (utxolib.bitgo.outputScripts.isScriptType2Of3(scriptType)) {
+    spendableScript = utxolib.bitgo.outputScripts.createOutputScript2of3(pubkeys, scriptType);
   } else {
-    throw new Error(`unexpected inputType ${inputType}`);
+    throw new Error(`unexpected inputType ${scriptType}`);
   }
 
   return {
     ...spendableScript,
     value,
-    inputType,
+    inputType: scriptType,
   };
 }
 
@@ -153,12 +155,12 @@ const runCombinations = (
     outputTypes,
     maxNOutputs,
   }: {
-    inputTypes: string[];
+    inputTypes: InputScriptType[];
     maxNInputs: number;
     outputTypes: TestUnspentType[];
     maxNOutputs: number;
   },
-  callback: (inputCombo: string[], outputCombo: TestUnspentType[]) => void
+  callback: (inputCombo: InputScriptType[], outputCombo: TestUnspentType[]) => void
 ): void => {
   // Create combinations of different input and output types. Length between 1 and 3.
   const inputCombinations = _.flatten(

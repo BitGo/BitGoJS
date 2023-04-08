@@ -14,72 +14,14 @@ import {
   inputComponentsP2trKeySpend,
 } from '../../src/inputWeights';
 import { pushdataEncodingLength } from '../../src/scriptSizes';
-import { UnspentTypeScript2of3 } from '../testutils';
-import { createScriptPubKey } from './txGen';
+import {
+  getInputScriptTypes,
+  getSignedTransaction,
+  InputScriptType,
+  OutputScriptType,
+  UnspentTypeScript2of3,
+} from '../testutils';
 import { Triple } from '@bitgo/sdk-core';
-
-type InputScriptType = utxolib.bitgo.outputScripts.ScriptType | 'taprootKeyPathSpend';
-type OutputScriptType = utxolib.bitgo.outputScripts.ScriptType;
-
-function getInputScriptTypes(): InputScriptType[] {
-  // return ['p2shP2pk'];
-  return [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'p2shP2pk', 'taprootKeyPathSpend'];
-}
-
-function getSignedTransaction(
-  keys: utxolib.bitgo.RootWalletKeys,
-  signerName: utxolib.bitgo.KeyName,
-  cosignerName: utxolib.bitgo.KeyName,
-  inputTypes: InputScriptType[],
-  outputTypes: OutputScriptType[]
-): utxolib.bitgo.UtxoTransaction {
-  const psbt = utxolib.bitgo.createPsbtForNetwork({ network: utxolib.networks.bitcoin });
-
-  const signer = keys[signerName];
-  const cosigner = keys[cosignerName];
-
-  inputTypes.forEach((t, i) => {
-    if (t === 'p2shP2pk') {
-      const unspent = utxolib.testutil.mockReplayProtectionUnspent(utxolib.networks.bitcoin, BigInt(10), {
-        key: signer,
-        vout: i,
-      });
-      const { redeemScript } = utxolib.bitgo.outputScripts.createOutputScriptP2shP2pk(signer.publicKey);
-      assert.ok(redeemScript);
-      utxolib.bitgo.addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
-    } else {
-      const unspent = utxolib.testutil.mockWalletUnspent(utxolib.networks.bitcoin, BigInt(10), {
-        keys,
-        chain: utxolib.bitgo.getExternalChainCode(t === 'taprootKeyPathSpend' ? 'p2trMusig2' : t),
-        vout: i,
-        index: i,
-      });
-      utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, keys, signerName, cosignerName);
-    }
-  });
-
-  outputTypes.forEach((t, index) => {
-    psbt.addOutput({
-      script: createScriptPubKey(keys.triple, t),
-      value: BigInt(10),
-    });
-  });
-
-  psbt.setMusig2Nonces(signer);
-  psbt.setMusig2Nonces(cosigner);
-
-  inputTypes.forEach((t, i) => {
-    if (t === 'p2shP2pk') {
-      psbt.signInput(i, signer);
-    } else {
-      psbt.signInputHD(i, signer);
-      psbt.signInputHD(i, cosigner);
-    }
-  });
-  assert.ok(psbt.validateSignaturesOfAllInputs());
-  psbt.finalizeAllInputs();
-  return (psbt.extractTransaction() as utxolib.bitgo.UtxoTransaction<bigint>).clone<number>('number');
-}
 
 describe('Input Script Sizes (Worst-Case)', function () {
   const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/${v}`))) as Triple<BIP32Interface>;
