@@ -280,7 +280,7 @@ export interface BitgoGPGPublicKey {
 }
 
 export type ApiChallenge = {
-  nTilde: string;
+  ntilde: string;
   h1: string;
   h2: string;
 };
