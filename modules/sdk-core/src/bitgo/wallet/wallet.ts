@@ -89,6 +89,7 @@ import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
 import { Hash } from 'crypto';
+import { ofcTokens } from '@bitgo/statics';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -1050,15 +1051,12 @@ export class Wallet implements IWallet {
    * @param {Number} params.chain on which the new address should be created
    * @param {(Number|String)} params.gasPrice gas price for new address creation, if applicable
    * @param {String} params.label label for the new address(es)
-   * @param {String} params.label label for the new address(es)
    * @param {Number} params.count=1 number of new addresses which should be created (maximum 250)
    * @param {Number} params.forwarderVersion The version of address to create, if applicable
    * @param {Boolean} params.lowPriority Ethereum-specific param to create address using low priority fee address
    * @param {String} params.baseAddress base address of the wallet(optional parameter)
    * @param {Boolean} params.allowSkipVerifyAddress When set to false, it throws error if address verification is skipped for any reason. Default is true.
-   * @param {String} [params.derivedAddress]  Derived address
-   * @param {Number} [params.index] Index of the derived address
-   * @param {String} [params.passphrase] passphrase
+   * @param {String} params.onToken mandatory in case of the OFC wallet, the name of token to create address for
    * Address verification can be skipped when forwarderVersion is 0 and pendingChainInitialization is true OR
    * if 'coinSpecific' is not part of the response from api call to create address
    */
@@ -1076,6 +1074,7 @@ export class Wallet implements IWallet {
       count = 1,
       baseAddress,
       allowSkipVerifyAddress = true,
+      onToken,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1136,6 +1135,23 @@ export class Wallet implements IWallet {
         throw new Error('format has to be a string');
       }
       addressParams.format = format;
+    }
+
+    if (this.baseCoin.getFamily() === 'ofc') {
+      if (!_.isUndefined(onToken)) {
+        if (!_.isString(onToken)) {
+          throw new Error('onToken has to be a string');
+        }
+        if (!ofcTokens.includes(onToken)) {
+          throw new Error('Unknown OFC token');
+        }
+        addressParams.onToken = onToken;
+      } else {
+        throw new Error('onToken is a mandatory parameter for OFC wallets');
+      }
+      if (!_.isString(onToken)) {
+        throw new Error('onToken has to be a string');
+      }
     }
 
     // get keychains for address verification

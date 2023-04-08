@@ -504,6 +504,86 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('OFC Create Address', () => {
+    let ofcWallet: Wallet;
+    let nocks;
+    before(async function() {
+      const walletDataOfc = {
+        id: '5b34252f1bf349930e3400b00000000',
+        coin: 'ofc',
+        keys: [
+          '5b3424f91bf349930e34017800000000',
+          '5b3424f91bf349930e34017900000000',
+          '5b3424f91bf349930e34018000000000',
+        ],
+        coinSpecific: {},
+        multisigType: 'onchain',
+      };
+      ofcWallet = new Wallet(bitgo, bitgo.coin('ofc'), walletDataOfc);
+    });
+
+    beforeEach((async function() {
+      nocks = [
+        nock(bgUrl)
+          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[0]}`)
+          .reply(200, {
+            id: ofcWallet.keyIds()[0],
+            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+            source: 'user',
+            encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[1]}`)
+          .reply(200, {
+            id: ofcWallet.keyIds()[1],
+            pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+            source: 'backup',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[2]}`)
+          .reply(200, {
+            id: ofcWallet.keyIds()[2],
+            pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+            source: 'bitgo',
+            coinSpecific: {},
+          }),
+      ];
+    }));
+
+    afterEach(async function() {
+      nock.cleanAll();
+      nocks.forEach(scope => scope.isDone().should.be.true());
+    });
+
+    it('should correctly validate arguments to create address on OFC wallet', async function () {
+      await ofcWallet.createAddress().should.be.rejectedWith('onToken is a mandatory parameter for OFC wallets');
+      await ofcWallet.createAddress({ onToken: 'ofcMyCoin' }).should.be.rejectedWith('Unknown OFC token');
+      // @ts-expect-error test passing invalid number argument
+      await ofcWallet.createAddress({ onToken: 42 }).should.be.rejectedWith('onToken has to be a string');
+    });
+
+    it('address creation with valid onToken argument succeeds', async function() {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/ofc/wallet/${ofcWallet.id()}/address`, { onToken: 'ofctbtc' })
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: 'generated address',
+          chain: 0,
+          index: 1,
+          coin: 'tbtc',
+          wallet: ofcWallet.id,
+        });
+      const address = await ofcWallet.createAddress({ onToken: 'ofctbtc' });
+      address.address.should.equal('generated address');
+      scope.isDone().should.be.true();
+    });
+
+  });
+
   describe('TETH Create Address', () => {
     let ethWallet, nocks;
     const walletData = {
