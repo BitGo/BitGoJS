@@ -18,7 +18,7 @@ import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
 import { unsign } from './psbt/fromHalfSigned';
 import { checkPlainPublicKey, toXOnlyPublicKey } from './outputScripts';
-import { parsePubScript } from './parseInput';
+import { parsePubScript2Of3 } from './parseInput';
 import {
   createMusig2SigningSession,
   encodePsbtMusig2PartialSig,
@@ -315,7 +315,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     const { controlBlock, script } = input.tapLeafScript[0];
     const witness: Buffer[] = [script, controlBlock];
-    const [pubkey1, pubkey2] = parsePubScript(script, 'taprootScriptPathSpend').publicKeys;
+    const [pubkey1, pubkey2] = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
       const sig = input.tapScriptSig?.find(({ pubkey }) => pubkey.equals(pk));
       if (!sig) {
