@@ -57,11 +57,18 @@ export interface FromUnspentParams {
   p2tr: {
     scriptPathLevel?: number;
   };
+  p2trMusig2: {
+    scriptPathLevel?: number;
+  };
 }
 
 const defaultUnspentParams: FromUnspentParams = {
   p2tr: {
     scriptPathLevel: 1,
+  },
+  p2trMusig2: {
+    // we default to keypath spend
+    scriptPathLevel: undefined,
   },
 };
 
@@ -234,12 +241,8 @@ export class Dimensions {
       case 'p2shP2pk':
         return Dimensions.SingleInput[scriptType];
       case 'p2tr':
-      case 'p2trMusig2':
-      case 'taprootKeyPathSpend':
       case 'taprootScriptPathSpend':
         switch (params.scriptPathLevel) {
-          case undefined:
-            return Dimensions.SingleInput.p2trKeypath;
           case 1:
             return Dimensions.SingleInput.p2trScriptPathLevel1;
           case 2:
@@ -247,6 +250,17 @@ export class Dimensions {
           default:
             throw new Error(`unexpected script path level`);
         }
+      case 'p2trMusig2':
+        switch (params.scriptPathLevel) {
+          case undefined:
+            return Dimensions.SingleInput.p2trKeypath;
+          case 1:
+            return Dimensions.SingleInput.p2trScriptPathLevel1;
+          default:
+            throw new Error(`unexpected script path level`);
+        }
+      case 'taprootKeyPathSpend':
+        return Dimensions.SingleInput.p2trKeypath;
       default:
         throw new Error(`unexpected scriptType ${scriptType}`);
     }
@@ -260,6 +274,14 @@ export class Dimensions {
   static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Dimensions.SingleInput.p2trScriptPathLevel2;
   static readonly ASSUME_P2SH_P2PK_INPUT = Dimensions.SingleInput.p2shP2pk;
 
+  private static getAssumedDimension(params: FromInputParams = {}, index: number) {
+    const { assumeUnsigned } = params;
+    if (!assumeUnsigned) {
+      throw new Error(`illegal input ${index}: empty script and assumeUnsigned not set`);
+    }
+    return assumeUnsigned;
+  }
+
   /**
    * @param input - the transaction input to count
    * @param params
@@ -271,11 +293,27 @@ export class Dimensions {
       return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
     }
 
-    const { assumeUnsigned } = params;
-    if (!assumeUnsigned) {
-      throw new Error(`illegal input ${input.index}: empty script and assumeUnsigned not set`);
+    return Dimensions.getAssumedDimension(params, input.index);
+  }
+
+  /**
+   * @param psbt - psbt
+   * @param inputIndex - psbt input index
+   * @param params
+   *        [param.assumeUnsigned] - default type for unsigned input
+   */
+  static fromPsbtInput(
+    psbt: bitgo.UtxoPsbt<bitgo.UtxoTransaction<bigint>>,
+    inputIndex: number,
+    params: FromInputParams = {}
+  ): Dimensions {
+    if (psbt.getSignatureCount(inputIndex) > 0) {
+      const parsed = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
+      if (parsed && parsed.scriptType) {
+        return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
+      }
     }
-    return assumeUnsigned;
+    return Dimensions.getAssumedDimension(params, psbt.getUnsignedTx().ins[inputIndex].index);
   }
 
   /**
@@ -288,6 +326,20 @@ export class Dimensions {
       throw new TypeError(`inputs must be array`);
     }
     return Dimensions.sum(...inputs.map((i) => Dimensions.fromInput(i, params)));
+  }
+
+  /**
+   * @param psbt
+   * @param params - @see Dimensions.fromInput()
+   * @return {Dimensions} sum of the dimensions for each input (@see Dimensions.fromInput())
+   */
+  static fromPsbtInputs(psbt: bitgo.UtxoPsbt<bitgo.UtxoTransaction<bigint>>, params?: FromInputParams): Dimensions {
+    if (!Array.isArray(psbt.txInputs)) {
+      throw new TypeError(`psbt must have inputs`);
+    }
+    return Dimensions.sum(
+      ...psbt.txInputs.map((input, inputIndex) => Dimensions.fromPsbtInput(psbt, inputIndex, params))
+    );
   }
 
   /**
@@ -353,7 +405,10 @@ export class Dimensions {
 
     const scriptType = scriptTypeForChain(chain);
 
-    return Dimensions.fromScriptType(scriptType, scriptType === 'p2tr' ? params.p2tr : {});
+    return Dimensions.fromScriptType(
+      scriptType,
+      scriptType === 'p2tr' ? params.p2tr : scriptType === 'p2trMusig2' ? params.p2trMusig2 : {}
+    );
   }
 
   /**
@@ -384,6 +439,15 @@ export class Dimensions {
     params?: FromInputParams
   ): Dimensions {
     return Dimensions.fromInputs(ins, params).plus(Dimensions.fromOutputs(outs));
+  }
+
+  /**
+   * @param psbt
+   * @param [param.assumeUnsigned] - default type for unsigned inputs
+   * @return {Dimensions}
+   */
+  static fromPsbt(psbt: bitgo.UtxoPsbt<bitgo.UtxoTransaction<bigint>>, params?: FromInputParams): Dimensions {
+    return Dimensions.fromPsbtInputs(psbt, params).plus(Dimensions.fromOutputs(psbt.getUnsignedTx().outs));
   }
 
   /**

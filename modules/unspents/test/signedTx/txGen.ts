@@ -45,7 +45,7 @@ function createUnspent(pubkeys: Buffer[], inputType: string, value: number): IUn
  * @param unspentType {String} - one of UnspentTypeScript2of3 or UnspentTypePubKeyHash
  * @return {String} address
  */
-const createScriptPubKey = (keys: BIP32Interface[], unspentType: TestUnspentType): Buffer => {
+export const createScriptPubKey = (keys: BIP32Interface[], unspentType: TestUnspentType): Buffer => {
   const pubkeys = keys.map((key) => key.publicKey);
   if (typeof unspentType === 'string' && unspentType in UnspentTypeScript2of3) {
     return createUnspent(pubkeys, unspentType, 0).scriptPubKey;
