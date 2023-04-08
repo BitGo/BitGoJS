@@ -98,7 +98,7 @@ export async function getChallengesForEcdsaSigning(
 
   // Verify enterprise's challenge is signed by the respective admin's ecdh keychain
   const enterpriseRawChallenge = {
-    nTilde: enterpriseChallenge.nTilde,
+    ntilde: enterpriseChallenge.ntilde,
     h1: enterpriseChallenge.h1,
     h2: enterpriseChallenge.h2,
   };
@@ -115,7 +115,7 @@ export async function getChallengesForEcdsaSigning(
 
   // Verify that the BitGo challenge's ZK proofs have been verified by the admin
   const bitGoRawChallenge = {
-    nTilde: bitGoChallenge.nTilde,
+    ntilde: bitGoChallenge.ntilde,
     h1: bitGoChallenge.h1,
     h2: bitGoChallenge.h2,
   };
