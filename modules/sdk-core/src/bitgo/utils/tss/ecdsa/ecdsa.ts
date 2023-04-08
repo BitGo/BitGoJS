@@ -657,14 +657,14 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       this.wallet.toJSON().enterprise
     );
     const clientChallengeBigInt: NTilde = {
-      ntilde: BigInt(apiChallenges.enterpriseChallenge.nTilde),
+      ntilde: BigInt(apiChallenges.enterpriseChallenge.ntilde),
       h1: BigInt(apiChallenges.enterpriseChallenge.h1),
       h2: BigInt(apiChallenges.enterpriseChallenge.h2),
     };
     const signingKeyWithChallenge = await MPC.appendChallenge(signingKey.xShare, yShare, clientChallengeBigInt);
 
     const bitgoChallenge: NTildeShare = {
-      ntilde: apiChallenges.bitGoChallenge.nTilde,
+      ntilde: apiChallenges.bitGoChallenge.ntilde,
       h1: apiChallenges.bitGoChallenge.h1,
       h2: apiChallenges.bitGoChallenge.h2,
     };
