@@ -220,6 +220,7 @@ export async function parseOutput({
   debug('Parsing address details for %s', currentAddress);
   let currentAddressDetails = undefined;
   let currentAddressType: string | undefined = undefined;
+  const RECIPIENT_THRESHOLD = 1000;
   try {
     /**
      * The only way to determine whether an address is known on the wallet is to initiate a network request and
@@ -228,6 +229,21 @@ export async function parseOutput({
      * details are fetched on the wallet, a local address validation is run, whose errors however are generated
      * client-side and can therefore be analyzed with more granularity and type checking.
      */
+
+    /**
+     * In order to minimize API requests, we assume that explicit recipients are always external when the
+     * recipient list is > 1000 This is not always a valid assumption and could lead greater apparent spend (but never lower)
+     */
+    if (txParams.recipients !== undefined && txParams.recipients.length > RECIPIENT_THRESHOLD) {
+      const isCurrentAddressInRecipients = txParams.recipients.some((recipient) =>
+        recipient.address.includes(currentAddress)
+      );
+
+      if (isCurrentAddressInRecipients) {
+        return { ...currentOutput, external: true };
+      }
+    }
+
     const addressDetails = await fetchAddressDetails({
       reqId,
       addressDetailsVerification,
