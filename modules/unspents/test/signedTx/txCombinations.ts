@@ -1,8 +1,4 @@
 import should from 'should';
-
-import * as bitcoin from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
-
 import { Dimensions } from '../../src';
 
 import {
@@ -11,10 +7,16 @@ import {
   TestUnspentType,
   UnspentTypeP2shP2pk,
   UnspentTypePubKeyHash,
-  UnspentTypeScript2of3,
 } from '../testutils';
 
 import { runCombinations, TxCombo } from './txGen';
+import * as utxolib from '@bitgo/utxo-lib';
+
+export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType | 'taprootKeyPathSpend';
+
+const keys = [1, 2, 3].map((v) =>
+  utxolib.bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), utxolib.networks.bitcoin)
+) as utxolib.BIP32Interface[];
 
 const testDimensionsFromTx = (txCombo: any) => {
   const { inputTypes, outputTypes, expectedDims } = txCombo;
@@ -60,18 +62,18 @@ const testDimensionsFromTx = (txCombo: any) => {
 };
 
 describe(`Dimensions for transaction combinations`, function () {
+  // p2trMusig2 is supported only with PSBT
+  const scriptTypes = utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((t) => t !== 'p2trMusig2');
   const params = {
-    inputTypes: [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk],
+    inputTypes: [...scriptTypes, UnspentTypeP2shP2pk] as InputScriptType[],
     maxNInputs: 2,
-    outputTypes: [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)],
+    outputTypes: [...scriptTypes, ...Object.keys(UnspentTypePubKeyHash)] as TestUnspentType[],
     maxNOutputs: 2,
   };
 
-  runCombinations(params, (inputTypeCombo: string[], outputTypeCombo: TestUnspentType[]) => {
+  runCombinations(params, (inputTypeCombo: InputScriptType[], outputTypeCombo: TestUnspentType[]) => {
     const expectedInputDims = Dimensions.sum(...inputTypeCombo.map(getInputDimensionsForUnspentType));
     const expectedOutputDims = Dimensions.sum(...outputTypeCombo.map(getOutputDimensionsForUnspentType));
-
-    const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), bitcoin.networks.bitcoin));
 
     testDimensionsFromTx(
       new TxCombo(keys, inputTypeCombo, outputTypeCombo, expectedInputDims.plus(expectedOutputDims))

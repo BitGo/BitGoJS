@@ -57,10 +57,18 @@ export interface FromUnspentParams {
   p2tr: {
     scriptPathLevel?: number;
   };
+  p2trMusig2: {
+    scriptPathLevel?: number;
+  };
 }
 
 const defaultUnspentParams: FromUnspentParams = {
   p2tr: {
+    scriptPathLevel: 1,
+  },
+  p2trMusig2: {
+    // Default to script path spend, to make it easier for recovery case callers (WRW etc).
+    // WP can explicitly pass undefined to use key path.
     scriptPathLevel: 1,
   },
 };
@@ -234,12 +242,8 @@ export class Dimensions {
       case 'p2shP2pk':
         return Dimensions.SingleInput[scriptType];
       case 'p2tr':
-      case 'p2trMusig2':
-      case 'taprootKeyPathSpend':
       case 'taprootScriptPathSpend':
         switch (params.scriptPathLevel) {
-          case undefined:
-            return Dimensions.SingleInput.p2trKeypath;
           case 1:
             return Dimensions.SingleInput.p2trScriptPathLevel1;
           case 2:
@@ -247,6 +251,17 @@ export class Dimensions {
           default:
             throw new Error(`unexpected script path level`);
         }
+      case 'p2trMusig2':
+        switch (params.scriptPathLevel) {
+          case undefined:
+            return Dimensions.SingleInput.p2trKeypath;
+          case 1:
+            return Dimensions.SingleInput.p2trScriptPathLevel1;
+          default:
+            throw new Error(`unexpected script path level`);
+        }
+      case 'taprootKeyPathSpend':
+        return Dimensions.SingleInput.p2trKeypath;
       default:
         throw new Error(`unexpected scriptType ${scriptType}`);
     }
@@ -353,7 +368,10 @@ export class Dimensions {
 
     const scriptType = scriptTypeForChain(chain);
 
-    return Dimensions.fromScriptType(scriptType, scriptType === 'p2tr' ? params.p2tr : {});
+    return Dimensions.fromScriptType(
+      scriptType,
+      scriptType === 'p2tr' ? params.p2tr : scriptType === 'p2trMusig2' ? params.p2trMusig2 : {}
+    );
   }
 
   /**
