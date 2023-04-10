@@ -17,7 +17,7 @@ import {
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
-import { randomBytes } from 'crypto';
+import { createHash, Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
 
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
@@ -209,5 +209,9 @@ export class Atom extends BaseCoin {
   /** @inheritDoc **/
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
+  }
+
+  getHashFunction(): Hash {
+    return createHash('sha256');
   }
 }
