@@ -151,8 +151,8 @@ export function constructPsbt(
     return psbt;
   }
 
-  psbt.setMusig2Nonces(keys['user']);
-  psbt.setMusig2Nonces(keys['bitgo']);
+  psbt.setMusig2NoncesHD(keys['user']);
+  psbt.setMusig2NoncesHD(keys['bitgo']);
 
   inputTypes.forEach((t, i) => {
     const signerNames = getDefaultSignerNames(t, signers);
