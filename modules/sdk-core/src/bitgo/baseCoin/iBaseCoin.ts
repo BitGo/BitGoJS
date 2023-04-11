@@ -13,6 +13,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
+import { Hash } from 'crypto';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -467,4 +468,5 @@ export interface IBaseCoin {
   // TODO - this only belongs in eth coins
   recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction>;
   getInscriptionBuilder(wallet: Wallet): IInscriptionBuilder;
+  getHashFunction(): Hash;
 }

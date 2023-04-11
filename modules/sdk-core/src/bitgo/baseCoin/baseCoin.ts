@@ -40,6 +40,7 @@ import {
   VerifyTransactionOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
+import { Hash } from 'crypto';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
@@ -461,5 +462,13 @@ export abstract class BaseCoin implements IBaseCoin {
 
   getInscriptionBuilder(wallet: Wallet): IInscriptionBuilder {
     throw new NotImplementedError('Inscription Builder is not supported for this coin');
+  }
+
+  /**
+   * Function to get coin specific hash function used to generate transaction digests.
+   * @returns {@see Hash} hash function if implemented, otherwise throws exception
+   */
+  getHashFunction(): Hash {
+    throw new NotImplementedError('getHashFunction is not supported for this coin');
   }
 }
