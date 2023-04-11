@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as should from 'should';
 import { bitgo } from '@bitgo/utxo-lib';
-const { chainCodes, chainCodesP2sh, chainCodesP2shP2wsh, chainCodesP2tr, chainCodesP2wsh } = bitgo;
+const { chainCodes, chainCodesP2sh, chainCodesP2shP2wsh, chainCodesP2tr, chainCodesP2trMusig2, chainCodesP2wsh } =
+  bitgo;
 import { Dimensions, OutputDimensions, VirtualSizes } from '../src';
 
 import { getOutputDimensionsForUnspentType, UnspentTypePubKeyHash, UnspentTypeScript2of3 } from './testutils';
@@ -79,6 +80,7 @@ describe('Dimensions Arithmetic', function () {
         [Dimensions.SingleOutput.p2wsh, VirtualSizes.txP2wshOutputSize],
         [Dimensions.SingleOutput.p2pkh, VirtualSizes.txP2pkhOutputSize],
         [Dimensions.SingleOutput.p2wpkh, VirtualSizes.txP2wpkhOutputSize],
+        [Dimensions.SingleOutput.p2tr, VirtualSizes.txP2trOutputSize],
       ] as [Dimensions, number][]
     ).forEach(([dims, size]) => {
       dims.getOutputsVSize().should.eql(size);
@@ -145,17 +147,29 @@ describe('Dimensions from unspent types', function () {
       Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2wshInputs: 1 }))
     );
 
-    chainCodesP2tr.forEach((chain) =>
-      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }))
-    );
+    chainCodesP2tr.forEach((chain) => {
+      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }));
+      Dimensions.fromUnspent(
+        { chain },
+        { p2tr: { scriptPathLevel: 2 }, p2trMusig2: { scriptPathLevel: undefined } }
+      ).should.eql(Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }));
+    });
+
+    chainCodesP2trMusig2.forEach((chain) => {
+      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }));
+      Dimensions.fromUnspent(
+        { chain },
+        { p2tr: { scriptPathLevel: undefined }, p2trMusig2: { scriptPathLevel: undefined } }
+      ).should.eql(Dimensions.sum({ nP2trKeypathInputs: 1 }));
+    });
 
     Dimensions.fromUnspents(chainCodes.map((chain) => ({ chain }))).should.eql(
       new Dimensions({
         nP2shP2wshInputs: 2,
         nP2shInputs: 2,
         nP2wshInputs: 2,
-        nP2trKeypathInputs: 2,
-        nP2trScriptPathLevel1Inputs: 2,
+        nP2trKeypathInputs: 0,
+        nP2trScriptPathLevel1Inputs: 4,
         nP2trScriptPathLevel2Inputs: 0,
         nP2shP2pkInputs: 0,
         outputs: { count: 0, size: 0 },
@@ -169,14 +183,13 @@ describe('Dimensions from unspent types', function () {
       [UnspentTypeScript2of3.p2shP2wsh, VirtualSizes.txP2shP2wshOutputSize],
       [UnspentTypeScript2of3.p2wsh, VirtualSizes.txP2wshOutputSize],
       [UnspentTypeScript2of3.p2tr, VirtualSizes.txP2trOutputSize],
+      [UnspentTypeScript2of3.p2trMusig2, VirtualSizes.txP2trOutputSize],
+      [UnspentTypeScript2of3.taprootKeyPathSpend, VirtualSizes.txP2trOutputSize],
       [UnspentTypePubKeyHash.p2pkh, VirtualSizes.txP2pkhOutputSize],
       [UnspentTypePubKeyHash.p2wpkh, VirtualSizes.txP2wpkhOutputSize],
     ]);
 
-    [
-      ...Object.keys(UnspentTypeScript2of3).filter((scriptType) => scriptType !== 'p2tr'), // TODO: remove when p2tr signing is supported,
-      ...Object.keys(UnspentTypePubKeyHash),
-    ].forEach((type) =>
+    [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)].forEach((type) =>
       getOutputDimensionsForUnspentType(type).outputs.size.should.eql(expectedSizes.get(type as any))
     );
   });
