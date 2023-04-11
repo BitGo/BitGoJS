@@ -108,8 +108,16 @@ export class Sui extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients && txParams.recipients.length > 0) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
-      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+      const filteredRecipients = txParams.recipients?.map((recipient) => {
+        const filteredRecipient = _.pick(recipient, ['address', 'amount']);
+        filteredRecipient.amount = new BigNumber(filteredRecipient.amount).toFixed();
+        return filteredRecipient;
+      });
+      const filteredOutputs = explainedTx.outputs.map((output) => {
+        const filteredOutput = _.pick(output, ['address', 'amount']);
+        filteredOutput.amount = new BigNumber(filteredOutput.amount).toFixed();
+        return filteredOutput;
+      });
 
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');

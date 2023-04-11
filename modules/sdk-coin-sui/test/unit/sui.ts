@@ -62,6 +62,21 @@ describe('SUI:', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify transaction when recipients amount are numbers', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParamsWithNumberAmounts = newTxParams();
+      txParamsWithNumberAmounts.recipients = txParamsWithNumberAmounts.recipients.map(({ address, amount }) => {
+        return { address, amount: Number(amount) };
+      });
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParamsWithNumberAmounts,
+        txPrebuild,
+        verification,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = newTxParams();
