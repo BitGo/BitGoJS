@@ -143,6 +143,7 @@ export function validatePsbtParsing(
     } else {
       assert.ok(psbtParsed);
       assert.strictEqual(psbtParsed.scriptType, scriptType === 'p2tr' ? 'taprootScriptPathSpend' : scriptType);
+      assert.ok(psbtParsed.scriptType !== 'p2shP2pk');
       const txParsed = parseSignatureScript2Of3(tx.ins[i]);
       validateScript(psbtParsed, txParsed);
       validatePublicKeys(psbtParsed, txParsed);

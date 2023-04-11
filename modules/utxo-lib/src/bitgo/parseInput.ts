@@ -56,7 +56,7 @@ export type ParsedScriptType2Of3 =
 export type ParsedScriptType = ParsedScriptType2Of3 | 'p2shP2pk';
 
 export type ParsedPubScript = {
-  scriptType: ParsedScriptType2Of3;
+  scriptType: ParsedScriptType;
 };
 
 export type ParsedSignatureScript = {
@@ -90,6 +90,13 @@ export interface ParsedPubScriptP2ms extends ParsedPubScript {
   pubScript: Buffer;
   redeemScript: Buffer | undefined;
   witnessScript: Buffer | undefined;
+}
+
+export interface ParsedPubScriptP2shP2pk extends ParsedPubScript {
+  scriptType: 'p2shP2pk';
+  publicKeys: [Buffer];
+  pubScript: Buffer;
+  redeemScript: Buffer;
 }
 
 export interface ParsedSignatureScriptP2ms extends ParsedSignatureScript {
@@ -311,9 +318,9 @@ type InputParser<T extends ParsedSignatureScriptP2shP2pk | ParsedSignatureScript
 
 export type InputPubScript = Buffer;
 
-type PubScriptParser<T extends ParsedPubScriptTaproot | ParsedPubScriptP2ms> = (
+type PubScriptParser<T extends ParsedPubScriptTaproot | ParsedPubScriptP2ms | ParsedPubScriptP2shP2pk> = (
   p: InputPubScript,
-  t: ParsedScriptType2Of3
+  t: ParsedScriptType
 ) => T | MatchError;
 
 function isLegacy(p: InputScriptsUnknown): p is InputScriptsLegacy {
@@ -503,8 +510,25 @@ export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScriptP
   return result as ParsedSignatureScriptP2ms | ParsedSignatureScriptTaproot;
 }
 
+const parseP2shP2pkPubScript: PubScriptParser<ParsedPubScriptP2shP2pk> = (pubScript, scriptType) => {
+  if (scriptType !== 'p2shP2pk') {
+    throw new Error('invalid script type');
+  }
+  const match = matchScript([pubScript], [{ ':script': [':pubkey', 'OP_CHECKSIG'] }]);
+  if (match instanceof MatchError) {
+    return match;
+  }
+  const [script] = match[':script'];
+  return {
+    scriptType,
+    publicKeys: script.match[':pubkey'] as [Buffer],
+    pubScript: pubScript,
+    redeemScript: pubScript,
+  };
+};
+
 const parseP2msPubScript: PubScriptParser<ParsedPubScriptP2ms> = (pubScript, scriptType) => {
-  if (scriptType === 'taprootScriptPathSpend' || scriptType === 'taprootKeyPathSpend') {
+  if (scriptType === 'taprootScriptPathSpend' || scriptType === 'taprootKeyPathSpend' || scriptType === 'p2shP2pk') {
     throw new Error('invalid script type');
   }
   const match = matchScript(
@@ -535,7 +559,8 @@ const parseTaprootKeyPathPubScript: PubScriptParser<ParsedPubScriptTaprootKeyPat
     scriptType === 'p2sh' ||
     scriptType === 'p2wsh' ||
     scriptType === 'p2shP2wsh' ||
-    scriptType === 'taprootScriptPathSpend'
+    scriptType === 'taprootScriptPathSpend' ||
+    scriptType === 'p2shP2pk'
   ) {
     throw new Error('invalid script type');
   }
@@ -558,7 +583,8 @@ const parseTaprootScriptPathPubScript: PubScriptParser<ParsedPubScriptTaprootScr
     scriptType === 'p2sh' ||
     scriptType === 'p2wsh' ||
     scriptType === 'p2shP2wsh' ||
-    scriptType === 'taprootKeyPathSpend'
+    scriptType === 'taprootKeyPathSpend' ||
+    scriptType === 'p2shP2pk'
   ) {
     throw new Error('invalid script type');
   }
@@ -585,23 +611,23 @@ const parseTaprootScriptPathPubScript: PubScriptParser<ParsedPubScriptTaprootScr
  * taprootScriptPathSpend (P2TR and P2TRMUISG2 script path) => scriptType, pubScript, pub keys.
  * taprootKeyPathSpend (P2TRMUISG2 key path) => scriptType, pubScript (34-byte output script), pub key (tapOutputKey).
  */
-export function parsePubScript(
+export function parsePubScript2Of3(
   inputPubScript: InputPubScript,
   scriptType: 'taprootKeyPathSpend'
 ): ParsedPubScriptTaprootKeyPath;
-export function parsePubScript(
+export function parsePubScript2Of3(
   inputPubScript: InputPubScript,
   scriptType: 'taprootScriptPathSpend'
 ): ParsedPubScriptTaprootScriptPath;
-export function parsePubScript(
+export function parsePubScript2Of3(
   inputPubScript: InputPubScript,
   scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
 ): ParsedPubScriptP2ms;
-export function parsePubScript(
+export function parsePubScript2Of3(
   inputPubScript: InputPubScript,
   scriptType: ParsedScriptType2Of3
 ): ParsedPubScriptP2ms | ParsedPubScriptTaproot;
-export function parsePubScript(
+export function parsePubScript2Of3(
   inputPubScript: InputPubScript,
   scriptType: ParsedScriptType2Of3
 ): ParsedPubScriptP2ms | ParsedPubScriptTaproot {
@@ -621,6 +647,52 @@ export function parsePubScript(
     (result.scriptType === 'taprootScriptPathSpend' && result.publicKeys.length !== 2) ||
     (isScriptType2Of3(result.scriptType) && result.publicKeys.length !== 3)
   ) {
+    throw new Error('unexpected pubkey count');
+  }
+
+  return result;
+}
+
+/**
+ * @return pubScript (scriptPubKey/redeemScript/witnessScript) is parsed.
+ * P2SH => scriptType, pubScript (redeemScript), redeemScript, public keys
+ * PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
+ * P2SH-PW2SH => scriptType, pubScript (witnessScript), witnessScript, public keys.
+ * taprootScriptPathSpend (P2TR and P2TRMUISG2 script path) => scriptType, pubScript, pub keys.
+ * taprootKeyPathSpend (P2TRMUISG2 key path) => scriptType, pubScript (34-byte output script), pub key (tapOutputKey).
+ * P2SH-P2PK => scriptType, pubScript, pub key, redeemScript.
+ */
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: 'taprootKeyPathSpend'
+): ParsedPubScriptTaprootKeyPath;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: 'taprootScriptPathSpend'
+): ParsedPubScriptTaprootScriptPath;
+export function parsePubScript(inputPubScript: InputPubScript, scriptType: 'p2shP2pk'): ParsedPubScriptP2shP2pk;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh'
+): ParsedPubScriptP2ms;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: ParsedScriptType
+): ParsedPubScriptP2ms | ParsedPubScriptTaproot | ParsedPubScriptP2shP2pk;
+export function parsePubScript(
+  inputPubScript: InputPubScript,
+  scriptType: ParsedScriptType
+): ParsedPubScriptP2ms | ParsedPubScriptTaproot | ParsedPubScriptP2shP2pk {
+  const result =
+    scriptType === 'p2shP2pk'
+      ? parseP2shP2pkPubScript(inputPubScript, scriptType)
+      : parsePubScript2Of3(inputPubScript, scriptType);
+
+  if (result instanceof MatchError) {
+    throw new Error(result.message);
+  }
+
+  if (result.scriptType === 'p2shP2pk' && result.publicKeys.length !== 1) {
     throw new Error('unexpected pubkey count');
   }
 
