@@ -189,7 +189,7 @@ export function createPsbtSpendTransactionFromPrevTx(
   addWalletOutputToPsbt(psbt, rootWalletKeys, unspents[0].chain, unspents[0].index, outputValue);
 
   signers.forEach((keyName) => {
-    psbt.setMusig2Nonces(rootWalletKeys[keyName]);
+    psbt.setMusig2NoncesHD(rootWalletKeys[keyName]);
   });
 
   signers.forEach((keyName) => {
