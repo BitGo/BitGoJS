@@ -1178,6 +1178,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ANA
   ),
   erc20(
+    '06a93c2a-c7d2-4a7d-b07d-4ac0414be6eb',
+    'ankreth',
+    'Ankr Staked ETH',
+    18,
+    '0xe95a203b1a91a908f9b9ce46459d101078c2c3cb',
+    UnderlyingAsset.ANKRETH
+  ),
+  erc20(
     'be4c1e1d-17e1-4364-a4b1-5547363ed9a6',
     'ant',
     'Aragon',
@@ -2195,6 +2203,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a',
     UnderlyingAsset.DGD
+  ),
+  erc20(
+    '23719fdc-416a-4f2f-b90f-7af874e98e7a',
+    'dgld',
+    'Digital Gold',
+    18,
+    '0xa9299c296d7830a99414d1e5546f5171fa01e9c8',
+    UnderlyingAsset.DGLD
   ),
   erc20(
     '5847740c-8ff2-414a-ba65-e9fa48b847f6',
