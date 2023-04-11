@@ -275,6 +275,14 @@ export class Dimensions {
   static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Dimensions.SingleInput.p2trScriptPathLevel2;
   static readonly ASSUME_P2SH_P2PK_INPUT = Dimensions.SingleInput.p2shP2pk;
 
+  private static getAssumedDimension(params: FromInputParams = {}, index: number) {
+    const { assumeUnsigned } = params;
+    if (!assumeUnsigned) {
+      throw new Error(`illegal input ${index}: empty script and assumeUnsigned not set`);
+    }
+    return assumeUnsigned;
+  }
+
   /**
    * @param input - the transaction input to count
    * @param params
@@ -286,11 +294,24 @@ export class Dimensions {
       return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
     }
 
-    const { assumeUnsigned } = params;
-    if (!assumeUnsigned) {
-      throw new Error(`illegal input ${input.index}: empty script and assumeUnsigned not set`);
+    return Dimensions.getAssumedDimension(params, input.index);
+  }
+
+  /**
+   * Create Dimensions from psbt input
+   * @param psbt - psbt
+   * @param inputIndex - psbt input index
+   * @param params
+   *        [param.assumeUnsigned] - default type for unsigned input
+   */
+  static fromPsbtInput(psbt: bitgo.UtxoPsbt, inputIndex: number, params: FromInputParams = {}): Dimensions {
+    if (psbt.getSignatureCount(inputIndex) > 0) {
+      const parsed = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
+      if (parsed && parsed.scriptType) {
+        return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
+      }
     }
-    return assumeUnsigned;
+    return Dimensions.getAssumedDimension(params, inputIndex);
   }
 
   /**
@@ -303,6 +324,21 @@ export class Dimensions {
       throw new TypeError(`inputs must be array`);
     }
     return Dimensions.sum(...inputs.map((i) => Dimensions.fromInput(i, params)));
+  }
+
+  /**
+   * Create Dimensions from multiple psbt inputs
+   * @param psbt
+   * @param params - @see Dimensions.fromInput()
+   * @return {Dimensions} sum of the dimensions for each input (@see Dimensions.fromInput())
+   */
+  static fromPsbtInputs(psbt: bitgo.UtxoPsbt, params?: FromInputParams): Dimensions {
+    if (!Array.isArray(psbt.txInputs)) {
+      throw new TypeError(`psbt must have inputs`);
+    }
+    return Dimensions.sum(
+      ...psbt.txInputs.map((input, inputIndex) => Dimensions.fromPsbtInput(psbt, inputIndex, params))
+    );
   }
 
   /**
@@ -402,6 +438,16 @@ export class Dimensions {
     params?: FromInputParams
   ): Dimensions {
     return Dimensions.fromInputs(ins, params).plus(Dimensions.fromOutputs(outs));
+  }
+
+  /**
+   * Create Dimensions from psbt inputs and outputs
+   * @param psbt
+   * @param [param.assumeUnsigned] - default type for unsigned inputs
+   * @return {Dimensions}
+   */
+  static fromPsbt(psbt: bitgo.UtxoPsbt, params?: FromInputParams): Dimensions {
+    return Dimensions.fromPsbtInputs(psbt, params).plus(Dimensions.fromOutputs(psbt.getUnsignedTx().outs));
   }
 
   /**
