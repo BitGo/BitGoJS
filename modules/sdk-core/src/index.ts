@@ -4,6 +4,7 @@ export * from './api';
 export * from './bitgo';
 export * from './bitgojsError';
 export * as coins from './coins';
+export * as OpenSSL from './openssl';
 import { EddsaUtils } from './bitgo/utils/tss/eddsa/eddsa';
 export { EddsaUtils };
 export { GShare, SignShare, YShare } from './account-lib/mpc/tss/eddsa/types';

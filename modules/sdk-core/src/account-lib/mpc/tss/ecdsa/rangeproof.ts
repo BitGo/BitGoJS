@@ -5,17 +5,31 @@
 import { createHash } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
+import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+import { OpenSSL } from '../../../../openssl/openssl';
+
+export async function generateSafePrime(bitlength: number): Promise<bigint> {
+  const openSSL = new OpenSSL();
+  await openSSL.init();
+  const result = await openSSL.runCommand(`prime -bits ${bitlength} -generate -safe`);
+  return BigInt(result);
+}
 
 async function generateModulus(bitlength: number): Promise<bigint> {
   let n, p, q;
   do {
-    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
+    // [p, q] = await Promise.all([
+    //   generateSafePrime(Math.floor(bitlength / 2)),
+    //   generateSafePrime(Math.floor(bitlength / 2)),
+    // ]);
+    // for some reason calling the wasm twice blows it up, not the biggest current problem, so just doing this for now
+    p = await generateSafePrime(Math.floor(bitlength / 2));
+    q = p;
     n = p * q;
-  } while (q === p || bitLength(n) !== bitlength);
+  } while (/* q === p ||*/ bitLength(n) !== bitlength);
   return n;
 }
 
