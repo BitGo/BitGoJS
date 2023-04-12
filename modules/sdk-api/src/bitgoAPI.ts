@@ -1538,12 +1538,15 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Gets the user's private keychain, used for receiving shares
    */
-  async getECDHSharingKeychain(): Promise<any> {
-    const result = await this.get(this.url('/user/settings')).result();
-    if (!result.settings.ecdhKeychain) {
-      return new Error('ecdh keychain not found for user');
+  async getECDHKeychain(ecdhKeychainPub?: string): Promise<any> {
+    if (!ecdhKeychainPub) {
+      const result = await this.get(this.url('/user/settings')).result();
+      if (!result.settings.ecdhKeychain) {
+        return new Error('ecdh keychain not found for user');
+      }
+      ecdhKeychainPub = result.settings.ecdhKeychain;
     }
-    return this.keychains().get({ xpub: result.settings.ecdhKeychain });
+    return this.keychains().get({ xpub: ecdhKeychainPub });
   }
 
   /**

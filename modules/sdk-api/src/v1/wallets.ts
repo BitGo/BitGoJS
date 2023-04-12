@@ -238,7 +238,7 @@ Wallets.prototype.acceptShare = function (params, callback) {
         throw new Error('userPassword param must be provided to decrypt shared key');
       }
 
-      return self.bitgo.getECDHSharingKeychain().then(function (sharingKeychain) {
+      return self.bitgo.getECDHKeychain().then(function (sharingKeychain) {
         if (!sharingKeychain.encryptedXprv) {
           throw new Error('EncryptedXprv was not found on sharing keychain');
         }
