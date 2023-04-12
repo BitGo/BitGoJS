@@ -70,8 +70,8 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
 
     it('can go from unsigned to fully signed', async function () {
       if (scriptType === 'p2trMusig2' && signerName === 'user' && cosignerName === 'bitgo') {
-        psbt.setMusig2Nonces(signer);
-        psbt.setMusig2Nonces(cosigner);
+        psbt.setMusig2NoncesHD(signer);
+        psbt.setMusig2NoncesHD(cosigner);
       }
       if (scriptType === 'p2shP2pk') {
         psbt.signAllInputs(signer);

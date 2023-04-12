@@ -152,13 +152,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this.fromBuffer(Buffer.from(data, 'hex'), opts);
   }
 
-  static deriveWalletKey(
-    rootWalletKey: BIP32Interface,
+  static deriveKeyPair(
+    hdKeyPair: BIP32Interface,
     bip32Derivations: Bip32Derivation[],
     params: { keyFormat: 'plain' | 'xOnly' }
   ): BIP32Interface | undefined {
     const myDerivations = bip32Derivations.filter((bipDv) => {
-      return bipDv.masterFingerprint.equals(rootWalletKey.fingerprint);
+      return bipDv.masterFingerprint.equals(hdKeyPair.fingerprint);
     });
 
     if (!myDerivations.length) {
@@ -167,7 +167,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
 
     const myDerivation = myDerivations.filter((bipDv) => {
-      const node = rootWalletKey.derivePath(bipDv.path);
+      const node = hdKeyPair.derivePath(bipDv.path);
       if (!bipDv.pubkey.equals(params.keyFormat === 'xOnly' ? toXOnlyPublicKey(node.publicKey) : node.publicKey)) {
         throw new Error('pubkey did not match bip32Derivation');
       }
@@ -175,9 +175,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     });
 
     if (myDerivation.length !== 1) {
-      throw new Error('root wallet key should derive one bip32Derivation');
+      throw new Error('hd key pair should derive one bip32Derivation');
     }
-    return rootWalletKey.derivePath(myDerivation[0].path);
+    return hdKeyPair.derivePath(myDerivation[0].path);
   }
 
   get network(): Network {
@@ -391,25 +391,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * Get derived public keys for the specified input.
-   *
-   * If no tapBip32Derivation or bip32Derivation is found, return the pubkey of the bip32Interface
-   *
-   * @param inputIndex
-   * @param bip32
-   * @private
-   */
-  private getBip32PublicKeyForInput(inputIndex: number, bip32: BIP32Interface): Buffer | undefined {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    if (input.tapBip32Derivation && input.tapBip32Derivation.length > 0) {
-      return UtxoPsbt.deriveWalletKey(bip32, input.tapBip32Derivation, { keyFormat: 'xOnly' })?.publicKey;
-    } else if (input.bip32Derivation && input.bip32Derivation.length > 0) {
-      return UtxoPsbt.deriveWalletKey(bip32, input.bip32Derivation, { keyFormat: 'plain' })?.publicKey;
-    }
-    return bip32.publicKey;
-  }
-
-  /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    *
    * Unlike the function it overrides, this does not take a validator. In BitGo
@@ -561,9 +542,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (this.data.globalMap.globalXpub.length !== 3) {
       throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
     }
+    const input = checkForInput(this.data.inputs, inputIndex);
     return this.data.globalMap.globalXpub.map((xpub) => {
       const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
-      const pubKey = this.getBip32PublicKeyForInput(inputIndex, bip32);
+      const pubKey = input.tapBip32Derivation?.length
+        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { keyFormat: 'xOnly' })?.publicKey
+        : input.bip32Derivation?.length
+        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { keyFormat: 'plain' })?.publicKey
+        : bip32?.publicKey;
       if (!pubKey) {
         return false;
       }
@@ -945,7 +931,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
   private createMusig2NonceForInput(
     inputIndex: number,
-    rootWalletKey: BIP32Interface,
+    keyPair: BIP32Interface,
+    keyType: 'root' | 'derived',
     sessionId?: Buffer
   ): PsbtMusig2PubNonce {
     const input = this.data.inputs[inputIndex];
@@ -955,14 +942,18 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!input.tapMerkleRoot) {
       throw new Error('tapMerkleRoot is required to create nonce');
     }
-    if (!input.tapBip32Derivation?.length) {
-      throw new Error('tapBip32Derivation is required to create nonce');
-    }
-    const derivedWalletKey = UtxoPsbt.deriveWalletKey(rootWalletKey, input.tapBip32Derivation, { keyFormat: 'xOnly' });
-    if (!derivedWalletKey) {
-      throw new Error('No bip32Derivation masterFingerprint matched the rootWalletKey fingerprint');
-    }
-    if (!derivedWalletKey.privateKey) {
+    const getDerivedKeyPair = (): BIP32Interface => {
+      if (!input.tapBip32Derivation?.length) {
+        throw new Error('tapBip32Derivation is required to create nonce');
+      }
+      const derived = UtxoPsbt.deriveKeyPair(keyPair, input.tapBip32Derivation, { keyFormat: 'xOnly' });
+      if (!derived) {
+        throw new Error('No bip32Derivation masterFingerprint matched the HD keyPair fingerprint');
+      }
+      return derived;
+    };
+    const derivedKeyPair = keyType === 'root' ? getDerivedKeyPair() : keyPair;
+    if (!derivedKeyPair.privateKey) {
       throw new Error('privateKey is required to create nonce');
     }
     const participants = parsePsbtMusig2Participants(this, inputIndex);
@@ -971,7 +962,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     assertPsbtMusig2Participants(participants, input.tapInternalKey, input.tapMerkleRoot);
     const { tapOutputKey, participantPubKeys } = participants;
-    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedWalletKey.publicKey));
+    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedKeyPair.publicKey));
 
     if (!Buffer.isBuffer(participantPubKey)) {
       throw new Error('participant plain pub key should match one bip32Derivation plain pub key');
@@ -979,7 +970,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     const { hash } = this.getTaprootHashForSig(inputIndex);
     const pubNonce = this.nonceStore.createMusig2Nonce(
-      derivedWalletKey.privateKey,
+      derivedKeyPair.privateKey,
       participantPubKey,
       tapOutputKey,
       hash,
@@ -989,18 +980,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return { tapOutputKey, participantPubKey, pubNonce: Buffer.from(pubNonce) };
   }
 
-  /**
-   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
-   * tapInternalkey, tapMerkleRoot, tapBip32Derivation for rootWalletKey are required per p2trMusig2 key path input.
-   * Also participant keys are required from psbt proprietary key values.
-   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param psbt
-   * @param rootWalletKey
-   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
-   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
-   */
-  setMusig2Nonces(rootWalletKey: BIP32Interface, sessionId?: Buffer): void {
-    if (rootWalletKey.isNeutered()) {
+  private setMusig2NoncesInner(keyPair: BIP32Interface, keyType: 'root' | 'derived', sessionId?: Buffer): this {
+    if (keyPair.isNeutered()) {
       throw new Error('private key is required to generate nonce');
     }
     if (Buffer.isBuffer(sessionId) && sessionId.length !== 32) {
@@ -1011,9 +992,38 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         // Not a p2trMusig2 key path input, so skip it.
         return;
       }
-      const nonce = this.createMusig2NonceForInput(inputIndex, rootWalletKey, sessionId);
+      const nonce = this.createMusig2NonceForInput(inputIndex, keyPair, keyType, sessionId);
       this.addOrUpdateProprietaryKeyValToInput(inputIndex, encodePsbtMusig2PubNonce(nonce));
     });
+    return this;
+  }
+
+  /**
+   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
+   * tapInternalkey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are required per p2trMusig2 key path input.
+   * Also participant keys are required from psbt proprietary key values.
+   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
+   * @param psbt
+   * @param derivedKeyPair derived key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   */
+  setMusig2Nonces(derivedKeyPair: BIP32Interface, sessionId?: Buffer): this {
+    return this.setMusig2NoncesInner(derivedKeyPair, 'derived', sessionId);
+  }
+
+  /**
+   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
+   * tapInternalkey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are required per p2trMusig2 key path input.
+   * Also participant keys are required from psbt proprietary key values.
+   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
+   * @param psbt
+   * @param hdKeyPair HD key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   */
+  setMusig2NoncesHD(hdKeyPair: BIP32Interface, sessionId?: Buffer): this {
+    return this.setMusig2NoncesInner(hdKeyPair, 'root', sessionId);
   }
 
   clone(): this {
