@@ -46,7 +46,7 @@
     "@bitgo/statics": "^14.4.0",
     "bignumber.js": "^9.0.0",
     "ethereumjs-util": "7.1.5",
-    "superagent": "^3.8.3"
+    "superagent": "^8.0.9"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",

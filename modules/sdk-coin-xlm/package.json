@@ -46,7 +46,7 @@
     "bignumber.js": "^8.0.1",
     "lodash": "^4.17.14",
     "stellar-sdk": "^10.0.1",
-    "superagent": "^3.8.3"
+    "superagent": "^8.0.9"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.9.10",

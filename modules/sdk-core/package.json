@@ -64,7 +64,7 @@
     "paillier-bigint": "3.3.0",
     "secp256k1": "^4.0.2",
     "strip-hex-prefix": "^1.0.0",
-    "superagent": "^3.8.3",
+    "superagent": "^8.0.9",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
