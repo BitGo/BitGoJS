@@ -12,4 +12,5 @@ export interface IEnterprise {
   getFirstPendingTransaction(params?: Record<string, never>): Promise<any>;
   settlements(): ISettlements;
   affirmations(): IAffirmations;
+  initiateChallengesForEcdsaSigning(): Promise<void>;
 }

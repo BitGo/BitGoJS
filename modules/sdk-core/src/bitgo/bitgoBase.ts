@@ -13,10 +13,10 @@ export interface BitGoBase {
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;
-  getECDHSharingKeychain(): Promise<any>;
+  getECDHKeychain(ecdhKeychainPub?: string): Promise<any>;
   getEnv(): EnvironmentName;
   getSharingKey({ email }: GetSharingKeyOptions): Promise<any>;
-  getSigningKeyForUser(userId: string, enterpriseId: string): Promise<GetSigningKeyApi>;
+  getSigningKeyForUser(enterpriseId: string, userId?: string): Promise<GetSigningKeyApi>;
   microservicesUrl(path: string): string;
   post(url: string): BitGoRequest;
   put(url: string): BitGoRequest;

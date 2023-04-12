@@ -119,8 +119,8 @@ export interface GetKeysForSigningOptions {
 export interface GetSigningKeyApi {
   userId: string;
   userEmail: string;
-  pubkey: string;
-  path?: string;
+  derivedPubkey: string;
+  derivationPath?: string;
   ecdhKeychain?: string;
 }
 

@@ -50,6 +50,14 @@ export function verifyMessage(
 }
 
 /**
+ Signs a message using a given ecdh xprv at a given path
+ */
+export function signMessageWithDerivedKey(message: string, xprv: string, path: string): Buffer {
+  const derivedBip32Key = bip32.fromBase58(xprv).derivePath(path);
+  return derivedBip32Key.sign(Buffer.from(message, 'hex'));
+}
+
+/**
  Verifies if a message was signed using the given ecdh key
  */
 export function verifyEcdhSignature(message: string, signature: string, ecdhXpub: string): boolean {

@@ -1,10 +1,11 @@
 import assert from 'assert';
 
 import { BitGoBase } from '../bitgoBase';
-import { RequestType, ApiChallenges, TxRequest } from '../utils';
+import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 import { verifyEcdhSignature } from '../bip32util';
 import openpgp from 'openpgp';
+import { ApiChallenges } from '../utils/tss/ecdsa';
 
 /**
  * Gets the latest Tx Request by id
@@ -94,7 +95,7 @@ export async function getChallengesForEcdsaSigning(
 
   const challengeVerifierUserId = result.createdBy;
   const adminSigningKeyResponse = await bitgo.getSigningKeyForUser(challengeVerifierUserId, enterpriseId);
-  const pubkeyOfAdminEcdhSigningKey: string = adminSigningKeyResponse.pubkey;
+  const pubkeyOfAdminEcdhSigningKey: string = adminSigningKeyResponse.derivedPubkey;
 
   // Verify enterprise's challenge is signed by the respective admin's ecdh keychain
   const enterpriseRawChallenge = {

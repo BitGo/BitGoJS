@@ -8,6 +8,7 @@ import { IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal/internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
+import { EcdsaUtils } from '../utils/tss/ecdsa';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -111,5 +112,9 @@ export class Enterprise implements IEnterprise {
    */
   affirmations(): Affirmations {
     return new Affirmations(this.bitgo, this.id);
+  }
+
+  async initiateChallengesForEcdsaSigning(): Promise<void> {
+    await EcdsaUtils.initiateChallengesForEnterprise(this.bitgo, this.id);
   }
 }

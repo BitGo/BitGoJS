@@ -12,11 +12,18 @@ export interface NtildeProof {
   t: bigint[];
 }
 
+// String serialized NTilde Proof values
+export interface NtildeProofShare {
+  alpha: string[];
+  t: string[];
+}
+
 // String-serialized NTilde values.
 export interface NTildeShare {
   ntilde: string;
   h1: string;
   h2: string;
+  ntildeProof?: NtildeProofShare;
 }
 
 // Range proof values
