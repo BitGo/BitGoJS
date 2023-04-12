@@ -127,14 +127,14 @@ export class TokenTransferBuilder extends TransactionBuilder {
       uniqueCreateAtaParams.map(async (recipient: TokenAssociateRecipient): Promise<AtaInit> => {
         const coin = getSolTokenFromTokenName(recipient.tokenName);
         assert(coin instanceof SolCoin);
-        const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
+        const recipientTokenAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, recipient.ownerAddress);
         return {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             ownerAddress: recipient.ownerAddress,
             tokenName: coin.name,
             mintAddress: coin.tokenAddress,
-            ataAddress: sourceAddress,
+            ataAddress: recipientTokenAddress,
             payerAddress: this._sender,
           },
         };
