@@ -8,6 +8,12 @@ export interface NTilde {
 
 // NTilde Proof
 export interface NtildeProof {
+  h1WrtH2: NtildeProofH1H2;
+  h2WrtH1: NtildeProofH1H2;
+}
+
+// NTilde Proof where both alpha and t are a set of 128 proofs each.
+export interface NtildeProofH1H2 {
   alpha: bigint[];
   t: bigint[];
 }
@@ -19,11 +25,24 @@ export interface RSAModulus {
   q2: bigint;
 }
 
+// String serialized NTilde Proof values
+export interface NtildeProofShare {
+  h1WrtH2: {
+    alpha: string[];
+    t: string[];
+  };
+  h2WrtH1: {
+    alpha: string[];
+    t: string[];
+  };
+}
+
 // String-serialized NTilde values.
 export interface NTildeShare {
   ntilde: string;
   h1: string;
   h2: string;
+  ntildeProof?: NtildeProofShare;
 }
 
 // Range proof values

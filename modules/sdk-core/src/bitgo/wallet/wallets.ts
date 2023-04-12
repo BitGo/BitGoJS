@@ -532,7 +532,7 @@ export class Wallets implements IWallets {
       throw new Error('userPassword param must be provided to decrypt shared key');
     }
 
-    const sharingKeychain = (await this.bitgo.getECDHSharingKeychain()) as any;
+    const sharingKeychain = (await this.bitgo.getECDHKeychain()) as any;
     if (_.isUndefined(sharingKeychain.encryptedXprv)) {
       throw new Error('encryptedXprv was not found on sharing keychain');
     }

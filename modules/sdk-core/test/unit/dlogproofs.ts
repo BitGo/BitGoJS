@@ -1,4 +1,3 @@
-import 'should';
 import * as sinon from 'sinon';
 import {
   generateNTilde,
@@ -31,16 +30,17 @@ describe('h1H2DiscreteLogProofs', function () {
     // 512 bits is not secure for generating an Ntilde, this is for testing purposes ONLY.
     const ntilde = await generateNTilde(512);
     (
-      await verifyNtildeProof(ntilde, {
-        alpha: ntilde.ntildeProof!.alpha.slice(0, 128),
-        t: ntilde.ntildeProof!.t.slice(0, 128),
-      })
+      await verifyNtildeProof(
+        {
+          ntilde: ntilde.ntilde,
+          h1: ntilde.h1,
+          h2: ntilde.h2,
+        },
+        ntilde.ntildeProof!.h1WrtH2
+      )
     ).should.be.true();
     (
-      await verifyNtildeProof(
-        { ntilde: ntilde.ntilde, h1: ntilde.h2, h2: ntilde.h1 },
-        { alpha: ntilde.ntildeProof!.alpha.slice(128), t: ntilde.ntildeProof!.t.slice(128) }
-      )
+      await verifyNtildeProof({ ntilde: ntilde.ntilde, h1: ntilde.h2, h2: ntilde.h1 }, ntilde.ntildeProof!.h2WrtH1)
     ).should.be.true();
   });
   it('catch h1 and h2 not being in the same group', async function () {
