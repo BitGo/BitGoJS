@@ -4,6 +4,7 @@ import should from 'should';
 import * as testData from '../../resources/sol';
 
 describe('Sol Token Transfer Builder', () => {
+  let ataAddress;
   const factory = getBuilderFactory('tsol');
 
   const tokenTransferBuilder = () => {
@@ -25,8 +26,11 @@ describe('Sol Token Transfer Builder', () => {
   const owner = testData.tokenTransfers.owner;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
-
   describe('Succeed', () => {
+    before(async () => {
+      ataAddress = await Utils.getAssociatedTokenAccountAddress(mintUSDC, otherAccount.pub);
+    });
+
     it('build a token transfer tx unsigned with memo', async () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash);
@@ -364,7 +368,7 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[1].params.should.deepEqual({
         mintAddress: mintUSDC,
-        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
@@ -380,6 +384,8 @@ describe('Sol Token Transfer Builder', () => {
     it('build a multi token transfer tx unsigned with multi create ATA, memo and durable nonce', async () => {
       const account1 = new KeyPair({ prv: testData.extraAccounts.prv1 }).getKeys();
       const account2 = new KeyPair({ prv: testData.extraAccounts.prv2 }).getKeys();
+      const ataAddress1 = await Utils.getAssociatedTokenAccountAddress(mintUSDC, account1.pub);
+      const ataAddress2 = await Utils.getAssociatedTokenAccountAddress(mintUSDC, account2.pub);
 
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.sender(walletPK);
@@ -453,7 +459,7 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[3].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[3].params.should.deepEqual({
         mintAddress: mintUSDC,
-        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
@@ -461,7 +467,7 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[4].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[4].params.should.deepEqual({
         mintAddress: mintUSDC,
-        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ataAddress: ataAddress1,
         ownerAddress: account1.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
@@ -469,7 +475,7 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[5].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[5].params.should.deepEqual({
         mintAddress: mintUSDC,
-        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ataAddress: ataAddress2,
         ownerAddress: account2.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
@@ -555,7 +561,7 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[3].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[3].params.should.deepEqual({
         mintAddress: mintUSDC,
-        ataAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
