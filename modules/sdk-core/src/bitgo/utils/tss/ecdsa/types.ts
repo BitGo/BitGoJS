@@ -20,7 +20,7 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
 export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;
 
 export type ApiChallenge = {
-  nTilde: string;
+  ntilde: string;
   h1: string;
   h2: string;
 };
@@ -36,7 +36,7 @@ export type ApiChallenges = {
 };
 
 export type ChallengeWithNTildeProofApi = ApiChallenge & {
-  nTildeProof: {
+  ntildeProof: {
     h1WrtH2: ApiNTildeProof;
     h2WrtH1: ApiNTildeProof;
   };

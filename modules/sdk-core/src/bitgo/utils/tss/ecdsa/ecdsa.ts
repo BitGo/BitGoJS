@@ -6,6 +6,7 @@ import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import {
+  ApiChallenges,
   CreateEcdsaBitGoKeychainParams,
   CreateEcdsaKeychainParams,
   DecryptableNShare,
@@ -29,10 +30,9 @@ import { BackupProvider, IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
-import { getChallengesForEcdsaSigning } from '../../../tss/common';
 import { NTilde, NTildeShare } from '../../../../account-lib/mpc/tss/ecdsa/types';
 import { generateNTilde, verifyNtildeProof } from '../../../../account-lib/mpc/tss/ecdsa/rangeproof';
-import { signMessageWithDerivedKey } from '../../../bip32util';
+import { signMessageWithDerivedKey, verifyEcdhSignature } from '../../../bip32util';
 import { Buffer } from 'buffer';
 import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../../account-lib';
 
@@ -661,23 +661,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       n: signingKey.nShares[bitgoIndex].n,
     };
 
-    const apiChallenges = await getChallengesForEcdsaSigning(
+    const apiChallenges = await EcdsaUtils.getChallengesForEcdsaSigning(
       this.bitgo,
       this.wallet.id(),
       this.wallet.toJSON().enterprise
     );
-    const clientChallengeBigInt: NTilde = EcdsaUtils.deserializeNTilde({
-      ntilde: apiChallenges.enterpriseChallenge.nTilde,
-      h1: apiChallenges.enterpriseChallenge.h1,
-      h2: apiChallenges.enterpriseChallenge.h2,
-    });
+    const clientChallengeBigInt: NTilde = EcdsaUtils.deserializeNTilde(apiChallenges.enterpriseChallenge);
     const signingKeyWithChallenge = await MPC.appendChallenge(signingKey.xShare, yShare, clientChallengeBigInt);
 
-    const bitgoChallenge: NTildeShare = {
-      ntilde: apiChallenges.bitGoChallenge.nTilde,
-      h1: apiChallenges.bitGoChallenge.h1,
-      h2: apiChallenges.bitGoChallenge.h2,
-    };
+    const bitgoChallenge = apiChallenges.bitGoChallenge;
 
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
       i: userIndex,
@@ -795,6 +787,67 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   }
 
   /**
+   * Get the challenge values for enterprise and BitGo in ECDSA signing
+   * Only returns the challenges if they are verified by the user's enterprise admin's ecdh key
+   * @param bitgo
+   * @param walletId
+   * @param enterpriseId
+   */
+  static async getChallengesForEcdsaSigning(
+    bitgo: BitGoBase,
+    walletId: string,
+    enterpriseId: string
+  ): Promise<ApiChallenges> {
+    const urlPath = `/wallet/${walletId}/challenges`;
+    const result = await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
+    const enterpriseChallenge = result.enterpriseChallenge;
+    const bitGoChallenge = result.bitGoChallenge;
+
+    const challengeVerifierUserId = result.createdBy;
+    const adminSigningKeyResponse = await bitgo.getSigningKeyForUser(challengeVerifierUserId, enterpriseId);
+    const pubkeyOfAdminEcdhSigningKey: string = adminSigningKeyResponse.derivedPubkey;
+
+    // Verify enterprise's challenge is signed by the respective admin's ecdh keychain
+    const enterpriseRawChallenge = {
+      ntilde: enterpriseChallenge.ntilde,
+      h1: enterpriseChallenge.h1,
+      h2: enterpriseChallenge.h2,
+    };
+    const adminSignatureOnEntChallenge: string = enterpriseChallenge.verifiers.adminSignature;
+    if (
+      !verifyEcdhSignature(
+        JSON.stringify(enterpriseRawChallenge),
+        adminSignatureOnEntChallenge,
+        pubkeyOfAdminEcdhSigningKey
+      )
+    ) {
+      throw new Error(`Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.`);
+    }
+
+    // Verify that the BitGo challenge's ZK proofs have been verified by the admin
+    const bitGoRawChallenge = {
+      ntilde: bitGoChallenge.nTilde,
+      h1: bitGoChallenge.h1,
+      h2: bitGoChallenge.h2,
+    };
+    const adminVerificationSignatureForBitGoChallenge = bitGoChallenge.verifiers.adminSignature;
+    if (
+      !verifyEcdhSignature(
+        JSON.stringify(bitGoRawChallenge),
+        adminVerificationSignatureForBitGoChallenge,
+        pubkeyOfAdminEcdhSigningKey
+      )
+    ) {
+      throw new Error(`Admin signature for BitGo's challenge is not valid. Please contact your enterprise admin.`);
+    }
+
+    return {
+      enterpriseChallenge: enterpriseRawChallenge,
+      bitGoChallenge: bitGoRawChallenge,
+    };
+  }
+
+  /**
    * Verifies the u-value proofs and GPG keys used in generating a TSS ECDSA wallet.
    * @param userGpgPub The user's public GPG key for encryption between user/server
    * @param backupGpgPub The backup's public GPG key for encryption between backup/server
@@ -859,34 +912,34 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   static async verifyBitGoChallenges(bitgoChallenges: GetBitGoChallengesApi): Promise<boolean> {
     // Verify institutional hsm challenge proof (H1WrtH2)
     const instChallengeH1WrtH2Verified = this.verifyBitGoChallenge({
-      ntilde: bitgoChallenges.bitgoInstitutionalHsm.nTilde,
+      ntilde: bitgoChallenges.bitgoInstitutionalHsm.ntilde,
       h1: bitgoChallenges.bitgoInstitutionalHsm.h1,
       h2: bitgoChallenges.bitgoInstitutionalHsm.h2,
-      ntildeProof: bitgoChallenges.bitgoInstitutionalHsm.nTildeProof.h1WrtH2,
+      ntildeProof: bitgoChallenges.bitgoInstitutionalHsm.ntildeProof.h1WrtH2,
     });
 
     // Verify institutional hsm challenge proof (H2WrtH1)
     const instChallengeH2WrtH1Verified = this.verifyBitGoChallenge({
-      ntilde: bitgoChallenges.bitgoInstitutionalHsm.nTilde,
+      ntilde: bitgoChallenges.bitgoInstitutionalHsm.ntilde,
       h1: bitgoChallenges.bitgoInstitutionalHsm.h2,
       h2: bitgoChallenges.bitgoInstitutionalHsm.h1,
-      ntildeProof: bitgoChallenges.bitgoInstitutionalHsm.nTildeProof.h2WrtH1,
+      ntildeProof: bitgoChallenges.bitgoInstitutionalHsm.ntildeProof.h2WrtH1,
     });
 
     // Verify nitro hsm challenge proof (H1WrtH2)
     const nitroChallengeH1WrtH2Verified = this.verifyBitGoChallenge({
-      ntilde: bitgoChallenges.bitgoNitroHsm.nTilde,
+      ntilde: bitgoChallenges.bitgoNitroHsm.ntilde,
       h1: bitgoChallenges.bitgoNitroHsm.h1,
       h2: bitgoChallenges.bitgoNitroHsm.h2,
-      ntildeProof: bitgoChallenges.bitgoNitroHsm.nTildeProof.h1WrtH2,
+      ntildeProof: bitgoChallenges.bitgoNitroHsm.ntildeProof.h1WrtH2,
     });
 
     // Verify nitro hsm challenge proof (H1WrtH2)
     const nitroChallengeH2WrtH1Verified = this.verifyBitGoChallenge({
-      ntilde: bitgoChallenges.bitgoNitroHsm.nTilde,
+      ntilde: bitgoChallenges.bitgoNitroHsm.ntilde,
       h1: bitgoChallenges.bitgoNitroHsm.h2,
       h2: bitgoChallenges.bitgoNitroHsm.h1,
-      ntildeProof: bitgoChallenges.bitgoNitroHsm.nTildeProof.h2WrtH1,
+      ntildeProof: bitgoChallenges.bitgoNitroHsm.ntildeProof.h2WrtH1,
     });
 
     return (
@@ -980,7 +1033,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
     const signedBitGoInstChallenge = EcdsaUtils.signChallenge(
       {
-        ntilde: bitgoChallengesWithProofs.bitgoInstitutionalHsm.nTilde,
+        ntilde: bitgoChallengesWithProofs.bitgoInstitutionalHsm.ntilde,
         h1: bitgoChallengesWithProofs.bitgoInstitutionalHsm.h1,
         h2: bitgoChallengesWithProofs.bitgoInstitutionalHsm.h2,
       },
@@ -989,7 +1042,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     );
     const signedBitGoNitroChallenge = EcdsaUtils.signChallenge(
       {
-        ntilde: bitgoChallengesWithProofs.bitgoNitroHsm.nTilde,
+        ntilde: bitgoChallengesWithProofs.bitgoNitroHsm.ntilde,
         h1: bitgoChallengesWithProofs.bitgoNitroHsm.h1,
         h2: bitgoChallengesWithProofs.bitgoNitroHsm.h2,
       },
