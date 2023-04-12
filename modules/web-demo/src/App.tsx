@@ -7,6 +7,9 @@ const BGComponent = lazy(() => import('@components/BitGoJS'));
 const BGApiComponent = lazy(() => import('@components/BitGoAPI'));
 const CoinsComponent = lazy(() => import('@components/Coins'));
 const KeyCardComponent = lazy(() => import('@components/KeyCard'));
+const EcdsaChallengeComponent = lazy(
+  () => import('@components/EcdsaChallenge'),
+);
 
 const Loading = () => <div>Loading route...</div>;
 
@@ -21,6 +24,10 @@ const App = () => {
             <Route path="/bitgo-api" element={<BGApiComponent />} />
             <Route path="/coins" element={<CoinsComponent />} />
             <Route path="/keycard" element={<KeyCardComponent />} />
+            <Route
+              path="/ecdsachallenge"
+              element={<EcdsaChallengeComponent />}
+            />
           </Routes>
         </Suspense>
       </Layout>

@@ -5,17 +5,35 @@
 import { createHash } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, prime, randBits, randBetween } from 'bigint-crypto-utils';
+import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modPow } from 'bigint-mod-arith';
 import { NTilde, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+import { OpenSSL } from '../../../../openssl/openssl';
+
+export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]> {
+  const openSSL = new OpenSSL();
+  await openSSL.init();
+  const promises: Promise<string>[] = bitLengths.map((bitlength: number) => {
+    return openSSL.runCommand(`prime -bits ${bitlength} -generate -safe`);
+  });
+  const bigIntStrings = await Promise.all(promises);
+  return bigIntStrings.map((bigIntString) => {
+    return BigInt(bigIntString);
+  });
+}
 
 async function generateModulus(bitlength: number): Promise<bigint> {
-  let n, p, q;
-  do {
-    [p, q] = await Promise.all([prime(Math.floor(bitlength / 2) + 1), prime(Math.floor(bitlength / 2))]);
-    n = p * q;
-  } while (q === p || bitLength(n) !== bitlength);
+  const bitlengthP = Math.floor(bitlength / 2);
+  const bitlengthQ = bitlength - bitlengthP;
+  const [p, q] = await generateSafePrimes([bitlengthP, bitlengthQ]);
+  const n = p * q;
+  // We never expect this to happen unless something went wrong with the wasm/openssl module
+  if (bitLength(n) !== bitlength) {
+    throw new Error(
+      `Unable to generate modules with bit length of ${bitLength}, please try again or reach out to support@bitgo.com`
+    );
+  }
   return n;
 }
 
