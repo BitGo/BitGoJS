@@ -47,7 +47,7 @@ export function getPrefix(network: Network): string {
     case networks.ecash:
       return 'ecash';
     case networks.ecashTest:
-      return 'ecashtest';
+      return 'ectest';
     default:
       throw new Error(`unsupported prefix for ${getNetworkName(network)}`);
   }
