@@ -13,11 +13,11 @@ import { signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
 import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { KeyName, RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { Triple, Tuple } from '../types';
+import { Triple } from '../types';
 import { toOutput, UnspentWithPrevTx, Unspent, isUnspentWithPrevTx, toPrevOutput } from '../Unspent';
 import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
-import { encodePsbtMusig2Participants } from '../Musig2';
+import { encodePsbtMusig2Participants, sortMusig2ParticipantPubKeys } from '../Musig2';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -189,11 +189,11 @@ export function addWalletUnspentToPsbt(
       outputPubkey: tapOutputKey,
       taptreeRoot,
     } = createKeyPathP2trMusig2(walletKeys.publicKeys);
-    const participantPubKeys: Tuple<Buffer> = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
+    const participantPubKeys = sortMusig2ParticipantPubKeys([walletKeys.user.publicKey, walletKeys.bitgo.publicKey]);
     const participantsKeyValData = encodePsbtMusig2Participants({
       tapOutputKey,
       tapInternalKey,
-      participantPubKeys,
+      participantPubKeys: [participantPubKeys[0], participantPubKeys[1]],
     });
     psbt.addProprietaryKeyValToInput(inputIndex, participantsKeyValData);
     psbt.updateInput(inputIndex, {

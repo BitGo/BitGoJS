@@ -215,6 +215,10 @@ export function decodePsbtMusig2PartialSig(kv: ProprietaryKeyValue): PsbtMusig2P
   return { participantPubKey: key.subarray(0, 33), tapOutputKey: key.subarray(33), partialSig: value };
 }
 
+export function sortMusig2ParticipantPubKeys(plainPubKeys: Buffer[]): Buffer[] {
+  return musig.keySort(plainPubKeys).map((pk) => Buffer.from(pk));
+}
+
 export function createTapInternalKey(plainPubKeys: Buffer[]): Buffer {
   return Buffer.from(musig.getXOnlyPubkey(musig.keyAgg(musig.keySort(plainPubKeys))));
 }
