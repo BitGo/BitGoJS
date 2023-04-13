@@ -140,7 +140,8 @@ export class TokenTransferBuilder extends TransactionBuilder {
         };
       })
     );
-    this._instructionsData = [...sendInstructions, ...createAtaInstructions];
+    // order is important, createAtaInstructions must be before sendInstructions
+    this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     return await super.buildImplementation();
   }
 }
