@@ -351,6 +351,7 @@ export interface CreateAddressOptions {
   allowSkipVerifyAddress?: boolean;
   derivedAddress?: string;
   index?: number;
+  onToken?: string;
 }
 
 export interface UpdateAddressOptions {
