@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.4.8...@bitgo/sdk-coin-polygon@1.5.0) (2023-04-13)
+
+### Features
+
+- **sdk-coin-polygon:** support evm based cross chain recovery ([a88681f](https://github.com/BitGo/BitGoJS/commit/a88681f8428bcb6617ee2c7cfe5e8294b603af9f))
+
 ## [1.4.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.4.7...@bitgo/sdk-coin-polygon@1.4.8) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

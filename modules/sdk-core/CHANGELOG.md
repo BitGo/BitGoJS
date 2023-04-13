@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@7.0.1...@bitgo/sdk-core@8.0.0) (2023-04-13)
+
+### Bug Fixes
+
+- **bitgo:** add argument to create address on ofc wallets ([b1a212d](https://github.com/BitGo/BitGoJS/commit/b1a212d05962719822c8420acf4f01dc6e012d16))
+- conditional check to custodial consolidation ([46cda4e](https://github.com/BitGo/BitGoJS/commit/46cda4e97bf060dd886d86bc254a6f709c09fe11))
+- **sdk-core:** add new function in BaseCoin to get hash-function ([e028b31](https://github.com/BitGo/BitGoJS/commit/e028b31b3954810ee6c3fd7fdfa6ed4a07aa458e))
+- **sdk-core:** add walletpassphrase to message signing ([7265c67](https://github.com/BitGo/BitGoJS/commit/7265c674e4934c00309525b4474d34c137a53cb9))
+- **sdk-core:** change testnet ada node url in config ([8e7e185](https://github.com/BitGo/BitGoJS/commit/8e7e185c20c4c631a89ffb8a4074d80bd673b2dc))
+- **sdk-core:** create reqid if not present ([758c198](https://github.com/BitGo/BitGoJS/commit/758c198aaf6a04553d0031f4a429aa109aa8f11e))
+- **sdk-core:** eth tss receive address ([a67a98a](https://github.com/BitGo/BitGoJS/commit/a67a98a82e8a19c1f1c126900e273691be08d70c))
+- **sdk-core:** fix parameter misordering for user gpg key ([225246e](https://github.com/BitGo/BitGoJS/commit/225246e7d52974c216e3b4ff7cfaf9edb213eb3e))
+- **sdk-core:** return txreqid and raw message ([89944a5](https://github.com/BitGo/BitGoJS/commit/89944a5b23caea91bf7e9f61732abcd90bd0c61a))
+- used derived keys and use xonly public key for script ([382ce07](https://github.com/BitGo/BitGoJS/commit/382ce073b660f2d002176e3a8fdcadcf5bbaff6a))
+
+### Features
+
+- add inscription builder class ([214eafe](https://github.com/BitGo/BitGoJS/commit/214eafe48e8d12fd5d58efac289bab33bbd46fd3))
+- express route for signing arbitrary payloads ([808acec](https://github.com/BitGo/BitGoJS/commit/808acecc68d40edeb93f8365e45a01746cf98f97))
+- **sdk-coin-btc:** transfer an inscription ([bc2eda8](https://github.com/BitGo/BitGoJS/commit/bc2eda86f73a4e4451fd6accbc2a794f08649b78))
+- **sdk-coin-polygon:** support evm based cross chain recovery ([a88681f](https://github.com/BitGo/BitGoJS/commit/a88681f8428bcb6617ee2c7cfe5e8294b603af9f))
+- **sdk-coin-sui:** add mystenlab types and remove old impl of transfer ([4a8aeaa](https://github.com/BitGo/BitGoJS/commit/4a8aeaa97cb372dfaa2b364fd9c617f47f037d03))
+- **sdk-core:** add `switchValidator` for stakingWallet ([c067695](https://github.com/BitGo/BitGoJS/commit/c0676959b9f103ef45439ce32412cca27bf81642))
+- **sdk-core:** add sha256 hash support in ecdsa tss signing ([b43d733](https://github.com/BitGo/BitGoJS/commit/b43d7330aa15174fdc07fc6800d19dd88055deb2))
+- **sdk-core:** add signedChildPsbt to halfSigned object ([f1c1ac5](https://github.com/BitGo/BitGoJS/commit/f1c1ac59e9c45ea01d8133bcac502c67a465a000))
+- **sdk-core:** allow passing a list of delegations for eth ([e6b7022](https://github.com/BitGo/BitGoJS/commit/e6b70226eb7735931c433c0888b8bbd0f8594234))
+- **sdk-core:** enable fillNonce and acceleration tx for receive address ([09f05f3](https://github.com/BitGo/BitGoJS/commit/09f05f3f18994e5bd0600ba2f98f2f860ea85bd0))
+- **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+
+### BREAKING CHANGES
+
+- **sdk-core:** return txreqid, raw message, and txhash instead of just txhash
+
+Ticket: BG-68940
+
 ## [7.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@7.0.0...@bitgo/sdk-core@7.0.1) (2023-02-17)
 
 ### Bug Fixes

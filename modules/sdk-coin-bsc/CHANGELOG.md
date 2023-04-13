@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.3.1...@bitgo/sdk-coin-bsc@3.4.0) (2023-04-13)
+
+### Features
+
+- **sdk-coin-bsc:** allow account consolidations ([0d94585](https://github.com/BitGo/BitGoJS/commit/0d94585cb5ddcbb1a90388930287c5952f67f658))
+
 ## [3.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.3.0...@bitgo/sdk-coin-bsc@3.3.1) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

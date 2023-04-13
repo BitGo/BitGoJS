@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.4.15...@bitgo/sdk-coin-stx@2.0.0) (2023-04-13)
+
+### Features
+
+- **sdk-coin-stx:** update stx staking contract name ([e0701e0](https://github.com/BitGo/BitGoJS/commit/e0701e00d2aeb83459da518c2e7482cdfac68489))
+
+### BREAKING CHANGES
+
+- **sdk-coin-stx:** The old pox contract is no longer allowed, pox-2 must be used
+
+BG-71631
+
 ## [1.4.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@1.4.14...@bitgo/sdk-coin-stx@1.4.15) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

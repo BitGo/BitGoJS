@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@2.0.1...@bitgo/sdk-coin-sui@3.0.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** adjust sui bcs models changes ([25f06e7](https://github.com/BitGo/BitGoJS/commit/25f06e7a0c922594858a8b9fc5b48c96acacc27f))
+- **sdk-coin-sui:** export unstaking ([d23986d](https://github.com/BitGo/BitGoJS/commit/d23986dd25fba757501696263a3118012e948922))
+- **sdk-coin-sui:** fix outputs address and add validation ([077640c](https://github.com/BitGo/BitGoJS/commit/077640c4b76492489a88728c272b33755ef744a9))
+- **sdk-coin-sui:** fix sui verifyTransaction method ([c86766a](https://github.com/BitGo/BitGoJS/commit/c86766aa3668d2f22f1f2cf438c806bb3b88289c))
+- **sdk-coin-sui:** fix tx type ([94e2178](https://github.com/BitGo/BitGoJS/commit/94e2178dff63faf5f41065e4781c47d0fc8cbd2a))
+- **sdk-coin-sui:** fix txHex to hex string ([48b462e](https://github.com/BitGo/BitGoJS/commit/48b462eb914fd8f69b801bc440eb5d236c7893c6))
+- **sdk-coin-sui:** fixed getAddressFromPublicKey for SUI ([0d6d72d](https://github.com/BitGo/BitGoJS/commit/0d6d72dd9529e7156b13aa204d8999806587e502))
+- **sdk-coin-sui:** staking explain transaction ([fbc49f8](https://github.com/BitGo/BitGoJS/commit/fbc49f8cd39d265f7a5ff65ed5896e12389b4b09))
+- **sdk-coin-sui:** tx signing flow ([ae681ed](https://github.com/BitGo/BitGoJS/commit/ae681ed6d9d895beff67621e46a589d0317eb403))
+
+### chore
+
+- **sdk-coin-sui:** update bcs and tx serialization ([8280468](https://github.com/BitGo/BitGoJS/commit/82804683d6c5149e628002f64b2b9b5c8f92665b))
+
+### Features
+
+- remove swtich tx builder not supported prior on 0.28 release ([2aaff40](https://github.com/BitGo/BitGoJS/commit/2aaff4018842137ea2fdef4a4ab818f28eff8232))
+- **sdk-coin-sui:** add mystenlab types and remove old impl of transfer ([4a8aeaa](https://github.com/BitGo/BitGoJS/commit/4a8aeaa97cb372dfaa2b364fd9c617f47f037d03))
+- **sdk-coin-sui:** build staking transaction ([53d3b6e](https://github.com/BitGo/BitGoJS/commit/53d3b6efcda6148bb20ebf6647deb05e7c464744))
+- **sdk-coin-sui:** build transfer transaction ([bc0f531](https://github.com/BitGo/BitGoJS/commit/bc0f5310650dbb5a6cc16c23047f81853aec1b1e))
+- **sdk-coin-sui:** build unstaking transaction ([c3ef7de](https://github.com/BitGo/BitGoJS/commit/c3ef7de26abca8d5d1161ef04891a39b5aaf6d4b))
+- **sdk-coin-sui:** implement generateKeyPair ([ca9f788](https://github.com/BitGo/BitGoJS/commit/ca9f788d8e08bf6c04ae49088ee7a0b405b03be5))
+- **sdk-coin-sui:** update sui models up to 0.30 ([b9de616](https://github.com/BitGo/BitGoJS/commit/b9de616afaebc8da546bd95cbec63d5d21079889))
+- update signature hashing ([fcadc86](https://github.com/BitGo/BitGoJS/commit/fcadc8688ef9d0c2f1ed86b7e50053fd62045b0a))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sui:** gasData is added to transaction builder interface
+
 ## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@2.0.0...@bitgo/sdk-coin-sui@2.0.1) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

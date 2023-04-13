@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.0.1...@bitgo/abstract-utxo@2.1.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-coin-btc:** get rootwalletkeys for inscription transfer ([b160186](https://github.com/BitGo/BitGoJS/commit/b16018643273e20ea6908f51149139def7209932))
+
+### Features
+
+- **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+
 ## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.0.0...@bitgo/abstract-utxo@2.0.1) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

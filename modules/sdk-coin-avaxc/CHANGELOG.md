@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.4.6...@bitgo/sdk-coin-avaxc@2.4.7) (2023-04-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxc
+
 ## [2.4.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.4.5...@bitgo/sdk-coin-avaxc@2.4.6) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.2.1...@bitgo/sdk-coin-eth@4.3.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-coin-eth:** consolidation verification tss ([a45bfc0](https://github.com/BitGo/BitGoJS/commit/a45bfc08d3e6b689743995945f448fb1b411a53c))
+- **sdk-coin-eth:** fix @ethereumjs/util version to support node 14 ([3581c03](https://github.com/BitGo/BitGoJS/commit/3581c037717736058607001c80fbd713163ed319))
+
+### Features
+
+- **sdk-coin-polygon:** support evm based cross chain recovery ([a88681f](https://github.com/BitGo/BitGoJS/commit/a88681f8428bcb6617ee2c7cfe5e8294b603af9f))
+
 ## [4.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.2.0...@bitgo/sdk-coin-eth@4.2.1) (2023-02-17)
 
 ### Bug Fixes

@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.0.1...bitgo@18.1.0) (2023-04-13)
+
+
+### Bug Fixes
+
+* **bitgo:** add argument to create address on ofc wallets ([b1a212d](https://github.com/BitGo/BitGoJS/commit/b1a212d05962719822c8420acf4f01dc6e012d16))
+* **bitgo:** modified failing unit tests ([9b3ec66](https://github.com/BitGo/BitGoJS/commit/9b3ec66d886b1db936df678cdcb4e3ca6ed785b2))
+* **sdk-core:** fix parameter misordering for user gpg key ([225246e](https://github.com/BitGo/BitGoJS/commit/225246e7d52974c216e3b4ff7cfaf9edb213eb3e))
+
+
+### Features
+
+* **sdk-coin-trx:** add tokens to tron recovery method ([1aec210](https://github.com/BitGo/BitGoJS/commit/1aec2109bbd52a5c77d9df529ec73184c9babc85))
+* **sdk-core:** add `switchValidator` for stakingWallet ([c067695](https://github.com/BitGo/BitGoJS/commit/c0676959b9f103ef45439ce32412cca27bf81642))
+* **sdk-core:** enable fillNonce and acceleration tx for receive address ([09f05f3](https://github.com/BitGo/BitGoJS/commit/09f05f3f18994e5bd0600ba2f98f2f860ea85bd0))
+* **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+* **utxo-lib:** fix for noble ecc wrapper buffer to bigint conversion ([ba58297](https://github.com/BitGo/BitGoJS/commit/ba582975d63c5a3f2584a0bd3cb12ab8a3209d7f))
+* **utxo-lib:** improve signature of `createTransactionFromBuffer` ([b896944](https://github.com/BitGo/BitGoJS/commit/b89694442e060cac35b3fc558dc6f87d93f74db3))
+* **utxo-lib:** introduce ParsedScriptType ([3c28bbc](https://github.com/BitGo/BitGoJS/commit/3c28bbc4baada5b614ef5893301059b51b324ce2))
+
+
+
+
+
 ## [18.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.0.0...bitgo@18.0.1) (2023-02-17)
 
 

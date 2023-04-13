@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.9...@bitgo/sdk-coin-sol@2.4.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix solana create ata on token transfer ([3c50db3](https://github.com/BitGo/BitGoJS/commit/3c50db323b57f48390df5936816d697214fb8918))
+
+### Features
+
+- **sdk-coin-sol:** add create ATA to token transfer for SOL ([8ce5c6a](https://github.com/BitGo/BitGoJS/commit/8ce5c6ab30225d02cc8eace006bb84b5541ecef9))
+
 ## [2.3.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.8...@bitgo/sdk-coin-sol@2.3.9) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
