@@ -126,7 +126,7 @@ export function addReplayProtectionUnspentToPsbt(
     redeemScript,
   });
   if (!isZcash) {
-    psbt.updateInput(vout, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
+    psbt.updateInput(psbt.inputCount - 1, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
   }
 }
 
