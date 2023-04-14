@@ -1222,6 +1222,46 @@ describe('SOL:', function () {
         durableNonce: undefined,
       });
     });
+
+    it('should explain an unsigned token transfer with ATA creation transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.tokenTransferWithAtaCreation.unsigned,
+        feeInfo: {
+          fee: '5000',
+        },
+        tokenAccountRentExemptAmount: '3000000',
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [
+          {
+            address: '2eKjVtzV3oPTXFdtRSDj3Em9k1MV7k8WjKkBszQUwizS',
+            amount: '10000',
+            tokenName: 'tsol:usdc',
+          },
+        ],
+        fee: { fee: '3005000', feeRate: 5000 },
+        memo: undefined,
+        blockhash: '27E3MXFvXMUNYeMJeX1pAbERGsJfUbkaZTfgMgpmNN5g',
+        durableNonce: undefined,
+      });
+    });
   });
 
   describe('Keypair:', () => {

@@ -20,6 +20,7 @@ import {
   stakingPartialDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
   VALID_SYSTEM_INSTRUCTION_TYPES,
+  ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
 } from './constants';
 import {
@@ -251,6 +252,15 @@ export function matchTransactionTypeByInstructionsOrder(
 export function getTransactionType(transaction: SolTransaction): TransactionType {
   const { instructions } = transaction;
   validateIntructionTypes(instructions);
+  for (const instruction of instructions) {
+    const instructionType = getInstructionType(instruction);
+    if (
+      instructionType === ValidInstructionTypesEnum.Transfer ||
+      instructionType === ValidInstructionTypesEnum.TokenTransfer
+    ) {
+      return TransactionType.Send;
+    }
+  }
   if (matchTransactionTypeByInstructionsOrder(instructions, walletInitInstructionIndexes)) {
     return TransactionType.WalletInitialization;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
@@ -264,8 +274,9 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingWithdraw;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataInitInstructionIndexes)) {
     return TransactionType.AssociatedTokenAccountInitialization;
+  } else {
+    throw new NotSupported('Invalid transaction, transaction not supported or invalid');
   }
-  return TransactionType.Send;
 }
 
 /**
