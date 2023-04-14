@@ -457,6 +457,21 @@ describe('V2 Wallet:', function () {
       }
     });
 
+    it('should not pass receiveAddress in sendMany when TSS transaction type is transfer or transferToken', async function () {
+      const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const recipients = [{
+        address: recipientAddress,
+        amount: 0,
+      }];
+      const sendManyParams = { receiveAddress: 'throw', recipients, type: 'transfer', isTss: true, nonce: '13' };
+
+      try {
+        await ethWallet.sendMany(sendManyParams);
+      } catch (e) {
+        e.message.should.equal('cannot use receive address for TSS transactions of type transfer');
+      }
+    });
+
     it('should use a custom signing function if provided', async function () {
       const customSigningFunction: CustomSigningFunction = sinon.stub();
       const builtInSigningMethod = sinon.spy();
