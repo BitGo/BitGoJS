@@ -463,12 +463,20 @@ describe('V2 Wallet:', function () {
         address: recipientAddress,
         amount: 0,
       }];
-      const sendManyParams = { receiveAddress: 'throw', recipients, type: 'transfer', isTss: true, nonce: '13' };
+      const errorMessage = 'cannot use receive address for TSS transactions of type transfer';
+      const sendManyParamsReceiveAddressError = { receiveAddress: 'throw', recipients, type: 'transfer', isTss: true, nonce: '13' };
+      const sendManyParams = { recipients, type: 'transfer', isTss: true, nonce: '13' };
+
+      try {
+        await ethWallet.sendMany(sendManyParamsReceiveAddressError);
+      } catch (e) {
+        e.message.should.equal(errorMessage);
+      }
 
       try {
         await ethWallet.sendMany(sendManyParams);
       } catch (e) {
-        e.message.should.equal('cannot use receive address for TSS transactions of type transfer');
+        e.message.should.not.equal(errorMessage);
       }
     });
 
