@@ -155,15 +155,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   /**
    * @param parent - Parent key. Matched with `bip32Derivations` using `fingerprint` property.
    * @param bip32Derivations - possible derivations for input or output
-   * @param params - keyFormat used to validate derivation result
    * @return derived bip32 node if matching derivation is found, undefined if none is found
    * @throws Error if more than one match is found
    */
-  static deriveKeyPair(
-    parent: BIP32Interface,
-    bip32Derivations: Bip32Derivation[],
-    params: { keyFormat: 'plain' | 'xOnly' }
-  ): BIP32Interface | undefined {
+  static deriveKeyPair(parent: BIP32Interface, bip32Derivations: Bip32Derivation[]): BIP32Interface | undefined {
     const matchingDerivations = bip32Derivations.filter((bipDv) => {
       return bipDv.masterFingerprint.equals(parent.fingerprint);
     });
@@ -184,7 +179,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const [derivation] = matchingDerivations;
     const node = parent.derivePath(derivation.path);
 
-    if (!derivation.pubkey.equals(params.keyFormat === 'xOnly' ? toXOnlyPublicKey(node.publicKey) : node.publicKey)) {
+    if (!derivation.pubkey.equals(node.publicKey) && !derivation.pubkey.equals(toXOnlyPublicKey(node.publicKey))) {
       throw new Error('pubkey did not match bip32Derivation');
     }
 
@@ -562,9 +557,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this.data.globalMap.globalXpub.map((xpub) => {
       const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
       const pubKey = input.tapBip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { keyFormat: 'xOnly' })?.publicKey
+        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation)?.publicKey
         : input.bip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { keyFormat: 'plain' })?.publicKey
+        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation)?.publicKey
         : bip32?.publicKey;
       if (!pubKey) {
         return false;
@@ -962,7 +957,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!input.tapBip32Derivation?.length) {
         throw new Error('tapBip32Derivation is required to create nonce');
       }
-      const derived = UtxoPsbt.deriveKeyPair(keyPair, input.tapBip32Derivation, { keyFormat: 'xOnly' });
+      const derived = UtxoPsbt.deriveKeyPair(keyPair, input.tapBip32Derivation);
       if (!derived) {
         throw new Error('No bip32Derivation masterFingerprint matched the HD keyPair fingerprint');
       }
