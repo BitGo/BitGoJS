@@ -73,6 +73,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         psbt.setMusig2NoncesHD(signer);
         psbt.setMusig2NoncesHD(cosigner);
       }
+      assert.ok(psbt.getSignatureValidationArray(0).every((res) => !res));
       if (scriptType === 'p2shP2pk') {
         psbt.signAllInputs(signer);
       } else {
