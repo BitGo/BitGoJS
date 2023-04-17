@@ -136,7 +136,7 @@ const MATIC_FEATURES = [
   CoinFeature.METAMASK_INSTITUTIONAL,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
-const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
+const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
