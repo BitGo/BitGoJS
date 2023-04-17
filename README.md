@@ -65,6 +65,7 @@ As each Node LTS version reaches its end-of-life we will exclude that version fr
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.
 
+> **_NOTE:_**  Users that would like to use ecdsa tss coins with node v14 must enable `--experimental-wasm-bigint` to initialize wallets
 # Notes for Developers
 
 See [DEVELOPERS.md](https://github.com/BitGo/BitGoJS/blob/master/DEVELOPERS.md)

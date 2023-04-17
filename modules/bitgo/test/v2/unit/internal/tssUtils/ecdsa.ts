@@ -5,7 +5,7 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo, createSharedDataProof } from '../../../../../src';
 import {
   common,
@@ -560,6 +560,13 @@ describe('TSS Ecdsa Utils:', async function () {
     };
     let aShare, dShare, userSignShare;
 
+    let signTxRequestSandbox: sinon.SinonSandbox;
+
+    before(async () => {
+      signTxRequestSandbox = sinon.createSandbox();
+      signTxRequestSandbox.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+    });
+
     beforeEach(async () => {
 
       // Initializing user and bitgo for creating shares for nocks
@@ -701,6 +708,10 @@ describe('TSS Ecdsa Utils:', async function () {
 
     afterEach(async () => {
       sinon.restore();
+    });
+
+    after(async () => {
+      signTxRequestSandbox.restore();
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {

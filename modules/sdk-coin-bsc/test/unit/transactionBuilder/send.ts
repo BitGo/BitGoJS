@@ -1,7 +1,9 @@
 import { getBuilder } from '../getBuilder';
-import { Ecdsa, ECDSA, TransactionType } from '@bitgo/sdk-core';
+import { Ecdsa, ECDSA, TransactionType, rangeProof } from '@bitgo/sdk-core';
 import { keyShares } from '../../fixtures/ecdsa';
 import should from 'should';
+import { mockChallenge } from '@bitgo/sdk-test';
+import * as sinon from 'sinon';
 
 describe('BSC Transfer Builder', () => {
   describe('TSS Signing with 2 of 3', () => {
@@ -37,6 +39,12 @@ describe('BSC Transfer Builder', () => {
 
       const unsignedTransaction = await txBuilder.build();
       serializedTransaction = Buffer.from(unsignedTransaction.toBroadcastFormat());
+
+      sinon.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+    });
+
+    after(() => {
+      sinon.restore();
     });
 
     it('A and B signing', async () => {
