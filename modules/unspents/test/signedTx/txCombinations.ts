@@ -72,38 +72,16 @@ const testDimensionsFromPsbt = (
   expectedDims: Dimensions
 ) => {
   describe(`Psbt Combination inputs=${inputTypes}; outputs=${outputTypes}`, function () {
-    const nInputs = inputTypes.length;
-    const outputDims = Dimensions.sum(...outputTypes.map(getOutputDimensionsForUnspentType));
-
-    it(`calculates dimensions from unsigned psbt`, function () {
-      const unsignedPsbt = constructPsbt(keys, inputTypes, outputTypes, 'unsigned');
-
-      // does not work for unsigned transactions
-      should.throws(() => Dimensions.fromPsbt(unsignedPsbt));
-
-      // unless explicitly allowed
-      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2SH }).should.eql(
-        Dimensions.sum({ nP2shInputs: nInputs }, outputDims)
-      );
-
-      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2SH_P2WSH }).should.eql(
-        Dimensions.sum({ nP2shP2wshInputs: nInputs }, outputDims)
-      );
-
-      Dimensions.fromPsbt(unsignedPsbt, { assumeUnsigned: Dimensions.ASSUME_P2WSH }).should.eql(
-        Dimensions.sum({ nP2wshInputs: nInputs }, outputDims)
-      );
-    });
-
-    it(`calculates dimensions for signed psbt`, function () {
-      const dimensions = Dimensions.fromPsbt(constructPsbt(keys, inputTypes, outputTypes, 'fullysigned'));
-      dimensions.should.eql(expectedDims);
+    (['unsigned', 'halfsigned', 'fullysigned'] as const).forEach((s) => {
+      it(`calculates dimensions from ${s} psbt`, function () {
+        const dimensions = Dimensions.fromPsbt(constructPsbt(keys, inputTypes, outputTypes, s));
+        dimensions.should.eql(expectedDims);
+      });
     });
 
     it(`calculates dimensions for signed input of psbt`, function () {
       const signedPsbt = constructPsbt(keys, inputTypes, outputTypes, 'fullysigned');
 
-      // test Dimensions.fromInput()
       inputTypes.forEach((input: any, i: number) =>
         Dimensions.fromPsbtInput(signedPsbt, i).should.eql(Dimensions.sum(getInputDimensionsForUnspentType(input)))
       );
@@ -162,6 +140,12 @@ describe(`Dimensions for PSBT combinations`, function () {
     outputTypes: [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)],
     maxNOutputs: 1,
   };
+
+  it(`does not work for unknown psbt input`, function () {
+    const psbt = utxolib.bitgo.createPsbtForNetwork({ network: utxolib.networks.bitcoin });
+    psbt.addInput({ hash: Buffer.alloc(32), index: 0 });
+    should.throws(() => Dimensions.fromPsbt(psbt));
+  });
 
   runCombinations(params, (inputTypeCombo: InputScriptType[], outputTypeCombo: TestUnspentType[]) => {
     const expectedInputDims = Dimensions.sum(...inputTypeCombo.map(getInputDimensionsForUnspentType));
