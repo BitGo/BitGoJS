@@ -96,6 +96,7 @@ export class Transaction extends BaseTransaction {
       accountNumber: this._accountNumber,
       chainId: this._chainId,
       hash: tx.hash,
+      memo: tx.memo,
     };
   }
 
@@ -231,6 +232,11 @@ export class Transaction extends BaseTransaction {
         break;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
+    }
+    if (json.memo) {
+      outputs.forEach((output) => {
+        output.memo = json.memo;
+      });
     }
     return {
       ...explanationResult,
