@@ -413,15 +413,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
   private validateSignaturesOfInputInner(inputIndex: number, pubkey?: Buffer): boolean {
     const input = checkForInput(this.data.inputs, inputIndex);
-
-    if (input.tapScriptSig?.length) {
+    if (input.tapLeafScript?.length) {
       return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
-    } else if (input.partialSig?.length) {
-      return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), pubkey);
     } else if (input.tapInternalKey && input.tapMerkleRoot) {
       return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
     }
-    throw new Error('invalid psbt input to validate signature');
+    return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), pubkey);
   }
 
   private getMusig2SessionKey(
@@ -541,12 +538,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
   getSignatureValidationArray(inputIndex: number): boolean[] {
-    const noSigErrorMessages = ['No signatures to validate', 'No signatures for this pubkey'];
     if (!this.data.globalMap.globalXpub) {
       throw new Error('Cannot get signature validation array without global xpubs');
     }
     if (this.data.globalMap.globalXpub.length !== 3) {
       throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
+    }
+    if (!this.getSignatureCount(inputIndex)) {
+      return [false, false, false];
     }
     const input = checkForInput(this.data.inputs, inputIndex);
     return this.data.globalMap.globalXpub.map((xpub) => {
@@ -563,7 +562,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         return this.validateSignaturesOfInputInner(inputIndex, pubKey);
       } catch (err) {
         // Not an elegant solution. Might need upstream changes like custom error types.
-        if (noSigErrorMessages.includes(err.message)) {
+        if (err.message === 'No signatures for this pubkey') {
           return false;
         }
         throw err;
