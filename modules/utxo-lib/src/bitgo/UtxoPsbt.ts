@@ -291,18 +291,24 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
   finalizeAllInputs(): this {
+    const isMultisigTaprootScript = (script: Buffer): boolean => {
+      try {
+        parsePubScript2Of3(script, 'taprootScriptPathSpend');
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     this.data.inputs.map((input, idx) => {
-      if (input.tapScriptSig?.length) {
-        return input.tapScriptSig.length === 1
-          ? this.finalizeTapInputWithSingleLeafScriptAndSignature(idx)
-          : this.finalizeTaprootInput(idx);
-      } else if (input.partialSig?.length) {
-        return this.finalizeInput(idx);
+      if (input.tapLeafScript?.length) {
+        return isMultisigTaprootScript(input.tapLeafScript[0].script)
+          ? this.finalizeTaprootInput(idx)
+          : this.finalizeTapInputWithSingleLeafScriptAndSignature(idx);
       } else if (input.tapInternalKey && input.tapMerkleRoot) {
         return this.finalizeTaprootMusig2Input(idx);
       }
-      throw new Error('invalid psbt input to finalize');
+      return this.finalizeInput(idx);
     });
     return this;
   }
