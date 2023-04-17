@@ -2405,7 +2405,12 @@ export class Wallet implements IWallet {
       consolidations.push(prebuild);
     }
 
-    if (this._wallet.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+    if (
+      this._wallet.multisigType === 'tss' &&
+      this.baseCoin.getMPCAlgorithm() === 'ecdsa' &&
+      !params.preview &&
+      params.walletPassphrase
+    ) {
       consolidations.forEach(async (unsignedConsolidation) => {
         await this.sendAccountConsolidation({
           walletPassphrase: params.walletPassphrase,
