@@ -38,6 +38,12 @@ const Navbar = () => {
       >
         Key Card
       </NavItem>
+      <NavItem
+        activeRoute={pathname === '/ecdsachallenge'}
+        onClick={() => navigate('/ecdsachallenge')}
+      >
+        Generate Ecdsa Challenge
+      </NavItem>
     </NavbarContainer>
   );
 };

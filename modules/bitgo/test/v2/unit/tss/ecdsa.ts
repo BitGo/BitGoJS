@@ -8,14 +8,16 @@ import {
   ECDSAMethods,
   RequestType,
   SignatureShareType,
+  rangeProof,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
 import nock = require('nock');
+import * as sinon from 'sinon';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -74,6 +76,8 @@ describe('Ecdsa tss helper functions tests', function () {
     userGpgKeypair = gpgKeypairs[0];
     backupGpgKeypair = gpgKeypairs[1];
     bitgoGpgKeypair = gpgKeypairs[2];
+
+    sinon.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
   });
 
   after(function () {
