@@ -301,9 +301,19 @@ export class Utils implements BaseUtils {
       throw new Error('publicKey is required to create a txRaw');
     }
     const encodedPublicKey: Any = encodePubkey(encodeSecp256k1Pubkey(fromHex(atomTransaction.publicKey)));
-    const txBodyValue = {
-      messages: atomTransaction.sendMessages as unknown as Any[],
-    };
+    const messages = atomTransaction.sendMessages as unknown as Any[];
+    let txBodyValue;
+    if (atomTransaction.memo) {
+      txBodyValue = {
+        memo: atomTransaction.memo,
+        messages: messages,
+      };
+    } else {
+      txBodyValue = {
+        messages: messages,
+      };
+    }
+
     const txBodyBytes = this.registry.encodeTxBody(txBodyValue);
     const sequence = atomTransaction.sequence;
     const authInfoBytes = makeAuthInfoBytes(
@@ -376,20 +386,29 @@ export class Utils implements BaseUtils {
     const gasBudget = utils.getGasBudgetFromDecodedTx(decodedTx);
     const publicKey = utils.getPublicKeyFromDecodedTx(decodedTx);
     const signature = decodedTx.signatures?.[0] !== undefined ? Buffer.from(decodedTx.signatures[0]) : undefined;
-    return this.createAtomTransactionWithHash(sequence, sendMessageData, gasBudget, publicKey, signature);
+    return this.createAtomTransactionWithHash(
+      sequence,
+      sendMessageData,
+      gasBudget,
+      publicKey,
+      signature,
+      decodedTx.body?.memo
+    );
   }
 
   createAtomTransaction(
     sequence: number,
     messages: MessageData[],
     gasBudget: FeeData,
-    publicKey: string | undefined
+    publicKey?: string,
+    memo?: string
   ): AtomTransaction {
     const atomTxn = {
       sequence: sequence,
       sendMessages: messages,
       gasBudget: gasBudget,
       publicKey: publicKey,
+      memo: memo,
     };
     this.validateAtomTransaction(atomTxn);
     return atomTxn;
@@ -399,10 +418,11 @@ export class Utils implements BaseUtils {
     sequence: number,
     messages: MessageData[],
     gasBudget: FeeData,
-    publicKey: string | undefined,
-    signature: Buffer | undefined
+    publicKey?: string,
+    signature?: Buffer,
+    memo?: string
   ): AtomTransaction {
-    const atomTxn = this.createAtomTransaction(sequence, messages, gasBudget, publicKey);
+    const atomTxn = this.createAtomTransaction(sequence, messages, gasBudget, publicKey, memo);
     let hash = constants.UNAVAILABLE_TEXT;
     if (signature !== undefined) {
       const unsignedTx = this.createTxRawFromAtomTransaction(atomTxn);
