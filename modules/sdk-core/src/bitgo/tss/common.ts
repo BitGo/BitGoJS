@@ -4,6 +4,7 @@ import { BitGoBase } from '../bitgoBase';
 import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 import openpgp from 'openpgp';
+import { ApiChallenge } from '../utils/tss/ecdsa';
 
 /**
  * Gets the latest Tx Request by id
@@ -118,4 +119,39 @@ export async function commonVerifyWalletSignature(params: {
   );
 
   return rawNotations;
+}
+
+/**
+ * Gets challenge for a tx request from BitGo
+ * supports Message and regular Transaction
+ * @param bitgo
+ * @param walletId
+ * @param txRequestId
+ * @param index
+ * @param requestType
+ * @param mpcAlgorithm
+ */
+export async function getTxRequestChallenge(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  index: string,
+  requestType: RequestType,
+  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
+): Promise<ApiChallenge> {
+  let addendum = '';
+  switch (requestType) {
+    case RequestType.tx:
+      if (mpcAlgorithm === 'ecdsa') {
+        addendum = '/transactions/' + index;
+      }
+      break;
+    case RequestType.message:
+      if (mpcAlgorithm === 'ecdsa') {
+        addendum = '/messages/' + index;
+      }
+      break;
+  }
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({}).result();
 }

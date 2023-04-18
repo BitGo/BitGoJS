@@ -27,7 +27,7 @@ import {
 } from '@bitgo/sdk-core';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
-import { createWalletSignatures, nockGetChallenges, nockGetTxRequest } from '../../tss/helpers';
+import { createWalletSignatures, nockGetChallenge, nockGetChallenges, nockGetTxRequest } from '../../tss/helpers';
 import { bip32, ecc } from '@bitgo/utxo-lib';
 import { Hash } from 'crypto';
 import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
@@ -578,13 +578,16 @@ describe('TSS Ecdsa Utils:', async function () {
       const serializedEntChallenge = mockChallengeA;
       const serializedBitgoChallenge = mockChallengeB;
 
-      sinon.stub(ecdsaStaticUtils, 'getChallengesForEcdsaSigning').resolves({
-        enterpriseChallenge: serializedEntChallenge,
-        bitgoChallenge: serializedBitgoChallenge,
-      });
-
       const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
       const deserializedBitGoChallenge = ecdsaStaticUtils.deserializeNTilde(serializedBitgoChallenge);
+
+      sinon.stub(rangeProof, 'generateNTilde').resolves(deserializedEntChallenge);
+
+      await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
+        ntilde: serializedEntChallenge.ntilde,
+        h1: serializedEntChallenge.h1,
+        h2: serializedEntChallenge.h2,
+      } });
 
       const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.appendChallenge(userSigningKey.xShare, userSigningKey.yShares[3], deserializedEntChallenge), MPC.appendChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1], deserializedBitGoChallenge)]);
 

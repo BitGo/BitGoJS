@@ -36,6 +36,7 @@ import { generateNTilde, verifyNtildeProof } from '../../../../account-lib/mpc/t
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { Buffer } from 'buffer';
 import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../../account-lib';
+import { getTxRequestChallenge } from '../../../tss/common';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -662,15 +663,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       n: signingKey.nShares[bitgoIndex].n,
     };
 
-    const apiChallenges = await EcdsaUtils.getChallengesForEcdsaSigning(
-      this.bitgo,
-      this.wallet.id(),
-      this.wallet.toJSON().enterprise
-    );
-    const clientChallengeBigInt: NTilde = EcdsaUtils.deserializeNTilde(apiChallenges.enterpriseChallenge);
-    const signingKeyWithChallenge = await MPC.appendChallenge(signingKey.xShare, yShare, clientChallengeBigInt);
-
-    const bitgoChallenge = apiChallenges.bitgoChallenge;
+    const [signingKeyWithChallenge, bitgoChallenge] = await Promise.all([
+      MPC.appendChallenge(signingKey.xShare, yShare),
+      getTxRequestChallenge(this.bitgo, this.wallet.id(), txRequestId, '0', requestType, 'ecdsa'),
+    ]);
 
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
       i: userIndex,

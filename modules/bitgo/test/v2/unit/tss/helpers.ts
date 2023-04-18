@@ -27,6 +27,12 @@ export async function nockGetChallenges(params: {walletId: string, response: any
     .reply(200, params.response);
 }
 
+export async function nockGetChallenge(params: {walletId: string, txRequestId: string, addendum: string, response: any}): Promise<nock.Scope> {
+  return nock('https://bitgo.fakeurl')
+    .post('/api/v2/wallet/' + params.walletId + '/txrequests/' + params.txRequestId + params.addendum + '/challenge')
+    .reply(200, params.response);
+}
+
 export async function createWalletSignatures(
   privateKeyArmored: string,
   publicKeyToCertArmoredUser: string,
