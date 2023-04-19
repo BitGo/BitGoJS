@@ -1,0 +1,56 @@
+{
+  "name": "@bitgo/crypto",
+  "version": "1.0.0",
+  "description": "Low-level cryptographic methods used in BitGo packages",
+  "main": "./dist/src/index.js",
+  "engines": {
+    "node": ">=10.22.0 <17",
+    "npm": ">=3.10.10"
+  },
+  "keywords": [
+    "bitgo",
+    "ecc",
+    "bip32",
+    "musig",
+    "musig2"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "unit-test": "mocha --recursive test",
+    "lint": "eslint --quiet .",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/crypto"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "dependencies": {
+    "@brandonblack/musig": "^0.0.1-alpha.0",
+    "@noble/secp256k1": "1.6.3",
+    "bip32": "^3.0.1",
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
+    "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0"
+  },
+  "devDependencies": {
+    "@types/elliptic": "^6.4.12",
+    "@types/node": "^14.18.12"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT"
+}
