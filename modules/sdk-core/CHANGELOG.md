@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.0.0...@bitgo/sdk-core@8.1.0) (2023-04-20)
+
+### Bug Fixes
+
+- **bitgo:** restrict receive address withdrawals ([8257552](https://github.com/BitGo/BitGoJS/commit/8257552085e8fd7a6e41865db902d10a3f1c8cc8)), closes [#3486](https://github.com/BitGo/BitGoJS/issues/3486)
+- **bitgo:** restrict receive address withdrawals ([c563742](https://github.com/BitGo/BitGoJS/commit/c5637420dea8904f45bf9b75ced69839301ee315))
+- **root:** update tests using safe primes ([5a275ff](https://github.com/BitGo/BitGoJS/commit/5a275ffbf3eecf351dfbb0b4538d62dd0a2f2a43))
+
+### Features
+
+- **sdk-core:** implement openssl wasm class ([dce32e3](https://github.com/BitGo/BitGoJS/commit/dce32e3fb6b5238f4791068cbdf5a2a797f9a157))
+
 # [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@7.0.1...@bitgo/sdk-core@8.0.0) (2023-04-13)
 
 ### Bug Fixes

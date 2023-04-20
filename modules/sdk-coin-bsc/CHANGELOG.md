@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.4.0...@bitgo/sdk-coin-bsc@3.4.1) (2023-04-20)
+
+### Bug Fixes
+
+- **root:** update tests using safe primes ([5a275ff](https://github.com/BitGo/BitGoJS/commit/5a275ffbf3eecf351dfbb0b4538d62dd0a2f2a43))
+
 # [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.3.1...@bitgo/sdk-coin-bsc@3.4.0) (2023-04-13)
 
 ### Features

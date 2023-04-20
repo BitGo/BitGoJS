@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.0.0...@bitgo/statics@15.1.0) (2023-04-20)
+
+### Features
+
+- **sdk-coin-sui:** add sui staking coin feature ([9d711c4](https://github.com/BitGo/BitGoJS/commit/9d711c4879f079b869ea3695a0f0755b83c93674))
+
 # [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.4.0...@bitgo/statics@15.0.0) (2023-04-13)
 
 ### Bug Fixes

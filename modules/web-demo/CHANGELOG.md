@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.5.2...@bitgo/web-demo@1.6.0) (2023-04-20)
+
+### Features
+
+- **sdk-core:** implement openssl wasm class ([dce32e3](https://github.com/BitGo/BitGoJS/commit/dce32e3fb6b5238f4791068cbdf5a2a797f9a157))
+
 ## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.5.1...@bitgo/web-demo@1.5.2) (2023-04-13)
 
 **Note:** Version bump only for package @bitgo/web-demo

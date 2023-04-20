@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.1.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.1.0...bitgo@18.1.1) (2023-04-20)
+
+
+### Bug Fixes
+
+* **bitgo:** restrict receive address withdrawals ([8257552](https://github.com/BitGo/BitGoJS/commit/8257552085e8fd7a6e41865db902d10a3f1c8cc8)), closes [#3486](https://github.com/BitGo/BitGoJS/issues/3486)
+* **bitgo:** restrict receive address withdrawals ([c563742](https://github.com/BitGo/BitGoJS/commit/c5637420dea8904f45bf9b75ced69839301ee315))
+* **root:** update tests using safe primes ([5a275ff](https://github.com/BitGo/BitGoJS/commit/5a275ffbf3eecf351dfbb0b4538d62dd0a2f2a43))
+
+
+
+
+
 # [18.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.0.1...bitgo@18.1.0) (2023-04-13)
 
 

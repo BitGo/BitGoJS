@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.0...@bitgo/utxo-lib@8.0.1) (2023-04-20)
+
+### Bug Fixes
+
+- **utxo-lib:** finalizeAllInputs finalises half signed p2tr ([c822670](https://github.com/BitGo/BitGoJS/commit/c822670ec2176a54ba9818afdae184107549488c))
+- **utxo-lib:** getSignatureValidationArray throws error for unsigned ([ec3d0f6](https://github.com/BitGo/BitGoJS/commit/ec3d0f6846caba8b2f673ae69fc0a333974e3a01))
+
 # [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.7.0...@bitgo/utxo-lib@8.0.0) (2023-04-13)
 
 ### Bug Fixes

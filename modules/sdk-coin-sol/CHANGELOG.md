@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.4.0...@bitgo/sdk-coin-sol@2.4.1) (2023-04-20)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix SOL create ATA instruction order ([a1c8c3c](https://github.com/BitGo/BitGoJS/commit/a1c8c3c7b81913d20409ba6d198ab49c28c50671))
+- **sdk-coin-sol:** fix solana get instruction type ([93c02b2](https://github.com/BitGo/BitGoJS/commit/93c02b2d0464f8ead4a544257b2e1d9de30610da))
+
 # [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.9...@bitgo/sdk-coin-sol@2.4.0) (2023-04-13)
 
 ### Bug Fixes

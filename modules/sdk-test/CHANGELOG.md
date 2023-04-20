@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.16...@bitgo/sdk-test@1.2.17) (2023-04-20)
+
+### Bug Fixes
+
+- **root:** update tests using safe primes ([5a275ff](https://github.com/BitGo/BitGoJS/commit/5a275ffbf3eecf351dfbb0b4538d62dd0a2f2a43))
+
 ## [1.2.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.15...@bitgo/sdk-test@1.2.16) (2023-04-13)
 
 **Note:** Version bump only for package @bitgo/sdk-test

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.12.0...@bitgo/unspents@0.13.0) (2023-04-20)
+
+### Features
+
+- **unspents:** unsigned psbt dimensions can be calculated ([427cc36](https://github.com/BitGo/BitGoJS/commit/427cc36f33842cb4372292dc69fe2f23fde78876))
+
 # [0.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.11.12...@bitgo/unspents@0.12.0) (2023-04-13)
 
 ### Features

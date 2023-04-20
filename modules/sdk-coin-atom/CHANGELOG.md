@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@3.0.0...@bitgo/sdk-coin-atom@3.1.0) (2023-04-20)
+
+### Features
+
+- **sdk-coin-atom:** add memo support for atom ([0287361](https://github.com/BitGo/BitGoJS/commit/0287361265de70a57c833f0ec1598648a88f1c24))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@2.1.0...@bitgo/sdk-coin-atom@3.0.0) (2023-04-13)
 
 ### Bug Fixes
