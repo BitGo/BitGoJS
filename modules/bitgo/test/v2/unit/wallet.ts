@@ -2390,6 +2390,39 @@ describe('V2 Wallet:', function () {
           },
         });
       });
+
+      it('should build with isRebuild flag', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await custodialTssWallet.prebuildTransaction({
+          reqId,
+          apiVersion: 'full',
+          recipients,
+          type: 'transfer',
+          isRebuild: true,
+        });
+
+        const buildParams = {
+          reqId,
+          intentType: 'payment',
+          recipients,
+          sequenceId: undefined,
+          comment: undefined,
+          memo: undefined,
+          nonce: undefined,
+          feeOptions: undefined,
+          custodianTransactionId: undefined,
+          isRebuild: true,
+        };
+
+        prebuildTxWithIntent.calledOnceWith(buildParams, 'full').should.be.true();
+      });
     });
 
     describe('Transaction signing', function () {

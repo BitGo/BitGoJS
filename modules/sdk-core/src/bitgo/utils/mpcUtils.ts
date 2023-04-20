@@ -184,6 +184,7 @@ export abstract class MpcUtils {
       memo: params.memo?.value,
       token: params.tokenName,
       enableTokens: params.enableTokens,
+      isRebuild: params.isRebuild,
     };
   }
 }

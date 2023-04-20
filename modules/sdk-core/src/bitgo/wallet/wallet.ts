@@ -1531,6 +1531,7 @@ export class Wallet implements IWallet {
    * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
    * @param {String} params.walletPassphrase The passphrase to the wallet user key, to sign commitment data for Ethereum hop transactions
    * @param {String} params.walletContractAddress - The contract address used as the "to" field of a transaction
+   * @params {Boolean} params.isRebuild - Whether this is a rebuild of a previously built transaction
    * @returns {*}
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
@@ -2682,6 +2683,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             feeOptions,
             custodianTransactionId: params.custodianTransactionId,
+            isRebuild: !!params.isRebuild,
           },
           apiVersion,
           params.preview
@@ -2696,6 +2698,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             nonce: params.nonce,
             feeOptions,
+            isRebuild: !!params.isRebuild,
           },
           apiVersion,
           params.preview
@@ -2709,6 +2712,7 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             enableTokens: params.enableTokens,
             memo: params.memo,
+            isRebuild: !!params.isRebuild,
           },
           apiVersion,
           params.preview
@@ -2723,6 +2727,7 @@ export class Wallet implements IWallet {
             lowFeeTxid: params.lowFeeTxid,
             receiveAddress: params.receiveAddress,
             feeOptions,
+            isRebuild: !!params.isRebuild,
           },
           apiVersion,
           params.preview
@@ -2737,6 +2742,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             receiveAddress: params.receiveAddress,
             feeOptions,
+            isRebuild: !!params.isRebuild,
           },
           apiVersion,
           params.preview

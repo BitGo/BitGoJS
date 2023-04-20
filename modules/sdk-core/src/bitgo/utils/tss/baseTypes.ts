@@ -66,6 +66,7 @@ interface IntentOptionsBase {
   memo?: Memo;
   custodianTransactionId?: string;
   custodianMessageId?: string;
+  isRebuild?: boolean;
 }
 
 export interface IntentOptionsForMessage extends IntentOptionsBase {
@@ -113,6 +114,7 @@ interface PopulatedIntentBase {
   comment?: string;
   memo?: string;
   isTss?: boolean;
+  isRebuild?: boolean;
 }
 
 export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
