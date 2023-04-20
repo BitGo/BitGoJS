@@ -1778,6 +1778,12 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    if (params.receiveAddress && (params.type === 'transfer' || params.type === 'transferToken')) {
+      const error: any = new Error(`cannot use receive address for TSS transactions of type ${params.type}`);
+      error.code = 'receive_address_not_allowed_for_tss_withdrawals';
+      throw error;
+    }
+
     if (params.recipients && (params.type === 'fillNonce' || params.type === 'acceleration')) {
       const error: any = new Error(`cannot provide recipients for transaction type ${params.type}`);
       error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';

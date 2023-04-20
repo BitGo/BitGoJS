@@ -12,6 +12,7 @@ import {
   TEST_SEND_TX,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
+  TEST_TX_WITH_MEMO,
 } from '../resources/atom';
 
 describe('ATOM', function () {
@@ -228,6 +229,28 @@ describe('ATOM', function () {
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },
         type: 15,
+      });
+    });
+
+    it('should explain a transfer transaction with memo', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_TX_WITH_MEMO.hash,
+        outputs: [
+          {
+            address: TEST_TX_WITH_MEMO.to,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+            memo: TEST_TX_WITH_MEMO.memo,
+          },
+        ],
+        outputAmount: TEST_TX_WITH_MEMO.sendAmount,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_TX_WITH_MEMO.gasBudget.amount[0].amount },
+        type: 0,
       });
     });
 

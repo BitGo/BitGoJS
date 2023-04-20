@@ -49,4 +49,5 @@ export interface AtomTransaction {
   readonly publicKey?: string;
   readonly signature?: Uint8Array;
   readonly hash?: string;
+  readonly memo?: string;
 }

@@ -10,6 +10,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 describe('Atom Transfer Builder', () => {
   const factory = getBuilderFactory('tatom');
   const testTx = testData.TEST_SEND_TX;
+  const testTxWithMemo = testData.TEST_TX_WITH_MEMO;
   it('should build a Transfer tx with signature', async function () {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sequence(testTx.sequence);
@@ -38,6 +39,44 @@ describe('Atom Transfer Builder', () => {
       {
         address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
+  });
+
+  it('should build a Transfer tx with signature and memo', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sequence(testTxWithMemo.sequence);
+    txBuilder.gasBudget(testTxWithMemo.gasBudget);
+    txBuilder.messages([testTxWithMemo.sendMessage.value]);
+    txBuilder.publicKey(toHex(fromBase64(testTxWithMemo.pubKey)));
+    txBuilder.memo(testTxWithMemo.memo);
+    txBuilder.addSignature(
+      { pub: toHex(fromBase64(testTxWithMemo.pubKey)) },
+      Buffer.from(testTxWithMemo.signature, 'base64')
+    );
+
+    const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
+    should.equal(tx.type, TransactionType.Send);
+    should.deepEqual(json.gasBudget, testTxWithMemo.gasBudget);
+    should.deepEqual(json.sendMessages, [testTxWithMemo.sendMessage]);
+    should.deepEqual(json.publicKey, toHex(fromBase64(testTxWithMemo.pubKey)));
+    should.deepEqual(json.sequence, testTxWithMemo.sequence);
+    should.equal(json.memo, testTxWithMemo.memo);
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testTxWithMemo.signedTxBase64);
+    should.deepEqual(tx.inputs, [
+      {
+        address: testTxWithMemo.sendMessage.value.fromAddress,
+        value: testTxWithMemo.sendMessage.value.amount[0].amount,
+        coin: 'tatom',
+      },
+    ]);
+    should.deepEqual(tx.outputs, [
+      {
+        address: testTxWithMemo.sendMessage.value.toAddress,
+        value: testTxWithMemo.sendMessage.value.amount[0].amount,
         coin: 'tatom',
       },
     ]);

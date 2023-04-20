@@ -38,7 +38,7 @@ module.exports = {
       async: require.resolve('async'),
     },
   },
-  externals: ['morgan', 'superagent-proxy'],
+  externals: ['morgan', 'superagent-proxy', 'wasmer_wasi_js_bg.wasm'],
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

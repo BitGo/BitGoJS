@@ -5,12 +5,13 @@
 import * as should from 'should';
 import * as nock from 'nock';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import { ECDSAMethodTypes, krsProviders, Ecdsa } from '@bitgo/sdk-core';
+import { ECDSAMethodTypes, krsProviders, Ecdsa, rangeProof } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
 import { TransactionFactory } from '@ethereumjs/tx';
 import { KeyPair } from '@bitgo/sdk-coin-eth';
+import * as sinon from 'sinon';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -489,6 +490,8 @@ describe('Recovery:', function () {
       },
     ];
 
+    let recoverEthSandbox: sinon.SinonSandbox;
+
     before(() => {
       recoveryParams = {
         userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -503,6 +506,12 @@ describe('Recovery:', function () {
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       };
+      recoverEthSandbox = sinon.createSandbox();
+      recoverEthSandbox.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+    });
+
+    after(() => {
+      recoverEthSandbox.restore();
     });
 
     it('should throw on invalid gasLimit', async function () {

@@ -143,6 +143,40 @@ export const TEST_WITHDRAW_REWARDS_TX = {
   },
 };
 
+export const TEST_TX_WITH_MEMO = {
+  hash: 'AEA8DFD3A86BFFE1B172E5B5E5F993BD90DBB08646AD082C1877167B0105D66C',
+  signature: 'qeHDhr9ZwWQO2KcRINp8V7szW2fTgPJilX5eV/MI5PwoHKkgI8X6qH1IxgFC+EBFG04C9GhYoLyBtIa8vfcJnQ==',
+  pubKey: 'AyWF+4XfQ0l8vuwqDm7iu6SPqr5lhAj34JKwuxzHR4Fx',
+  privateKey: 'iXqkSCHPAqBaWaPLiVkYGykGxZiCDunb4YA/kpLdIo0=',
+  signedTxBase64:
+    'Cp4BCo8BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm8KLWNvc21vczF5dGV6MDZ5eDB1M3lqempqam0wMnh5eDNtaDI1YWtlbnpxbDNuOBItY29zbW9zMWo0YTB6Y3Z4bGh1dWQ1MHJobHM3c2xlbDB2ZG5uY3R5cDBjY203Gg8KBXVhdG9tEgYxMDAwMDASCjk4NzY1NDMyMTASZgpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAyWF+4XfQ0l8vuwqDm7iu6SPqr5lhAj34JKwuxzHR4FxEgQKAggBGGISEgoMCgV1YXRvbRIDNTAwEMCaDBpAqeHDhr9ZwWQO2KcRINp8V7szW2fTgPJilX5eV/MI5PwoHKkgI8X6qH1IxgFC+EBFG04C9GhYoLyBtIa8vfcJnQ==',
+  from: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+  to: 'cosmos1j4a0zcvxlhuud50rhls7slel0vdnnctyp0ccm7',
+  chainId: 'theta-testnet-001',
+  accountNumber: 722559,
+  sequence: 98,
+  feeAmount: '50000',
+  sendAmount: '100000',
+  sendMessage: {
+    typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+    value: {
+      amount: [
+        {
+          denom: 'uatom',
+          amount: '100000',
+        },
+      ],
+      fromAddress: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+      toAddress: 'cosmos1j4a0zcvxlhuud50rhls7slel0vdnnctyp0ccm7',
+    },
+  },
+  memo: '9876543210',
+  gasBudget: {
+    amount: [{ denom: 'uatom', amount: '500' }],
+    gasLimit: 200000,
+  },
+};
+
 export const address = {
   address1: 'cosmos1ut2w0m3xa7z2rvndv23pthv9qc7hksx6tkf9uq',
   address2: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2',

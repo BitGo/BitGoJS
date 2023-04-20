@@ -388,7 +388,7 @@ describe('p2trMusig2', function () {
         });
         assert.throws(
           () => psbt.setMusig2NoncesHD(rootWalletKeys.user),
-          (e) => e.message === 'hd key pair should derive one bip32Derivation'
+          (e) => e.message.startsWith('more than one matching derivation for fingerprint')
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });

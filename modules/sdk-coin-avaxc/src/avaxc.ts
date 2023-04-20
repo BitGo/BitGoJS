@@ -6,7 +6,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   BaseCoin,
   BaseTransaction,
@@ -748,7 +748,10 @@ export class AvaxC extends BaseCoin {
     const tx = await txBuilder.build();
     const payload = tx.signablePayload;
     const signatures = tx.signature.map((s) => Buffer.from(s, 'hex'));
-    const recoverPubky = signatures.map((s) => AvaxpLib.Utils.recoverySignature(_.get(tx, '_network'), payload, s));
+    const network = _.get(tx, '_network');
+    const recoverPubky = signatures.map((s) =>
+      AvaxpLib.Utils.recoverySignature(network as unknown as AvalancheNetwork, payload, s)
+    );
     const expectedSenders = recoverPubky.map((r) => pubToAddress(r, true));
     const senders = tx.inputs.map((i) => AvaxpLib.Utils.parseAddress(i.address));
     return expectedSenders.every((e) => senders.some((sender) => e.equals(sender)));

@@ -34,6 +34,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _chainId?: string;
   private _publicKey?: string;
   private _signer: KeyPair;
+  private _memo?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -111,6 +112,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  memo(memo: string | undefined): this {
+    this._memo = memo;
+    return this;
+  }
+
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    * @param {Transaction} tx the transaction data
@@ -128,6 +134,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.publicKey(txData.publicKey);
     this.accountNumber(txData.accountNumber);
     this.chainId(txData.chainId);
+    this.memo(txData.memo);
     if (tx.signature && tx.signature.length > 0) {
       this.addSignature({ pub: txData.publicKey } as any, Buffer.from(tx.signature[0], 'hex'));
     }
@@ -154,7 +161,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._sequence,
       this._messages,
       this._gasBudget,
-      this._publicKey
+      this._publicKey,
+      this._memo
     );
 
     const privateKey = this._signer?.getPrivateKey();
@@ -173,7 +181,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this._messages,
         this._gasBudget,
         this._publicKey,
-        this._signature
+        this._signature,
+        this._memo
       );
     }
     this.transaction.loadInputsAndOutputs();
