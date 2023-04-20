@@ -6,10 +6,13 @@ import { createHash } from 'crypto';
 import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
-import { gcd, modPow } from 'bigint-mod-arith';
-import { NTilde, RangeProof, RangeProofWithCheck } from './types';
+import { gcd, modInv, modPow } from 'bigint-mod-arith';
+import { NTilde, NtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { OpenSSL } from '../../../../openssl';
+
+// 128 as recommened by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
+const ITERATIONS = 128;
 
 export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]> {
   const openSSL = new OpenSSL();
@@ -20,7 +23,7 @@ export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]
   return await Promise.all(promises);
 }
 
-async function generateModulus(bitlength: number): Promise<bigint> {
+async function generateModulus(bitlength: number): Promise<RSAModulus> {
   if (bitlength < 3072) {
     // https://www.keylength.com/en/6/
     console.warn('Generating a modulus with less than 3072 is not recommended!');
@@ -36,7 +39,7 @@ async function generateModulus(bitlength: number): Promise<bigint> {
       ${bitLength(n)}. please try again or reach out to support@bitgo.com`
     );
   }
-  return n;
+  return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
 }
 
 export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
@@ -55,13 +58,126 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
  * @returns {NTilde} The generated NTilde values.
  */
 export async function generateNTilde(bitlength: number): Promise<NTilde> {
-  const ntilde = await generateModulus(bitlength);
+  const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
   const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
-  const h2 = modPow(f2, BigInt(2), ntilde);
-  return { ntilde, h1, h2 };
+  const h2 = modPow(h1, f2, ntilde);
+  const beta = modInv(f2, q1 * q2);
+  const [h1wrtH2Proofs, h2wrtH1Proofs] = await Promise.all([
+    generateNTildeProof(
+      {
+        h1: h1,
+        h2: h2,
+        ntilde: ntilde,
+      },
+      f2,
+      q1,
+      q2
+    ),
+    generateNTildeProof(
+      {
+        h1: h2,
+        h2: h1,
+        ntilde: ntilde,
+      },
+      beta,
+      q1,
+      q2
+    ),
+  ]);
+  return {
+    ntilde,
+    h1,
+    h2,
+    ntildeProof: {
+      alpha: h1wrtH2Proofs.alpha.concat(h2wrtH1Proofs.alpha),
+      t: h1wrtH2Proofs.t.concat(h2wrtH1Proofs.t),
+    },
+  };
 }
 
+/**
+ * Generate iterations of Ntilde, h1, h2 discrete log proofs.
+ * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {bigint} x Either alpha or beta depending on whether it is a discrete log proof of
+ * h1 w.r.t h2 or h2 w.r.t h1.
+ * @param {bigint} q1 The Sophie Germain prime associated with the first safe prime p1 used to generate Ntilde.
+ * @param {bigint} q2 The Sophie Germain prime associated with the second safe prime p2 used to generate Ntilde.
+ * @returns {NTildeProof} The generated NTilde Proofs.
+ */
+export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint, q2: bigint): Promise<NtildeProof> {
+  const q1MulQ2 = q1 * q2;
+  const a: bigint[] = [];
+  const alpha: bigint[] = [];
+  let msgToHash: Buffer = Buffer.concat([
+    bigIntToBufferBE(ntilde.h1),
+    bigIntToBufferBE(ntilde.h2),
+    bigIntToBufferBE(ntilde.ntilde),
+  ]);
+  for (let i = 0; i < ITERATIONS; i++) {
+    a.push(randBetween(q1MulQ2));
+    alpha.push(modPow(ntilde.h1, a[i], ntilde.ntilde));
+    msgToHash = Buffer.concat([msgToHash, bigIntToBufferBE(alpha[i], Math.ceil(bitLength(ntilde.ntilde) / 8))]);
+  }
+  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  const t: bigint[] = [];
+  for (let i = 0; i < ITERATIONS; i++) {
+    // Get the ith bit from a buffer of bytes.
+    const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
+    t.push((a[i] + ((BigInt(ithBit) * x) % q1MulQ2)) % q1MulQ2);
+  }
+  return { alpha, t };
+}
+
+/**
+ * Verify discrete log proofs of h1 and h2 mod Ntilde.
+ * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {NtildeProof} ntildeProof Ntilde Proofs
+ * @returns {boolean} true if proof is verified, false otherwise.
+ */
+export async function verifyNtildeProof(ntilde: NTilde, ntildeProof: NtildeProof): Promise<boolean> {
+  const h1ModNtilde = ntilde.h1 % ntilde.ntilde;
+  const h2ModNtilde = ntilde.h2 % ntilde.ntilde;
+  if (h1ModNtilde === BigInt(0) || h2ModNtilde === BigInt(0)) {
+    return false;
+  }
+  if (h1ModNtilde === BigInt(1) || h2ModNtilde === BigInt(1)) {
+    return false;
+  }
+  if (h1ModNtilde === h2ModNtilde) {
+    return false;
+  }
+  if (
+    ntildeProof.alpha.length > 256 ||
+    ntildeProof.alpha.length !== ITERATIONS ||
+    ntildeProof.t.length !== ITERATIONS
+  ) {
+    return false;
+  }
+  let msgToHash: Buffer = Buffer.concat([
+    bigIntToBufferBE(ntilde.h1),
+    bigIntToBufferBE(ntilde.h2),
+    bigIntToBufferBE(ntilde.ntilde),
+  ]);
+  for (let i = 0; i < ntildeProof.alpha.length; i++) {
+    msgToHash = Buffer.concat([
+      msgToHash,
+      bigIntToBufferBE(ntildeProof.alpha[i], Math.ceil(bitLength(ntilde.ntilde) / 8)),
+    ]);
+  }
+  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  for (let i = 0; i < ntildeProof.alpha.length; i++) {
+    // Get the ith bit from a buffer of bytes.
+    const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
+    const h1PowTi = modPow(ntilde.h1, ntildeProof.t[i], ntilde.ntilde);
+    const h2PowCi = modPow(ntilde.h2, BigInt(ithBit), ntilde.ntilde);
+    const alphaMulh2PowCi = (ntildeProof.alpha[i] * h2PowCi) % ntilde.ntilde;
+    if (h1PowTi !== alphaMulh2PowCi) {
+      return false;
+    }
+  }
+  return true;
+}
 /**
  * Generate a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
