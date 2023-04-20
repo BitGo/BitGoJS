@@ -7,6 +7,6 @@
     "allowJs": false,
     "strict": true
   },
-  "include": ["src/**/*", "bin/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
 }
