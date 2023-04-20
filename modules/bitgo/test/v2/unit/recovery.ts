@@ -102,7 +102,7 @@ describe('Recovery:', function () {
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
         .then(function (recovery) {
-          const json = JSON.parse(recovery);
+          const json = JSON.parse(recovery.txHex);
           json.TransactionType.should.equal('Payment');
           json.Account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
           json.Destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');

@@ -64,6 +64,10 @@ interface RecoveryInfo extends TransactionExplanation {
   coin?: string;
 }
 
+export interface RecoveryTransaction {
+  txHex: string;
+}
+
 export interface InitiateRecoveryOptions extends BaseInitiateRecoveryOptions {
   krsProvider?: string;
 }
@@ -417,7 +421,7 @@ export class Xrp extends BaseCoin {
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    */
-  public async recover(params: RecoveryOptions): Promise<RecoveryInfo | string> {
+  public async recover(params: RecoveryOptions): Promise<RecoveryInfo | RecoveryTransaction> {
     const rippledUrl = this.getRippledUrl();
     const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
     const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
@@ -558,7 +562,9 @@ export class Xrp extends BaseCoin {
     const txJSON: string = JSON.stringify(transaction);
 
     if (isUnsignedSweep) {
-      return txJSON;
+      return {
+        txHex: txJSON,
+      };
     }
     const rippleLib = ripple();
     if (!keys[0].privateKey) {
