@@ -120,6 +120,7 @@ export interface GetSigningKeyApi {
   userId: string;
   userEmail: string;
   derivedPubkey: string;
+  // These are present when user fetches their own ecdh keychain for signing.
   derivationPath?: string;
   ecdhKeychain?: string;
 }

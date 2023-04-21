@@ -39,7 +39,24 @@ describe('ECDH utils', () => {
     }
   });
 
-  it('signMessageWithDerivedEcdhKey/verifyEcdhSignature', function () {
+  describe('signMessageWithDerivedEcdhKey and verifyEcdhSignature', function () {
+    it('signMessageWithDerivedEcdhKey and verifyEcdhSignature are able to sign/verify the same message', function () {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const myEcdhKeychain = bitgo.keychains().create();
+      const message = {
+        ntilde: 'bla',
+        h1: 'bla',
+      };
+      const derivationPath = 'm/0/1';
+      const signedMessage = signMessageWithDerivedEcdhKey(JSON.stringify(message), myEcdhKeychain.xprv, derivationPath);
+      const hexEncodedSignedMessage = signedMessage.toString('hex');
+      const derivedPubKey = bip32.fromBase58(myEcdhKeychain.xpub).derivePath(derivationPath).publicKey;
+      const isVerify = verifyEcdhSignature(JSON.stringify(message), hexEncodedSignedMessage, derivedPubKey);
+      isVerify.should.be.true();
+    });
+  });
+
+  it('verifyEcdhSignature fails if the message/signature or pub key is diff than the one used for signing', function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const myEcdhKeychain = bitgo.keychains().create();
     const message = {
@@ -47,10 +64,22 @@ describe('ECDH utils', () => {
       h1: 'bla',
     };
     const derivationPath = 'm/0/1';
-    const signedMessage = signMessageWithDerivedEcdhKey(JSON.stringify(message), myEcdhKeychain.xprv, derivationPath);
+    let signedMessage = signMessageWithDerivedEcdhKey(JSON.stringify(message), myEcdhKeychain.xprv, derivationPath);
     const hexEncodedSignedMessage = signedMessage.toString('hex');
-    const derivedPubKey = bip32.fromBase58(myEcdhKeychain.xpub).derivePath(derivationPath).publicKey;
-    const isVerify = verifyEcdhSignature(JSON.stringify(message), hexEncodedSignedMessage, derivedPubKey);
-    isVerify.should.be.true();
+    let derivedPubKey = bip32.fromBase58(myEcdhKeychain.xpub).derivePath(derivationPath).publicKey;
+
+    // wrong message
+    let isVerify = verifyEcdhSignature('fake message', hexEncodedSignedMessage, derivedPubKey);
+    isVerify.should.be.false();
+
+    // bad signature
+    signedMessage = signMessageWithDerivedEcdhKey('fake message', myEcdhKeychain.xprv, derivationPath);
+    isVerify = verifyEcdhSignature(JSON.stringify(message), signedMessage.toString('hex'), derivedPubKey);
+    isVerify.should.be.false();
+
+    // bad public key derived at a diff. path
+    derivedPubKey = bip32.fromBase58(myEcdhKeychain.xpub).derivePath('m/0/0').publicKey;
+    isVerify = verifyEcdhSignature(JSON.stringify(message), signedMessage.toString('hex'), derivedPubKey);
+    isVerify.should.be.false();
   });
 });

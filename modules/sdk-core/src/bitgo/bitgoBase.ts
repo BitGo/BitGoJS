@@ -23,4 +23,5 @@ export interface BitGoBase {
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
+  getBitgoChallengesForEcdsaSigning(walletId: string): Promise<any>;
 }

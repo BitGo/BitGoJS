@@ -7,6 +7,7 @@ import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import {
   ApiChallenges,
+  BitGoProofSignatures,
   CreateEcdsaBitGoKeychainParams,
   CreateEcdsaKeychainParams,
   DecryptableNShare,
@@ -799,8 +800,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     walletId: string,
     enterpriseId: string
   ): Promise<ApiChallenges> {
-    const urlPath = `/wallet/${walletId}/challenges`;
-    const result = await bitgo.get(bitgo.url(urlPath, 2)).query({}).result();
+    const result = await bitgo.getBitgoChallengesForEcdsaSigning(walletId);
     const enterpriseChallenge = result.enterpriseChallenge;
     const bitgoChallenge = result.bitgoChallenge;
 
@@ -1033,17 +1033,18 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   }
 
   /**
-   * This is needed to enable ecdsa signing on the enterprise.
-   * It initializes the enterprise and bitgo challenges on the enterprise by
-   * generating/fetching the challenges, verifying the proofs, signing them
-   * and uploading them on the enterprise.
+   * Gets BitGo's proofs from API and signs them if the proofs are valid.
    * @param bitgo
-   * @param entId - enterprise id to enable ecdsa signing on
-   * @param userPassword - enterprise admin's login pw
+   * @param enterpriseId
+   * @param userPassword
    */
-  static async initiateChallengesForEnterprise(bitgo: BitGoBase, entId: string, userPassword: string): Promise<void> {
+  static async getVerifyAndSignBitGoChallenges(
+    bitgo: BitGoBase,
+    enterpriseId: string,
+    userPassword: string
+  ): Promise<BitGoProofSignatures> {
     // Fetch user's ecdh public keychain needed for signing the challenges
-    const userSigningKey = await bitgo.getSigningKeyForUser(entId);
+    const userSigningKey = await bitgo.getSigningKeyForUser(enterpriseId);
     if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
       throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
     }
@@ -1065,7 +1066,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         `Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com`
       );
     }
-
     const signedBitGoInstChallenge = EcdsaUtils.signChallenge(
       bitgoChallengesWithProofs.bitgoInstitutionalHsm,
       xprv,
@@ -1076,9 +1076,49 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       xprv,
       userSigningKey.derivationPath
     );
+    return {
+      bitgoInstHsmAdminSignature: signedBitGoInstChallenge,
+      bitgoNitroHsmAdminSignature: signedBitGoNitroChallenge,
+    };
+  }
+
+  /**
+   * This is needed to enable ecdsa signing on the enterprise.
+   * It receives the enterprise challenge and signatures of verified bitgo proofs
+   * and uploads them on the enterprise.
+   * @param bitgo
+   * @param entId - enterprise id to enable ecdsa signing on
+   * @param userPassword - enterprise admin's login pw
+   * @param bitgoInstChallengeProofSignature - signature on bitgo's institutional HSM challenge after verification
+   * @param bitgoNitroChallengeProofSignature - signature on bitgo's nitro HSM challenge after verification
+   * @param challenge - optionally use the challenge for enterprise challenge
+   */
+  static async initiateChallengesForEnterprise(
+    bitgo: BitGoBase,
+    entId: string,
+    userPassword: string,
+    bitgoInstChallengeProofSignature: Buffer,
+    bitgoNitroChallengeProofSignature: Buffer,
+    challenge?: NTilde
+  ): Promise<void> {
+    // Fetch user's ecdh public keychain needed for signing the challenges
+    const userSigningKey = await bitgo.getSigningKeyForUser(entId);
+    if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
+      throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
+    }
+    const userEcdhKeychain = await bitgo.getECDHKeychain(userSigningKey.ecdhKeychain);
+    let xprv;
+    try {
+      xprv = bitgo.decrypt({
+        password: userPassword,
+        input: userEcdhKeychain.encryptedXprv,
+      });
+    } catch (e) {
+      throw new Error('Incorrect password. Please try again.');
+    }
 
     // Generate and sign enterprise challenge
-    const entChallengeWithProof = await generateNTilde(3072);
+    const entChallengeWithProof = challenge ?? (await generateNTilde(3072));
 
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       this.serializeNTilde(entChallengeWithProof),
@@ -1091,8 +1131,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       entId,
       this.serializeNTilde(entChallengeWithProof),
       signedEnterpriseChallenge.toString('hex'),
-      signedBitGoInstChallenge.toString('hex'),
-      signedBitGoNitroChallenge.toString('hex')
+      bitgoInstChallengeProofSignature.toString('hex'),
+      bitgoNitroChallengeProofSignature.toString('hex')
     );
   }
 

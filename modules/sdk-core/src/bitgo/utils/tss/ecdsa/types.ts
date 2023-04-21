@@ -3,7 +3,7 @@ import { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { BackupKeyShare, CreateKeychainParamsBase, BackupGpgKey } from '../baseTypes';
 import { Key } from 'openpgp';
 import { BackupProvider } from '../../../wallet';
-import { NTilde } from '../../../../account-lib/mpc/tss/ecdsa/types';
+import { Buffer } from 'buffer';
 
 export type KeyShare = ECDSA.KeyShare;
 export type DecryptableNShare = ECDSAMethodTypes.DecryptableNShare;
@@ -47,7 +47,7 @@ export type GetBitGoChallengesApi = {
   bitgoInstitutionalHsm: ChallengeWithNTildeProofApi;
 };
 
-export type SignedEnterpriseChallengeWithProof = {
-  challengeWithProof: NTilde;
-  adminSignature: Buffer;
+export type BitGoProofSignatures = {
+  bitgoNitroHsmAdminSignature: Buffer;
+  bitgoInstHsmAdminSignature: Buffer;
 };
