@@ -103,6 +103,7 @@ export interface XShare {
   y: string; // combined public key
   x: string; // combined secret
   chaincode: string;
+  p?: string[]; // paillier proof of correctness challenge
 }
 
 export type XShareWithNtilde = XShare & SerializedNtilde;
@@ -112,6 +113,7 @@ export interface YShare {
   i: number;
   j: number;
   n: string;
+  p?: string[]; // paillier proof of correctness challenge
 }
 
 export type YShareWithNtilde = YShare & SerializedNtilde;
@@ -140,6 +142,7 @@ export interface WShare {
   ntilde: string;
   h1: string;
   h2: string;
+  p: Array<string>;
   ck: string;
   k: string;
   w: string;
@@ -162,6 +165,8 @@ export interface KShare {
   ntilde: string;
   h1: string;
   h2: string;
+  p: Array<string>;
+  sigma: Array<string>;
   k: string;
   proof: RangeProofShare;
 }
@@ -193,6 +198,7 @@ export interface AShare {
   ntilde: string;
   h1: string;
   h2: string;
+  sigma: Array<string>;
   k: string;
   alpha: string;
   mu: string;

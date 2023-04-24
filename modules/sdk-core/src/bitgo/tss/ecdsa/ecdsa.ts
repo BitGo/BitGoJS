@@ -469,8 +469,8 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
 
-  validateSharesLength(shares, 11, 'K');
-  const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
+  validateSharesLength(shares, 11 + 2 * 128, 'K');
+  const hasProof = validateOptionalValues(shares, 5, 11 + 2 * 128, 'K', 'proof');
 
   let proof;
   if (hasProof) {
@@ -492,6 +492,8 @@ export function parseKShare(share: SignatureShareRecord): KShare {
     ntilde: shares[2],
     h1: shares[3],
     h2: shares[4],
+    p: shares.slice(11, 11 + 128),
+    sigma: shares.slice(11 + 128),
     proof,
   };
 }
@@ -509,7 +511,9 @@ export function convertKShare(share: KShare): SignatureShareRecord {
       share.h2
     }${delimeter}${share.proof?.z || ''}${delimeter}${share.proof?.u || ''}${delimeter}${
       share.proof?.w || ''
-    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}`,
+    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${
+      share.proof?.s2 || ''
+    }${delimeter}${share.p.join(delimeter)}${delimeter}{share.sigma.join(delimeter)}`,
   };
 }
 
@@ -520,7 +524,7 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 37, 'A');
+  validateSharesLength(shares, 37 + 128, 'A');
   const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
@@ -583,6 +587,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     ntilde: shares[4],
     h1: shares[5],
     h2: shares[6],
+    sigma: shares.slice(38),
     proof,
     gammaProof,
     wProof,
@@ -620,7 +625,7 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.wProof?.s2 || ''
     }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
       share.wProof?.u || ''
-    }${delimeter}${share.wProof?.x || ''}`,
+    }${delimeter}${share.wProof?.x || ''}${delimeter}${share.sigma.join(delimeter)}`,
   };
 }
 
@@ -837,7 +842,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(share.i),
-    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}`,
+    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}${delimeter}{share.p.join(delimeter)}`,
   };
 }
 
@@ -848,7 +853,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 13, 'B');
+  validateSharesLength(shares, 13 + 128, 'B');
 
   return {
     i: getParticipantIndex(share.to),
@@ -864,6 +869,7 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     ntilde: shares[9],
     h1: shares[10],
     h2: shares[11],
+    p: shares.slice(13),
     ck: shares[12],
   };
 }

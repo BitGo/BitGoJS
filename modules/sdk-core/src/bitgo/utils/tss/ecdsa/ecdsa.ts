@@ -670,6 +670,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       ntilde: challenges.bitgoChallenge.ntilde,
       h1: challenges.bitgoChallenge.h1,
       h2: challenges.bitgoChallenge.h2,
+      p: [], // TODO: Need to fill this value in with Paillier challenge values from BitGo.
     });
     const u = signingKey.nShares[bitgoIndex].u;
 

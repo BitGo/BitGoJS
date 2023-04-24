@@ -9,6 +9,7 @@ import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPubli
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
 import * as rangeProof from './rangeproof';
+import * as paillierProof from './paillierproof';
 import {
   AShare,
   BShare,
@@ -301,8 +302,11 @@ export default class Ecdsa {
       challenge = Ecdsa.serializeNtilde(await rangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
+    const p = (await paillierProof.generateP(hexToBigInt(yShare.n))).map((p_i) =>
+      bigIntToBufferBE(p_i, 384).toString('hex')
+    );
     return {
-      xShare: { ...xShare, ntilde, h1, h2 },
+      xShare: { ...xShare, ntilde, h1, h2, p },
       yShares: {
         [yShare.j]: {
           i: yShare.j,
@@ -311,6 +315,7 @@ export default class Ecdsa {
           ntilde,
           h1,
           h2,
+          p,
         },
       },
     };
@@ -344,6 +349,10 @@ export default class Ecdsa {
       Ecdsa.curve.scalarInvert(d),
     ].reduce(Ecdsa.curve.scalarMult);
 
+    if (!xShare.p) {
+      throw new Error('Expected Paillier challenge values in xShare');
+    }
+
     const { ntilde: ntildea, h1: h1a, h2: h2a } = xShare as XShareWithNtilde;
 
     const signers: SignShareRT = {
@@ -356,6 +365,7 @@ export default class Ecdsa {
         ntilde: ntildea,
         h1: h1a,
         h2: h2a,
+        p: xShare.p,
         k: bigIntToBufferBE(k, 32).toString('hex'),
         ck: bigIntToBufferBE(ck, 768).toString('hex'),
         w: bigIntToBufferBE(w, 32).toString('hex'),
@@ -363,6 +373,10 @@ export default class Ecdsa {
       },
       kShare: {} as KShare,
     };
+
+    if (!yShare.p) {
+      throw new Error('Expected Paillier challenge values in yShare');
+    }
 
     const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
     const proof = await rangeProof.prove(
@@ -378,6 +392,12 @@ export default class Ecdsa {
       k,
       rk
     );
+    const sigma = await paillierProof.prove(
+      hexToBigInt(xShare.n),
+      hexToBigInt(xShare.l),
+      yShare.p.map((p_i) => hexToBigInt(p_i))
+    );
+
     const proofShare = {
       z: bigIntToBufferBE(proof.z, 384).toString('hex'),
       u: bigIntToBufferBE(proof.u, 768).toString('hex'),
@@ -394,6 +414,8 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
+      p: xShare.p,
+      sigma: sigma.map((sigma_i) => bigIntToBufferBE(sigma_i, 384).toString('hex')),
       k: bigIntToBufferBE(ck, 768).toString('hex'),
       proof: proofShare,
     };
@@ -418,6 +440,7 @@ export default class Ecdsa {
         ntilde: shares.kShare.ntilde,
         h1: shares.kShare.h1,
         h2: shares.kShare.h2,
+        p: shares.kShare.p,
       };
       const signShare = await this.signShare(xShare, yShare);
       kShare = signShare.kShare;
@@ -529,17 +552,20 @@ export default class Ecdsa {
       const aShareToBeSent = shareToBeSent as AShare;
       const n = hexToBigInt(aShareToBeSent.n); // Paillier pub from other signer
       const pka = getPaillierPublicKey(n);
-      let ntildea, h1a, h2a, ntildeb, h1b, h2b;
+      let ntildea, h1a, h2a, sigma, ntildeb, h1b, h2b, p;
       if (aShareToBeSent.ntilde) {
         ntildea = hexToBigInt(aShareToBeSent.ntilde);
         h1a = hexToBigInt(aShareToBeSent.h1);
         h2a = hexToBigInt(aShareToBeSent.h2);
+        sigma = aShareToBeSent.sigma.map((sigma_i) => hexToBigInt(sigma_i));
         ntildeb = hexToBigInt(bShareParticipant.ntilde);
         h1b = hexToBigInt(bShareParticipant.h1);
         h2b = hexToBigInt(bShareParticipant.h2);
+        p = bShareParticipant.p.map((p_i) => hexToBigInt(p_i));
       }
       const k = hexToBigInt(aShareToBeSent.k);
       if (
+        !(await paillierProof.verify(n, p, sigma)) ||
         !rangeProof.verify(
           Ecdsa.curve,
           3072,
