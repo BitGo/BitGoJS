@@ -715,6 +715,22 @@ describe('TSS Ecdsa Utils:', async function () {
       sinon.restore();
     });
 
+    it('signTxRequest should fail if wallet is in pendingEcdsaTssInitialization', async function() {
+      sandbox.stub(wallet, 'coinSpecific').returns({
+        customChangeWalletId: '',
+        pendingEcdsaTssInitialization: true,
+      });
+      await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+      }).should.be.rejectedWith('Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.');
+    });
+
     it('signTxRequest should succeed with txRequest object as input', async function () {
       const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
       await setupSignTxRequestNocks(false, userSignShare, aShare, dShare);
