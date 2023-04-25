@@ -148,4 +148,23 @@ export class Enterprise implements IEnterprise {
       challenge
     );
   }
+
+  /**
+   * Fetches the existing TSS ECDSA enterprise challenge if one exists.
+   * Can be used with uploadAndEnableTssEcdsaSigning to re-sign the
+   * enterprise challenge with new signatures.
+   */
+  async getExistingTssEcdsaChallenge(): Promise<NTilde> {
+    const urlPath = `/api/v2/enterprise/${this.id}/tssconfig`;
+    const tssConfig = await this.bitgo.get(this.bitgo.url(urlPath, 2)).send().result();
+    const enterpriseChallenge = tssConfig?.ecdsa.challenge?.enterprise;
+    if (!enterpriseChallenge) {
+      throw new Error('No existing ECDSA challenge on the enterprise.');
+    }
+    return EcdsaUtils.deserializeNTilde({
+      ntilde: enterpriseChallenge.ntilde,
+      h1: enterpriseChallenge.h1,
+      h2: enterpriseChallenge.h2,
+    });
+  }
 }
