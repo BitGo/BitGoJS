@@ -30,6 +30,7 @@ import {
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
+  GetSigningKeyApi,
   GlobalCoinFactory,
   IRequestTracer,
   makeRandomKey,
@@ -1209,6 +1210,21 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Users that want to sign with a key will use this api to fetch the keychain and the path.
+   * Users that want to verify a signature will use this api to fetch another users ecdh pubkey.
+   * Note: If the user id is not provided, it will default to getting the current user's keychain.
+   * @param bitgo
+   * @param enterpriseId
+   * @param userId
+   */
+  async getSigningKeyForUser(enterpriseId: string, userId?: string): Promise<GetSigningKeyApi> {
+    const user = userId ?? 'me';
+    return this.get(this.url(`/enterprise/${enterpriseId}/user/${user}/signingkey`, 2))
+      .query({})
+      .result();
+  }
+
+  /**
    *
    */
   getValidate(): boolean {
@@ -1522,14 +1538,17 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Gets the user's private keychain, used for receiving shares
+   * Gets the user's private ECDH keychain
    */
-  async getECDHSharingKeychain(): Promise<any> {
-    const result = await this.get(this.url('/user/settings')).result();
-    if (!result.settings.ecdhKeychain) {
-      return new Error('ecdh keychain not found for user');
+  async getECDHKeychain(ecdhKeychainPub?: string): Promise<any> {
+    if (!ecdhKeychainPub) {
+      const result = await this.get(this.url('/user/settings')).result();
+      if (!result.settings.ecdhKeychain) {
+        return new Error('ecdh keychain not found for user');
+      }
+      ecdhKeychainPub = result.settings.ecdhKeychain;
     }
-    return this.keychains().get({ xpub: result.settings.ecdhKeychain });
+    return this.keychains().get({ xpub: ecdhKeychainPub });
   }
 
   /**
@@ -1875,5 +1894,10 @@ export class BitGoAPI implements BitGoBase {
 
     // use defaultConstants as the backup for keys that are not set in this._constants
     return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
+  }
+
+  async getBitgoChallengesForEcdsaSigning(walletId: string): Promise<any> {
+    const urlPath = `/wallet/${walletId}/challenges`;
+    return await this.get(this.url(urlPath, 2)).query({}).result();
   }
 }

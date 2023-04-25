@@ -272,3 +272,23 @@ export function isBase58(value: string, length: number): boolean {
 export function toUint8Array(str: string): Uint8Array {
   return hex.decode(str);
 }
+
+/**
+ * Returns a bigint array from a hex string array
+ * @param values
+ */
+export function convertHexArrToBigIntArr(values: string[]): bigint[] {
+  return values.map((value) => {
+    return hexToBigInt(value);
+  });
+}
+
+/**
+ * Returns a hex string array from a bigint array
+ * @param values
+ */
+export function convertBigIntArrToHexArr(values: bigint[]): string[] {
+  return values.map((value) => {
+    return bigIntToHex(value);
+  });
+}

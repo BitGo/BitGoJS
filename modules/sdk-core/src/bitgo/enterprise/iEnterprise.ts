@@ -1,5 +1,8 @@
 import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
+import { Buffer } from 'buffer';
+import { NTilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { BitGoProofSignatures } from '../utils/tss/ecdsa';
 
 export interface IEnterprise {
   url(query?: string): string;
@@ -12,4 +15,11 @@ export interface IEnterprise {
   getFirstPendingTransaction(params?: Record<string, never>): Promise<any>;
   settlements(): ISettlements;
   affirmations(): IAffirmations;
+  verifyEcdsaBitGoChallengeProofs(userPassword: string): Promise<BitGoProofSignatures>;
+  uploadAndEnableTssEcdsaSigning(
+    userPassword: string,
+    bitgoInstChallengeProofSignature: Buffer,
+    bitgoNitroChallengeProofSignature: Buffer,
+    challenge?: NTilde
+  ): Promise<void>;
 }

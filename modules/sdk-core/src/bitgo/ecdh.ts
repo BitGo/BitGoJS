@@ -14,7 +14,7 @@
 
 import * as assert from 'assert';
 import * as secp256k1 from 'secp256k1';
-import { ECPairInterface, BIP32Interface } from '@bitgo/utxo-lib';
+import { ECPairInterface, BIP32Interface, bip32, ECPair } from '@bitgo/utxo-lib';
 
 /**
  * Calculate the Elliptic Curve Diffie Hellman
@@ -62,4 +62,22 @@ export function getSharedSecret(
     .slice(1);
   assert.strictEqual(buffer.length, 32);
   return buffer;
+}
+
+/**
+ Signs a message using a given ecdh xprv at a given path
+ */
+export function signMessageWithDerivedEcdhKey(message: string, xprv: string, path: string): Buffer {
+  return bip32.fromBase58(xprv).derivePath(path).sign(Buffer.from(message));
+}
+
+/**
+ Verifies if a message was signed using the given ecdh key
+ @param message message to verify
+ @param signature hex encoded signature used to sign the message
+ @param ecdhXpub pubkey/derived pubkey of ecdh keychain used to sign
+ */
+export function verifyEcdhSignature(message: string, signature: string, ecdhXpub: Buffer): boolean {
+  const ecPairInterface = ECPair.fromPublicKey(ecdhXpub);
+  return ecPairInterface.verify(Buffer.from(message), Buffer.from(signature, 'hex'));
 }

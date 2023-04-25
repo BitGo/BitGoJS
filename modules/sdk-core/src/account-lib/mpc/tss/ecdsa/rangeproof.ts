@@ -7,7 +7,7 @@ import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modInv, modPow } from 'bigint-mod-arith';
-import { NTilde, NtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
+import { NTilde, NtildeProofH1H2, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { OpenSSL } from '../../../../openssl';
 
@@ -90,8 +90,14 @@ export async function generateNTilde(bitlength: number): Promise<NTilde> {
     h1,
     h2,
     ntildeProof: {
-      alpha: h1wrtH2Proofs.alpha.concat(h2wrtH1Proofs.alpha),
-      t: h1wrtH2Proofs.t.concat(h2wrtH1Proofs.t),
+      h1WrtH2: {
+        alpha: h1wrtH2Proofs.alpha,
+        t: h1wrtH2Proofs.t,
+      },
+      h2WrtH1: {
+        alpha: h2wrtH1Proofs.alpha,
+        t: h2wrtH1Proofs.t,
+      },
     },
   };
 }
@@ -105,7 +111,7 @@ export async function generateNTilde(bitlength: number): Promise<NTilde> {
  * @param {bigint} q2 The Sophie Germain prime associated with the second safe prime p2 used to generate Ntilde.
  * @returns {NTildeProof} The generated NTilde Proofs.
  */
-export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint, q2: bigint): Promise<NtildeProof> {
+export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint, q2: bigint): Promise<NtildeProofH1H2> {
   const q1MulQ2 = q1 * q2;
   const a: bigint[] = [];
   const alpha: bigint[] = [];
@@ -135,7 +141,7 @@ export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint,
  * @param {NtildeProof} ntildeProof Ntilde Proofs
  * @returns {boolean} true if proof is verified, false otherwise.
  */
-export async function verifyNtildeProof(ntilde: NTilde, ntildeProof: NtildeProof): Promise<boolean> {
+export async function verifyNtildeProof(ntilde: NTilde, ntildeProof: NtildeProofH1H2): Promise<boolean> {
   const h1ModNtilde = ntilde.h1 % ntilde.ntilde;
   const h2ModNtilde = ntilde.h2 % ntilde.ntilde;
   if (h1ModNtilde === BigInt(0) || h2ModNtilde === BigInt(0)) {

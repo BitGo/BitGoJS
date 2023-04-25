@@ -8,6 +8,9 @@ import { IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal/internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
+import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
+import { Buffer } from 'buffer';
+import { NTilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -111,5 +114,38 @@ export class Enterprise implements IEnterprise {
    */
   affirmations(): Affirmations {
     return new Affirmations(this.bitgo, this.id);
+  }
+
+  /**
+   * Verifies and signs bitgo proofs for the enterprise
+   * @param userPassword - enterprise admin's login password
+   */
+  async verifyEcdsaBitGoChallengeProofs(userPassword: string): Promise<BitGoProofSignatures> {
+    return EcdsaUtils.getVerifyAndSignBitGoChallenges(this.bitgo, this.id, userPassword);
+  }
+
+  /**
+   * Manages all the challenges and signatures and uploads them to enable
+   * ECDSA signing on enterprise. Also generates a client side Ntilde challenge
+   * if not provided, but note that can take approx. a minute.
+   * @param userPassword
+   * @param bitgoInstChallengeProofSignature
+   * @param bitgoNitroChallengeProofSignature
+   * @param challenge
+   */
+  async uploadAndEnableTssEcdsaSigning(
+    userPassword: string,
+    bitgoInstChallengeProofSignature: Buffer,
+    bitgoNitroChallengeProofSignature: Buffer,
+    challenge?: NTilde
+  ): Promise<void> {
+    await EcdsaUtils.initiateChallengesForEnterprise(
+      this.bitgo,
+      this.id,
+      userPassword,
+      bitgoInstChallengeProofSignature,
+      bitgoNitroChallengeProofSignature,
+      challenge
+    );
   }
 }
