@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.1.0...@bitgo/sdk-core@8.2.0) (2023-04-25)
+
+### Features
+
+- **sdk-core:** add enterprise method to fetch ecdsa config ([59a2eae](https://github.com/BitGo/BitGoJS/commit/59a2eaea91c03bca95f485e933bfdd3b52896796))
+- **sdk-core:** generate and verify Ntilde Proofs ([e3dbb1b](https://github.com/BitGo/BitGoJS/commit/e3dbb1b58f41656c594035b1c7b50dbe4bc3cd33))
+- **sdk-core:** initate, sign and verify ecdsa challenges for enterprise ([529ad9e](https://github.com/BitGo/BitGoJS/commit/529ad9e43e5123359c7417f3af2f5766e752474e))
+- **sdk-core:** update ecdsa signing to use enterprise challenge ([c626f00](https://github.com/BitGo/BitGoJS/commit/c626f00e141db2ef4147b3e0c4badf1776729465))
+
 # [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.0.0...@bitgo/sdk-core@8.1.0) (2023-04-20)
 
 ### Bug Fixes

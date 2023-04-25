@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.4.3...@bitgo/account-lib@4.5.0) (2023-04-25)
+
+### Features
+
+- **sdk-core:** update ecdsa signing to use enterprise challenge ([c626f00](https://github.com/BitGo/BitGoJS/commit/c626f00e141db2ef4147b3e0c4badf1776729465))
+
 ## [4.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.4.2...@bitgo/account-lib@4.4.3) (2023-04-20)
 
 **Note:** Version bump only for package @bitgo/account-lib
