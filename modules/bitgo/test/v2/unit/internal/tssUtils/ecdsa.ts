@@ -5,32 +5,34 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo, createSharedDataProof } from '../../../../../src';
 import {
-  common,
-  Keychain,
-  Wallet,
-  Ecdsa,
-  ECDSA,
-  ECDSAUtils,
-  ECDSAMethods,
-  TxRequest,
-  SignatureShareType,
-  SignatureShareRecord,
-  RequestTracer,
-  BitgoHeldBackupKeyShare,
+  BackupGpgKey,
   BackupKeyShare,
   BitgoGPGPublicKey,
-  BackupGpgKey,
+  BitgoHeldBackupKeyShare,
+  common,
+  Ecdsa,
+  ECDSA,
+  ECDSAMethods,
+  ECDSAUtils,
+  Keychain,
   rangeProof,
+  RequestTracer,
+  SignatureShareRecord,
+  SignatureShareType,
+  TxRequest,
+  Wallet,
 } from '@bitgo/sdk-core';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
-import { createWalletSignatures, nockGetChallenge, nockGetTxRequest } from '../../tss/helpers';
-import { ecc } from '@bitgo/utxo-lib';
-const createKeccakHash = require('keccak');
+import { createWalletSignatures, nockGetChallenge, nockGetChallenges, nockGetTxRequest } from '../../tss/helpers';
+import { bip32, ecc } from '@bitgo/utxo-lib';
 import { Hash } from 'crypto';
+import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
+
+const createKeccakHash = require('keccak');
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
@@ -40,6 +42,7 @@ describe('TSS Ecdsa Utils:', async function () {
   let MPC: Ecdsa;
   let bgUrl: string;
   let tssUtils: ECDSAUtils.EcdsaUtils;
+  let ecdsaStaticUtils;
   let wallet: Wallet;
   let bitgoKeyShare;
   let userKeyShare: KeyShare;
@@ -47,6 +50,7 @@ describe('TSS Ecdsa Utils:', async function () {
   let bitgoPublicKey: openpgp.Key;
   let thirdPartyBackupPublicGpgKey: openpgp.Key;
   const isThirdPartyBackup = false;
+
   let userGpgKey: openpgp.SerializedKeyPair<string> & {
     revocationCertificate: string;
   };
@@ -159,6 +163,7 @@ describe('TSS Ecdsa Utils:', async function () {
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, wallet);
+    ecdsaStaticUtils = ECDSAUtils.EcdsaUtils;
   });
 
   after(function () {
@@ -560,13 +565,6 @@ describe('TSS Ecdsa Utils:', async function () {
     };
     let aShare, dShare, userSignShare;
 
-    let signTxRequestSandbox: sinon.SinonSandbox;
-
-    before(async () => {
-      signTxRequestSandbox = sinon.createSandbox();
-      signTxRequestSandbox.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
-    });
-
     beforeEach(async () => {
 
       // Initializing user and bitgo for creating shares for nocks
@@ -577,14 +575,21 @@ describe('TSS Ecdsa Utils:', async function () {
         userKeyShare.nShares[3], backupKeyShare.nShares[3],
       ]);
 
-      const bitgoChallenge = await rangeProof.generateNTilde(3072);
+      const serializedEntChallenge = mockChallengeA;
+      const serializedBitgoChallenge = mockChallengeB;
+
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
+      const deserializedBitGoChallenge = ecdsaStaticUtils.deserializeNTilde(serializedBitgoChallenge);
+
+      sinon.stub(rangeProof, 'generateNTilde').resolves(deserializedEntChallenge);
+
       await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
-        ntilde: bitgoChallenge.ntilde.toString(),
-        h1: bitgoChallenge.h1.toString(),
-        h2: bitgoChallenge.h2.toString(),
+        ntilde: serializedEntChallenge.ntilde,
+        h1: serializedEntChallenge.h1,
+        h2: serializedEntChallenge.h2,
       } });
 
-      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.signChallenge(userSigningKey.xShare, userSigningKey.yShares[3]), MPC.signChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1])]);
+      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.appendChallenge(userSigningKey.xShare, userSigningKey.yShares[3], deserializedEntChallenge), MPC.appendChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1], deserializedBitGoChallenge)]);
 
       /**
        * START STEP ONE
@@ -710,10 +715,6 @@ describe('TSS Ecdsa Utils:', async function () {
       sinon.restore();
     });
 
-    after(async () => {
-      signTxRequestSandbox.restore();
-    });
-
     it('signTxRequest should succeed with txRequest object as input', async function () {
       const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
       await setupSignTxRequestNocks(false, userSignShare, aShare, dShare);
@@ -804,6 +805,300 @@ describe('TSS Ecdsa Utils:', async function () {
     }
   });
 
+  describe('getChallengesForEcdsaSigning', function() {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const rawEntChallenge = {
+      ntilde: 'ent ntilde',
+      h1: 'ent h1',
+      h2: 'ent h2',
+    };
+    const rawBitGoChallenge = {
+      ntilde: 'bitgo ntilde',
+      h1: 'bitgo h1',
+      h2: 'bitgo h2',
+    };
+    const walletId = 'walletId';
+    const entId = 'entId';
+    const adminEcdhKey = bitgo.keychains().create();
+    const fakeAdminEcdhKey = bitgo.keychains().create();
+    const derivationPath = 'm/0/0';
+
+    before(function() {
+
+      sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
+        userId: 'id',
+        userEmail: 'user@bitgo.com',
+        derivedPubkey: bip32.fromBase58(adminEcdhKey.xpub).derivePath(derivationPath).publicKey.toString('hex'),
+        derivationPath: derivationPath,
+        ecdhKeychain: 'my keychain',
+      });
+    });
+
+    it('Fetches the challenges and verifies the admin signatures correctly', async function() {
+      const adminSignatureEntChallenge = ecdsaStaticUtils.signChallenge(rawEntChallenge, adminEcdhKey.xprv, derivationPath);
+      const adminSignatureBitGoChallenge = ecdsaStaticUtils.signChallenge(rawBitGoChallenge, adminEcdhKey.xprv, derivationPath);
+      const mockChallengesResponse = {
+        enterpriseChallenge: {
+          ...rawEntChallenge,
+          verifiers: {
+            adminSignature: adminSignatureEntChallenge.toString('hex'),
+          },
+        },
+        bitgoChallenge: {
+          ...rawBitGoChallenge,
+          verifiers: {
+            adminSignature: adminSignatureBitGoChallenge.toString('hex'),
+          },
+        },
+        createdBy: 'id',
+      };
+      await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+      const apiChallenges = await ecdsaStaticUtils.getChallengesForEcdsaSigning(bitgo, walletId, entId);
+      should.exist(apiChallenges);
+      apiChallenges.enterpriseChallenge.should.deepEqual(rawEntChallenge);
+      apiChallenges.bitgoChallenge.should.deepEqual(rawBitGoChallenge);
+    });
+
+    it('Fails if the enterprise challenge signature is different from the admin ecdh key', async function() {
+      // Bad sign
+      const adminSignedEntChallenge = ecdsaStaticUtils.signChallenge(rawEntChallenge, fakeAdminEcdhKey.xprv, derivationPath);
+      const adminSignedBitGoChallenge = ecdsaStaticUtils.signChallenge(rawBitGoChallenge, adminEcdhKey.xprv, derivationPath);
+      const mockChallengesResponse = {
+        enterpriseChallenge: {
+          ...rawEntChallenge,
+          verifiers: {
+            adminSignature: adminSignedEntChallenge.toString('hex'),
+          },
+        },
+        bitgoChallenge: {
+          ...rawBitGoChallenge,
+          verifiers: {
+            adminSignature: adminSignedBitGoChallenge.toString('hex'),
+          },
+        },
+        createdBy: 'id',
+      };
+      await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+      await ecdsaStaticUtils.getChallengesForEcdsaSigning(bitgo, walletId, entId).should.be.rejectedWith('Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.');
+    });
+
+    it('Fails if the bitgo challenge signature is different from the admin ecdh key', async function() {
+      const adminSignedEntChallenge = ecdsaStaticUtils.signChallenge(rawEntChallenge, adminEcdhKey.xprv, derivationPath);
+      // Bad sign
+      const adminSignedBitGoChallenge = ecdsaStaticUtils.signChallenge(rawBitGoChallenge, fakeAdminEcdhKey.xprv, derivationPath);
+      const mockChallengesResponse = {
+        enterpriseChallenge: {
+          ...rawEntChallenge,
+          verifiers: {
+            adminSignature: adminSignedEntChallenge.toString('hex'),
+          },
+        },
+        bitgoChallenge: {
+          ...rawBitGoChallenge,
+          verifiers: {
+            adminSignature: adminSignedBitGoChallenge.toString('hex'),
+          },
+        },
+        createdBy: 'id',
+      };
+      await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
+      await ecdsaStaticUtils.getChallengesForEcdsaSigning(bitgo, walletId, entId).should.be.rejectedWith('Admin signature for BitGo\'s challenge is not valid. Please contact your enterprise admin.');
+    });
+  });
+
+  describe('getVerifyAndSignBitGoChallenges', function() {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const adminEcdhKey = bitgo.keychains().create();
+    const derivationPath = 'm/0/0';
+    const bitgoInstChallenge = mockChallengeA;
+    const bitgoNitroChallenge = mockChallengeB;
+    const userPassword = 'password123';
+    const encryptedXprv = bitgo.encrypt({
+      password: userPassword,
+      input: adminEcdhKey.xprv,
+    });
+
+    beforeEach(async function() {
+      sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
+        userId: 'id',
+        userEmail: 'user@bitgo.com',
+        derivedPubkey: bip32.fromBase58(adminEcdhKey.xpub).derivePath(derivationPath).publicKey.toString('hex'),
+        derivationPath: derivationPath,
+        ecdhKeychain: 'my keychain',
+      });
+
+      sinon.stub(bitgo, 'getECDHKeychain').resolves({
+        encryptedXprv: encryptedXprv,
+      });
+    });
+
+    afterEach(async function() {
+      sinon.restore();
+    });
+
+    it('succeeds for valid bitgo proofs', async function() {
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: bitgoNitroChallenge,
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.not.be.rejected();
+    });
+
+    it('Fails if bitgo challenge proofs are not present', async function() {
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: {
+          ...bitgoNitroChallenge,
+          ntildeProof: undefined,
+        },
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Expected BitGo challenge proof to be present. Contact support@bitgo.com.');
+    });
+
+    it('Fails if the user password to decrypt the ecdhkeychain is wrong', async function() {
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: {
+          ...bitgoNitroChallenge,
+          ntildeProof: undefined,
+        },
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', 'bro').should.be.rejectedWith('Incorrect password. Please try again.');
+
+    });
+
+    it('Fails bitgo challenge proofs for faulty nitro h2WrtH1 proof', async function() {
+      assert(bitgoNitroChallenge.ntildeProof);
+      bitgoNitroChallenge.ntildeProof.h2WrtH1 = bitgoNitroChallenge.ntildeProof.h1WrtH2;
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: bitgoNitroChallenge,
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+    });
+
+    it('Fails bitgo challenge proofs for faulty nitro h1WrtH2 proof', async function() {
+      assert(bitgoNitroChallenge.ntildeProof);
+      bitgoNitroChallenge.ntildeProof.h1WrtH2 = bitgoNitroChallenge.ntildeProof.h2WrtH1;
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: bitgoNitroChallenge,
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+    });
+
+    it('Fails bitgo challenge proofs for faulty inst h2WrtH1 proof', async function() {
+      assert(bitgoInstChallenge.ntildeProof);
+      bitgoInstChallenge.ntildeProof.h2WrtH1 = bitgoInstChallenge.ntildeProof.h1WrtH2;
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: bitgoNitroChallenge,
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+    });
+
+    it('Fails bitgo challenge proofs for faulty inst h1WrtH2 proof', async function() {
+      assert(bitgoInstChallenge.ntildeProof);
+      bitgoInstChallenge.ntildeProof.h1WrtH2 = bitgoInstChallenge.ntildeProof.h2WrtH1;
+      sinon.stub(ecdsaStaticUtils, 'getBitGoChallenges').resolves({
+        bitgoNitroHsm: bitgoNitroChallenge,
+        bitgoInstitutionalHsm: bitgoInstChallenge,
+      });
+
+      await ecdsaStaticUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+    });
+  });
+
+  describe('initiateChallengesForEnterprise', function() {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const adminEcdhKey = bitgo.keychains().create();
+    const derivationPath = 'm/0/0';
+    const bitgoInstChallenge = mockChallengeA;
+    const bitgoNitroChallenge = mockChallengeB;
+    const serializedEntChallenge = mockChallengeC;
+    const userPassword = 'password123';
+    const encryptedXprv = bitgo.encrypt({
+      password: userPassword,
+      input: adminEcdhKey.xprv,
+    });
+
+    beforeEach(async function() {
+      sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
+        userId: 'id',
+        userEmail: 'user@bitgo.com',
+        derivedPubkey: bip32.fromBase58(adminEcdhKey.xpub).derivePath(derivationPath).publicKey.toString('hex'),
+        derivationPath: derivationPath,
+        ecdhKeychain: 'my keychain',
+      });
+
+      sinon.stub(bitgo, 'getECDHKeychain').resolves({
+        encryptedXprv: encryptedXprv,
+      });
+    });
+
+    afterEach(async function() {
+      sinon.restore();
+    });
+
+    it('should upload challenge without generating if passed in', async function() {
+      const stubUploadChallenge = sinon.stub(ecdsaStaticUtils, 'uploadChallengesToEnterprise');
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
+
+      const signedEntChallenge = ecdsaStaticUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedInstChallenge = ecdsaStaticUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedNitroChallenge = ecdsaStaticUtils.signChallenge(bitgoNitroChallenge, adminEcdhKey.xprv, derivationPath);
+
+      await ecdsaStaticUtils.initiateChallengesForEnterprise(bitgo, 'ent_id', userPassword, signedInstChallenge, signedNitroChallenge, deserializedEntChallenge).should.not.be.rejected();
+      stubUploadChallenge.should.be.calledWith(
+        bitgo,
+        'ent_id',
+        serializedEntChallenge,
+        signedEntChallenge.toString('hex'),
+        signedInstChallenge.toString('hex'),
+        signedNitroChallenge.toString('hex'),
+      );
+    });
+
+    it('should generate a challenge and if one is not provided', async function() {
+      const stubUploadChallenge = sinon.stub(ecdsaStaticUtils, 'uploadChallengesToEnterprise');
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
+      sinon.stub(rangeProof, 'generateNTilde').resolves(deserializedEntChallenge);
+
+      const signedEntChallenge = ecdsaStaticUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedInstChallenge = ecdsaStaticUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedNitroChallenge = ecdsaStaticUtils.signChallenge(bitgoNitroChallenge, adminEcdhKey.xprv, derivationPath);
+
+      await ecdsaStaticUtils.initiateChallengesForEnterprise(bitgo, 'ent_id', userPassword, signedInstChallenge, signedNitroChallenge).should.not.be.rejected();
+      stubUploadChallenge.should.be.calledWith(
+        bitgo,
+        'ent_id',
+        serializedEntChallenge,
+        signedEntChallenge.toString('hex'),
+        signedInstChallenge.toString('hex'),
+        signedNitroChallenge.toString('hex'),
+      );
+    });
+  });
+
+  it('serializeNTilde and deserializeNTilde are deterministic', function() {
+    const mockSerializedChallenge = mockChallengeA;
+    const deserializeChallenge = ecdsaStaticUtils.deserializeNTilde(mockSerializedChallenge);
+    const serializeChallenge = ecdsaStaticUtils.serializeNTilde(deserializeChallenge);
+    serializeChallenge.should.deepEqual(mockSerializedChallenge);
+  });
+
+  it('getMessageToSignFromChallenge concatenates the challenge values only', function() {
+    const challenge = mockChallengeA;
+    const expectedMessageToSign = challenge.ntilde.concat(challenge.h1).concat(challenge.h2);
+    const message = ecdsaStaticUtils.getMessageToSignFromChallenge(challenge);
+    message.should.equal(expectedMessageToSign);
+  });
 
   // #region Nock helpers
   async function createIncompleteBitgoHeldBackupKeyShare(userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {

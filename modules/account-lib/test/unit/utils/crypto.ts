@@ -1,5 +1,12 @@
 import assert from 'assert';
-import { xpubToUncompressedPub, xprvToRawPrv, rawPrvToExtendedKeys, hexToBigInt } from '@bitgo/sdk-core';
+import {
+  xpubToUncompressedPub,
+  xprvToRawPrv,
+  rawPrvToExtendedKeys,
+  hexToBigInt,
+  convertHexArrToBigIntArr,
+  convertBigIntArrToHexArr,
+} from '@bitgo/sdk-core';
 import should from 'should';
 
 describe('Crypto utils', function () {
@@ -61,6 +68,15 @@ describe('Crypto utils', function () {
     });
     it('should throw error converting hex to BigInt', function () {
       assert.throws(() => hexToBigInt('op'));
+    });
+  });
+
+  describe('convertHexToBigIntArr and convertBigIntArrToHexArr', function () {
+    it('able to serialize/deserialize between the two methods', function () {
+      const fakeHexArr = ['8abc528e671324135d709395a4cf2552e842f648b8245df65f144311d4482082117355440ae565faf21d7587'];
+      const fakeBigIntArr = convertHexArrToBigIntArr(fakeHexArr);
+      const hexArrAgain = convertBigIntArrToHexArr(fakeBigIntArr);
+      hexArrAgain.should.deepEqual(fakeHexArr);
     });
   });
 });

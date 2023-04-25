@@ -281,12 +281,6 @@ export interface BitgoGPGPublicKey {
   enterpriseId: string;
 }
 
-export type Challenge = {
-  ntilde: string;
-  h1: string;
-  h2: string;
-};
-
 export type BackupGpgKey = SerializedKeyPair<string> | Key;
 
 /**

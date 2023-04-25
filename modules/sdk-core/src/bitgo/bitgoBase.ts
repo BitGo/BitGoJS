@@ -2,6 +2,7 @@ import { BitGoRequest, DecryptOptions, EncryptOptions, GetSharingKeyOptions, IRe
 import { IBaseCoin } from './baseCoin';
 import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
+import { GetSigningKeyApi } from './keychain';
 
 export interface BitGoBase {
   wallets(): any; // TODO - define v1 wallets type
@@ -12,13 +13,15 @@ export interface BitGoBase {
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;
-  getECDHSharingKeychain(): Promise<any>;
+  getECDHKeychain(ecdhKeychainPub?: string): Promise<any>;
   getEnv(): EnvironmentName;
   getSharingKey({ email }: GetSharingKeyOptions): Promise<any>;
+  getSigningKeyForUser(enterpriseId: string, userId?: string): Promise<GetSigningKeyApi>;
   microservicesUrl(path: string): string;
   post(url: string): BitGoRequest;
   put(url: string): BitGoRequest;
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
+  getChallengesForEcdsaSigning(walletId: string): Promise<any>;
 }
