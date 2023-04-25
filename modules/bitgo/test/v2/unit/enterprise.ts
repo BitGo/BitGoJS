@@ -7,6 +7,7 @@ import { common, Enterprise } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
+import { mockChallengeA } from './internal/tssUtils/mocks/ecdsaNtilde';
 
 describe('Enterprise:', function () {
   let bitgo;
@@ -33,5 +34,22 @@ describe('Enterprise:', function () {
       await enterprise.getFirstPendingTransaction().should.be.resolved();
       scope.isDone().should.be.True();
     });
+  });
+
+  it('should fetch the tss config correctly', async function() {
+    const scope = nock(bgUrl).get(`/api/v2/enterprise/${enterprise.id}/tssconfig`).reply(200, {
+      ecdsa: {
+        challenge: {
+          enterprise: {
+            ...mockChallengeA,
+            verifiers: {
+              adminSignature: 'hex sig',
+            },
+          },
+        },
+      },
+    });
+    await enterprise.getExistingTssEcdsaChallenge().should.be.resolved();
+    scope.isDone().should.be.True();
   });
 });
