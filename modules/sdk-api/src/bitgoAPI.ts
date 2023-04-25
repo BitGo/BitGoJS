@@ -1896,7 +1896,7 @@ export class BitGoAPI implements BitGoBase {
     return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
   }
 
-  async getBitgoChallengesForEcdsaSigning(walletId: string): Promise<any> {
+  async getChallengesForEcdsaSigning(walletId: string): Promise<any> {
     const urlPath = `/wallet/${walletId}/challenges`;
     return await this.get(this.url(urlPath, 2)).query({}).result();
   }

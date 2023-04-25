@@ -22,4 +22,5 @@ export interface IEnterprise {
     bitgoNitroChallengeProofSignature: Buffer,
     challenge?: NTilde
   ): Promise<void>;
+  getExistingTssEcdsaChallenge(): Promise<NTilde>;
 }

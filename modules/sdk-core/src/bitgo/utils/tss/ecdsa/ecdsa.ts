@@ -796,7 +796,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     walletId: string,
     enterpriseId: string
   ): Promise<ApiChallenges> {
-    const result = await bitgo.getBitgoChallengesForEcdsaSigning(walletId);
+    const result = await bitgo.getChallengesForEcdsaSigning(walletId);
     const enterpriseChallenge = result.enterpriseChallenge;
     const bitgoChallenge = result.bitgoChallenge;
 
