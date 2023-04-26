@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.4.1...@bitgo/sdk-coin-btc@1.4.2) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-btc
+
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.4.0...@bitgo/sdk-coin-btc@1.4.1) (2023-04-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-btc
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.3.6...@bitgo/sdk-coin-btc@1.4.0) (2023-04-13)
+
+### Bug Fixes
+
+- fix error when using feeOutput ([4fb6214](https://github.com/BitGo/BitGoJS/commit/4fb6214a2596c33563eceae4f360302e95060354))
+- **sdk-coin-btc:** convert unspent value to BigInt ([ed7d967](https://github.com/BitGo/BitGoJS/commit/ed7d96717919eb266a6a319e8c53552a058d5edf))
+- **sdk-coin-btc:** get rootwalletkeys for inscription transfer ([b160186](https://github.com/BitGo/BitGoJS/commit/b16018643273e20ea6908f51149139def7209932))
+- use half signed commit txn when signing reveal ([c0fb50b](https://github.com/BitGo/BitGoJS/commit/c0fb50bd6b3b5f4322420a8574a1a661d15ee21d))
+- use p2wsh and internalChainCode for changeAddress creation ([4a5b79c](https://github.com/BitGo/BitGoJS/commit/4a5b79cce0e41ebe31e5d1ee7c5c05b2f7c3d414))
+- used derived keys and use xonly public key for script ([382ce07](https://github.com/BitGo/BitGoJS/commit/382ce073b660f2d002176e3a8fdcadcf5bbaff6a))
+
+### Features
+
+- add inscription builder class ([214eafe](https://github.com/BitGo/BitGoJS/commit/214eafe48e8d12fd5d58efac289bab33bbd46fd3))
+- **sdk-coin-btc:** transfer an inscription ([bc2eda8](https://github.com/BitGo/BitGoJS/commit/bc2eda86f73a4e4451fd6accbc2a794f08649b78))
+
 ## [1.3.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@1.3.5...@bitgo/sdk-coin-btc@1.3.6) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

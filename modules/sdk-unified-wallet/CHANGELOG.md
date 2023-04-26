@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.0.1...@bitgo/sdk-unified-wallet@3.0.2) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/sdk-unified-wallet
+
+## [3.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.0.0...@bitgo/sdk-unified-wallet@3.0.1) (2023-04-20)
+
+**Note:** Version bump only for package @bitgo/sdk-unified-wallet
+
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@2.0.1...@bitgo/sdk-unified-wallet@3.0.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-unified-wallet:** added pagination options ([060fb99](https://github.com/BitGo/BitGoJS/commit/060fb9911d0d4c332a7c821c7743e00ae6d1571a))
+- **sdk-unified-wallet:** change argument name in getunifiedwallet by id ([5f9f8a6](https://github.com/BitGo/BitGoJS/commit/5f9f8a6bc6401ca19bfe5870c3953bbcf3817a40))
+- **sdk-unified-wallet:** made changes to accomodate api result change ([33246e1](https://github.com/BitGo/BitGoJS/commit/33246e1bcfb1c0aeba71eb11137dfc2039264fc5))
+
+### Code Refactoring
+
+- **sdk-unified-evm:** change getallunifiedwallets name ([b359860](https://github.com/BitGo/BitGoJS/commit/b3598605846f8eff4ae284fe32ead5ad6afb425c))
+
+### Features
+
+- **sdk-unified-wallet:** added eddsa impl ([284f147](https://github.com/BitGo/BitGoJS/commit/284f147df74cde83ab594338808eef83d6865615))
+- **sdk-unified-wallet:** created getunifiedwalletfromkeytriplet ([7c85a05](https://github.com/BitGo/BitGoJS/commit/7c85a05ad1094fec357ebb20a373ccda1a4e05b8))
+
+### BREAKING CHANGES
+
+- **sdk-unified-evm:** rename getAllUnifiedWallets to getUnifiedWallets to conform with BitGo naming convention
+
+Ticket: BG-69090
+
 ## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@2.0.0...@bitgo/sdk-unified-wallet@2.0.1) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-unified-wallet

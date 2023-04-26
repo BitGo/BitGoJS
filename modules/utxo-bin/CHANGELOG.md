@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.8.1...@bitgo/utxo-bin@2.8.2) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+## [2.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.8.0...@bitgo/utxo-bin@2.8.1) (2023-04-20)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.7.4...@bitgo/utxo-bin@2.8.0) (2023-04-13)
+
+### Bug Fixes
+
+- correct ecash testnet address prefix issue in utxo-bin: BG-3163 ([6aa939e](https://github.com/BitGo/BitGoJS/commit/6aa939efd949cfb91f8ae8e8e5b70d3e9bb1f34a))
+- **utxo-bin:** remove colon from filenames in test fixtures ([42e2686](https://github.com/BitGo/BitGoJS/commit/42e2686cfe537e5a1c263705cd9f04d81379e842))
+
+### Features
+
+- **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+- **utxo-lib:** fix for noble ecc wrapper buffer to bigint conversion ([ba58297](https://github.com/BitGo/BitGoJS/commit/ba582975d63c5a3f2584a0bd3cb12ab8a3209d7f))
+- **utxo-lib:** introduce ParsedScriptType ([3c28bbc](https://github.com/BitGo/BitGoJS/commit/3c28bbc4baada5b614ef5893301059b51b324ce2))
+- **utxo-lib:** parse p2trMusig2 key path witness ([ecb4c31](https://github.com/BitGo/BitGoJS/commit/ecb4c3127343b613cc6ae02bc1cd971d2e032954))
+- **utxo-lib:** sort public keys before musig2 key aggregation ([720105f](https://github.com/BitGo/BitGoJS/commit/720105fd90ea9e230fa382f8dd48f23f8ea549e1))
+
 ## [2.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.7.3...@bitgo/utxo-bin@2.7.4) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

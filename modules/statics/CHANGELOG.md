@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.0.0...@bitgo/statics@15.1.0) (2023-04-20)
+
+### Features
+
+- **sdk-coin-sui:** add sui staking coin feature ([9d711c4](https://github.com/BitGo/BitGoJS/commit/9d711c4879f079b869ea3695a0f0755b83c93674))
+
+# [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.4.0...@bitgo/statics@15.0.0) (2023-04-13)
+
+### Bug Fixes
+
+- **bitgo:** add argument to create address on ofc wallets ([b1a212d](https://github.com/BitGo/BitGoJS/commit/b1a212d05962719822c8420acf4f01dc6e012d16))
+- **statics:** add tsol valid usdc for devnet token data ([462ada8](https://github.com/BitGo/BitGoJS/commit/462ada828755576dc2dfd02cba8d6d1930fc3654))
+- **statics:** update explorer urls for bsc ([a40c4d7](https://github.com/BitGo/BitGoJS/commit/a40c4d77c90993870ac2913f8f71bb94ba1f7c0e))
+- **statics:** update tbsc:busd contract ([24eeba5](https://github.com/BitGo/BitGoJS/commit/24eeba5600afc1fddd4d666b789f52ccadf65f7a))
+- update cspr testnet explorer to reference integration cluster ([5d92804](https://github.com/BitGo/BitGoJS/commit/5d928045cedcda4c48dd9c2370b322c0cf44b147))
+
+### Features
+
+- onboard new sol tokens ([9079fb8](https://github.com/BitGo/BitGoJS/commit/9079fb8e2123574eed9b038b62a61f629063f3cd))
+- **sdk-coin-polygon:** support evm based cross chain recovery ([a88681f](https://github.com/BitGo/BitGoJS/commit/a88681f8428bcb6617ee2c7cfe5e8294b603af9f))
+- **statics:** add custodial coin feature to poly ([3287d9d](https://github.com/BitGo/BitGoJS/commit/3287d9d5b9a18bc457336295a0607626bd03a285))
+- **statics:** add custody coin features ([fcb28a5](https://github.com/BitGo/BitGoJS/commit/fcb28a5156fb4183c824239136953c7bcc495199))
+- **statics:** add expiring tx CoinFeature ([d264c4a](https://github.com/BitGo/BitGoJS/commit/d264c4ac9dea02a0de77e05f6517ada6bfcc3a4a))
+- **statics:** add token support for trx ([b473732](https://github.com/BitGo/BitGoJS/commit/b473732cc3bba357c9a7b95160f94ed6d84c6bdf))
+- **statics:** add xrp token config and test token ([76da61b](https://github.com/BitGo/BitGoJS/commit/76da61b54b62825116b102a3fd50377356a9f0be))
+- **statics:** set addressCoin to gteth for new tofcerc20 tokens ([5ecc4f4](https://github.com/BitGo/BitGoJS/commit/5ecc4f4e0192a627504955986484de8b0aafe17e))
+
+### BREAKING CHANGES
+
+- **statics:** overrode address coin from deprecated teth to gteth for tofcerc20s
+  Ticket: BG-69417
+- **statics:** updated contract address for tbsc:busd
+  TICKET: BG-69321
+
 # [14.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@14.3.0...@bitgo/statics@14.4.0) (2023-02-17)
 
 ### Features

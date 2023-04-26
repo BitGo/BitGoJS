@@ -116,6 +116,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsv /var/modules/sdk-coin-bsv/
 RUN cd /var/modules/sdk-coin-bsv && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btc /var/modules/sdk-coin-btc/
 RUN cd /var/modules/sdk-coin-btc && yarn link
+COPY --from=builder /tmp/bitgo/modules/utxo-ord /var/modules/utxo-ord/
+RUN cd /var/modules/utxo-ord && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btg /var/modules/sdk-coin-btg/
 RUN cd /var/modules/sdk-coin-btg && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dash /var/modules/sdk-coin-dash/
@@ -177,6 +179,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-bcha && \
     yarn link @bitgo/sdk-coin-bsv && \
     yarn link @bitgo/sdk-coin-btc && \
+    yarn link @bitgo/utxo-ord && \
     yarn link @bitgo/sdk-coin-btg && \
     yarn link @bitgo/sdk-coin-dash && \
     yarn link @bitgo/sdk-coin-doge && \
@@ -189,9 +192,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Fri, 17 Feb 2023 01:20:02 GMT"
-LABEL version=9.24.1
-LABEL git_hash=fa5d7a66fc7d85bb66f1642850c8c5a96e809393
+LABEL created="Tue, 25 Apr 2023 22:49:19 GMT"
+LABEL version=9.25.2
+LABEL git_hash=0e062498e48576d0613b10ae83caf87f349bd112
 #LABEL_END
 
 USER node

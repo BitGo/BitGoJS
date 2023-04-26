@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.4.1...@bitgo/sdk-coin-sol@2.4.2) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.4.0...@bitgo/sdk-coin-sol@2.4.1) (2023-04-20)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix SOL create ATA instruction order ([a1c8c3c](https://github.com/BitGo/BitGoJS/commit/a1c8c3c7b81913d20409ba6d198ab49c28c50671))
+- **sdk-coin-sol:** fix solana get instruction type ([93c02b2](https://github.com/BitGo/BitGoJS/commit/93c02b2d0464f8ead4a544257b2e1d9de30610da))
+
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.9...@bitgo/sdk-coin-sol@2.4.0) (2023-04-13)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix solana create ata on token transfer ([3c50db3](https://github.com/BitGo/BitGoJS/commit/3c50db323b57f48390df5936816d697214fb8918))
+
+### Features
+
+- **sdk-coin-sol:** add create ATA to token transfer for SOL ([8ce5c6a](https://github.com/BitGo/BitGoJS/commit/8ce5c6ab30225d02cc8eace006bb84b5541ecef9))
+
 ## [2.3.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.3.8...@bitgo/sdk-coin-sol@2.3.9) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

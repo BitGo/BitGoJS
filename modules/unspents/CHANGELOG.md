@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.0...@bitgo/unspents@0.13.1) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+# [0.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.12.0...@bitgo/unspents@0.13.0) (2023-04-20)
+
+### Features
+
+- **unspents:** unsigned psbt dimensions can be calculated ([427cc36](https://github.com/BitGo/BitGoJS/commit/427cc36f33842cb4372292dc69fe2f23fde78876))
+
+# [0.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.11.12...@bitgo/unspents@0.12.0) (2023-04-13)
+
+### Features
+
+- **unspents:** add dimensions for psbt ([b125034](https://github.com/BitGo/BitGoJS/commit/b125034d83d1e613e9a7036f9b4d805d6f57c3f7))
+- **unspents:** add p2trMusig2 to dimensions ([de460ad](https://github.com/BitGo/BitGoJS/commit/de460ad5c43f936458b7af6524cefad3d5f94914))
+- **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+- **utxo-lib:** create p2trMusig2 nonce using derived key ([a0cd1f1](https://github.com/BitGo/BitGoJS/commit/a0cd1f1b67b4e013a53362d3e01aa8818a1a9b33))
+- **utxo-lib:** introduce ParsedScriptType ([3c28bbc](https://github.com/BitGo/BitGoJS/commit/3c28bbc4baada5b614ef5893301059b51b324ce2))
+- **utxo-lib:** parse p2trMusig2 key path witness ([ecb4c31](https://github.com/BitGo/BitGoJS/commit/ecb4c3127343b613cc6ae02bc1cd971d2e032954))
+
 ## [0.11.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.11.9...@bitgo/unspents@0.11.12) (2023-02-16)
 
 **Note:** Version bump only for package @bitgo/unspents

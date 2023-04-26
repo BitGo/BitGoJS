@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.4.1...@bitgo/sdk-coin-bsc@3.5.0) (2023-04-25)
+
+### Features
+
+- **sdk-core:** update ecdsa signing to use enterprise challenge ([c626f00](https://github.com/BitGo/BitGoJS/commit/c626f00e141db2ef4147b3e0c4badf1776729465))
+
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.4.0...@bitgo/sdk-coin-bsc@3.4.1) (2023-04-20)
+
+### Bug Fixes
+
+- **root:** update tests using safe primes ([5a275ff](https://github.com/BitGo/BitGoJS/commit/5a275ffbf3eecf351dfbb0b4538d62dd0a2f2a43))
+
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.3.1...@bitgo/sdk-coin-bsc@3.4.0) (2023-04-13)
+
+### Features
+
+- **sdk-coin-bsc:** allow account consolidations ([0d94585](https://github.com/BitGo/BitGoJS/commit/0d94585cb5ddcbb1a90388930287c5952f67f658))
+
 ## [3.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.3.0...@bitgo/sdk-coin-bsc@3.3.1) (2023-02-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

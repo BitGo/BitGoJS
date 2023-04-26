@@ -3,6 +3,77 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.1...@bitgo/utxo-lib@8.0.2) (2023-04-25)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+## [8.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.0...@bitgo/utxo-lib@8.0.1) (2023-04-20)
+
+### Bug Fixes
+
+- **utxo-lib:** finalizeAllInputs finalises half signed p2tr ([c822670](https://github.com/BitGo/BitGoJS/commit/c822670ec2176a54ba9818afdae184107549488c))
+- **utxo-lib:** getSignatureValidationArray throws error for unsigned ([ec3d0f6](https://github.com/BitGo/BitGoJS/commit/ec3d0f6846caba8b2f673ae69fc0a333974e3a01))
+
+# [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.7.0...@bitgo/utxo-lib@8.0.0) (2023-04-13)
+
+### Bug Fixes
+
+- correct ecash testnet address prefix Issue: BG-3163 ([ecf0b8a](https://github.com/BitGo/BitGoJS/commit/ecf0b8a9792be1677b08da823b73ffcc5bf80c28))
+- support correct ecash transaction version Issues: [#3161](https://github.com/BitGo/BitGoJS/issues/3161) re-running maint.ts Issue: BG-0 ([e95fd1c](https://github.com/BitGo/BitGoJS/commit/e95fd1c6dcf99d82fb5696a07c08a96eb907afd5))
+- support correct ecash transaction version Issues: Bitgo[#3161](https://github.com/BitGo/BitGoJS/issues/3161) Issue: BG-0 ([07f1da3](https://github.com/BitGo/BitGoJS/commit/07f1da3bae47bf7ee659fae6e0011dfb85e9a225))
+- support correct ecash transaction version Issues: BitGo[#3161](https://github.com/BitGo/BitGoJS/issues/3161) Issue: BG-0 ([f031824](https://github.com/BitGo/BitGoJS/commit/f031824558a0f600954583d97a9e7d5c4398825b))
+- **utxo-lib:** remove default `spec` from '.mocharc.js` ([52818cc](https://github.com/BitGo/BitGoJS/commit/52818cc17cb1289082006e467f4b7b91ccbd166f))
+- **utxo-lib:** remove unused parameter in `getTaprootHashForSig()` ([163ed04](https://github.com/BitGo/BitGoJS/commit/163ed041f63ce81bbb29cc27d8bf76eddbe0e000))
+- **utxo-lib:** rename getScriptPathLevel to getLeafVersion ([3a0c535](https://github.com/BitGo/BitGoJS/commit/3a0c5358de13456b4f0800a9b85b0010116bb58b))
+
+### Features
+
+- add inscription builder class ([214eafe](https://github.com/BitGo/BitGoJS/commit/214eafe48e8d12fd5d58efac289bab33bbd46fd3))
+- add support finalizeAllInputs for reveal transactions ([3b3050e](https://github.com/BitGo/BitGoJS/commit/3b3050e793a65e6af1453fb55fd1c2da0dd7446f))
+- prepare and sign inscription reveal transaction ([7a1280d](https://github.com/BitGo/BitGoJS/commit/7a1280dfed15d3710198fda028722a627c5f7fb2))
+- support ordinary key musig aggregation ([29a95f7](https://github.com/BitGo/BitGoJS/commit/29a95f78f3097ac2b2caf955d99b8094e752d4a6))
+- **utxo-lib:** add `clone()` implementation for UtxoPsbt ([4fb4f0b](https://github.com/BitGo/BitGoJS/commit/4fb4f0b120e1ed27194ac8d3c10ffcb23def92b2))
+- **utxo-lib:** add `network` property to `UtxoPsbt` ([fb6e77f](https://github.com/BitGo/BitGoJS/commit/fb6e77f7d295bca11d261ea98fc59b9c0259b688))
+- **utxo-lib:** add `utxolib/src/ord` with some basic classes ([05931cf](https://github.com/BitGo/BitGoJS/commit/05931cfe887c51d6ea37bb8775f58f10d2911ff2))
+- **utxo-lib:** add basic layout code for inscription txs ([261b18a](https://github.com/BitGo/BitGoJS/commit/261b18aef43ae457c252abf83dcf044ef79272df))
+- **utxo-lib:** add default template parameter for UtxoPsbt ([2937364](https://github.com/BitGo/BitGoJS/commit/2937364285cc6aeb4451b0b8d14433cdd20461e8))
+- **utxo-lib:** add integration test for p2trMusig2 ([fd7a43c](https://github.com/BitGo/BitGoJS/commit/fd7a43c0559ea088811a72740ef55d1d8311dc0b))
+- **utxo-lib:** add SatPoint type to ord/ subdir ([058a038](https://github.com/BitGo/BitGoJS/commit/058a038d138bf31db4223d386e5268a76b2a58a0))
+- **utxo-lib:** add sorted musig2 participant pub keys in PSBT ([5e2b021](https://github.com/BitGo/BitGoJS/commit/5e2b021afc492a2b4dda1989835539ee41317303))
+- **utxo-lib:** add splitWithParams ([978419c](https://github.com/BitGo/BitGoJS/commit/978419cc865646338dd5e6f43bb1dda3368b3410))
+- **utxo-lib:** allow `bigint` in some SatRange methods ([886a4bd](https://github.com/BitGo/BitGoJS/commit/886a4bd028ec37a13befea82738ea03a786ed578))
+- **utxo-lib:** correct input index to psbt ([78899b2](https://github.com/BitGo/BitGoJS/commit/78899b258d174eb6366ef5f6b32fe7ba0aebd615))
+- **utxo-lib:** create p2tr address using musig2 ([699e829](https://github.com/BitGo/BitGoJS/commit/699e8291f4a205ba0b2071c6369f2c8843b8a945))
+- **utxo-lib:** create p2trMusig2 nonce using derived key ([8993c09](https://github.com/BitGo/BitGoJS/commit/8993c096cebf13d09055f1cd989c2a7f2f6993d1))
+- **utxo-lib:** create p2trMusig2 nonce using derived key ([a0cd1f1](https://github.com/BitGo/BitGoJS/commit/a0cd1f1b67b4e013a53362d3e01aa8818a1a9b33))
+- **utxo-lib:** enable psbt for musig2 nonce creation ([86a5d79](https://github.com/BitGo/BitGoJS/commit/86a5d790ef302e316c3a7cd96faa88b10aca3074))
+- **utxo-lib:** fix for noble ecc wrapper buffer to bigint conversion ([ba58297](https://github.com/BitGo/BitGoJS/commit/ba582975d63c5a3f2584a0bd3cb12ab8a3209d7f))
+- **utxo-lib:** fix p2tr prevout and output script mismatch case ([dfba435](https://github.com/BitGo/BitGoJS/commit/dfba4350be1651880d64bf281bef4bca4e0be3b3))
+- **utxo-lib:** improve signature of `createTransactionFromBuffer` ([b896944](https://github.com/BitGo/BitGoJS/commit/b89694442e060cac35b3fc558dc6f87d93f74db3))
+- **utxo-lib:** introduce ParsedScriptType ([3c28bbc](https://github.com/BitGo/BitGoJS/commit/3c28bbc4baada5b614ef5893301059b51b324ce2))
+- **utxo-lib:** move some testutils to `src/` ([f517a26](https://github.com/BitGo/BitGoJS/commit/f517a26c525255074d4c4d5cf2ea8db2a97b0f2d))
+- **utxo-lib:** new function getTaprootOutputKey ([b29ab33](https://github.com/BitGo/BitGoJS/commit/b29ab33317a261d2fd2a547bbafa41623478fbd3))
+- **utxo-lib:** parse p2trMusig2 key path witness ([ecb4c31](https://github.com/BitGo/BitGoJS/commit/ecb4c3127343b613cc6ae02bc1cd971d2e032954))
+- **utxo-lib:** parse psbt for p2trMusig2 ([4dff11f](https://github.com/BitGo/BitGoJS/commit/4dff11f2c411a76f9495e8cb9ba2505f7be8294d))
+- **utxo-lib:** refactor p2trMusig2 psbt code ([609ea27](https://github.com/BitGo/BitGoJS/commit/609ea27621e442ed32efa5e3286a28fd49d0e1d5))
+- **utxo-lib:** refactor p2trMusig2 psbt validate code ([a648600](https://github.com/BitGo/BitGoJS/commit/a6486005f87e53058e0583dac9fdad32aa3822d9))
+- **utxo-lib:** refactor validation and fix sigValArray ([29a18bf](https://github.com/BitGo/BitGoJS/commit/29a18bf586ccbde403edc68151ca6c686700567d))
+- **utxo-lib:** refactoring create musig2 nonce ([fc3003b](https://github.com/BitGo/BitGoJS/commit/fc3003b0720f0e6eb5f08f919e643c91f30c20d1))
+- **utxo-lib:** sort public keys before musig2 key aggregation ([720105f](https://github.com/BitGo/BitGoJS/commit/720105fd90ea9e230fa382f8dd48f23f8ea549e1))
+- **utxo-lib:** support p2shP2pk psbt parsing ([8e1a1cb](https://github.com/BitGo/BitGoJS/commit/8e1a1cb0668d53a5519c634f451773fa0ca7f9fe))
+- **utxo-lib:** support p2trMusig2 key path finalize ([b5228fe](https://github.com/BitGo/BitGoJS/commit/b5228fe2b2372dcd3e31d9e1d4743f1e00a57e59))
+- **utxo-lib:** support p2trMusig2 key path sig verification ([674ee9a](https://github.com/BitGo/BitGoJS/commit/674ee9af4f29e0bd6299d7c0534ed154dce85718))
+- **utxo-lib:** support psbt to musig2 partial sign for p2tr musig2 ([9aabe94](https://github.com/BitGo/BitGoJS/commit/9aabe9488a7973819df143095ba4477c86dddfa4))
+- **utxo-lib:** test p2trMusig2 psbt serialise and deserialise ([5b53c1b](https://github.com/BitGo/BitGoJS/commit/5b53c1b70607d9c8d39bc5e004240bff18e4dd09))
+- **utxo-ord:** add package `utxo-ord/` ([444bd4d](https://github.com/BitGo/BitGoJS/commit/444bd4dc3a7f0cc4ca0c62b55fb8689b2250dd94))
+
+### BREAKING CHANGES
+
+- `ecashtest` will no longer be returned as the prefix for `networks.ecashTest`
+- **utxo-lib:** changes UtxoPsbt
+
+Issue: BG-68135
+
 # [7.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@7.4.0...@bitgo/utxo-lib@7.7.0) (2023-02-16)
 
 ### Bug Fixes
