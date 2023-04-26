@@ -1,11 +1,9 @@
+import { TestBitGo } from '@bitgo/sdk-test';
+import { Enterprise, Environments, SettlementTradingPartnerStatus, Wallet } from '@bitgo/sdk-core';
 import * as nock from 'nock';
 import * as should from 'should';
-
-import fixtures from '../../fixtures/trading/tradingPartner';
-
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { Enterprise, Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide, Wallet } from '@bitgo/sdk-core';
+import { BitGo } from '../../../../src';
+import fixtures from '../../fixtures/clearing/tradingPartner';
 
 describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -37,13 +35,11 @@ describe('Trading Partners', function () {
 
   it('should refer check trading partner by code', async function () {
     const scope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trading-partner`)
       .reply(200, fixtures.addByCodeResponse);
 
-    const addByCodeResponse = await tradingAccount.partners().addByCode({
+    const addByCodeResponse = await tradingAccount.partners().add({
       referralCode: 'TEST',
-      type: TradingPartnerType.AGENCY,
-      requesterSide: TradingReferralRequesterSide.PRIMARY,
     });
 
     addByCodeResponse.should.have.property('id');
@@ -51,16 +47,14 @@ describe('Trading Partners', function () {
     addByCodeResponse.should.have.property('primaryEnterpriseName');
     addByCodeResponse.should.have.property('secondaryAccountId');
     addByCodeResponse.should.have.property('secondaryEnterpriseName');
-    addByCodeResponse.should.have.property('requesterAccountId', tradingAccount.id);
-    addByCodeResponse.status.should.eql(TradingPartnerStatus.PENDING);
-    addByCodeResponse.type.should.eql(TradingPartnerType.AGENCY);
+    addByCodeResponse.status.should.eql(SettlementTradingPartnerStatus.ACCEPTED);
 
     scope.isDone().should.be.true();
   });
 
   it('should list all trading partners', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trading-partners`)
       .reply(200, fixtures.listTradingPartners);
 
     const partners = await tradingAccount.partners().list();
@@ -74,9 +68,7 @@ describe('Trading Partners', function () {
       partner.should.have.property('primaryEnterpriseName');
       partner.should.have.property('secondaryAccountId');
       partner.should.have.property('secondaryEnterpriseName');
-      partner.should.have.property('requesterAccountId');
-      partner.status.should.eql(TradingPartnerStatus.ACCEPTED);
-      [TradingPartnerType.DIRECT, TradingPartnerType.AGENCY].includes(partner.type);
+      partner.status.should.eql(SettlementTradingPartnerStatus.ACCEPTED);
     }
 
     scope.isDone().should.be.true();
@@ -84,11 +76,8 @@ describe('Trading Partners', function () {
 
   it('should balance check trading partners', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
-      .reply(200, fixtures.listTradingPartners)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners/${fixtures.listTradingPartners.tradingPartners[0].secondaryAccountId}/balance`)
-      .query(fixtures.balanceCheckTrueRequest)
-      .reply(200, { check: true });
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trading-partners`)
+      .reply(200, fixtures.listTradingPartners);
 
     const partners = await tradingAccount.partners().list();
     should.exist(partners);

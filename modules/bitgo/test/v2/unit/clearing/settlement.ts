@@ -1,20 +1,16 @@
-import * as should from 'should';
-import * as nock from 'nock';
-
-import fixtures from '../../fixtures/trading/settlement';
-
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
 import {
-  AffirmationStatus,
   common,
   Enterprise,
   Settlement,
-  SettlementStatus,
-  SettlementType,
-  TradeStatus,
+  SettlementAffirmationStatus,
+  SettlementTradeStatus,
   Wallet,
 } from '@bitgo/sdk-core';
+import { TestBitGo } from '@bitgo/sdk-test';
+import * as nock from 'nock';
+import * as should from 'should';
+import { BitGo } from '../../../../src';
+import fixtures from '../../fixtures/clearing/settlement';
 
 describe('Settlements', function () {
   const microservicesUri = common.Environments['mock'].uri;
@@ -48,7 +44,7 @@ describe('Settlements', function () {
 
   it('should list all settlements', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/settlements`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/settlements`)
       .reply(200, fixtures.listSettlements);
 
     const settlements = await enterprise.settlements().list();
@@ -57,11 +53,7 @@ describe('Settlements', function () {
 
     for (const settlement of settlements) {
       settlement.should.have.property('type');
-      if (settlement.type === SettlementType.DIRECT) {
-        validateDirectSettlement(settlement);
-      } else {
-        validateAgencySettlement(settlement);
-      }
+      validateSettlement(settlement);
     }
 
     scope.isDone().should.be.true();
@@ -69,21 +61,21 @@ describe('Settlements', function () {
 
   it('should get a single settlement', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlement/${fixtures.singleSettlementId}`)
       .reply(200, fixtures.getSingleSettlement);
 
     const settlement = await tradingAccount.settlements().get({ id: fixtures.singleSettlementId });
 
     should.exist(settlement);
-    validateDirectSettlement(settlement);
+    validateSettlement(settlement);
     scope.isDone().should.be.true();
   });
 
   it('should create a new direct settlement', async function () {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createDirectSettlementPayloadRequest)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trade-payload`, fixtures.createDirectSettlementPayloadRequest)
       .reply(200, fixtures.createDirectSettlementPayloadResponse)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createDirectSettlementRequest)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createDirectSettlementRequest)
       .reply(200, fixtures.createDirectSettlementResponse);
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -106,7 +98,7 @@ describe('Settlements', function () {
       trades: [{
         baseAccountId: '5cf940a49449412d00f53b8f7392f7c0',
         quoteAccountId: '5cf940969449412d00f53b4c55fc2139',
-        status: TradeStatus.EXECUTED,
+        status: SettlementTradeStatus.EXECUTED,
         timestamp: new Date('2019-06-06T16:36:20.810Z'),
         baseAmount: '500',
         baseCurrency: 'ofctbtc',
@@ -119,7 +111,7 @@ describe('Settlements', function () {
     });
 
     should.exist(settlement);
-    validateDirectSettlement(settlement);
+    validateSettlement(settlement);
 
     msScope.isDone().should.be.true();
     platformScope.isDone().should.be.true();
@@ -127,9 +119,9 @@ describe('Settlements', function () {
 
   it('should create a new agency settlement', async function () {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createAgencySettlementPayloadRequest)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trade-payload`, fixtures.createAgencySettlementPayloadRequest)
       .reply(200, fixtures.createAgencySettlementPayloadResponse)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createAgencySettlementRequest)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createAgencySettlementRequest)
       .reply(200, fixtures.createAgencySettlementResponse);
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -154,7 +146,7 @@ describe('Settlements', function () {
           id: 'a37c5c9a-efc0-4b2c-89e0-39538de86b29',
           baseAccountId: '5df03e088b4eb3470019a88734b69f7a',
           quoteAccountId: '5df03e088b4eb3470019a89e37864bed',
-          status: TradeStatus.EXECUTED,
+          status: SettlementTradeStatus.EXECUTED,
           timestamp: new Date('2019-12-11T00:53:52.814Z'),
           baseAmount: '115087',
           quoteAmount: '942777',
@@ -171,45 +163,26 @@ describe('Settlements', function () {
     });
 
     should.exist(settlement);
-    validateAgencySettlement(settlement);
+    validateSettlement(settlement);
 
     msScope.isDone().should.be.true();
     platformScope.isDone().should.be.true();
   });
 
-  function validateDirectSettlement(settlement: Settlement): void {
+  function validateSettlement(settlement: Settlement): void {
     settlement.should.have.property('id');
     settlement.should.have.property('requesterAccountId');
     settlement.should.have.property('status');
     settlement.should.have.property('type');
 
     settlement.requesterAccountId.should.eql(tradingAccount.id);
-    settlement.status.should.eql(SettlementStatus.PENDING);
-    settlement.type.should.eql(SettlementType.DIRECT);
+    settlement.status.should.eql('pending');
 
-    // one affirmation should be for this account, one should be for the counterparty
+    // one affirmation should be for this account (party), one should be for the counterparty
     // furthermore, the one for this account should already be affirmed
     settlement.should.have.property('affirmations');
-    settlement.affirmations.should.have.length(2);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED).should.have.length(1);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId !== tradingAccount.id).should.have.length(1);
-  }
-
-  function validateAgencySettlement(settlement: Settlement): void {
-    settlement.should.have.property('id');
-    settlement.should.have.property('requesterAccountId');
-    settlement.should.have.property('status');
-    settlement.should.have.property('type');
-
-    settlement.requesterAccountId.should.eql(tradingAccount.id);
-    settlement.status.should.eql(SettlementStatus.PENDING);
-    settlement.type.should.eql(SettlementType.AGENCY);
-
-    // one affirmation should be for this account, one should be for the counterparty
-    // furthermore, the one for this account should already be affirmed
-    settlement.should.have.property('affirmations');
-    settlement.affirmations.should.have.length(3);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED).should.have.length(1);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId !== tradingAccount.id).should.have.length(2);
+    settlement.affirmationsList.should.have.length(2);
+    settlement.affirmationsList.filter(affirmation => affirmation.partyAccountId === tradingAccount.id && affirmation.status === SettlementAffirmationStatus.AFFIRMED).should.have.length(1);
+    settlement.affirmationsList.filter(affirmation => affirmation.partyAccountId !== tradingAccount.id).should.have.length(1);
   }
 });

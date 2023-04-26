@@ -1,21 +1,18 @@
-import * as should from 'should';
-import * as nock from 'nock';
-
-import fixtures from '../../fixtures/trading/affirmation';
-
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
-import { Environments } from '../../../../src';
+import { common, SettlementAffirmationStatus, Enterprise, Wallet } from '@bitgo/sdk-core';
+import * as nock from 'nock';
+import * as should from 'should';
+import { BitGo, Environments } from '../../../../src';
+import fixtures from '../../fixtures/clearing/affirmation';
 
 describe('Affirmations', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;
-  let tradingAccount;
   let bgUrl;
-
+  let wallet;
+  let tradingAccount;
   let affirmation;
 
   before(function () {
@@ -29,20 +26,22 @@ describe('Affirmations', function () {
     const walletData = {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
-      enterprise: enterprise.id,
+      enterprise: {
+        id: enterprise.id,
+      },
       keys: [
         'keyid',
       ],
     };
 
-    const wallet = new Wallet(bitgo, basecoin, walletData);
+    wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
 
   it('should list all affirmations', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/affirmations`)
       .reply(200, fixtures.listAffirmations);
 
     const affirmations = await enterprise.affirmations().list();
@@ -55,24 +54,28 @@ describe('Affirmations', function () {
 
   it('should list all affirmations filtered by status', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
       .reply(200, fixtures.listOverdueAffirmations);
 
-    const affirmations = await enterprise.affirmations().list(AffirmationStatus.OVERDUE);
+    const affirmations = await enterprise.affirmations().list({
+      status: 'overdue',
+    });
 
     should.exist(affirmations);
     affirmations.should.have.length(1);
-    affirmations[0].status.should.eql(AffirmationStatus.OVERDUE);
+    affirmations[0].status.should.eql('overdue');
 
     scope.isDone().should.be.true();
   });
 
   it('should get a single affirmation', async function () {
-    const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
-      .reply(200, fixtures.singleAffirmation);
+    const id = '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9';
 
-    affirmation = await tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
+    const scope = nock(microservicesUri)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/affirmation/${id}`)
+      .reply(200, fixtures.singleAffirmation);
+      
+    affirmation = await tradingAccount.affirmations.get({ id });
     should.exist(affirmation);
 
     scope.isDone().should.be.true();
@@ -80,9 +83,9 @@ describe('Affirmations', function () {
 
   it('should affirm an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.affirmAffirmationPayloadRequest)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/trade-payload`, fixtures.affirmAffirmationPayloadRequest)
       .reply(200, fixtures.affirmAffirmationPayloadResponse)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.AFFIRMED)
+      .put(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/affirmation/${affirmation.id}`, (body) => body.status === SettlementAffirmationStatus.AFFIRMED)
       .reply(200, fixtures.updateAffirmation('affirmed'));
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -105,7 +108,7 @@ describe('Affirmations', function () {
 
   it('should reject an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
+      .put(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/affirmations/${affirmation.id}`, (body) => SettlementAffirmationStatus.REJECTED)
       .reply(200, fixtures.updateAffirmation('rejected'));
 
     await affirmation.reject();
@@ -115,7 +118,7 @@ describe('Affirmations', function () {
 
   it('should cancel an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
+      .put(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/affirmations/${affirmation.id}`, (body) => SettlementAffirmationStatus.CANCELED)
       .reply(200, fixtures.updateAffirmation('canceled'));
 
     await affirmation.cancel();

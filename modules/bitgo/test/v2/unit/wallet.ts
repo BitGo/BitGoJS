@@ -591,6 +591,9 @@ describe('V2 Wallet:', function () {
         ],
         coinSpecific: {},
         multisigType: 'onchain',
+        enterprise: {
+          id: '5cf940949449412d00f53b3d92dbcaa3',
+        },
       };
       ofcWallet = new Wallet(bitgo, bitgo.coin('ofc'), walletDataOfc);
     });

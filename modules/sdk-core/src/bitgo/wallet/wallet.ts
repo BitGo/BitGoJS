@@ -1,8 +1,10 @@
 /**
  * @prettier
  */
+import { ofcTokens } from '@bitgo/statics';
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
+import { Hash } from 'crypto';
 import * as _ from 'lodash';
 import * as common from '../../common';
 import {
@@ -13,15 +15,21 @@ import {
   TransactionPrebuild,
   VerifyAddressOptions,
 } from '../baseCoin';
-import { makeRandomKey } from '../bitcoin';
-import { BitGoBase } from '../bitgoBase';
-import { getSharedSecret } from '../ecdh';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
-import * as internal from '../internal/internal';
+import { BitGoBase } from '../bitgoBase';
 import { drawKeycard } from '../internal/keycard';
-import { Keychain } from '../keychain';
+import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { getSharedSecret } from '../ecdh';
+import { getTxRequest } from '../tss';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
-import { TradingAccount } from '../trading/tradingAccount';
+import { Keychain } from '../keychain';
+import { Lightning } from '../lightning';
+import { makeRandomKey } from '../bitcoin';
+import { Settlements, ISettlements } from '../settlements';
+import { StakingWallet } from '../staking/stakingWallet';
+import { TradingAccount } from '../trading';
+import * as internal from '../internal/internal';
+import EddsaUtils from '../utils/tss/eddsa';
 import {
   inferAddressType,
   RequestTracer,
@@ -84,13 +92,6 @@ import {
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
 } from './iWallet';
-import { StakingWallet } from '../staking/stakingWallet';
-import { Lightning } from '../lightning';
-import EddsaUtils from '../utils/tss/eddsa';
-import { EcdsaUtils } from '../utils/tss/ecdsa';
-import { getTxRequest } from '../tss';
-import { Hash } from 'crypto';
-import { ofcTokens } from '@bitgo/statics';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -107,12 +108,18 @@ export class Wallet implements IWallet {
   public _wallet: WalletData;
   private readonly tssUtils: EcdsaUtils | EddsaUtils | undefined;
   private readonly _permissions?: string[];
+  public settlements?: ISettlements;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this._wallet = walletData;
+    if (baseCoin?.getFamily?.() === 'ofc') {
+      this.settlements = new Settlements(bitgo, walletData.enterprise.id, walletData.id);
+    }
+
     const userId = _.get(bitgo, '_user.id');
+
     if (_.isString(userId)) {
       const userDetails = _.find(walletData.users, { user: userId });
       this._permissions = _.get(userDetails, 'permissions');
@@ -2232,16 +2239,6 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Create a trading account from this wallet
-   */
-  toTradingAccount(): TradingAccount {
-    if (this.baseCoin.getFamily() !== 'ofc') {
-      throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
-    }
-    return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
-  }
-
-  /**
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
@@ -2250,6 +2247,16 @@ export class Wallet implements IWallet {
         ? this._wallet.coinSpecific.walletVersion >= 3
         : false;
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Retrieve settlement trading account methods for this wallet
+   */
+  toTradingAccount(): TradingAccount {
+    if (this.baseCoin.getFamily() !== 'ofc') {
+      throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
+    }
+    return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
   }
 
   /**

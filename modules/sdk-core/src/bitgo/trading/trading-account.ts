@@ -3,38 +3,35 @@
  */
 import { BigNumber } from 'bignumber.js';
 import { BitGoBase } from '../bitgoBase';
+import { BuildPayloadParameters, ITradingAccount, SignPayloadParameters } from '../trading';
 import {
-  Affirmations,
-  BuildPayloadParameters,
-  CalculateSettlementFeesParams,
-  IAffirmations,
-  ISettlements,
-  ITradingAccount,
-  ITradingPartners,
-  Payload,
-  SettlementFees,
   Settlements,
-  SignPayloadParameters,
-  TradingPartners,
-} from '../trading';
+  ISettlements,
+  SettlementVersion,
+  SettlementTradePayload,
+  ISettlementAffirmations,
+  SettlementAffirmations,
+  SettlementTradingPartners,
+} from '../settlements';
 import { IWallet } from '../wallet';
 
-const TRADE_PAYLOAD_VERSION = '1.2.0';
+const TRADE_PAYLOAD_VERSION: SettlementVersion = '2.0.0';
 
 export class TradingAccount implements ITradingAccount {
-  private readonly bitgo: BitGoBase;
-  private readonly enterpriseId: string;
-
-  public wallet: IWallet;
+  private readonly _bitgo: BitGoBase;
+  private readonly _enterpriseId: string;
+  private readonly _settlements: ISettlements;
+  private readonly _wallet: IWallet;
 
   constructor(enterpriseId: string, wallet: IWallet, bitgo: BitGoBase) {
-    this.enterpriseId = enterpriseId;
-    this.wallet = wallet;
-    this.bitgo = bitgo;
+    this._bitgo = bitgo;
+    this._enterpriseId = enterpriseId;
+    this._wallet = wallet;
+    this._settlements = new Settlements(bitgo, enterpriseId, wallet.id());
   }
 
-  get id() {
-    return this.wallet.id();
+  get id(): string {
+    return this._wallet.id();
   }
 
   /**
@@ -48,15 +45,11 @@ export class TradingAccount implements ITradingAccount {
    * @param params.amounts[].receiveCurrency currency of amount received by trading account of given accountId
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
-  async buildPayload(params: BuildPayloadParameters): Promise<Payload> {
-    const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/payload`);
-
-    const body = {
+  async buildPayload(params: BuildPayloadParameters): Promise<SettlementTradePayload> {
+    const response = await this._settlements.getTradePayload({
       version: TRADE_PAYLOAD_VERSION,
-      amounts: params.amounts,
-    };
-
-    const response = (await this.bitgo.post(url).send(body).result()) as any;
+      amountsList: params.amounts,
+    });
 
     if (!this.verifyPayload(params, response.payload)) {
       throw new Error(
@@ -64,7 +57,7 @@ export class TradingAccount implements ITradingAccount {
       );
     }
 
-    return JSON.parse(response.payload) as Payload;
+    return JSON.parse(response.payload);
   }
 
   /**
@@ -124,24 +117,6 @@ export class TradingAccount implements ITradingAccount {
   }
 
   /**
-   * Calculates the necessary fees to complete a settlement between two parties, based on the amounts and currencies of the settlement.
-   * @param params
-   * @param params.counterpartyAccountId Account ID of the counterparty of the settlement
-   * @param params.sendCurrency Currency to be sent as part of the settlement
-   * @param params.sendAmount Amount of currency (in base units such as cents, satoshis, or wei) to be sent
-   * @param params.receiveCurrency Currency to be received as part of the settlement
-   * @param params.receiveAmount Amount of currency (in base units such as cents, satoshis, or wei) to be received
-   * @returns Fee rate, currency, and total amount of the described settlement
-   */
-  async calculateSettlementFees(params: CalculateSettlementFeesParams): Promise<SettlementFees> {
-    const url = this.bitgo.microservicesUrl(
-      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
-    );
-
-    return await this.bitgo.post(url).send(params).result();
-  }
-
-  /**
    * Signs an arbitrary payload with the user key on this trading account
    * @param params
    * @param params.payload arbitrary payload object (string | Record<string, unknown>)
@@ -149,24 +124,39 @@ export class TradingAccount implements ITradingAccount {
    * @returns hex-encoded signature of the payload
    */
   async signPayload(params: SignPayloadParameters): Promise<string> {
-    const key = (await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[0] })) as any;
-    const prv = this.wallet.bitgo.decrypt({
+    const key = (await this._wallet.baseCoin.keychains().get({ id: this._wallet.keyIds()[0] })) as any;
+    const prv = this._wallet.bitgo.decrypt({
       input: key.encryptedPrv,
       password: params.walletPassphrase,
     });
     const payload = typeof params.payload === 'string' ? params.payload : JSON.stringify(params.payload);
-    return ((await this.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
+    return ((await this._wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
   }
 
-  affirmations(): IAffirmations {
-    return new Affirmations(this.bitgo, this.enterpriseId, this);
+  /**
+   * Create an instance of a wallet's settlement affirmations class
+   * @deprecated Better accessed through wallet().settlements.affirmations
+   * @returns SettlementAffirmations
+   */
+  affirmations(): ISettlementAffirmations {
+    return new SettlementAffirmations(this._bitgo, this._enterpriseId, this._wallet.id());
   }
 
-  settlements(): ISettlements {
-    return new Settlements(this.bitgo, this.enterpriseId, this);
+  /**
+   * Create an instance of a wallet's settlement class
+   * @deprecated Better accessed through wallet().settlements
+   * @returns Settlements
+   */
+  settlements(): Settlements {
+    return new Settlements(this._bitgo, this._enterpriseId, this._wallet.id());
   }
 
-  partners(): ITradingPartners {
-    return new TradingPartners(this.bitgo, this.enterpriseId, this);
+  /**
+   * Create an instance of a wallet's settlement trading partners class
+   * @deprecated Better accessed through wallet().settlements.tradingPartners
+   * @returns SettlementTradingPartners
+   */
+  partners(): SettlementTradingPartners {
+    return new SettlementTradingPartners(this._bitgo, this._enterpriseId, this._wallet.id());
   }
 }
