@@ -192,9 +192,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Thu, 20 Apr 2023 01:49:10 GMT"
-LABEL version=9.25.1
-LABEL git_hash=1dc88962a7dec6805607e4510e20e0e80a84d01f
+LABEL created="Tue, 25 Apr 2023 22:49:19 GMT"
+LABEL version=9.25.2
+LABEL git_hash=0e062498e48576d0613b10ae83caf87f349bd112
 #LABEL_END
 
 USER node
