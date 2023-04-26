@@ -40,8 +40,7 @@ export class Enterprises implements IEnterprises {
     if (!_.isString(enterpriseId)) {
       throw new Error('id must be hexadecimal enterprise ID');
     }
-
-    const enterpriseData = (await this.bitgo.get(this.bitgo.url(`/enterprise/${enterpriseId}`)).result()) as any;
+    const enterpriseData = await this.bitgo.getEnterprise(enterpriseId);
     return new Enterprise(this.bitgo, this.baseCoin, enterpriseData);
   }
 

@@ -19,10 +19,19 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
 
 export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;
 
+export type TxRequestChallenge = {
+  ntilde: string;
+  h1: string;
+  h2: string;
+};
+
 export type ApiChallenge = {
   ntilde: string;
   h1: string;
   h2: string;
+  verifiers: {
+    adminSignature: string;
+  };
 };
 
 export type ApiNTildeProof = {
@@ -33,6 +42,7 @@ export type ApiNTildeProof = {
 export type ApiChallenges = {
   enterpriseChallenge: ApiChallenge;
   bitgoChallenge: ApiChallenge;
+  createdBy: string;
 };
 
 export type ChallengeWithNTildeProofApi = ApiChallenge & {

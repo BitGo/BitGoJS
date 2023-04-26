@@ -6,6 +6,7 @@ import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import {
+  ApiChallenge,
   ApiChallenges,
   BitGoProofSignatures,
   CreateEcdsaBitGoKeychainParams,
@@ -13,6 +14,7 @@ import {
   DecryptableNShare,
   GetBitGoChallengesApi,
   KeyShare,
+  TxRequestChallenge,
 } from './types';
 import {
   BackupGpgKey,
@@ -607,10 +609,11 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<ECDSASigningRequestBaseResult>}
    */
   private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
+    const { txRequest, prv } = params;
     let txRequestResolved: TxRequest;
     let txRequestId: string;
-
-    const { txRequest, prv } = params;
+    let enterpriseChallenge: NTilde | undefined;
+    let bitgoChallenge: ApiChallenge | TxRequestChallenge | undefined;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -618,6 +621,33 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     } else {
       txRequestResolved = txRequest;
       txRequestId = txRequest.txRequestId;
+    }
+
+    const shouldUseEnterpriseChallenge =
+      txRequestResolved.enterpriseId &&
+      (await EcdsaUtils.shouldUseEnterpriseStaticChallenge(this.bitgo, txRequestResolved.enterpriseId));
+
+    if (shouldUseEnterpriseChallenge) {
+      // Once the new range proof workflow is complete, this will be the only way to sign
+      const challenges = await EcdsaUtils.getChallengesForEcdsaSigning(
+        this.bitgo,
+        txRequestResolved.walletId,
+        txRequestResolved.enterpriseId!
+      );
+      enterpriseChallenge = EcdsaUtils.deserializeNTilde(challenges.enterpriseChallenge);
+      bitgoChallenge = challenges.bitgoChallenge;
+    } else {
+      // preserve this flow while the new range proof workflow is being implemented
+      // to maintain backwards compatibility
+      const txRequestChallenge = await getTxRequestChallenge(
+        this.bitgo,
+        this.wallet.id(),
+        txRequestId,
+        '0',
+        requestType,
+        'ecdsa'
+      );
+      bitgoChallenge = txRequestChallenge;
     }
 
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
@@ -663,11 +693,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       n: signingKey.nShares[bitgoIndex].n,
     };
 
-    const [signingKeyWithChallenge, bitgoChallenge] = await Promise.all([
-      MPC.appendChallenge(signingKey.xShare, yShare),
-      getTxRequestChallenge(this.bitgo, this.wallet.id(), txRequestId, '0', requestType, 'ecdsa'),
-    ]);
-
+    const signingKeyWithChallenge = await MPC.appendChallenge(signingKey.xShare, yShare, enterpriseChallenge);
     const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
       i: userIndex,
       j: bitgoIndex,
@@ -724,6 +750,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       userSignShare.wShare,
       bitgoToUserAShareWithNTilde
     );
+
     const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
       userGammaAndMuShares.gShare as ECDSA.GShare
     );
@@ -785,6 +812,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   }
 
   /**
+   * Checks if the enterprise is meant to use a static enterprise challenge.
+   * @param bitgo
+   * @param enterpriseId
+   * @returns {Promise<boolean>}
+   */
+  static async shouldUseEnterpriseStaticChallenge(bitgo: BitGoBase, enterpriseId: string): Promise<boolean> {
+    if (enterpriseId) {
+      return false;
+    }
+    const enterprise = await bitgo.getEnterprise(enterpriseId);
+    return enterprise?.featureFlags?.includes('useEnterpriseEcdsaTssChallenge');
+  }
+
+  /**
    * Get the challenge values for enterprise and BitGo in ECDSA signing
    * Only returns the challenges if they are verified by the user's enterprise admin's ecdh key
    * @param bitgo
@@ -838,10 +879,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error(`Admin signature for BitGo's challenge is not valid. Please contact your enterprise admin.`);
     }
 
-    return {
-      enterpriseChallenge: enterpriseRawChallenge,
-      bitgoChallenge: bitGoRawChallenge,
-    };
+    return result;
   }
 
   /**
