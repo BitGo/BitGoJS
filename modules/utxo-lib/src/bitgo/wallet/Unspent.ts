@@ -18,6 +18,7 @@ import { toOutput, UnspentWithPrevTx, Unspent, isUnspentWithPrevTx, toPrevOutput
 import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { encodePsbtMusig2Participants, sortMusig2ParticipantPubKeys } from '../Musig2';
+import { createTransactionFromBuffer } from '../transaction';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -162,6 +163,10 @@ export function addWalletUnspentToPsbt(
   if (!isSegwit(u.chain) && getMainnet(psbt.network) !== networks.zcash) {
     if (!isUnspentWithPrevTx(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
+    }
+    // Force the litecoin transaction to have no MWEB advanced transaction flag
+    if (getMainnet(psbt.network) === networks.litecoin) {
+      u.prevTx = createTransactionFromBuffer(u.prevTx, psbt.network, { amountType: 'bigint' }).toBuffer();
     }
     psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
   }
