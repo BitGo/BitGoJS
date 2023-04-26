@@ -1,21 +1,18 @@
-import * as should from 'should';
-import * as nock from 'nock';
-
-import fixtures from '../../fixtures/trading/affirmation';
-
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
-import { Environments } from '../../../../src';
+import { common, SettlementAffirmationStatus, Enterprise, Wallet } from '@bitgo/sdk-core';
+import * as nock from 'nock';
+import * as should from 'should';
+import { BitGo, Environments } from '../../../../src';
+import fixtures from '../../fixtures/clearing/affirmation';
 
 describe('Affirmations', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;
-  let tradingAccount;
   let bgUrl;
-
+  let wallet;
+  let tradingAccount;
   let affirmation;
 
   before(function () {
@@ -33,14 +30,14 @@ describe('Affirmations', function () {
       keys: ['keyid'],
     };
 
-    const wallet = new Wallet(bitgo, basecoin, walletData);
+    wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
 
   it('should list all affirmations', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/affirmations`)
       .reply(200, fixtures.listAffirmations);
 
     const affirmations = await enterprise.affirmations().list();
@@ -53,14 +50,16 @@ describe('Affirmations', function () {
 
   it('should list all affirmations filtered by status', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
       .reply(200, fixtures.listOverdueAffirmations);
 
-    const affirmations = await enterprise.affirmations().list(AffirmationStatus.OVERDUE);
+    const affirmations = await enterprise.affirmations().list({
+      status: 'overdue',
+    });
 
     should.exist(affirmations);
     affirmations.should.have.length(1);
-    affirmations[0].status.should.eql(AffirmationStatus.OVERDUE);
+    affirmations[0].status.should.eql('overdue');
 
     scope.isDone().should.be.true();
   });
@@ -72,7 +71,11 @@ describe('Affirmations', function () {
       )
       .reply(200, fixtures.singleAffirmation);
 
-    affirmation = await tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
+    const scope = nock(microservicesUri)
+      .get(`/api/clearing/v1/enterprise/${enterprise.id}/account/${wallet.id}/affirmation/${id}`)
+      .reply(200, fixtures.singleAffirmation);
+      
+    affirmation = await tradingAccount.affirmations.get({ id });
     should.exist(affirmation);
 
     scope.isDone().should.be.true();

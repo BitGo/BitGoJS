@@ -1,6 +1,9 @@
 /**
  * @prettier
  */
+
+import { TxSendBody } from '@bitgo/public-types';
+import { ofcTokens } from '@bitgo/statics';
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
@@ -21,7 +24,6 @@ import * as internal from '../internal/internal';
 import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
-import { TradingAccount } from '../trading/tradingAccount';
 import {
   inferAddressType,
   RequestTracer,
@@ -93,10 +95,9 @@ import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
 import { Hash } from 'crypto';
-import { ofcTokens } from '@bitgo/statics';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
-import { TxSendBody } from '@bitgo/public-types';
+import { TradingAccount } from '../trading';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2289,16 +2290,6 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Create a trading account from this wallet
-   */
-  toTradingAccount(): TradingAccount {
-    if (this.baseCoin.getFamily() !== 'ofc') {
-      throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
-    }
-    return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
-  }
-
-  /**
    * Create a staking wallet from this wallet
    */
   toStakingWallet(): StakingWallet {
@@ -2307,6 +2298,16 @@ export class Wallet implements IWallet {
         ? this._wallet.coinSpecific.walletVersion >= 3
         : false;
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Retrieve settlement trading account methods for this wallet
+   */
+  toTradingAccount(): TradingAccount {
+    if (this.baseCoin.getFamily() !== 'ofc') {
+      throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
+    }
+    return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
   }
 
   /**

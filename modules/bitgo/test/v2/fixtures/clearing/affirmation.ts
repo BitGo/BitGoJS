@@ -1,4 +1,4 @@
-import { AffirmationStatus } from '@bitgo/sdk-core';
+import { SettlementAffirmationStatus } from '@bitgo/sdk-core';
 
 export default {
   listAffirmations: {
@@ -131,7 +131,7 @@ export default {
   updateAffirmation: function (status) {
     // @ts-expect-error - 'status' is specified more than once, so this usage will be overwritten.
     const affirmation = { status, ...this.singleAffirmation };
-    if (status !== AffirmationStatus.AFFIRMED) {
+    if (status !== SettlementAffirmationStatus.AFFIRMED) {
       // @ts-expect-error - The operand of a 'delete' operator must be optional.
       delete affirmation.payload;
       // @ts-expect-error - The operand of a 'delete' operator must be optional.

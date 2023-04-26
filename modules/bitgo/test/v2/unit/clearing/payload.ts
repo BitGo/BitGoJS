@@ -2,16 +2,14 @@
  * @prettier
  */
 
-import { bip32 } from '@bitgo/utxo-lib';
-import * as should from 'should';
-import * as nock from 'nock';
-import * as bitcoinMessage from 'bitcoinjs-message';
-
-import fixtures from '../../fixtures/trading/payload';
-
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
 import { common, Enterprise, getAddressP2PKH, Wallet } from '@bitgo/sdk-core';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { bip32 } from '@bitgo/utxo-lib';
+import * as nock from 'nock';
+import * as should from 'should';
+import * as bitcoinMessage from 'bitcoinjs-message';
+import { BitGo } from '../../../../src';
+import fixtures from '../../fixtures/clearing/payload';
 
 describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
@@ -55,11 +53,11 @@ describe('Trade Payloads', function () {
       });
 
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trade-payload`)
       .reply(200, fixtures.validPayloadWithFees);
 
     const payload = await tradingAccount.buildPayload({
-      amounts: [
+      amountsList: [
         {
           accountId: 'walletId',
           sendCurrency: 'ofctbtc',
@@ -78,7 +76,7 @@ describe('Trade Payloads', function () {
     });
 
     should.exist(payload);
-    payload.should.have.property('version', '1.2.0');
+    payload.should.have.property('version', '2.0.0');
     payload.should.have.property('accountId');
     payload.should.have.property('nonceHold');
     payload.should.have.property('nonceSettle');
@@ -113,14 +111,14 @@ describe('Trade Payloads', function () {
 
   it('should throw if the payload does not match the build parameters', async function () {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
+      .post(`/api/clearing/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/trade-payload`)
       .twice()
       .reply(200, fixtures.invalidPayload);
 
     // no matching amount found between payload and parameters
     await tradingAccount
       .buildPayload({
-        amounts: [
+        amountsList: [
           {
             accountId: 'walletId',
             sendCurrency: 'ofctbtc',

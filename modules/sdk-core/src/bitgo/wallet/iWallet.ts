@@ -1,3 +1,4 @@
+import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IRequestTracer } from '../../api';
 import {
   IBaseCoin,
@@ -12,7 +13,6 @@ import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
-import { ITradingAccount } from '../trading';
 import {
   CustomCommitmentGeneratingFunction,
   CustomGShareGeneratingFunction,
@@ -25,7 +25,7 @@ import {
   TokenTransferRecipientParams,
 } from '../utils';
 import { ILightning } from '../lightning';
-import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { ISettlements } from '../settlements';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -693,7 +693,6 @@ export interface IWallet {
   removePolicyRule(params?: RemovePolicyRuleOptions): Promise<any>;
   remove(params?: Record<string, never>): Promise<any>;
   toJSON(): WalletData;
-  toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
   downloadKeycard(params?: DownloadKeycardOptions): void;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
@@ -707,4 +706,5 @@ export interface IWallet {
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
+  settlements?: ISettlements;
 }
