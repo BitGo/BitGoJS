@@ -424,7 +424,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     } else if (input.tapInternalKey && input.tapMerkleRoot) {
       return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
     }
-    return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s), pubkey);
+    return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), pubkey);
   }
 
   private getMusig2SessionKey(
