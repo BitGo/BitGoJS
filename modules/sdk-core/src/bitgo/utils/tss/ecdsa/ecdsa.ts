@@ -610,6 +610,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
+    const pendingEcdsaTssInitialization = this.wallet.coinSpecific()?.pendingEcdsaTssInitialization;
+    if (pendingEcdsaTssInitialization) {
+      throw new Error(
+        'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
+      );
+    }
+
     const { txRequest, prv } = params;
 
     if (typeof txRequest === 'string') {

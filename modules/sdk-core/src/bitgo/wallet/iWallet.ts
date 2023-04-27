@@ -185,6 +185,7 @@ export interface WalletCoinSpecific {
   customChangeWalletId: string;
   walletVersion?: number;
   hashAlgorithm?: string;
+  pendingEcdsaTssInitialization?: boolean;
 }
 
 export interface PaginationOptions {
