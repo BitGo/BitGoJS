@@ -155,7 +155,7 @@ export class Enterprise implements IEnterprise {
    * enterprise challenge with new signatures.
    */
   async getExistingTssEcdsaChallenge(): Promise<NTilde> {
-    const urlPath = `/api/v2/enterprise/${this.id}/tssconfig`;
+    const urlPath = `/enterprise/${this.id}/tssconfig`;
     const tssConfig = await this.bitgo.get(this.bitgo.url(urlPath, 2)).send().result();
     const enterpriseChallenge = tssConfig?.ecdsa.challenge?.enterprise;
     if (!enterpriseChallenge) {
