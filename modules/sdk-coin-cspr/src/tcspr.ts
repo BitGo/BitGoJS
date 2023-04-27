@@ -1,29 +1,15 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Cspr } from './cspr';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class Tcspr extends Cspr {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('bd8f0b27-d13b-41c8-9f60-84fc1f201d89');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tcspr(bitgo, staticsCoin);
-  }
-
-  getChain() {
-    return this._staticsCoin.name;
-  }
-
-  getFullName() {
-    return this._staticsCoin.fullName;
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Tcspr(bitgo);
   }
 }

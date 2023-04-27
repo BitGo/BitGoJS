@@ -2,6 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32, ECPair } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
@@ -97,6 +98,7 @@ interface SupplementGenerateWalletOptions {
 }
 
 export class Xrp extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('a4578c23-8e01-4d13-bc17-7bf8b529fbef');
   protected constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
@@ -109,28 +111,32 @@ export class Xrp extends BaseCoin {
    * Factor between the coin's base unit and its smallest subdivison
    */
   public getBaseFactor(): number {
-    return 1e6;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   /**
    * Identifier for the blockchain which supports this coin
    */
   public getChain(): string {
-    return 'xrp';
+    return this._staticsCoin.name;
   }
 
   /**
    * Identifier for the coin family
    */
-  public getFamily(): string {
-    return 'xrp';
+  public getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   /**
    * Complete human-readable name of this coin
    */
   public getFullName(): string {
-    return 'Ripple';
+    return this._staticsCoin.fullName;
   }
 
   /**

@@ -5,6 +5,7 @@ import {
   VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import { InscriptionBuilder } from './inscriptionBuilder';
 
@@ -13,6 +14,7 @@ export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTran
 }
 
 export class Btc extends AbstractUtxoCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('5c1691c5-c9cc-49ed-abe0-c433dab2edaa');
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.bitcoin);
   }
@@ -21,16 +23,20 @@ export class Btc extends AbstractUtxoCoin {
     return new Btc(bitgo);
   }
 
-  getChain(): string {
-    return 'btc';
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
-  getFamily(): string {
-    return 'btc';
+  getChain(): string {
+    return this._staticsCoin.name;
+  }
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Bitcoin';
+    return this._staticsCoin.fullName;
   }
 
   supportsBlockTarget(): boolean {

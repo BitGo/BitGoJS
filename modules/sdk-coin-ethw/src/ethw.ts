@@ -13,7 +13,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { Eth, optionalDeps, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
@@ -28,32 +28,43 @@ type FullNodeResponseBody = {
 };
 
 export class Ethw extends Eth {
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('33712672-8cb9-444e-be92-b8c9e84050d5');
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Ethw(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Ethw(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
-    return 'ethw';
+    return this._staticsCoin.name;
   }
-  getFamily(): string {
-    return 'eth';
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
+
   getFullName(): string {
-    return 'Ethereum PoW';
+    return this._staticsCoin.fullName;
   }
+
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
+
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
+
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     throw new Error('Method not implemented.');
   }
+
   generateKeyPair(seed?: Buffer | undefined): KeyPair {
     throw new Error('Method not implemented.');
   }

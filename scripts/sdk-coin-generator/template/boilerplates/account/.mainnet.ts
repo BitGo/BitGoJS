@@ -1,5 +1,5 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 
 export class <%= constructor %> extends AbstractEthLikeCoin {
@@ -23,22 +23,22 @@ export class <%= constructor %> extends AbstractEthLikeCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  getChain() {
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
   /**
    * Get the base chain that the coin exists on.
    */
-  getBaseChain() {
+  getBaseChain(): string {
     return this.getChain();
   }
 
-  getFamily(): CoinFamily {
+  getFamily(): string {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 }

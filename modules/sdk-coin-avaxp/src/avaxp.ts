@@ -31,32 +31,33 @@ import BigNumber from 'bignumber.js';
 import { isValidAddress as isValidEthAddress } from 'ethereumjs-util';
 
 export class AvaxP extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('5436386e-9e4d-4d82-92df-59d9720d1738');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new AvaxP(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new AvaxP(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
     return this._staticsCoin.name;
   }
+
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
+
   getFullName(): string {
     return this._staticsCoin.fullName;
   }
-  getBaseFactor(): string | number {
+
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 

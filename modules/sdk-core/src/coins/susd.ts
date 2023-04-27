@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -15,6 +16,7 @@ import {
 } from '../';
 
 export class Susd extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('954184e5-ef74-45a5-8513-240f2baabaf6');
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Susd(bitgo);
   }
@@ -24,19 +26,23 @@ export class Susd extends BaseCoin {
    * @return {number}
    */
   getBaseFactor(): number {
-    return 1e2;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
-    return 'susd';
+    return this._staticsCoin.name;
   }
 
-  getFamily(): string {
-    return 'susd';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Silvergate USD';
+    return this._staticsCoin.fullName;
   }
 
   /**

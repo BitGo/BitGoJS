@@ -28,43 +28,47 @@ export class EosToken extends Eos {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress() {
+  get tokenContractAddress(): string {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'EOS Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 

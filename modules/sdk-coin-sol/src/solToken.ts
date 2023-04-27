@@ -1,22 +1,12 @@
 import { Sol } from './sol';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, tokens } from '@bitgo/statics';
-
-export interface SolTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  tokenAddress: string;
-  decimalPlaces: number;
-}
+import { SolTokenConfig, tokens } from '@bitgo/statics';
 
 export class SolToken extends Sol {
   public readonly tokenConfig: SolTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: SolTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('sol') : coins.get('tsol');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -33,39 +23,43 @@ export class SolToken extends Sol {
     return tokensCtors;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenAddress() {
+  get tokenAddress(): string {
     return this.tokenConfig.tokenAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Solana Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 

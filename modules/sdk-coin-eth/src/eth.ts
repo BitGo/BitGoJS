@@ -48,7 +48,7 @@ import {
   PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
 
-import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, CoinFamily, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
@@ -363,19 +363,19 @@ interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
 }
 
 export class Eth extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('39dbafaf-02d0-42c9-95fb-f676f92dc039');
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   readonly staticsCoin?: Readonly<StaticsBaseCoin>;
 
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
-    this.staticsCoin = staticsCoin;
     this.sendMethodName = 'sendMultiSig';
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Eth(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Eth(bitgo);
   }
 
   /**
@@ -458,25 +458,28 @@ export class Eth extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor(): string {
-    // 10^18
-    return '1000000000000000000';
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
-    return 'eth';
+    return this._staticsCoin.name;
   }
 
-  getFamily(): string {
-    return 'eth';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getNetwork(): EthereumNetwork | undefined {
-    return this.staticsCoin?.network as EthereumNetwork;
+    return this._staticsCoin.network as EthereumNetwork;
   }
 
   getFullName(): string {
-    return 'Ethereum';
+    return this._staticsCoin.fullName;
   }
 
   /**

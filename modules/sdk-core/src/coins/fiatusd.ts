@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -15,6 +16,7 @@ import {
 } from '../';
 
 export class FiatUsd extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('3f89b1f5-4ada-49c0-a613-15e484d42426');
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new FiatUsd(bitgo);
   }
@@ -23,26 +25,30 @@ export class FiatUsd extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
-    return 1e2;
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  getChain() {
-    return 'fiatusd';
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
-  getFamily() {
-    return 'fiat';
+  getChain(): string {
+    return this._staticsCoin.name;
   }
 
-  getFullName() {
-    return 'USD Dollar';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
+  }
+
+  getFullName(): string {
+    return this._staticsCoin.fullName;
   }
 
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }: { m: number; n: number }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
     return m === 0 && n === 0;
   }
 

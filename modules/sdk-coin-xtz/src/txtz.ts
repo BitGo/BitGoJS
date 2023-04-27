@@ -4,15 +4,16 @@
  * @format
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Xtz } from './xtz';
 
 export class Txtz extends Xtz {
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('1792f953-c4be-4842-97b3-69efb4f0832c');
+  protected constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Txtz(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Txtz(bitgo);
   }
 }

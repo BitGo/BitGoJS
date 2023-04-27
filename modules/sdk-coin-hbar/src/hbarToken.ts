@@ -1,13 +1,12 @@
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, HbarTokenConfig, tokens } from '@bitgo/statics';
+import { HbarTokenConfig, tokens } from '@bitgo/statics';
 import { Hbar } from './hbar';
 
 export class HbarToken extends Hbar {
   public readonly tokenConfig: HbarTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: HbarTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('hbar') : coins.get('thbar');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -40,6 +39,10 @@ export class HbarToken extends Hbar {
     return this.tokenConfig.decimalPlaces;
   }
 
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }
@@ -49,7 +52,7 @@ export class HbarToken extends Hbar {
   }
 
   getFullName(): string {
-    return this.name;
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor(): number {

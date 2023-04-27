@@ -63,6 +63,10 @@ export class EthLikeToken extends AbstractEthLikeCoin {
     return this.tokenConfig.decimalPlaces;
   }
 
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }

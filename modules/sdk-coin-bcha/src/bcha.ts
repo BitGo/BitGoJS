@@ -1,9 +1,11 @@
 import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import { Bch } from '@bitgo/sdk-coin-bch';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import { UtxoNetwork } from '@bitgo/abstract-utxo';
 
 export class Bcha extends Bch {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('941587ce-1c7a-4305-b908-15455d15e961');
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.ecash);
   }
@@ -12,15 +14,19 @@ export class Bcha extends Bch {
     return new Bcha(bitgo);
   }
 
-  getChain(): string {
-    return 'bcha';
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
-  getFamily(): string {
-    return 'bcha';
+  getChain(): string {
+    return this._staticsCoin.name;
+  }
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Bitcoin ABC';
+    return this._staticsCoin.fullName;
   }
 }

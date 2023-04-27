@@ -1,5 +1,6 @@
 import assert from 'assert';
 import * as _ from 'lodash';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
@@ -142,6 +143,7 @@ interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
 }
 
 export class Xlm extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('5beda85f-32fc-4c72-9051-ddcdfb3166a2');
   public readonly homeDomain: string;
   public static readonly tokenPatternSeparator = '-'; // separator for token code and issuer
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
@@ -165,29 +167,33 @@ export class Xlm extends BaseCoin {
   /**
    * Factor between the base unit and its smallest subdivison
    */
-  getBaseFactor() {
-    return 1e7;
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   /**
    * Identifier for the blockchain which supports this coin
    */
   getChain(): string {
-    return 'xlm';
+    return this._staticsCoin.name;
   }
 
   /**
    * Identifier for the coin family
    */
-  getFamily(): string {
-    return 'xlm';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   /**
    * Complete human-readable name of this coin
    */
   getFullName(): string {
-    return 'Stellar';
+    return this._staticsCoin.fullName;
   }
 
   /**

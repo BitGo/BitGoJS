@@ -19,7 +19,7 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
@@ -67,18 +67,12 @@ interface DotTx {
 const dotUtils = Utils.default;
 
 export class Dot extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('aa1fc03b-c499-4240-a703-f6510517f97f');
   readonly MAX_VALIDITY_DURATION = 2400;
   readonly SWEEP_TXN_DURATION = 64;
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
   protected static initialized = false;
@@ -86,24 +80,28 @@ export class Dot extends BaseCoin {
   protected static nodeApiInitialized = false;
   protected static API: ApiPromise;
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Dot(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Dot(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
-    return 'dot';
+    return this._staticsCoin.name;
   }
 
   getBaseChain(): string {
-    return 'dot';
+    return this.getChain();
   }
 
-  getFamily(): string {
-    return 'dot';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Polkadot';
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor(): number {

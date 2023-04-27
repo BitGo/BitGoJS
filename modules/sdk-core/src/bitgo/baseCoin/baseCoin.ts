@@ -101,6 +101,11 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Id of the chain which identifies this coin (uuid)
+   */
+  abstract getId(): string;
+
+  /**
    * Name of the chain which supports this coin (eg, 'btc', 'eth')
    */
   abstract getChain(): string;

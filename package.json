@@ -81,6 +81,7 @@
     "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "lerna run lint --stream",
+    "lint:fix": "lerna run lint -- --fix",
     "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
     "unit-test-changed": "lerna run unit-test --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
     "browser-tests": "lerna run --scope bitgo compile && lerna run --scope bitgo browser-test && lerna run --scope @bitgo/web-demo test",

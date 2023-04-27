@@ -14,7 +14,7 @@ import {
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory, KeyPair as SuiKeyPair } from './lib';
 import utils from './lib/utils';
@@ -47,38 +47,36 @@ export interface SuiParsedTransaction extends ParsedTransaction {
 export type SuiTransactionExplanation = TransactionExplanation;
 
 export class Sui extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('8979b9a7-c2ea-4154-b4ae-4b905afe6c4a');
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Sui(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Sui(bitgo);
   }
 
   /**
    * Factor between the coin's base unit and its smallest subdivison
    */
   public getBaseFactor(): number {
-    return 1e9;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  public getId(): string {
+    return this._staticsCoin.id;
   }
 
   public getChain(): string {
-    return 'sui';
+    return this._staticsCoin.name;
   }
 
-  public getFamily(): string {
-    return 'sui';
+  public getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   public getFullName(): string {
-    return 'Sui';
+    return this._staticsCoin.fullName;
   }
 
   /** @inheritDoc */

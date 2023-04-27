@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as _ from 'lodash';
 import * as ethUtil from 'ethereumjs-util';
 import * as request from 'superagent';
@@ -108,6 +109,7 @@ export interface RecoveryInfo {
 }
 
 export class Eth2 extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('bfe3a3d5-2210-4bac-b494-40c45ed89267');
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Eth2(bitgo);
   }
@@ -121,21 +123,24 @@ export class Eth2 extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor(): string {
-    // 10^18
-    return '1000000000000000000';
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
-    return 'eth2';
+    return this._staticsCoin.name;
   }
 
-  getFamily(): string {
-    return 'eth2';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Ethereum 2.0';
+    return this._staticsCoin.fullName;
   }
 
   /**

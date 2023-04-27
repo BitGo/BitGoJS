@@ -23,6 +23,9 @@
       "path": "../sdk-core"
     },
     {
+      "path": "../statics"
+    },
+    {
       "path": "../sdk-test"
     },
     {

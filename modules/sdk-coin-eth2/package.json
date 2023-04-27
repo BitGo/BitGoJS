@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^8.2.0",
+    "@bitgo/statics": "^15.1.0",
     "bignumber.js": "^8.0.1",
     "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.14",

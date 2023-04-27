@@ -1,8 +1,9 @@
 /**
  * @prettier
  */
-import { BigNumber } from 'bignumber.js';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { BigNumber } from 'bignumber.js';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -199,6 +200,7 @@ class NoopSignatureProvider implements ApiInterfaces.SignatureProvider {
 }
 
 export class Eos extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('4d1f8b5c-ae96-42b9-94b9-a310c655779e');
   public static VALID_ADDRESS_CHARS = '12345abcdefghijklmnopqrstuvwxyz'.split('');
   public static ADDRESS_LENGTH = 12;
 
@@ -206,28 +208,32 @@ export class Eos extends BaseCoin {
     return new Eos(bitgo);
   }
 
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
   getChainId(): string {
     return 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'; // mainnet chain id
   }
 
   getChain(): string {
-    return 'eos';
+    return this._staticsCoin.name;
   }
 
-  getFamily(): string {
-    return 'eos';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'EOS';
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor(): number {
-    return 1e4;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  get decimalPlaces() {
-    return 4;
+  get decimalPlaces(): number {
+    return this._staticsCoin.decimalPlaces;
   }
 
   /**

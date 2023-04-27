@@ -13,20 +13,18 @@ import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExp
 import { StxLib } from '.';
 
 export class Stx extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('4a903d2c-6487-41fc-bede-77947b80efbb');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Stx(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Stx(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
@@ -41,7 +39,7 @@ export class Stx extends BaseCoin {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor(): string | number {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 

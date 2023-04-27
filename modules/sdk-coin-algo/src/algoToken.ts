@@ -72,6 +72,10 @@ export class AlgoToken extends Algo {
     return this.tokenConfig.decimalPlaces;
   }
 
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }

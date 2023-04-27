@@ -17,20 +17,18 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { Interface, Utils, KeyPair, TransactionBuilder } from './lib';
 
 export class Xtz extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('a789797d-b740-43ad-a347-f19b17353651');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Xtz(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Xtz(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
@@ -45,7 +43,7 @@ export class Xtz extends BaseCoin {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 

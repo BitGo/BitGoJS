@@ -4,7 +4,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { SeedValidator } from './seedValidator';
-import { coins, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, CoinFamily } from '@bitgo/statics';
 import * as AlgoLib from './lib';
 import {
   AddressCoinSpecific,
@@ -122,6 +122,7 @@ export interface VerifiedTransactionParameters {
 }
 
 export class Algo extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('ec41e62a-cc57-4aa0-9b9e-217da1226817');
   readonly ENABLE_TOKEN: TokenManagementType = 'enabletoken';
   readonly DISABLE_TOKEN: TokenManagementType = 'disabletoken';
 
@@ -133,24 +134,28 @@ export class Algo extends BaseCoin {
     return new Algo(bitgo);
   }
 
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
   getChain(): string {
-    return 'algo';
+    return this._staticsCoin.name;
   }
 
   getBaseChain(): string {
-    return 'algo';
+    return this.getChain();
   }
 
-  getFamily(): string {
-    return 'algo';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Algorand';
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor(): number | string {
-    return 1e6;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   /**

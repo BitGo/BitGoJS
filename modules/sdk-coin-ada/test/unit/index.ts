@@ -30,6 +30,6 @@ describe('Ada', function () {
   });
 
   it('should return full name', function () {
-    basecoin.getFullName().should.equal('Testnet Ada');
+    basecoin.getFullName().should.equal('Testnet Cardano ADA');
   });
 });

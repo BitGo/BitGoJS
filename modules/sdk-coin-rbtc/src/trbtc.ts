@@ -2,15 +2,16 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Rbtc } from './rbtc';
 
 export class Trbtc extends Rbtc {
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('626b060b-597e-499b-88dd-414f931a743e');
+  protected constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Trbtc(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Trbtc(bitgo);
   }
 }

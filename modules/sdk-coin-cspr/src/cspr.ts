@@ -68,32 +68,33 @@ interface CsprVerifyAddressOptions extends VerifyAddressOptions {
 }
 
 export class Cspr extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('f3f0f790-fc53-40ba-a9cc-71909fc50566');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Cspr(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Cspr(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {
     return this._staticsCoin.name;
   }
+
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
+
   getFullName(): string {
     return this._staticsCoin.fullName;
   }
-  getBaseFactor(): string | number {
+
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 

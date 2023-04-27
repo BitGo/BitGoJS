@@ -14,7 +14,7 @@ import {
 } from '../fixtures/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
-import { KeyPair, Near, TNear, Transaction } from '../../src';
+import { KeyPair, Near, Transaction, register } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
 import { coins } from '@bitgo/statics';
 
@@ -42,8 +42,7 @@ describe('NEAR:', function () {
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.initializeTestVars();
-    bitgo.safeRegister('tnear', Near.createInstance);
-    bitgo.safeRegister('near', TNear.createInstance);
+    register(bitgo);
     basecoin = bitgo.coin('tnear');
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);
@@ -53,14 +52,17 @@ describe('NEAR:', function () {
     };
   });
 
-  it('should retun the right info', function () {
+  it('should return the correct info for mainnet', function () {
     const near = bitgo.coin('near');
-    const tnear = bitgo.coin('tnear');
 
     near.getChain().should.equal('near');
     near.getFamily().should.equal('near');
     near.getFullName().should.equal('Near');
     near.getBaseFactor().should.equal(1e24);
+  });
+
+  it('should return the correct info for testnet', function () {
+    const tnear = bitgo.coin('tnear');
 
     tnear.getChain().should.equal('tnear');
     tnear.getFamily().should.equal('near');

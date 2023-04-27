@@ -128,20 +128,14 @@ interface RecoveryOptions {
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 
 export class Sol extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('92185a03-356f-4b75-9213-af1c92fe5393');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Sol(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Sol(bitgo);
   }
 
   allowsAccountConsolidations(): boolean {
@@ -156,6 +150,10 @@ export class Sol extends BaseCoin {
     return 'eddsa';
   }
 
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
   getChain(): string {
     return this._staticsCoin.name;
   }
@@ -168,7 +166,7 @@ export class Sol extends BaseCoin {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor(): string | number {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 

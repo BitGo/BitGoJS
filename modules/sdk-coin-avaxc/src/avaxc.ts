@@ -57,26 +57,23 @@ import {
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
 
 export class AvaxC extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('d716be0f-d8e7-4f1e-962e-e11c79ec4381');
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new AvaxC(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new AvaxC(bitgo);
   }
 
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {

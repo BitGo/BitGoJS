@@ -5,7 +5,7 @@
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as base58 from 'bs58';
-import { Networks, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, Networks, CoinFamily, coins } from '@bitgo/statics';
 
 import {
   BaseCoin,
@@ -13,11 +13,7 @@ import {
   BaseTransaction,
   KeyPair,
   MethodNotImplementedError,
-  ParsedTransaction,
-  ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
   Eddsa,
@@ -32,109 +28,34 @@ import * as request from 'superagent';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import nearUtils from './lib/utils';
-
-export interface SignTransactionOptions extends BaseSignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string;
-}
-
-export interface TransactionPrebuild {
-  txHex: string;
-  key: string;
-  blockHash: string;
-  nonce: number;
-}
-
-export interface ExplainTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  publicKey: string;
-  feeInfo: {
-    fee: string;
-  };
-}
-
-export interface VerifiedTransactionParameters {
-  txHex: string;
-  prv: string;
-  signer: string;
-}
-
-export interface NearParseTransactionOptions extends BaseParseTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  publicKey: string;
-  feeInfo: {
-    fee: string;
-  };
-}
-
-interface TransactionOutput {
-  address: string;
-  amount: string;
-}
-
-interface RecoveryOptions {
-  userKey: string; // Box A
-  backupKey: string; // Box B
-  bitgoKey: string; // Box C
-  recoveryDestination: string;
-  krsProvider?: string;
-  walletPassphrase: string;
-  startingScanIndex?: number;
-  scan?: number;
-}
-
-interface NearTx {
-  serializedTx: string;
-  scanIndex: number;
-}
-
-interface NearTxBuilderParamsFromNode {
-  nonce: number;
-  blockHash: string;
-}
-
-interface NearFeeConfig {
-  sendSir: number;
-  sendNotSir: number;
-  execution: number;
-}
-
-interface ProtocolConfigOutput {
-  storageAmountPerByte: number;
-  transferCost: NearFeeConfig;
-  receiptConfig: NearFeeConfig;
-}
-
-type TransactionInput = TransactionOutput;
-
-export interface NearParsedTransaction extends ParsedTransaction {
-  // total assets being moved, including fees
-  inputs: TransactionInput[];
-
-  // where assets are moved to
-  outputs: TransactionOutput[];
-}
-
-export type NearTransactionExplanation = TransactionExplanation;
+import {
+  ExplainTransactionOptions,
+  NearFeeConfig,
+  NearParseTransactionOptions,
+  NearParsedTransaction,
+  NearTransactionExplanation,
+  NearTx,
+  NearTxBuilderParamsFromNode,
+  ProtocolConfigOutput,
+  RecoveryOptions,
+  SignTransactionOptions,
+  TransactionOutput,
+  VerifiedTransactionParameters,
+} from './types';
 
 export class Near extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('e48baabf-5cc9-4011-b67e-6f6425753df2');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
   protected static initialized = false;
   protected static MPC: Eddsa;
   protected network = this.bitgo.getEnv() === 'prod' ? 'main' : 'test';
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Near(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Near(bitgo);
   }
 
   allowsAccountConsolidations(): boolean {
@@ -151,6 +72,10 @@ export class Near extends BaseCoin {
 
   getMPCAlgorithm(): MPCAlgorithm {
     return 'eddsa';
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   getChain(): string {

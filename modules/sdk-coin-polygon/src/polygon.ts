@@ -28,28 +28,22 @@ import {
   Util,
   MPCAlgorithm,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { KeyPair, TransactionBuilder } from './lib';
 import _ from 'lodash';
 import type * as EthTxLib from '@ethereumjs/tx';
 
 export class Polygon extends Eth {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('f0e226b6-6cd8-4384-b0a5-ba8e4148a049');
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
+  protected constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Polygon(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Polygon(bitgo);
   }
   static getCustomChainName(chainId?: number): string {
     if (chainId === 80001) {
@@ -103,16 +97,20 @@ export class Polygon extends Eth {
     return unsignedEthTx;
   }
 
-  getChain(): string {
-    return 'polygon';
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
-  getFamily(): string {
-    return 'polygon';
+  getChain(): string {
+    return this._staticsCoin.name;
+  }
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Polygon';
+    return this._staticsCoin.fullName;
   }
 
   /**

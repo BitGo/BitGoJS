@@ -68,19 +68,17 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 }
 
 export class Hbar extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('98aad956-27ee-45dd-aa43-6a23c9a1d1d0');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  getChain() {
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
@@ -88,16 +86,16 @@ export class Hbar extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Hbar(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Hbar(bitgo);
   }
 
   /**

@@ -1,23 +1,12 @@
 import { Ada } from './ada';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, tokens } from '@bitgo/statics';
-
-export interface AdaTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  policyId: string;
-  assetName: string;
-  decimalPlaces: number;
-}
+import { AdaTokenConfig, tokens } from '@bitgo/statics';
 
 export class AdaToken extends Ada {
   public readonly tokenConfig: AdaTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: AdaTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('ada') : coins.get('tada');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -34,43 +23,47 @@ export class AdaToken extends Ada {
     return tokensCtors;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get policyId() {
+  get policyId(): string {
     return this.tokenConfig.policyId;
   }
 
-  get assetName() {
+  get assetName(): string {
     return this.tokenConfig.assetName;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Cardano Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 
@@ -78,7 +71,7 @@ export class AdaToken extends Ada {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 
@@ -86,7 +79,7 @@ export class AdaToken extends Ada {
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (CELO), false otherwise
    */
-  transactionDataAllowed() {
+  transactionDataAllowed(): boolean {
     return false;
   }
 }

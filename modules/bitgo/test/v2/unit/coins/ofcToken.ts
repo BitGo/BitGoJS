@@ -2,12 +2,12 @@ import 'should';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
-const PRECISION_2 = '100';
-const PRECISION_6 = '1000000';
-const PRECISION_7 = '10000000';
-const PRECISION_8 = '100000000';
-const PRECISION_9 = '1000000000';
-const PRECISION_18 = '1000000000000000000';
+const PRECISION_2 = 100;
+const PRECISION_6 = 1000000;
+const PRECISION_7 = 10000000;
+const PRECISION_8 = 100000000;
+const PRECISION_9 = 1000000000;
+const PRECISION_18 = 1000000000000000000;
 
 describe('OFC:', function () {
   let bitgo;

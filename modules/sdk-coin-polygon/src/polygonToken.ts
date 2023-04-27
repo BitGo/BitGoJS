@@ -4,7 +4,7 @@
 
 import { Polygon } from './polygon';
 import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
-import { EthLikeTokenConfig, tokens, coins } from '@bitgo/statics';
+import { EthLikeTokenConfig, tokens } from '@bitgo/statics';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 
 export { EthLikeTokenConfig };
@@ -12,8 +12,7 @@ export { EthLikeTokenConfig };
 export class PolygonToken extends Polygon {
   public readonly tokenConfig: EthLikeTokenConfig;
   constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('polygon') : coins.get('tpolygon');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -31,51 +30,55 @@ export class PolygonToken extends Polygon {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress() {
+  get tokenContractAddress(): string {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
+  }
+
+  getId(): string {
+    return this.tokenConfig.id;
   }
 
   getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
   getFullName(): string {
-    return 'Polygon Token';
+    return this._staticsCoin.fullName;
   }
 
-  getBaseFactor() {
-    return String(Math.pow(10, this.tokenConfig.decimalPlaces));
+  getBaseFactor(): number {
+    return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 
@@ -83,7 +86,7 @@ export class PolygonToken extends Polygon {
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
-  transactionDataAllowed() {
+  transactionDataAllowed(): boolean {
     return false;
   }
 

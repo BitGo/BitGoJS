@@ -3,7 +3,7 @@
  */
 import { AvaxC } from './avaxc';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AvaxcTokenConfig, coins, tokens } from '@bitgo/statics';
+import { AvaxcTokenConfig, tokens } from '@bitgo/statics';
 import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
 
 export { AvaxcTokenConfig };
@@ -12,8 +12,7 @@ export class AvaxCToken extends AvaxC {
   public readonly tokenConfig: AvaxcTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: AvaxcTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('avaxc') : coins.get('tavaxc');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -55,11 +54,15 @@ export class AvaxCToken extends AvaxC {
     return this.tokenConfig.decimalPlaces;
   }
 
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 

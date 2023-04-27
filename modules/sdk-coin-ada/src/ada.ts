@@ -60,25 +60,24 @@ interface AdaTx {
 export type AdaTransactionExplanation = TransactionExplanation;
 
 export class Ada extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('fd4d125e-f14f-414b-bd17-6cb1393265f0');
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Ada(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Ada(bitgo);
+  }
+
+  public getId(): string {
+    return this._staticsCoin.id;
   }
 
   /**
    * Factor between the coin's base unit and its smallest subdivison
    */
   public getBaseFactor(): number {
-    return 1e6;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   public getChain(): string {
@@ -96,6 +95,7 @@ export class Ada extends BaseCoin {
   getBaseChain(): string {
     return this.getChain();
   }
+
   /**
    * Verify that a transaction prebuild complies with the original intention
    *  A prebuild transaction has to be parsed correctly and intended recipients has to be

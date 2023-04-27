@@ -3,7 +3,7 @@
  */
 import { Celo } from './celo';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CeloTokenConfig, coins, tokens } from '@bitgo/statics';
+import { CeloTokenConfig, tokens } from '@bitgo/statics';
 
 export { CeloTokenConfig };
 
@@ -11,8 +11,7 @@ export class CeloToken extends Celo {
   public readonly tokenConfig: CeloTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: CeloTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('celo') : coins.get('tcelo');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -30,43 +29,47 @@ export class CeloToken extends Celo {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress() {
+  get tokenContractAddress(): string {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Celo Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 

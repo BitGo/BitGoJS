@@ -14,6 +14,7 @@ import {
   TransactionPrebuild,
 } from '@bitgo/abstract-utxo';
 import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bitgo, networks } from '@bitgo/utxo-lib';
 
 type UnspentJSON = bitgo.Unspent<number> & { valueString: string };
@@ -56,6 +57,7 @@ function parseTransactionPrebuild<TNumber extends number | bigint>(
 }
 
 export class Doge extends AbstractUtxoCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('c93a9160-458f-4a31-bea0-4a93ae8b1d2d');
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || networks.dogecoin, 'bigint');
   }
@@ -64,16 +66,20 @@ export class Doge extends AbstractUtxoCoin {
     return new Doge(bitgo);
   }
 
-  getChain(): string {
-    return 'doge';
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
-  getFamily(): string {
-    return 'doge';
+  getChain(): string {
+    return this._staticsCoin.name;
+  }
+
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Dogecoin';
+    return this._staticsCoin.fullName;
   }
 
   supportsBlockTarget(): boolean {

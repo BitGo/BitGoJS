@@ -24,7 +24,7 @@ describe('Ethereum 2.0', function () {
 
     localBasecoin = bitgo.coin('eth2');
     localBasecoin.should.be.an.instanceof(Eth2);
-    localBasecoin.getBaseFactor().should.equal('1000000000000000000');
+    localBasecoin.getBaseFactor().should.equal(1000000000000000000);
     localBasecoin.getChain().should.equal('eth2');
     localBasecoin.getFamily().should.equal('eth2');
     localBasecoin.getFullName().should.equal('Ethereum 2.0');

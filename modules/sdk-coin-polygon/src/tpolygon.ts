@@ -2,19 +2,16 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Polygon } from './polygon';
 
 export class Tpolygon extends Polygon {
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('aa7b72d1-9197-492d-b2ca-2c9c9732115d');
+  protected constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tpolygon(bitgo, staticsCoin);
-  }
-
-  getChain(): string {
-    return 'tpolygon';
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Tpolygon(bitgo);
   }
 }

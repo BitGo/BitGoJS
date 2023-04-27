@@ -300,7 +300,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): number {
     return 1e8;
   }
 

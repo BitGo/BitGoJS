@@ -1,6 +1,6 @@
 import { Trx } from './trx';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { TrxTokenConfig, coins, tokens } from '@bitgo/statics';
+import { TrxTokenConfig, tokens } from '@bitgo/statics';
 import { getBuilder } from './lib/builder';
 import { Recipient } from '../../sdk-core/src/bitgo/baseCoin/iBaseCoin';
 import assert from 'assert';
@@ -17,8 +17,7 @@ export class TrxToken extends Trx {
   public readonly tokenConfig: TrxTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: TrxTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('trx') : coins.get('ttrx');
-    super(bitgo, staticsCoin);
+    super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
@@ -35,43 +34,47 @@ export class TrxToken extends Trx {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress() {
+  get tokenContractAddress(): string {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Tron Token';
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 
@@ -79,7 +82,7 @@ export class TrxToken extends Trx {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 
@@ -87,7 +90,7 @@ export class TrxToken extends Trx {
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
-  transactionDataAllowed() {
+  transactionDataAllowed(): boolean {
     return false;
   }
 

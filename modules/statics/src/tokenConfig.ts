@@ -20,20 +20,21 @@ import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
 
-export interface BaseTokenConfig {
+export type BaseTokenConfig = {
+  id: string;
   coin: string;
   decimalPlaces: number;
   name: string;
   type: string;
-}
+};
 
-export interface BaseNetworkConfig extends BaseTokenConfig {
+export type BaseNetworkConfig = BaseTokenConfig & {
   network: string;
-}
+};
 
-export interface BaseContractAddressConfig extends BaseNetworkConfig {
+export type BaseContractAddressConfig = BaseNetworkConfig & {
   tokenContractAddress: string;
-}
+};
 
 export type AvaxcTokenConfig = BaseContractAddressConfig;
 export type CeloTokenConfig = BaseContractAddressConfig;
@@ -179,6 +180,7 @@ const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
     }
 
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: baseCoin,
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -203,6 +205,7 @@ export const ethGasConfigs = {
 const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) => {
   if (coin instanceof StellarCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -217,6 +220,7 @@ const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) =>
 const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
   if (coin instanceof OfcCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: 'ofc',
       backingCoin: coin.asset,
@@ -231,6 +235,7 @@ const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
 const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
   if (coin instanceof CeloCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -245,6 +250,7 @@ const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
 const formattedBscTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
   if (coin instanceof BscCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -259,6 +265,7 @@ const formattedBscTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
 const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
   if (coin instanceof EosCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -273,6 +280,7 @@ const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
 const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
   if (coin instanceof AvaxERC20Token) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -290,6 +298,7 @@ const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) =>
     ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
   ) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -304,6 +313,7 @@ const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) =>
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -318,6 +328,7 @@ const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
 export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
   if (coin instanceof AlgoCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
       alias: coin.alias,
@@ -332,6 +343,7 @@ export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) =
 const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
   if (coin instanceof HederaToken) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -345,6 +357,7 @@ const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
 const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
   if (coin instanceof AdaCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -360,6 +373,7 @@ const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
 const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
   if (coin instanceof TronErc20Coin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
@@ -374,6 +388,7 @@ const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
 const formattedXrpTokens = coins.reduce((acc: XrpTokenConfig[], coin) => {
   if (coin instanceof XrpCoin) {
     acc.push({
+      id: coin.id,
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',

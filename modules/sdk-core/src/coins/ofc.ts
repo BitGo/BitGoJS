@@ -2,6 +2,7 @@
  * @prettier
  */
 import { randomBytes } from 'crypto';
+import { CoinFamily } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import {
   BaseCoin,
@@ -25,7 +26,11 @@ export class Ofc extends BaseCoin {
     return new Ofc(bitgo);
   }
 
-  getChain() {
+  getId(): string {
+    throw new MethodNotImplementedError();
+  }
+
+  getChain(): string {
     return 'ofc';
   }
 
@@ -50,18 +55,18 @@ export class Ofc extends BaseCoin {
     };
   }
 
-  getFamily() {
-    return 'ofc';
+  getFamily(): CoinFamily {
+    return 'ofc' as CoinFamily;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Offchain';
   }
 
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }: { m: number; n: number }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
     return m === 1 && n === 1;
   }
 

@@ -3,7 +3,7 @@
  */
 import * as secp256k1 from 'secp256k1';
 import { randomBytes } from 'crypto';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32, networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import {
@@ -97,19 +97,21 @@ export interface AccountResponse {
 }
 
 export class Trx extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('9cf6d137-6c6b-4fc0-acc0-8e78a1599c15');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  getChain() {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Trx(bitgo);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
@@ -117,21 +119,17 @@ export class Trx extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   /** @inheritdoc */
   transactionDataAllowed() {
     return true;
-  }
-
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Trx(bitgo, staticsCoin);
   }
 
   /**

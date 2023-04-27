@@ -1,29 +1,15 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Sol } from './sol';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 
 export class Tsol extends Sol {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('16445f37-624c-4343-90f2-c62429551871');
 
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tsol(bitgo, staticsCoin);
-  }
-
-  getChain() {
-    return this._staticsCoin.name;
-  }
-
-  getFullName() {
-    return this._staticsCoin.fullName;
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Tsol(bitgo);
   }
 }

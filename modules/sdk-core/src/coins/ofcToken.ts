@@ -29,39 +29,43 @@ export class OfcToken extends Ofc {
     this.tokenConfig = tokenConfig;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get backingCoin() {
+  get backingCoin(): string {
     return this.tokenConfig.backingCoin;
   }
 
-  get isFiat() {
+  get isFiat(): boolean {
     return this.tokenConfig.isFiat;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.type;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this.name;
   }
 
-  getBaseFactor() {
-    return String(Math.pow(10, this.decimalPlaces));
+  getBaseFactor(): number {
+    return Math.pow(10, this.decimalPlaces);
   }
 
-  public get type() {
+  public get type(): string {
     return this.tokenConfig.type;
   }
 
@@ -69,7 +73,7 @@ export class OfcToken extends Ofc {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 

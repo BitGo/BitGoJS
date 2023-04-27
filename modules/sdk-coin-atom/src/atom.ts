@@ -69,24 +69,21 @@ interface AtomTx {
 }
 
 export class Atom extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('a605eecf-f1ff-4230-a856-197cd227832a');
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Atom(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Atom(bitgo);
   }
 
-  /** @inheritDoc **/
-  getBaseFactor(): string | number {
-    return 1e6;
+  getBaseFactor(): number {
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getId(): string {
+    return this._staticsCoin.id;
   }
 
   /** @inheritDoc **/

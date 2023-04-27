@@ -1,32 +1,14 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Dot } from './dot';
 
 export class Tdot extends Dot {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo, staticsCoin);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin> = coins.get('85b966bd-d1cc-4a86-a937-b1afab659e7b');
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tdot(bitgo, staticsCoin);
-  }
-
-  getChain(): string {
-    return 'tdot';
-  }
-
-  getFullName(): string {
-    return 'Testnet Polkadot';
-  }
-
-  getBaseFactor(): number {
-    return Math.pow(10, this._staticsCoin.decimalPlaces);
+  static createInstance(bitgo: BitGoBase): BaseCoin {
+    return new Tdot(bitgo);
   }
 }

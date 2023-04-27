@@ -42,31 +42,31 @@ export class StellarToken extends Xlm {
     return tokensCtors;
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get code() {
+  get code(): string {
     return this._code;
   }
 
-  get issuer() {
+  get issuer(): string {
     return this._issuer;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
@@ -74,11 +74,15 @@ export class StellarToken extends Xlm {
     return this.tokenConfig.network === 'Testnet' ? stellar.Networks.TESTNET : stellar.Networks.PUBLIC;
   }
 
-  getChain() {
+  getId(): string {
+    return this.tokenConfig.id;
+  }
+
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Stellar Token';
   }
 

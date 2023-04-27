@@ -2,7 +2,7 @@
  * @prettier
  */
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
@@ -82,14 +82,18 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  getChain() {
+  getId(): string {
+    return this._staticsCoin.id;
+  }
+
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
   /**
    * Get the base chain that the coin exists on.
    */
-  getBaseChain() {
+  getBaseChain(): string {
     return this.getChain();
   }
 
@@ -97,11 +101,11 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
-  getBaseFactor() {
+  getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
