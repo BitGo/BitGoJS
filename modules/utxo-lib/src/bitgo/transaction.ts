@@ -11,6 +11,7 @@ import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
 import { ZcashPsbt } from './zcash/ZcashPsbt';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
+import { LitecoinPsbt, LitecoinTransaction, LitecoinTransactionBuilder } from './litecoin';
 
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
@@ -36,8 +37,9 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.ecash:
-    case networks.litecoin:
       return UtxoTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
+    case networks.litecoin:
+      return LitecoinTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.dash:
       return DashTransaction.fromBuffer<TNumber>(buf, false, amountType, network);
     case networks.zcash:
@@ -56,8 +58,9 @@ export function createPsbtFromBuffer(buf: Buffer, network: Network, bip32PathsAb
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.ecash:
-    case networks.litecoin:
       return UtxoPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
+    case networks.litecoin:
+      return LitecoinPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
     case networks.dash:
       return DashPsbt.fromBuffer(buf, { network, bip32PathsAbsolute });
     case networks.zcash:
@@ -80,8 +83,9 @@ export function createPsbtFromTransaction(tx: UtxoTransaction<bigint>, prevOuts:
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.ecash:
-    case networks.litecoin:
       return UtxoPsbt.fromTransaction(tx, prevOuts);
+    case networks.litecoin:
+      return LitecoinPsbt.fromTransaction(tx, prevOuts);
     case networks.dash:
       return DashPsbt.fromTransaction(tx, prevOuts);
     case networks.zcash:
@@ -185,9 +189,12 @@ export function createPsbtForNetwork(psbtOpts: PsbtOpts, { version }: { version?
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
-    case networks.ecash:
-    case networks.litecoin: {
+    case networks.ecash: {
       psbt = UtxoPsbt.createPsbt(psbtOpts);
+      break;
+    }
+    case networks.litecoin: {
+      psbt = LitecoinPsbt.createPsbt(psbtOpts);
       break;
     }
     case networks.dash: {
@@ -218,9 +225,12 @@ export function createTransactionBuilderForNetwork<TNumber extends number | bigi
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.dogecoin:
-    case networks.ecash:
-    case networks.litecoin: {
+    case networks.ecash: {
       txb = new UtxoTransactionBuilder<TNumber>(network);
+      break;
+    }
+    case networks.litecoin: {
+      txb = new LitecoinTransactionBuilder<TNumber>(network);
       break;
     }
     case networks.dash:
@@ -250,8 +260,13 @@ export function createTransactionBuilderFromTransaction<TNumber extends number |
     case networks.bitcoingold:
     case networks.dogecoin:
     case networks.ecash:
-    case networks.litecoin:
       return UtxoTransactionBuilder.fromTransaction<TNumber>(tx, undefined, prevOutputs);
+    case networks.litecoin:
+      return LitecoinTransactionBuilder.fromTransaction<TNumber>(
+        tx as LitecoinTransaction<TNumber>,
+        undefined,
+        prevOutputs as TxOutput<TNumber>[]
+      );
     case networks.dash:
       return DashTransactionBuilder.fromTransaction<TNumber>(
         tx as DashTransaction<TNumber>,
