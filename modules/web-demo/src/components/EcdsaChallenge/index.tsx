@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
 import React, { useState } from 'react';
-import { ECDSA, rangeProof, bigIntToBufferBE } from '@bitgo/sdk-core';
+import { ECDSA, bigIntToBufferBE } from '@bitgo/sdk-core';
 
 const EcdsaChallenge = () => {
   const [challenge, setChallenge] = useState<ECDSA.NTilde | undefined>(
@@ -7,16 +8,37 @@ const EcdsaChallenge = () => {
   );
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [totalTime, setTotalTime] = useState<number | undefined>(undefined);
+  // const [totalTime, setTotalTime] = useState<number | undefined>(undefined);
+
+  const worker = React.useMemo(
+    () => new Worker(new URL('../../worker.js', import.meta.url)),
+    [],
+  );
+  React.useEffect(() => {
+    if (worker) {
+      worker.onmessage = (event: MessageEvent<ECDSA.NTilde>) => {
+        console.log(event);
+        setChallenge(event.data);
+        setLoading(false);
+      };
+      worker.onerror = (event: unknown) => {
+        console.log(event);
+        setLoading(false);
+      };
+    }
+
+    return () => worker.terminate();
+  });
 
   const generateChallenge = async () => {
     setLoading(true);
-    const start = new Date().getTime() / 1000;
-    const challenge = await rangeProof.generateNTilde(3072);
-    const end = new Date().getTime() / 1000;
+    // const start = new Date().getTime() / 1000;
+    // const challenge = await rangeProof.generateNTilde(3072);
+    worker.postMessage('hello world');
+    // const end = new Date().getTime() / 1000;
     setChallenge(challenge);
-    setTotalTime(end - start);
-    setLoading(false);
+    // setTotalTime(end - start);
+    // setLoading(false);
   };
 
   return (
@@ -31,12 +53,12 @@ const EcdsaChallenge = () => {
           <h5>{bigIntToBufferBE(challenge.h1).toString('hex')}</h5>
           <h4> h2 </h4>
           <h5>{bigIntToBufferBE(challenge.h2).toString('hex')}</h5>
-          {totalTime ? (
+          {/* {totalTime ? (
             <div>
               <h4>Time to generate (s)</h4>
               <h5>{totalTime}</h5>
             </div>
-          ) : null}
+          ) : null} */}
           <h5></h5>
         </div>
       ) : null}

@@ -1,6 +1,7 @@
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { join } = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const WorkerPlugin = require('worker-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
@@ -133,6 +134,7 @@ const prodRules = [
 ];
 
 const devPlugins = [
+  new WorkerPlugin(),
   new HtmlWebpackPlugin({
     template: './src/index.html',
     inject: true,
