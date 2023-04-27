@@ -20,7 +20,7 @@ import {
   KShare,
   MUShare,
   NShare,
-  Ntilde,
+  DeserializedNtilde,
   OShare,
   PShare,
   RangeProofWithCheck,
@@ -295,7 +295,11 @@ export default class Ecdsa {
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: Ntilde): Promise<KeyCombinedWithNtilde> {
+  async appendChallenge(
+    xShare: XShare,
+    yShare: YShare,
+    challenge?: DeserializedNtilde
+  ): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
       challenge = await rangeProof.generateNtilde(3072);
     }

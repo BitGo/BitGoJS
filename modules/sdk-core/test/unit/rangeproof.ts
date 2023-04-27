@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as paillierBigint from 'paillier-bigint';
 import Ecdsa from '../../src/account-lib/mpc/tss/ecdsa/ecdsa';
 import * as rangeProof from '../../src/account-lib/mpc/tss/ecdsa/rangeproof';
-import { Ntilde } from '../../src/account-lib/mpc/tss/ecdsa/types';
+import { DeserializedNtilde } from '../../src/account-lib/mpc/tss/ecdsa/types';
 import { OpenSSL } from '../../src/openssl';
 
 describe('MtA range proof', function () {
@@ -10,7 +10,7 @@ describe('MtA range proof', function () {
   let safePrimeMock: sinon.SinonStub;
 
   let paillierKeyPair: paillierBigint.KeyPair;
-  let ntilde: Ntilde;
+  let ntilde: DeserializedNtilde;
 
   before('set up paillier and ntile', async function () {
     safePrimeMock = sinon.stub(OpenSSL.prototype, 'generateSafePrime').callsFake(async (bitlength: number) => {

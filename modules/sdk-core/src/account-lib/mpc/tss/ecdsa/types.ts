@@ -1,42 +1,36 @@
 // Ntilde Proof where both alpha and t are a set of 128 proofs each.
-export interface NtildeProofH1H2 {
-  alpha: bigint[];
-  t: bigint[];
+interface NtildeProof<T> {
+  alpha: T[];
+  t: T[];
 }
 
 // Ntilde Proof
-export interface NtildeProof {
-  h1WrtH2: NtildeProofH1H2;
-  h2WrtH1: NtildeProofH1H2;
+interface NtildeProofs<T> {
+  h1WrtH2: NtildeProof<T>;
+  h2WrtH1: NtildeProof<T>;
 }
 
 // Ntilde challenge values
-export interface Ntilde {
-  ntilde: bigint;
-  h1: bigint;
-  h2: bigint;
-  ntildeProof?: NtildeProof;
+interface Ntilde<T> {
+  ntilde: T;
+  h1: T;
+  h2: T;
+  ntildeProof?: NtildeProofs<T>;
 }
 
-// String serialized Ntilde Proof values
-export interface NtildeProofShare {
-  h1WrtH2: {
-    alpha: string[];
-    t: string[];
-  };
-  h2WrtH1: {
-    alpha: string[];
-    t: string[];
-  };
-}
+export type DeserializedNtildeProof = NtildeProof<bigint>;
+export type DeserializedNtildeProofs = NtildeProofs<bigint>;
+export type DeserializedNtilde = Ntilde<bigint>;
+export type DeserializedNtildeWithProofs = Omit<DeserializedNtilde, 'ntildeProof'> & {
+  ntildeProof: DeserializedNtildeProofs;
+};
 
-// String-serialized Ntilde values.
-export interface NtildeShare {
-  ntilde: string;
-  h1: string;
-  h2: string;
-  ntildeProof?: NtildeProofShare;
-}
+export type SerializedNtildeProof = NtildeProof<string>;
+export type SerializedNtildeProofs = NtildeProofs<string>;
+export type SerializedNtilde = Ntilde<string>;
+export type SerializedNtildeWithProofs = Omit<SerializedNtilde, 'ntildeProof'> & {
+  ntildeProof: SerializedNtildeProofs;
+};
 
 export interface RSAModulus {
   n: bigint;
@@ -111,7 +105,7 @@ export interface XShare {
   chaincode: string;
 }
 
-export type XShareWithNtilde = XShare & NtildeShare;
+export type XShareWithNtilde = XShare & SerializedNtilde;
 
 // YShares used during signature generation
 export interface YShare {
@@ -120,7 +114,7 @@ export interface YShare {
   n: string;
 }
 
-export type YShareWithNtilde = YShare & NtildeShare;
+export type YShareWithNtilde = YShare & SerializedNtilde;
 
 export interface KeyCombined {
   xShare: XShare;

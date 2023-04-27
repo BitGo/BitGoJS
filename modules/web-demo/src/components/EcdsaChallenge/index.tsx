@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { ECDSA, rangeProof, bigIntToBufferBE } from '@bitgo/sdk-core';
 
 const EcdsaChallenge = () => {
-  const [challenge, setChallenge] = useState<ECDSA.Ntilde | undefined>(
-    undefined,
-  );
+  const [challenge, setChallenge] = useState<
+    ECDSA.DeserializedNtilde | undefined
+  >(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [totalTime, setTotalTime] = useState<number | undefined>(undefined);

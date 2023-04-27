@@ -9,8 +9,7 @@ import { getFirstPendingTransaction } from '../internal/internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
-import { Buffer } from 'buffer';
-import { Ntilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -137,7 +136,7 @@ export class Enterprise implements IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: Ntilde
+    challenge?: DeserializedNtilde
   ): Promise<void> {
     await EcdsaUtils.initiateChallengesForEnterprise(
       this.bitgo,
@@ -154,7 +153,7 @@ export class Enterprise implements IEnterprise {
    * Can be used with uploadAndEnableTssEcdsaSigning to re-sign the
    * enterprise challenge with new signatures.
    */
-  async getExistingTssEcdsaChallenge(): Promise<Ntilde> {
+  async getExistingTssEcdsaChallenge(): Promise<DeserializedNtilde> {
     const urlPath = `/enterprise/${this.id}/tssconfig`;
     const tssConfig = await this.bitgo.get(this.bitgo.url(urlPath, 2)).send().result();
     const enterpriseChallenge = tssConfig?.ecdsa.challenge?.enterprise;
