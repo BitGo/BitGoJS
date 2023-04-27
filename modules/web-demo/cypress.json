@@ -2,5 +2,6 @@
   "component": {
     "testFiles": "**/*.spec.tsx",
     "componentFolder": "src"
-  }
+  },
+  "video": false
 }
