@@ -15,12 +15,12 @@ import {
   DShare,
   GShare,
   KeyCombined,
-  KeyCombinedWithNTilde,
+  KeyCombinedWithNtilde,
   KeyShare,
   KShare,
   MUShare,
   NShare,
-  NTilde,
+  Ntilde,
   OShare,
   PShare,
   RangeProofWithCheck,
@@ -33,14 +33,14 @@ import {
   SShare,
   SubkeyShare,
   XShare,
-  XShareWithNTilde,
+  XShareWithNtilde,
   YShare,
-  YShareWithNTilde,
+  YShareWithNtilde,
 } from './types';
 
 const _5n = BigInt(5);
 
-function hasNTilde(share: XShare | YShare): share is XShareWithNTilde | YShareWithNTilde {
+function hasNtilde(share: XShare | YShare): share is XShareWithNtilde | YShareWithNtilde {
   return 'ntilde' in share;
 }
 
@@ -295,9 +295,9 @@ export default class Ecdsa {
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: NTilde): Promise<KeyCombinedWithNTilde> {
+  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: Ntilde): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
-      challenge = await rangeProof.generateNTilde(3072);
+      challenge = await rangeProof.generateNtilde(3072);
     }
     const ntilde = bigIntToBufferBE(challenge.ntilde, 384).toString('hex');
     const h1 = bigIntToBufferBE(challenge.h1, 384).toString('hex');
@@ -324,11 +324,11 @@ export default class Ecdsa {
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  async signShare(xShare: XShare | XShareWithNTilde, yShare: YShareWithNTilde): Promise<SignShareRT> {
+  async signShare(xShare: XShare | XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShareRT> {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
     // Generate a challenge if ntilde is not present in the xShare.
-    if (!hasNTilde(xShare)) {
+    if (!hasNtilde(xShare)) {
       xShare = (await this.appendChallenge(xShare, yShare)).xShare;
     }
 
@@ -345,7 +345,7 @@ export default class Ecdsa {
       Ecdsa.curve.scalarInvert(d),
     ].reduce(Ecdsa.curve.scalarMult);
 
-    const { ntilde: ntildea, h1: h1a, h2: h2a } = xShare as XShareWithNTilde;
+    const { ntilde: ntildea, h1: h1a, h2: h2a } = xShare as XShareWithNtilde;
 
     const signers: SignShareRT = {
       wShare: {

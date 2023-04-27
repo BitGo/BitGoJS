@@ -1,7 +1,7 @@
 import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
-import { NTilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { Ntilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { BitGoProofSignatures } from '../utils/tss/ecdsa';
 
 export interface IEnterprise {
@@ -20,7 +20,7 @@ export interface IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: NTilde
+    challenge?: Ntilde
   ): Promise<void>;
-  getExistingTssEcdsaChallenge(): Promise<NTilde>;
+  getExistingTssEcdsaChallenge(): Promise<Ntilde>;
 }

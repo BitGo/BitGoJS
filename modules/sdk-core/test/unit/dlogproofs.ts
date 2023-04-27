@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import {
-  generateNTilde,
-  generateNTildeProof,
+  generateNtilde,
+  generateNtildeProof,
   generateSafePrimes,
   verifyNtildeProof,
 } from '../../src/account-lib/mpc/tss/ecdsa/rangeproof';
@@ -28,7 +28,7 @@ describe('h1H2DiscreteLogProofs', function () {
   });
   it('should generate valid ntilde proofs', async function () {
     // 512 bits is not secure for generating an Ntilde, this is for testing purposes ONLY.
-    const ntilde = await generateNTilde(512);
+    const ntilde = await generateNtilde(512);
     (
       await verifyNtildeProof(
         {
@@ -53,7 +53,7 @@ describe('h1H2DiscreteLogProofs', function () {
     };
     // h1 = f1 ^ 2 where f1 is coprime to ntilde, since h1 = 4 and we know p and q can not be 2 as they are of bitlength 257
     // we f1 to be 2.
-    const ntildeProof = await generateNTildeProof(
+    const ntildeProof = await generateNtildeProof(
       ntildeObj,
       BigInt(2),
       (p - BigInt(1)) / BigInt(2),

@@ -25,7 +25,7 @@ export type ApiChallenge = {
   h2: string;
 };
 
-export type ApiNTildeProof = {
+export type ApiNtildeProof = {
   alpha: string[];
   t: string[];
 };
@@ -35,16 +35,16 @@ export type ApiChallenges = {
   bitgoChallenge: ApiChallenge;
 };
 
-export type ChallengeWithNTildeProofApi = ApiChallenge & {
+export type ChallengeWithNtildeProofApi = ApiChallenge & {
   ntildeProof: {
-    h1WrtH2: ApiNTildeProof;
-    h2WrtH1: ApiNTildeProof;
+    h1WrtH2: ApiNtildeProof;
+    h2WrtH1: ApiNtildeProof;
   };
 };
 
 export type GetBitGoChallengesApi = {
-  bitgoNitroHsm: ChallengeWithNTildeProofApi;
-  bitgoInstitutionalHsm: ChallengeWithNTildeProofApi;
+  bitgoNitroHsm: ChallengeWithNtildeProofApi;
+  bitgoInstitutionalHsm: ChallengeWithNtildeProofApi;
 };
 
 export type BitGoProofSignatures = {

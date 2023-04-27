@@ -40,7 +40,7 @@ describe('BSC Transfer Builder', () => {
       const unsignedTransaction = await txBuilder.build();
       serializedTransaction = Buffer.from(unsignedTransaction.toBroadcastFormat());
 
-      sinon.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+      sinon.stub(rangeProof, 'generateNtilde').resolves(mockChallenge);
     });
 
     after(() => {

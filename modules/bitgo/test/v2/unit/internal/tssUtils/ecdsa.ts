@@ -578,10 +578,10 @@ describe('TSS Ecdsa Utils:', async function () {
       const serializedEntChallenge = mockChallengeA;
       const serializedBitgoChallenge = mockChallengeB;
 
-      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
-      const deserializedBitGoChallenge = ecdsaStaticUtils.deserializeNTilde(serializedBitgoChallenge);
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNtilde(serializedEntChallenge);
+      const deserializedBitGoChallenge = ecdsaStaticUtils.deserializeNtilde(serializedBitgoChallenge);
 
-      sinon.stub(rangeProof, 'generateNTilde').resolves(deserializedEntChallenge);
+      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
       await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
         ntilde: serializedEntChallenge.ntilde,
@@ -1048,7 +1048,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('should upload challenge without generating if passed in', async function() {
       const stubUploadChallenge = sinon.stub(ecdsaStaticUtils, 'uploadChallengesToEnterprise');
-      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNtilde(serializedEntChallenge);
 
       const signedEntChallenge = ecdsaStaticUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
       const signedInstChallenge = ecdsaStaticUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
@@ -1067,8 +1067,8 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('should generate a challenge and if one is not provided', async function() {
       const stubUploadChallenge = sinon.stub(ecdsaStaticUtils, 'uploadChallengesToEnterprise');
-      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNTilde(serializedEntChallenge);
-      sinon.stub(rangeProof, 'generateNTilde').resolves(deserializedEntChallenge);
+      const deserializedEntChallenge = ecdsaStaticUtils.deserializeNtilde(serializedEntChallenge);
+      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
       const signedEntChallenge = ecdsaStaticUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
       const signedInstChallenge = ecdsaStaticUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
@@ -1086,10 +1086,10 @@ describe('TSS Ecdsa Utils:', async function () {
     });
   });
 
-  it('serializeNTilde and deserializeNTilde are deterministic', function() {
+  it('serializeNtilde and deserializeNtilde are deterministic', function() {
     const mockSerializedChallenge = mockChallengeA;
-    const deserializeChallenge = ecdsaStaticUtils.deserializeNTilde(mockSerializedChallenge);
-    const serializeChallenge = ecdsaStaticUtils.serializeNTilde(deserializeChallenge);
+    const deserializeChallenge = ecdsaStaticUtils.deserializeNtilde(mockSerializedChallenge);
+    const serializeChallenge = ecdsaStaticUtils.serializeNtilde(deserializeChallenge);
     serializeChallenge.should.deepEqual(mockSerializedChallenge);
   });
 

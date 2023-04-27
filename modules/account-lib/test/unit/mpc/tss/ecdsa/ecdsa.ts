@@ -214,9 +214,9 @@ describe('TSS ECDSA TESTS', function () {
         { signerOne: G, signerTwo: H },
       ];
 
-      ntildeMock = sinon.stub(rangeProof, 'generateNTilde');
+      ntildeMock = sinon.stub(rangeProof, 'generateNtilde');
       for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.NTilde);
+        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.Ntilde);
       }
     });
 
@@ -234,7 +234,7 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Two
         // Second signer generates their range proof challenge.
-        const signerTwoWithChallenge: ECDSA.KeyCombinedWithNTilde = await MPC.appendChallenge(
+        const signerTwoWithChallenge: ECDSA.KeyCombinedWithNtilde = await MPC.appendChallenge(
           signerTwo.xShare,
           signerTwo.yShares[signerOneIndex],
         );
