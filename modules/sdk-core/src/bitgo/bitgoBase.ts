@@ -3,7 +3,6 @@ import { IBaseCoin } from './baseCoin';
 import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
 import { GetSigningKeyApi } from './keychain';
-import { ApiChallenges } from './utils/tss/ecdsa';
 
 export interface BitGoBase {
   wallets(): any; // TODO - define v1 wallets type
@@ -25,5 +24,4 @@ export interface BitGoBase {
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
   getEnterprise(enterpriseId: string): Promise<any>;
-  getChallengesForEcdsaSigning(walletId: string): Promise<ApiChallenges>;
 }

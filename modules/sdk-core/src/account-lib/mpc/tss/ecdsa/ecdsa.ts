@@ -20,10 +20,10 @@ import {
   KShare,
   MUShare,
   NShare,
-  NTilde,
   OShare,
   PShare,
   RangeProofWithCheck,
+  SerializedNTilde,
   Signature,
   SignCombine,
   SignCombineRT,
@@ -37,6 +37,7 @@ import {
   YShare,
   YShareWithNTilde,
 } from './types';
+import { EcdsaUtils } from 'modules/sdk-core/src/bitgo/utils/tss/ecdsa';
 
 const _5n = BigInt(5);
 
@@ -295,13 +296,12 @@ export default class Ecdsa {
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: NTilde): Promise<KeyCombinedWithNTilde> {
+  // eslint-disable-next-line prettier/prettier
+  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: SerializedNTilde): Promise<KeyCombinedWithNTilde> {
     if (!challenge) {
-      challenge = await rangeProof.generateNTilde(3072);
+      challenge = EcdsaUtils.serializeNTilde(await rangeProof.generateNTilde(3072));
     }
-    const ntilde = bigIntToBufferBE(challenge.ntilde, 384).toString('hex');
-    const h1 = bigIntToBufferBE(challenge.h1, 384).toString('hex');
-    const h2 = bigIntToBufferBE(challenge.h2, 384).toString('hex');
+    const { ntilde, h1, h2 } = challenge;
     return {
       xShare: { ...xShare, ntilde, h1, h2 },
       yShares: {

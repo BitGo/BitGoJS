@@ -1,48 +1,32 @@
-// NTilde challenge values
-export interface NTilde {
-  ntilde: bigint;
-  h1: bigint;
-  h2: bigint;
-  ntildeProof?: NtildeProof;
+// DeserializedNTilde Proof where both alpha and t are a set of 128 proofs each.
+export interface NTildeProof<T> {
+  alpha: T[];
+  t: T[];
 }
 
-// NTilde Proof
-export interface NtildeProof {
-  h1WrtH2: NtildeProofH1H2;
-  h2WrtH1: NtildeProofH1H2;
+// DeserializedNTilde Proof
+export interface NTildeProofs<T> {
+  h1WrtH2: NTildeProof<T>;
+  h2WrtH1: NTildeProof<T>;
 }
 
-// NTilde Proof where both alpha and t are a set of 128 proofs each.
-export interface NtildeProofH1H2 {
-  alpha: bigint[];
-  t: bigint[];
+// DeserializedNTilde challenge values
+export interface DeserializedNTilde<T> {
+  ntilde: T;
+  h1: T;
+  h2: T;
+  ntildeProof?: NTildeProofs<T>;
 }
+
+export type DeserializedNTilde = DeserializedNTilde<bigint>;
+// all big ints are converted to hex strings
+export type SerializedNTilde = DeserializedNTilde<string>;
 
 export interface RSAModulus {
   n: bigint;
   // Sophie Germain primes.
   q1: bigint;
   q2: bigint;
-}
-
-// String serialized NTilde Proof values
-export interface NtildeProofShare {
-  h1WrtH2: {
-    alpha: string[];
-    t: string[];
-  };
-  h2WrtH1: {
-    alpha: string[];
-    t: string[];
-  };
-}
-
-// String-serialized NTilde values.
-export interface NTildeShare {
-  ntilde: string;
-  h1: string;
-  h2: string;
-  ntildeProof?: NtildeProofShare;
 }
 
 // Range proof values
@@ -111,7 +95,7 @@ export interface XShare {
   chaincode: string;
 }
 
-export type XShareWithNTilde = XShare & NTildeShare;
+export type XShareWithNTilde = XShare & SerializedNTilde;
 
 // YShares used during signature generation
 export interface YShare {
@@ -120,7 +104,7 @@ export interface YShare {
   n: string;
 }
 
-export type YShareWithNTilde = YShare & NTildeShare;
+export type YShareWithNTilde = YShare & SerializedNTilde;
 
 export interface KeyCombined {
   xShare: XShare;

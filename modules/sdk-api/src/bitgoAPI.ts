@@ -85,7 +85,6 @@ const debug = debugLib('bitgo:api');
 const Blockchain = require('./v1/blockchain');
 const Keychains = require('./v1/keychains');
 import Wallet = require('./v1/wallet');
-import { ApiChallenges } from 'modules/sdk-core/src/bitgo/utils/tss/ecdsa';
 const Wallets = require('./v1/wallets');
 const Markets = require('./v1/markets');
 const PendingApprovals = require('./v1/pendingapprovals');
@@ -1901,10 +1900,5 @@ export class BitGoAPI implements BitGoBase {
     const urlPath = `/enterprise/${enterpriseId}`;
     const enterpriseData = await this.get(this.url(urlPath)).result();
     return enterpriseData;
-  }
-
-  async getChallengesForEcdsaSigning(walletId: string): Promise<ApiChallenges> {
-    const urlPath = `/wallet/${walletId}/challenges`;
-    return await this.get(this.url(urlPath, 2)).query({}).result();
   }
 }

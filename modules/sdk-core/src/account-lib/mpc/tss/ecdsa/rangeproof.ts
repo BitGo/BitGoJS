@@ -7,7 +7,7 @@ import BaseCurve from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modInv, modPow } from 'bigint-mod-arith';
-import { NTilde, NtildeProofH1H2, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
+import { DeserializedNTilde, NTildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { OpenSSL } from '../../../../openssl';
 
@@ -55,9 +55,9 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
  * Generate "challenge" values for range proofs.
  * @param {number} bitlength The bit length of the modulus to generate. This should
  * be the same as the bit length of the paillier public keys used for MtA.
- * @returns {NTilde} The generated NTilde values.
+ * @returns {DeserializedNTilde} The generated DeserializedNTilde values.
  */
-export async function generateNTilde(bitlength: number): Promise<NTilde> {
+export async function generateNTilde(bitlength: number): Promise<DeserializedNTilde> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
   const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
@@ -104,14 +104,19 @@ export async function generateNTilde(bitlength: number): Promise<NTilde> {
 
 /**
  * Generate iterations of Ntilde, h1, h2 discrete log proofs.
- * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {DeserializedNTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
  * @param {bigint} x Either alpha or beta depending on whether it is a discrete log proof of
  * h1 w.r.t h2 or h2 w.r.t h1.
  * @param {bigint} q1 The Sophie Germain prime associated with the first safe prime p1 used to generate Ntilde.
  * @param {bigint} q2 The Sophie Germain prime associated with the second safe prime p2 used to generate Ntilde.
- * @returns {NTildeProof} The generated NTilde Proofs.
+ * @returns {NTildeProof} The generated DeserializedNTilde Proofs.
  */
-export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint, q2: bigint): Promise<NtildeProofH1H2> {
+export async function generateNTildeProof(
+  ntilde: DeserializedNTilde,
+  x: bigint,
+  q1: bigint,
+  q2: bigint
+): Promise<NTildeProof<bigint>> {
   const q1MulQ2 = q1 * q2;
   const a: bigint[] = [];
   const alpha: bigint[] = [];
@@ -137,11 +142,14 @@ export async function generateNTildeProof(ntilde: NTilde, x: bigint, q1: bigint,
 
 /**
  * Verify discrete log proofs of h1 and h2 mod Ntilde.
- * @param {NTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {DeserializedNTilde} ntilde Ntilde, h1, h2 to generate the proofs for.
  * @param {NtildeProof} ntildeProof Ntilde Proofs
  * @returns {boolean} true if proof is verified, false otherwise.
  */
-export async function verifyNtildeProof(ntilde: NTilde, ntildeProof: NtildeProofH1H2): Promise<boolean> {
+export async function verifyNtildeProof(
+  ntilde: DeserializedNTilde,
+  ntildeProof: NTildeProof<bigint>
+): Promise<boolean> {
   const h1ModNtilde = ntilde.h1 % ntilde.ntilde;
   const h2ModNtilde = ntilde.h2 % ntilde.ntilde;
   if (h1ModNtilde === BigInt(0) || h2ModNtilde === BigInt(0)) {
@@ -189,7 +197,7 @@ export async function verifyNtildeProof(ntilde: NTilde, ntildeProof: NtildeProof
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
- * @param {NTilde} ntilde The verifier's NTilde values.
+ * @param {DeserializedNTilde} ntilde The verifier's DeserializedNTilde values.
  * @param {bigint} c The ciphertext.
  * @param {bigint} m The plaintext.
  * @param {bigint} r The obfuscation value used to encrypt m.
@@ -199,7 +207,7 @@ export async function prove(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
-  ntilde: NTilde,
+  ntilde: DeserializedNTilde,
   c: bigint,
   m: bigint,
   r: bigint
@@ -242,7 +250,7 @@ export async function prove(
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
- * @param {NTilde} ntilde The verifier's NTilde values.
+ * @param {DeserializedNTilde} ntilde The verifier's DeserializedNTilde values.
  * @param {RangeProof} proof The range proof.
  * @param {bigint} c The ciphertext.
  * @returns {boolean} True if verification succeeds.
@@ -251,7 +259,7 @@ export function verify(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
-  ntilde: NTilde,
+  ntilde: DeserializedNTilde,
   proof: RangeProof,
   c: bigint
 ): boolean {
@@ -296,7 +304,7 @@ export function verify(
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
- * @param {NTilde} ntilde The verifier's NTilde values.
+ * @param {DeserializedNTilde} ntilde The verifier's DeserializedNTilde values.
  * @param {bigint} c1 The original ciphertext.
  * @param {bigint} c2 The manipulated ciphertext.
  * @param {bigint} x The plaintext value multiplied by the original plaintext.
@@ -309,7 +317,7 @@ export async function proveWithCheck(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
-  ntilde: NTilde,
+  ntilde: DeserializedNTilde,
   c1: bigint,
   c2: bigint,
   x: bigint,
@@ -375,7 +383,7 @@ export async function proveWithCheck(
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
  * @param {PublicKey} pk The prover's public key.
- * @param {NTilde} ntilde The verifier's NTilde values.
+ * @param {DeserializedNTilde} ntilde The verifier's DeserializedNTilde values.
  * @param {RangeProofWithCheck} proof The range proof.
  * @param {bigint} c1 The original ciphertext.
  * @param {bigint} c2 The manipulated ciphertext.
@@ -386,7 +394,7 @@ export function verifyWithCheck(
   curve: BaseCurve,
   modulusBits: number,
   pk: PublicKey,
-  ntilde: NTilde,
+  ntilde: DeserializedNTilde,
   proof: RangeProofWithCheck,
   c1: bigint,
   c2: bigint,

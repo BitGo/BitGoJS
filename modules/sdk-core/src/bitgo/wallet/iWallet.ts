@@ -580,6 +580,20 @@ export interface DownloadKeycardOptions {
   backupKeyID?: string;
 }
 
+export interface ChallengeWithVerifiers {
+  ntilde: string;
+  h1: string;
+  h2: string;
+  verifiers: {
+    adminSignature: string;
+  };
+}
+export interface EcdsaWalletChallenges {
+  enterpriseChallenge: ChallengeWithVerifiers;
+  bitgoChallenge: ChallengeWithVerifiers;
+  createdBy: string;
+}
+
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
@@ -664,4 +678,5 @@ export interface IWallet {
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
+  getEcdsaSigningChallenges(): Promise<EcdsaWalletChallenges>;
 }

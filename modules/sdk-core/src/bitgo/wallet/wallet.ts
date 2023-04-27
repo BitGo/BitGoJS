@@ -43,6 +43,7 @@ import {
   CrossChainUTXO,
   DeployForwardersOptions,
   DownloadKeycardOptions,
+  EcdsaWalletChallenges,
   FanoutUnspentsOptions,
   FetchCrossChainUTXOsOptions,
   FlushForwarderTokenOptions,
@@ -3032,5 +3033,9 @@ export class Wallet implements IWallet {
     const url = this.url(`/forwarders/balances`);
     const response = await this.bitgo.get(url).query(query).result();
     return response as ForwarderBalance[];
+  }
+
+  public async getEcdsaSigningChallenges(): Promise<EcdsaWalletChallenges> {
+    return await this.bitgo.get(this.url('/challenges')).query({}).result();
   }
 }

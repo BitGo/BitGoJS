@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ECDSA, rangeProof, bigIntToBufferBE } from '@bitgo/sdk-core';
 
 const EcdsaChallenge = () => {
-  const [challenge, setChallenge] = useState<ECDSA.NTilde | undefined>(
+  const [challenge, setChallenge] = useState<ECDSA.DeserializedNTilde | undefined>(
     undefined,
   );
   const [loading, setLoading] = useState<boolean>(false);

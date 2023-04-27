@@ -216,7 +216,7 @@ describe('TSS ECDSA TESTS', function () {
 
       ntildeMock = sinon.stub(rangeProof, 'generateNTilde');
       for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.NTilde);
+        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.DeserializedNTilde);
       }
     });
 
