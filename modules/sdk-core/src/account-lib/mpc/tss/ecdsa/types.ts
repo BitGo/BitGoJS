@@ -1,9 +1,7 @@
-// Ntilde challenge values
-export interface Ntilde {
-  ntilde: bigint;
-  h1: bigint;
-  h2: bigint;
-  ntildeProof?: NtildeProof;
+// Ntilde Proof where both alpha and t are a set of 128 proofs each.
+export interface NtildeProofH1H2 {
+  alpha: bigint[];
+  t: bigint[];
 }
 
 // Ntilde Proof
@@ -12,17 +10,12 @@ export interface NtildeProof {
   h2WrtH1: NtildeProofH1H2;
 }
 
-// Ntilde Proof where both alpha and t are a set of 128 proofs each.
-export interface NtildeProofH1H2 {
-  alpha: bigint[];
-  t: bigint[];
-}
-
-export interface RSAModulus {
-  n: bigint;
-  // Sophie Germain primes.
-  q1: bigint;
-  q2: bigint;
+// Ntilde challenge values
+export interface Ntilde {
+  ntilde: bigint;
+  h1: bigint;
+  h2: bigint;
+  ntildeProof?: NtildeProof;
 }
 
 // String serialized Ntilde Proof values
@@ -43,6 +36,13 @@ export interface NtildeShare {
   h1: string;
   h2: string;
   ntildeProof?: NtildeProofShare;
+}
+
+export interface RSAModulus {
+  n: bigint;
+  // Sophie Germain primes.
+  q1: bigint;
+  q2: bigint;
 }
 
 // Range proof values
