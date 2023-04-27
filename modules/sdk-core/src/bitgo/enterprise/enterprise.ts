@@ -10,7 +10,7 @@ import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
 import { Buffer } from 'buffer';
-import { NTilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { Ntilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -137,7 +137,7 @@ export class Enterprise implements IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: NTilde
+    challenge?: Ntilde
   ): Promise<void> {
     await EcdsaUtils.initiateChallengesForEnterprise(
       this.bitgo,
@@ -154,14 +154,14 @@ export class Enterprise implements IEnterprise {
    * Can be used with uploadAndEnableTssEcdsaSigning to re-sign the
    * enterprise challenge with new signatures.
    */
-  async getExistingTssEcdsaChallenge(): Promise<NTilde> {
+  async getExistingTssEcdsaChallenge(): Promise<Ntilde> {
     const urlPath = `/enterprise/${this.id}/tssconfig`;
     const tssConfig = await this.bitgo.get(this.bitgo.url(urlPath, 2)).send().result();
     const enterpriseChallenge = tssConfig?.ecdsa.challenge?.enterprise;
     if (!enterpriseChallenge) {
       throw new Error('No existing ECDSA challenge on the enterprise.');
     }
-    return EcdsaUtils.deserializeNTilde({
+    return EcdsaUtils.deserializeNtilde({
       ntilde: enterpriseChallenge.ntilde,
       h1: enterpriseChallenge.h1,
       h2: enterpriseChallenge.h2,

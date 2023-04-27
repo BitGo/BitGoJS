@@ -507,7 +507,7 @@ describe('Recovery:', function () {
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       };
       recoverEthSandbox = sinon.createSandbox();
-      recoverEthSandbox.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+      recoverEthSandbox.stub(rangeProof, 'generateNtilde').resolves(mockChallenge);
     });
 
     after(() => {

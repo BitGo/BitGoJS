@@ -77,7 +77,7 @@ describe('Ecdsa tss helper functions tests', function () {
     backupGpgKeypair = gpgKeypairs[1];
     bitgoGpgKeypair = gpgKeypairs[2];
 
-    sinon.stub(rangeProof, 'generateNTilde').resolves(mockChallenge);
+    sinon.stub(rangeProof, 'generateNtilde').resolves(mockChallenge);
   });
 
   after(function () {
@@ -284,13 +284,13 @@ describe('Ecdsa tss helper functions tests', function () {
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
         const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNTilde = {
+        const xShare: ECDSAMethodTypes.XShareWithNtilde = {
           ...shares.xShare,
           ntilde: shares.xShare.ntilde,
           h1: shares.xShare.h1,
           h2: shares.xShare.h2,
         };
-        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+        const yShare: ECDSAMethodTypes.YShareWithNtilde = {
           ...userKey.yShares[3],
           ntilde: shares.xShare.ntilde,
           h1: shares.xShare.h1,
@@ -322,8 +322,8 @@ describe('Ecdsa tss helper functions tests', function () {
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
         const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNTilde = { ...shares.xShare, i: 3 };
-        const yShare: ECDSAMethodTypes.YShareWithNTilde = {
+        const xShare: ECDSAMethodTypes.XShareWithNtilde = { ...shares.xShare, i: 3 };
+        const yShare: ECDSAMethodTypes.YShareWithNtilde = {
           ...userKey.yShares[3],
           ntilde: shares.xShare.ntilde,
           h1: shares.xShare.h1,

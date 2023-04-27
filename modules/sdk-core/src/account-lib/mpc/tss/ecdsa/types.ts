@@ -1,18 +1,18 @@
-// NTilde challenge values
-export interface NTilde {
+// Ntilde challenge values
+export interface Ntilde {
   ntilde: bigint;
   h1: bigint;
   h2: bigint;
   ntildeProof?: NtildeProof;
 }
 
-// NTilde Proof
+// Ntilde Proof
 export interface NtildeProof {
   h1WrtH2: NtildeProofH1H2;
   h2WrtH1: NtildeProofH1H2;
 }
 
-// NTilde Proof where both alpha and t are a set of 128 proofs each.
+// Ntilde Proof where both alpha and t are a set of 128 proofs each.
 export interface NtildeProofH1H2 {
   alpha: bigint[];
   t: bigint[];
@@ -25,7 +25,7 @@ export interface RSAModulus {
   q2: bigint;
 }
 
-// String serialized NTilde Proof values
+// String serialized Ntilde Proof values
 export interface NtildeProofShare {
   h1WrtH2: {
     alpha: string[];
@@ -37,8 +37,8 @@ export interface NtildeProofShare {
   };
 }
 
-// String-serialized NTilde values.
-export interface NTildeShare {
+// String-serialized Ntilde values.
+export interface NtildeShare {
   ntilde: string;
   h1: string;
   h2: string;
@@ -111,7 +111,7 @@ export interface XShare {
   chaincode: string;
 }
 
-export type XShareWithNTilde = XShare & NTildeShare;
+export type XShareWithNtilde = XShare & NtildeShare;
 
 // YShares used during signature generation
 export interface YShare {
@@ -120,16 +120,16 @@ export interface YShare {
   n: string;
 }
 
-export type YShareWithNTilde = YShare & NTildeShare;
+export type YShareWithNtilde = YShare & NtildeShare;
 
 export interface KeyCombined {
   xShare: XShare;
   yShares: Record<number, YShare>;
 }
 
-export interface KeyCombinedWithNTilde {
-  xShare: XShareWithNTilde;
-  yShares: Record<number, YShareWithNTilde>;
+export interface KeyCombinedWithNtilde {
+  xShare: XShareWithNtilde;
+  yShares: Record<number, YShareWithNtilde>;
 }
 
 export interface SubkeyShare {

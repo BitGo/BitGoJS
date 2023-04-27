@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ECDSA, rangeProof, bigIntToBufferBE } from '@bitgo/sdk-core';
 
 const EcdsaChallenge = () => {
-  const [challenge, setChallenge] = useState<ECDSA.NTilde | undefined>(
+  const [challenge, setChallenge] = useState<ECDSA.Ntilde | undefined>(
     undefined,
   );
   const [loading, setLoading] = useState<boolean>(false);
@@ -12,7 +12,7 @@ const EcdsaChallenge = () => {
   const generateChallenge = async () => {
     setLoading(true);
     const start = new Date().getTime() / 1000;
-    const challenge = await rangeProof.generateNTilde(3072);
+    const challenge = await rangeProof.generateNtilde(3072);
     const end = new Date().getTime() / 1000;
     setChallenge(challenge);
     setTotalTime(end - start);
