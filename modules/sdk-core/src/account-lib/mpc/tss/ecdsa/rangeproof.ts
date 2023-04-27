@@ -258,7 +258,7 @@ export function verify(
   const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
-  if (proof.s1 == q3) {
+  if (proof.s1 > q3) {
     return false;
   }
   const hash = createHash('sha256');
