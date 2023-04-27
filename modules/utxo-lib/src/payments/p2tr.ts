@@ -6,6 +6,7 @@ import { script as bscript, Payment, PaymentOpts, lazy } from 'bitcoinjs-lib';
 import * as taproot from '../taproot';
 import { musig } from '../noble_ecc';
 import * as necc from '@noble/secp256k1';
+
 const typef = require('typeforce');
 const OPS = bscript.OPS;
 
@@ -297,13 +298,15 @@ export function p2tr(a: Payment, opts?: PaymentOpts): Payment {
         throw new TypeError('mismatch between address & output');
       }
 
-      if (taprootPubkey && _outputPubkey && !_outputPubkey()?.equals(taprootPubkey.xOnlyPubkey)) {
+      // Wrapping `taprootPubkey.xOnlyPubkey` in Buffer because of a peculiar issue in the frontend
+      // where a polyfill for Buffer is used. Refer: https://bitgoinc.atlassian.net/browse/BG-61420
+      if (taprootPubkey && _outputPubkey && !_outputPubkey()?.equals(Buffer.from(taprootPubkey.xOnlyPubkey))) {
         throw new TypeError('mismatch between output and taproot pubkey');
       }
     }
 
     if (a.address) {
-      if (taprootPubkey && !_address()?.data.equals(taprootPubkey.xOnlyPubkey)) {
+      if (taprootPubkey && !_address()?.data.equals(Buffer.from(taprootPubkey.xOnlyPubkey))) {
         throw new TypeError('mismatch between address and taproot pubkey');
       }
     }
