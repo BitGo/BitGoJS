@@ -42,6 +42,42 @@ describe('ATOM', function () {
   });
 
   describe('Address Validation', () => {
+    it('should get address details without memoId', function () {
+      const addressDetails = basecoin.getAddressDetails(address.noMemoIdAddress);
+      addressDetails.address.should.equal(address.noMemoIdAddress);
+      should.not.exist(addressDetails.memoId);
+    });
+
+    it('should get address details with memoId', function () {
+      const addressDetails = basecoin.getAddressDetails(address.validMemoIdAddress);
+      addressDetails.address.should.equal(address.validMemoIdAddress.split('?')[0]);
+      addressDetails.memoId.should.equal('2');
+    });
+
+    it('should throw on invalid memo id address', () => {
+      (() => {
+        basecoin.getAddressDetails(address.invalidMemoIdAddress);
+      }).should.throw();
+    });
+
+    it('should throw on multiple memo id address', () => {
+      (() => {
+        basecoin.getAddressDetails(address.multipleMemoIdAddress);
+      }).should.throw();
+    });
+
+    it('should validate wallet receive address', async function () {
+      const receiveAddress = {
+        address: 'cosmos1r7k3xmlljsfdk6y9r8ssfnt4ks5ka0nwmm0z70?memoId=7',
+        coinSpecific: {
+          rootAddress: 'cosmos1r7k3xmlljsfdk6y9r8ssfnt4ks5ka0nwmm0z70',
+          memoID: '7',
+        },
+      };
+      const isValid = await basecoin.isWalletAddress(receiveAddress);
+      isValid.should.equal(true);
+    });
+
     it('should validate account addresses correctly', () => {
       should.equal(utils.isValidAddress(address.address1), true);
       should.equal(utils.isValidAddress(address.address2), true);

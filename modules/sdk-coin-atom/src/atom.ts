@@ -3,6 +3,8 @@ import {
   BaseTransaction,
   BitGoBase,
   ExplanationResult,
+  InvalidAddressError,
+  InvalidMemoIdError,
   KeyPair,
   MPCAlgorithm,
   ParsedTransaction,
@@ -11,6 +13,7 @@ import {
   SigningError,
   SignTransactionOptions,
   TransactionType,
+  UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -22,6 +25,23 @@ import * as _ from 'lodash';
 
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
+import url from 'url';
+import querystring from 'querystring';
+
+/**
+ * Atom accounts support memo Id based addresses
+ */
+interface AddressDetails {
+  address: string;
+  memoId?: string | undefined;
+}
+
+/**
+ * Atom accounts support memo Id based addresses
+ */
+interface AtomCoinSpecific {
+  rootAddress: string;
+}
 
 export class Atom extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -208,10 +228,85 @@ export class Atom extends BaseCoin {
 
   /** @inheritDoc **/
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    const addressDetails = this.getAddressDetails(params.address);
+
+    if (!this.isValidAddress(addressDetails.address)) {
+      throw new InvalidAddressError(`invalid address: ${addressDetails.address}`);
+    }
+    const rootAddress = (params.coinSpecific as AtomCoinSpecific).rootAddress;
+    if (addressDetails.address !== rootAddress) {
+      throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddress}`);
+    }
+    return true;
   }
 
   getHashFunction(): Hash {
     return createHash('sha256');
+  }
+
+  /**
+   * Process address into address and memo id
+   *
+   * @param address the address
+   * @returns object containing address and memo id
+   */
+  getAddressDetails(address: string): AddressDetails {
+    const destinationDetails = url.parse(address);
+    const destinationAddress = destinationDetails.pathname || '';
+
+    // address doesn't have a memo id
+    if (destinationDetails.pathname === address) {
+      return {
+        address: address,
+        memoId: undefined,
+      };
+    }
+
+    if (!destinationDetails.query) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    const queryDetails = querystring.parse(destinationDetails.query);
+    if (!queryDetails.memoId) {
+      // if there are more properties, the query details need to contain the memo id property
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    if (Array.isArray(queryDetails.memoId)) {
+      throw new InvalidAddressError(
+        `memoId may only be given at most once, but found ${queryDetails.memoId.length} instances in address ${address}`
+      );
+    }
+
+    if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
+      // valid addresses can only contain one memo id
+      throw new InvalidAddressError(`invalid address '${address}', must contain exactly one memoId`);
+    }
+
+    const [memoId] = _.castArray(queryDetails.memoId) || undefined;
+    if (!this.isValidMemoId(memoId)) {
+      throw new InvalidMemoIdError(`invalid address: '${address}', memoId is not valid`);
+    }
+
+    return {
+      address: destinationAddress,
+      memoId,
+    };
+  }
+
+  /**
+   * Return boolean indicating whether a memo id is valid
+   *
+   * @param memoId memo id
+   * @returns true if memo id is valid
+   */
+  isValidMemoId(memoId: string): boolean {
+    let memoIdNumber;
+    try {
+      memoIdNumber = new BigNumber(memoId);
+    } catch (e) {
+      return false;
+    }
+    return memoIdNumber.gte(0);
   }
 }
