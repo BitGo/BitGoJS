@@ -144,8 +144,8 @@ class AvalancheC extends Mainnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheC';
   family = CoinFamily.AVAXC;
-  explorerUrl = 'https://cchain.explorer.avax.network/tx/';
-  accountExplorerUrl = 'https://cchain.explorer.avax.network/address/';
+  explorerUrl = 'https://snowtrace.io/tx/';
+  accountExplorerUrl = 'https://snowtrace.io/address/';
   chainId = 43114;
 }
 
@@ -153,16 +153,16 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheCTestnet';
   family = CoinFamily.AVAXC;
-  explorerUrl = 'https://cchain.explorer.avax-test.network/tx/';
-  accountExplorerUrl = 'https://cchain.explorer.avax-test.network/address/';
+  explorerUrl = 'https://testnet.snowtrace.io/tx/';
+  accountExplorerUrl = 'https://testnet.snowtrace.io/address/';
   chainId = 43113;
 }
 
 class AvalancheP extends Mainnet implements AvalancheNetwork {
   name = 'AvalancheP';
   family = CoinFamily.AVAXP;
-  explorerUrl = 'https://explorer-xp.avax.network/tx/';
-  accountExplorerUrl = 'https://explorer-xp.avax.network/address/';
+  explorerUrl = 'https://subnets.avax.network/p-chain/tx/';
+  accountExplorerUrl = 'https://subnets.avax.network/p-chain/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
   avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
@@ -187,8 +187,8 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
 class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   name = 'AvalanchePTestnet';
   family = CoinFamily.AVAXP;
-  explorerUrl = 'https://explorer-xp.avax-test.network/tx/';
-  accountExplorerUrl = 'https://explorer-xp.avax-test.network/address/';
+  explorerUrl = 'https://subnets-test.avax.network/p-chain/tx/';
+  accountExplorerUrl = 'https://subnets-test.avax.network/p-chain/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = 'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp';
   avaxAssetID = 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
