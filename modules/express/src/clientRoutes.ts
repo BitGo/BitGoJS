@@ -461,10 +461,75 @@ export async function handleV2Sign(req: express.Request) {
   }
 }
 
+export async function handleV2OFCSignPayloadInExtSigningMode(
+  req: express.Request
+): Promise<{ payload: string; signature: string }> {
+  const walletId = req.body.walletId;
+  const payload = req.body.payload;
+  const ofcCoinName = 'ofc';
+
+  if (!payload) {
+    throw new ApiResponseError('Missing required field: payload', 400);
+  }
+
+  if (!walletId) {
+    throw new ApiResponseError('Missing required field: walletId', 400);
+  }
+
+  // fetch the password for the given walletId from the env. This is required for decrypting the private key that belongs to that wallet.
+  const walletPw = getWalletPwFromEnv(walletId);
+
+  const { signerFileSystemPath } = req.config;
+  if (!signerFileSystemPath) {
+    throw new ApiResponseError('Missing required configuration: signerFileSystemPath', 500);
+  }
+  // get the encrypted private key from the local JSON file (encryptedPrivKeys.json) (populated using fetchEncryptedPrivateKeys.ts)
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+
+  const bitgo = req.bitgo;
+
+  // decrypt the encrypted private key using the wallet pwd
+  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+
+  // create a BaseCoin instance for 'ofc'
+  const coin = bitgo.coin(ofcCoinName);
+
+  // stringify the payload if not already a string
+  const stringifiedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
+
+  try {
+    // sign the message using the decrypted private key
+    const signature = (await coin.signMessage({ prv: privKey }, stringifiedPayload)).toString('hex');
+    return {
+      payload: stringifiedPayload,
+      signature,
+    };
+  } catch (error) {
+    console.log('Error while signing message.', error);
+    throw error;
+  }
+}
+
 export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
   const ofcCoinName = 'ofc';
+
+  // If the externalSignerUrl is set, forward the request to the express server hosted on the externalSignerUrl
+  const externalSignerUrl = req.config?.externalSignerUrl;
+  if (externalSignerUrl) {
+    const { body: payloadWithSignature } = await retryPromise(
+      () =>
+        superagent
+          .post(`${externalSignerUrl}/api/v2/ofc/signPayload`)
+          .type('json')
+          .send({ walletId: walletId, payload: payload }),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return payloadWithSignature;
+  }
 
   if (!payload) {
     throw new ApiResponseError('Missing required field: payload', 400);
@@ -1252,5 +1317,11 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     parseBody,
     prepareBitGo(config),
     promiseWrapper(handleV2GenerateShareTSS)
+  );
+  app.post(
+    `/api/v2/ofc/signPayload`,
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
   );
 }
