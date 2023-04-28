@@ -4,7 +4,7 @@ import { BitGoBase } from '../bitgoBase';
 import { RequestType, TxRequest } from '../utils';
 import { SignatureShareRecord } from '../utils/tss/baseTypes';
 import openpgp from 'openpgp';
-import { ApiChallenge } from '../utils/tss/ecdsa';
+import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
 /**
  * Gets the latest Tx Request by id
@@ -138,7 +138,7 @@ export async function getTxRequestChallenge(
   index: string,
   requestType: RequestType,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
-): Promise<ApiChallenge> {
+): Promise<SerializedNtilde> {
   let addendum = '';
   switch (requestType) {
     case RequestType.tx:
