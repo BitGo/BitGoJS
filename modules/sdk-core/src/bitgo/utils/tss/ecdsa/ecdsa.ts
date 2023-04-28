@@ -606,6 +606,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<ECDSASigningRequestBaseResult>}
    */
   private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
+    const { txRequest, prv } = params;
+
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
@@ -615,8 +617,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
       );
     }
-
-    const { txRequest, prv } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -797,20 +797,22 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param walletId
    * @param enterpriseId
    */
-  static async getChallengesForEcdsaSigning(
-    bitgo: BitGoBase,
-    walletId: string,
-    enterpriseId: string
-  ): Promise<{
+  async getChallengesForEcdsaSigning(): Promise<{
     enterpriseChallenge: SerializedNtilde;
     bitgoChallenge: SerializedNtilde;
   }> {
-    const result = await bitgo.getChallengesForEcdsaSigning(walletId);
+    if (!this.wallet.toJSON().enterprise) {
+      throw new Error('Wallet must be an enterprise wallet');
+    }
+    const result = await this.wallet.getChallengesForEcdsaSigning();
     const enterpriseChallenge = result.enterpriseChallenge;
     const bitgoChallenge = result.bitgoChallenge;
 
     const challengeVerifierUserId = result.createdBy;
-    const adminSigningKeyResponse = await bitgo.getSigningKeyForUser(enterpriseId, challengeVerifierUserId);
+    const adminSigningKeyResponse = await this.bitgo.getSigningKeyForUser(
+      this.wallet.toJSON().enterprise,
+      challengeVerifierUserId
+    );
     const pubkeyOfAdminEcdhKeyHex = adminSigningKeyResponse.derivedPubkey;
 
     // Verify enterprise's challenge is signed by the respective admin's ecdh keychain
@@ -822,7 +824,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const adminSignatureOnEntChallenge: string = enterpriseChallenge.verifiers.adminSignature;
     if (
       !verifyEcdhSignature(
-        this.getMessageToSignFromChallenge(enterpriseRawChallenge),
+        EcdsaUtils.getMessageToSignFromChallenge(enterpriseRawChallenge),
         adminSignatureOnEntChallenge,
         Buffer.from(pubkeyOfAdminEcdhKeyHex, 'hex')
       )
@@ -839,7 +841,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const adminVerificationSignatureForBitGoChallenge = bitgoChallenge.verifiers.adminSignature;
     if (
       !verifyEcdhSignature(
-        this.getMessageToSignFromChallenge(bitGoRawChallenge),
+        EcdsaUtils.getMessageToSignFromChallenge(bitGoRawChallenge),
         adminVerificationSignatureForBitGoChallenge,
         Buffer.from(pubkeyOfAdminEcdhKeyHex, 'hex')
       )

@@ -79,6 +79,7 @@ import {
   UpdateAddressOptions,
   WalletCoinSpecific,
   WalletData,
+  WalletEcdsaChallenges,
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
@@ -3032,5 +3033,10 @@ export class Wallet implements IWallet {
     const url = this.url(`/forwarders/balances`);
     const response = await this.bitgo.get(url).query(query).result();
     return response as ForwarderBalance[];
+  }
+
+  async getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges> {
+    const url = this.url(`/challenges`);
+    return await this.bitgo.get(url).send().result();
   }
 }
