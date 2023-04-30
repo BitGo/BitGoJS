@@ -52,12 +52,12 @@ export interface Output {
  * use p2trMusig2 for p2trMusig2 script path.
  * use taprootKeyPathSpend for p2trMusig2 key path.
  */
-export const inputTypes = [...scriptTypes2Of3, 'taprootKeyPathSpend', scriptTypeP2shP2pk] as const;
+export const inputScriptTypes = [...scriptTypes2Of3, 'taprootKeyPathSpend', scriptTypeP2shP2pk] as const;
 
 /**
  * array of supported output script types.
  */
-export const outputTypes = scriptTypes2Of3;
+export const outputScriptTypes = scriptTypes2Of3;
 
 /**
  * create unspent object from input script type, index, network and root wallet key.
