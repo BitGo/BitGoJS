@@ -215,12 +215,8 @@ export function decodePsbtMusig2PartialSig(kv: ProprietaryKeyValue): PsbtMusig2P
   return { participantPubKey: key.subarray(0, 33), tapOutputKey: key.subarray(33), partialSig: value };
 }
 
-export function sortMusig2ParticipantPubKeys(plainPubKeys: Buffer[]): Buffer[] {
-  return musig.keySort(plainPubKeys).map((pk) => Buffer.from(pk));
-}
-
 export function createTapInternalKey(plainPubKeys: Buffer[]): Buffer {
-  return Buffer.from(musig.getXOnlyPubkey(musig.keyAgg(musig.keySort(plainPubKeys))));
+  return Buffer.from(musig.getXOnlyPubkey(musig.keyAgg(plainPubKeys)));
 }
 
 export function createTapOutputKey(internalPubKey: Buffer, tapTreeRoot: Buffer): Buffer {
@@ -243,7 +239,7 @@ function startMusig2SigningSession(
   publicKeys: Tuple<Buffer>,
   tweak: Buffer
 ): SessionKey {
-  return musig.startSigningSession(aggNonce, hash, musig.keySort(publicKeys), { tweak, xOnly: true });
+  return musig.startSigningSession(aggNonce, hash, publicKeys, { tweak, xOnly: true });
 }
 
 export function musig2PartialSign(
