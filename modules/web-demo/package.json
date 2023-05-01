@@ -92,6 +92,7 @@
     "style-loader": "^2.0.0",
     "ts-loader": "^9.1.2",
     "webpack-dev-server": "^4.9.0",
+    "worker-loader": "^3.0.8",
     "worker-plugin": "^5.0.1"
   },
   "lint-staged": {

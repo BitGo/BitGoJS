@@ -11,7 +11,7 @@ const EcdsaChallenge = () => {
   // const [totalTime, setTotalTime] = useState<number | undefined>(undefined);
 
   const worker = React.useMemo(
-    () => new Worker(new URL('../../worker.js', import.meta.url)),
+    () => new Worker(new URL('@src/x.worker.js', import.meta.url)),
     [],
   );
   React.useEffect(() => {
@@ -34,7 +34,7 @@ const EcdsaChallenge = () => {
     setLoading(true);
     // const start = new Date().getTime() / 1000;
     // const challenge = await rangeProof.generateNTilde(3072);
-    worker.postMessage('hello world');
+    // worker.postMessage('hello world');
     // const end = new Date().getTime() / 1000;
     setChallenge(challenge);
     // setTotalTime(end - start);

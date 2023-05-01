@@ -39,6 +39,23 @@ module.exports = (env, options) => {
       plugins: devPlugins,
       experiments,
     },
+    // {
+    //   mode: options.mode,
+    //   entry: './src/x.worker.mjs',
+    //   target: 'webworker',
+    //   // module: {
+    //   //   rules: devRules,
+    //   // },
+    //   resolve: {
+    //     extensions: ['.js', '.ts'],
+    //     fallback: resolveFallback,
+    //   },
+    //   output: {
+    //     filename: 'x.worker.mjs',
+    //     path: path.resolve(__dirname, outputConfig.destPath),
+    //     publicPath: '',
+    //   },
+    // },
     bitgoConfig,
     mergeCustomizer,
   );
