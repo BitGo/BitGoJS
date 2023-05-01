@@ -11,7 +11,10 @@ const EcdsaChallenge = () => {
   // const [totalTime, setTotalTime] = useState<number | undefined>(undefined);
 
   const worker = React.useMemo(
-    () => new Worker(new URL('@src/x.worker.js', import.meta.url)),
+    () =>
+      new Worker(new URL('@src/x.worker.js', import.meta.url), {
+        type: 'module',
+      }),
     [],
   );
   React.useEffect(() => {
