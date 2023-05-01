@@ -187,6 +187,10 @@ export const address = {
   validatorAddress2: 'cosmosvaloper12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2',
   validatorAddress3: 'cosxyzvaloper1xxxz06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
   validatorAddress4: 'cosmosvalopr16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+  noMemoIdAddress: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2',
+  validMemoIdAddress: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2?memoId=2',
+  invalidMemoIdAddress: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2?memoId=xyz',
+  multipleMemoIdAddress: 'cosmos12xt4x49p96n9aw4umjwyp3huct27nwr2g4r6p2?memoId=3&memoId=12',
 };
 
 export const blockHash = {
