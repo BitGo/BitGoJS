@@ -3036,7 +3036,8 @@ export class Wallet implements IWallet {
   }
 
   async getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges> {
-    const url = this.url(`/challenges`);
-    return await this.bitgo.get(url).send().result();
+    // note: this is not a coin specific route, we cannot use this.url(..)
+    const url = this.bitgo.url(`/wallet/${this.id()}/challenges`, 2);
+    return await this.bitgo.get(url).query({}).result();
   }
 }
