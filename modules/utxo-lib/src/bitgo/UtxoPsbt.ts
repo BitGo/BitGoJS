@@ -1021,6 +1021,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
    */
   setMusig2Nonces(derivedKeyPair: BIP32Interface, sessionId?: Buffer): this {
+    // TODO: This should take an inputIndex and only apply to that input with this derived key.
     return this.setMusig2NoncesInner(derivedKeyPair, 'derived', sessionId);
   }
 
