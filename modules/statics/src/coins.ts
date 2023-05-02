@@ -8171,7 +8171,7 @@ export const coins = CoinMap.fromCoins([
     'tavaxc:opm',
     'Test OPMETANA',
     18,
-    '0x9A25414C8A41599cb7048F2e4Dd42DB02C1de487',
+    '0x9a25414c8a41599cb7048f2e4dd42db02c1de487',
     UnderlyingAsset['tavaxc:opm']
   ),
   solToken(
