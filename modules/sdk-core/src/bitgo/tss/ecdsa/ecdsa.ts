@@ -24,7 +24,7 @@ import {
   BShare,
   Signature,
 } from './types';
-import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from './../../utils';
+import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from '../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
