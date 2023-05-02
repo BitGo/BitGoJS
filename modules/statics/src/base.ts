@@ -1132,6 +1132,7 @@ export enum UnderlyingAsset {
   'talgo:KAL-16026733' = 'talgo:KAL-16026733',
   'talgo:USDC-10458941' = 'talgo:USDC-10458941',
   'talgo:USDt-180447' = 'talgo:USDt-180447',
+  'talgo:JPT-162085446' = 'talgo:JPT-162085446',
 
   // EOS tokens
   CHEX = 'chex',
@@ -1147,6 +1148,7 @@ export enum UnderlyingAsset {
   'avaxc:usdt' = 'avaxc:usdt',
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
+  'tavaxc:opm' = 'tavaxc:opm',
 
   // polygon Token ERC-20
   'polygon:usdc' = 'polygon:usdc',
