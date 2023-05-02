@@ -4,7 +4,7 @@ const { UnderlyingAsset } = require('../../src/base');
 describe('UnderlyingAsset', function () {
   it('UnderlyingAsset values should be unique', function () {
     const underlyingAssetSet = new Set();
-    const duplicateAssets: typeof UnderlyingAsset[] = [];
+    const duplicateAssets: (typeof UnderlyingAsset)[] = [];
 
     for (const asset in UnderlyingAsset) {
       const assetValue = UnderlyingAsset[asset].toUpperCase();

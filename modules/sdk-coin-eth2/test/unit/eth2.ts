@@ -58,7 +58,7 @@ describe('Ethereum 2.0', function () {
     const localBaseCoin = bitgo.coin('teth2');
     (function () {
       localBaseCoin.generateKeyPair(prv);
-    }.should.throw());
+    }).should.throw();
   });
 
   describe('Sign message:', () => {

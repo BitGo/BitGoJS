@@ -30,7 +30,7 @@ import {
 import { scriptTypeForChain } from '../../../src/bitgo';
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
-export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
+export type ScriptTypeSingleSig = (typeof scriptTypesSingleSig)[number];
 
 export const scriptTypes = [...scriptTypesSingleSig, ...scriptTypes2Of3];
 export type ScriptType = ScriptType2Of3 | ScriptTypeSingleSig;

@@ -37,7 +37,7 @@ export interface CalculateHmacSubjectOptions {
   urlPath: string;
   text: string;
   timestamp: number;
-  method: typeof supportedRequestMethods[number];
+  method: (typeof supportedRequestMethods)[number];
   statusCode?: number;
 }
 
@@ -46,7 +46,7 @@ export interface CalculateRequestHmacOptions {
   text: string;
   timestamp: number;
   token: string;
-  method: typeof supportedRequestMethods[number];
+  method: (typeof supportedRequestMethods)[number];
 }
 
 export interface RequestHeaders {
@@ -59,7 +59,7 @@ export interface CalculateRequestHeadersOptions {
   url: string;
   text: string;
   token: string;
-  method: typeof supportedRequestMethods[number];
+  method: (typeof supportedRequestMethods)[number];
 }
 
 export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
@@ -67,7 +67,7 @@ export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   url: string;
   text: string;
   timestamp: number;
-  method: typeof supportedRequestMethods[number];
+  method: (typeof supportedRequestMethods)[number];
   statusCode?: number;
 }
 

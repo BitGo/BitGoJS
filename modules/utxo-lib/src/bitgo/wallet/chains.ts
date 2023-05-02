@@ -26,7 +26,7 @@ export const chainCodes = [
   ...chainCodesP2tr,
   ...chainCodesP2trMusig2,
 ];
-export type ChainCode = typeof chainCodes[number];
+export type ChainCode = (typeof chainCodes)[number];
 export function isChainCode(n: unknown): n is ChainCode {
   return chainCodes.includes(n as ChainCode);
 }

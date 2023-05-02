@@ -53,7 +53,7 @@ export const ETHTransactionType = {
 } as const;
 
 // eslint-disable-next-line no-redeclare
-export type ETHTransactionType = typeof ETHTransactionType[keyof typeof ETHTransactionType];
+export type ETHTransactionType = (typeof ETHTransactionType)[keyof typeof ETHTransactionType];
 
 export interface LegacyTxData extends BaseTxData {
   _type: typeof ETHTransactionType.LEGACY;

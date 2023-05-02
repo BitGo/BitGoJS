@@ -11,7 +11,7 @@ import { bcashAddress } from './bitgo';
 
 export const addressFormats = ['default', 'cashaddr'] as const;
 
-export type AddressFormat = typeof addressFormats[number];
+export type AddressFormat = (typeof addressFormats)[number];
 
 /**
  * @param format

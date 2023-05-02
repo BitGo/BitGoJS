@@ -239,22 +239,22 @@ export class TransactionBlock {
 
   // Method shorthands:
 
-  splitCoins(...args: Parameters<typeof Transactions['SplitCoins']>) {
+  splitCoins(...args: Parameters<(typeof Transactions)['SplitCoins']>) {
     return this.add(Transactions.SplitCoins(...args));
   }
-  mergeCoins(...args: Parameters<typeof Transactions['MergeCoins']>) {
+  mergeCoins(...args: Parameters<(typeof Transactions)['MergeCoins']>) {
     return this.add(Transactions.MergeCoins(...args));
   }
-  publish(...args: Parameters<typeof Transactions['Publish']>) {
+  publish(...args: Parameters<(typeof Transactions)['Publish']>) {
     return this.add(Transactions.Publish(...args));
   }
-  moveCall(...args: Parameters<typeof Transactions['MoveCall']>) {
+  moveCall(...args: Parameters<(typeof Transactions)['MoveCall']>) {
     return this.add(Transactions.MoveCall(...args));
   }
-  transferObjects(...args: Parameters<typeof Transactions['TransferObjects']>) {
+  transferObjects(...args: Parameters<(typeof Transactions)['TransferObjects']>) {
     return this.add(Transactions.TransferObjects(...args));
   }
-  makeMoveVec(...args: Parameters<typeof Transactions['MakeMoveVec']>) {
+  makeMoveVec(...args: Parameters<(typeof Transactions)['MakeMoveVec']>) {
     return this.add(Transactions.MakeMoveVec(...args));
   }
 

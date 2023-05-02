@@ -291,7 +291,7 @@ export class BitGoAPI implements BitGoBase {
    * @param method - http method for the new request
    * @param url - URL for the new request
    */
-  protected getAgentRequest(method: typeof patchedRequestMethods[number], url: string): superagent.SuperAgentRequest {
+  protected getAgentRequest(method: (typeof patchedRequestMethods)[number], url: string): superagent.SuperAgentRequest {
     let req: superagent.SuperAgentRequest = superagent[method](url);
     if (this.cookiesPropagationEnabled) {
       req = req.withCredentials();
@@ -325,7 +325,7 @@ export class BitGoAPI implements BitGoBase {
    * headers to any outbound request.
    * @param method
    */
-  private requestPatch(method: typeof patchedRequestMethods[number], url: string) {
+  private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
     let req = this.getAgentRequest(method, url);
     if (this._proxy) {
       debug('proxying request through %s', this._proxy);
