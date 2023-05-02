@@ -10,7 +10,7 @@ import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
 import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
-import { deserializeNtilde } from '../../account-lib/mpc/tss/ecdsa/ecdsa';
+import Ecdsa from '../../account-lib/mpc/tss/ecdsa';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -163,7 +163,7 @@ export class Enterprise implements IEnterprise {
     if (!enterpriseChallenge) {
       throw new Error('No existing ECDSA challenge on the enterprise.');
     }
-    return deserializeNtilde({
+    return Ecdsa.deserializeNtilde({
       ntilde: enterpriseChallenge.ntilde,
       h1: enterpriseChallenge.h1,
       h2: enterpriseChallenge.h2,
