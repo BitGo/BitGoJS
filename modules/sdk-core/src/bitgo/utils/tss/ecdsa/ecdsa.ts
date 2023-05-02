@@ -808,14 +808,11 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     enterpriseChallenge: SerializedNtilde;
     bitgoChallenge: SerializedNtilde;
   }> {
-    if (!this.wallet.toJSON().enterprise) {
-      throw new Error('Wallet must be an enterprise wallet');
+    const enterpriseId = this.wallet.toJSON().enterprise;
+    if (!enterpriseId) {
+      throw new Error('Wallet must be an enterprise wallet.');
     }
     const shouldUseEnterpriseChallenge = await (async () => {
-      const enterpriseId = this.wallet.toJSON().enterprise;
-      if (!enterpriseId) {
-        return false;
-      }
       const enterprise = await new Enterprises(this.bitgo, this.baseCoin).get({ id: enterpriseId });
       return enterprise.hasFeatureFlags(['useEnterpriseEcdsaTssChallenge']);
     })();
@@ -839,10 +836,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoChallenge = result.bitgoChallenge;
 
     const challengeVerifierUserId = result.createdBy;
-    const adminSigningKeyResponse = await this.bitgo.getSigningKeyForUser(
-      this.wallet.toJSON().enterprise,
-      challengeVerifierUserId
-    );
+    const adminSigningKeyResponse = await this.bitgo.getSigningKeyForUser(enterpriseId, challengeVerifierUserId);
     const pubkeyOfAdminEcdhKeyHex = adminSigningKeyResponse.derivedPubkey;
 
     // Verify enterprise's challenge is signed by the respective admin's ecdh keychain

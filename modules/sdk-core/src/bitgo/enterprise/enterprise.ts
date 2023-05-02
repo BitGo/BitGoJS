@@ -4,7 +4,7 @@
 import * as _ from 'lodash';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { EnterpriseData, IEnterprise } from '../enterprise';
+import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
@@ -174,7 +174,7 @@ export class Enterprise implements IEnterprise {
    *  Check if the enterprise has a set of featureFlags
    * @param flags
    */
-  hasFeatureFlags(flags: string[]): boolean {
+  hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean {
     return flags.every((targetFlag) => this._enterprise.featureFlags?.includes(targetFlag));
   }
 }

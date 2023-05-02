@@ -3035,6 +3035,13 @@ export class Wallet implements IWallet {
     return response as ForwarderBalance[];
   }
 
+  /**
+   * Gets the ecdsa tss challenges for a wallet.
+   * These are static challenges that have been verified by an enterprise admin.
+   * Callers should verify that an enterprise admin signed the challenge values before using them.
+   *
+   * @returns {Promise<WalletEcdsaChallenges>}
+   */
   async getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges> {
     // note: this is not a coin specific route, we cannot use this.url(..)
     const url = this.bitgo.url(`/wallet/${this.id()}/challenges`, 2);

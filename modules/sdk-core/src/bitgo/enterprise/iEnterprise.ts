@@ -4,6 +4,8 @@ import { Buffer } from 'buffer';
 import { BitGoProofSignatures } from '../utils/tss/ecdsa';
 import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
+export type EnterpriseFeatureFlag = 'useEnterpriseEcdsaTssChallenge';
+
 export interface EnterpriseData {
   id: string;
   name: string;
@@ -29,5 +31,5 @@ export interface IEnterprise {
     challenge?: DeserializedNtilde
   ): Promise<void>;
   getExistingTssEcdsaChallenge(): Promise<DeserializedNtilde>;
-  hasFeatureFlags(flags: string[]): boolean;
+  hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean;
 }
