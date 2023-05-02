@@ -34,9 +34,9 @@ import { DeserializedNtilde, SerializedNtilde } from '../../../../account-lib/mp
 import { generateNtilde, verifyNtildeProof } from '../../../../account-lib/mpc/tss/ecdsa/rangeproof';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { Buffer } from 'buffer';
-import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../../account-lib';
 import { getTxRequestChallenge } from '../../../tss/common';
 import { Enterprises } from '../../../enterprise';
+import { deserializeNtilde, serializeNtilde } from '../../../../account-lib/mpc/tss/ecdsa/ecdsa';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -822,7 +822,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
 
     if (!shouldUseEnterpriseChallenge) {
       return {
-        enterpriseChallenge: EcdsaUtils.serializeNtilde(await generateNtilde(3072)),
+        enterpriseChallenge: serializeNtilde(await generateNtilde(3072)),
         bitgoChallenge: await getTxRequestChallenge(
           this.bitgo,
           this.wallet.id(),
@@ -989,7 +989,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param bitgoChallenge
    */
   static async verifyBitGoChallenge(bitgoChallenge: SerializedNtilde): Promise<boolean> {
-    const deserializedInstChallenge = this.deserializeNtilde(bitgoChallenge);
+    const deserializedInstChallenge = deserializeNtilde(bitgoChallenge);
     if (!deserializedInstChallenge.ntildeProof) {
       throw new Error('Expected BitGo challenge proof to be present. Contact support@bitgo.com.');
     }
@@ -1018,55 +1018,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    */
   static async getBitGoChallenges(bitgo: BitGoBase): Promise<GetBitGoChallengesApi> {
     return await bitgo.get(bitgo.url('/tss/ecdsa/challenges', 2)).send().result();
-  }
-
-  /**
-   * Deserializes a challenge and it's proofs from hex strings to bigint
-   */
-  static deserializeNtilde(challenge: SerializedNtilde): DeserializedNtilde {
-    const deserializedNtilde: DeserializedNtilde = {
-      ntilde: hexToBigInt(challenge.ntilde),
-      h1: hexToBigInt(challenge.h1),
-      h2: hexToBigInt(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      deserializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return deserializedNtilde;
-  }
-
-  /**
-   * Serializes a challenge and it's proofs from big int to hex strings.
-   * @param challenge
-   */
-  static serializeNtilde(challenge: DeserializedNtilde): SerializedNtilde {
-    const serializedNtilde: SerializedNtilde = {
-      ntilde: bigIntToHex(challenge.ntilde),
-      h1: bigIntToHex(challenge.h1),
-      h2: bigIntToHex(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      serializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return serializedNtilde;
   }
 
   /**
@@ -1158,7 +1109,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const entChallengeWithProof = challenge ?? (await generateNtilde(3072));
 
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
-      this.serializeNtilde(entChallengeWithProof),
+      serializeNtilde(entChallengeWithProof),
       xprv,
       userSigningKey.derivationPath
     );
@@ -1166,7 +1117,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     await this.uploadChallengesToEnterprise(
       bitgo,
       entId,
-      this.serializeNtilde(entChallengeWithProof),
+      serializeNtilde(entChallengeWithProof),
       signedEnterpriseChallenge.toString('hex'),
       bitgoInstChallengeProofSignature.toString('hex'),
       bitgoNitroChallengeProofSignature.toString('hex')

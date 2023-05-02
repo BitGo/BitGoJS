@@ -4,7 +4,7 @@ import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
-import { hexToBigInt } from '../../../util/crypto';
+import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
@@ -36,10 +36,59 @@ import {
   YShare,
   YShareWithNtilde,
   SerializedNtilde,
+  DeserializedNtilde,
 } from './types';
-import { EcdsaUtils } from '../../../../bitgo/utils/tss/ecdsa';
 
 const _5n = BigInt(5);
+
+/**
+ * Deserializes a challenge and it's proofs from hex strings to bigint
+ */
+export function deserializeNtilde(challenge: SerializedNtilde): DeserializedNtilde {
+  const deserializedNtilde: DeserializedNtilde = {
+    ntilde: hexToBigInt(challenge.ntilde),
+    h1: hexToBigInt(challenge.h1),
+    h2: hexToBigInt(challenge.h2),
+  };
+  if (challenge.ntildeProof) {
+    deserializedNtilde.ntildeProof = {
+      h1WrtH2: {
+        alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.alpha),
+        t: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.t),
+      },
+      h2WrtH1: {
+        alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.alpha),
+        t: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.t),
+      },
+    };
+  }
+  return deserializedNtilde;
+}
+
+/**
+ * Serializes a challenge and it's proofs from big int to hex strings.
+ * @param challenge
+ */
+export function serializeNtilde(challenge: DeserializedNtilde): SerializedNtilde {
+  const serializedNtilde: SerializedNtilde = {
+    ntilde: bigIntToHex(challenge.ntilde),
+    h1: bigIntToHex(challenge.h1),
+    h2: bigIntToHex(challenge.h2),
+  };
+  if (challenge.ntildeProof) {
+    serializedNtilde.ntildeProof = {
+      h1WrtH2: {
+        alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.alpha),
+        t: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.t),
+      },
+      h2WrtH1: {
+        alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.alpha),
+        t: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.t),
+      },
+    };
+  }
+  return serializedNtilde;
+}
 
 function hasNtilde(share: XShare | YShare): share is XShareWithNtilde | YShareWithNtilde {
   return 'ntilde' in share;
@@ -298,7 +347,7 @@ export default class Ecdsa {
    */
   async appendChallenge(xShare: XShare, yShare: YShare, challenge?: SerializedNtilde): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
-      challenge = EcdsaUtils.serializeNtilde(await rangeProof.generateNtilde(3072));
+      challenge = serializeNtilde(await rangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
     return {
