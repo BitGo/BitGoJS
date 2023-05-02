@@ -8166,6 +8166,14 @@ export const coins = CoinMap.fromCoins([
     '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
     UnderlyingAsset['avaxc:link']
   ),
+  tavaxErc20(
+    'b44ff1b9-b4a8-4bd4-aa56-a663f3ee569e',
+    'tavaxc:opm',
+    'Test OPMETANA',
+    18,
+    '0x9A25414C8A41599cb7048F2e4Dd42DB02C1de487',
+    UnderlyingAsset['tavaxc:opm']
+  ),
   solToken(
     'acc2b136-c21e-46b6-aecf-69fd3c8281db',
     'sol:srm',

@@ -1148,6 +1148,7 @@ export enum UnderlyingAsset {
   'avaxc:usdt' = 'avaxc:usdt',
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
+  'tavaxc:opm' = 'tavaxc:opm',
 
   // polygon Token ERC-20
   'polygon:usdc' = 'polygon:usdc',
