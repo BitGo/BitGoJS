@@ -1132,6 +1132,7 @@ export enum UnderlyingAsset {
   'talgo:KAL-16026733' = 'talgo:KAL-16026733',
   'talgo:USDC-10458941' = 'talgo:USDC-10458941',
   'talgo:USDt-180447' = 'talgo:USDt-180447',
+  'talgo:JPT-162085446' = 'talgo:JPT-162085446',
 
   // EOS tokens
   CHEX = 'chex',

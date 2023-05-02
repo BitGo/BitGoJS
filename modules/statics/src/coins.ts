@@ -7994,6 +7994,18 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
+  talgoToken(
+    '857994b1-3198-4649-a7a0-724a8620eb67',
+    'talgo:JPT-162085446',
+    undefined,
+    'JPT',
+    6,
+    UnderlyingAsset['talgo:JPT-162085446'],
+    'https://www.cav3.sg',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'JPT'
+  ),
   eosToken(
     'c6e34428-3c32-4db6-b51e-7edee3bb0b1e',
     'eos:CHEX',
