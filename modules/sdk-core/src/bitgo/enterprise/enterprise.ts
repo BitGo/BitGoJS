@@ -4,20 +4,22 @@
 import * as _ from 'lodash';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { IEnterprise } from '../enterprise';
-import { getFirstPendingTransaction } from '../internal/internal';
+import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
+import { getFirstPendingTransaction } from '../internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
 import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import Ecdsa from '../../account-lib/mpc/tss/ecdsa';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
-  readonly id: string;
-  readonly name: string;
+  public readonly id: string;
+  public readonly name: string;
+  public readonly _enterprise: EnterpriseData;
 
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, enterpriseData: { id: string; name: string }) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, enterpriseData: EnterpriseData) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     if (!_.isObject(enterpriseData)) {
@@ -29,6 +31,7 @@ export class Enterprise implements IEnterprise {
     if (!_.isString(enterpriseData.name)) {
       throw new Error('enterprise name has to be a string');
     }
+    this._enterprise = enterpriseData;
     this.id = enterpriseData.id;
     this.name = enterpriseData.name;
   }
@@ -160,10 +163,18 @@ export class Enterprise implements IEnterprise {
     if (!enterpriseChallenge) {
       throw new Error('No existing ECDSA challenge on the enterprise.');
     }
-    return EcdsaUtils.deserializeNtilde({
+    return Ecdsa.deserializeNtilde({
       ntilde: enterpriseChallenge.ntilde,
       h1: enterpriseChallenge.h1,
       h2: enterpriseChallenge.h2,
     });
+  }
+
+  /**
+   *  Check if the enterprise has a set of featureFlags
+   * @param flags
+   */
+  hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean {
+    return flags.every((targetFlag) => this._enterprise.featureFlags?.includes(targetFlag));
   }
 }

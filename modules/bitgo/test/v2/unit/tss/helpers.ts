@@ -15,10 +15,20 @@ export async function nockSendSignatureShare(params: { walletId: string, txReque
     .reply(status, (status === 200 ? (params.response ? params.response : params.signatureShare) : { error: 'some error' }));
 }
 
-export async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: any}): Promise<nock.Scope> {
-  return nock('https://bitgo.fakeurl')
-    .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
-    .reply(200, params.response);
+export async function nockGetTxRequest(params: {walletId: string, txRequestId: string, response: any, times?: number}): Promise<nock.Scope> {
+  const n = nock('https://bitgo.fakeurl')
+    .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`);
+  if (params.times !== undefined) {
+    return n.times(params.times).reply(200, params.response);
+  }
+  return n.reply(200, params.response);
+}
+export async function nockGetEnterprise(params: {enterpriseId: string, response: any, times?: number}): Promise<nock.Scope> {
+  const n = nock('https://bitgo.fakeurl').get(`/api/v1/enterprise/${params.enterpriseId}`);
+  if (params.times !== undefined) {
+    return n.times(params.times).reply(200, params.response);
+  }
+  return n.reply(200, params.response);
 }
 
 export async function nockGetChallenges(params: {walletId: string, response: any}): Promise<nock.Scope> {
@@ -27,12 +37,23 @@ export async function nockGetChallenges(params: {walletId: string, response: any
     .reply(200, params.response);
 }
 
-export async function nockGetChallenge(params: {walletId: string, txRequestId: string, addendum: string, response: any}): Promise<nock.Scope> {
-  return nock('https://bitgo.fakeurl')
-    .post('/api/v2/wallet/' + params.walletId + '/txrequests/' + params.txRequestId + params.addendum + '/challenge')
-    .reply(200, params.response);
+export async function nockGetChallenge(params: {walletId: string, txRequestId: string, addendum: string, response: any, times?: number}): Promise<nock.Scope> {
+  const n = nock('https://bitgo.fakeurl')
+    .post('/api/v2/wallet/' + params.walletId + '/txrequests/' + params.txRequestId + params.addendum + '/challenge');
+  if (params.times !== undefined) {
+    return n.times(params.times).reply(200, params.response);
+  }
+  return n.reply(200, params.response);
 }
 
+export async function nockGetSigningKey(params: {enterpriseId: string, userId: string, response: any, times?: number}): Promise<nock.Scope> {
+  const path = `/api/v2/enterprise/${params.enterpriseId}/user/${params.userId}/signingkey`;
+  const n = nock('https://bitgo.fakeurl').get(path);
+  if (params.times !== undefined) {
+    return n.times(params.times).reply(200, params.response);
+  }
+  return n.reply(200, params.response);
+}
 export async function createWalletSignatures(
   privateKeyArmored: string,
   publicKeyToCertArmoredUser: string,

@@ -20,6 +20,7 @@ import {
   TokenTransferRecipientParams,
 } from '../utils';
 import { ILightning } from '../lightning';
+import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -581,6 +582,17 @@ export interface DownloadKeycardOptions {
   backupKeyID?: string;
 }
 
+export interface ChallengeVerifiers {
+  verifiers: {
+    adminSignature: string;
+  };
+}
+export interface WalletEcdsaChallenges {
+  enterpriseChallenge: SerializedNtilde & ChallengeVerifiers;
+  bitgoChallenge: SerializedNtilde & ChallengeVerifiers;
+  createdBy: string;
+}
+
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
@@ -665,4 +677,5 @@ export interface IWallet {
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
+  getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
 }

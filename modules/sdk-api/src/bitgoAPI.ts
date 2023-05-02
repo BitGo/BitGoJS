@@ -1895,9 +1895,4 @@ export class BitGoAPI implements BitGoBase {
     // use defaultConstants as the backup for keys that are not set in this._constants
     return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
   }
-
-  async getChallengesForEcdsaSigning(walletId: string): Promise<any> {
-    const urlPath = `/wallet/${walletId}/challenges`;
-    return await this.get(this.url(urlPath, 2)).query({}).result();
-  }
 }
