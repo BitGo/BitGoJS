@@ -3,6 +3,7 @@
   "private": true,
   "license": "Apache-2.0",
   "devDependencies": {
+    "typescript-cached-transpile": "^0.0.6",
     "@babel/core": "^7.17.8",
     "@babel/preset-env": "^7.16.11",
     "@commitlint/cli": "^11.0.0",
