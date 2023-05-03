@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.1.0...@bitgo/statics@15.1.1) (2023-05-03)
+
+### Bug Fixes
+
+- **statics:** update sui mainnet explorer url ([fcdffe4](https://github.com/BitGo/BitGoJS/commit/fcdffe4edcf912527bfcf8ea266724f45b898992))
+
 # [15.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.0.0...@bitgo/statics@15.1.0) (2023-04-20)
 
 ### Features

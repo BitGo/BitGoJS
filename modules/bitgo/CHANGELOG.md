@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.0...bitgo@18.2.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix url path of fetching tss config API ([0d61a31](https://github.com/BitGo/BitGoJS/commit/0d61a31f3dfd6b5e892bbeb38889f56540a12cda))
+
+
+
+
+
 # [18.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.1.1...bitgo@18.2.0) (2023-04-25)
 
 

@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.2.0...@bitgo/sdk-core@8.3.0) (2023-05-03)
+
+### Bug Fixes
+
+- **sdk-core:** fix incorrect check verifying range proof ([3c74334](https://github.com/BitGo/BitGoJS/commit/3c74334721a1517b474540f38a7443368f0e8e3b))
+- **sdk-core:** fix url path of fetching tss config API ([0d61a31](https://github.com/BitGo/BitGoJS/commit/0d61a31f3dfd6b5e892bbeb38889f56540a12cda))
+- **sdk-core:** use coin agnostic url for get challenges ([3661ff8](https://github.com/BitGo/BitGoJS/commit/3661ff8a8fcf52d8290c5fff54339c53938bdcbf))
+
+### Features
+
+- **sdk-core:** enable signing with enterprise challenge ([68391c1](https://github.com/BitGo/BitGoJS/commit/68391c1b165ae63f67ef37f2ea2344aeb21cc9d8))
+- **sdk-core:** move ntilde (de/se)rialize methods ([5ee0e41](https://github.com/BitGo/BitGoJS/commit/5ee0e41f8aff8bbc232f6c504a3938dd1e27cba1))
+- **sdk-core:** save enterprise data on get ([58109d3](https://github.com/BitGo/BitGoJS/commit/58109d3a916d09c0e29072fbaecc442fea930873))
+
 # [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.1.0...@bitgo/sdk-core@8.2.0) (2023-04-25)
 
 ### Features

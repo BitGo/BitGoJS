@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.2...@bitgo/utxo-lib@8.1.0) (2023-05-03)
+
+### Features
+
+- **utxo-lib:** add ease of use fns for HSM testing ([5e82bab](https://github.com/BitGo/BitGoJS/commit/5e82bab7d54b9b405c2436b8df83b436e9542852))
+- **utxo-lib:** add index file for create psbt util function ([cc3e8db](https://github.com/BitGo/BitGoJS/commit/cc3e8db2440f08bc0fd7f47f3970d368d6ac05d0))
+- **utxo-lib:** add test util function to create psbt ([d052beb](https://github.com/BitGo/BitGoJS/commit/d052beb6f6fa6c65be4b97ccfc61881117bdf61c))
+- **utxo-lib:** deterministic sign and nonce gen for psbts ([9399291](https://github.com/BitGo/BitGoJS/commit/939929195337a6380fc6376b80b425d089de21df))
+- **utxo-lib:** fix "Argument must be a Buffer" bug in the frontend ([bd0bda8](https://github.com/BitGo/BitGoJS/commit/bd0bda8cabb54dc4964619375dbf7067006134f7))
+- **utxo-lib:** implement mweb parsing for ltc ([1a77f01](https://github.com/BitGo/BitGoJS/commit/1a77f01ae8f1fd8bb4bcfbf220f89294bea55ff7))
+- **utxo-lib:** signature validates only with low S ([389c4f9](https://github.com/BitGo/BitGoJS/commit/389c4f969bc5c9cbbbae26c574279d7320e9cdad))
+- **utxo-lib:** use chronological musig2 key order ([c63ac4e](https://github.com/BitGo/BitGoJS/commit/c63ac4e630bf5db39a32c9e2f0a446a3e6c4a6b7))
+
 ## [8.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.1...@bitgo/utxo-lib@8.0.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

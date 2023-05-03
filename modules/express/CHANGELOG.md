@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.25.2...@bitgo/express@9.26.0) (2023-05-03)
+
+
+### Features
+
+* express route to sign payloads in external signing mode ([f0c6c80](https://github.com/BitGo/BitGoJS/commit/f0c6c807433fcf36cff4e3d5c826438dfff07cfd))
+
+
+
+
+
 ## [9.25.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.25.1...@bitgo/express@9.25.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/express
