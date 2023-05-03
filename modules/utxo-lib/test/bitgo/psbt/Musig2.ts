@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 
+import { BIP32Interface } from 'bip32';
+
 import {
-  createPsbtFromBuffer,
   createPsbtFromHex,
   getExternalChainCode,
   getInternalChainCode,
@@ -11,6 +12,7 @@ import {
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
   scriptTypeForChain,
+  UtxoPsbt,
   UtxoTransaction,
 } from '../../../src/bitgo';
 
@@ -53,12 +55,36 @@ import {
   validateParsedTaprootScriptPathTxInput,
   validateParsedTaprootKeyPathPsbt,
   validateParsedTaprootScriptPathPsbt,
+  addDeterministicNoncesToPsbt,
+  addDerterministicMusig2SignaturesToPsbt,
+  getTaprootSigners,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
 const p2trMusig2Unspent = getUnspents(['p2trMusig2'], rootWalletKeys);
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
+
+/**
+ * Add signatures to psbt. This is broken out like this so that we can add a
+ * deterministic signature for the bitgo key
+ * @param psbt
+ * @param keypair
+ */
+function signTxLocal(psbt: UtxoPsbt, keypair: BIP32Interface): void {
+  psbt.data.inputs.forEach((input, inputIndex) => {
+    if (input.tapBip32Derivation?.length) {
+      if (input.tapInternalKey?.length) {
+        const signers = getTaprootSigners(psbt, inputIndex, keypair);
+        signers.forEach((signer) => addDerterministicMusig2SignaturesToPsbt(psbt, inputIndex, signer));
+      } else if (input.tapLeafScript?.length) {
+        psbt.signTaprootInputHD(inputIndex, keypair);
+      }
+    } else {
+      psbt.signInputHD(inputIndex, keypair);
+    }
+  });
+}
 
 describe('p2trMusig2', function () {
   describe('p2trMusig2 key path', function () {
@@ -68,33 +94,32 @@ describe('p2trMusig2', function () {
         scriptTypes2Of3.map((t) => t),
         rootWalletKeys
       );
-      // WP creates PSBT during build API and adds bitgo nonce
-      const bitgoPsbt = constructPsbt(unspents, rootWalletKeys, 'bitgo', 'user', outputType);
-      bitgoPsbt.setMusig2NoncesHD(rootWalletKeys.bitgo, Buffer.allocUnsafe(32));
+      // WP creates PSBT during build API, serializes it, and sends the psbt to user
+      const buildPsbt = constructPsbt(unspents, rootWalletKeys, 'bitgo', 'user', outputType);
+      const buildPsbtSer = buildPsbt.toHex();
 
-      // WP serialises it and sends to user
-      const bitgoPsbtSer = bitgoPsbt.toHex();
-
-      // User de-serialises the psbt
-      const userPsbt = createPsbtFromHex(bitgoPsbtSer, network);
-
-      // User adds user nonce and signs with user key
+      // User de-serialises the psbt, ands the user nonce, and sends it to the hsm so that it can add the bitgo nonce
+      const userPsbt = createPsbtFromHex(buildPsbtSer, network);
       userPsbt.setMusig2NoncesHD(rootWalletKeys.user);
-      userPsbt.signAllInputsHD(rootWalletKeys.user);
-
-      // User serialises it and sends to WP
       const userPsbtSer = userPsbt.toHex();
 
+      // HSM deserializes the user psbt, adds the deterministic bitgo nonce, and sends that back to the user
+      const bitgoPsbt = addDeterministicNoncesToPsbt(createPsbtFromHex(userPsbtSer, network), rootWalletKeys.bitgo);
+      const bitgoPsbtSer = bitgoPsbt.toHex();
+
+      // User combines the psbt with the bitgo nonce, adds user signature, and sends half-signed to hsm
+      const bitgoPsbtDeser = createPsbtFromHex(bitgoPsbtSer, network);
+      userPsbt.combine(bitgoPsbtDeser);
+      userPsbt.signAllInputsHD(rootWalletKeys.user);
+      const userPsbtHalfSignedHex = userPsbt.toHex();
+
       // WP de-serialises the psbt and validates user sig
-      const userPsbtDes = createPsbtFromHex(userPsbtSer, network);
+      const userPsbtDes = createPsbtFromHex(userPsbtHalfSignedHex, network);
       assert.ok(userPsbtDes.validateTaprootMusig2SignaturesOfInput(4, walletKeys.user.publicKey));
 
-      // WP combines both user & bitgo psbts and signs with bitgo key
-      bitgoPsbt.combine(userPsbtDes);
-      bitgoPsbt.signAllInputsHD(rootWalletKeys.bitgo);
-
-      // To test fully signed de-serialised psbt
-      const psbt = createPsbtFromBuffer(bitgoPsbt.toBuffer(), network);
+      // WP sends to hsm for signature and returns a fully signed psbt
+      const psbt = createPsbtFromHex(userPsbtHalfSignedHex, network);
+      signTxLocal(psbt, rootWalletKeys.bitgo);
 
       unspents.forEach((unspent, index) => {
         if (scriptTypeForChain(unspent.chain) !== 'p2trMusig2') {

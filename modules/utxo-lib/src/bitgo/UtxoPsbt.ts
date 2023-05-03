@@ -35,8 +35,6 @@ import {
   musig2PartialSigVerify,
   musig2AggregateSigs,
   getSigHashTypeFromSigs,
-  musig2DeterministicSign,
-  createMusig2DeterministicNonce,
 } from './Musig2';
 import { isTuple, Tuple } from './types';
 
@@ -719,34 +717,19 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const nonces = this.getMusig2Nonces(inputIndex, participants);
     const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
 
-    let partialSig: Buffer;
-    if (participantPubKeys[1].equals(signer.publicKey)) {
-      const userNonce = nonces.find((n) => !n.participantPubKey.equals(signerPubKey));
-      if (!userNonce) {
-        throw new Error('User nonce is missing. retry signing process');
-      }
-      partialSig = musig2DeterministicSign({
-        privateKey: signer.privateKey,
-        otherNonce: userNonce.pubNonce,
-        publicKeys: participantPubKeys,
-        internalPubKey: input.tapInternalKey,
-        tapTreeRoot: input.tapMerkleRoot,
-        hash,
-      }).sig;
-    } else {
-      const sessionKey = createMusig2SigningSession({
-        pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
-        pubKeys: participantPubKeys,
-        txHash: hash,
-        internalPubKey: input.tapInternalKey,
-        tapTreeRoot: input.tapMerkleRoot,
-      });
-      const signerNonce = nonces.find((kv) => kv.participantPubKey.equals(signerPubKey));
-      if (!signerNonce) {
-        throw new Error('pubNonce is missing. retry signing process');
-      }
-      partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
+    const sessionKey = createMusig2SigningSession({
+      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+      pubKeys: participantPubKeys,
+      txHash: hash,
+      internalPubKey: input.tapInternalKey,
+      tapTreeRoot: input.tapMerkleRoot,
+    });
+
+    const signerNonce = nonces.find((kv) => kv.participantPubKey.equals(signerPubKey));
+    if (!signerNonce) {
+      throw new Error('pubNonce is missing. retry signing process');
     }
+    let partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
 
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
@@ -819,7 +802,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     throw new Error('not a taproot input');
   }
 
-  private getTaprootHashForSig(
+  getTaprootHashForSig(
     inputIndex: number,
     sighashTypes?: number[],
     leafHash?: Buffer
@@ -998,33 +981,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     const { hash } = this.getTaprootHashForSig(inputIndex);
 
-    let pubNonce: Buffer;
-    // Match the publicKey to the user or bitgo - if bitgo, create nonce deterministically
-    if (participantPubKeys[1].equals(derivedKeyPair.publicKey)) {
-      if (sessionId) {
-        throw new Error('deterministic nonces cannot accept added entropy during creation');
-      }
-      const musigNonces = parsePsbtMusig2Nonces(this, inputIndex);
-      const userNonce = musigNonces?.find((kv) => kv.participantPubKey.equals(participantPubKeys[0]));
-      if (!userNonce) {
-        throw new Error(`user nonce not found - cannot generate deterministic nonce`);
-      }
+    const pubNonce = this.nonceStore.createMusig2Nonce(
+      derivedKeyPair.privateKey,
+      participantPubKey,
+      tapOutputKey,
+      hash,
+      sessionId
+    );
 
-      pubNonce = createMusig2DeterministicNonce({
-        privateKey: derivedKeyPair.privateKey,
-        otherNonce: userNonce.pubNonce,
-        publicKeys: participantPubKeys,
-        internalPubKey: input.tapInternalKey,
-        tapTreeRoot: input.tapMerkleRoot,
-        hash,
-      });
-    } else {
-      pubNonce = Buffer.from(
-        this.nonceStore.createMusig2Nonce(derivedKeyPair.privateKey, participantPubKey, tapOutputKey, hash, sessionId)
-      );
-    }
-
-    return { tapOutputKey, participantPubKey, pubNonce };
+    return { tapOutputKey, participantPubKey, pubNonce: Buffer.from(pubNonce) };
   }
 
   private setMusig2NoncesInner(keyPair: BIP32Interface, keyType: 'root' | 'derived', sessionId?: Buffer): this {
