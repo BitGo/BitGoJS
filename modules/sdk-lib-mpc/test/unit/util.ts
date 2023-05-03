@@ -1,5 +1,5 @@
 import 'should';
-import { bigIntFromBufferBE } from '../src/util';
+import { bigIntFromBufferBE } from '../../src/util';
 import { Buffer } from 'buffer';
 
 describe('mpc utils', () => {
