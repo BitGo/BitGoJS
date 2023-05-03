@@ -550,8 +550,7 @@ class SolTestnet extends Testnet implements AccountNetwork {
 class Sui extends Mainnet implements AccountNetwork {
   name = 'Sui';
   family = CoinFamily.SUI;
-  //  TODO(BG-58364): mysten is still only in devnet update to mainnet url when it's live
-  explorerUrl = 'https://explorer.sui.io/txblock/?network=testnet';
+  explorerUrl = 'https://explorer.sui.io/txblock/?network=mainnet';
 }
 
 class SuiTestnet extends Testnet implements AccountNetwork {
