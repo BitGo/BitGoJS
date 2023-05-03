@@ -14,7 +14,7 @@ export const scriptTypeP2shP2pk = 'p2shP2pk';
 export type ScriptTypeP2shP2pk = typeof scriptTypeP2shP2pk;
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2'] as const;
-export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
+export type ScriptType2Of3 = (typeof scriptTypes2Of3)[number];
 
 export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
   return scriptTypes2Of3.includes(t as ScriptType2Of3);

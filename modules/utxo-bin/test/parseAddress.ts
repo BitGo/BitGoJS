@@ -13,7 +13,7 @@ type KeyTriple = Triple<BIP32Interface>;
 
 const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, ...scriptTypesSingleSig] as const;
-type ScriptType = typeof scriptTypes[number];
+type ScriptType = (typeof scriptTypes)[number];
 
 function getKey(seed: string): BIP32Interface {
   return utxolib.bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());

@@ -150,13 +150,9 @@ export function p2tr(a: Payment, opts?: PaymentOpts): Payment {
     }
   });
 
-  const _taprootPubkey = lazy.value(() => {
+  lazy.prop(o, 'taptreeRoot', () => {
     const parsedControlBlock = _parsedControlBlock();
     const parsedWitness = _parsedWitness();
-    // Refuse to create an unspendable key
-    if (!a.pubkey && !(a.pubkeys && a.pubkeys.length) && !a.redeems && !parsedControlBlock) {
-      return;
-    }
     let taptreeRoot;
     // Prefer to get the root via the control block because not all redeems may
     // be available
@@ -171,6 +167,15 @@ export function p2tr(a: Payment, opts?: PaymentOpts): Payment {
     }
     if (!taptreeRoot && _taprootPaths()) taptreeRoot = _taprootPaths()?.root;
 
+    return taptreeRoot;
+  });
+
+  const _taprootPubkey = lazy.value(() => {
+    const taptreeRoot = o.taptreeRoot;
+    // Refuse to create an unspendable key
+    if (!a.pubkey && !(a.pubkeys && a.pubkeys.length) && !a.redeems && !taptreeRoot) {
+      return;
+    }
     return taproot.tapTweakPubkey(ecc, o?.internalPubkey as Uint8Array, taptreeRoot);
   });
 

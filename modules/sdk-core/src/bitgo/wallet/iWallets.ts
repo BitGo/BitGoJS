@@ -24,7 +24,7 @@ export interface GenerateMpcWalletOptions {
   backupProvider?: BackupProvider;
 }
 export const backupProviders = ['BitGoTrustAsKrs'] as const;
-export type BackupProvider = typeof backupProviders[number];
+export type BackupProvider = (typeof backupProviders)[number];
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;

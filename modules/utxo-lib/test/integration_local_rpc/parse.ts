@@ -41,7 +41,7 @@ import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { decimalCoinsToSats } from '../testutil';
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
-type FixtureTxType = typeof fixtureTxTypes[number];
+type FixtureTxType = (typeof fixtureTxTypes)[number];
 
 function getScriptTypes() {
   // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
