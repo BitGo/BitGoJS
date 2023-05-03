@@ -252,7 +252,13 @@ describe('TSS EDDSA key generation and signing', function () {
     const A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, A_combine.jShares[2]);
     const B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, B_combine.jShares[1]);
 
-    const A_sign = MPC.sign(message_buffer, A_sign_share.xShare, B_sign_share.commitment, B_sign_share.rShare);
+    const A_sign = MPC.sign(
+      message_buffer,
+      A_sign_share.xShare,
+      B_sign_share.commitment,
+      B_sign_share.rShare,
+      A.yShares[2],
+    );
     const signature = MPC.signCombine([A_sign]);
     MPC.verify(message_buffer, signature).should.equal(false);
   });
@@ -423,11 +429,11 @@ describe('TSS EDDSA key generation and signing', function () {
         chaincode: 'chaincode',
       };
       assert.throws(
-        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, [], randomBytes(33)),
+        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, { i: 1, j: 2 }, randomBytes(33)),
         /Seed must have length 64/,
       );
       assert.throws(
-        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, [], randomBytes(66)),
+        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, { i: 1, j: 2 }, randomBytes(66)),
         /Seed must have length 64/,
       );
     });

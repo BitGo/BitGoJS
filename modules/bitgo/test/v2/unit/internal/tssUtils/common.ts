@@ -42,6 +42,13 @@ export async function nockGetTxRequest(params: {walletId: string, txRequestId: s
     .reply(200, params.response);
 }
 
+export async function nockExchangeCommitments(params: {walletId: string, txRequestId: string, response: unknown, notPersist?: boolean}): Promise<nock.Scope> {
+  return nock('https://bitgo.fakeurl')
+    .persist(true)
+    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/commit`)
+    .reply(200, params.response);
+}
+
 export function getRoute(tssType: 'eddsa' | 'ecdsa' = 'eddsa'): string {
   if (tssType === 'ecdsa') {
     return '/transactions/0';

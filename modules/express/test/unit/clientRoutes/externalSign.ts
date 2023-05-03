@@ -138,13 +138,15 @@ describe('External signer', () => {
     } as unknown as express.Request;
     const result = await handleV2GenerateShareTSS(reqR);
     const bitgoCombine = MPC.keyCombine(bitgo.uShare, [result.signingKeyYShare, backup.yShares[3]]);
-    const bitgoSignShare = await MPC.signShare(Buffer.from(tMessage, 'hex'), bitgoCombine.pShare, [
-      bitgoCombine.jShares[1],
-    ]);
+    const bitgoSignShare = await MPC.signShare(
+      Buffer.from(tMessage, 'hex'),
+      bitgoCombine.pShare,
+      bitgoCombine.jShares[1]
+    );
     const signatureShareRec = {
       from: SignatureShareType.BITGO,
       to: SignatureShareType.USER,
-      share: bitgoSignShare.rShares[1].r + bitgoSignShare.rShares[1].R,
+      share: bitgoSignShare.rShare.r + bitgoSignShare.rShare.R,
     };
     const reqG = {
       bitgo: bgTest,
@@ -163,6 +165,7 @@ describe('External signer', () => {
         },
         userToBitgoRShare: result.rShare,
         bitgoToUserRShare: signatureShareRec,
+        bitgoToUserCommitment: bitgoSignShare.commitment,
       },
       params: {
         coin: 'tsol',
@@ -177,14 +180,16 @@ describe('External signer', () => {
       i: ShareKeyPosition.BITGO,
       j: ShareKeyPosition.USER,
       u: result.signingKeyYShare.u,
-      r: result.rShare.rShares[3].r,
-      R: result.rShare.rShares[3].R,
+      v: result.rShare.rShare.v,
+      r: result.rShare.rShare.r,
+      R: result.rShare.rShare.R,
     };
     const bitgoGShare = MPC.sign(
       Buffer.from(tMessage, 'hex'),
       bitgoSignShare.xShare,
-      [userToBitgoRShare],
-      [backup.yShares[3]]
+      result.rShare.commitment,
+      userToBitgoRShare,
+      backup.yShares[3]
     );
     const signature = MPC.signCombine([userGShare, bitgoGShare]);
     const veriResult = MPC.verify(Buffer.from(tMessage, 'hex'), signature);

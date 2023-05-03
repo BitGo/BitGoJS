@@ -9,10 +9,8 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src/bitgo';
 import {
   common,
-  createUserSignShare,
   Keychain,
   RequestTracer,
-  ShareKeyPosition,
   SignatureShareRecord,
   SignatureShareType,
   TssUtils,
@@ -24,7 +22,14 @@ import {
   createSharedDataProof,
 } from '@bitgo/sdk-core';
 import { createWalletSignatures } from '../../tss/helpers';
-import { nockSendSignatureShare, nockGetTxRequest, nockCreateTxRequest, nockDeleteSignatureShare, nockSendTxRequest } from './common';
+import {
+  nockSendSignatureShare,
+  nockGetTxRequest,
+  nockCreateTxRequest,
+  nockDeleteSignatureShare,
+  nockSendTxRequest,
+  nockExchangeCommitments,
+} from './common';
 
 openpgp.config.rejectCurves = new Set();
 
@@ -45,38 +50,83 @@ describe('TSS Utils:', async function () {
       i: 1,
       t: 2,
       n: 3,
-      y: '2f97f50e81507c2d3aaaf35673a9ec2eb5be706ab2aa6302a8a1dbc6dc8b13a4',
-      seed: 'e49bcb10aed940823180ec841b562593a5111d221319920720dee209633a7c1e',
-      chaincode: '1175780188727cdc222b55ab36a21e4f9a81f34fd66b216d55d497e806095404',
+      y: '093c8603ad86c41d5ee25a814b88185b435dd3a9ceccf9c9fd691a465ac4a8b0',
+      seed: 'ca40c789813250c334ddd2ba19050f6ed20b5a08853ceca492358f2711ad4b15',
+      chaincode: '596d5404a7eb918ee78247b952d06539619884091fdd9e0ff5a665f349e32fca',
     },
-    commonChaincode: '3b8ceb8c78b151ba2e6cf123b385ab83fd16b50554335fb9d30967a2977b1c18',
+    commonChaincode: '596d5404a7eb918ee78247b952d06539619884091fdd9e0ff5a665f349e32fca',
     bitgoYShare: {
       i: 1,
       j: 3,
-      y: '367523d7d49fbaf5b3ddac8d95fbae6b5ae5df93bcd28facdf5b2845db96a456',
-      v: '2757f7b44ba338c4d917c46ce59e64d5d5b340c8f56bed4d6548674b7262326a',
-      u: '657127c5ad7f019ca2d13564a61dcea69b36869a5e0b1d0bcb4e9aff12f4f702',
-      chaincode: '5a16fcb16a53904409f41cb9ea253df50b3396ac5ecce9c17124f5a79b890f24',
+      y: '59d8000ba5e85fa402f39382960e7d5ede82b1b6e22b146a18b7df238c3a3225',
+      v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
+      u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
+      chaincode: 'd21dbd8eae5d4789292ecea2efa53e0165b2439d57f5158eb4dd57dc26b59236',
     },
     backupYShare: {
       i: 1,
       j: 2,
-      y: 'a287d3396a25a30a11d893212ede64823687e86b3e8ab7d9d30511bda225bdee',
-      v: 'dd1fd4864d9739ec5e5d99fb2d4fa2841179c03f1661d9c0dd7383a870bed975',
-      u: '012e025099bffc0b97522cec86d043ced552bc076ba29f1045e480a717a2150b',
-      chaincode: 'd00076d985eb449a024d7ebe92be4f3f57612b091efb548b0c0fda12f5e8b8f0',
+      y: 'e0ae75077715686a121acb41b29a55bde426971154f40a41fc317f7f774a9424',
+      v: 'f76ef629dfc15ab5e4531e532b5d67f2176637ca752b195876b7e3172459c969',
+      u: 'fe6b89fb6acfcd7392c35c084f58bde0846b888c4df57e466caf0a3271b06a05',
+      chaincode: '1c34e5dfbbd4a870f4479caaa5e6a46e3438f976ad5aefd4905b8fe8bca1101e',
     },
   };
+
+  const validUserSignShare = {
+    xShare: {
+      i: 1,
+      y: '4d9343988e68191aac945a6963031dddde3490f9020d0571a6e6c6e15cca0296',
+      u: '1e159d6a0ae3a8dccc74615113e7c3e25d3080e5e0ffeb0ae04dd6a967268102',
+      r: 'c8f64cc48926216c3f60e1d8ff1e24eba060d7c1ff020d0fc1d735d4564efd03',
+      R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
+    },
+    commitment: {
+      c: '445c8cb1dee0166b6bdd5ad1d0a53fbfe86c4d3a470f184745530a863eedff28',
+      z: '3935ff6e865b82fb5ba919583cc9ef6f299e07f70aebde3d599cb29b2eb34691',
+    },
+    rShare: {
+      i: 3,
+      j: 1,
+      u: 'd675f9099fbef03aa9fcdca4009286f435e56369c374d0042f03cc60b49e690a',
+      v: '3c090e88ed42da0dd0bade35c8d6b88bc050284536b98e5b27d33ff45da9755b',
+      r: '7f16224dbf5b02adb6c21380fcb2a8ee00323daae62cac3575a4d328fd23a905',
+      R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
+    },
+  };
+
+  const validBitgoToUserSignShare = {
+    xShare: {
+      i: 3,
+      y: '4d9343988e68191aac945a6963031dddde3490f9020d0571a6e6c6e15cca0296',
+      u: '1315dbe18069825b4a27188b813eae7ff2917a614499ed553e70d65d4fa4820b',
+      r: 'd0539375e6566f2fe540cba48c5e56bd1cdf68cfe1f0d527d2b730fe4e879809',
+      R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
+    },
+    commitment: {
+      c: '62b21f98bf885841ad469145192d4df0697b3f42c581e3e926394eae0b101ecb',
+      z: '3935ff6e865b82fb5ba919583cc9ef6f299e07f70aebde3d599cb29b2eb34691',
+    },
+    rShare: {
+      i: 1,
+      j: 3,
+      u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
+      v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
+      r: '0375e8c5a5691a73c21df00d49d423e3f83fe08d7b5d5af33c5c6aa9cae59d0a',
+      R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
+    },
+  };
+
   const txRequest = {
     txRequestId: 'randomId',
-    unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0/1/2',
-    }],
+    unsignedTxs: [{ signableHex: 'MPC on a Friday night', serializedTxHex: 'MPC on a Friday night' }],
     signatureShares: [
-      { from: 'bitgo',
+      {
+        from: 'bitgo',
         to: 'user',
-        share: '9d7159a76700635b10edf1fb983ce1ad1690a9686927e137cb4a70b32ad77b0e7f0394fa3ac3db433aec1097ca88ee43034d3a9fb0c4f87b63ff38fc1d1c8f4f' }],
+        share: validBitgoToUserSignShare.rShare.r + validBitgoToUserSignShare.rShare.R,
+      }],
   };
-  const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
 
   beforeEach(function () {
     sandbox = sinon.createSandbox();
@@ -471,9 +521,9 @@ describe('TSS Utils:', async function () {
       transactions: [],
       unsignedTxs: [
         {
-          serializedTxHex: 'ababfefe',
-          signableHex: 'deadbeef',
-          derivationPath: 'm/0/1/2',
+          serializedTxHex: 'MPC on a Friday night',
+          signableHex: 'MPC on a Friday night',
+          derivationPath: 'm/0',
         },
       ],
       date: new Date().toISOString(),
@@ -490,14 +540,8 @@ describe('TSS Utils:', async function () {
     };
 
     beforeEach(async function () {
-      const signingKey = MPC.keyDerive(
-        validUserSigningMaterial.uShare,
-        [validUserSigningMaterial.bitgoYShare, validUserSigningMaterial.backupYShare],
-        txRequest.unsignedTxs[0].derivationPath
-      );
-
-      const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
-      const rShare = userSignShare.rShares[ShareKeyPosition.BITGO];
+      const userSignShare = validUserSignShare;
+      const rShare = userSignShare.rShare;
       const signatureShare: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
@@ -513,10 +557,12 @@ describe('TSS Utils:', async function () {
       const signatureShare2: SignatureShareRecord = {
         from: SignatureShareType.BITGO,
         to: SignatureShareType.USER,
-        share: rShare.r + rShare.R,
+        share: validBitgoToUserSignShare.rShare.r + validBitgoToUserSignShare.rShare.R,
       };
       const response = { txRequests: [{ ...txRequest, signatureShares: [signatureShare2] }] };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+      const exchangeCommitResponse = { commitment: validBitgoToUserSignShare.commitment.c };
+      await nockExchangeCommitments( { walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: exchangeCommitResponse });
 
     });
 

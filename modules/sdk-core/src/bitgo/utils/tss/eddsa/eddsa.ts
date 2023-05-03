@@ -457,7 +457,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
-    // TODO: need to fix this to work
     await offerUserToBitgoRShare(this.bitgo, this.wallet.id(), txRequestId, rShare, encryptedSignerShare, 'full');
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
     const gSignShareTransactionParams = {

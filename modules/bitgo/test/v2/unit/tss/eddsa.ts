@@ -269,62 +269,89 @@ describe('test tss helper functions', function () {
         i: 1,
         t: 2,
         n: 3,
-        y: '9e69e3e92978896e872d71ff7a9e63a963ab0f59583d4fcbe79f82cde9ea6bf9',
-        seed: '1bd73e7a4592405bfd297a85a7d28bacc676f3f5a89d84023f0e4e0be2a0b526',
-        chaincode: 'bda980c34aa06916f25c4c7934ea09a928bff7730a100902f4d53bb9236771a7',
+        y: '093c8603ad86c41d5ee25a814b88185b435dd3a9ceccf9c9fd691a465ac4a8b0',
+        seed: 'ca40c789813250c334ddd2ba19050f6ed20b5a08853ceca492358f2711ad4b15',
+        chaincode: '596d5404a7eb918ee78247b952d06539619884091fdd9e0ff5a665f349e32fca',
       },
-      commonChaincode: '99dd8f3e26f906a66ff0ee5d586afd403fd4cc8a6378a00347f90aa8983164b9',
+      commonChaincode: '596d5404a7eb918ee78247b952d06539619884091fdd9e0ff5a665f349e32fca',
       bitgoYShare: {
         i: 1,
         j: 3,
-        y: '141fd5cbb901d46b8c2c783f3d4ee968ae91c38f71aba05146b3ba8bd4309596',
-        u: 'd9d21c0a0a4434ddc17d386d47b022487169408429bd544e9d98b1cc9a73a508',
-        chaincode: '67d33063052606f341cae40877709de725abda41f2df7f4765e3f58ce5030e1a',
+        y: '59d8000ba5e85fa402f39382960e7d5ede82b1b6e22b146a18b7df238c3a3225',
+        v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
+        u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
+        chaincode: 'd21dbd8eae5d4789292ecea2efa53e0165b2439d57f5158eb4dd57dc26b59236',
       },
       backupYShare: {
         i: 1,
         j: 2,
-        y: 'e2b844934b56f278b4a8a3665d43d14de80732241622ec7a8bd6cffc0f74452a',
-        u: '971b424cea4c978cfe4669272c2fde01ef46b49a2823e4281a244bf877f1430b',
-        chaincode: '7460de17d732969c3bc9bddbac1055aff168fad5668917b8ed3fd9628fc6e4f8',
+        y: 'e0ae75077715686a121acb41b29a55bde426971154f40a41fc317f7f774a9424',
+        v: 'f76ef629dfc15ab5e4531e532b5d67f2176637ca752b195876b7e3172459c969',
+        u: 'fe6b89fb6acfcd7392c35c084f58bde0846b888c4df57e466caf0a3271b06a05',
+        chaincode: '1c34e5dfbbd4a870f4479caaa5e6a46e3438f976ad5aefd4905b8fe8bca1101e',
       },
     };
-    const txRequest = {
-      txRequestId: 'randomId',
-      unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2' }],
-      signatureShares: [
-        {
-          from: 'bitgo',
-          to: 'user',
-          share: '9d7159a76700635b10edf1fb983ce1ad1690a9686927e137cb4a70b32ad77b0e7f0394fa3ac3db433aec1097ca88ee43034d3a9fb0c4f87b63ff38fc1d1c8f4f',
-        }],
-    };
-    const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
+
     const validUserSignShare = {
       xShare: {
         i: 1,
-        y: 'bb055c0cf5230140a97d229bee0a1edbbfde6806cfbda743230d11398b443bbf',
-        u: 'aef915654c84753e51c06960c0b7f6bd0c449880d964606c0182b1d42e347003',
-        r: 'aa5ec75127d9fa7bdedbb3c6801b61dda1dba912fda0bbc0f7c42e93d39e280a',
-        R: '87c111ea06d9654b2b2f2937cbe845424753329899e2bdab3623219534459dca',
+        y: '4d9343988e68191aac945a6963031dddde3490f9020d0571a6e6c6e15cca0296',
+        u: '1e159d6a0ae3a8dccc74615113e7c3e25d3080e5e0ffeb0ae04dd6a967268102',
+        r: 'c8f64cc48926216c3f60e1d8ff1e24eba060d7c1ff020d0fc1d735d4564efd03',
+        R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
       },
-      rShares: {
-        3: {
-          i: 3,
-          j: 1,
-          u: '097d672cd5010aaec3c4b2b9e35418c4966bfe77a1cb680a629acc22a8f31b07',
-          v: 'c6a34e7a11bf1eeb8441d037cdd3e163ab4c60580102cc2fe8472ff435e5d7a9',
-          r: '859148eabb36952dfbc6adbff64021e1f96ad5c090f66db6a2d2983fbc643403',
-          R: '87c111ea06d9654b2b2f2937cbe845424753329899e2bdab3623219534459dca',
-        },
+      commitment: {
+        c: '445c8cb1dee0166b6bdd5ad1d0a53fbfe86c4d3a470f184745530a863eedff28',
+        z: '3935ff6e865b82fb5ba919583cc9ef6f299e07f70aebde3d599cb29b2eb34691',
+      },
+      rShare: {
+        i: 3,
+        j: 1,
+        u: 'd675f9099fbef03aa9fcdca4009286f435e56369c374d0042f03cc60b49e690a',
+        v: '3c090e88ed42da0dd0bade35c8d6b88bc050284536b98e5b27d33ff45da9755b',
+        r: '7f16224dbf5b02adb6c21380fcb2a8ee00323daae62cac3575a4d328fd23a905',
+        R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
       },
     };
     const validUserToBitgoGShare = {
       i: 1,
-      y: 'bb055c0cf5230140a97d229bee0a1edbbfde6806cfbda743230d11398b443bbf',
-      gamma: '1f77841296a362214dd0890e14de9c035e1ce3eced733cf742f7726e5384520d',
-      R: 'c339f3ff342bac6b95b7b3a93a5ddb93343aff6145cf496950e85fcc4de45496',
+      y: '4d9343988e68191aac945a6963031dddde3490f9020d0571a6e6c6e15cca0296',
+      gamma: 'ce87a00d17e52b91bc5bb6e275983b84fc1998b2b37f7166c671a019c33d3905',
+      R: 'aa6e5bad24ad4131b8793dcb95c72e03c5426456ab0b52fc99d61d7103c2f01b',
     };
+    const validBitgoToUserSignShare = {
+      xShare: {
+        i: 3,
+        y: '4d9343988e68191aac945a6963031dddde3490f9020d0571a6e6c6e15cca0296',
+        u: '1315dbe18069825b4a27188b813eae7ff2917a614499ed553e70d65d4fa4820b',
+        r: 'd0539375e6566f2fe540cba48c5e56bd1cdf68cfe1f0d527d2b730fe4e879809',
+        R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
+      },
+      commitment: {
+        c: '62b21f98bf885841ad469145192d4df0697b3f42c581e3e926394eae0b101ecb',
+        z: '3935ff6e865b82fb5ba919583cc9ef6f299e07f70aebde3d599cb29b2eb34691',
+      },
+      rShare: {
+        i: 1,
+        j: 3,
+        u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
+        v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
+        r: '0375e8c5a5691a73c21df00d49d423e3f83fe08d7b5d5af33c5c6aa9cae59d0a',
+        R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
+      },
+    };
+
+    const txRequest = {
+      txRequestId: 'randomId',
+      unsignedTxs: [{ signableHex: 'MPC on a Friday night', serializedTxHex: 'MPC on a Friday night' }],
+      signatureShares: [
+        {
+          from: 'bitgo',
+          to: 'user',
+          share: validBitgoToUserSignShare.rShare.r + validBitgoToUserSignShare.rShare.R,
+        }],
+    };
+    const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex);
 
 
     let MPC: Eddsa;
@@ -355,18 +382,19 @@ describe('test tss helper functions', function () {
           path
         );
         const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
-        userSignShare.should.have.properties(['xShare', 'rShares']);
-        const { xShare, rShares } = userSignShare;
+        userSignShare.should.have.properties(['xShare', 'rShare']);
+        const { xShare, rShare } = userSignShare;
         xShare.should.have.property('i').and.be.a.Number();
         xShare.should.have.property('y').and.be.a.String();
         xShare.should.have.property('u').and.be.a.String();
         xShare.should.have.property('r').and.be.a.String();
         xShare.should.have.property('R').and.be.a.String();
-        rShares.should.have.property('3').and.be.an.Object();
-        rShares[3].should.have.property('i').and.be.a.Number();
-        rShares[3].should.have.property('j').and.be.a.Number();
-        rShares[3].should.have.property('r').and.be.a.String();
-        rShares[3].should.have.property('R').and.be.a.String();
+        rShare.should.have.property('i').and.be.a.Number();
+        rShare.should.have.property('j').and.be.a.Number();
+        rShare.should.have.property('u').and.be.a.String();
+        rShare.should.have.property('v').and.be.a.String();
+        rShare.should.have.property('r').and.be.a.String();
+        rShare.should.have.property('R').and.be.a.String();
       });
 
       it('should fail if the Pshare doesnt belong to the User', async function () {
@@ -398,7 +426,7 @@ describe('test tss helper functions', function () {
 
     describe('offerUserToBitgoRShare:', async function() {
       it('should succeed to send Signature Share', async function() {
-        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
+        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShare.r + validUserSignShare.rShare.R } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, validUserSignShare, 'signerShare').should.be.fulfilled();
         nock.isDone().should.equal(true);
@@ -406,17 +434,17 @@ describe('test tss helper functions', function () {
 
       it('should fail if no rShare is found', async function() {
         const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any ;
-        delete invalidUserSignShare.rShares[3];
+        delete invalidUserSignShare.rShare;
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare, 'signerShare').should.be.rejectedWith('userToBitgo RShare not found');
       });
 
       it('should fail if the rShare found is invalid', async function() {
         const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any ;
-        invalidUserSignShare.rShares[3].i = 1;
+        invalidUserSignShare.rShare.i = 1;
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare, 'signerShare' ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
 
         const invalidUserSignShare2 = _.cloneDeep(validUserSignShare) as any ;
-        invalidUserSignShare2.rShares[3].j = 3;
+        invalidUserSignShare2.rShare.j = 3;
         await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare2, 'signerShare' ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
       });
     });
@@ -494,6 +522,7 @@ describe('test tss helper functions', function () {
       it('should succeed to create a UserToBitGo GShare', async function() {
         const userToBitgoGShare = await createUserToBitGoGShare(
           validUserSignShare,
+          validBitgoToUserSignShare.commitment,
           txRequest.signatureShares[0] as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
@@ -507,6 +536,7 @@ describe('test tss helper functions', function () {
         invalidUserSignShare.xShare.i = 3;
         await createUserToBitGoGShare(
           invalidUserSignShare,
+          validBitgoToUserSignShare.commitment,
           txRequest.signatureShares[0] as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
@@ -514,11 +544,25 @@ describe('test tss helper functions', function () {
         ).should.be.rejectedWith('Invalid XShare, doesnt belong to the User');
       });
 
+      it('should fail when commitment is invalid', async function() {
+        const invalidBitgoToUserCommitment = _.cloneDeep(validBitgoToUserSignShare) ;
+        invalidBitgoToUserCommitment.commitment.c = 'deadbeef';
+        await createUserToBitGoGShare(
+          validUserSignShare,
+          invalidBitgoToUserCommitment.commitment,
+          txRequest.signatureShares[0] as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload
+        ).should.be.rejectedWith('Could not verify other player share');
+      });
+
       it('should fail when RShare doesnt belong to Bitgo', async function() {
         const invalidBitgoRShare = _.cloneDeep(txRequest.signatureShares[0]);
         invalidBitgoRShare.from = 'user';
         await createUserToBitGoGShare(
           validUserSignShare,
+          validBitgoToUserSignShare.commitment,
           invalidBitgoRShare as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
@@ -529,6 +573,7 @@ describe('test tss helper functions', function () {
         invalidBitgoRShare2.to = 'bitgo';
         await createUserToBitGoGShare(
           validUserSignShare,
+          validBitgoToUserSignShare.commitment,
           invalidBitgoRShare2 as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
