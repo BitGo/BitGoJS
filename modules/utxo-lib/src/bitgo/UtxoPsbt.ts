@@ -729,8 +729,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!signerNonce) {
       throw new Error('pubNonce is missing. retry signing process');
     }
-
     let partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
+
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
     }
@@ -802,7 +802,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     throw new Error('not a taproot input');
   }
 
-  private getTaprootHashForSig(
+  getTaprootHashForSig(
     inputIndex: number,
     sighashTypes?: number[],
     leafHash?: Buffer
@@ -973,13 +973,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     assertPsbtMusig2Participants(participants, input.tapInternalKey, input.tapMerkleRoot);
     const { tapOutputKey, participantPubKeys } = participants;
-    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedKeyPair.publicKey));
 
+    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedKeyPair.publicKey));
     if (!Buffer.isBuffer(participantPubKey)) {
       throw new Error('participant plain pub key should match one bip32Derivation plain pub key');
     }
 
     const { hash } = this.getTaprootHashForSig(inputIndex);
+
     const pubNonce = this.nonceStore.createMusig2Nonce(
       derivedKeyPair.privateKey,
       participantPubKey,

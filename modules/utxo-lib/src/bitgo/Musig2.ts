@@ -21,6 +21,15 @@ export interface PsbtMusig2Participants {
   participantPubKeys: Tuple<Buffer>;
 }
 
+export interface PsbtMusig2DeterministicParams {
+  privateKey: Buffer;
+  otherNonce: Buffer;
+  publicKeys: Tuple<Buffer>;
+  internalPubKey: Buffer;
+  tapTreeRoot: Buffer;
+  hash: Buffer;
+}
+
 /**
  *  Nonce key value object.
  */
@@ -439,4 +448,31 @@ export function getSigHashTypeFromSigs(partialSigs: PsbtMusig2PartialSig[]): {
   }
 
   return { partialSigs: pSigsWithHashType.map(({ pSig }) => pSig), sigHashType };
+}
+
+export function createMusig2DeterministicNonce(params: PsbtMusig2DeterministicParams): Buffer {
+  return Buffer.from(
+    musig.deterministicNonceGen({
+      secretKey: params.privateKey,
+      aggOtherNonce: musig.nonceAgg([params.otherNonce]),
+      publicKeys: params.publicKeys,
+      tweaks: [createTapTweak(params.internalPubKey, params.tapTreeRoot)],
+      msg: params.hash,
+    }).publicNonce
+  );
+}
+
+export function musig2DeterministicSign(params: PsbtMusig2DeterministicParams): {
+  sig: Buffer;
+  sessionKey: SessionKey;
+  publicNonce: Buffer;
+} {
+  const { sig, sessionKey, publicNonce } = musig.deterministicSign({
+    secretKey: params.privateKey,
+    aggOtherNonce: musig.nonceAgg([params.otherNonce]),
+    publicKeys: params.publicKeys,
+    tweaks: [createTapTweak(params.internalPubKey, params.tapTreeRoot)],
+    msg: params.hash,
+  });
+  return { sig: Buffer.from(sig), sessionKey, publicNonce: Buffer.from(publicNonce) };
 }
