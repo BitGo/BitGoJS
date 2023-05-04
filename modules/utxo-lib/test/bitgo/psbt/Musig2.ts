@@ -16,7 +16,14 @@ import {
   UtxoTransaction,
 } from '../../../src/bitgo';
 
-import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
+import {
+  getDefaultWalletKeys,
+  getKeyTriple,
+  addDeterministicNoncesToPsbt,
+  addDeterministicMusig2SignaturesToPsbt,
+  getTaprootSigners,
+  verifyFullySignedSignatures,
+} from '../../../src/testutil';
 import {
   createTapInternalKey,
   createTapOutputKey,
@@ -55,9 +62,6 @@ import {
   validateParsedTaprootScriptPathTxInput,
   validateParsedTaprootKeyPathPsbt,
   validateParsedTaprootScriptPathPsbt,
-  addDeterministicNoncesToPsbt,
-  addDerterministicMusig2SignaturesToPsbt,
-  getTaprootSigners,
 } from './Musig2Util';
 
 const rootWalletKeys = getDefaultWalletKeys();
@@ -76,7 +80,7 @@ function signTxLocal(psbt: UtxoPsbt, keypair: BIP32Interface): void {
     if (input.tapBip32Derivation?.length) {
       if (input.tapInternalKey?.length) {
         const signers = getTaprootSigners(psbt, inputIndex, keypair);
-        signers.forEach((signer) => addDerterministicMusig2SignaturesToPsbt(psbt, inputIndex, signer));
+        signers.forEach((signer) => addDeterministicMusig2SignaturesToPsbt(psbt, inputIndex, signer));
       } else if (input.tapLeafScript?.length) {
         psbt.signTaprootInputHD(inputIndex, keypair);
       }

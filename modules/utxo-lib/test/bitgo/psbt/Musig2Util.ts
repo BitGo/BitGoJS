@@ -1,7 +1,4 @@
 import * as assert from 'assert';
-import { BIP32Interface } from 'bip32';
-import { TapBip32Derivation } from 'bip174/src/lib/interfaces';
-import { Transaction } from 'bitcoinjs-lib';
 
 import {
   addWalletOutputToPsbt,
@@ -9,11 +6,8 @@ import {
   createPsbtForNetwork,
   getExternalChainCode,
   getInternalChainCode,
-  HDTaprootMusig2Signer,
-  HDTaprootSigner,
   isWalletUnspent,
   KeyName,
-  Musig2Signer,
   outputScripts,
   parsePsbtInput,
   parseSignatureScript2Of3,
@@ -36,9 +30,6 @@ import {
 } from '../../../src/bitgo/outputScripts';
 import { getDefaultWalletKeys, mockWalletUnspent } from '../../../src/testutil';
 import { networks } from '../../../src';
-import * as musig2 from '../../../src/bitgo/Musig2';
-import { musig2DeterministicSign } from '../../../src/bitgo/Musig2';
-import { checkForInput } from 'bip174/src/lib/utils';
 
 export const network = networks.bitcoin;
 const outputType = 'p2trMusig2';
@@ -326,156 +317,4 @@ export function validateParsedTaprootScriptPathTxInput(
   parsedTxInput.signatures.forEach((sig) => {
     assert.strictEqual(sig.length, 64);
   });
-}
-
-export function getTaprootSigners(
-  psbt: UtxoPsbt,
-  inputIndex: number,
-  keypair: BIP32Interface
-): HDTaprootSigner[] | HDTaprootMusig2Signer[] {
-  const input = checkForInput(psbt.data.inputs, inputIndex);
-  if (!input.tapBip32Derivation || input.tapBip32Derivation.length === 0) {
-    throw new Error('Need tapBip32Derivation to sign Taproot with HD');
-  }
-  const myDerivations = input.tapBip32Derivation
-    .map((bipDv) => {
-      if (bipDv.masterFingerprint.equals(keypair.fingerprint)) {
-        return bipDv;
-      }
-    })
-    .filter((v) => !!v) as TapBip32Derivation[];
-  if (myDerivations.length === 0) {
-    throw new Error('Need one tapBip32Derivation masterFingerprint to match the HDSigner fingerprint');
-  }
-
-  function getDerivedNode(bipDv: TapBip32Derivation): HDTaprootMusig2Signer | HDTaprootSigner {
-    const node = keypair.derivePath(bipDv.path);
-    if (!bipDv.pubkey.equals(node.publicKey.slice(1))) {
-      throw new Error('pubkey did not match tapBip32Derivation');
-    }
-    return node;
-  }
-
-  if (input.tapLeafScript?.length) {
-    return myDerivations.map((bipDv) => {
-      const signer = getDerivedNode(bipDv);
-      if (!('signSchnorr' in signer)) {
-        throw new Error('signSchnorr function is required to sign p2tr');
-      }
-      return signer;
-    });
-  } else if (input.tapInternalKey?.length) {
-    return myDerivations.map((bipDv) => {
-      const signer = getDerivedNode(bipDv);
-      if (!('privateKey' in signer) || !signer.privateKey) {
-        throw new Error('privateKey is required to sign p2tr musig2');
-      }
-      return signer;
-    });
-  }
-  throw new Error(`taproot input #${inputIndex} failed to get signers`);
-}
-
-export function addDeterministicNoncesToPsbt(psbt: UtxoPsbt, keypair: BIP32Interface): UtxoPsbt {
-  psbt.data.inputs.forEach((input, inputIndex) => {
-    if (!input.tapMerkleRoot || !input.tapInternalKey) {
-      return;
-    }
-    const derivedKey = input.tapBip32Derivation ? UtxoPsbt.deriveKeyPair(keypair, input.tapBip32Derivation) : keypair;
-    assert.ok(derivedKey);
-    assert.ok(derivedKey.privateKey);
-
-    const participants = musig2.parsePsbtMusig2Participants(psbt, inputIndex);
-    assert.ok(participants);
-    musig2.assertPsbtMusig2Participants(participants, input.tapInternalKey, input.tapMerkleRoot);
-    const { tapOutputKey, participantPubKeys } = participants;
-    const participantPubKey = participantPubKeys.find((pubKey) => pubKey.equals(derivedKey.publicKey));
-
-    // If the bitgo pubkey is not within the participants, then this musig2 input doesnt use this key. Skip
-    if (!participantPubKey) {
-      return;
-    }
-    assert.ok(participantPubKeys[1].equals(derivedKey.publicKey));
-
-    const { hash } = psbt.getTaprootHashForSig(inputIndex);
-
-    const musigNonces = musig2.parsePsbtMusig2Nonces(psbt, inputIndex);
-    assert.ok(musigNonces);
-    const userNonce = musigNonces.find((kv) => kv.participantPubKey.equals(participantPubKeys[0]));
-    assert.ok(userNonce);
-
-    const pubNonce = musig2.createMusig2DeterministicNonce({
-      privateKey: derivedKey.privateKey,
-      otherNonce: userNonce.pubNonce,
-      publicKeys: participantPubKeys,
-      internalPubKey: input.tapInternalKey,
-      tapTreeRoot: input.tapMerkleRoot,
-      hash,
-    });
-    const nonce = { tapOutputKey, participantPubKey, pubNonce };
-    psbt.addOrUpdateProprietaryKeyValToInput(inputIndex, musig2.encodePsbtMusig2PubNonce(nonce));
-  });
-  return psbt;
-}
-
-/**
- * General flow is copied from UtxoPsbt.signAllInputsHD going into UtxoPsbt.signTaprootMusig2Input.
- *
- * This only adds signatures to musig2 inputs
- * @param psbt
- * @param keypair
- */
-export function addDerterministicMusig2SignaturesToPsbt(
-  psbt: UtxoPsbt,
-  inputIndex: number,
-  signer: Musig2Signer,
-  sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
-): void {
-  const input = checkForInput(psbt.data.inputs, inputIndex);
-
-  if (!input.tapBip32Derivation?.length) {
-    return;
-  }
-
-  if (!input.tapInternalKey || !input.tapMerkleRoot) {
-    return;
-  }
-  assert.ok(input.tapInternalKey);
-  assert.ok(input.tapMerkleRoot);
-
-  const participants = musig2.parsePsbtMusig2Participants(psbt, inputIndex);
-  assert.ok(participants);
-  const { tapOutputKey, participantPubKeys } = participants;
-  const signerPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
-  assert.ok(signerPubKey);
-  if (!participantPubKeys[1].equals(signer.publicKey)) {
-    return;
-  }
-
-  const nonces = musig2.parsePsbtMusig2Nonces(psbt, inputIndex);
-  assert.ok(nonces);
-  const userNonce = nonces.find((n) => !n.participantPubKey.equals(signerPubKey));
-  assert.ok(userNonce);
-
-  const { hash, sighashType } = psbt.getTaprootHashForSig(inputIndex, sighashTypes);
-
-  let partialSig = musig2DeterministicSign({
-    privateKey: signer.privateKey,
-    otherNonce: userNonce.pubNonce,
-    publicKeys: participantPubKeys,
-    internalPubKey: input.tapInternalKey,
-    tapTreeRoot: input.tapMerkleRoot,
-    hash,
-  }).sig;
-
-  if (sighashType !== Transaction.SIGHASH_DEFAULT) {
-    partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
-  }
-
-  const sig = musig2.encodePsbtMusig2PartialSig({
-    participantPubKey: signerPubKey,
-    tapOutputKey,
-    partialSig: partialSig,
-  });
-  psbt.addProprietaryKeyValToInput(inputIndex, sig);
 }
