@@ -16,7 +16,7 @@ import {
   UtxoTransaction,
 } from '../../../src/bitgo';
 
-import { getDefaultWalletKeys, getKeyTriple } from '../../../src/testutil';
+import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
 import {
   createTapInternalKey,
   createTapOutputKey,
@@ -138,8 +138,8 @@ describe('p2trMusig2', function () {
       unspents.forEach((unspent, index) => {
         validateFinalizedInput(psbt, index, unspent);
       });
-      const tx = psbt.extractTransaction();
-      assert.ok(tx);
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      assert.ok(verifyFullySignedSignatures(tx, unspents, rootWalletKeys, 'bitgo', 'user'));
     });
 
     it(`parse tx`, function () {
@@ -645,7 +645,8 @@ describe('p2trMusig2', function () {
       assert.ok(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
-      psbt.extractTransaction();
+      let tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      assert.ok(verifyFullySignedSignatures(tx, p2trMusig2Unspent, rootWalletKeys, 'user', 'backup'));
 
       psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'backup', outputType);
       psbt.setMusig2NoncesHD(rootWalletKeys.bitgo);
@@ -658,7 +659,8 @@ describe('p2trMusig2', function () {
       assert.ok(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       validateFinalizedInput(psbt, 0, p2trMusig2Unspent[0], 'scriptPath');
-      psbt.extractTransaction();
+      tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      assert.ok(verifyFullySignedSignatures(tx, p2trMusig2Unspent, rootWalletKeys, 'bitgo', 'backup'));
     });
 
     it(`parse tx`, function () {
