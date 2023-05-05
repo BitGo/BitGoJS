@@ -413,12 +413,17 @@ describe('V2 Wallet:', function () {
         .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
+      const nockKeyChain = nock(bgUrl)
+        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
+        .reply(200, {});
+
       try {
         await ethWallet.send({ address: recipients[0].address, data: recipients[0].data, amount: recipients[0].amount });
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
+      nockKeyChain.isDone().should.be.true();
     });
 
     it('should pass data parameter and amount: 0 when using sendMany', async function () {
@@ -433,12 +438,17 @@ describe('V2 Wallet:', function () {
         .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
+      const nockKeyChain = nock(bgUrl)
+        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
+        .reply(200, {});
+
       try {
         await ethWallet.sendMany({ recipients });
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
+      nockKeyChain.isDone().should.be.true();
     });
 
     it('should not pass recipients in sendMany when transaction type is fillNonce', async function () {
@@ -478,6 +488,39 @@ describe('V2 Wallet:', function () {
       } catch (e) {
         e.message.should.not.equal(errorMessage);
       }
+    });
+
+    it('should throw error early if password is wrong', async function () {
+      const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const recipients = [{
+        address: recipientAddress,
+        amount: 0,
+      }];
+      const errorMessage = `unable to decrypt keychain with the given wallet passphrase. Error: {"message":"password error - ccm: tag doesn't match"}`;
+      const sendManyParamsCorrectPassPhrase = { recipients, type: 'transfer', isTss: true, nonce: '13', walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE };
+      const nockKeychain = nock(bgUrl)
+        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
+        .times(2)
+        .reply(200, {
+          id: '598f606cd8fc24710d2ebad89dce86c2',
+          pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+          ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+          source: 'user',
+          encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+          coinSpecific: {},
+        });
+      try {
+        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase' } );
+      } catch (e) {
+        e.code.should.equal('wallet_passphrase_incorrect');
+        e.message.should.equal(errorMessage);
+      }
+      try {
+        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase } );
+      } catch (e) {
+        e.message.should.not.equal(errorMessage);
+      }
+      nockKeychain.isDone().should.be.true();
     });
 
     it('should use a custom signing function if provided', async function () {
