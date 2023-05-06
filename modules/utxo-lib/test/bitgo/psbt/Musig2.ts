@@ -201,15 +201,15 @@ describe('p2trMusig2', function () {
 
         psbt.setMusig2NoncesHD(rootWalletKeys.user);
 
-        const tapMerkleRoot = psbt.data.inputs[0].tapMerkleRoot;
-        psbt.data.inputs[0].tapMerkleRoot = undefined;
+        const tapBip32Derivation = psbt.data.inputs[0].tapBip32Derivation;
+        psbt.data.inputs[0].tapBip32Derivation = undefined;
 
         assert.throws(
           () => psbt.setMusig2NoncesHD(rootWalletKeys.bitgo),
-          (e) => e.message === 'tapMerkleRoot is required to create nonce'
+          (e) => e.message === 'tapBip32Derivation is required to create nonce'
         );
 
-        psbt.data.inputs[0].tapMerkleRoot = tapMerkleRoot;
+        psbt.data.inputs[0].tapBip32Derivation = tapBip32Derivation;
 
         psbt.setMusig2NoncesHD(rootWalletKeys.bitgo);
 
@@ -474,7 +474,7 @@ describe('p2trMusig2', function () {
               publicKey: walletKeys.user.publicKey,
               privateKey: walletKeys.user.privateKey!,
             }),
-          (e) => e.message === 'tapInternalKey is required for p2tr musig2 key path signing'
+          (e) => e.message === 'not a taproot musig2 input'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
       });
@@ -495,7 +495,7 @@ describe('p2trMusig2', function () {
             publicKey: walletKeys.user.publicKey,
             privateKey: walletKeys.user.privateKey!,
           }),
-        (e) => e.message === 'tapMerkleRoot is required for p2tr musig2 key path signing'
+        (e) => e.message === 'not a taproot musig2 input'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });

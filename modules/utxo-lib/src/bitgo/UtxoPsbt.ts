@@ -37,6 +37,7 @@ import {
   getSigHashTypeFromSigs,
 } from './Musig2';
 import { isTuple, Tuple } from './types';
+import { getTaprootOutputKey } from '../taproot';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
 
@@ -294,6 +295,83 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @returns true if the input at inputIndex is a taproot key path.
+   * Checks for presence of minimum required key path input fields and absence of any script path only input fields.
+   */
+  isTaprootKeyPathInput(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return (
+      !!input.tapInternalKey &&
+      !!input.tapMerkleRoot &&
+      !(
+        input.tapLeafScript?.length ||
+        input.tapScriptSig?.length ||
+        input.tapBip32Derivation?.some((v) => v.leafHashes.length)
+      )
+    );
+  }
+
+  /**
+   * @returns true if the input at inputIndex is a taproot script path.
+   * Checks for presence of minimum required script path input fields and absence of any key path only input fields.
+   */
+  isTaprootScriptPathInput(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    return (
+      !!input.tapLeafScript?.length &&
+      !(
+        this.getProprietaryKeyVals(inputIndex, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
+        }).length ||
+        this.getProprietaryKeyVals(inputIndex, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        }).length ||
+        this.getProprietaryKeyVals(inputIndex, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+        }).length
+      )
+    );
+  }
+
+  /**
+   * @returns true if the input at inputIndex is a taproot
+   */
+  isTaprootInput(inputIndex: number): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const isP2TR = (script: Buffer): boolean => {
+      try {
+        getTaprootOutputKey(script);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    return !!(
+      input.tapInternalKey ||
+      input.tapMerkleRoot ||
+      input.tapLeafScript?.length ||
+      input.tapBip32Derivation?.length ||
+      input.tapScriptSig?.length ||
+      this.getProprietaryKeyVals(inputIndex, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
+      }).length ||
+      this.getProprietaryKeyVals(inputIndex, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+      }).length ||
+      this.getProprietaryKeyVals(inputIndex, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
+      }).length ||
+      (input.witnessUtxo && isP2TR(input.witnessUtxo.script))
+    );
+  }
+
+  /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
   finalizeAllInputs(): this {
@@ -311,7 +389,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         return isMultisigTaprootScript(input.tapLeafScript[0].script)
           ? this.finalizeTaprootInput(idx)
           : this.finalizeTapInputWithSingleLeafScriptAndSignature(idx);
-      } else if (input.tapInternalKey && input.tapMerkleRoot) {
+      } else if (this.isTaprootKeyPathInput(idx)) {
         return this.finalizeTaprootMusig2Input(idx);
       }
       return this.finalizeInput(idx);
@@ -418,10 +496,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   private validateSignaturesOfInputInner(inputIndex: number, pubkey?: Buffer): boolean {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    if (input.tapLeafScript?.length) {
+    if (this.isTaprootScriptPathInput(inputIndex)) {
       return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
-    } else if (input.tapInternalKey && input.tapMerkleRoot) {
+    } else if (this.isTaprootKeyPathInput(inputIndex)) {
       return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
     }
     return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), pubkey);
@@ -610,6 +687,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
+    if (!this.isTaprootInput(inputIndex)) {
+      throw new Error('not a taproot input');
+    }
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
       throw new Error('Need HDSigner to sign input');
     }
@@ -659,8 +739,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   signInputHD(inputIndex: number, hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer, sighashTypes?: number[]): this {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    if (input.tapBip32Derivation?.length) {
+    if (this.isTaprootInput(inputIndex)) {
       return this.signTaprootInputHD(inputIndex, hdKeyPair, sighashTypes);
     } else {
       return super.signInputHD(inputIndex, hdKeyPair, sighashTypes);
@@ -698,13 +777,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     signer: Musig2Signer,
     sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
   ): this {
-    const input = checkForInput(this.data.inputs, inputIndex);
-
-    if (!input.tapInternalKey) {
-      throw new Error('tapInternalKey is required for p2tr musig2 key path signing');
+    if (!this.isTaprootKeyPathInput(inputIndex)) {
+      throw new Error('not a taproot musig2 input');
     }
-    if (!input.tapMerkleRoot) {
-      throw new Error('tapMerkleRoot is required for p2tr musig2 key path signing');
+
+    const input = this.data.inputs[inputIndex];
+
+    if (!input.tapInternalKey || !input.tapMerkleRoot) {
+      throw new Error('missing required input data');
     }
 
     const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
@@ -810,6 +890,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     hash: Buffer;
     sighashType: number;
   } {
+    if (!this.isTaprootInput(inputIndex)) {
+      throw new Error('not a taproot input');
+    }
     const sighashType = this.data.inputs[inputIndex].sighashType || Transaction.SIGHASH_DEFAULT;
     if (sighashTypes && sighashTypes.indexOf(sighashType) < 0) {
       throw new Error(
@@ -1000,7 +1083,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error(`Invalid sessionId size ${sessionId.length}`);
     }
     this.data.inputs.forEach((input, inputIndex) => {
-      if (!input.tapInternalKey) {
+      if (!this.isTaprootKeyPathInput(inputIndex)) {
         // Not a p2trMusig2 key path input, so skip it.
         return;
       }
