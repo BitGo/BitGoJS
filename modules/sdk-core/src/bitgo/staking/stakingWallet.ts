@@ -177,14 +177,18 @@ export class StakingWallet implements IStakingWallet {
   }
 
   /**
-   * Send the signed staking transaction
+   * Send the signed staking transaction if required. Send call is not required if api version is full
+   * and this method will return the staking transaction from the incoming object.
    * @param signedTransaction
    */
   async send(signedTransaction: StakingSignedTransaction): Promise<StakingTransaction> {
-    return await this.bitgo
-      .post(this.bitgo.microservicesUrl(this.stakingTransactionURL(signedTransaction.transaction)))
-      .send(signedTransaction.signed)
-      .result();
+    if (this.isSendCallRequired()) {
+      return await this.bitgo
+        .post(this.bitgo.microservicesUrl(this.stakingTransactionURL(signedTransaction.transaction)))
+        .send(signedTransaction.signed)
+        .result();
+    }
+    return signedTransaction.transaction;
   }
 
   /**
@@ -197,9 +201,6 @@ export class StakingWallet implements IStakingWallet {
     transaction: StakingTransaction
   ): Promise<StakingTransaction> {
     return await this.buildAndSign(signOptions, transaction).then((result: StakingSignedTransaction) => {
-      if (this.isEthTss) {
-        return result.transaction;
-      }
       return this.send(result);
     });
   }
@@ -268,6 +269,21 @@ export class StakingWallet implements IStakingWallet {
       return this.tokenParentWallet;
     } else {
       return Promise.resolve(this.wallet);
+    }
+  }
+
+  /**
+   * Send API call is only required for TSS TxRequest api version lite or multi-sig transactions.
+   * For Full api version, sign transaction moves the transaction to delivered state.
+   * @returns true if send API call to staking service is required else false
+   */
+  private isSendCallRequired(): boolean {
+    if (this.wallet.baseCoin.getFamily() === 'eth') {
+      return !this.isEthTss;
+    } else if (this.wallet.baseCoin.supportsTss()) {
+      return this.wallet.baseCoin.getMPCAlgorithm() !== 'ecdsa';
+    } else {
+      return true;
     }
   }
 }
