@@ -38,4 +38,11 @@ describe('Binance Smart Chain', function () {
       tbsc.allowsAccountConsolidations().should.equal(true);
     });
   });
+
+  it('should correctly return true for valid pub', function () {
+    const bsc = bitgo.coin('bsc');
+    const validPub =
+      '03100d7a8834d3514701c140c60c9f847d905ced8d4c10143b24d2876fe6c3aeed29e4c4cbc124ec3ccb48074100cdb6a601684cbf102544898e148431a07bca1f';
+    bsc.isValidPub(validPub).should.equal(true);
+  });
 });
