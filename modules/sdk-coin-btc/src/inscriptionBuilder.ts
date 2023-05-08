@@ -1,4 +1,4 @@
-import { AbstractUtxoCoin, getWalletKeys } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getWalletKeys, RootWalletKeys } from '@bitgo/abstract-utxo';
 import {
   HalfSignedUtxoTransaction,
   IInscriptionBuilder,
@@ -18,9 +18,14 @@ import {
   inscriptions,
   parseSatPoint,
   isSatPoint,
+  ErrorNoLayout,
   findOutputLayoutForWalletUnspents,
+  MAX_UNSPENTS_FOR_OUTPUT_LAYOUT,
+  SatPoint,
 } from '@bitgo/utxo-ord';
 import assert from 'assert';
+
+const SUPPLEMENTARY_UNSPENTS_MIN_VALUE_SATS = [0, 20_000, 200_000];
 
 export class InscriptionBuilder implements IInscriptionBuilder {
   private readonly wallet: IWallet;
@@ -40,6 +45,77 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const xOnlyPublicKey = utxolib.bitgo.outputScripts.toXOnlyPublicKey(Buffer.from(compressedPublicKey, 'hex'));
 
     return inscriptions.createInscriptionRevealData(xOnlyPublicKey, contentType, inscriptionData, this.coin.network);
+  }
+
+  private async prepareTransferWithExtraInputs(
+    satPoint: SatPoint,
+    feeRateSatKB: number,
+    {
+      signer,
+      cosigner,
+      inscriptionConstraints,
+    }: {
+      signer: utxolib.bitgo.KeyName;
+      cosigner: utxolib.bitgo.KeyName;
+      inscriptionConstraints: {
+        minChangeOutput?: bigint;
+        minInscriptionOutput?: bigint;
+        maxInscriptionOutput?: bigint;
+      };
+    },
+    rootWalletKeys: RootWalletKeys,
+    outputs: InscriptionOutputs,
+    inscriptionUnspents: utxolib.bitgo.WalletUnspent<bigint>[],
+    supplementaryUnspentsMinValue: number
+  ): Promise<PrebuildTransactionResult> {
+    let supplementaryUnspents: utxolib.bitgo.WalletUnspent<bigint>[] = [];
+    if (supplementaryUnspentsMinValue > 0) {
+      const response = await this.wallet.unspents({
+        minValue: supplementaryUnspentsMinValue,
+      });
+      // Filter out the inscription unspent from the supplementary unspents
+      supplementaryUnspents = response.unspents
+        .filter((unspent) => unspent.id !== inscriptionUnspents[0].id)
+        .slice(0, MAX_UNSPENTS_FOR_OUTPUT_LAYOUT - 1)
+        .map((unspent) => {
+          unspent.value = BigInt(unspent.value);
+          return unspent;
+        });
+    }
+    const psbt = createPsbtForSingleInscriptionPassingTransaction(
+      this.coin.network,
+      {
+        walletKeys: rootWalletKeys,
+        signer,
+        cosigner,
+      },
+      inscriptionUnspents,
+      satPoint,
+      outputs,
+      { feeRateSatKB, ...inscriptionConstraints },
+      { supplementaryUnspents }
+    );
+    if (!psbt) {
+      throw new Error('Fee too high for the selected unspent with this fee rate');
+    }
+
+    const allUnspents = [...inscriptionUnspents, ...supplementaryUnspents];
+
+    // TODO: Remove the call to this function because it's already called inside the createPsbt function above.
+    // Create & use a getFee function inside the created PSBT instead, lack of which necessitates a duplicate call here.
+    const outputLayout = findOutputLayoutForWalletUnspents(allUnspents, satPoint, outputs, {
+      feeRateSatKB,
+      ...inscriptionConstraints,
+    });
+    if (!outputLayout) {
+      throw new Error('Fee too high for the selected unspent with this fee rate');
+    }
+    return {
+      walletId: this.wallet.id(),
+      txHex: psbt.getUnsignedTx().toHex(),
+      txInfo: { unspents: allUnspents },
+      feeInfo: { fee: Number(outputLayout.layout.feeOutput), feeString: outputLayout.layout.feeOutput.toString() },
+    };
   }
 
   /**
@@ -79,10 +155,8 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const rootWalletKeys = await getWalletKeys(this.coin, this.wallet);
     const parsedSatPoint = parseSatPoint(satPoint);
     const transaction = await this.wallet.getTransaction({ txHash: parsedSatPoint.txid });
-    // TODO(BG-70900): allow supplemental unspents
-    const unspents = [transaction.outputs[parsedSatPoint.vout]];
+    const unspents: utxolib.bitgo.WalletUnspent<bigint>[] = [transaction.outputs[parsedSatPoint.vout]];
     unspents[0].value = BigInt(unspents[0].value);
-    const txInfo = { unspents };
 
     const changeAddress = await this.wallet.createAddress({
       chain: utxolib.bitgo.getInternalChainCode(changeAddressType),
@@ -95,32 +169,25 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       ],
     };
 
-    const psbt = createPsbtForSingleInscriptionPassingTransaction(
-      this.coin.network,
-      {
-        walletKeys: rootWalletKeys,
-        signer,
-        cosigner,
-      },
-      unspents,
-      satPoint,
-      outputs,
-      { feeRateSatKB, ...inscriptionConstraints }
-    );
-    const outputLayout = findOutputLayoutForWalletUnspents(unspents, satPoint, outputs, {
-      feeRateSatKB,
-      ...inscriptionConstraints,
-    });
-    if (!outputLayout) {
-      throw new Error(`could not output layout for inscription passing transaction`);
+    for (const supplementaryUnspentsMinValue of SUPPLEMENTARY_UNSPENTS_MIN_VALUE_SATS) {
+      try {
+        return await this.prepareTransferWithExtraInputs(
+          satPoint,
+          feeRateSatKB,
+          { signer, cosigner, inscriptionConstraints },
+          rootWalletKeys,
+          outputs,
+          unspents,
+          supplementaryUnspentsMinValue
+        );
+      } catch (error) {
+        if (!(error instanceof ErrorNoLayout)) {
+          throw error; // Propagate error if it's not an ErrorNoLayout
+        } // Otherwise continue trying with higher minValue for supplementary unspents
+      }
     }
 
-    return {
-      walletId: this.wallet.id(),
-      txHex: psbt.getUnsignedTx().toHex(),
-      txInfo,
-      feeInfo: { fee: Number(outputLayout.layout.feeOutput), feeString: outputLayout.layout.feeOutput.toString() },
-    };
+    throw new Error('Fee too high for the selected unspent with this fee rate'); // Exhausted all tries to supplement
   }
 
   /**

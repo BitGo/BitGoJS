@@ -163,6 +163,8 @@ export function findOutputLayoutForWalletUnspents(
   return layout ? { inputs, layout } : undefined;
 }
 
+export const MAX_UNSPENTS_FOR_OUTPUT_LAYOUT = 5;
+
 /**
  * @param inputs - inscription input must come first
  * @param satPoint - location of the inscription
@@ -175,7 +177,7 @@ function findSmallestOutputLayoutForWalletUnspents(
   outputs: InscriptionTransactionOutputs,
   constraints: InscriptionTransactionConstraints
 ): { inputs: WalletUnspent[]; layout: OutputLayout } | undefined {
-  if (4 < inputs.length) {
+  if (MAX_UNSPENTS_FOR_OUTPUT_LAYOUT < inputs.length) {
     throw new Error(`input array is too large`);
   }
   // create powerset of all supplementary inputs and find the cheapest result
@@ -191,6 +193,12 @@ function findSmallestOutputLayoutForWalletUnspents(
       }
       return best.layout.feeOutput < next.layout.feeOutput ? best : next;
     });
+}
+
+export class ErrorNoLayout extends Error {
+  constructor() {
+    super('Could not find output layout for inscription passing transaction');
+  }
 }
 
 /**
@@ -235,7 +243,7 @@ export function createPsbtForSingleInscriptionPassingTransaction(
   );
 
   if (!result) {
-    throw new Error(`could not output layout for inscription passing transaction`);
+    throw new ErrorNoLayout();
   }
 
   return createPsbtFromOutputLayout(network, inputBuilder, result.inputs, outputs, result.layout);
