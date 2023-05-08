@@ -1841,7 +1841,8 @@ export class Eth extends BaseCoin {
       replayProtectionOptions: params.replayProtectionOptions,
     };
 
-    const tx = Eth.buildTransaction(txParams);
+    // Build contract call and sign it
+    let tx = Eth.buildTransaction(txParams);
 
     if (isUnsignedSweep) {
       return this.formatForOfflineVault(
@@ -1856,10 +1857,19 @@ export class Eth extends BaseCoin {
       );
     }
 
+    if (!isKrsRecovery) {
+      tx = tx.sign(backupSigningKey);
+    }
+
     const signedTx: RecoveryInfo = {
       id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
       tx: tx.serialize().toString('hex'),
     };
+
+    if (isKrsRecovery) {
+      signedTx.backupKey = backupKey;
+      signedTx.coin = this.getChain();
+    }
 
     return signedTx;
   }
