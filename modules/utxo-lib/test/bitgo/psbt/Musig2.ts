@@ -1,7 +1,5 @@
 import * as assert from 'assert';
 
-import { BIP32Interface } from 'bip32';
-
 import {
   createPsbtFromHex,
   getExternalChainCode,
@@ -12,18 +10,10 @@ import {
   PSBT_PROPRIETARY_IDENTIFIER,
   RootWalletKeys,
   scriptTypeForChain,
-  UtxoPsbt,
   UtxoTransaction,
 } from '../../../src/bitgo';
 
-import {
-  getDefaultWalletKeys,
-  getKeyTriple,
-  addDeterministicNoncesToPsbt,
-  addDeterministicMusig2SignaturesToPsbt,
-  getTaprootSigners,
-  verifyFullySignedSignatures,
-} from '../../../src/testutil';
+import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
 import {
   createTapInternalKey,
   createTapOutputKey,
@@ -69,27 +59,6 @@ const p2trMusig2Unspent = getUnspents(['p2trMusig2'], rootWalletKeys);
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
 
-/**
- * Add signatures to psbt. This is broken out like this so that we can add a
- * deterministic signature for the bitgo key
- * @param psbt
- * @param keypair
- */
-function signTxLocal(psbt: UtxoPsbt, keypair: BIP32Interface): void {
-  psbt.data.inputs.forEach((input, inputIndex) => {
-    if (input.tapBip32Derivation?.length) {
-      if (input.tapInternalKey?.length) {
-        const signers = getTaprootSigners(psbt, inputIndex, keypair);
-        signers.forEach((signer) => addDeterministicMusig2SignaturesToPsbt(psbt, inputIndex, signer));
-      } else if (input.tapLeafScript?.length) {
-        psbt.signTaprootInputHD(inputIndex, keypair);
-      }
-    } else {
-      psbt.signInputHD(inputIndex, keypair);
-    }
-  });
-}
-
 describe('p2trMusig2', function () {
   describe('p2trMusig2 key path', function () {
     it(`create psbt, nonces, sign (internal verify) - success`, function () {
@@ -108,7 +77,8 @@ describe('p2trMusig2', function () {
       const userPsbtSer = userPsbt.toHex();
 
       // HSM deserializes the user psbt, adds the deterministic bitgo nonce, and sends that back to the user
-      const bitgoPsbt = addDeterministicNoncesToPsbt(createPsbtFromHex(userPsbtSer, network), rootWalletKeys.bitgo);
+      const bitgoPsbt = createPsbtFromHex(userPsbtSer, network);
+      bitgoPsbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
       const bitgoPsbtSer = bitgoPsbt.toHex();
 
       // User combines the psbt with the bitgo nonce, adds user signature, and sends half-signed to hsm
@@ -123,7 +93,7 @@ describe('p2trMusig2', function () {
 
       // WP sends to hsm for signature and returns a fully signed psbt
       const psbt = createPsbtFromHex(userPsbtHalfSignedHex, network);
-      signTxLocal(psbt, rootWalletKeys.bitgo);
+      psbt.signAllInputsHD(rootWalletKeys.bitgo, { deterministic: true });
 
       unspents.forEach((unspent, index) => {
         if (scriptTypeForChain(unspent.chain) !== 'p2trMusig2') {
@@ -235,6 +205,76 @@ describe('p2trMusig2', function () {
         assert.strictEqual(participantKeyVals.length, 1);
       });
 
+      it('Cosigner can create a deterministic nonce', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
+
+        const noncesKeyVals = psbt.getProprietaryKeyVals(0, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        });
+        assert.strictEqual(noncesKeyVals.length, 2);
+      });
+
+      it('Cosigner cannot create a deterministic nonce if there is no signer nonce', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+
+        assert.throws(
+          () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true }),
+          (e) => e.message === 'No nonces found on input #0'
+        );
+
+        let noncesKeyVals = psbt.getProprietaryKeyVals(0, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        });
+        assert.strictEqual(noncesKeyVals.length, 0);
+
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
+        assert.throws(
+          () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true }),
+          (e) => e.message === 'signer nonce must be set if cosigner nonce is to be derived deterministically'
+        );
+
+        noncesKeyVals = psbt.getProprietaryKeyVals(0, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        });
+        assert.strictEqual(noncesKeyVals.length, 1);
+      });
+
+      it('Cosigner cannot add entropy to deterministic nonce creation', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+        assert.throws(
+          () =>
+            psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, {
+              deterministic: true,
+              sessionId: Buffer.allocUnsafe(32),
+            }),
+          (e) => e.message === 'Cannot add extra entropy when generating a deterministic nonce'
+        );
+        const noncesKeyVals = psbt.getProprietaryKeyVals(0, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        });
+        assert.strictEqual(noncesKeyVals.length, 1);
+      });
+
+      it('Signer cannot create a deterministic nonce', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        assert.throws(
+          () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user, { deterministic: true }),
+          (e) => e.message === `Only the cosigner's nonce can be set deterministically`
+        );
+        const noncesKeyVals = psbt.getProprietaryKeyVals(0, {
+          identifier: PSBT_PROPRIETARY_IDENTIFIER,
+          subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
+        });
+        assert.strictEqual(noncesKeyVals.length, 0);
+      });
+
       it(`skipped if tapInternalKey doesn't match participant pub keys agg`, function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         psbt.data.inputs[0].tapInternalKey = dummyTapInternalKey;
@@ -248,7 +288,7 @@ describe('p2trMusig2', function () {
       it(`fails if sessionId size is invalid`, function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         assert.throws(
-          () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user, Buffer.allocUnsafe(33)),
+          () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user, { sessionId: Buffer.allocUnsafe(33) }),
           (e) => e.message === 'Invalid sessionId size 33'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
@@ -477,6 +517,36 @@ describe('p2trMusig2', function () {
           (e) => e.message === 'not a taproot musig2 input'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
+      });
+
+      it('only the cosigner can add a deterministic signature', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
+        assert.throws(
+          () => psbt.signInputHD(0, rootWalletKeys.user, { deterministic: true }),
+          (e) => e.message === 'can only add a deterministic signature on the cosigner'
+        );
+      });
+
+      it('cosigner can sign deterministically', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
+        psbt.signAllInputsHD(rootWalletKeys.user);
+        psbt.signAllInputsHD(rootWalletKeys.bitgo, { deterministic: true });
+        assert.ok(psbt.validateSignaturesOfAllInputs());
+        assert.ok(psbt.finalizeAllInputs());
+      });
+
+      it('cosigner can sign non-deterministically', function () {
+        const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+        psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: false });
+        psbt.signAllInputsHD(rootWalletKeys.user);
+        psbt.signAllInputsHD(rootWalletKeys.bitgo, { deterministic: false });
+        assert.ok(psbt.validateSignaturesOfAllInputs());
+        assert.ok(psbt.finalizeAllInputs());
       });
     });
 
