@@ -191,8 +191,8 @@ export function constructPsbt(
     return psbt;
   }
 
-  psbt.setMusig2NoncesHD(rootWalletKeys['user']);
-  psbt.setMusig2NoncesHD(rootWalletKeys['bitgo']);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo']);
 
   signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned');
 

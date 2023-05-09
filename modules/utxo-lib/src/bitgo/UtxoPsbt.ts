@@ -1075,52 +1075,79 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return { tapOutputKey, participantPubKey, pubNonce: Buffer.from(pubNonce) };
   }
 
-  private setMusig2NoncesInner(keyPair: BIP32Interface, keyType: 'root' | 'derived', sessionId?: Buffer): this {
+  private setMusig2NoncesInner(
+    keyPair: BIP32Interface,
+    keyType: 'root' | 'derived',
+    sessionId?: Buffer,
+    inputIndex?: number
+  ): this {
     if (keyPair.isNeutered()) {
       throw new Error('private key is required to generate nonce');
     }
     if (Buffer.isBuffer(sessionId) && sessionId.length !== 32) {
       throw new Error(`Invalid sessionId size ${sessionId.length}`);
     }
-    this.data.inputs.forEach((input, inputIndex) => {
-      if (!this.isTaprootKeyPathInput(inputIndex)) {
-        // Not a p2trMusig2 key path input, so skip it.
+    const inputs = inputIndex === undefined ? this.data.inputs : [this.data.inputs[inputIndex]];
+    inputs.forEach((input, index) => {
+      if (!this.isTaprootKeyPathInput(index)) {
         return;
       }
-      const nonce = this.createMusig2NonceForInput(inputIndex, keyPair, keyType, sessionId);
-      this.addOrUpdateProprietaryKeyValToInput(inputIndex, encodePsbtMusig2PubNonce(nonce));
+      const nonce = this.createMusig2NonceForInput(index, keyPair, keyType, sessionId);
+      this.addOrUpdateProprietaryKeyValToInput(index, encodePsbtMusig2PubNonce(nonce));
     });
     return this;
   }
 
   /**
-   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
-   * The properties tapInternalKey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are
-   * required per p2trMusig2 key path input.
-   * Also participant keys are required from psbt proprietary key values.
-   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param psbt
-   * @param derivedKeyPair derived key pair
+   * Generates and sets MuSig2 nonce to taproot key path input at inputIndex.
+   * If input is not a taproot key path, no action.
+   *
+   * @param inputIndex input index
+   * @param keyPair derived key pair
    * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
    */
-  setMusig2Nonces(derivedKeyPair: BIP32Interface, sessionId?: Buffer): this {
-    // TODO: This should take an inputIndex and only apply to that input with this derived key.
-    return this.setMusig2NoncesInner(derivedKeyPair, 'derived', sessionId);
+  setInputMusig2Nonce(inputIndex: number, keyPair: BIP32Interface, sessionId?: Buffer): this {
+    checkForInput(this.data.inputs, inputIndex);
+    return this.setMusig2NoncesInner(keyPair, 'derived', sessionId, inputIndex);
   }
 
   /**
-   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
-   * The properties tapInternalKey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are
-   * required per p2trMusig2 key path input.
-   * Also participant keys are required from psbt proprietary key values.
-   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param rootKeyPair HD key pair
+   * Generates and sets MuSig2 nonce to taproot key path input at inputIndex.
+   * If input is not a taproot key path, no action.
+   *
+   * @param inputIndex input index
+   * @param keyPair HD root key pair
    * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
    */
-  setMusig2NoncesHD(rootKeyPair: BIP32Interface, sessionId?: Buffer): this {
-    return this.setMusig2NoncesInner(rootKeyPair, 'root', sessionId);
+  setInputMusig2NonceHD(inputIndex: number, keyPair: BIP32Interface, sessionId?: Buffer): this {
+    checkForInput(this.data.inputs, inputIndex);
+    return this.setMusig2NoncesInner(keyPair, 'root', sessionId, inputIndex);
+  }
+
+  /**
+   * Generates and sets MuSig2 nonce to all taproot key path inputs. Other inputs will be skipped.
+   *
+   * @param inputIndex input index
+   * @param keyPair derived key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   */
+  setAllInputsMusig2Nonce(keyPair: BIP32Interface, sessionId?: Buffer): this {
+    return this.setMusig2NoncesInner(keyPair, 'derived', sessionId);
+  }
+
+  /**
+   * Generates and sets MuSig2 nonce to all taproot key path inputs. Other inputs will be skipped.
+   *
+   * @param inputIndex input index
+   * @param keyPair HD root key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   */
+  setAllInputsMusig2NonceHD(keyPair: BIP32Interface, sessionId?: Buffer): this {
+    return this.setMusig2NoncesInner(keyPair, 'root', sessionId);
   }
 
   clone(): this {

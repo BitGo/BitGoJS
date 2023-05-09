@@ -2053,37 +2053,7 @@ export class Wallet implements IWallet {
       return this.sendManyTss(params);
     }
 
-    const selectParams = _.pick(params, [
-      'recipients',
-      'numBlocks',
-      'feeRate',
-      'maxFeeRate',
-      'minConfirms',
-      'enforceMinConfirmsForChange',
-      'targetWalletUnspents',
-      'message',
-      'minValue',
-      'maxValue',
-      'sequenceId',
-      'lastLedgerSequence',
-      'ledgerSequenceDelta',
-      'gasPrice',
-      'noSplitChange',
-      'unspents',
-      'comment',
-      'otp',
-      'changeAddress',
-      'instant',
-      'memo',
-      'type',
-      'trustlines',
-      'transferId',
-      'stakingOptions',
-      'hop',
-      'type',
-      'sourceChain',
-      'destinationChain',
-    ]);
+    const selectParams = _.pick(params, [...this.prebuildWhitelistedParams(), 'comment', 'otp', 'hop']);
 
     if (this._wallet.type === 'custodial') {
       const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
