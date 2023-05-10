@@ -5,8 +5,9 @@ import * as Bluebird from 'bluebird';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+export type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type WalletUnspentLegacy<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspentLegacy<TNumber>;
@@ -18,6 +19,7 @@ import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 
 import { decrypt } from '@bitgo/sdk-api';
 import { signAndVerifyWalletTransaction } from '../sign';
+
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
   faultyTxId: string;

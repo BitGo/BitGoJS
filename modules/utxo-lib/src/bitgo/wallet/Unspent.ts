@@ -146,21 +146,16 @@ export function addWalletUnspentToPsbt(
     throw new Error(`network parameter does not match psbt.network`);
   }
   const { txid, vout, script, value } = toPrevOutput(u, psbt.network);
-  const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
-  const scriptType = scriptTypeForChain(u.chain);
-  psbt.addInput({
-    hash: txid,
-    index: vout,
-    witnessUtxo: {
-      script,
-      value,
-    },
-  });
+
+  psbt.addInput({ hash: txid, index: vout });
   const inputIndex = psbt.inputCount - 1;
+
   // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
-  if (!isSegwit(u.chain) && getMainnet(psbt.network) !== networks.zcash) {
+  if (isSegwit(u.chain) || getMainnet(psbt.network) === networks.zcash) {
+    psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
+  } else {
     if (!isUnspentWithPrevTx(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }
@@ -171,6 +166,8 @@ export function addWalletUnspentToPsbt(
     psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
   }
 
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
+  const scriptType = scriptTypeForChain(u.chain);
   const isBackupFlow = signer === 'backup' || cosigner === 'backup';
 
   if (scriptType === 'p2tr' || (scriptType === 'p2trMusig2' && isBackupFlow)) {

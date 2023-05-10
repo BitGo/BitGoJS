@@ -35,6 +35,8 @@ import {
   musig2PartialSigVerify,
   musig2AggregateSigs,
   getSigHashTypeFromSigs,
+  musig2DeterministicSign,
+  createMusig2DeterministicNonce,
 } from './Musig2';
 import { isTuple, Tuple } from './types';
 
@@ -45,6 +47,25 @@ export enum ProprietaryKeySubtype {
   MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
   MUSIG2_PUB_NONCE = 0x02,
   MUSIG2_PARTIAL_SIG = 0x03,
+}
+
+type SignatureParams = {
+  /** When true, and add the second (last) nonce and signature for a taproot key
+   * path spend deterministically. Throws an error if done for the first nonce/signature
+   * of a taproot keypath spend. Ignore for all other input types.
+   */
+  deterministic: boolean;
+  /** Allowed sighash types */
+  sighashTypes: number[];
+};
+
+const defaultSignatureParams = {
+  deterministic: false,
+  sighashTypes: [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL],
+};
+
+function toSignatureParams(v: Partial<SignatureParams> | number[]): SignatureParams {
+  return Array.isArray(v) ? toSignatureParams({ sighashTypes: v }) : { ...defaultSignatureParams, ...v };
 }
 
 export interface HDTaprootSigner extends HDSigner {
@@ -536,7 +557,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType], leafHash);
       results.push(eccLib.verifySchnorr(hash, pubkey, sig));
     }
-    return results.every((res) => res === true);
+    return results.every((res) => res);
   }
 
   /**
@@ -581,22 +602,23 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   signAllInputsHD(
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
-    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+    params: number[] | Partial<SignatureParams> = defaultSignatureParams
   ): this {
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
       throw new Error('Need HDSigner to sign input');
     }
+    const { sighashTypes, deterministic } = toSignatureParams(params);
 
     const results: boolean[] = [];
     for (let i = 0; i < this.data.inputs.length; i++) {
       try {
-        this.signInputHD(i, hdKeyPair, sighashTypes);
+        this.signInputHD(i, hdKeyPair, { sighashTypes, deterministic });
         results.push(true);
       } catch (err) {
         results.push(false);
       }
     }
-    if (results.every((v) => v === false)) {
+    if (results.every((v) => !v)) {
       throw new Error('No inputs were signed');
     }
     return this;
@@ -608,7 +630,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   signTaprootInputHD(
     inputIndex: number,
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
-    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+    { sighashTypes = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL], deterministic = false } = {}
   ): this {
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
       throw new Error('Need HDSigner to sign input');
@@ -653,15 +675,20 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         }
         return signer;
       });
-      signers.forEach((signer) => this.signTaprootMusig2Input(inputIndex, signer, sighashTypes));
+      signers.forEach((signer) => this.signTaprootMusig2Input(inputIndex, signer, { sighashTypes, deterministic }));
     }
     return this;
   }
 
-  signInputHD(inputIndex: number, hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer, sighashTypes?: number[]): this {
+  signInputHD(
+    inputIndex: number,
+    hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
+    params: number[] | Partial<SignatureParams> = defaultSignatureParams
+  ): this {
+    const { sighashTypes, deterministic } = toSignatureParams(params);
     const input = checkForInput(this.data.inputs, inputIndex);
     if (input.tapBip32Derivation?.length) {
-      return this.signTaprootInputHD(inputIndex, hdKeyPair, sighashTypes);
+      return this.signTaprootInputHD(inputIndex, hdKeyPair, { sighashTypes, deterministic });
     } else {
       return super.signInputHD(inputIndex, hdKeyPair, sighashTypes);
     }
@@ -689,14 +716,17 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
   /**
    * Signs p2tr musig2 key path input with 2 aggregated keys.
+   *
+   * Note: Only can sign deterministically as the cosigner
    * @param inputIndex
    * @param signer - XY public key and private key are required
    * @param sighashTypes
+   * @param deterministic If true, sign the musig input deterministically
    */
   signTaprootMusig2Input(
     inputIndex: number,
     signer: Musig2Signer,
-    sighashTypes: number[] = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL]
+    { sighashTypes = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL], deterministic = false } = {}
   ): this {
     const input = checkForInput(this.data.inputs, inputIndex);
 
@@ -707,6 +737,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('tapMerkleRoot is required for p2tr musig2 key path signing');
     }
 
+    // Retrieve and check that we have two participant nonces
     const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
     const { tapOutputKey, participantPubKeys } = participants;
     const signerPubKey = participantPubKeys.find((pubKey) => pubKey.equals(signer.publicKey));
@@ -717,19 +748,40 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const nonces = this.getMusig2Nonces(inputIndex, participants);
     const { hash, sighashType } = this.getTaprootHashForSig(inputIndex, sighashTypes);
 
-    const sessionKey = createMusig2SigningSession({
-      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
-      pubKeys: participantPubKeys,
-      txHash: hash,
-      internalPubKey: input.tapInternalKey,
-      tapTreeRoot: input.tapMerkleRoot,
-    });
+    let partialSig: Buffer;
+    if (deterministic) {
+      if (!signerPubKey.equals(participantPubKeys[1])) {
+        throw new Error('can only add a deterministic signature on the cosigner');
+      }
 
-    const signerNonce = nonces.find((kv) => kv.participantPubKey.equals(signerPubKey));
-    if (!signerNonce) {
-      throw new Error('pubNonce is missing. retry signing process');
+      const firstSignerNonce = nonces.find((n) => n.participantPubKey.equals(participantPubKeys[0]));
+      if (!firstSignerNonce) {
+        throw new Error('could not find the user nonce');
+      }
+
+      partialSig = musig2DeterministicSign({
+        privateKey: signer.privateKey,
+        otherNonce: firstSignerNonce.pubNonce,
+        publicKeys: participantPubKeys,
+        internalPubKey: input.tapInternalKey,
+        tapTreeRoot: input.tapMerkleRoot,
+        hash,
+      }).sig;
+    } else {
+      const sessionKey = createMusig2SigningSession({
+        pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+        pubKeys: participantPubKeys,
+        txHash: hash,
+        internalPubKey: input.tapInternalKey,
+        tapTreeRoot: input.tapMerkleRoot,
+      });
+
+      const signerNonce = nonces.find((kv) => kv.participantPubKey.equals(signerPubKey));
+      if (!signerNonce) {
+        throw new Error('pubNonce is missing. retry signing process');
+      }
+      partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
     }
-    let partialSig = musig2PartialSign(signer.privateKey, signerNonce.pubNonce, sessionKey, this.nonceStore);
 
     if (sighashType !== Transaction.SIGHASH_DEFAULT) {
       partialSig = Buffer.concat([partialSig, Buffer.of(sighashType)]);
@@ -802,7 +854,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     throw new Error('not a taproot input');
   }
 
-  getTaprootHashForSig(
+  private getTaprootHashForSig(
     inputIndex: number,
     sighashTypes?: number[],
     leafHash?: Buffer
@@ -944,7 +996,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     inputIndex: number,
     keyPair: BIP32Interface,
     keyType: 'root' | 'derived',
-    sessionId?: Buffer
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
   ): PsbtMusig2PubNonce {
     const input = this.data.inputs[inputIndex];
     if (!input.tapInternalKey) {
@@ -981,63 +1033,141 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     const { hash } = this.getTaprootHashForSig(inputIndex);
 
-    const pubNonce = this.nonceStore.createMusig2Nonce(
-      derivedKeyPair.privateKey,
-      participantPubKey,
-      tapOutputKey,
-      hash,
-      sessionId
-    );
+    let pubNonce: Buffer;
+    if (params.deterministic) {
+      if (params.sessionId) {
+        throw new Error('Cannot add extra entropy when generating a deterministic nonce');
+      }
+      // There must be only 2 participant pubKeys if it got to this point
+      if (!participantPubKey.equals(participantPubKeys[1])) {
+        throw new Error(`Only the cosigner's nonce can be set deterministically`);
+      }
+      const nonces = parsePsbtMusig2Nonces(this, inputIndex);
+      if (!nonces) {
+        throw new Error(`No nonces found on input #${inputIndex}`);
+      }
+      if (nonces.length > 2) {
+        throw new Error(`Cannot have more than 2 nonces`);
+      }
+      const firstSignerNonce = nonces.find((kv) => kv.participantPubKey.equals(participantPubKeys[0]));
+      if (!firstSignerNonce) {
+        throw new Error('signer nonce must be set if cosigner nonce is to be derived deterministically');
+      }
 
-    return { tapOutputKey, participantPubKey, pubNonce: Buffer.from(pubNonce) };
+      pubNonce = createMusig2DeterministicNonce({
+        privateKey: derivedKeyPair.privateKey,
+        otherNonce: firstSignerNonce.pubNonce,
+        publicKeys: participantPubKeys,
+        internalPubKey: input.tapInternalKey,
+        tapTreeRoot: input.tapMerkleRoot,
+        hash,
+      });
+    } else {
+      pubNonce = Buffer.from(
+        this.nonceStore.createMusig2Nonce(
+          derivedKeyPair.privateKey,
+          participantPubKey,
+          tapOutputKey,
+          hash,
+          params.sessionId
+        )
+      );
+    }
+
+    return { tapOutputKey, participantPubKey, pubNonce };
   }
 
-  private setMusig2NoncesInner(keyPair: BIP32Interface, keyType: 'root' | 'derived', sessionId?: Buffer): this {
+  private setMusig2NoncesInner(
+    keyPair: BIP32Interface,
+    keyType: 'root' | 'derived',
+    inputIndex?: number,
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
+  ): this {
     if (keyPair.isNeutered()) {
       throw new Error('private key is required to generate nonce');
     }
-    if (Buffer.isBuffer(sessionId) && sessionId.length !== 32) {
-      throw new Error(`Invalid sessionId size ${sessionId.length}`);
+    if (Buffer.isBuffer(params.sessionId) && params.sessionId.length !== 32) {
+      throw new Error(`Invalid sessionId size ${params.sessionId.length}`);
     }
-    this.data.inputs.forEach((input, inputIndex) => {
+
+    const inputs = inputIndex === undefined ? this.data.inputs : [checkForInput(this.data.inputs, inputIndex)];
+    inputs.forEach((input, index) => {
       if (!input.tapInternalKey) {
         // Not a p2trMusig2 key path input, so skip it.
         return;
       }
-      const nonce = this.createMusig2NonceForInput(inputIndex, keyPair, keyType, sessionId);
-      this.addOrUpdateProprietaryKeyValToInput(inputIndex, encodePsbtMusig2PubNonce(nonce));
+      const nonce = this.createMusig2NonceForInput(index, keyPair, keyType, params);
+      this.addOrUpdateProprietaryKeyValToInput(index, encodePsbtMusig2PubNonce(nonce));
     });
     return this;
   }
 
   /**
-   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
-   * The properties tapInternalKey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are
-   * required per p2trMusig2 key path input.
-   * Also participant keys are required from psbt proprietary key values.
-   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param psbt
-   * @param derivedKeyPair derived key pair
+   * Generates and sets MuSig2 nonce to taproot key path input at inputIndex.
+   * If input is not a taproot key path, no action.
+   *
+   * @param inputIndex input index
+   * @param keyPair derived key pair
    * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   * @param deterministic If true, set the cosigner nonce deterministically
    */
-  setMusig2Nonces(derivedKeyPair: BIP32Interface, sessionId?: Buffer): this {
+  setInputMusig2Nonce(
+    inputIndex: number,
+    derivedKeyPair: BIP32Interface,
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
+  ): this {
     // TODO: This should take an inputIndex and only apply to that input with this derived key.
-    return this.setMusig2NoncesInner(derivedKeyPair, 'derived', sessionId);
+    return this.setMusig2NoncesInner(derivedKeyPair, 'derived', inputIndex, params);
   }
 
   /**
-   * Generates and sets Musig2 nonces to p2trMusig2 key path spending inputs.
-   * The properties tapInternalKey, tapMerkleRoot, tapBip32Derivation for derivedWalletKey are
-   * required per p2trMusig2 key path input.
-   * Also participant keys are required from psbt proprietary key values.
-   * Ref: https://gist.github.com/sanket1729/4b525c6049f4d9e034d27368c49f28a6
-   * @param rootKeyPair HD key pair
+   * Generates and sets MuSig2 nonce to taproot key path input at inputIndex.
+   * If input is not a taproot key path, no action.
+   *
+   * @param inputIndex input index
+   * @param keyPair HD root key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   * @param deterministic If true, set the cosigner nonce deterministically
+   */
+  setInputMusig2NonceHD(
+    inputIndex: number,
+    keyPair: BIP32Interface,
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
+  ): this {
+    checkForInput(this.data.inputs, inputIndex);
+    return this.setMusig2NoncesInner(keyPair, 'root', inputIndex, params);
+  }
+
+  /**
+   * Generates and sets MuSig2 nonce to all taproot key path inputs. Other inputs will be skipped.
+   *
+   * @param inputIndex input index
+   * @param keyPair derived key pair
    * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
    * (converted to an array of 32 bytes), or 32 uniformly random bytes.
    */
-  setMusig2NoncesHD(rootKeyPair: BIP32Interface, sessionId?: Buffer): this {
-    return this.setMusig2NoncesInner(rootKeyPair, 'root', sessionId);
+  setAllInputsMusig2Nonce(
+    keyPair: BIP32Interface,
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
+  ): this {
+    return this.setMusig2NoncesInner(keyPair, 'derived', undefined, params);
+  }
+
+  /**
+   * Generates and sets MuSig2 nonce to all taproot key path inputs. Other inputs will be skipped.
+   *
+   * @param inputIndex input index
+   * @param keyPair HD root key pair
+   * @param sessionId Optional extra entropy. If provided it must either be a counter unique to this secret key,
+   * (converted to an array of 32 bytes), or 32 uniformly random bytes.
+   */
+  setAllInputsMusig2NonceHD(
+    keyPair: BIP32Interface,
+    params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
+  ): this {
+    return this.setMusig2NoncesInner(keyPair, 'root', undefined, params);
   }
 
   clone(): this {

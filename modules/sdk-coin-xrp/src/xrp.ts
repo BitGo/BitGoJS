@@ -564,6 +564,7 @@ export class Xrp extends BaseCoin {
     if (isUnsignedSweep) {
       return {
         txHex: txJSON,
+        coin: this.getChain(),
       };
     }
     const rippleLib = ripple();

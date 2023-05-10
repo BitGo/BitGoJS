@@ -637,6 +637,24 @@ describe('Recovery:', function () {
       recovery.should.have.property('tx');
     });
 
+    it('should construct an eip1559 recovery transaction without BitGo', async function () {
+      const eip1559RecoveryParams = {
+        ...recoveryParams,
+        eip1559: {
+          maxPriorityFeePerGas: 3,
+          maxFeePerGas: 20,
+        },
+      };
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+      const recovery = await basecoin.recover(eip1559RecoveryParams);
+      // id and tx will always be different because of expireTime
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+
     it('should construct a recovery transaction without BitGo and with KRS', async function () {
       recoveryNocks.nockEthRecovery(bitgo);
 

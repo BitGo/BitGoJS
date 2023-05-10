@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+
 import {
   createOutputScriptP2shP2pk,
   ScriptType,
@@ -12,15 +13,21 @@ import {
   addWalletUnspentToPsbt,
   createPsbtForNetwork,
   getExternalChainCode,
+  getSignatureVerifications,
   isWalletUnspent,
   KeyName,
+  parseSignatureScript2Of3,
+  getInternalChainCode,
   RootWalletKeys,
+  toOutput,
   Unspent,
   UtxoPsbt,
+  UtxoTransaction,
+  verifySignatureWithUnspent,
+  WalletUnspent,
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
-import { getInternalChainCode } from '../bitgo';
 
 /**
  * input script type and value.
@@ -175,8 +182,8 @@ export function constructPsbt(
     return psbt;
   }
 
-  psbt.setMusig2NoncesHD(rootWalletKeys['user']);
-  psbt.setMusig2NoncesHD(rootWalletKeys['bitgo']);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo']);
 
   signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned');
 
@@ -185,4 +192,33 @@ export function constructPsbt(
   }
 
   return psbt;
+}
+
+/**
+ * Verifies signatures of fully signed tx (with taproot key path support).
+ * NOTE: taproot key path tx can only be built and signed with PSBT.
+ */
+export function verifyFullySignedSignatures(
+  tx: UtxoTransaction<bigint>,
+  unspents: WalletUnspent<bigint>[],
+  walletKeys: RootWalletKeys,
+  signer: KeyName,
+  cosigner: KeyName
+): boolean {
+  const prevOutputs = unspents.map((u) => toOutput(u, tx.network));
+  return unspents.every((u, index) => {
+    if (parseSignatureScript2Of3(tx.ins[index]).scriptType === 'taprootKeyPathSpend') {
+      const result = getSignatureVerifications(tx, index, u.value, undefined, prevOutputs);
+      return result.length === 1 && result[0].signature;
+    } else {
+      const result = verifySignatureWithUnspent(tx, index, unspents, walletKeys);
+      if ((signer === 'user' && cosigner === 'bitgo') || (signer === 'bitgo' && cosigner === 'user')) {
+        return result[0] && !result[1] && result[2];
+      } else if ((signer === 'user' && cosigner === 'backup') || (signer === 'backup' && cosigner === 'user')) {
+        return result[0] && result[1] && !result[2];
+      } else {
+        return !result[0] && result[1] && result[2];
+      }
+    }
+  });
 }

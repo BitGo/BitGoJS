@@ -520,6 +520,7 @@ export enum UnderlyingAsset {
   FXS = 'fxs',
   GAL = 'gal',
   GALA = 'gala',
+  GALAV2 = 'galav2',
   GAMMA = 'gamma',
   GARI = 'gari',
   GATE = 'gate',

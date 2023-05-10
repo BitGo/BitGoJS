@@ -1791,12 +1791,23 @@ export class Wallet implements IWallet {
       throw error;
     }
 
-    // call prebuildTransaction and keychains-get in parallel
-    // the prebuild can be overridden by providing an explicit tx
-    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
-
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
 
+    // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    try {
+      if (keychains[0].encryptedPrv) {
+        this.bitgo.decrypt({ input: keychains[0].encryptedPrv as string, password: params.walletPassphrase });
+      }
+    } catch (e) {
+      const error: any = new Error(
+        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
+      );
+      error.code = 'wallet_passphrase_incorrect';
+      throw error;
+    }
+
+    // the prebuild can be overridden by providing an explicit tx
+    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
@@ -2042,37 +2053,7 @@ export class Wallet implements IWallet {
       return this.sendManyTss(params);
     }
 
-    const selectParams = _.pick(params, [
-      'recipients',
-      'numBlocks',
-      'feeRate',
-      'maxFeeRate',
-      'minConfirms',
-      'enforceMinConfirmsForChange',
-      'targetWalletUnspents',
-      'message',
-      'minValue',
-      'maxValue',
-      'sequenceId',
-      'lastLedgerSequence',
-      'ledgerSequenceDelta',
-      'gasPrice',
-      'noSplitChange',
-      'unspents',
-      'comment',
-      'otp',
-      'changeAddress',
-      'instant',
-      'memo',
-      'type',
-      'trustlines',
-      'transferId',
-      'stakingOptions',
-      'hop',
-      'type',
-      'sourceChain',
-      'destinationChain',
-    ]);
+    const selectParams = _.pick(params, [...this.prebuildWhitelistedParams(), 'comment', 'otp', 'hop']);
 
     if (this._wallet.type === 'custodial') {
       const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));

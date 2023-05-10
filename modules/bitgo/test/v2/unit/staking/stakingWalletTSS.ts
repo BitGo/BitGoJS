@@ -22,10 +22,12 @@ describe('TSS Staking Wallet', function () {
   let bitgo;
   let nearBaseCoin;
   let ethBaseCoin;
+  let atomBaseCoin;
   let enterprise;
   let ethWalletData: any;
   let nearStakingWallet: StakingWallet;
   let ethStakingWallet: StakingWallet;
+  let atomStakingWallet: StakingWallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
@@ -34,6 +36,8 @@ describe('TSS Staking Wallet', function () {
     nearBaseCoin.keychains();
     ethBaseCoin = bitgo.coin('eth');
     ethBaseCoin.keychains();
+    atomBaseCoin = bitgo.coin('atom');
+    atomBaseCoin.keychains();
     enterprise = new Enterprise(bitgo, nearBaseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'TSS Test Enterprise' });
     const tssWalletData = {
       id: 'walletIdTss',
@@ -53,6 +57,9 @@ describe('TSS Staking Wallet', function () {
     };
     const ethWallet = new Wallet(bitgo, ethBaseCoin, ethWalletData);
     ethStakingWallet = ethWallet.toStakingWallet();
+
+    const atomWallet = new Wallet(bitgo, atomBaseCoin, { ...tssWalletData, coin: 'atom' });
+    atomStakingWallet = atomWallet.toStakingWallet();
   });
 
   describe('buildSignAndSend', function () {
@@ -109,40 +116,44 @@ describe('TSS Staking Wallet', function () {
 
       stakingTransaction.should.deepEqual(transaction);
     });
+    
+    it('should build and sign but not send transaction for ETH TSS or ECDSA based TSS Coin', async function () {
+      [ethStakingWallet, atomStakingWallet].forEach(async (ecdsaStakingWallet) => {
+        const walletPassphrase = 'passphrase';
+        const transaction = fixtures.transaction('READY');
+        const deleteSignatureShares = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+        deleteSignatureShares.resolves([]);
+        deleteSignatureShares.calledOnceWithExactly(transaction.id);
 
-    it('should build and sign but not send transaction ETH TSS', async function () {
-      const walletPassphrase = 'passphrase';
-      const transaction = fixtures.transaction('READY');
-      const deleteSignatureShares = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
-      deleteSignatureShares.resolves([]);
-      deleteSignatureShares.calledOnceWithExactly(transaction.id);
+        const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
+        const keyChain: Keychain = {
+          id: 'id',
+          pub: 'pub',
+          type: 'tss',
+        };
+        getKeysForSigning.resolves([keyChain]);
+        getKeysForSigning.calledOnce;
 
-      const getKeysForSigning = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
-      const keyChain: Keychain = {
-        id: 'id',
-        pub: 'pub',
-        type: 'tss',
-      };
-      getKeysForSigning.resolves([keyChain]);
-      getKeysForSigning.calledOnce;
+        const signTransaction = sandbox.stub(Wallet.prototype, 'signTransaction');
+        signTransaction.resolves({ txRequestId: fixtures.txRequestId });
+        signTransaction.calledOnceWithExactly({
+          txPrebuild: {
+            txRequestId: fixtures.txRequestId,
+          },
+          walletPassphrase: walletPassphrase,
+          keychain: keyChain,
+        });
 
-      const signTransaction = sandbox.stub(Wallet.prototype, 'signTransaction');
-      signTransaction.resolves({ txRequestId: fixtures.txRequestId });
-      signTransaction.calledOnceWithExactly({
-        txPrebuild: {
-          txRequestId: fixtures.txRequestId,
-        },
-        walletPassphrase: walletPassphrase,
-        keychain: keyChain,
+        const stakingTransaction = await ecdsaStakingWallet.buildSignAndSend(
+          { walletPassphrase: walletPassphrase },
+          transaction,
+        );
+
+        stakingTransaction.should.deepEqual(transaction);
       });
 
-      const stakingTransaction = await ethStakingWallet.buildSignAndSend(
-        { walletPassphrase: walletPassphrase },
-        transaction,
-      );
-
-      stakingTransaction.should.deepEqual(transaction);
     });
 
   });
+
 });

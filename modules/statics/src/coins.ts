@@ -2781,6 +2781,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GALA
   ),
   erc20(
+    'b328e2d5-ef04-445c-a927-b70d35af2d01',
+    'galav2',
+    'galav2',
+    8,
+    '0xd1d2eb1b1e90b638588728b4130137d262c87cae',
+    UnderlyingAsset.GALAV2
+  ),
+  erc20(
     '2a3b4d48-1e59-4c1d-840a-d992b484a3b2',
     'gamma',
     'Gamma',
