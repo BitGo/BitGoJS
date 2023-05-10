@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.1...@bitgo/sdk-coin-eth@4.4.2) (2023-05-10)
+
+### Bug Fixes
+
+- **sdk-coin-eth:** fix eth multisig recoveries ([6e49792](https://github.com/BitGo/BitGoJS/commit/6e49792bfdb670a9e10dad10df932767b8ac6cdd))
+
 ## [4.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.0...@bitgo/sdk-coin-eth@4.4.1) (2023-05-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

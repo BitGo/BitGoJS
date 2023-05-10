@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.1.3...@bitgo/utxo-ord@1.2.0) (2023-05-10)
+
+### Features
+
+- **sdk-coin-btc:** find & use supplementary unspents in case ([fc321ee](https://github.com/BitGo/BitGoJS/commit/fc321ee1fccfae2d6676070fb32d8d4dee531aaf))
+
 ## [1.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.1.2...@bitgo/utxo-ord@1.1.3) (2023-05-03)
 
 **Note:** Version bump only for package @bitgo/utxo-ord

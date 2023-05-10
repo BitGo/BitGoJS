@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.1.0...@bitgo/utxo-lib@8.2.0) (2023-05-10)
+
+### Bug Fixes
+
+- **utxo-lib:** witness utxo should not be added for non-segwit PSBT input ([5921045](https://github.com/BitGo/BitGoJS/commit/59210451ff32ef6f9dea1a4d008a7a8b80c58b23))
+
+### Features
+
+- **utxo-lib:** add musig2 nonce at input index ([9991d3f](https://github.com/BitGo/BitGoJS/commit/9991d3ff4fbecc326c8fc67e523a5108843a0f9d))
+- **utxo-lib:** migrate deterministic signing into utxopsbt ([535ba30](https://github.com/BitGo/BitGoJS/commit/535ba30e1478c6809cf255d4a45a50cfe18969e6))
+- **utxo-lib:** verify fully signed musig2 tx signature ([dc8174e](https://github.com/BitGo/BitGoJS/commit/dc8174e59184818a58920cc2149fbd359c57a490))
+
 # [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.2...@bitgo/utxo-lib@8.1.0) (2023-05-03)
 
 ### Features

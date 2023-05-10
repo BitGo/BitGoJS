@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.1...bitgo@18.3.0) (2023-05-10)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix eth multisig recoveries ([6e49792](https://github.com/BitGo/BitGoJS/commit/6e49792bfdb670a9e10dad10df932767b8ac6cdd))
+
+
+### Features
+
+* **sdk-core:** pre validate wallet pass phrase ([77f37e6](https://github.com/BitGo/BitGoJS/commit/77f37e6e811aa61a8ba577136f01fab073ef8fe4))
+* **sdk-core:** stop calling staking service send api for full version ([49d13f1](https://github.com/BitGo/BitGoJS/commit/49d13f1c4a3660bfd75b7072f19f612fe040b0e4))
+
+
+
+
+
 ## [18.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.0...bitgo@18.2.1) (2023-05-03)
 
 

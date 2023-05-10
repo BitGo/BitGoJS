@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.3.0...@bitgo/sdk-core@8.4.0) (2023-05-10)
+
+### Features
+
+- **sdk-core:** add more whitelisted build params ([f468837](https://github.com/BitGo/BitGoJS/commit/f4688370df274e42622cb1e67b617f30c486ab70))
+- **sdk-core:** pre validate wallet pass phrase ([77f37e6](https://github.com/BitGo/BitGoJS/commit/77f37e6e811aa61a8ba577136f01fab073ef8fe4))
+- **sdk-core:** stop calling staking service send api for full version ([49d13f1](https://github.com/BitGo/BitGoJS/commit/49d13f1c4a3660bfd75b7072f19f612fe040b0e4))
+
 # [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.2.0...@bitgo/sdk-core@8.3.0) (2023-05-03)
 
 ### Bug Fixes

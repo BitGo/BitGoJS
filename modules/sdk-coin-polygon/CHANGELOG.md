@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.5.3...@bitgo/sdk-coin-polygon@1.5.4) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polygon
+
 ## [1.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.5.2...@bitgo/sdk-coin-polygon@1.5.3) (2023-05-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

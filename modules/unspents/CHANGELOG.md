@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.2...@bitgo/unspents@0.14.0) (2023-05-10)
+
+### Features
+
+- **utxo-lib:** add musig2 nonce at input index ([9991d3f](https://github.com/BitGo/BitGoJS/commit/9991d3ff4fbecc326c8fc67e523a5108843a0f9d))
+
 ## [0.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.1...@bitgo/unspents@0.13.2) (2023-05-03)
 
 **Note:** Version bump only for package @bitgo/unspents
