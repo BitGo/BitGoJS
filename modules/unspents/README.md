@@ -58,7 +58,7 @@ the newly installed package will be downloaded and `require()`'d to ensure the p
 
 ## Continuous Integration
 
-`@bitgo/unspents` uses Drone for continuous integration, which is configured by the `.drone.yml` file in the project root. However, this file should not be modified by hand. All changes to the CI process should be done by modifying the `.drone.jsonnet` file, then running `npm run generate_drone` to rebuild the `.drone.yml` file.
+`@bitgo/unspents` uses github actions for continuous integration, which is configured by the `.github/workflows/ci.yml` file in the project root. All changes to the CI process should be done by modifying the `.github/workflows/ci.yml` file.
 
 ## `Codes`
 
