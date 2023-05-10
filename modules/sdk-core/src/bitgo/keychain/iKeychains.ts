@@ -1,6 +1,7 @@
 import { IRequestTracer } from '../../api';
 import { KeyPair, KeychainsTriplet } from '../baseCoin';
 import { BackupProvider, IWallet } from '../wallet';
+import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 
@@ -130,58 +131,6 @@ export enum KeyIndices {
   BACKUP = 1,
   BITGO = 2,
 }
-
-export type BitGoKeyFromOvcShares = {
-  bitGoOutputJsonForOvc: BitGoToOvcJSON;
-  bitGoKeyId: string;
-};
-
-export type OvcToBitGoJSON = {
-  tssVersion: string;
-  walletType: string;
-  coin: string;
-  state: number;
-  ovc: {
-    1: {
-      gpgPubKey: string;
-      ovcToBitgoShare: OvcToOtherShare;
-    };
-    2: {
-      gpgPubKey: string;
-      ovcToBitgoShare: OvcToOtherShare;
-      ovcToOvcShare: OvcToOtherShare;
-    };
-  };
-};
-
-export type BitGoToOvcJSON = OvcToBitGoJSON & {
-  platform: {
-    commonKeychain: string;
-    walletHSMGPGPublicKeySigs: string;
-    ovc: {
-      // BitGo to User (OVC-1)
-      1: {
-        bitgoToOvcShare: OvcShare;
-      };
-      // BitGo to Backup (OVC-2)
-      2: {
-        bitgoToOvcShare: OvcShare;
-      };
-    };
-  };
-};
-
-export type OvcShare = {
-  publicShare: string;
-  privateShare: string;
-  vssProof: string;
-  i: number;
-  j: number;
-};
-
-export type OvcToOtherShare = OvcShare & {
-  uSig: number;
-};
 
 export interface IKeychains {
   get(params: GetKeychainOptions): Promise<Keychain>;

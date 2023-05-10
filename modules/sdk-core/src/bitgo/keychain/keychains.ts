@@ -19,10 +19,9 @@ import {
   ListKeychainsResult,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
-  OvcToBitGoJSON,
-  BitGoToOvcJSON,
-  BitGoKeyFromOvcShares,
 } from './iKeychains';
+import { decodeOrElse } from '../utils/decode';
+import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -318,34 +317,19 @@ export class Keychains implements IKeychains {
    * @param ovcOutputJson JSON format of the file downloaded from the OVC for platform
    * @returns {BitGoKeyFromOvcShares}
    */
-  async createTssBitGoKeyFromOvcShares(ovcOutputJson: OvcToBitGoJSON): Promise<BitGoKeyFromOvcShares> {
-    if (ovcOutputJson.state !== 1) {
+  async createTssBitGoKeyFromOvcShares(ovcOutputJson: unknown): Promise<BitGoKeyFromOvcShares> {
+    const decodedOvcOutput = decodeOrElse(OvcToBitGoJSON.name, OvcToBitGoJSON, ovcOutputJson, (errors) => {
+      throw new Error(`Error(s) parsing OVC JSON: ${errors}`);
+    });
+
+    if (decodedOvcOutput.state !== 1) {
       throw new Error('State expected to be "1". Please complete the first two OVC operations');
-    }
-    if (!ovcOutputJson.coin) {
-      throw new Error('No coin set, unable to parse OVC JSON');
-    }
-    if (!ovcOutputJson.ovc || Object.keys(ovcOutputJson.ovc).length !== 2) {
-      throw new Error(`The 'ovc' property doesn't exist or is malformed`);
     }
 
     // OVC-1 is responsible for the User key
-    const ovc1 = ovcOutputJson.ovc[1];
+    const ovc1 = decodedOvcOutput.ovc[1];
     // OVC-2 is responsible for the Backup key
-    const ovc2 = ovcOutputJson.ovc[2];
-
-    if (!ovc1 || !ovc2) {
-      throw new Error('Missing data from OVC-1 or OVC-2');
-    }
-
-    const userGPGPublicKey = ovc1.gpgPubKey;
-    if (!userGPGPublicKey) {
-      throw new Error('GPG public key from OVC-1 is missing');
-    }
-    const backupGPGPublicKey = ovc2.gpgPubKey;
-    if (!backupGPGPublicKey) {
-      throw new Error('GPG public key from OVC-2 is missing');
-    }
+    const ovc2 = decodedOvcOutput.ovc[2];
 
     const keyShares: ApiKeyShare[] = [
       {
@@ -370,8 +354,8 @@ export class Keychains implements IKeychains {
       source: 'bitgo',
       keyShares,
       keyType: 'tss',
-      userGPGPublicKey,
-      backupGPGPublicKey,
+      userGPGPublicKey: ovc1.gpgPubKey,
+      backupGPGPublicKey: ovc2.gpgPubKey,
     });
     assert(key.keyShares);
     assert(key.commonKeychain);
@@ -389,8 +373,8 @@ export class Keychains implements IKeychains {
     assert(bitgoToBackupShare.vssProof);
 
     // Create JSON data with platform shares for OVC-1 and OVC-2
-    const bitgoToOvcOutput: BitGoToOvcJSON = {
-      ...ovcOutputJson,
+    const bitgoToOvcOutput = {
+      ...decodedOvcOutput,
       platform: {
         commonKeychain: key.commonKeychain,
         walletHSMGPGPublicKeySigs: key.walletHSMGPGPublicKeySigs,
@@ -422,9 +406,13 @@ export class Keychains implements IKeychains {
     // Mark it ready for next operation, should be 2
     bitgoToOvcOutput.state += 1;
 
-    return {
+    const output = {
       bitGoKeyId: key.id,
       bitGoOutputJsonForOvc: bitgoToOvcOutput,
     };
+
+    return decodeOrElse(BitGoKeyFromOvcShares.name, BitGoKeyFromOvcShares, output, (errors) => {
+      throw new Error(`Error producing the output: ${errors}`);
+    });
   }
 }

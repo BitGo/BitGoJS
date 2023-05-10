@@ -9,5 +9,6 @@ export * from './promise-utils';
 export * from './triple';
 export * from './tss';
 export * from './util';
+export * from './decode';
 
 export { openpgpUtils };
