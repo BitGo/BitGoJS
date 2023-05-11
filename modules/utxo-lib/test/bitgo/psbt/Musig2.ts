@@ -11,6 +11,7 @@ import {
   RootWalletKeys,
   scriptTypeForChain,
   UtxoTransaction,
+  verifySignatureWithUnspent,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
@@ -114,6 +115,13 @@ describe('p2trMusig2', function () {
       });
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
       assert.ok(verifyFullySignedSignatures(tx, unspents, rootWalletKeys, 'bitgo', 'user'));
+      unspents.map((unspent, inputIndex) => {
+        assert.deepStrictEqual(verifySignatureWithUnspent(tx, inputIndex, unspents, rootWalletKeys), [
+          true,
+          false,
+          true,
+        ]);
+      });
     });
 
     it(`parse tx`, function () {
