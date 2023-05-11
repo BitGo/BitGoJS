@@ -9,7 +9,7 @@ import {
   toXOnlyPublicKey,
 } from '../outputScripts';
 import { toOutputScript } from '../../address';
-import { signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
+import { getSignatureVerifications, signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
 import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { KeyName, RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -19,6 +19,7 @@ import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { encodePsbtMusig2Participants } from '../Musig2';
 import { createTransactionFromBuffer } from '../transaction';
+import { parseSignatureScript } from '../parseInput';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -81,10 +82,21 @@ export function verifySignatureWithUnspent<TNumber extends number | bigint>(
   if (!isWalletUnspent(unspent)) {
     return [false, false, false];
   }
+
+  const prevOutputs = unspents.map((u) => toOutput(u, tx.network));
+  const parsedInput = parseSignatureScript(tx.ins[inputIndex]);
+  // If it is a taproot keyPathSpend input, the only valid signature combinations is user-bitgo. We can
+  // only verify that the aggregated signature is valid, not that the individual partial-signature is valid.
+  // Therefore, we can only say that either all partial signatures are valid, or none are.
+  if (parsedInput.scriptType === 'taprootKeyPathSpend') {
+    const result = getSignatureVerifications(tx, inputIndex, unspent.value, undefined, prevOutputs);
+    return result.length === 1 && result[0].signature ? [true, false, true] : [false, false, false];
+  }
+
   return verifySignatureWithPublicKeys(
     tx,
     inputIndex,
-    unspents.map((u) => toOutput(u, tx.network)),
+    prevOutputs,
     walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys
   ) as Triple<boolean>;
 }
