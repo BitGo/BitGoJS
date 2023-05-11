@@ -13,7 +13,7 @@ import {
   UtxoTransaction,
 } from '../../../src/bitgo';
 
-import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
+import { getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
 import {
   createTapInternalKey,
   createTapOutputKey,
@@ -52,9 +52,9 @@ import {
   validateParsedTaprootScriptPathTxInput,
   validateParsedTaprootKeyPathPsbt,
   validateParsedTaprootScriptPathPsbt,
+  rootWalletKeys,
 } from './Musig2Util';
 
-const rootWalletKeys = getDefaultWalletKeys();
 const p2trMusig2Unspent = getUnspents(['p2trMusig2'], rootWalletKeys);
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;

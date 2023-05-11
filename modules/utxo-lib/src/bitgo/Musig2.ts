@@ -456,7 +456,7 @@ export function createMusig2DeterministicNonce(params: PsbtMusig2DeterministicPa
       secretKey: params.privateKey,
       aggOtherNonce: musig.nonceAgg([params.otherNonce]),
       publicKeys: params.publicKeys,
-      tweaks: [createTapTweak(params.internalPubKey, params.tapTreeRoot)],
+      tweaks: [{ tweak: createTapTweak(params.internalPubKey, params.tapTreeRoot), xOnly: true }],
       msg: params.hash,
     }).publicNonce
   );
@@ -471,7 +471,7 @@ export function musig2DeterministicSign(params: PsbtMusig2DeterministicParams): 
     secretKey: params.privateKey,
     aggOtherNonce: musig.nonceAgg([params.otherNonce]),
     publicKeys: params.publicKeys,
-    tweaks: [createTapTweak(params.internalPubKey, params.tapTreeRoot)],
+    tweaks: [{ tweak: createTapTweak(params.internalPubKey, params.tapTreeRoot), xOnly: true }],
     msg: params.hash,
   });
   return { sig: Buffer.from(sig), sessionKey, publicNonce: Buffer.from(publicNonce) };
