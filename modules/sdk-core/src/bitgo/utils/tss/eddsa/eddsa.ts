@@ -6,7 +6,7 @@ import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib';
 import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType, CreateBackupOptions } from '../../../keychain';
+import { AddKeychainOptions, Keychain, CreateBackupOptions } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { encryptText, getBitgoGpgPubKey, createShareProof, generateGPGKeyPair } from '../../opengpgUtils';
 import {
@@ -29,7 +29,6 @@ import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YS
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
-import { createHash } from 'crypto';
 
 /**
  * Utility functions for TSS work flows.
@@ -153,7 +152,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const userKeychainParams: AddKeychainOptions = {
       source: 'user',
-      keyType: 'tss' as KeyType,
+      keyType: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       originalPasscodeEncryptionCode,
     };
@@ -525,11 +524,9 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       unsignedTx.serializedTxHex,
       encryptedSignerShare
     );
-
-    const bitgoToUserCommitment = {
+    const bitgoToUserCommitment: Commitment = {
       c: exchangeCommitmentResponse.commitment,
-      z: createHash('sha256').update(unsignedTx.serializedTxHex).digest().toString('hex'),
-    } as Commitment;
+    };
 
     await offerUserToBitgoRShare(
       this.bitgo,

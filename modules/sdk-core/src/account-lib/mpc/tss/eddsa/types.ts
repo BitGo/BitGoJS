@@ -65,7 +65,6 @@ export interface RShare {
 
 export interface Commitment {
   c: string; // A commitment of $r_j$, where $c = r_j G$.
-  z: string; // A commitment of the message being signed, $m$, where $z = H(m)$ and $H$ is a hash.
 }
 
 export interface ExchangeCommitmentResponse {
