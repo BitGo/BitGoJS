@@ -1,16 +1,25 @@
-// Ntilde Proof where both alpha and t are a set of 128 proofs each.
+/**
+ * Ntilde Proof where both alpha and t are a set of 128 proofs each.
+ * @deprecated use NtildeProof from sdk-lib-mpc instead
+ */
 interface NtildeProof<T> {
   alpha: T[];
   t: T[];
 }
 
-// Ntilde Proof
+/**
+ * Ntilde Proof
+ * @deprecated use NtildeProofs from sdk-lib-mpc instead
+ */
 interface NtildeProofs<T> {
   h1WrtH2: NtildeProof<T>;
   h2WrtH1: NtildeProof<T>;
 }
 
-// Ntilde challenge values
+/**
+ * Ntilde challenge values
+ * @deprecated use Ntilde from sdk-lib-mpc instead
+ */
 interface Ntilde<T> {
   ntilde: T;
   h1: T;
@@ -18,20 +27,47 @@ interface Ntilde<T> {
   ntildeProof?: NtildeProofs<T>;
 }
 
+/**
+ * @deprecated use DeserializedNtildeProof from sdk-lib-mpc instead
+ */
 export type DeserializedNtildeProof = NtildeProof<bigint>;
+/**
+ * @deprecated use DeserializedNtildeProofs from sdk-lib-mpc instead
+ */
 export type DeserializedNtildeProofs = NtildeProofs<bigint>;
+/**
+ * @deprecated use DeserializedNtildeProofs from sdk-lib-mpc instead
+ */
 export type DeserializedNtilde = Ntilde<bigint>;
+/**
+ * @deprecated use DeserializedNtildeWithProofs from sdk-lib-mpc instead
+ */
 export type DeserializedNtildeWithProofs = Omit<DeserializedNtilde, 'ntildeProof'> & {
   ntildeProof: DeserializedNtildeProofs;
 };
 
+/**
+ * @deprecated use SerializedNtildeProof from sdk-lib-mpc instead
+ */
 export type SerializedNtildeProof = NtildeProof<string>;
+/**
+ * @deprecated use SerializedNtildeProofs from sdk-lib-mpc instead
+ */
 export type SerializedNtildeProofs = NtildeProofs<string>;
+/**
+ * @deprecated use SerializedNtilde from sdk-lib-mpc instead
+ */
 export type SerializedNtilde = Ntilde<string>;
+/**
+ * @deprecated use SerializedNtildeWithProofs from sdk-lib-mpc instead
+ */
 export type SerializedNtildeWithProofs = Omit<SerializedNtilde, 'ntildeProof'> & {
   ntildeProof: SerializedNtildeProofs;
 };
 
+/**
+ * @deprecated use RSAModulus from sdk-lib-mpc instead
+ */
 export interface RSAModulus {
   n: bigint;
   // Sophie Germain primes.
@@ -39,7 +75,10 @@ export interface RSAModulus {
   q2: bigint;
 }
 
-// Range proof values
+/**
+ * Range proof values
+ * @deprecated use RangeProof from sdk-lib-mpc instead
+ */
 export interface RangeProof {
   z: bigint;
   u: bigint;
@@ -49,7 +88,10 @@ export interface RangeProof {
   s2: bigint;
 }
 
-// Range proof values
+/**
+ * Range proof values
+ * @deprecated use RangeProofWithCheck from sdk-lib-mpc instead
+ */
 export interface RangeProofWithCheck {
   z: bigint;
   zprm: bigint;

@@ -9,15 +9,11 @@ import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modInv, modPow } from 'bigint-mod-arith';
 import { DeserializedNtilde, DeserializedNtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
-import { OpenSSL } from '../../../../openssl';
+import { OpenSSL } from '../../openssl';
 
-// 128 as recommened by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
+// 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
 const ITERATIONS = 128;
 
-/**
- * @deprecated Use generateSafePrimes from sdk-lib-mpc instead
- * @param bitLengths
- */
 export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]> {
   const openSSL = new OpenSSL();
   await openSSL.init();
@@ -27,10 +23,6 @@ export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]
   return await Promise.all(promises);
 }
 
-/**
- * @deprecated Use generateModulus from sdk-lib-mpc instead
- * @param bitlength
- */
 async function generateModulus(bitlength: number): Promise<RSAModulus> {
   if (bitlength < 3072) {
     // https://www.keylength.com/en/6/
@@ -50,10 +42,6 @@ async function generateModulus(bitlength: number): Promise<RSAModulus> {
   return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
 }
 
-/**
- * @deprecated use randomCoPrimeTo from sdk-lib-mpc instead
- * @param x
- */
 export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
   while (true) {
     const y = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(x), true)));
@@ -68,7 +56,6 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
  * @param {number} bitlength The bit length of the modulus to generate. This should
  * be the same as the bit length of the paillier public keys used for MtA.
  * @returns {DeserializedNtilde} The generated Ntilde values.
- * @deprecated Use generateNtilde from sdk-lib-mpc instead
  */
 export async function generateNtilde(bitlength: number): Promise<DeserializedNtilde> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
@@ -123,7 +110,6 @@ export async function generateNtilde(bitlength: number): Promise<DeserializedNti
  * @param {bigint} q1 The Sophie Germain prime associated with the first safe prime p1 used to generate Ntilde.
  * @param {bigint} q2 The Sophie Germain prime associated with the second safe prime p2 used to generate Ntilde.
  * @returns {NtildeProof} The generated Ntilde Proofs.
- * @deprecated use generateNtildeProof from sdk-lib-mpc instead
  */
 export async function generateNtildeProof(
   ntilde: DeserializedNtilde,
@@ -216,7 +202,6 @@ export async function verifyNtildeProof(
  * @param {bigint} m The plaintext.
  * @param {bigint} r The obfuscation value used to encrypt m.
  * @returns {RangeProof} The generated proof.
- * @deprecated use prove from sdk-lib-mpc instead
  */
 export async function prove(
   curve: BaseCurve,
@@ -269,7 +254,6 @@ export async function prove(
  * @param {RangeProof} proof The range proof.
  * @param {bigint} c The ciphertext.
  * @returns {boolean} True if verification succeeds.
- * @deprecated use verify from sdk-lib-mpc instead
  */
 export function verify(
   curve: BaseCurve,
@@ -328,7 +312,6 @@ export function verify(
  * @param {bigint} r The obfuscation value used to encrypt x.
  * @param {bigint} X The curve's base point raised to x.
  * @returns {RangeProofWithCheck} The generated proof.
- * @deprecated use proveWithCheck from sdk-lib-mpc instead
  */
 export async function proveWithCheck(
   curve: BaseCurve,
@@ -406,7 +389,6 @@ export async function proveWithCheck(
  * @param {bigint} c2 The manipulated ciphertext.
  * @param {bigint} X The curve's base point raised to x.
  * @returns {boolean} True if verification succeeds.
- * @deprecated use verifyWithCheck from sdk-lib-mpc instead
  */
 export function verifyWithCheck(
   curve: BaseCurve,

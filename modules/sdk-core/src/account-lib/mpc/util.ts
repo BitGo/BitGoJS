@@ -1,8 +1,18 @@
 import { PublicKey } from 'paillier-bigint';
+
+/**
+ * @deprecated Use bigIntFromBufferLE from sdk-lib-mpc instead
+ * @param buf
+ */
 export function bigIntFromBufferLE(buf: Buffer): bigint {
   return BigInt('0x' + Buffer.from(buf).reverse().toString('hex'));
 }
 
+/**
+ * @deprecated Use bigIntToBufferLE from sdk-lib-mpc instead
+ * @param n
+ * @param bytes
+ */
 export function bigIntToBufferLE(n: bigint, bytes?: number): Buffer {
   let v = n.toString(16);
   v = '0'.slice(0, v.length % 2) + v;
@@ -13,6 +23,10 @@ export function bigIntToBufferLE(n: bigint, bytes?: number): Buffer {
   return buf;
 }
 
+/**
+ * @deprecated Use bigIntFromBufferBE from sdk-lib-mpc instead
+ * @param buf
+ */
 export function bigIntFromBufferBE(buf: Buffer): bigint {
   return BigInt('0x' + buf.toString('hex'));
 }
@@ -21,6 +35,11 @@ export function bigIntFromU8ABE(buf: Uint8Array): bigint {
   return bigIntFromBufferBE(Buffer.from(buf));
 }
 
+/**
+ * @deprecated Use bigIntToBufferBE from sdk-lib-mpc instead
+ * @param n
+ * @param bytes
+ */
 export function bigIntToBufferBE(n: bigint, bytes?: number): Buffer {
   let v = n.toString(16);
   v = '0'.slice(0, v.length % 2) + v;
