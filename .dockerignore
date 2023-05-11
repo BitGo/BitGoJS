@@ -4,8 +4,6 @@ node_modules/
 .nyc_output/
 .codecov.yml
 .dockerignore
-.drone.jsonnet
-.drone.yml
 .eslintrc
 .prettierrc.yml
 **/karma.conf.js

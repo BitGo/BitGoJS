@@ -73,8 +73,6 @@ browser
 .karma.conf.js
 .travis.yml
 Dockerfile
-.drone.jsonnet
-.drone.yml
 .nvmrc
 .prettierignore
 .prettierrc.yml
