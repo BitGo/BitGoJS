@@ -30,12 +30,11 @@ import { BackupProvider, IWallet } from '../../../wallet';
 import assert from 'assert';
 import { bip32 } from '@bitgo/utxo-lib';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
-import { DeserializedNtilde, SerializedNtilde } from '../../../../account-lib/mpc/tss/ecdsa/types';
-import { generateNtilde, verifyNtildeProof } from '../../../../account-lib/mpc/tss/ecdsa/rangeproof';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { Buffer } from 'buffer';
 import { getTxRequestChallenge } from '../../../tss/common';
 import { Enterprises } from '../../../enterprise';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -791,8 +790,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     requestType: RequestType,
     index = 0
   ): Promise<{
-    enterpriseChallenge: SerializedNtilde;
-    bitgoChallenge: SerializedNtilde;
+    enterpriseChallenge: EcdsaTypes.SerializedNtilde;
+    bitgoChallenge: EcdsaTypes.SerializedNtilde;
   }> {
     const enterpriseId = this.wallet.toJSON().enterprise;
     if (!enterpriseId) {
@@ -804,8 +803,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     })();
 
     if (!shouldUseEnterpriseChallenge) {
+      const entChallenge = await EcdsaRangeProof.generateNtilde(3072);
       return {
-        enterpriseChallenge: Ecdsa.serializeNtilde(await generateNtilde(3072)),
+        enterpriseChallenge: Ecdsa.serializeNtilde(entChallenge),
         bitgoChallenge: await getTxRequestChallenge(
           this.bitgo,
           this.wallet.id(),
@@ -927,7 +927,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @param ecdhXprv xprv of the ecdh key
    * @param derivationPath the derived path at which the ecdh key will sign
    */
-  static signChallenge(challenge: SerializedNtilde, ecdhXprv: string, derivationPath: string): Buffer {
+  static signChallenge(challenge: EcdsaTypes.SerializedNtilde, ecdhXprv: string, derivationPath: string): Buffer {
     const messageToSign = this.getMessageToSignFromChallenge(challenge);
     return signMessageWithDerivedEcdhKey(messageToSign, ecdhXprv, derivationPath);
   }
@@ -936,7 +936,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * Converts challenge to a common message format which can be signed.
    * @param challenge
    */
-  static getMessageToSignFromChallenge(challenge: SerializedNtilde): string {
+  static getMessageToSignFromChallenge(challenge: EcdsaTypes.SerializedNtilde): string {
     return challenge.ntilde.concat(challenge.h1).concat(challenge.h2);
   }
 
@@ -968,12 +968,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * Verifies ZK proof for a single BitGo challenge
    * @param bitgoChallenge
    */
-  static async verifyBitGoChallenge(bitgoChallenge: SerializedNtilde): Promise<boolean> {
+  static async verifyBitGoChallenge(bitgoChallenge: EcdsaTypes.SerializedNtilde): Promise<boolean> {
     const deserializedInstChallenge = Ecdsa.deserializeNtilde(bitgoChallenge);
     if (!deserializedInstChallenge.ntildeProof) {
       throw new Error('Expected BitGo challenge proof to be present. Contact support@bitgo.com.');
     }
-    const ntildeProofH1WrtH2Verified = await verifyNtildeProof(
+    const ntildeProofH1WrtH2Verified = await EcdsaRangeProof.verifyNtildeProof(
       {
         ntilde: deserializedInstChallenge.ntilde,
         h1: deserializedInstChallenge.h1,
@@ -981,7 +981,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       },
       deserializedInstChallenge.ntildeProof.h1WrtH2
     );
-    const ntildeProofH2WrtH1Verified = await verifyNtildeProof(
+    const ntildeProofH2WrtH1Verified = await EcdsaRangeProof.verifyNtildeProof(
       {
         ntilde: deserializedInstChallenge.ntilde,
         h1: deserializedInstChallenge.h2,
@@ -1086,7 +1086,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: DeserializedNtilde
+    challenge?: EcdsaTypes.DeserializedNtilde
   ): Promise<void> {
     // Fetch user's ecdh public keychain needed for signing the challenges
     const userSigningKey = await bitgo.getSigningKeyForUser(entId);
@@ -1105,7 +1105,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     // Generate and sign enterprise challenge
-    const entChallengeWithProof = challenge ?? (await generateNtilde(3072));
+    const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(3072));
 
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       Ecdsa.serializeNtilde(entChallengeWithProof),
@@ -1136,7 +1136,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   static async uploadChallengesToEnterprise(
     bitgo: BitGoBase,
     entId: string,
-    entChallengeWithProofs: SerializedNtilde,
+    entChallengeWithProofs: EcdsaTypes.SerializedNtilde,
     entChallengeSignature: string,
     bitgoIntChallengeSignature: string,
     bitgoNitroChallengeSignature: string

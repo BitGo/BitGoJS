@@ -1,1 +1,1 @@
-export * as Ecdsa from './ecdsa';
+export * from './ecdsa';

@@ -4,8 +4,8 @@ import {
   generateNtildeProof,
   generateSafePrimes,
   verifyNtildeProof,
-} from '../../src/account-lib/mpc/tss/ecdsa/rangeproof';
-import { OpenSSL } from '../../src/openssl';
+} from '../../../../src/tss/ecdsa/rangeproof';
+import { OpenSSL } from '../../../../src/openssl';
 
 describe('h1H2DiscreteLogProofs', function () {
   let switchPrime = false;

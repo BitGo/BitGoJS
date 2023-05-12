@@ -1,2 +1,2 @@
 export * as EcdsaTypes from './types';
-export * as RangeProof from './rangeproof';
+export * as EcdsaRangeProof from './rangeproof';
