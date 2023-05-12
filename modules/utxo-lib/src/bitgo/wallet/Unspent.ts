@@ -84,13 +84,22 @@ export function verifySignatureWithUnspent<TNumber extends number | bigint>(
   }
 
   const prevOutputs = unspents.map((u) => toOutput(u, tx.network));
-  const parsedInput = parseSignatureScript(tx.ins[inputIndex]);
-  // If it is a taproot keyPathSpend input, the only valid signature combinations is user-bitgo. We can
-  // only verify that the aggregated signature is valid, not that the individual partial-signature is valid.
-  // Therefore, we can only say that either all partial signatures are valid, or none are.
-  if (parsedInput.scriptType === 'taprootKeyPathSpend') {
-    const result = getSignatureVerifications(tx, inputIndex, unspent.value, undefined, prevOutputs);
-    return result.length === 1 && result[0].signature ? [true, false, true] : [false, false, false];
+  try {
+    // If this fails to parse, that means there is no signature on the input and we can skip
+    // taprootKeyPathSpend verification
+    const parsedInput = parseSignatureScript(tx.ins[inputIndex]);
+
+    // If it is a taproot keyPathSpend input, the only valid signature combinations is user-bitgo. We can
+    // only verify that the aggregated signature is valid, not that the individual partial-signature is valid.
+    // Therefore, we can only say that either all partial signatures are valid, or none are.
+    if (parsedInput.scriptType === 'taprootKeyPathSpend') {
+      const result = getSignatureVerifications(tx, inputIndex, unspent.value, undefined, prevOutputs);
+      return result.length === 1 && result[0].signature ? [true, false, true] : [false, false, false];
+    }
+  } catch (e) {
+    if (e.message !== 'could not parse input') {
+      throw e;
+    }
   }
 
   return verifySignatureWithPublicKeys(
