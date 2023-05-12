@@ -14,15 +14,24 @@ import {
   addReplayProtectionUnspentToPsbt,
   addWalletOutputToPsbt,
   getInternalChainCode,
+  getSignatureCount,
+  UtxoTransaction,
 } from '../../../src/bitgo';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
-import { getDefaultWalletKeys, mockReplayProtectionUnspent } from '../../../src/testutil';
+import {
+  constructPsbt,
+  getDefaultWalletKeys,
+  inputScriptTypes,
+  mockReplayProtectionUnspent,
+  outputScriptTypes,
+} from '../../../src/testutil';
 
 import { defaultTestOutputAmount } from '../../transaction_util';
 import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
 
 import { mockUnspents } from '../../../src/testutil/mock';
+import { constructTxnBuilder, txnInputScriptTypes, txnOutputScriptTypes } from '../../../src/testutil/transaction';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -39,6 +48,48 @@ function getScriptTypes2Of3() {
   //  because the test suite is written with TransactionBuilder
   return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
 }
+
+describe('getSignatureCount', function () {
+  it('tx', function () {
+    const inputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
+    const outputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
+      const txb = constructTxnBuilder(inputs, outputs, network, rootWalletKeys, sign);
+      const tx = sign === 'fullsigned' ? txb.build() : txb.buildIncomplete();
+      assert.strictEqual(getSignatureCount(tx), signatureCount);
+      tx.ins.forEach((input, inputIndex) => {
+        // p2shP2pk is at 4th index, and it will only have one signature.
+        const expectedSigCount = inputIndex === 4 && signatureCount > 0 ? 1 : signatureCount;
+        assert.strictEqual(getSignatureCount([tx.ins[inputIndex]], 0), expectedSigCount);
+      });
+    });
+  });
+
+  it('psbt', function () {
+    const inputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
+    const outputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
+      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      assert.strictEqual(getSignatureCount(psbt), signatureCount);
+      psbt.data.inputs.forEach((input, inputIndex) => {
+        // p2shP2pk is at 6th index, and it will only have one signature.
+        const expectedSigCount = inputIndex === 6 && signatureCount > 0 ? 1 : signatureCount;
+        assert.strictEqual(getSignatureCount(psbt, inputIndex), expectedSigCount);
+      });
+
+      if (sign === 'fullsigned') {
+        const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
+        tx.ins.forEach((input, inputIndex) => {
+          // p2shP2pk is at 6th index, and it will only have one signature.
+          const expectedSigCount = inputIndex === 6 ? 1 : signatureCount;
+          assert.strictEqual(getSignatureCount([tx.ins[inputIndex]], 0), expectedSigCount);
+        });
+      }
+    });
+  });
+});
 
 describe('Parse PSBT', function () {
   it('p2shP2pk parsing', function () {
