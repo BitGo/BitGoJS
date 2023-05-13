@@ -21,11 +21,13 @@ import {
   parsePubScript,
   ParsedPubScriptP2shP2pk,
   ParsedScriptType,
+  isPlaceholderSignature,
+  parseSignatureScript,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
 import { isTuple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
-import { script as bscript } from 'bitcoinjs-lib';
+import { script as bscript, TxInput } from 'bitcoinjs-lib';
 import { opcodes } from '../../index';
 
 // only used for building `SignatureContainer`
@@ -396,4 +398,50 @@ export function parsePsbtInput(
     return undefined;
   }
   return parseInputMetadata(psbt, inputIndex, scriptType);
+}
+
+function parseSignatureCount(
+  signatures: [Buffer | 0, Buffer | 0, Buffer | 0] | [Buffer, Buffer] | [Buffer] | undefined
+): 0 | 1 | 2 {
+  const count = signatures ? signatures.filter((s) => !isPlaceholderSignature(s)).length : 0;
+  if (count === 0 || count === 1 || count === 2) {
+    return count;
+  }
+  throw new Error('invalid signature count');
+}
+
+function getInputSignatureCount(param: TxInput | { psbt: UtxoPsbt; inputIndex: number }): 0 | 1 | 2 {
+  if ('psbt' in param) {
+    const parsedInput = parsePsbtInput(param.psbt, param.inputIndex);
+    assert(parsedInput, 'invalid psbt input');
+    return parseSignatureCount(parsedInput.signatures);
+  } else {
+    if (param.script?.length || param.witness?.length) {
+      const parsedInput = parseSignatureScript(param);
+      return parsedInput.scriptType === 'taprootKeyPathSpend' ? 2 : parseSignatureCount(parsedInput.signatures);
+    }
+    return 0;
+  }
+}
+
+/**
+ * @returns maximum number of signatures across all inputs - 0, 1 and 2.
+ * It can be used to check given psbt/transaction/array of TxInputs is unsigned(0), half-signed(1) or fully-signed(2).
+ */
+export function getSignatureCount(
+  tx: UtxoPsbt | UtxoTransaction<number | bigint> | TxInput[],
+  inputIndex?: number
+): 0 | 1 | 2 {
+  const constructParam = (tx: UtxoPsbt | UtxoTransaction<number | bigint> | TxInput[], inputIndex: number) => {
+    return tx instanceof UtxoPsbt
+      ? { psbt: tx, inputIndex }
+      : (tx instanceof UtxoTransaction ? tx.ins : tx)[inputIndex];
+  };
+
+  const inputs = tx instanceof UtxoPsbt ? tx.data.inputs : tx instanceof UtxoTransaction ? tx.ins : tx;
+  assert(inputIndex === undefined || (inputIndex >= 0 && inputIndex < inputs.length), 'invalid inputIndex range');
+  const indices = inputIndex === undefined ? inputs.map((_, index) => index) : [inputIndex];
+  return indices
+    .map((index, _) => getInputSignatureCount(constructParam(tx, index)))
+    .reduce((prev, curr) => (curr > prev ? curr : prev), 0);
 }
