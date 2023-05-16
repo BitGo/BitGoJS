@@ -1004,12 +1004,7 @@ describe('TSS Ecdsa Utils:', async function () {
     it('Fails if the user password to decrypt the ecdhkeychain is wrong', async function() {
 
       sinon.stub(ECDSAUtils.EcdsaUtils, 'getBitGoChallenges').resolves({
-        bitgoNitroHsm: {
-          ...bitgoNitroChallenge,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          ntildeProof: undefined,
-        },
+        bitgoNitroHsm: bitgoNitroChallenge,
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
 
