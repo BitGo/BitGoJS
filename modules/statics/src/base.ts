@@ -47,6 +47,7 @@ export enum CoinFamily {
   POLYGON = 'polygon',
   NEAR = 'near',
   OFC = 'ofc',
+  OSMO = 'osmo',
   RBTC = 'rbtc',
   SOL = 'sol',
   SUI = 'sui',
@@ -227,6 +228,7 @@ export enum UnderlyingAsset {
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
   NEAR = 'near',
+  OSMO = 'osmo',
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
@@ -1254,6 +1256,7 @@ export enum BaseUnit {
   SUI = 'MIST',
   NEAR = 'yocto',
   OFC = 'ofcCoin',
+  OSMO = 'uosmo',
   FIAT = 'fiatCoin',
 }
 

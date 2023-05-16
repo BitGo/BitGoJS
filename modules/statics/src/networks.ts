@@ -571,6 +571,18 @@ class AtomTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.theta-testnet.polypore.xyz/transactions/';
 }
 
+class Osmo extends Mainnet implements AccountNetwork {
+  name = 'Osmosis';
+  family = CoinFamily.OSMO;
+  explorerUrl = 'https://www.mintscan.io/osmosis/txs/';
+}
+
+class OsmoTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Osmosis';
+  family = CoinFamily.OSMO;
+  explorerUrl = 'https://testnet.osmosis.explorers.guru/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -737,6 +749,7 @@ export const Networks = {
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
+    osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
     sol: Object.freeze(new Sol()),
@@ -776,6 +789,7 @@ export const Networks = {
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     sol: Object.freeze(new SolTestnet()),
