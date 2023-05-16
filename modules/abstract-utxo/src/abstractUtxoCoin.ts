@@ -68,7 +68,7 @@ const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
-import { signAndVerifyWalletTransaction } from './sign';
+import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
@@ -201,6 +201,7 @@ export interface AddressDetails {
 export interface SignTransactionOptions<TNumber extends number | bigint = number> extends BaseSignTransactionOptions {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
+    walletId: string;
     txHex: string;
     txInfo: TransactionInfo<TNumber>;
   };
@@ -253,6 +254,14 @@ export interface VerifyTransactionOptions<TNumber extends number | bigint = numb
   extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild<TNumber>;
   wallet: AbstractUtxoCoinWallet;
+}
+
+export interface SignPsbtRequest {
+  psbt: string;
+}
+
+export interface SignPsbtResponse {
+  psbt: string;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
@@ -356,11 +365,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (_.isUndefined(prebuild.txHex)) {
       throw new Error('missing required txPrebuild property txHex');
     }
-    const transaction = this.createTransactionFromHex<TNumber>(prebuild.txHex);
+    let tx: bitgo.UtxoTransaction<TNumber> | bitgo.UtxoPsbt;
+    if (bitgo.isPsbt(Buffer.from(prebuild.txHex, 'hex'))) {
+      tx = bitgo.createPsbtFromHex(prebuild.txHex, this.network);
+    } else {
+      tx = this.createTransactionFromHex<TNumber>(prebuild.txHex);
+    }
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
-    return _.extend({}, prebuild, { txHex: transaction.toHex() });
+    return _.extend({}, prebuild, { txHex: tx.toHex() });
   }
 
   /**
@@ -720,6 +734,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
     const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+
+    // TODO: BG-77743 Add native psbt support
+    if (txPrebuild.txHex && bitgo.isPsbt(Buffer.from(txPrebuild.txHex, 'hex'))) {
+      const psbt = bitgo.createPsbtFromHex(txPrebuild.txHex, this.network);
+      txPrebuild.txHex = psbt.getUnsignedTx().toHex();
+    }
+
     const disableNetworking = !!verification.disableNetworking;
     const parsedTransaction: ParsedTransaction<TNumber> = await this.parseTransaction<TNumber>({
       txParams,
@@ -1038,6 +1059,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * Gets a psbt that contains unsigned tx with MuSig2 nonce for all MuSig2 inputs.
+   * @param psbt all MuSig2 inputs should contain user MuSig2 nonce
+   * @param walletId
+   */
+  async signPsbt(psbt: bitgo.UtxoPsbt, walletId: string): Promise<SignPsbtResponse> {
+    const params: SignPsbtRequest = { psbt: psbt.toBuffer().toString('hex') };
+    return await this.bitgo
+      .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
+      .send(params)
+      .result();
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params - {@see SignTransactionOptions}
    * @returns {Promise<SignedTransaction | HalfSignedUtxoTransaction>}
@@ -1054,14 +1088,30 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       throw new Error('missing txPrebuild parameter');
     }
-    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
 
-    if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
-      throw new Error('length of unspents array should equal to the number of transaction inputs');
+    let tx: bitgo.UtxoTransaction<TNumber> | bitgo.UtxoPsbt;
+    if (bitgo.isPsbt(Buffer.from(txPrebuild.txHex, 'hex'))) {
+      tx = bitgo.createPsbtFromHex(txPrebuild.txHex, this.network);
+    } else {
+      tx = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+
+      if (tx.ins.length !== txPrebuild.txInfo.unspents.length) {
+        throw new Error('length of unspents array should equal to the number of transaction inputs');
+      }
     }
+
+    const isTransactionWithKeyPathSpendInput =
+      tx instanceof bitgo.UtxoPsbt && bitgo.musig2.isTransactionWithKeyPathSpendInput(tx);
 
     let isLastSignature = false;
     if (_.isBoolean(params.isLastSignature)) {
+      // We can only be the first signature on a transaction with taproot key path spend inputs because
+      // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
+      // deserialized from a hex.
+      if (isTransactionWithKeyPathSpendInput) {
+        throw new Error('Cannot be last signature on a transaction with key path spend inputs');
+      }
+
       // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
       isLastSignature = params.isLastSignature;
     }
@@ -1087,12 +1137,22 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
     const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
-    const signedTransaction = signAndVerifyWalletTransaction(
-      transaction,
-      txPrebuild.txInfo.unspents,
-      new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
-      { isLastSignature }
-    );
+    if (tx instanceof bitgo.UtxoPsbt && isTransactionWithKeyPathSpendInput) {
+      tx.setAllInputsMusig2NonceHD(signerKeychain);
+      const hex = (await this.signPsbt(tx, txPrebuild.walletId)).psbt;
+      const psbt = bitgo.createPsbtFromHex(hex, this.network);
+      tx.combine(psbt);
+    }
+
+    let signedTransaction: bitgo.UtxoTransaction<bigint> | bitgo.UtxoPsbt;
+    if (tx instanceof bitgo.UtxoPsbt) {
+      signedTransaction = signAndVerifyPsbt(tx, signerKeychain, { isLastSignature });
+    } else {
+      const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
+      signedTransaction = signAndVerifyWalletTransaction(tx, txPrebuild.txInfo.unspents, walletSigner, {
+        isLastSignature,
+      }) as bitgo.UtxoTransaction<bigint>;
+    }
 
     return {
       txHex: signedTransaction.toBuffer().toString('hex'),

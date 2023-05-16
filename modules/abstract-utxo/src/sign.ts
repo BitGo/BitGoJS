@@ -15,12 +15,16 @@ const debug = debugLib('bitgo:v2:utxo');
 export class InputSigningError<TNumber extends number | bigint = number> extends Error {
   static expectedWalletUnspent<TNumber extends number | bigint>(
     inputIndex: number,
-    unspent: Unspent<TNumber>
+    unspent: Unspent<TNumber> | { id: string }
   ): InputSigningError<TNumber> {
     return new InputSigningError(inputIndex, unspent, `not a wallet unspent, not a replay protection unspent`);
   }
 
-  constructor(public inputIndex: number, public unspent: Unspent<TNumber>, public reason: Error | string) {
+  constructor(
+    public inputIndex: number,
+    public unspent: Unspent<TNumber> | { id: string },
+    public reason: Error | string
+  ) {
     super(`signing error at input ${inputIndex}: unspentId=${unspent.id}: ${reason}`);
   }
 }
@@ -32,6 +36,87 @@ export class TransactionSigningError<TNumber extends number | bigint = number> e
         `verify errors at inputs: [${verifyError.join(',')}], see log for details`
     );
   }
+}
+
+/**
+ * Sign all inputs of a psbt and verify signatures after signing.
+ * Collects and logs signing errors and verification errors, throws error in the end if any of them
+ * failed.
+ *
+ * If it is the last signature, finalize and extract the transaction from the psbt.
+ *
+ * This function mirrors signAndVerifyWalletTransaction, but is used for signing PSBTs instead of
+ * using TransactionBuilder
+ *
+ * @param psbt
+ * @param signerKeychain
+ * @param isLastSignature
+ */
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  signerKeychain: utxolib.BIP32Interface,
+  { isLastSignature }: { isLastSignature: boolean }
+): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
+  const txInputs = psbt.txInputs;
+  const signErrors: InputSigningError<bigint>[] = psbt.data.inputs
+    .map((input, inputIndex: number) => {
+      const parsedInput = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
+      const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
+      if (!parsedInput) {
+        return new InputSigningError<bigint>(inputIndex, { id: outputId }, 'could not parse input');
+      }
+
+      if (parsedInput.scriptType === 'p2shP2pk') {
+        debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, psbt.data.inputs.length);
+        return;
+      }
+
+      try {
+        psbt.signInputHD(inputIndex, signerKeychain);
+        debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
+      } catch (e) {
+        return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
+      }
+    })
+    .filter((e): e is InputSigningError<bigint> => e !== undefined);
+
+  const verifyErrors: InputSigningError<bigint>[] = psbt.data.inputs
+    .map((input, inputIndex) => {
+      const parsedInput = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
+      const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
+      if (!parsedInput) {
+        return new InputSigningError<bigint>(inputIndex, { id: outputId }, 'could not parse input');
+      }
+      if (parsedInput.scriptType === 'p2shP2pk') {
+        debug(
+          'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
+          inputIndex + 1,
+          psbt.data.inputs.length
+        );
+        return;
+      }
+
+      try {
+        if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
+          return new InputSigningError(inputIndex, { id: outputId }, new Error(`invalid signature`));
+        }
+      } catch (e) {
+        debug('Invalid signature');
+        return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
+      }
+    })
+    .filter((e): e is InputSigningError<bigint> => e !== undefined);
+
+  if (signErrors.length || verifyErrors.length) {
+    throw new TransactionSigningError(signErrors, verifyErrors);
+  }
+
+  if (isLastSignature) {
+    psbt.finalizeAllInputs();
+    return psbt.extractTransaction() as utxolib.bitgo.UtxoTransaction<bigint>;
+  }
+
+  return psbt;
 }
 
 /**

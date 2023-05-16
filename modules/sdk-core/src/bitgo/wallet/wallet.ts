@@ -200,6 +200,7 @@ export class Wallet implements IWallet {
       'destinationChain',
       'targetWalletUnspents',
       'trustlines',
+      'txFormat',
       'type',
       'unspents',
       'nonParticipation',

@@ -114,6 +114,7 @@ export interface PrebuildTransactionOptions {
    * If set to false, sweep all funds including the required minimums for address(es). E.g. Polkadot (DOT) requires 1 DOT minimum.
    */
   keepAlive?: boolean;
+  txFormat?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
