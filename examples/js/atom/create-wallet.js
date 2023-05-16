@@ -11,10 +11,7 @@
  * Copyright 2023, BitGo, Inc.  All Rights Reserved.
  */
 const BitGo = require('bitgo');
-const bitgo = new BitGo.BitGo({
-  env: 'custom',
-  customRootURI: '',
-});
+const bitgo = new BitGo.BitGo({ env: 'test' });
 
 // TODO: set your access token here
 // You can get this from User Settings > Developer Options > Add Access Token
@@ -24,7 +21,10 @@ const accessToken = '';
 const label = 'Example atom Test Wallet';
 
 // TODO: set your passphrase for your new wallet here
-const passphrase = 'test_wallet_passphrase';
+const passphrase = '';
+
+// TODO: set your enterprise for your new wallet here
+const enterprise = '';
 
 const coin = 'tatom';
 
@@ -37,6 +37,7 @@ async function main() {
     label,
     passphrase,
     passcodeEncryptionCode,
+    enterprise,
     multisigType: 'tss',
   };
 
