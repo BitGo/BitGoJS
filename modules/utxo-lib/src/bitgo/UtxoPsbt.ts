@@ -38,7 +38,7 @@ import {
   musig2DeterministicSign,
   createMusig2DeterministicNonce,
 } from './Musig2';
-import { isTuple, Tuple } from './types';
+import { isTuple, Triple, Tuple } from './types';
 import { getTaprootOutputKey } from '../taproot';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
@@ -516,6 +516,19 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return results.reduce((final, res) => res && final, true);
   }
 
+  validateSignaturesOfInputHD(inputIndex: number, bip32Interface: BIP32Interface): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const pubKey = input.tapBip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(bip32Interface, input.tapBip32Derivation)?.publicKey
+      : input.bip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(bip32Interface, input.bip32Derivation)?.publicKey
+      : undefined;
+    if (!pubKey) {
+      throw new Error('can not derive from HD key pair');
+    }
+    return this.validateSignaturesOfInputInner(inputIndex, pubKey);
+  }
+
   private validateSignaturesOfInputInner(inputIndex: number, pubkey?: Buffer): boolean {
     if (this.isTaprootScriptPathInput(inputIndex)) {
       return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
@@ -641,7 +654,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
-  getSignatureValidationArray(inputIndex: number): boolean[] {
+  getSignatureValidationArray(inputIndex: number): Triple<boolean> {
     if (!this.data.globalMap.globalXpub) {
       throw new Error('Cannot get signature validation array without global xpubs');
     }
@@ -652,7 +665,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       return [false, false, false];
     }
     const input = checkForInput(this.data.inputs, inputIndex);
-    return this.data.globalMap.globalXpub.map((xpub) => {
+    const result = this.data.globalMap.globalXpub.map((xpub) => {
       const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
       const pubKey = input.tapBip32Derivation?.length
         ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation)?.publicKey
@@ -672,6 +685,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         throw err;
       }
     });
+    return [result[0], result[1], result[2]];
   }
 
   /**

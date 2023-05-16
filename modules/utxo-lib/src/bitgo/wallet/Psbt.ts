@@ -445,3 +445,10 @@ export function getSignatureCount(
     .map((index, _) => getInputSignatureCount(constructParam(tx, index)))
     .reduce((prev, curr) => (curr > prev ? curr : prev), 0);
 }
+
+/** @return true iff input starts with magic PSBT byte sequence */
+export function isPsbt(data: Buffer): boolean {
+  // https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#specification
+  // 0x70736274 - ASCII for 'psbt'. 0xff - separator
+  return 5 <= data.length && data.readUInt32BE(0) === 0x70736274 && data.readUInt8(4) === 0xff;
+}
