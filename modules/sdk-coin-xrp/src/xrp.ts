@@ -48,10 +48,14 @@ interface FeeInfo {
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
+  isLastSignature?: boolean;
 }
 
 interface ExplainTransactionOptions {
   txHex?: string;
+  halfSigned?: {
+    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
+  };
 }
 
 interface VerifyAddressOptions extends BaseVerifyAddressOptions {
@@ -232,7 +236,11 @@ export class Xrp extends BaseCoin {
    * - prv
    * @returns Bluebird<HalfSignedTransaction>
    */
-  public async signTransaction({ txPrebuild, prv }: SignTransactionOptions): Promise<HalfSignedTransaction> {
+  public async signTransaction({
+    txPrebuild,
+    prv,
+    isLastSignature,
+  }: SignTransactionOptions): Promise<HalfSignedTransaction | RecoveryTransaction> {
     if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
       if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
         throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
@@ -255,10 +263,17 @@ export class Xrp extends BaseCoin {
     const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
 
     const rippleLib = ripple();
-    const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
+
+    const tx = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
       signAs: userAddress,
     });
-    return { halfSigned: { txHex: halfSigned.signedTransaction } };
+
+    // Normally the SDK provides the first signature for an XRP tx, but occasionally it provides the second and final one
+    // for recovery transactions
+    if (isLastSignature) {
+      return { txHex: tx.signedTransaction };
+    }
+    return { halfSigned: { txHex: tx.signedTransaction } };
   }
 
   /**
@@ -289,23 +304,22 @@ export class Xrp extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions = {}): Promise<TransactionExplanation> {
-    if (!params.txHex) {
+    let transaction;
+    let txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex) {
       throw new Error('missing required param txHex');
     }
-    let transaction;
-    let txHex;
     try {
-      transaction = rippleBinaryCodec.decode(params.txHex);
-      txHex = params.txHex;
+      transaction = rippleBinaryCodec.decode(txHex);
     } catch (e) {
       try {
-        transaction = JSON.parse(params.txHex);
+        transaction = JSON.parse(txHex);
         txHex = rippleBinaryCodec.encode(transaction);
       } catch (e) {
         throw new Error('txHex needs to be either hex or JSON string for XRP');
       }
     }
-    const id = computeBinaryTransactionHash(txHex);
+    const id = computeBinaryTransactionHash(txHex as string);
 
     if (transaction.TransactionType == 'AccountSet') {
       return {
@@ -318,7 +332,7 @@ export class Xrp extends BaseCoin {
         fee: {
           fee: transaction.Fee,
           feeRate: null,
-          size: txHex.length / 2,
+          size: txHex!.length / 2,
         },
         accountSet: {
           messageKey: transaction.MessageKey,
@@ -343,7 +357,7 @@ export class Xrp extends BaseCoin {
       fee: {
         fee: transaction.Fee,
         feeRate: null,
-        size: txHex.length / 2,
+        size: txHex!.length / 2,
       },
     } as any;
   }

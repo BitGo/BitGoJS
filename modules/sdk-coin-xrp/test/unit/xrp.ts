@@ -7,6 +7,7 @@ const ripple = require('../../src/ripple');
 
 import * as nock from 'nock';
 import assert from 'assert';
+import * as rippleBinaryCodec from 'ripple-binary-codec';
 
 nock.disableNetConnect();
 
@@ -96,6 +97,16 @@ describe('XRP:', function () {
     signedExplanation.outputAmount.should.equal('253481');
   });
 
+  it('Should be able to explain a half signed XRP transaction', async function () {
+    const halfSigned = await basecoin.explainTransaction({
+      txHex:
+        '12000022800000002402364C9A2E00000000201B0251041E614000000000E4E1A268400000000000001E730081146ED6833681CD87DBC055D8DC5A92BC9E3CD287848314CF522A61021FA485553A6CE48E226D973258B9BBF3E01073210335479B7F82FC3280B72ED8659BC621A3284544DA9704B518EBC9275F669429CF7447304502210098AF70338FF43B9BEC9916BB8762E54C95CA85DBCE418F30A9640BF804DCB2DA02204221C2480BE44D9F6ED7331FD5FE580E42177873BA796B00255A6F55672BE26081149460A1C4C25209500B55D09F8CD13BD330968521E1F1',
+    });
+
+    halfSigned.id.should.equal('22254B2799C961E9D919A4B5FB9B24722163EBD11671C17F215BEAFC750D6D89');
+    halfSigned.outputAmount.should.equal('14999970');
+  });
+
   it('Should be able to explain an XRP AccountSet transaction', async function () {
     const signedExplanation = await basecoin.explainTransaction({
       txHex:
@@ -116,6 +127,31 @@ describe('XRP:', function () {
       '02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61'
     );
     unsignedExplanation.fee.fee.should.equal('45');
+  });
+
+  it('should be able to add second signature to half signed XRP transaction', function () {
+    const halfSignedTxHex =
+      '12000022800000002402364C9A2E00000000201B0251041E614000000000E4E1A268400000000000001E730081146ED6833681CD87DBC055D8DC5A92BC9E3CD287848314CF522A61021FA485553A6CE48E226D973258B9BBF3E01073210335479B7F82FC3280B72ED8659BC621A3284544DA9704B518EBC9275F669429CF7447304502210098AF70338FF43B9BEC9916BB8762E54C95CA85DBCE418F30A9640BF804DCB2DA02204221C2480BE44D9F6ED7331FD5FE580E42177873BA796B00255A6F55672BE26081149460A1C4C25209500B55D09F8CD13BD330968521E1F1';
+
+    const signer = {
+      prv: 'xprv9s21ZrQH143K36cPP1rLoWsp9JQp9JEJGo2LFdfaufqcYSp5qJk5S5zN94SnXLiBEnU4dH8RDWfsSSLzdKwdEdqBZrRvZ3LqX1VXYWXFcpD',
+      pub: 'xpub661MyMwAqRbcFagrV3PMAepYhLFJYkx9e1ww425CU1NbRF9ENr4KytJqzLWZwWQ7b1CWLDhV3kthPRAyT33CApQ9QWZDvSq4bFHp2yL8Eob',
+      rawPub: '02d15efd7200d9da40e10d3f5a3149ed006c6db8f3b2d22912597f0b6b74785490',
+      rawPrv: '49187695ec4da97486feb904f532769c8792555e989a050f486a6d3172a137e7',
+      xrpAddress: 'rJBWFy35Ya3qDZD89DuWBwm8oBbYmqb3H9',
+    };
+
+    const rippleLib = ripple();
+    const fullySigned = rippleLib.signWithPrivateKey(halfSignedTxHex, signer.rawPrv, {
+      signAs: signer.xrpAddress,
+    });
+
+    const signedTransaction = rippleBinaryCodec.decode(fullySigned.signedTransaction);
+    signedTransaction.TransactionType.should.equal('Payment');
+    signedTransaction.Amount.should.equal('14999970');
+    signedTransaction.Account.should.equal('rBfhJ6HopLW69xK83nyShdNxC3uggjs46K');
+    signedTransaction.Destination.should.equal('rKuDJCu188nbLDs2zfaT2RNScS6aa63PLC');
+    signedTransaction.Signers.length.should.equal(2);
   });
 
   it('should be able to cosign XRP transaction in any form', function () {

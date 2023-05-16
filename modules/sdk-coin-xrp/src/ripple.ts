@@ -40,9 +40,6 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
       throw new Error('txHex needs to be either hex or JSON string for XRP');
     }
   }
-  if (tx.TxnSignature || tx.Signers) {
-    throw new Error('transaction must not contain "TxnSignature" or "Signers" properties');
-  }
 
   tx.SigningPubKey = options && options.signAs ? '' : publicKey;
 
@@ -56,7 +53,11 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
       SigningPubKey: publicKey,
       TxnSignature: computeSignature(tx, privateKey, options.signAs),
     };
-    tx.Signers = [{ Signer: signer }];
+    if (tx.TxnSignature || tx.Signers) {
+      tx.Signers.unshift({ Signer: signer });
+    } else {
+      tx.Signers = [{ Signer: signer }];
+    }
   } else {
     tx.TxnSignature = computeSignature(tx, privateKey, undefined);
   }
