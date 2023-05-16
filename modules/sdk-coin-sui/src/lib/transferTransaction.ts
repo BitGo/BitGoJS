@@ -120,7 +120,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       return;
     }
 
-    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
+    const recipients = utils.getRecipients(this._suiTransaction);
     const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
     this._outputs = recipients.map((recipient, index) => ({
       address: recipient.address,
@@ -202,7 +202,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
    * @returns {TransactionExplanation}
    */
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const recipients = utils.getRecipients(this.suiTransaction.tx.inputs);
+    const recipients = utils.getRecipients(this.suiTransaction);
     const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
     const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
 

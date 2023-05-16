@@ -8,6 +8,8 @@ import * as _ from 'lodash';
 import * as sinon from 'sinon';
 import BigNumber from 'bignumber.js';
 import assert from 'assert';
+import { SuiTransactionType } from '../../src/lib/iface';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SUI:', function () {
   let bitgo: TestBitGoAPI;
@@ -87,6 +89,31 @@ describe('SUI:', function () {
           txPrebuild,
         })
         .should.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should verify a split transaction', async function () {
+      const factory = getBuilderFactory('tsui');
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      const amount = 1000000000;
+      const recipients = new Array(100).fill({ address: testData.sender.address, amount: amount.toString() });
+      txBuilder.send(recipients);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txHex: Buffer.from(tx.toBroadcastFormat(), 'base64').toString('hex'),
+        txInfo: {},
+      };
+      const txParams = {
+        recipients,
+      };
+      const verify = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+      });
+      verify.should.equal(true);
     });
   });
 
