@@ -43,6 +43,36 @@ describe('Sui Transfer Builder', () => {
       should.equal(utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.TRANSFER);
     });
+
+    it('should build a split coin tx', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      const amount = 1000000000;
+      const recipients = new Array(100).fill({ address: testData.sender.address, amount: amount.toString() });
+      txBuilder.send(recipients);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+      (tx as SuiTransaction<TransferProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
+        testData.coinsGasPayment
+      );
+
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: (amount * 100).toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(100);
+      tx.outputs.forEach((output) =>
+        output.should.deepEqual({
+          address: testData.sender.address,
+          value: amount.toString(),
+          coin: 'tsui',
+        })
+      );
+    });
   });
 
   describe('Fail', () => {
