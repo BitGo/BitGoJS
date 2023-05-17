@@ -3,8 +3,8 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import should = require('should');
 import sinon from 'sinon';
-
-import { Atom, Tatom } from '../../src';
+import { Atom, Tatom, Transaction } from '../../src';
+import { rangeProof, Ecdsa } from '@bitgo/sdk-core';
 import utils from '../../src/lib/utils';
 import {
   address,
@@ -13,7 +13,12 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   TEST_TX_WITH_MEMO,
+  wrwUser,
+  mockChallengeA,
 } from '../resources/atom';
+import { coins } from '@bitgo/statics';
+import { SendMessage } from '../../src/lib/iface';
+import { GAS_AMOUNT } from '../../src/lib/constants';
 
 describe('ATOM', function () {
   let bitgo: TestBitGoAPI;
@@ -334,6 +339,135 @@ describe('ATOM', function () {
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover transactions: success path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const coin = coins.get('tatom');
+    const testBalance = '150000';
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Atom.prototype, 'getAccountBalance' as keyof Atom);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+
+      const accountDetails = sandBox.stub(Atom.prototype, 'getAccountDetails' as keyof Atom);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
+      chainId.withArgs().resolves(testChainId);
+
+      const serializedEntChallenge = mockChallengeA;
+      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      sandBox.assert.calledOnce(basecoin.getAccountBalance);
+      sandBox.assert.calledOnce(basecoin.getAccountDetails);
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const atomTxn = new Transaction(coin);
+      atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const atomTxnJson = atomTxn.toJson();
+      const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance);
+      const gasAmount = new BigNumber(GAS_AMOUNT);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+  });
+
+  describe('Recover transactions: failure path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const testZeroBalance = '0';
+    const testAccountNumber = '1234';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Atom.prototype, 'getAccountBalance' as keyof Atom);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+
+      const accountNumber = sandBox.stub(Atom.prototype, 'getAccountDetails' as keyof Atom);
+      accountNumber.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
+      chainId.withArgs().resolves(testChainId);
+
+      const serializedEntChallenge = mockChallengeA;
+      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw error if backupkey is not present', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing backupKey');
+    });
+
+    it('should throw error if userkey is not present', async function () {
+      await basecoin
+        .recover({
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing userKey');
+    });
+
+    it('should throw error if wallet passphrase is not present', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should throw error if there is no balance', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('Did not have enough funds to recover');
     });
   });
 });
