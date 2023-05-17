@@ -121,6 +121,64 @@ describe('Sui Transaction Builder', async () => {
       should.equal(sig_2, expectedTransferTxSig);
     });
 
+    it('should submit a slit coin transaction with private keys', async () => {
+      const keyPairSender = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+      const senderAddress = keyPairSender.getAddress();
+      const expectedTransferTxSig =
+        'AGGWHZuyUjsxMhMoPoqdsZRTC50a8mByDhupwE0WrDlvvqzwaRO7R5sY20/IYgabUA9fep3o35ssnRhUZ0jDqwmlzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw==';
+      const expectedTransferTxHex =
+        'AAAVAAgA4fUFAAAAAAAgkAdCu5I+qQalbzJaF1l3UuzTrDAmu6luDt/0XejbM6sACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAAAgA4fUFAAAAAAAIAOH1BQAAAAAACADh9QUAAAAAKAIAAQEAAAEBAgAAAQEAAgABAQIAAQECAgABAQACAAEBAwABAQIEAAEBAAIAAQEEAAEBAgYAAQEAAgABAQUAAQECCAABAQACAAEBBgABAQIKAAEBAAIAAQEHAAEBAgwAAQEAAgABAQgAAQECDgABAQACAAEBCQABAQIQAAEBAAIAAQEKAAEBAhIAAQEAAgABAQsAAQECFAABAQACAAEBDAABAQIWAAEBAAIAAQENAAEBAhgAAQEAAgABAQ4AAQECGgABAQACAAEBDwABAQIcAAEBAAIAAQEQAAEBAh4AAQEAAgABAREAAQECIAABAQACAAEBEgABAQIiAAEBAAIAAQETAAEBAiQAAQEAAgABARQAAQECJgABAQCQB0K7kj6pBqVvMloXWXdS7NOsMCa7qW4O3/Rd6NszqwJ3AbiIwWM5ms1bgEYzwdDlMrwxQ8/vNMo2C+YHxo3N72YEAAAAAAAAIDrMcEOTidjOdp7a1J/jjJ9tOjb6P2WTyBSwQqAHiA1/yfVla+cYIwE9k34GVOs+3LJhla/SMAm+mrlufz8twgNmBAAAAAAAACAhXnkXobS2E/RZ/cLDQ/n3BH/TxAjKv5VxsbLEZCUxu5AHQruSPqkGpW8yWhdZd1Ls06wwJrupbg7f9F3o2zOr6AMAAAAAAAAALTEBAAAAAAA=';
+
+      const coins = [
+        {
+          digest: '4xXTGhhtNUjBU8nMivsLWTMRWvZRc5RWDMgyTMnnRDYS',
+          objectId: '0x7701b888c163399acd5b804633c1d0e532bc3143cfef34ca360be607c68dcdef',
+          version: 1126,
+        },
+        {
+          digest: '3FG1Nfk5HrQ1tWYKS8BX9ynZTSprL5hLn3pgw7kdj1RU',
+          objectId: '0xc9f5656be71823013d937e0654eb3edcb26195afd23009be9ab96e7f3f2dc203',
+          version: 1126,
+        },
+      ];
+      const txBuilder_1 = factory.getTransferBuilder();
+      txBuilder_1.type(SuiTransactionType.Transfer);
+      txBuilder_1.sender(senderAddress);
+      txBuilder_1.send(Array(20).fill({ address: senderAddress, amount: '100000000' }));
+      const gasData: GasData = {
+        payment: coins,
+        owner: senderAddress,
+        budget: testData.GAS_BUDGET,
+        price: 1000,
+      };
+      txBuilder_1.gasData(gasData);
+
+      const tx_1 = await txBuilder_1.build();
+      const signable_1 = tx_1.signablePayload;
+      const signature_1 = keyPairSender.signMessageinUint8Array(signable_1);
+      txBuilder_1.addSignature({ pub: keyPairSender.getKeys().pub }, Buffer.from(signature_1));
+      const signedTx_1 = (await txBuilder_1.build()) as TransferTransaction;
+      const txHex_1 = signedTx_1.toBroadcastFormat();
+      const sig_1 = Buffer.from(signedTx_1.serializedSig).toString('base64');
+
+      const txBuilderFromRaw_2 = factory.getTransferBuilder();
+      txBuilderFromRaw_2.from(txHex_1);
+      const signable_2 = tx_1.signablePayload;
+      const signature_2 = keyPairSender.signMessageinUint8Array(signable_2);
+      txBuilderFromRaw_2.addSignature({ pub: keyPairSender.getKeys().pub }, Buffer.from(signature_2));
+      const signedTx_2 = (await txBuilderFromRaw_2.build()) as TransferTransaction;
+      const txHex_2 = signedTx_2.toBroadcastFormat();
+      const sig_2 = Buffer.from(signedTx_2.serializedSig).toString('base64');
+
+      should.equal(Buffer.from(signable_1).toString('hex'), Buffer.from(signable_2).toString('hex'));
+      should.equal(txHex_1, txHex_2);
+      should.equal(txHex_1, expectedTransferTxHex);
+      should.equal(txHex_2, expectedTransferTxHex);
+      should.equal(sig_1, sig_2);
+      should.equal(sig_1, expectedTransferTxSig);
+      should.equal(sig_2, expectedTransferTxSig);
+    });
+
     it('should fail to build if missing type', async function () {
       for (const txBuilder of builders) {
         txBuilder.sender(testData.sender.address);
