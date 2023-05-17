@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Network, getNetworkName, networks } from '../../../src';
+import { Network, getNetworkName, networks, getNetworkList } from '../../../src';
 import {
   getExternalChainCode,
   outputScripts,
@@ -16,6 +16,7 @@ import {
   getInternalChainCode,
   getSignatureCount,
   UtxoTransaction,
+  isPsbt,
 } from '../../../src/bitgo';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
@@ -269,6 +270,57 @@ describe('Parse PSBT', function () {
       );
     }
   });
+});
+
+describe('isPsbt', function () {
+  function isPsbtForNetwork(n: Network) {
+    describe(`network: ${getNetworkName(n)}`, function () {
+      const psbt = createPsbtForNetwork({ network: n });
+
+      it('should return true for a valid PSBT', function () {
+        const psbtBuff = psbt.toBuffer();
+        assert.strictEqual(isPsbt(psbtBuff), true);
+        assert.strictEqual(isPsbt(psbtBuff.toString('hex')), true);
+      });
+
+      it('should return false for a transaction', function () {
+        assert.strictEqual(isPsbt(psbt.getUnsignedTx().toBuffer()), false);
+      });
+
+      it('should return false for a truncated magic word', function () {
+        const hex = psbt.toBuffer().slice(0, 3);
+        assert.strictEqual(isPsbt(hex), false);
+        assert.strictEqual(isPsbt(Buffer.from(hex)), false);
+      });
+
+      it('should return false for a valid PSBT with an invalid magic', function () {
+        const buffer = psbt.toBuffer();
+        buffer.writeUInt8(0x00, 1);
+        assert.strictEqual(isPsbt(psbt.getUnsignedTx().toBuffer()), false);
+      });
+
+      it('should return false for a valid PSBT with an invalid separator', function () {
+        const buffer = psbt.toBuffer();
+        buffer.writeUInt8(0xfe, 4);
+        assert.strictEqual(isPsbt(psbt.getUnsignedTx().toBuffer()), false);
+      });
+
+      it('should return false for a random buffer', function () {
+        const random = 'deadbeaf';
+        const buffer = Buffer.from(random, 'hex');
+        assert.strictEqual(isPsbt(random), false);
+        assert.strictEqual(isPsbt(buffer), false);
+      });
+
+      it('should return true if buffer is changed after the separator', function () {
+        const buffer = psbt.toBuffer();
+        buffer.writeUInt8(0x00, 5);
+        assert.strictEqual(isPsbt(buffer), true);
+      });
+    });
+  }
+
+  getNetworkList().forEach((n) => isPsbtForNetwork(n));
 });
 
 describe('Psbt from transaction using wallet unspents', function () {
