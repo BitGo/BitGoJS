@@ -211,20 +211,12 @@ export class Utils implements BaseUtils {
       if (transaction.kind === 'SplitCoins') {
         const index = transaction.amounts[0].index;
         const input = tx.tx.inputs[index] as any;
-        if (input.kind && input.kind === 'Input') {
-          amounts.push(input.value);
-        } else {
-          amounts.push(Buffer.from(input.Pure).readUIntLE(0, 6));
-        }
+        amounts.push(this.getAmount(input));
       }
       if (transaction.kind === 'TransferObjects') {
         const index = transaction.address.index;
         const input = tx.tx.inputs[index] as any;
-        if (input.kind && input.kind === 'Input') {
-          addresses.push(input.value);
-        } else {
-          addresses.push('0x' + Buffer.from(input.Pure).toString('hex'));
-        }
+        addresses.push(this.getAddress(input));
       }
     });
     return addresses.map((address, index) => {
