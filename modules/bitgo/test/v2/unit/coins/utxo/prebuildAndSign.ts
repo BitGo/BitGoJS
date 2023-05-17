@@ -25,7 +25,7 @@ type KeyDoc = {
 
 const walletPassphrase = 'gabagool';
 
-const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend'];
+const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend', 'p2shP2pk'] as const;
 export type ScriptType = (typeof scriptTypes)[number];
 
 type Input = {
@@ -90,9 +90,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     psbt.getUnsignedTx().ins.forEach((input, inputIndex) => {
       const unspent = utxolib.testutil.toUnspent(
         {
-          scriptType: (inputScripts[inputIndex] === 'taprootKeyPathSpend'
-            ? 'p2trMusig2'
-            : inputScripts[inputIndex]) as utxolib.bitgo.outputScripts.ScriptType2Of3,
+          scriptType: inputScripts[inputIndex],
           value: BigInt(1e8),
         },
         inputIndex,
@@ -102,7 +100,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       // Only thing we care about is that the address and value is at the correct respective previous
       // output index
       const outputs = psbt.data.inputs.map((_, ii) =>
-        ii === inputIndex ? { address: unspent.address, value: BigInt(unspent.value).toString() } : {}
+        ii === inputIndex
+          ? {
+              address: unspent.address,
+              value: BigInt(unspent.value).toString(),
+              valueString: BigInt(unspent.value).toString(),
+            }
+          : {}
       );
       const payload = { outputs };
       const txId = (Buffer.from(input.hash).reverse() as Buffer).toString('hex');
@@ -110,16 +114,15 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       nocks.push(nock(bgUrl).get(`/api/v2/${coin.getChain()}/public/tx/${txId}`).reply(200, payload));
     });
 
-    if (inputScripts.includes('p2trMusig2')) {
+    if (inputScripts.includes('taprootKeyPathSpend')) {
       // nock the deterministic nonce response
       const psbt = utxolib.bitgo.createPsbtFromHex(prebuild, coin.network);
       psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
-      const psbtHex = psbt.toHex();
-      psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
+      psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
       nocks.push(
         nock(bgUrl)
-          .post(`/api/v2/${coin.getChain()}/wallet/${wallet.id()}/tx/signpsbt`, { psbt: psbtHex })
-          .reply(200, { txHex: psbt.toHex() })
+          .post(`/api/v2/${coin.getChain()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
+          .reply(200, { psbt: psbt.toHex() })
       );
     }
 
