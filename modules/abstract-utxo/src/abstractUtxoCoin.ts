@@ -733,12 +733,21 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+    const { txParams, txPrebuild: txPrebuildObj, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+    let txPrebuild;
 
-    // TODO: BG-77743 Add native psbt support
-    if (txPrebuild.txHex && bitgo.isPsbt(Buffer.from(txPrebuild.txHex, 'hex'))) {
-      const psbt = bitgo.createPsbtFromHex(txPrebuild.txHex, this.network);
+    // TODO: BG-77743 Add native psbt support - we make a deep copy of the txPrebuild object here to avoid
+    // modifying the original object so that we can still use it later on in the function
+    if (txPrebuildObj.txHex && bitgo.isPsbt(Buffer.from(txPrebuildObj.txHex, 'hex'))) {
+      if (txPrebuildObj.txInfo?.unspents) {
+        throw new Error('shoould not have unspents in txInfo for psbt');
+      }
+
+      const psbt = bitgo.createPsbtFromHex(txPrebuildObj.txHex, this.network);
+      txPrebuild = JSON.parse(JSON.stringify(txPrebuildObj));
       txPrebuild.txHex = psbt.getUnsignedTx().toHex();
+    } else {
+      txPrebuild = txPrebuildObj;
     }
 
     const disableNetworking = !!verification.disableNetworking;
