@@ -40,7 +40,10 @@ function parseUnspents<TNumber extends number | bigint>(
 function parseTransactionInfo<TNumber extends number | bigint>(
   txInfo: TransactionInfo<TNumber> | TransactionInfoJSON
 ): TransactionInfo<bigint> {
-  return { ...txInfo, unspents: parseUnspents(txInfo.unspents) };
+  if (txInfo.unspents) {
+    return { ...txInfo, unspents: parseUnspents(txInfo.unspents) };
+  }
+  return { ...txInfo, unspents: undefined };
 }
 
 function parseTransactionPrebuild<TNumber extends number | bigint>(
