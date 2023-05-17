@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.14.0...@bitgo/unspents@0.14.1) (2023-05-17)
+
+### Bug Fixes
+
+- **bitgo:** drone is no longer used in this repo so can safely be removed ([badc0de](https://github.com/BitGo/BitGoJS/commit/badc0ded6870f56a0dc3925eba639b0fdb313c2b)), closes [#3554](https://github.com/BitGo/BitGoJS/issues/3554) [#3554](https://github.com/BitGo/BitGoJS/issues/3554)
+
 # [0.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.2...@bitgo/unspents@0.14.0) (2023-05-10)
 
 ### Features

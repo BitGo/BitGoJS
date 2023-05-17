@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.4.2...@bitgo/sdk-coin-xrp@1.5.0) (2023-05-17)
+
+### Features
+
+- **sdk-coin-xrp:** add backup signing for xrp ([3f2ff78](https://github.com/BitGo/BitGoJS/commit/3f2ff78b289a07fd28c75563fcf8c6a5aae3e37e))
+
 ## [1.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@1.4.1...@bitgo/sdk-coin-xrp@1.4.2) (2023-05-10)
 
 ### Bug Fixes

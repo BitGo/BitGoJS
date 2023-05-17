@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.4.0...@bitgo/sdk-core@8.5.0) (2023-05-17)
+
+### Features
+
+- **sdk-core:** method to parse json from OVC to create TSS bitgo key ([c045934](https://github.com/BitGo/BitGoJS/commit/c04593412b5988dbb27769500c64feed27c1a75a))
+
 # [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.3.0...@bitgo/sdk-core@8.4.0) (2023-05-10)
 
 ### Features

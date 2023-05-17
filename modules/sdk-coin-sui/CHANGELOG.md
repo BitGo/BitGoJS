@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.4...@bitgo/sdk-coin-sui@3.0.5) (2023-05-17)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** support split coin ([cf34f73](https://github.com/BitGo/BitGoJS/commit/cf34f7391d47080ca0427a3bc62173afc0102f12))
+
 ## [3.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.3...@bitgo/sdk-coin-sui@3.0.4) (2023-05-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

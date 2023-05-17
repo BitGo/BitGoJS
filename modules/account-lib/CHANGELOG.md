@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.5.2...@bitgo/account-lib@4.5.3) (2023-05-17)
+
+### Bug Fixes
+
+- **bitgo:** drone is no longer used in this repo so can safely be removed ([badc0de](https://github.com/BitGo/BitGoJS/commit/badc0ded6870f56a0dc3925eba639b0fdb313c2b)), closes [#3554](https://github.com/BitGo/BitGoJS/issues/3554) [#3554](https://github.com/BitGo/BitGoJS/issues/3554)
+
 ## [4.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.5.1...@bitgo/account-lib@4.5.2) (2023-05-10)
 
 **Note:** Version bump only for package @bitgo/account-lib

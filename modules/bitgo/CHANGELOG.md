@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.3.0...bitgo@18.4.0) (2023-05-17)
+
+
+### Bug Fixes
+
+* **bitgo:** drone is no longer used in this repo so can safely be removed ([badc0de](https://github.com/BitGo/BitGoJS/commit/badc0ded6870f56a0dc3925eba639b0fdb313c2b)), closes [#3554](https://github.com/BitGo/BitGoJS/issues/3554) [#3554](https://github.com/BitGo/BitGoJS/issues/3554)
+
+
+### Features
+
+* **sdk-core:** method to parse json from OVC to create TSS bitgo key ([c045934](https://github.com/BitGo/BitGoJS/commit/c04593412b5988dbb27769500c64feed27c1a75a))
+
+
+
+
+
 # [18.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.1...bitgo@18.3.0) (2023-05-10)
 
 

@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.2.0...@bitgo/utxo-lib@8.3.0) (2023-05-17)
+
+### Bug Fixes
+
+- **utxo-lib:** calculate signature count for psbt and tx ([1110d20](https://github.com/BitGo/BitGoJS/commit/1110d204160ff88778a2aded084dcf4fc1848930))
+- **utxo-lib:** improve taproot input check ([5ab10bf](https://github.com/BitGo/BitGoJS/commit/5ab10bfbfe3248d69d669197364a0508885c0f93))
+- **utxo-lib:** specify tapTweaks as xOnly for deterministic ([defda9f](https://github.com/BitGo/BitGoJS/commit/defda9f0791707c82bcea353fffde138283f3b97))
+- **utxo-lib:** unwrap parseSignatureScript from try/catch ([9eed2dc](https://github.com/BitGo/BitGoJS/commit/9eed2dcdb634c55ab0a1f82808fadae760fe1f5f))
+- **utxo-lib:** wrap parseSignatureScript in try/catch ([6a5c902](https://github.com/BitGo/BitGoJS/commit/6a5c9026d802a74cb0a862498c73e1c764703794))
+
+### Features
+
+- **utxo-lib:** verify fully signed MUSIGKP as tx ([65ce04c](https://github.com/BitGo/BitGoJS/commit/65ce04c5973c7e467d39d38f4752dffc41033c50))
+
 # [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.1.0...@bitgo/utxo-lib@8.2.0) (2023-05-10)
 
 ### Bug Fixes
