@@ -53,7 +53,7 @@ jobs:
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
         run: yarn install --with-frozen-lockfile
-      
+
       - name: build packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
         run: yarn run postinstall
@@ -61,8 +61,7 @@ jobs:
       - name: Lint Commit Messages
         if: ${{ startsWith(matrix.node-version, '14') }}
         run: |
-          # temporary workaround for hard-coded drone env var - this should be fixed
-          DRONE_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+          GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
 
       - name: Check In-Repo Package Versions
         if: ${{ startsWith(matrix.node-version, '14') }}
@@ -188,7 +187,7 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
         with:

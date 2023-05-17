@@ -2,6 +2,9 @@
  * Base Interface for supporting elliptic curve parameters
  */
 
+/**
+ * @deprecated Use BaseCurve from sdk-lib-mpc instead
+ */
 interface BaseCurve {
   // Function that reduces a scalar modulo the order of the
   // curve.

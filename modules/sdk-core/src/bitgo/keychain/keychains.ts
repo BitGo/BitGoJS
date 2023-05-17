@@ -1,10 +1,12 @@
 import * as _ from 'lodash';
+import assert from 'assert';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils } from '../utils';
 import {
   AddKeychainOptions,
+  ApiKeyShare,
   ChangedKeychains,
   CreateBackupOptions,
   CreateBitGoOptions,
@@ -18,6 +20,8 @@ import {
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
+import { decodeOrElse } from '../utils/decode';
+import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -303,6 +307,112 @@ export class Keychains implements IKeychains {
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
       backupProvider: params.backupProvider,
+    });
+  }
+
+  /**
+   * It parses the JSON downloaded from the OVC for platform (BitGo),
+   * and creates a corresponding TSS BitGo key. It also returns the JSON that needs
+   * to be uploaded back to the OVCs containing the BitGo -> OVC shares.
+   * @param ovcOutputJson JSON format of the file downloaded from the OVC for platform
+   * @returns {BitGoKeyFromOvcShares}
+   */
+  async createTssBitGoKeyFromOvcShares(ovcOutputJson: unknown): Promise<BitGoKeyFromOvcShares> {
+    const decodedOvcOutput = decodeOrElse(OvcToBitGoJSON.name, OvcToBitGoJSON, ovcOutputJson, (errors) => {
+      throw new Error(`Error(s) parsing OVC JSON: ${errors}`);
+    });
+
+    if (decodedOvcOutput.state !== 1) {
+      throw new Error('State expected to be "1". Please complete the first two OVC operations');
+    }
+
+    // OVC-1 is responsible for the User key
+    const ovc1 = decodedOvcOutput.ovc[1];
+    // OVC-2 is responsible for the Backup key
+    const ovc2 = decodedOvcOutput.ovc[2];
+
+    const keyShares: ApiKeyShare[] = [
+      {
+        from: 'user',
+        to: 'bitgo',
+        publicShare: ovc1.ovcToBitgoShare.publicShare,
+        privateShare: ovc1.ovcToBitgoShare.privateShare,
+        privateShareProof: ovc1.ovcToBitgoShare.uSig.toString() ?? '',
+        vssProof: ovc1.ovcToBitgoShare.vssProof ?? '',
+      },
+      {
+        from: 'backup',
+        to: 'bitgo',
+        publicShare: ovc2.ovcToBitgoShare.publicShare,
+        privateShare: ovc2.ovcToBitgoShare.privateShare,
+        privateShareProof: ovc2.ovcToBitgoShare.uSig.toString() ?? '',
+        vssProof: ovc2.ovcToBitgoShare.vssProof ?? '',
+      },
+    ];
+
+    const key = await this.baseCoin.keychains().add({
+      source: 'bitgo',
+      keyShares,
+      keyType: 'tss',
+      userGPGPublicKey: ovc1.gpgPubKey,
+      backupGPGPublicKey: ovc2.gpgPubKey,
+    });
+    assert(key.keyShares);
+    assert(key.commonKeychain);
+    assert(key.walletHSMGPGPublicKeySigs);
+
+    const bitgoToUserShare = key.keyShares.find(
+      (value: { from: string; to: string }) => value.from === 'bitgo' && value.to === 'user'
+    );
+    assert(bitgoToUserShare);
+    assert(bitgoToUserShare.vssProof);
+    const bitgoToBackupShare = key.keyShares.find(
+      (value: { from: string; to: string }) => value.from === 'bitgo' && value.to === 'backup'
+    );
+    assert(bitgoToBackupShare);
+    assert(bitgoToBackupShare.vssProof);
+
+    // Create JSON data with platform shares for OVC-1 and OVC-2
+    const bitgoToOvcOutput = {
+      ...decodedOvcOutput,
+      platform: {
+        commonKeychain: key.commonKeychain,
+        walletHSMGPGPublicKeySigs: key.walletHSMGPGPublicKeySigs,
+        ovc: {
+          // BitGo to User (OVC-1)
+          1: {
+            bitgoToOvcShare: {
+              i: 1,
+              j: 3,
+              publicShare: bitgoToUserShare.publicShare,
+              privateShare: bitgoToUserShare.privateShare,
+              vssProof: bitgoToUserShare.vssProof,
+            },
+          },
+          // BitGo to Backup (OVC-2)
+          2: {
+            bitgoToOvcShare: {
+              i: 2,
+              j: 3,
+              publicShare: bitgoToBackupShare.publicShare,
+              privateShare: bitgoToBackupShare.privateShare,
+              vssProof: bitgoToBackupShare.vssProof,
+            },
+          },
+        },
+      },
+    };
+
+    // Mark it ready for next operation, should be 2
+    bitgoToOvcOutput.state += 1;
+
+    const output = {
+      bitGoKeyId: key.id,
+      bitGoOutputJsonForOvc: bitgoToOvcOutput,
+    };
+
+    return decodeOrElse(BitGoKeyFromOvcShares.name, BitGoKeyFromOvcShares, output, (errors) => {
+      throw new Error(`Error producing the output: ${errors}`);
     });
   }
 }

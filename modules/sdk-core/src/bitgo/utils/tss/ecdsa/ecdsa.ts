@@ -1011,6 +1011,33 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     enterpriseId: string,
     userPassword: string
   ): Promise<BitGoProofSignatures> {
+    // Fetch BitGo's challenge and verify
+    const bitgoChallengesWithProofs = await EcdsaUtils.getBitGoChallenges(bitgo);
+    if (!(await EcdsaUtils.verifyBitGoChallenges(bitgoChallengesWithProofs))) {
+      throw new Error(
+        `Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com`
+      );
+    }
+    return await EcdsaUtils.signBitgoChallenges(bitgo, enterpriseId, userPassword, bitgoChallengesWithProofs);
+  }
+
+  /**
+   * Sign Bitgo's proofs, verification of proofs is left to the caller
+   * @param bitgo
+   * @param enterpriseId
+   * @param userPassword
+   * @param bitgoChallengesWithProofs Optionally provide Bitgo Challaenge & Proofs instead of fetching from API
+   */
+  static async signBitgoChallenges(
+    bitgo: BitGoBase,
+    enterpriseId: string,
+    userPassword: string,
+    bitgoChallengesWithProofs?: GetBitGoChallengesApi
+  ): Promise<BitGoProofSignatures> {
+    // fetch challenge & proof if none are provided
+    const challengesWithProofs = bitgoChallengesWithProofs
+      ? bitgoChallengesWithProofs
+      : await EcdsaUtils.getBitGoChallenges(bitgo);
     // Fetch user's ecdh public keychain needed for signing the challenges
     const userSigningKey = await bitgo.getSigningKeyForUser(enterpriseId);
     if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
@@ -1026,21 +1053,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     } catch (e) {
       throw new Error('Incorrect password. Please try again.');
     }
-
-    // Fetch BitGo's challenge and verify
-    const bitgoChallengesWithProofs = await EcdsaUtils.getBitGoChallenges(bitgo);
-    if (!(await EcdsaUtils.verifyBitGoChallenges(bitgoChallengesWithProofs))) {
-      throw new Error(
-        `Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com`
-      );
-    }
     const signedBitGoInstChallenge = EcdsaUtils.signChallenge(
-      bitgoChallengesWithProofs.bitgoInstitutionalHsm,
+      challengesWithProofs.bitgoInstitutionalHsm,
       xprv,
       userSigningKey.derivationPath
     );
     const signedBitGoNitroChallenge = EcdsaUtils.signChallenge(
-      bitgoChallengesWithProofs.bitgoNitroHsm,
+      challengesWithProofs.bitgoNitroHsm,
       xprv,
       userSigningKey.derivationPath
     );

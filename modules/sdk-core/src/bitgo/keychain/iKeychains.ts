@@ -1,6 +1,7 @@
 import { IRequestTracer } from '../../api';
 import { KeyPair, KeychainsTriplet } from '../baseCoin';
 import { BackupProvider, IWallet } from '../wallet';
+import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 
@@ -142,4 +143,5 @@ export interface IKeychains {
   createBackup(params?: CreateBackupOptions): Promise<Keychain>;
   getKeysForSigning(params?: GetKeysForSigningOptions): Promise<Keychain[]>;
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
+  createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON): Promise<BitGoKeyFromOvcShares>;
 }

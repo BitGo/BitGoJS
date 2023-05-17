@@ -9,15 +9,20 @@ import {
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
-import { isPureArg, CallArg } from './mystenlab/types/sui-bcs';
+import { isPureArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
-import { MethodNames, SuiTransactionType } from './iface';
+import {
+  MethodNames,
+  SuiTransaction,
+  SuiTransactionType,
+  TransferProgrammableTransaction,
+  StakingProgrammableTransaction,
+} from './iface';
 import { Buffer } from 'buffer';
 import {
   isValidSuiAddress,
   normalizeSuiAddress,
   normalizeSuiObjectId,
-  SuiCallArg,
   SuiJsonValue,
   SuiObjectRef,
 } from './mystenlab/types';
@@ -199,14 +204,27 @@ export class Utils implements BaseUtils {
     }
   }
 
-  getRecipients(inputs: CallArg[] | SuiCallArg[] | TransactionBlockInput[]): Recipient[] {
+  getRecipients(tx: SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction>): Recipient[] {
     const amounts: number[] = [];
     const addresses: string[] = [];
-    inputs.forEach((input, index) => {
-      if (index % 2 === 0) {
-        amounts.push(this.getAmount(input));
-      } else {
-        addresses.push(this.getAddress(input));
+    tx.tx.transactions.forEach((transaction, i) => {
+      if (transaction.kind === 'SplitCoins') {
+        const index = transaction.amounts[0].index;
+        const input = tx.tx.inputs[index] as any;
+        if (input.kind && input.kind === 'Input') {
+          amounts.push(input.value);
+        } else {
+          amounts.push(Buffer.from(input.Pure).readUIntLE(0, 6));
+        }
+      }
+      if (transaction.kind === 'TransferObjects') {
+        const index = transaction.address.index;
+        const input = tx.tx.inputs[index] as any;
+        if (input.kind && input.kind === 'Input') {
+          addresses.push(input.value);
+        } else {
+          addresses.push('0x' + Buffer.from(input.Pure).toString('hex'));
+        }
       }
     });
     return addresses.map((address, index) => {

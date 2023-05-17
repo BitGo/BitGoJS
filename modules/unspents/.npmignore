@@ -11,5 +11,3 @@ tslint.json
 tsconfig.json
 tsconfig.build.json
 .nvmrc
-.drone.jsonnet
-.drone.yml

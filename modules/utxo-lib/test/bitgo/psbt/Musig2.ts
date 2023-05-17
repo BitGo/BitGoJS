@@ -11,9 +11,10 @@ import {
   RootWalletKeys,
   scriptTypeForChain,
   UtxoTransaction,
+  verifySignatureWithUnspent,
 } from '../../../src/bitgo';
 
-import { getDefaultWalletKeys, getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
+import { getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
 import {
   createTapInternalKey,
   createTapOutputKey,
@@ -52,9 +53,9 @@ import {
   validateParsedTaprootScriptPathTxInput,
   validateParsedTaprootKeyPathPsbt,
   validateParsedTaprootScriptPathPsbt,
+  rootWalletKeys,
 } from './Musig2Util';
 
-const rootWalletKeys = getDefaultWalletKeys();
 const p2trMusig2Unspent = getUnspents(['p2trMusig2'], rootWalletKeys);
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
@@ -114,6 +115,13 @@ describe('p2trMusig2', function () {
       });
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
       assert.ok(verifyFullySignedSignatures(tx, unspents, rootWalletKeys, 'bitgo', 'user'));
+      unspents.map((unspent, inputIndex) => {
+        assert.deepStrictEqual(verifySignatureWithUnspent(tx, inputIndex, unspents, rootWalletKeys), [
+          true,
+          false,
+          true,
+        ]);
+      });
     });
 
     it(`parse tx`, function () {
@@ -171,15 +179,15 @@ describe('p2trMusig2', function () {
 
         psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
 
-        const tapMerkleRoot = psbt.data.inputs[0].tapMerkleRoot;
-        psbt.data.inputs[0].tapMerkleRoot = undefined;
+        const tapBip32Derivation = psbt.data.inputs[0].tapBip32Derivation;
+        psbt.data.inputs[0].tapBip32Derivation = undefined;
 
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo),
-          (e) => e.message === 'tapMerkleRoot is required to create nonce'
+          (e) => e.message === 'tapBip32Derivation is required to create nonce'
         );
 
-        psbt.data.inputs[0].tapMerkleRoot = tapMerkleRoot;
+        psbt.data.inputs[0].tapBip32Derivation = tapBip32Derivation;
 
         psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
 
@@ -514,7 +522,7 @@ describe('p2trMusig2', function () {
               publicKey: walletKeys.user.publicKey,
               privateKey: walletKeys.user.privateKey!,
             }),
-          (e) => e.message === 'tapInternalKey is required for p2tr musig2 key path signing'
+          (e) => e.message === 'not a taproot musig2 input'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
       });
@@ -565,7 +573,7 @@ describe('p2trMusig2', function () {
             publicKey: walletKeys.user.publicKey,
             privateKey: walletKeys.user.privateKey!,
           }),
-        (e) => e.message === 'tapMerkleRoot is required for p2tr musig2 key path signing'
+        (e) => e.message === 'not a taproot musig2 input'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });

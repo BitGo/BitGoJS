@@ -38,7 +38,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
   }
 
   /** @inheritdoc */
-  sign(key: BaseKey) {
+  sign(key: BaseKey): void {
     this.transaction.setSuiTransaction(this.buildSuiTransaction());
     super.sign(key);
   }
@@ -86,7 +86,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     this.sender(txData.sender);
     this.gasData(txData.gasData);
 
-    const recipients = utils.getRecipients(txData.kind.ProgrammableTransaction.inputs);
+    const recipients = utils.getRecipients(tx.suiTransaction);
     this.send(recipients);
   }
 

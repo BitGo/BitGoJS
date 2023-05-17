@@ -1,0 +1,50 @@
+{
+  "name": "@bitgo/sdk-lib-mpc",
+  "version": "8.2.0",
+  "description": "library functions for BitGo's MPC solution",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-lib-mpc"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@types/keccak": "^3.0.1",
+    "@types/superagent": "4.1.15",
+    "@wasmer/wasi": "^1.2.2",
+    "bigint-crypto-utils": "3.1.4",
+    "bigint-mod-arith": "3.1.2",
+    "paillier-bigint": "3.3.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.151",
+    "nyc": "^15.0.0"
+  }
+}

@@ -1,6 +1,9 @@
 import { init, WASI } from '@wasmer/wasi';
 import { loadWebAssembly } from './opensslbytes';
 
+/**
+ * @deprecated Use OpenSSL from sdk-lib-mpc instead
+ */
 export class OpenSSL {
   private waModule: WebAssembly.Module;
   private isInitialized = false;

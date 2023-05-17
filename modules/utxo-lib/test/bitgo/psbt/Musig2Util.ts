@@ -28,14 +28,18 @@ import {
   ScriptType2Of3,
   toXOnlyPublicKey,
 } from '../../../src/bitgo/outputScripts';
-import { getDefaultWalletKeys, mockWalletUnspent } from '../../../src/testutil';
-import { networks } from '../../../src';
+import { mockWalletUnspent } from '../../../src/testutil';
+import { bip32, networks } from '../../../src';
+import { BIP32Interface } from 'bip32';
 
 export const network = networks.bitcoin;
 const outputType = 'p2trMusig2';
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
-const rootWalletKeys = getDefaultWalletKeys();
+
+const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), network)) as BIP32Interface[];
+export const rootWalletKeys = new RootWalletKeys([keys[0], keys[1], keys[2]]);
+
 const dummyKey1 = rootWalletKeys.deriveForChainAndIndex(50, 200);
 const dummyKey2 = rootWalletKeys.deriveForChainAndIndex(60, 201);
 
