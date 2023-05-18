@@ -521,7 +521,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       this.wallet.id(),
       txRequestId,
       userSignShare.commitment,
-      unsignedTx.serializedTxHex,
       encryptedSignerShare
     );
     const bitgoToUserCommitment: Commitment = {

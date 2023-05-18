@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import 'should';
 import assert from 'assert';
 import * as bs58 from 'bs58';
 import { randomBytes } from 'crypto';

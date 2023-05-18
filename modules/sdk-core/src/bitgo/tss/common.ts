@@ -84,7 +84,6 @@ export async function exchangeEddsaCommitments(
   walletId: string,
   txRequestId: string,
   commitment: Commitment,
-  unsignedTx: string,
   encryptedSignerShare: string,
   apiMode: 'full' | 'lite' = 'lite'
 ): Promise<ExchangeCommitmentResponse> {
@@ -93,10 +92,7 @@ export async function exchangeEddsaCommitments(
     addendum = '/transactions/0';
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
-  return await bitgo
-    .post(bitgo.url(urlPath, 2))
-    .send({ c: commitment.c, m: unsignedTx, u: encryptedSignerShare })
-    .result();
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({ c: commitment.c, u: encryptedSignerShare }).result();
 }
 
 /**
