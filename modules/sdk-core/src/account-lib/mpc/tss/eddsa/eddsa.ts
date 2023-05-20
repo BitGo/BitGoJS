@@ -48,6 +48,7 @@ import {
   RShare,
   GShare,
 } from './types';
+import assert from 'assert';
 
 // 2^256
 const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');
@@ -297,12 +298,19 @@ export default class Eddsa {
         v: bigIntToBufferLE(v[0], 32).toString('hex'),
         r: bigIntToBufferLE(split_r[S_j.i], 32).toString('hex'),
         R: bigIntToBufferLE(R, 32).toString('hex'),
+        commitment: bigIntToBufferLE(Eddsa.curve.basePointMult(split_r[S_j.i]), 32).toString('hex'),
       };
     }
     return resultShares;
   }
 
   sign(message: Buffer, playerShare: XShare, rShares: RShare[], yShares: YShare[] = []): GShare {
+    for (const rShare of rShares) {
+      if (rShare.commitment) {
+        this.validateCommitment(rShare);
+      }
+    }
+
     const S_i = playerShare;
 
     const uValues = [playerShare, ...rShares, ...yShares].map(({ u }) => bigIntFromBufferLE(Buffer.from(u, 'hex')));
@@ -350,5 +358,14 @@ export default class Eddsa {
     const publicKey = bigIntFromBufferLE(Buffer.from(signature.y, 'hex'));
     const signedMessage = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
     return Eddsa.curve.verify(message, signedMessage, publicKey);
+  }
+
+  private validateCommitment(RShare: RShare): void {
+    assert(RShare.commitment, 'Commitment is missing');
+    const c = Eddsa.curve.basePointMult(bigIntFromBufferLE(Buffer.from(RShare.r, 'hex')));
+    const otherPlayerCommitment = bigIntFromBufferLE(Buffer.from(RShare.commitment, 'hex'));
+    if (c !== otherPlayerCommitment) {
+      throw new Error('Could not verify other player share');
+    }
   }
 }
