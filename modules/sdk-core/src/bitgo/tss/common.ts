@@ -2,8 +2,16 @@ import assert from 'assert';
 import openpgp from 'openpgp';
 
 import { BitGoBase } from '../bitgoBase';
-import { RequestType, TxRequest, verifyPrimaryUserWrapper, SignatureShareRecord } from '../utils';
 import { TxRequestChallengeResponse } from './types';
+import {
+  RequestType,
+  TxRequest,
+  verifyPrimaryUserWrapper,
+  SignatureShareRecord,
+  CommitmentShareRecord,
+  EncryptedSignerShareRecord,
+  ExchangeCommitmentResponse,
+} from '../utils';
 
 /**
  * Gets the latest Tx Request by id
@@ -72,6 +80,32 @@ export async function sendSignatureShare(
       userPublicGpgKey,
     })
     .result();
+}
+
+/**
+ * Sends the client commitment and encrypted signer share to the server, getting back the server commitment
+ * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {string} walletId - the wallet id
+ * @param {string} txRequestId - the txRequest Id
+ * @param {CommitmentShareRecord} commitmentShare - the client commitment share
+ * @param {EncryptedSignerShareRecord} encryptedSignerShare - the client encrypted signer share
+ * @param {string} [apiMode] - the txRequest api mode (full or lite) - defaults to lite
+ * @returns {Promise<ExchangeCommitmentResponse>} - the server commitment share
+ */
+export async function exchangeEddsaCommitments(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  commitmentShare: CommitmentShareRecord,
+  encryptedSignerShare: EncryptedSignerShareRecord,
+  apiMode: 'full' | 'lite' = 'lite'
+): Promise<ExchangeCommitmentResponse> {
+  let addendum = '';
+  if (apiMode === 'full') {
+    addendum = '/transactions/0';
+  }
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({ commitmentShare, encryptedSignerShare }).result();
 }
 
 /**

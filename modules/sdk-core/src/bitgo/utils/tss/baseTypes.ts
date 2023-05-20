@@ -143,6 +143,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
 }
 
 export type TxRequestState =
+  | 'pendingCommitment'
   | 'pendingApproval'
   | 'canceled'
   | 'rejected'
@@ -154,6 +155,7 @@ export type TxRequestState =
 
 export type TransactionState =
   | 'initialized'
+  | 'pendingCommitment'
   | 'pendingSignature'
   | 'signed'
   | 'held'
@@ -204,6 +206,7 @@ export type TxRequest = {
   pendingApprovalId?: string;
   policiesChecked: boolean;
   signatureShares?: SignatureShareRecord[];
+  commitmentShares?: CommitmentShareRecord[];
   pendingTxHashes?: string[];
   txHashes?: string[];
   unsignedMessages?: UnsignedMessageTss[];
@@ -214,6 +217,7 @@ export type TxRequest = {
     state: TransactionState;
     unsignedTx: UnsignedTransactionTss; // Should override with blockchain / sig specific unsigned tx
     signatureShares: SignatureShareRecord[];
+    commitmentShares?: CommitmentShareRecord[];
   }[];
   messages?: {
     state: TransactionState;
@@ -241,13 +245,34 @@ export enum SignatureShareType {
   BITGO = 'bitgo',
 }
 
-export interface SignatureShareRecord {
+interface ShareBaseRecord {
   from: SignatureShareType;
   to: SignatureShareType;
   share: string;
+}
+
+export interface SignatureShareRecord extends ShareBaseRecord {
   vssProof?: string;
   privateShareProof?: string;
   publicShare?: string;
+}
+
+export enum CommitmentType {
+  COMMITMENT = 'commitment',
+}
+export interface CommitmentShareRecord extends ShareBaseRecord {
+  type: CommitmentType;
+}
+
+export interface ExchangeCommitmentResponse {
+  commitmentShare: CommitmentShareRecord;
+}
+
+export enum EncryptedSignerShareType {
+  ENCRYPTED_SIGNER_SHARE = 'encryptedSignerShare',
+}
+export interface EncryptedSignerShareRecord extends ShareBaseRecord {
+  type: EncryptedSignerShareType;
 }
 
 export type TSSParams = {

@@ -18,6 +18,8 @@ import {
   SignatureShareRecord,
   SignatureShareType,
   RequestType,
+  CommitmentShareRecord,
+  CommitmentType,
 } from './../../utils';
 import { BaseTransaction } from './../../../account-lib/baseCoin/baseTransaction';
 import { Ed25519BIP32 } from './../../../account-lib/mpc/hdTree';
@@ -105,7 +107,7 @@ export async function createCombinedKey(params: {
 }
 
 /**
- * Creates the User Sign Share containing the User XShare and the User to Bitgo RShare
+ * Creates the User Sign Share containing the User XShare , the User to Bitgo RShare and User to Bitgo commitment
  *
  * @param {Buffer} signablePayload - the signablePayload as a buffer
  * @param {PShare} pShare - User's signing material
@@ -128,6 +130,7 @@ export async function createUserSignShare(signablePayload: Buffer, pShare: PShar
  * @param {SignatureShareRecord} bitgoToUserRShare - the Bitgo to User RShare
  * @param {YShare} backupToUserYShare - the backup key Y share received during wallet creation
  * @param {Buffer} signablePayload - the signable payload from a tx
+ * @param {CommitmentShareRecord} [bitgoToUserCommitment] - the Bitgo to User Commitment
  * @returns {Promise<GShare>} - the User to Bitgo GShare
  */
 export async function createUserToBitGoGShare(
@@ -135,7 +138,8 @@ export async function createUserToBitGoGShare(
   bitgoToUserRShare: SignatureShareRecord,
   backupToUserYShare: YShare,
   bitgoToUserYShare: YShare,
-  signablePayload: Buffer
+  signablePayload: Buffer,
+  bitgoToUserCommitment?: CommitmentShareRecord
 ): Promise<GShare> {
   if (userSignShare.xShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid XShare, doesnt belong to the User');
@@ -160,7 +164,7 @@ export async function createUserToBitGoGShare(
     R = bitgoToUserRShare.share.substring(64, 128);
   }
 
-  const RShare: RShare = {
+  const updatedBitgoToUserRShare: RShare = {
     i: ShareKeyPosition.USER,
     j: ShareKeyPosition.BITGO,
     u: bitgoToUserYShare.u,
@@ -170,7 +174,21 @@ export async function createUserToBitGoGShare(
   };
 
   const MPC = await Eddsa.initialize();
-  return MPC.sign(signablePayload, userSignShare.xShare, [RShare], [backupToUserYShare]);
+
+  if (bitgoToUserCommitment) {
+    if (
+      bitgoToUserCommitment.from !== SignatureShareType.BITGO ||
+      bitgoToUserCommitment.to !== SignatureShareType.USER
+    ) {
+      throw new Error('Invalid Commitment, is not from Bitgo to User');
+    }
+    if (bitgoToUserCommitment.type !== CommitmentType.COMMITMENT) {
+      throw new Error('Invalid Commitment type, got: ' + bitgoToUserCommitment.type + ' expected: commitment');
+    }
+    updatedBitgoToUserRShare.commitment = bitgoToUserCommitment.share;
+  }
+
+  return MPC.sign(signablePayload, userSignShare.xShare, [updatedBitgoToUserRShare], [backupToUserYShare]);
 }
 
 /**
