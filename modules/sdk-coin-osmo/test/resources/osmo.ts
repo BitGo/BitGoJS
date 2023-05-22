@@ -1,0 +1,11 @@
+export const TEST_ACCOUNT = {
+  pubAddress: 'osmo1kvpv7vgzrc4du0hufgdfysgglv9a7294mcnsy8',
+  compressedPublicKey: '02f24395e31dacdc3af853917b28b68d8bcaa3291ff77461f77b568aa6bef7b1e9',
+  uncompressedPublicKey:
+    '04f24395e31dacdc3af853917b28b68d8bcaa3291ff77461f77b568aa6bef7b1e9c4be2b435ed204f2402ace7069083056f2add3305be223c777611f2cb3bcacca',
+  privateKey: '9558c5f1240eabd46564f986ab9349626a25d6346cbb47cb3c98bdb379ae8ff0',
+  extendedPrv:
+    'xprv9s21ZrQH143K2b8FzvDTqLb7siAAUZVRHYooUDGUsoMtBfkzuHaNAkBRYDdA8V81QQBEQwNWQaNoYF35AxBCvR7gmv4bWKBzeSyzfzigTYZ',
+  extendedPub:
+    'xpub661MyMwAqRbcF5Cj6wkUCUXrRjzet2DGemjQGbg6S8ts4U69SptciYVuPVMr1zkmVgyK3iZaZtmeTEYChJEMy6QZKFpA7oL5K9neNRS6q7P',
+};

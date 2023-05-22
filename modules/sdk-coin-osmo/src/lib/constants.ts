@@ -1,0 +1,1 @@
+export const DEFAULT_SEED_SIZE_BYTES = 16;
