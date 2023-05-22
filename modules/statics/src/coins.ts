@@ -2865,7 +2865,7 @@ export const coins = CoinMap.fromCoins([
     'genie',
     'GenieSwap',
     18,
-    '0x665F77fbA5975ab40Ce61c90F28007fb5b09D7B1',
+    '0x665f77fba5975ab40ce61c90f28007fb5b09d7b1',
     UnderlyingAsset.GENIE
   ),
   erc20(
