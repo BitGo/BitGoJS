@@ -200,6 +200,7 @@ export class Wallet implements IWallet {
       'destinationChain',
       'targetWalletUnspents',
       'trustlines',
+      'txFormat',
       'type',
       'unspents',
       'nonParticipation',
@@ -1832,7 +1833,7 @@ export class Wallet implements IWallet {
     // pass our three keys
     const signingParams = {
       ...params,
-      txPrebuild: txPrebuild,
+      txPrebuild,
       wallet: {
         // this is the version of the multisig address at wallet creation time
         addressVersion: this._wallet.coinSpecific.addressVersion,
