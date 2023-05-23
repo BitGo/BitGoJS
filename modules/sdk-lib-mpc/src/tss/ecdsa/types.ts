@@ -15,20 +15,19 @@ interface Ntilde<T> {
   ntilde: T;
   h1: T;
   h2: T;
-  ntildeProof?: NtildeProofs<T>;
 }
 
 export type DeserializedNtildeProof = NtildeProof<bigint>;
 export type DeserializedNtildeProofs = NtildeProofs<bigint>;
 export type DeserializedNtilde = Ntilde<bigint>;
-export type DeserializedNtildeWithProofs = Omit<DeserializedNtilde, 'ntildeProof'> & {
+export type DeserializedNtildeWithProofs = DeserializedNtilde & {
   ntildeProof: DeserializedNtildeProofs;
 };
 
 export type SerializedNtildeProof = NtildeProof<string>;
 export type SerializedNtildeProofs = NtildeProofs<string>;
 export type SerializedNtilde = Ntilde<string>;
-export type SerializedNtildeWithProofs = Omit<SerializedNtilde, 'ntildeProof'> & {
+export type SerializedNtildeWithProofs = SerializedNtilde & {
   ntildeProof: SerializedNtildeProofs;
 };
 
@@ -40,26 +39,20 @@ export interface RSAModulus {
 }
 
 // Range proof values
-export interface RangeProof {
+export type RangeProof = {
   z: bigint;
   u: bigint;
   w: bigint;
   s: bigint;
   s1: bigint;
   s2: bigint;
-}
+};
 
 // Range proof values
-export interface RangeProofWithCheck {
-  z: bigint;
+export type RangeProofWithCheck = RangeProof & {
   zprm: bigint;
   t: bigint;
   v: bigint;
-  w: bigint;
-  s: bigint;
-  s1: bigint;
-  s2: bigint;
   t1: bigint;
   t2: bigint;
-  u: bigint;
-}
+};

@@ -2,7 +2,7 @@ import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
 import { BitGoProofSignatures } from '../utils/tss/ecdsa';
-import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 export type EnterpriseFeatureFlag = 'useEnterpriseEcdsaTssChallenge';
 
@@ -28,8 +28,8 @@ export interface IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: DeserializedNtilde
+    challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void>;
-  getExistingTssEcdsaChallenge(): Promise<DeserializedNtilde>;
+  getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs>;
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean;
 }

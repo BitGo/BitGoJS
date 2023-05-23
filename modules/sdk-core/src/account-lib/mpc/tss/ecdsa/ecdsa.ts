@@ -299,7 +299,7 @@ export default class Ecdsa {
     challenge?: EcdsaTypes.SerializedNtilde
   ): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
-      challenge = Ecdsa.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
+      challenge = EcdsaUtils.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
     return {

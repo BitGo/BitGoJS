@@ -47,16 +47,19 @@ export interface PShare {
   chaincode: string;
 }
 
-// NShares which is shared to the other participants during key generation
-export interface NShare {
+export type SignIndex = {
   i: number; // participant index
   j: number; // target participant index
+};
+
+// NShares which is shared to the other participants during key generation
+export type NShare = SignIndex & {
   n: string;
   u: string; // shamir share of secret at j'th index
   y: string;
   v?: string;
   chaincode: string;
-}
+};
 
 export type KeyShare = {
   pShare: PShare;
@@ -74,16 +77,14 @@ export interface XShare {
   chaincode: string;
 }
 
-export type XShareWithNtilde = XShare & SerializedNtilde;
+export type XShareWithNtilde = XShare & EcdsaTypes.SerializedNtilde;
 
 // YShares used during signature generation
-export interface YShare {
-  i: number;
-  j: number;
+export type YShare = SignIndex & {
   n: string;
-}
+};
 
-export type YShareWithNtilde = YShare & SerializedNtilde;
+export type YShareWithNtilde = YShare & EcdsaTypes.SerializedNtilde;
 
 export interface KeyCombined {
   xShare: XShare;
@@ -124,16 +125,15 @@ export interface RangeProofShare {
   s2: string;
 }
 
-export interface KShare {
-  i: number;
-  j: number;
+export type KShare = SignIndex & {
   n: string;
   ntilde: string;
   h1: string;
   h2: string;
   k: string;
   proof: RangeProofShare;
-}
+};
+
 export interface SignShareRT {
   wShare: WShare;
   kShare: KShare;
@@ -155,9 +155,7 @@ export interface RangeProofWithCheckShare {
 }
 
 // Alpha Share
-export interface AShare {
-  i: number;
-  j: number;
+export type AShare = SignIndex & {
   n: string;
   ntilde: string;
   h1: string;
@@ -168,7 +166,7 @@ export interface AShare {
   proof: RangeProofShare;
   gammaProof: RangeProofWithCheckShare;
   wProof: RangeProofWithCheckShare;
-}
+};
 
 // Beta Share
 export interface BShare extends WShare {
@@ -178,14 +176,12 @@ export interface BShare extends WShare {
 }
 
 // Mu Share
-export interface MUShare {
-  i: number;
-  j: number;
+export type MUShare = SignIndex & {
   alpha: string;
   mu: string;
   gammaProof: RangeProofWithCheckShare;
   wProof: RangeProofWithCheckShare;
-}
+};
 
 // Gamma Share
 export interface GShare {
@@ -228,12 +224,10 @@ export interface OShare {
   Gamma: string;
 }
 
-export interface DShare {
-  i: number;
-  j: number;
+export type DShare = SignIndex & {
   delta: string;
   Gamma: string;
-}
+};
 
 export interface SShare {
   i: number;
@@ -244,10 +238,7 @@ export interface SShare {
 
 export interface SignCombine {
   gShare: GShare;
-  signIndex: {
-    i: number;
-    j: number;
-  };
+  signIndex: SignIndex;
 }
 
 export interface SignCombineRT {

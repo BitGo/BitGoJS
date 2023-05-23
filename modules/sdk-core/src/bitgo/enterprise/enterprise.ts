@@ -9,8 +9,7 @@ import { getFirstPendingTransaction } from '../internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
-import { DeserializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
-import Ecdsa from '../../account-lib/mpc/tss/ecdsa';
+import { EcdsaUtils as ecdsaUtils, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -139,7 +138,7 @@ export class Enterprise implements IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
-    challenge?: DeserializedNtilde
+    challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void> {
     await EcdsaUtils.initiateChallengesForEnterprise(
       this.bitgo,
@@ -156,17 +155,18 @@ export class Enterprise implements IEnterprise {
    * Can be used with uploadAndEnableTssEcdsaSigning to re-sign the
    * enterprise challenge with new signatures.
    */
-  async getExistingTssEcdsaChallenge(): Promise<DeserializedNtilde> {
+  async getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs> {
     const urlPath = `/enterprise/${this.id}/tssconfig`;
     const tssConfig = await this.bitgo.get(this.bitgo.url(urlPath, 2)).send().result();
     const enterpriseChallenge = tssConfig?.ecdsa.challenge?.enterprise;
     if (!enterpriseChallenge) {
       throw new Error('No existing ECDSA challenge on the enterprise.');
     }
-    return Ecdsa.deserializeNtilde({
+    return ecdsaUtils.deserializeNtildeWithProofs({
       ntilde: enterpriseChallenge.ntilde,
       h1: enterpriseChallenge.h1,
       h2: enterpriseChallenge.h2,
+      ntildeProof: enterpriseChallenge.ntildeProof,
     });
   }
 
