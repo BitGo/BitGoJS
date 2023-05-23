@@ -2861,6 +2861,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GEC
   ),
   erc20(
+    '2f78a2c7-d3ed-4b95-96e7-298006be4cea',
+    'genie',
+    'GenieSwap',
+    18,
+    '0x665f77fba5975ab40ce61c90f28007fb5b09d7b1',
+    UnderlyingAsset.GENIE
+  ),
+  erc20(
     '79d47ed4-34e8-4ba3-b576-34fd2776f9b1',
     'ghub',
     'Genohub',
@@ -3283,6 +3291,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xa4ea687a2a7f29cf2dc66b39c68e4411c0d00c49',
     UnderlyingAsset.IVY
+  ),
+  erc20(
+    'aabde9b2-1346-4732-b374-5a809301d4ad',
+    'jasmy',
+    'JasmyCoin',
+    18,
+    '0x7420b4b9a0110cdc71fb720908340c03f9bc03ec',
+    UnderlyingAsset.JASMY
   ),
   erc20(
     '70bad6c3-d616-47f8-86b7-2293e478f7c2',
@@ -3780,6 +3796,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x53884b61963351c283118a8e1fc05ba464a11959',
     UnderlyingAsset.MNS
+  ),
+  erc20(
+    '1301f2e6-3f4c-46ab-9f21-e6e8eadb0f3c',
+    'mln',
+    'Melon Token',
+    18,
+    '0xec67005c4e498ec7f55e092bd1d35cbc47c91892',
+    UnderlyingAsset.MLN
   ),
   erc20(
     'fb049629-1846-4bbe-b163-330940e7d03e',
@@ -4598,6 +4622,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['RETH-H']
   ),
   erc20(
+    '93d78417-5ace-4945-8694-fbf578f752d7',
+    'req',
+    'Request',
+    18,
+    '0x8f8221afbb33998d8584a2b05749ba73c37a938a',
+    UnderlyingAsset.REQ
+  ),
+  erc20(
     '3bd6dff4-e073-4c61-a700-70fa4204b57f',
     'reth2',
     'StakeWise Reward ETH2',
@@ -5142,6 +5174,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TBTC1
   ),
   erc20(
+    'e20e9f1a-429c-40ab-a433-4c0d6ff399f2',
+    'tbtc2',
+    'Tbtc2',
+    18,
+    '0xce1f983c29f7a6c0c0dfa78c4d8fe7bdfe026d4b',
+    UnderlyingAsset.TBTC2
+  ),
+  erc20(
     '59654e4c-21f8-4139-aa7b-93ac62852f0c',
     'tcad',
     'TrueCAD',
@@ -5236,6 +5276,14 @@ export const coins = CoinMap.fromCoins([
     4,
     '0x888888848b652b3e3a0f34c96e00eec0f3a23f72',
     UnderlyingAsset.TLM
+  ),
+  erc20(
+    '6638e742-8f10-45bc-ac55-c357f98a105a',
+    'tlos',
+    'pTokens TLOS',
+    18,
+    '0x7825e833d495f3d1c28872415a4aee339d26ac88',
+    UnderlyingAsset.TLOS
   ),
   erc20(
     '492fb412-56bb-4677-b7d3-87cf03aad7df',
@@ -6597,6 +6645,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd13c7342e1ef687c5ad21b27c2b65d772cab5c8c',
     UnderlyingAsset.UOS
+  ),
+  erc20(
+    '228e67fe-3974-432a-833c-c8369113016b',
+    'xcn',
+    'Onyxcoin',
+    18,
+    '0xa2cd3d43c775978a96bdbf12d733d5a1ed94fb18',
+    UnderlyingAsset.XCN
   ),
   erc20(
     'f13e3fea-7da6-4954-950d-ae5774f103cb',
@@ -8198,6 +8254,15 @@ export const coins = CoinMap.fromCoins([
     6,
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     UnderlyingAsset.USDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '2a41c38d-c79a-4734-ae3a-c60e4d1f2d99',
+    'sol:wsol',
+    'Wrapped SOL',
+    9,
+    'So11111111111111111111111111111111111111112', // https://explorer.solana.com/address/So11111111111111111111111111111111111111112
+    UnderlyingAsset.WSOL,
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
