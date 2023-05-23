@@ -2,7 +2,8 @@
  * An interface for calculating a subkey in an HD key scheme.
  */
 import { createHmac } from 'crypto';
-import { Ed25519Curve, Secp256k1Curve } from './curves';
+import { Ed25519Curve } from './curves';
+import { Secp256k1Curve } from '@bitgo/sdk-lib-mpc';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromBufferLE, bigIntToBufferLE } from './util';
 
 // 2^256

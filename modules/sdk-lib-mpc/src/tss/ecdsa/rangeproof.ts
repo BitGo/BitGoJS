@@ -3,7 +3,7 @@
  * [1]: https://reitermk.github.io/papers/2004/IJIS.pdf
  */
 import { createHash } from 'crypto';
-import BaseCurve from '../../curves';
+import { BaseCurve } from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
 import { gcd, modInv, modPow } from 'bigint-mod-arith';

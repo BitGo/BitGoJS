@@ -2,7 +2,7 @@
  * Base Interface for supporting elliptic curve parameters
  */
 
-interface BaseCurve {
+export interface BaseCurve {
   // Function that reduces a scalar modulo the order of the
   // curve.
   scalarReduce(s: bigint): bigint;
@@ -34,5 +34,3 @@ interface BaseCurve {
   // order of the curve
   order: () => bigint;
 }
-
-export default BaseCurve;

@@ -1,2 +1,2 @@
-import curve from './baseCurve';
-export default curve;
+export * from './baseCurve';
+export * from './secp256k1';

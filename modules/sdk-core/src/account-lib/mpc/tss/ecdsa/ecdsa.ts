@@ -8,7 +8,7 @@ import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToB
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import * as rangeProof from './rangeproof';
+import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -298,7 +298,7 @@ export default class Ecdsa {
    */
   async appendChallenge(xShare: XShare, yShare: YShare, challenge?: SerializedNtilde): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
-      challenge = Ecdsa.serializeNtilde(await rangeProof.generateNtilde(3072));
+      challenge = Ecdsa.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
     return {
@@ -332,7 +332,7 @@ export default class Ecdsa {
     }
 
     const k = Ecdsa.curve.scalarRandom();
-    const rk = await rangeProof.randomCoPrimeTo(pk.n);
+    const rk = await EcdsaRangeProof.randomCoPrimeTo(pk.n);
     const ck = pk.encrypt(k, rk);
     const gamma = Ecdsa.curve.scalarRandom();
 
@@ -365,7 +365,7 @@ export default class Ecdsa {
     };
 
     const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
-    const proof = await rangeProof.prove(
+    const proof = await EcdsaRangeProof.prove(
       Ecdsa.curve,
       3072,
       pk,
@@ -446,7 +446,7 @@ export default class Ecdsa {
       }
       // Verify $\gamma_i \in Z_{N^2}$.
       if (
-        !rangeProof.verifyWithCheck(
+        !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
           pka,
@@ -477,7 +477,7 @@ export default class Ecdsa {
       }
       // Verify $\w_i \in Z_{N^2}$.
       if (
-        !rangeProof.verifyWithCheck(
+        !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
           3072,
           pka,
@@ -540,7 +540,7 @@ export default class Ecdsa {
       }
       const k = hexToBigInt(aShareToBeSent.k);
       if (
-        !rangeProof.verify(
+        !EcdsaRangeProof.verify(
           Ecdsa.curve,
           3072,
           pka,
@@ -568,14 +568,14 @@ export default class Ecdsa {
         'hex'
       );
       const g = hexToBigInt(bShareParticipant.gamma);
-      const rb = await rangeProof.randomCoPrimeTo(pka.n);
+      const rb = await EcdsaRangeProof.randomCoPrimeTo(pka.n);
       const cb = pka.encrypt(beta0, rb);
       const alpha = pka.addition(pka.multiply(k, g), cb);
       aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
       // Prove $\gamma_i \in Z_{N^2}$.
       const gx = Ecdsa.curve.basePointMult(g);
       let proof: RangeProofWithCheck;
-      proof = await rangeProof.proveWithCheck(
+      proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
         3072,
         pka,
@@ -613,13 +613,13 @@ export default class Ecdsa {
         'hex'
       );
       const w = hexToBigInt(bShareParticipant.w);
-      const rn = await rangeProof.randomCoPrimeTo(pka.n);
+      const rn = await EcdsaRangeProof.randomCoPrimeTo(pka.n);
       const cn = pka.encrypt(nu0, rn);
       const mu = pka.addition(pka.multiply(k, w), cn);
       shareToBeSent.mu = bigIntToBufferBE(mu, 32).toString('hex');
       // Prove $\w_i \in Z_{N^2}$.
       const wx = Ecdsa.curve.basePointMult(w);
-      proof = await rangeProof.proveWithCheck(
+      proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
         3072,
         pka,

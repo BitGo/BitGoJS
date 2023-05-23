@@ -48,6 +48,7 @@
     "@bitgo/sdk-coin-trx": "^1.7.2",
     "@bitgo/sdk-coin-xtz": "^1.4.18",
     "@bitgo/sdk-core": "^8.2.0",
+    "@bitgo/sdk-lib-mpc": "^8.2.0",
     "@bitgo/statics": "^15.1.0",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1"

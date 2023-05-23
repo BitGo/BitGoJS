@@ -18,7 +18,6 @@ import {
   ECDSAMethods,
   ECDSAUtils,
   Keychain,
-  rangeProof,
   RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
@@ -26,6 +25,7 @@ import {
   Wallet,
   EnterpriseData,
 } from '@bitgo/sdk-core';
+import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
 import {
@@ -589,7 +589,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
       const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
 
-      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
       await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
         ntilde: serializedEntChallenge.ntilde,
@@ -849,7 +849,7 @@ describe('TSS Ecdsa Utils:', async function () {
       await nockGetEnterprise({ enterpriseId: enterpriseId, response: enterpriseData, times: 1 });
       await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitGoChallenge });
       const deserializedEntChallenge = Ecdsa.deserializeNtilde(rawEntChallenge);
-      const generateNtildeStub = sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+      const generateNtildeStub = sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
       const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0);
       should.exist(challenges);
       challenges.should.deepEqual(({
@@ -1110,7 +1110,7 @@ describe('TSS Ecdsa Utils:', async function () {
     it('should generate a challenge and if one is not provided', async function() {
       const stubUploadChallenge = sinon.stub(ECDSAUtils.EcdsaUtils, 'uploadChallengesToEnterprise');
       const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
-      sinon.stub(rangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
       const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
       const signedInstChallenge = ECDSAUtils.EcdsaUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
