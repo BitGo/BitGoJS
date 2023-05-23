@@ -8,7 +8,7 @@ import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToB
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes, EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -35,8 +35,6 @@ import {
   XShareWithNtilde,
   YShare,
   YShareWithNtilde,
-  SerializedNtilde,
-  DeserializedNtilde,
 } from './types';
 
 const _5n = BigInt(5);
@@ -292,11 +290,15 @@ export default class Ecdsa {
    * @param {XShare} xShare Private xShare of signer
    * @param {YShare} yShare YShare of the other participant involved in
    * this signing operation
-   * @param {SerializedNtilde} challenge
+   * @param {EcdsaTypes.SerializedNtilde} challenge
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: SerializedNtilde): Promise<KeyCombinedWithNtilde> {
+  async appendChallenge(
+    xShare: XShare,
+    yShare: YShare,
+    challenge?: EcdsaTypes.SerializedNtilde
+  ): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
       challenge = Ecdsa.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
     }
@@ -821,8 +823,8 @@ export default class Ecdsa {
   /**
    * Deserializes a challenge and it's proofs from hex strings to bigint
    */
-  static deserializeNtilde(challenge: SerializedNtilde): DeserializedNtilde {
-    const deserializedNtilde: DeserializedNtilde = {
+  static deserializeNtilde(challenge: EcdsaTypes.SerializedNtilde): EcdsaTypes.DeserializedNtilde {
+    const deserializedNtilde: EcdsaTypes.DeserializedNtilde = {
       ntilde: hexToBigInt(challenge.ntilde),
       h1: hexToBigInt(challenge.h1),
       h2: hexToBigInt(challenge.h2),
@@ -846,8 +848,8 @@ export default class Ecdsa {
    * Serializes a challenge and it's proofs from big int to hex strings.
    * @param challenge
    */
-  static serializeNtilde(challenge: DeserializedNtilde): SerializedNtilde {
-    const serializedNtilde: SerializedNtilde = {
+  static serializeNtilde(challenge: EcdsaTypes.DeserializedNtilde): EcdsaTypes.SerializedNtilde {
+    const serializedNtilde: EcdsaTypes.SerializedNtilde = {
       ntilde: bigIntToHex(challenge.ntilde),
       h1: bigIntToHex(challenge.h1),
       h2: bigIntToHex(challenge.h2),
