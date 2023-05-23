@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as paillierBigint from 'paillier-bigint';
 import { EcdsaRangeProof, EcdsaTypes } from '../../../../src/tss/ecdsa';
 import { OpenSSL } from '../../../../src/openssl';
-import { Secp256k1Curve } from '../../../../src';
+import { randomCoPrimeTo, Secp256k1Curve } from '../../../../src';
 
 describe('MtA range proof', function () {
   const curve = new Secp256k1Curve();
@@ -35,7 +35,7 @@ describe('MtA range proof', function () {
 
   it('valid range proof', async function () {
     const k = curve.scalarRandom();
-    const rk = await EcdsaRangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
+    const rk = randomCoPrimeTo(paillierKeyPair.publicKey.n);
     const ck = paillierKeyPair.publicKey.encrypt(k, rk);
 
     const proof = await EcdsaRangeProof.prove(
@@ -69,7 +69,7 @@ describe('MtA range proof', function () {
   it('encrypted value too big', async function () {
     // Pick k based on attack described in https://eprint.iacr.org/2021/1621.pdf, where M = 2^29 is chosen.
     const k = (BigInt(2) * (BigInt(2) ^ BigInt(29)) * paillierKeyPair.publicKey.n) / curve.order();
-    const rk = await EcdsaRangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
+    const rk = await randomCoPrimeTo(paillierKeyPair.publicKey.n);
     const ck = paillierKeyPair.publicKey.encrypt(k, rk);
 
     const proof = await EcdsaRangeProof.prove(

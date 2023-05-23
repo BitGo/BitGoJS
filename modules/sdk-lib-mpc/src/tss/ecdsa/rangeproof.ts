@@ -5,10 +5,10 @@
 import { createHash } from 'crypto';
 import { BaseCurve } from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
-import { gcd, modInv, modPow } from 'bigint-mod-arith';
+import { bitLength, randBetween } from 'bigint-crypto-utils';
+import { modInv, modPow } from 'bigint-mod-arith';
 import { DeserializedNtilde, DeserializedNtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
-import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+import { bigIntFromBufferBE, bigIntToBufferBE, randomCoPrimeTo } from '../../util';
 import { OpenSSL } from '../../openssl';
 
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
@@ -42,15 +42,6 @@ async function generateModulus(bitlength: number): Promise<RSAModulus> {
   return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
 }
 
-export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
-  while (true) {
-    const y = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(x), true)));
-    if (y > BigInt(0) && gcd(x, y) === BigInt(1)) {
-      return y;
-    }
-  }
-}
-
 /**
  * Generate "challenge" values for range proofs.
  * @param {number} bitlength The bit length of the modulus to generate. This should
@@ -59,7 +50,7 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
  */
 export async function generateNtilde(bitlength: number): Promise<DeserializedNtilde> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
-  const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
+  const [f1, f2] = [randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)];
   const h1 = modPow(f1, BigInt(2), ntilde);
   const h2 = modPow(h1, f2, ntilde);
   const beta = modInv(f2, q1 * q2);
@@ -218,7 +209,7 @@ export async function prove(
   const qntilde = q * ntilde.ntilde;
   const q3ntilde = q3 * ntilde.ntilde;
   const alpha = randBetween(q3);
-  const beta = await randomCoPrimeTo(pk.n);
+  const beta = randomCoPrimeTo(pk.n);
   const gamma = randBetween(q3ntilde);
   const rho = randBetween(qntilde);
   const z = (modPow(ntilde.h1, m, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;
@@ -336,7 +327,7 @@ export async function proveWithCheck(
   const sigma = randBetween(qntilde);
   const tau = randBetween(q3ntilde);
   const rhoprm = randBetween(q3ntilde);
-  const beta = await randomCoPrimeTo(pk.n);
+  const beta = randomCoPrimeTo(pk.n);
   const gamma = randBetween(q7);
   const u = curve.basePointMult(curve.scalarReduce(alpha));
   const z = (modPow(ntilde.h1, x, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;

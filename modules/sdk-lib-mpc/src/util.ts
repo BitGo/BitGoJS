@@ -1,4 +1,6 @@
 import { PublicKey } from 'paillier-bigint';
+import { bitLength, randBitsSync } from 'bigint-crypto-utils';
+import { gcd } from 'bigint-mod-arith';
 
 export function bigIntToBufferLE(n: bigint, bytes?: number): Buffer {
   let v = n.toString(16);
@@ -45,4 +47,38 @@ export function clamp(u: bigint): bigint {
  */
 export function getPaillierPublicKey(n: bigint): PublicKey {
   return new PublicKey(n, n + BigInt(1));
+}
+
+/**
+ * Generates a random number less than x that is also co-prime to x
+ * @param x
+ */
+export function randomCoPrimeLessThan(x: bigint): bigint {
+  while (true) {
+    const y = randomBigInt(bitLength(x));
+    if (y > BigInt(0) && y < x && gcd(x, y) === BigInt(1)) {
+      return y;
+    }
+  }
+}
+
+/**
+ * Generates a random number co-prime to x
+ * @param x
+ */
+export function randomCoPrimeTo(x: bigint): bigint {
+  while (true) {
+    const y = randomBigInt(bitLength(x));
+    if (y > BigInt(0) && gcd(x, y) === BigInt(1)) {
+      return y;
+    }
+  }
+}
+
+/**
+ * Generate a random number of a given bitlength
+ * @param bitlength
+ */
+export function randomBigInt(bitlength: number): bigint {
+  return bigIntFromBufferBE(Buffer.from(randBitsSync(bitlength, true)));
 }
