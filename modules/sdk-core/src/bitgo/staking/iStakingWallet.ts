@@ -22,6 +22,7 @@ export interface StakeOptions {
   amount: string;
   clientId?: string;
   validator?: string;
+  rewardAddress?: string;
   durationSeconds?: string;
 }
 
