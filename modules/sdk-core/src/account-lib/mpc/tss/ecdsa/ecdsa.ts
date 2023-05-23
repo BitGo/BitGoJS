@@ -4,11 +4,11 @@ import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
-import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../util/crypto';
+import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaTypes, EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaUtils, EcdsaTypes, EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -22,7 +22,6 @@ import {
   NShare,
   OShare,
   PShare,
-  RangeProofWithCheck,
   Signature,
   SignCombine,
   SignCombineRT,
@@ -576,7 +575,7 @@ export default class Ecdsa {
       aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
       // Prove $\gamma_i \in Z_{N^2}$.
       const gx = Ecdsa.curve.basePointMult(g);
-      let proof: RangeProofWithCheck;
+      let proof: EcdsaTypes.RangeProofWithCheck;
       proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
         3072,
@@ -822,50 +821,18 @@ export default class Ecdsa {
 
   /**
    * Deserializes a challenge and it's proofs from hex strings to bigint
+   * @deprecated Use EcdsaUtils.deserializeNtilde instead
    */
   static deserializeNtilde(challenge: EcdsaTypes.SerializedNtilde): EcdsaTypes.DeserializedNtilde {
-    const deserializedNtilde: EcdsaTypes.DeserializedNtilde = {
-      ntilde: hexToBigInt(challenge.ntilde),
-      h1: hexToBigInt(challenge.h1),
-      h2: hexToBigInt(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      deserializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return deserializedNtilde;
+    return EcdsaUtils.deserializeNtilde(challenge);
   }
 
   /**
    * Serializes a challenge and it's proofs from big int to hex strings.
+   * @deprecated Use EcdsaUtils.serializeNtilde instead
    * @param challenge
    */
   static serializeNtilde(challenge: EcdsaTypes.DeserializedNtilde): EcdsaTypes.SerializedNtilde {
-    const serializedNtilde: EcdsaTypes.SerializedNtilde = {
-      ntilde: bigIntToHex(challenge.ntilde),
-      h1: bigIntToHex(challenge.h1),
-      h2: bigIntToHex(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      serializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return serializedNtilde;
+    return EcdsaUtils.serializeNtilde(challenge);
   }
 }
