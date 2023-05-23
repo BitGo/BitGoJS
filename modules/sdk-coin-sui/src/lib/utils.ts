@@ -66,7 +66,7 @@ export class Utils implements BaseUtils {
     try {
       const data = fromB64(rawTransaction);
       const deserialized = builder.de('TransactionData', data);
-      builder.ser('TransactionData', deserialized);
+      builder.ser('TransactionData', deserialized, { maxSize: 1024 * 64 });
       return true;
     } catch (e) {
       return false;
