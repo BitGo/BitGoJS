@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import 'should';
 import assert from 'assert';
 import * as bs58 from 'bs58';
 import { randomBytes } from 'crypto';
@@ -74,36 +75,27 @@ describe('TSS EDDSA key generation and signing', function () {
     const incorrect_message = 'MPC on a Monday night';
     const incorrect_message_buffer = Buffer.from(incorrect_message);
 
-    // signing with 3-3 signatures
-    let A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2], A_combine.jShares[3]]);
-    let B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1], B_combine.jShares[3]]);
-    let C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1], C_combine.jShares[2]]);
-    let A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1], C_sign_share.rShares[1]]);
-    let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
-    let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
-    let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
+    // signing with A and B
+    let A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]]);
+    let B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]]);
+    let A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
+    let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
+    let signature = MPC.signCombine([A_sign, B_sign]);
     let result = MPC.verify(message_buffer, signature);
     result.should.equal(true);
-    const resultTwo = MPC.verify(incorrect_message_buffer, signature);
+    let resultTwo = MPC.verify(incorrect_message_buffer, signature);
     resultTwo.should.equal(false);
-
-    // signing with A and B
-    A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]]);
-    B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]]);
-    A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
-    B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
-    signature = MPC.signCombine([A_sign, B_sign]);
-    result = MPC.verify(message_buffer, signature);
-    result.should.equal(true);
 
     // signing with A and C
     A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]]);
-    C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]]);
+    let C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]]);
     A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
-    C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
+    let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
     signature = MPC.signCombine([A_sign, C_sign]);
     result = MPC.verify(message_buffer, signature);
     result.should.equal(true);
+    resultTwo = MPC.verify(incorrect_message_buffer, signature);
+    resultTwo.should.equal(false);
 
     // signing with B and C
     B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[3]]);
@@ -113,6 +105,8 @@ describe('TSS EDDSA key generation and signing', function () {
     signature = MPC.signCombine([B_sign, C_sign]);
     result = MPC.verify(message_buffer, signature);
     result.should.equal(true);
+    resultTwo = MPC.verify(incorrect_message_buffer, signature);
+    resultTwo.should.equal(false);
   });
 
   it('should verify BIP32 subkey signature', function () {
@@ -263,46 +257,20 @@ describe('TSS EDDSA key generation and signing', function () {
       const message = 'MPC on a Friday night';
       const message_buffer = Buffer.from(message);
 
-      // signing with 3-3 signatures
-      let A_sign_share = MPC.signShare(
-        message_buffer,
-        A_combine.pShare,
-        [A_combine.jShares[2], A_combine.jShares[3]],
-        seed,
-      );
-      let B_sign_share = MPC.signShare(
-        message_buffer,
-        B_combine.pShare,
-        [B_combine.jShares[1], B_combine.jShares[3]],
-        seed,
-      );
-      let C_sign_share = MPC.signShare(
-        message_buffer,
-        C_combine.pShare,
-        [C_combine.jShares[1], C_combine.jShares[2]],
-        seed,
-      );
-      let A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1], C_sign_share.rShares[1]]);
-      let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
-      let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
-      let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
-      let result = MPC.verify(message_buffer, signature);
-      result.should.equal(true);
-
       // signing with A and B
-      A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]], seed);
-      B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]], seed);
-      A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
-      B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
-      signature = MPC.signCombine([A_sign, B_sign]);
-      result = MPC.verify(message_buffer, signature);
+      let A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]], seed);
+      let B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]], seed);
+      let A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
+      let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
+      let signature = MPC.signCombine([A_sign, B_sign]);
+      let result = MPC.verify(message_buffer, signature);
       result.should.equal(true);
 
       // signing with A and C
       A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]], seed);
-      C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]], seed);
+      let C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]], seed);
       A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
-      C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
+      let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
       signature = MPC.signCombine([A_sign, C_sign]);
       result = MPC.verify(message_buffer, signature);
       result.should.equal(true);
