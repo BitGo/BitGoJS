@@ -15,6 +15,9 @@ import {
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 
+import { bip32 } from '@bitgo/utxo-lib';
+import { randomBytes } from 'crypto';
+
 export class Osmo extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -71,8 +74,19 @@ export class Osmo extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
+  /** @inheritDoc **/
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256
+      // bit chain code, both of which must be random. 512 bits is therefore the
+      // maximum entropy and gives us maximum security against cracking.
+      seed = randomBytes(512 / 8);
+    }
+    const extendedKey = bip32.fromSeed(seed);
+    return {
+      pub: extendedKey.neutered().toBase58(),
+      prv: extendedKey.toBase58(),
+    };
   }
 
   isValidPub(pub: string): boolean {
