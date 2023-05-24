@@ -516,6 +516,13 @@ describe('V2 Wallet:', function () {
         e.message.should.equal(errorMessage);
       }
       try {
+        const customSigningFunction = () => {return 'mock'; };
+        // Should not validate passphrase if custom signing function is provided
+        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase', customSigningFunction } );
+      } catch (e) {
+        e.message.should.not.equal(errorMessage);
+      }
+      try {
         await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase } );
       } catch (e) {
         e.message.should.not.equal(errorMessage);
