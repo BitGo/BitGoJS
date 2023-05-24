@@ -4,8 +4,7 @@ import BigNumber from 'bignumber.js';
 import should = require('should');
 import sinon from 'sinon';
 import { Atom, Tatom, Transaction } from '../../src';
-import { Ecdsa } from '@bitgo/sdk-core';
-import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaUtils } from '@bitgo/sdk-lib-mpc';
 import utils from '../../src/lib/utils';
 import {
   address,
@@ -363,7 +362,7 @@ describe('ATOM', function () {
       chainId.withArgs().resolves(testChainId);
 
       const serializedEntChallenge = mockChallengeA;
-      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      const deserializedEntChallenge = EcdsaUtils.deserializeNtildeWithProofs(serializedEntChallenge);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
     });
 
@@ -417,7 +416,7 @@ describe('ATOM', function () {
       chainId.withArgs().resolves(testChainId);
 
       const serializedEntChallenge = mockChallengeA;
-      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      const deserializedEntChallenge = EcdsaUtils.deserializeNtildeWithProofs(serializedEntChallenge);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
     });
 

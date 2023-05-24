@@ -1,10 +1,10 @@
-import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '@bitgo/sdk-core';
 import {
   DeserializedNtilde,
   DeserializedNtildeWithProofs,
   SerializedNtilde,
   SerializedNtildeWithProofs,
 } from './types';
+import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../util';
 
 /**
  * Deserializes a challenge from hex strings to bigint

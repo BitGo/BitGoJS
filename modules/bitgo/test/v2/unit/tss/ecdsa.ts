@@ -12,7 +12,7 @@ import {
 import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
-import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
+import { mockChallengeWithProof, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
@@ -77,7 +77,7 @@ describe('Ecdsa tss helper functions tests', function () {
     backupGpgKeypair = gpgKeypairs[1];
     bitgoGpgKeypair = gpgKeypairs[2];
 
-    sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(mockChallenge);
+    sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(mockChallengeWithProof);
   });
 
   after(function () {

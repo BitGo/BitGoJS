@@ -7,6 +7,11 @@ import { ExtendedKeys } from '../baseCoin/iface';
 import bs58 from 'bs58';
 
 /**
+ * @deprecated - use @bitgo/sdk-lib-mpc instead
+ */
+export { convertHexArrToBigIntArr, convertBigIntArrToHexArr, hexToBigInt, bigIntToHex } from '@bitgo/sdk-lib-mpc';
+
+/**
  * @param xpub - a base-58 encoded extended public key (BIP32)
  * @param compressed flag to determine if return key should be compressed/uncompressed
  * @return a compressed or an uncompresseed public key in hexadecimal
@@ -215,39 +220,6 @@ export function toHex(buffer: Buffer | Uint8Array): string {
 }
 
 /**
- * Returns an hex string of the given bigint
- *
- * @param {bigint} bigint - the bigint to be converted to hex
- * @returns {string} - the hex value
- */
-export function bigIntToHex(bigint: bigint, hexLength?: number): string {
-  let hex = bigint.toString(16);
-  hex = '0'.slice(0, hex.length % 2) + hex;
-  if (hexLength) {
-    hex = hex.padStart(hexLength, '0');
-  }
-  return hex;
-}
-
-/**
- * Returns a BigInt value from hex
- *
- * @param {string} hex - hex value to be converted to bigint
- * @returns {bigint} - bigint representation of the hex value
- */
-export function hexToBigInt(hex: string): bigint {
-  // Strangely bigint.toString(16) gives a hex string without 0x
-  // but it won't accept the same string without 0x to convert
-  // to a bigint (BigInt(hex string)). So have to introduce this
-  // check to convert to add 0x in case if hex string
-  // doesn't have it.
-  if (hex.slice(0, 2) === '0x') {
-    return BigInt(hex);
-  }
-  return BigInt('0x' + hex);
-}
-
-/**
  * Check if base58 decoded string is equale to length
  *
  * @param {string} value - string to be checked
@@ -271,24 +243,4 @@ export function isBase58(value: string, length: number): boolean {
  */
 export function toUint8Array(str: string): Uint8Array {
   return hex.decode(str);
-}
-
-/**
- * Returns a bigint array from a hex string array
- * @param values
- */
-export function convertHexArrToBigIntArr(values: string[]): bigint[] {
-  return values.map((value) => {
-    return hexToBigInt(value);
-  });
-}
-
-/**
- * Returns a hex string array from a bigint array
- * @param values
- */
-export function convertBigIntArrToHexArr(values: bigint[]): string[] {
-  return values.map((value) => {
-    return bigIntToHex(value);
-  });
 }
