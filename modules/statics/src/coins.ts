@@ -5178,7 +5178,7 @@ export const coins = CoinMap.fromCoins([
     'tbtc2',
     'Tbtc2',
     18,
-    '0xce1f983c29f7a6c0c0dfa78c4d8fe7bdfe026d4b',
+    '0x18084fba666a33d37592fa2633fd49a74dd93a88',
     UnderlyingAsset.TBTC2
   ),
   erc20(
