@@ -1,110 +1,37 @@
-/**
- * Ntilde Proof where both alpha and t are a set of 128 proofs each.
- * @deprecated use NtildeProof from sdk-lib-mpc instead
- */
-interface NtildeProof<T> {
-  alpha: T[];
-  t: T[];
-}
-
-/**
- * Ntilde Proof
- * @deprecated use NtildeProofs from sdk-lib-mpc instead
- */
-interface NtildeProofs<T> {
-  h1WrtH2: NtildeProof<T>;
-  h2WrtH1: NtildeProof<T>;
-}
-
-/**
- * Ntilde challenge values
- * @deprecated use Ntilde from sdk-lib-mpc instead
- */
-interface Ntilde<T> {
-  ntilde: T;
-  h1: T;
-  h2: T;
-  ntildeProof?: NtildeProofs<T>;
-}
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 /**
  * @deprecated use DeserializedNtildeProof from sdk-lib-mpc instead
  */
-export type DeserializedNtildeProof = NtildeProof<bigint>;
+export type DeserializedNtildeProof = EcdsaTypes.DeserializedNtildeProof;
 /**
  * @deprecated use DeserializedNtildeProofs from sdk-lib-mpc instead
  */
-export type DeserializedNtildeProofs = NtildeProofs<bigint>;
+export type DeserializedNtildeProofs = EcdsaTypes.DeserializedNtildeProofs;
 /**
  * @deprecated use DeserializedNtildeProofs from sdk-lib-mpc instead
  */
-export type DeserializedNtilde = Ntilde<bigint>;
+export type DeserializedNtilde = EcdsaTypes.DeserializedNtilde;
 /**
  * @deprecated use DeserializedNtildeWithProofs from sdk-lib-mpc instead
  */
-export type DeserializedNtildeWithProofs = Omit<DeserializedNtilde, 'ntildeProof'> & {
-  ntildeProof: DeserializedNtildeProofs;
-};
-
+export type DeserializedNtildeWithProofs = EcdsaTypes.DeserializedNtildeWithProofs;
 /**
  * @deprecated use SerializedNtildeProof from sdk-lib-mpc instead
  */
-export type SerializedNtildeProof = NtildeProof<string>;
+export type SerializedNtildeProof = EcdsaTypes.SerializedNtildeProof;
 /**
  * @deprecated use SerializedNtildeProofs from sdk-lib-mpc instead
  */
-export type SerializedNtildeProofs = NtildeProofs<string>;
+export type SerializedNtildeProofs = EcdsaTypes.SerializedNtildeProofs;
 /**
  * @deprecated use SerializedNtilde from sdk-lib-mpc instead
  */
-export type SerializedNtilde = Ntilde<string>;
+export type SerializedNtilde = EcdsaTypes.SerializedNtilde;
 /**
  * @deprecated use SerializedNtildeWithProofs from sdk-lib-mpc instead
  */
-export type SerializedNtildeWithProofs = Omit<SerializedNtilde, 'ntildeProof'> & {
-  ntildeProof: SerializedNtildeProofs;
-};
-
-/**
- * @deprecated use RSAModulus from sdk-lib-mpc instead
- */
-export interface RSAModulus {
-  n: bigint;
-  // Sophie Germain primes.
-  q1: bigint;
-  q2: bigint;
-}
-
-/**
- * Range proof values
- * @deprecated use RangeProof from sdk-lib-mpc instead
- */
-export interface RangeProof {
-  z: bigint;
-  u: bigint;
-  w: bigint;
-  s: bigint;
-  s1: bigint;
-  s2: bigint;
-}
-
-/**
- * Range proof values
- * @deprecated use RangeProofWithCheck from sdk-lib-mpc instead
- */
-export interface RangeProofWithCheck {
-  z: bigint;
-  zprm: bigint;
-  t: bigint;
-  v: bigint;
-  w: bigint;
-  s: bigint;
-  s1: bigint;
-  s2: bigint;
-  t1: bigint;
-  t2: bigint;
-  u: bigint;
-}
+export type SerializedNtildeWithProofs = EcdsaTypes.SerializedNtildeWithProofs;
 
 // Private share of the user generated during key generation
 export interface PShare {
@@ -120,16 +47,19 @@ export interface PShare {
   chaincode: string;
 }
 
-// NShares which is shared to the other participants during key generation
-export interface NShare {
+export type SignIndex = {
   i: number; // participant index
   j: number; // target participant index
+};
+
+// NShares which is shared to the other participants during key generation
+export type NShare = SignIndex & {
   n: string;
   u: string; // shamir share of secret at j'th index
   y: string;
   v?: string;
   chaincode: string;
-}
+};
 
 export type KeyShare = {
   pShare: PShare;
@@ -147,16 +77,14 @@ export interface XShare {
   chaincode: string;
 }
 
-export type XShareWithNtilde = XShare & SerializedNtilde;
+export type XShareWithNtilde = XShare & EcdsaTypes.SerializedNtilde;
 
 // YShares used during signature generation
-export interface YShare {
-  i: number;
-  j: number;
+export type YShare = SignIndex & {
   n: string;
-}
+};
 
-export type YShareWithNtilde = YShare & SerializedNtilde;
+export type YShareWithNtilde = YShare & EcdsaTypes.SerializedNtilde;
 
 export interface KeyCombined {
   xShare: XShare;
@@ -197,16 +125,15 @@ export interface RangeProofShare {
   s2: string;
 }
 
-export interface KShare {
-  i: number;
-  j: number;
+export type KShare = SignIndex & {
   n: string;
   ntilde: string;
   h1: string;
   h2: string;
   k: string;
   proof: RangeProofShare;
-}
+};
+
 export interface SignShareRT {
   wShare: WShare;
   kShare: KShare;
@@ -228,9 +155,7 @@ export interface RangeProofWithCheckShare {
 }
 
 // Alpha Share
-export interface AShare {
-  i: number;
-  j: number;
+export type AShare = SignIndex & {
   n: string;
   ntilde: string;
   h1: string;
@@ -241,7 +166,7 @@ export interface AShare {
   proof: RangeProofShare;
   gammaProof: RangeProofWithCheckShare;
   wProof: RangeProofWithCheckShare;
-}
+};
 
 // Beta Share
 export interface BShare extends WShare {
@@ -251,14 +176,12 @@ export interface BShare extends WShare {
 }
 
 // Mu Share
-export interface MUShare {
-  i: number;
-  j: number;
+export type MUShare = SignIndex & {
   alpha: string;
   mu: string;
   gammaProof: RangeProofWithCheckShare;
   wProof: RangeProofWithCheckShare;
-}
+};
 
 // Gamma Share
 export interface GShare {
@@ -301,12 +224,10 @@ export interface OShare {
   Gamma: string;
 }
 
-export interface DShare {
-  i: number;
-  j: number;
+export type DShare = SignIndex & {
   delta: string;
   Gamma: string;
-}
+};
 
 export interface SShare {
   i: number;
@@ -317,10 +238,7 @@ export interface SShare {
 
 export interface SignCombine {
   gShare: GShare;
-  signIndex: {
-    i: number;
-    j: number;
-  };
+  signIndex: SignIndex;
 }
 
 export interface SignCombineRT {
