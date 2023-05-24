@@ -5,10 +5,10 @@
 import { createHash } from 'crypto';
 import { BaseCurve } from '../../curves';
 import { PublicKey } from 'paillier-bigint';
-import { bitLength, randBits, randBetween } from 'bigint-crypto-utils';
-import { gcd, modInv, modPow } from 'bigint-mod-arith';
+import { bitLength, randBetween } from 'bigint-crypto-utils';
+import { modInv, modPow } from 'bigint-mod-arith';
 import { DeserializedNtilde, DeserializedNtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
-import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+import { bigIntFromBufferBE, bigIntToBufferBE, randomCoPrimeTo } from '../../util';
 import { OpenSSL } from '../../openssl';
 
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
@@ -40,15 +40,6 @@ async function generateModulus(bitlength: number): Promise<RSAModulus> {
     );
   }
   return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
-}
-
-export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
-  while (true) {
-    const y = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(x), true)));
-    if (y > BigInt(0) && gcd(x, y) === BigInt(1)) {
-      return y;
-    }
-  }
 }
 
 /**
