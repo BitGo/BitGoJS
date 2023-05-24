@@ -128,11 +128,13 @@
       "path": "./modules/sdk-coin-zec"
     },
     {
-      "path": "./modules/sdk-rpc-wrapper"
-    }
-    ,
-    {
       "path": "./modules/sdk-core"
+    },
+    {
+      "path": "./modules/sdk-lib-mpc"
+    },
+    {
+      "path": "./modules/sdk-rpc-wrapper"
     },
     {
       "path": "./modules/sdk-unified-wallet"
