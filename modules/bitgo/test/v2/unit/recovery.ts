@@ -5,10 +5,10 @@
 import * as should from 'should';
 import * as nock from 'nock';
 
-import { mockChallenge, TestBitGo } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { ECDSAMethodTypes, krsProviders, Ecdsa } from '@bitgo/sdk-core';
-import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sjcl from '@bitgo/sjcl';
 import { TransactionFactory } from '@ethereumjs/tx';
 import { KeyPair } from '@bitgo/sdk-coin-eth';
@@ -508,7 +508,7 @@ describe('Recovery:', function () {
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       };
       recoverEthSandbox = sinon.createSandbox();
-      recoverEthSandbox.stub(EcdsaRangeProof, 'generateNtilde').resolves(mockChallenge);
+      recoverEthSandbox.stub(EcdsaRangeProof, 'generateNtilde').resolves(EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs));
     });
 
     after(() => {

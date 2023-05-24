@@ -1,10 +1,10 @@
 import assert from 'assert';
+import openpgp from 'openpgp';
+
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 import { BitGoBase } from '../bitgoBase';
-import { RequestType, TxRequest, verifyPrimaryUserWrapper } from '../utils';
-import { SignatureShareRecord } from '../utils/tss/baseTypes';
-import openpgp from 'openpgp';
-import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { RequestType, TxRequest, verifyPrimaryUserWrapper, SignatureShareRecord } from '../utils';
 
 /**
  * Gets the latest Tx Request by id
@@ -138,7 +138,7 @@ export async function getTxRequestChallenge(
   index: string,
   requestType: RequestType,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
-): Promise<SerializedNtilde> {
+): Promise<EcdsaTypes.SerializedNtilde> {
   let addendum = '';
   switch (requestType) {
     case RequestType.tx:

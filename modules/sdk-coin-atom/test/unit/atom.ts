@@ -1,11 +1,10 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import should = require('should');
 import sinon from 'sinon';
 import { Atom, Tatom, Transaction } from '../../src';
-import { Ecdsa } from '@bitgo/sdk-core';
-import { EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import utils from '../../src/lib/utils';
 import {
   address,
@@ -15,7 +14,6 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   TEST_TX_WITH_MEMO,
   wrwUser,
-  mockChallengeA,
 } from '../resources/atom';
 import { coins } from '@bitgo/statics';
 import { SendMessage } from '../../src/lib/iface';
@@ -362,8 +360,7 @@ describe('ATOM', function () {
       const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
       chainId.withArgs().resolves(testChainId);
 
-      const serializedEntChallenge = mockChallengeA;
-      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
     });
 
@@ -416,8 +413,7 @@ describe('ATOM', function () {
       const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
       chainId.withArgs().resolves(testChainId);
 
-      const serializedEntChallenge = mockChallengeA;
-      const deserializedEntChallenge = Ecdsa.deserializeNtilde(serializedEntChallenge);
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
     });
 

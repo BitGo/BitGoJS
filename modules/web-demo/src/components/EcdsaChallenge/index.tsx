@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ECDSA, rangeProof, bigIntToBufferBE } from '@bitgo/sdk-core';
+import { EcdsaTypes, EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import ReactJson from 'react-json-view';
 
 const EcdsaChallenge = () => {
   const [challenge, setChallenge] = useState<
-    ECDSA.DeserializedNtilde | undefined
+    EcdsaTypes.SerializedNtildeWithProofs | undefined
   >(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -12,9 +13,9 @@ const EcdsaChallenge = () => {
   const generateChallenge = async () => {
     setLoading(true);
     const start = new Date().getTime() / 1000;
-    const challenge = await rangeProof.generateNtilde(3072);
+    const challenge = await EcdsaRangeProof.generateNtilde(3072);
     const end = new Date().getTime() / 1000;
-    setChallenge(challenge);
+    setChallenge(EcdsaTypes.serializeNtildeWithProofs(challenge));
     setTotalTime(end - start);
     setLoading(false);
   };
@@ -25,19 +26,13 @@ const EcdsaChallenge = () => {
       <br />
       {challenge ? (
         <div>
-          <h4> ntilde </h4>
-          <h5>{bigIntToBufferBE(challenge.ntilde).toString('hex')}</h5>
-          <h4> h1 </h4>
-          <h5>{bigIntToBufferBE(challenge.h1).toString('hex')}</h5>
-          <h4> h2 </h4>
-          <h5>{bigIntToBufferBE(challenge.h2).toString('hex')}</h5>
-          {totalTime ? (
-            <div>
-              <h4>Time to generate (s)</h4>
-              <h5>{totalTime}</h5>
-            </div>
-          ) : null}
-          <h5></h5>
+          <ReactJson
+            src={challenge}
+            displayDataTypes={true}
+            enableClipboard={true}
+          />
+          <h4>Time to generate (s)</h4>
+          <h5>{totalTime}</h5>
         </div>
       ) : null}
       {loading ? <h4> Loading... </h4> : null}

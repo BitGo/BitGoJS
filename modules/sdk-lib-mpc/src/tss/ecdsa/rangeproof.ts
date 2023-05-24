@@ -7,7 +7,14 @@ import { BaseCurve } from '../../curves';
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBetween } from 'bigint-crypto-utils';
 import { modInv, modPow } from 'bigint-mod-arith';
-import { DeserializedNtilde, DeserializedNtildeProof, RSAModulus, RangeProof, RangeProofWithCheck } from './types';
+import {
+  DeserializedNtilde,
+  DeserializedNtildeProof,
+  RSAModulus,
+  RangeProof,
+  RangeProofWithCheck,
+  DeserializedNtildeWithProofs,
+} from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE, randomCoPrimeTo } from '../../util';
 import { OpenSSL } from '../../openssl';
 
@@ -48,7 +55,7 @@ async function generateModulus(bitlength: number): Promise<RSAModulus> {
  * be the same as the bit length of the paillier public keys used for MtA.
  * @returns {DeserializedNtilde} The generated Ntilde values.
  */
-export async function generateNtilde(bitlength: number): Promise<DeserializedNtilde> {
+export async function generateNtilde(bitlength: number): Promise<DeserializedNtildeWithProofs> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
   const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);

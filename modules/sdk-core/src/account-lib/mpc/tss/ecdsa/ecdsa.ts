@@ -4,11 +4,11 @@ import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
-import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../../util/crypto';
+import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -22,7 +22,6 @@ import {
   NShare,
   OShare,
   PShare,
-  RangeProofWithCheck,
   Signature,
   SignCombine,
   SignCombineRT,
@@ -35,8 +34,6 @@ import {
   XShareWithNtilde,
   YShare,
   YShareWithNtilde,
-  SerializedNtilde,
-  DeserializedNtilde,
 } from './types';
 
 const _5n = BigInt(5);
@@ -292,13 +289,17 @@ export default class Ecdsa {
    * @param {XShare} xShare Private xShare of signer
    * @param {YShare} yShare YShare of the other participant involved in
    * this signing operation
-   * @param {SerializedNtilde} challenge
+   * @param {EcdsaTypes.SerializedNtilde} challenge
    * @returns {KeyCombined} The new XShare and YShares with the amended
    * challenge values
    */
-  async appendChallenge(xShare: XShare, yShare: YShare, challenge?: SerializedNtilde): Promise<KeyCombinedWithNtilde> {
+  async appendChallenge(
+    xShare: XShare,
+    yShare: YShare,
+    challenge?: EcdsaTypes.SerializedNtilde
+  ): Promise<KeyCombinedWithNtilde> {
     if (!challenge) {
-      challenge = Ecdsa.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
+      challenge = EcdsaTypes.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
     return {
@@ -574,8 +575,7 @@ export default class Ecdsa {
       aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
       // Prove $\gamma_i \in Z_{N^2}$.
       const gx = Ecdsa.curve.basePointMult(g);
-      let proof: RangeProofWithCheck;
-      proof = await EcdsaRangeProof.proveWithCheck(
+      let proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
         3072,
         pka,
@@ -820,50 +820,18 @@ export default class Ecdsa {
 
   /**
    * Deserializes a challenge and it's proofs from hex strings to bigint
+   * @deprecated use sdk-lib-mpc EcdsaTypes.deserializeNtilde instead
    */
-  static deserializeNtilde(challenge: SerializedNtilde): DeserializedNtilde {
-    const deserializedNtilde: DeserializedNtilde = {
-      ntilde: hexToBigInt(challenge.ntilde),
-      h1: hexToBigInt(challenge.h1),
-      h2: hexToBigInt(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      deserializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertHexArrToBigIntArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return deserializedNtilde;
+  static deserializeNtilde(challenge: EcdsaTypes.SerializedNtilde): EcdsaTypes.DeserializedNtilde {
+    return EcdsaTypes.deserializeNtilde(challenge);
   }
 
   /**
    * Serializes a challenge and it's proofs from big int to hex strings.
+   * @deprecated use sdk-lib-mpc EcdsaTypes.deserializeNtilde instead
    * @param challenge
    */
-  static serializeNtilde(challenge: DeserializedNtilde): SerializedNtilde {
-    const serializedNtilde: SerializedNtilde = {
-      ntilde: bigIntToHex(challenge.ntilde),
-      h1: bigIntToHex(challenge.h1),
-      h2: bigIntToHex(challenge.h2),
-    };
-    if (challenge.ntildeProof) {
-      serializedNtilde.ntildeProof = {
-        h1WrtH2: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h1WrtH2.t),
-        },
-        h2WrtH1: {
-          alpha: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.alpha),
-          t: convertBigIntArrToHexArr(challenge.ntildeProof.h2WrtH1.t),
-        },
-      };
-    }
-    return serializedNtilde;
+  static serializeNtilde(challenge: EcdsaTypes.DeserializedNtilde): EcdsaTypes.SerializedNtilde {
+    return EcdsaTypes.serializeNtilde(challenge);
   }
 }
