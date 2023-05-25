@@ -61,11 +61,16 @@ export interface RShare {
   v?: string;
   r: string;
   R: string;
+  commitment?: string;
 }
 
 export interface SignShare {
   xShare: XShare;
   rShares: Record<number, RShare>;
+}
+
+export interface ExchangeCommitmentResponse {
+  commitment: string;
 }
 
 export interface GShare {

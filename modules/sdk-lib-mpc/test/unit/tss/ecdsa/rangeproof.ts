@@ -1,16 +1,16 @@
 import * as sinon from 'sinon';
 import * as paillierBigint from 'paillier-bigint';
-import Ecdsa from '../../src/account-lib/mpc/tss/ecdsa/ecdsa';
-import * as rangeProof from '../../src/account-lib/mpc/tss/ecdsa/rangeproof';
-import { DeserializedNtilde } from '../../src/account-lib/mpc/tss/ecdsa/types';
-import { OpenSSL } from '../../src/openssl';
+import { EcdsaRangeProof, EcdsaTypes } from '../../../../src/tss/ecdsa';
+import { OpenSSL } from '../../../../src/openssl';
+import { Secp256k1Curve } from '../../../../src';
 
 describe('MtA range proof', function () {
+  const curve = new Secp256k1Curve();
   let switchPrime = false;
   let safePrimeMock: sinon.SinonStub;
 
   let paillierKeyPair: paillierBigint.KeyPair;
-  let ntilde: DeserializedNtilde;
+  let ntilde: EcdsaTypes.DeserializedNtilde;
 
   before('set up paillier and ntile', async function () {
     safePrimeMock = sinon.stub(OpenSSL.prototype, 'generateSafePrime').callsFake(async (bitlength: number) => {
@@ -25,7 +25,7 @@ describe('MtA range proof', function () {
     });
 
     paillierKeyPair = await paillierBigint.generateRandomKeys(2048, true);
-    ntilde = await rangeProof.generateNtilde(512);
+    ntilde = await EcdsaRangeProof.generateNtilde(512);
   });
 
   after(function () {
@@ -34,12 +34,12 @@ describe('MtA range proof', function () {
   });
 
   it('valid range proof', async function () {
-    const k = Ecdsa.curve.scalarRandom();
-    const rk = await rangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
+    const k = curve.scalarRandom();
+    const rk = await EcdsaRangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
     const ck = paillierKeyPair.publicKey.encrypt(k, rk);
 
-    const proof = await rangeProof.prove(
-      Ecdsa.curve,
+    const proof = await EcdsaRangeProof.prove(
+      curve,
       2048,
       paillierKeyPair.publicKey,
       {
@@ -52,30 +52,28 @@ describe('MtA range proof', function () {
       rk
     );
 
-    rangeProof
-      .verify(
-        Ecdsa.curve,
-        2048,
-        paillierKeyPair.publicKey,
-        {
-          ntilde: ntilde.ntilde,
-          h1: ntilde.h1,
-          h2: ntilde.h2,
-        },
-        proof,
-        ck
-      )
-      .should.be.true();
+    EcdsaRangeProof.verify(
+      curve,
+      2048,
+      paillierKeyPair.publicKey,
+      {
+        ntilde: ntilde.ntilde,
+        h1: ntilde.h1,
+        h2: ntilde.h2,
+      },
+      proof,
+      ck
+    ).should.be.true();
   });
 
   it('encrypted value too big', async function () {
     // Pick k based on attack described in https://eprint.iacr.org/2021/1621.pdf, where M = 2^29 is chosen.
-    const k = (BigInt(2) * (BigInt(2) ^ BigInt(29)) * paillierKeyPair.publicKey.n) / Ecdsa.curve.order();
-    const rk = await rangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
+    const k = (BigInt(2) * (BigInt(2) ^ BigInt(29)) * paillierKeyPair.publicKey.n) / curve.order();
+    const rk = await EcdsaRangeProof.randomCoPrimeTo(paillierKeyPair.publicKey.n);
     const ck = paillierKeyPair.publicKey.encrypt(k, rk);
 
-    const proof = await rangeProof.prove(
-      Ecdsa.curve,
+    const proof = await EcdsaRangeProof.prove(
+      curve,
       2048,
       paillierKeyPair.publicKey,
       {
@@ -88,19 +86,17 @@ describe('MtA range proof', function () {
       rk
     );
 
-    rangeProof
-      .verify(
-        Ecdsa.curve,
-        2048,
-        paillierKeyPair.publicKey,
-        {
-          ntilde: ntilde.ntilde,
-          h1: ntilde.h1,
-          h2: ntilde.h2,
-        },
-        proof,
-        ck
-      )
-      .should.be.false();
+    EcdsaRangeProof.verify(
+      curve,
+      2048,
+      paillierKeyPair.publicKey,
+      {
+        ntilde: ntilde.ntilde,
+        h1: ntilde.h1,
+        h2: ntilde.h2,
+      },
+      proof,
+      ck
+    ).should.be.false();
   });
 });

@@ -20,6 +20,11 @@ import crypto from 'crypto';
 
 const sodium = require('libsodium-wrappers-sumo');
 
+export type KeyValidityDict = {
+  keyID: pgp.KeyID;
+  valid: boolean | null;
+}[];
+
 /**
  * Fetches BitGo's pubic gpg key used in MPC flows
  * @param {BitGo} bitgo BitGo object
@@ -33,6 +38,26 @@ export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
 
   const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
   return await readKey({ armoredKey: bitgoPublicKeyStr });
+}
+
+/**
+ * Verifies the primary user on a GPG key using a reference key representing the user to be checked.
+ * Allows a verification without a date check by wrapping verifyPrimaryUser of openpgp.
+ * @param {Key} pubKey gpg key to check the primary user of.
+ * @param {Key} primaryUser gpg key of the user to check.
+ * @param {boolean} checkDates If false, disable date checks in the openpgp call to check the primary user.
+ * @return {KeyValidityDict} list of users checked and whether each passed as a primary user in pubKey or not.
+ */
+export async function verifyPrimaryUserWrapper(
+  pubKey: Key,
+  primaryUser: Key,
+  checkDates: boolean
+): Promise<KeyValidityDict> {
+  if (checkDates) {
+    return await pubKey.verifyPrimaryUser([primaryUser]);
+  } else {
+    return await pubKey.verifyPrimaryUser([primaryUser], null as unknown as undefined);
+  }
 }
 
 /**
@@ -64,7 +89,7 @@ export async function verifyShareProof(
 ): Promise<boolean> {
   const decodedProof = await pgp.readKey({ armoredKey: privateShareProof });
   const senderGpgKey = await pgp.readKey({ armoredKey: senderPubKey });
-  if (!(await decodedProof.verifyPrimaryUser([senderGpgKey]))[0].valid) {
+  if (!(await verifyPrimaryUserWrapper(decodedProof, senderGpgKey, true))[0].valid) {
     return false;
   }
   const proofSubkeys = decodedProof.getSubkeys()[1];
@@ -98,7 +123,11 @@ export async function verifySharedDataProof(
 ): Promise<boolean> {
   const senderPubKey = await pgp.readKey({ armoredKey: senderPubKeyArm });
   const signedKey = await pgp.readKey({ armoredKey: keyWithNotation });
-  if (!(await signedKey.verifyPrimaryUser([senderPubKey]).then((values) => _.some(values, (value) => value.valid)))) {
+  if (
+    !(await verifyPrimaryUserWrapper(signedKey, senderPubKey, true).then((values) =>
+      _.some(values, (value) => value.valid)
+    ))
+  ) {
     return false;
   }
   const primaryUser = await signedKey.getPrimaryUser();
@@ -245,7 +274,7 @@ export async function createShareProof(privateArmor: string, uValue: string, alg
   // @ts-ignore - supports packet list as ctor param: https://docs.openpgpjs.org/PrivateKey.html
   const newPubKey = new pgp.PrivateKey(newKeyPktList).toPublic();
 
-  if (!(await newPubKey.verifyPrimaryUser([privateKey]))[0].valid) {
+  if (!(await verifyPrimaryUserWrapper(newPubKey, privateKey, true))[0].valid) {
     throw new Error('Incorrect signature');
   }
 

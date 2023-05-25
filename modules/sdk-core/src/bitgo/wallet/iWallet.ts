@@ -114,6 +114,11 @@ export interface PrebuildTransactionOptions {
    * If set to false, sweep all funds including the required minimums for address(es). E.g. Polkadot (DOT) requires 1 DOT minimum.
    */
   keepAlive?: boolean;
+  /**
+   * This comment applies to UTXO coins. It's asking which transaction format to use:
+   * the legacy format defined by bitcoinjs-lib, or the 'psbt' format, which follows the BIP-174.
+   */
+  txFormat?: 'legacy' | 'psbt';
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

@@ -1,8 +1,9 @@
 import { getBuilder } from '../getBuilder';
-import { Ecdsa, ECDSA, TransactionType, rangeProof } from '@bitgo/sdk-core';
+import { Ecdsa, ECDSA, TransactionType } from '@bitgo/sdk-core';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { keyShares } from '../../fixtures/ecdsa';
 import should from 'should';
-import { mockChallenge } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import * as sinon from 'sinon';
 
 describe('BSC Transfer Builder', () => {
@@ -40,7 +41,9 @@ describe('BSC Transfer Builder', () => {
       const unsignedTransaction = await txBuilder.build();
       serializedTransaction = Buffer.from(unsignedTransaction.toBroadcastFormat());
 
-      sinon.stub(rangeProof, 'generateNtilde').resolves(mockChallenge);
+      sinon
+        .stub(EcdsaRangeProof, 'generateNtilde')
+        .resolves(EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs));
     });
 
     after(() => {

@@ -200,6 +200,7 @@ export class Wallet implements IWallet {
       'destinationChain',
       'targetWalletUnspents',
       'trustlines',
+      'txFormat',
       'type',
       'unspents',
       'nonParticipation',
@@ -1794,8 +1795,10 @@ export class Wallet implements IWallet {
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    // we ignore this check with if customSigningFunction is provided
+    //  which means that the user is handling the signing in external signing mode
     try {
-      if (keychains[0].encryptedPrv) {
+      if (keychains[0].encryptedPrv && !params.customSigningFunction && params.walletPassphrase) {
         this.bitgo.decrypt({ input: keychains[0].encryptedPrv as string, password: params.walletPassphrase });
       }
     } catch (e) {
@@ -1832,7 +1835,7 @@ export class Wallet implements IWallet {
     // pass our three keys
     const signingParams = {
       ...params,
-      txPrebuild: txPrebuild,
+      txPrebuild,
       wallet: {
         // this is the version of the multisig address at wallet creation time
         addressVersion: this._wallet.coinSpecific.addressVersion,

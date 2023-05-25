@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^8.5.0",
+    "@bitgo/sdk-lib-mpc": "^8.2.0",
     "@bitgo/statics": "^15.1.2",
     "@bitgo/utxo-lib": "^8.3.0",
     "@cosmjs/amino": "^0.29.5",
@@ -50,6 +51,7 @@
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1",
     "cosmjs-types": "^0.6.1",
+    "superagent": "^3.8.3",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
-import { Ecdsa, ECDSA, rangeProof } from '@bitgo/sdk-core';
+import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -214,9 +215,9 @@ describe('TSS ECDSA TESTS', function () {
         { signerOne: G, signerTwo: H },
       ];
 
-      ntildeMock = sinon.stub(rangeProof, 'generateNtilde');
+      ntildeMock = sinon.stub(EcdsaRangeProof, 'generateNtilde');
       for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as ECDSA.DeserializedNtilde);
+        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as EcdsaTypes.DeserializedNtildeWithProofs);
       }
     });
 

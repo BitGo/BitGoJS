@@ -1,3 +1,6 @@
+import { TxInput } from 'bitcoinjs-lib';
+import { SessionKey } from '@brandonblack/musig';
+
 import { PSBT_PROPRIETARY_IDENTIFIER, ProprietaryKeyValue, UtxoPsbt, ProprietaryKeySubtype } from './UtxoPsbt';
 import {
   checkPlainPublicKey,
@@ -9,8 +12,10 @@ import {
 import { ecc, musig } from '../noble_ecc';
 import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
-import { SessionKey } from '@brandonblack/musig';
 import { Transaction } from '../index';
+import { UtxoTransaction } from './UtxoTransaction';
+import { getSignatureCount, parsePsbtInput } from './wallet';
+import { parseSignatureScript } from './parseInput';
 
 /**
  *  Participant key value object.
@@ -475,4 +480,28 @@ export function musig2DeterministicSign(params: PsbtMusig2DeterministicParams): 
     msg: params.hash,
   });
   return { sig: Buffer.from(sig), sessionKey, publicNonce: Buffer.from(publicNonce) };
+}
+
+/**
+ * @returns true iff given psbt/transaction/tx-input-array contains at least one taproot key path spend input
+ */
+export function isTransactionWithKeyPathSpendInput(
+  data: UtxoPsbt | UtxoTransaction<bigint | number> | TxInput[]
+): boolean {
+  if (data instanceof UtxoPsbt) {
+    return data.data.inputs.some((_, inputIndex) => {
+      const parsedInput = parsePsbtInput(data, inputIndex);
+      return parsedInput?.scriptType === 'taprootKeyPathSpend';
+    });
+  }
+  const inputs = data instanceof UtxoTransaction ? data.ins : data;
+  return inputs.some((input, inputIndex) => {
+    // If the input is not signed, it cannot be a taprootKeyPathSpend input because you can only
+    // extract a fully signed psbt into a transaction with taprootKeyPathSpend inputs.
+    if (getSignatureCount(data, inputIndex) === 0) {
+      return false;
+    }
+    const parsedInput = parseSignatureScript(input);
+    return parsedInput?.scriptType === 'taprootKeyPathSpend';
+  });
 }

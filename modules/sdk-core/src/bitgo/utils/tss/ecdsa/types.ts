@@ -1,7 +1,10 @@
+import { Key } from 'openpgp';
+
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+
 import { ECDSA } from '../../../../account-lib/mpc/tss';
 import { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { BackupKeyShare, CreateKeychainParamsBase, BackupGpgKey } from '../baseTypes';
-import { Key } from 'openpgp';
 import { BackupProvider } from '../../../wallet';
 
 export type KeyShare = ECDSA.KeyShare;
@@ -19,8 +22,8 @@ export type CreateEcdsaKeychainParams = CreateKeychainParamsBase & {
 export type CreateEcdsaBitGoKeychainParams = Omit<CreateEcdsaKeychainParams, 'bitgoKeychain'>;
 
 export type GetBitGoChallengesApi = {
-  bitgoNitroHsm: ECDSA.SerializedNtildeWithProofs;
-  bitgoInstitutionalHsm: ECDSA.SerializedNtildeWithProofs;
+  bitgoNitroHsm: EcdsaTypes.SerializedNtildeWithProofs;
+  bitgoInstitutionalHsm: EcdsaTypes.SerializedNtildeWithProofs;
 };
 
 export type BitGoProofSignatures = {

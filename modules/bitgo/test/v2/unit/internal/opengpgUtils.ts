@@ -81,6 +81,36 @@ describe('OpenGPG Utils Tests', function () {
     });
   });
 
+  describe('verifyPrimaryUserWrapper', function () {
+    it('should verify primary user with a date check', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'eddsa');
+
+      // verify proof
+      const decodedProof = await openpgp.readKey({ armoredKey: proof }).should.be.fulfilled();
+      const decodedPubKey = await openpgp.readKey({ armoredKey: senderKey.publicKey }).should.be.fulfilled();
+      const isValid = (await openpgpUtils.verifyPrimaryUserWrapper(decodedProof, decodedPubKey, true))[0].valid;
+      should.exist(isValid);
+      if (isValid !== null) {
+        isValid.should.be.true();
+      }
+    });
+
+    it('should verify primary user without a date check', async function () {
+      const uValue = crypto.randomBytes(32).toString('hex');
+      const proof = await openpgpUtils.createShareProof(senderKey.privateKey, uValue, 'eddsa');
+
+      // verify proof
+      const decodedProof = await openpgp.readKey({ armoredKey: proof }).should.be.fulfilled();
+      const decodedPubKey = await openpgp.readKey({ armoredKey: senderKey.publicKey }).should.be.fulfilled();
+      const isValid = (await openpgpUtils.verifyPrimaryUserWrapper(decodedProof, decodedPubKey, false))[0].valid;
+      should.exist(isValid);
+      if (isValid !== null) {
+        isValid.should.be.true();
+      }
+    });
+  });
+
   describe('verifyShareProof EdDSA', function () {
     it('should be able to verify a valid proof', async function () {
       const uValue = crypto.randomBytes(32).toString('hex');

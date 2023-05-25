@@ -1,5 +1,4 @@
-import 'should';
-import { Ecdsa } from '../../src';
+import { deserializeNtilde, serializeNtilde } from '../../../../src/tss/ecdsa/types';
 
 const testData = [
   {
@@ -24,8 +23,8 @@ const testData = [
 describe('Ecdsa', function () {
   it('serializeNtilde and deserializeNtilde are deterministic', function () {
     testData.forEach((serializeChallengeBefore) => {
-      const deserializeChallenge = Ecdsa.deserializeNtilde(serializeChallengeBefore);
-      const serializeChallengeAfter = Ecdsa.serializeNtilde(deserializeChallenge);
+      const deserializeChallenge = deserializeNtilde(serializeChallengeBefore);
+      const serializeChallengeAfter = serializeNtilde(deserializeChallenge);
       serializeChallengeBefore.should.deepEqual(serializeChallengeAfter);
     });
   });

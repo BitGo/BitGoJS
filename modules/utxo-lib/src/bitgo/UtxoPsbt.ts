@@ -38,7 +38,7 @@ import {
   musig2DeterministicSign,
   createMusig2DeterministicNonce,
 } from './Musig2';
-import { isTuple, Tuple } from './types';
+import { isTuple, Triple, Tuple } from './types';
 import { getTaprootOutputKey } from '../taproot';
 
 export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
@@ -511,18 +511,45 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   validateSignaturesOfAllInputs(): boolean {
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     const results = this.data.inputs.map((input, idx) => {
-      return this.validateSignaturesOfInputInner(idx);
+      return this.validateSignaturesOfInputCommon(idx);
     });
     return results.reduce((final, res) => res && final, true);
   }
 
-  private validateSignaturesOfInputInner(inputIndex: number, pubkey?: Buffer): boolean {
-    if (this.isTaprootScriptPathInput(inputIndex)) {
-      return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
-    } else if (this.isTaprootKeyPathInput(inputIndex)) {
-      return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
+  /**
+   * @returns true iff any matching valid signature is found for a derived pub key from given HD key pair.
+   */
+  validateSignaturesOfInputHD(inputIndex: number, hdKeyPair: BIP32Interface): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const pubKey = input.tapBip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.tapBip32Derivation)?.publicKey
+      : input.bip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.bip32Derivation)?.publicKey
+      : undefined;
+    if (!pubKey) {
+      throw new Error('can not derive from HD key pair');
     }
-    return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), pubkey);
+    return this.validateSignaturesOfInputCommon(inputIndex, pubKey);
+  }
+
+  /**
+   * @returns true iff any valid signature(s) are found from bip32 data of PSBT or for given pub key.
+   */
+  validateSignaturesOfInputCommon(inputIndex: number, pubkey?: Buffer): boolean {
+    try {
+      if (this.isTaprootScriptPathInput(inputIndex)) {
+        return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
+      } else if (this.isTaprootKeyPathInput(inputIndex)) {
+        return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
+      }
+      return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), pubkey);
+    } catch (err) {
+      // Not an elegant solution. Might need upstream changes like custom error types.
+      if (err.message === 'No signatures for this pubkey') {
+        return false;
+      }
+      throw err;
+    }
   }
 
   private getMusig2SessionKey(
@@ -641,12 +668,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
-  getSignatureValidationArray(inputIndex: number): boolean[] {
-    if (!this.data.globalMap.globalXpub) {
-      throw new Error('Cannot get signature validation array without global xpubs');
-    }
-    if (this.data.globalMap.globalXpub.length !== 3) {
-      throw new Error(`There must be 3 global xpubs and there are ${this.data.globalMap.globalXpub.length}`);
+  getSignatureValidationArray(inputIndex: number): Triple<boolean> {
+    if (this.data.globalMap.globalXpub?.length !== 3) {
+      throw new Error('Cannot get signature validation array without 3 global xpubs');
     }
     if (!this.getSignatureCount(inputIndex)) {
       return [false, false, false];
@@ -663,7 +687,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         return false;
       }
       try {
-        return this.validateSignaturesOfInputInner(inputIndex, pubKey);
+        return this.validateSignaturesOfInputCommon(inputIndex, pubKey);
       } catch (err) {
         // Not an elegant solution. Might need upstream changes like custom error types.
         if (err.message === 'No signatures for this pubkey') {
@@ -671,7 +695,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         }
         throw err;
       }
-    });
+    }) as Triple<boolean>;
   }
 
   /**

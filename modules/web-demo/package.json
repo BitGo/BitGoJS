@@ -60,6 +60,7 @@
     "@bitgo/sdk-coin-xtz": "^1.4.21",
     "@bitgo/sdk-coin-zec": "^1.3.21",
     "@bitgo/sdk-core": "^8.5.0",
+    "@bitgo/sdk-lib-mpc": "^8.2.0",
     "@bitgo/statics": "^15.1.2",
     "bitgo": "^18.4.0",
     "lodash": "^4.17.15",

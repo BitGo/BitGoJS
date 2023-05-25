@@ -46,10 +46,12 @@ export interface Input {
 }
 
 /**
+ * should set either address or scriptType, never both.
  * set isInternalAddress=true for internal output address
  */
 export interface Output {
-  scriptType: OutputScriptType;
+  address?: string;
+  scriptType?: OutputScriptType;
   value: bigint;
   isInternalAddress?: boolean;
 }
@@ -153,6 +155,10 @@ export function constructPsbt(
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
+  assert(
+    !outputs.some((o) => (o.scriptType && o.address) || (!o.scriptType && !o.address)),
+    'only either output script type or address should be provided'
+  );
 
   const psbt = createPsbtForNetwork({ network });
   const unspents = inputs.map((input, i) => toUnspent(input, i, network, rootWalletKeys));
@@ -169,13 +175,18 @@ export function constructPsbt(
   });
 
   outputs.forEach((output, i) => {
-    addWalletOutputToPsbt(
-      psbt,
-      rootWalletKeys,
-      output.isInternalAddress ? getInternalChainCode(output.scriptType) : getExternalChainCode(output.scriptType),
-      i,
-      output.value
-    );
+    if (output.scriptType) {
+      addWalletOutputToPsbt(
+        psbt,
+        rootWalletKeys,
+        output.isInternalAddress ? getInternalChainCode(output.scriptType) : getExternalChainCode(output.scriptType),
+        i,
+        output.value
+      );
+    } else if (output.address) {
+      const { address, value } = output;
+      psbt.addOutput({ address, value });
+    }
   });
 
   if (sign === 'unsigned') {

@@ -66,7 +66,7 @@ export class Utils implements BaseUtils {
     try {
       const data = fromB64(rawTransaction);
       const deserialized = builder.de('TransactionData', data);
-      builder.ser('TransactionData', deserialized);
+      builder.ser('TransactionData', deserialized, { maxSize: 1024 * 64 });
       return true;
     } catch (e) {
       return false;
@@ -211,20 +211,12 @@ export class Utils implements BaseUtils {
       if (transaction.kind === 'SplitCoins') {
         const index = transaction.amounts[0].index;
         const input = tx.tx.inputs[index] as any;
-        if (input.kind && input.kind === 'Input') {
-          amounts.push(input.value);
-        } else {
-          amounts.push(Buffer.from(input.Pure).readUIntLE(0, 6));
-        }
+        amounts.push(this.getAmount(input));
       }
       if (transaction.kind === 'TransferObjects') {
         const index = transaction.address.index;
         const input = tx.tx.inputs[index] as any;
-        if (input.kind && input.kind === 'Input') {
-          addresses.push(input.value);
-        } else {
-          addresses.push('0x' + Buffer.from(input.Pure).toString('hex'));
-        }
+        addresses.push(this.getAddress(input));
       }
     });
     return addresses.map((address, index) => {
