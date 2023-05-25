@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.5.0...@bitgo/sdk-core@8.6.0) (2023-05-25)
+
+### Bug Fixes
+
+- **bitgo:** should skip password validation in external signing ([a0cde4d](https://github.com/BitGo/BitGoJS/commit/a0cde4dacf7a48669f487d17f896e414fb5ee9df))
+- **sdk-core:** fix time issue when checking gpg wallet signatures from bitgo ([a7fa97b](https://github.com/BitGo/BitGoJS/commit/a7fa97b5b483168ad2385f4d4590d39f1476ed94))
+
+### Features
+
+- **abstract-utxo:** add psbt and musig2 support for sdk-api ([7a23991](https://github.com/BitGo/BitGoJS/commit/7a23991079e5609d43d7483f8137189163943dfc))
+- **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+- **sdk-coin-atom:** add recover mechanism for ATOM ([0e4cfc7](https://github.com/BitGo/BitGoJS/commit/0e4cfc74201f9a44ec3b4b9c7591a6fbd3f2efb6))
+
 # [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.4.0...@bitgo/sdk-core@8.5.0) (2023-05-17)
 
 ### Features

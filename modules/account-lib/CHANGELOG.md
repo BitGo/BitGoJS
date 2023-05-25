@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.5.3...@bitgo/account-lib@4.6.0) (2023-05-25)
+
+### Features
+
+- **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+
 ## [4.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.5.2...@bitgo/account-lib@4.5.3) (2023-05-17)
 
 ### Bug Fixes

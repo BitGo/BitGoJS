@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.5...@bitgo/sdk-coin-sui@3.0.6) (2023-05-25)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix amount parsing ([b7e2b40](https://github.com/BitGo/BitGoJS/commit/b7e2b40711161a9f9fe739bcb71f5af00da2c689))
+- **sdk-coin-sui:** fix large transaction ([050f66d](https://github.com/BitGo/BitGoJS/commit/050f66d58e4ad15f16ba94a6d9cc07d4e0ea19c6))
+- **sdk-coin-sui:** fix split transaction ([a46eaff](https://github.com/BitGo/BitGoJS/commit/a46eaffc48506ba568e4c36237e874c32b5a0a24))
+
 ## [3.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.4...@bitgo/sdk-coin-sui@3.0.5) (2023-05-17)
 
 ### Bug Fixes

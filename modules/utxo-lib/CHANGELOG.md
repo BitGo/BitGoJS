@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.3.0...@bitgo/utxo-lib@8.4.0) (2023-05-25)
+
+### Features
+
+- **utxo-lib:** add utils for sdk-api support musig2 ([1104f13](https://github.com/BitGo/BitGoJS/commit/1104f13f418e50c82634c7e936ee32b041cc15ba))
+
 # [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.2.0...@bitgo/utxo-lib@8.3.0) (2023-05-17)
 
 ### Bug Fixes

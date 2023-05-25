@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.2.1...@bitgo/abstract-utxo@2.3.0) (2023-05-25)
+
+### Features
+
+- **abstract-utxo:** add psbt and musig2 support for sdk-api ([7a23991](https://github.com/BitGo/BitGoJS/commit/7a23991079e5609d43d7483f8137189163943dfc))
+
 ## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.2.0...@bitgo/abstract-utxo@2.2.1) (2023-05-17)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

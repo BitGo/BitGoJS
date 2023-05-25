@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.1.2...@bitgo/statics@16.0.0) (2023-05-25)
+
+### chore
+
+- onboard new batch of tokens ([8c3a467](https://github.com/BitGo/BitGoJS/commit/8c3a467cfa61bce8a560ee3afba04a6d86b27f0f))
+
+### BREAKING CHANGES
+
+- Update correct token address for TBTCv2
+
 ## [15.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.1.1...@bitgo/statics@15.1.2) (2023-05-10)
 
 **Note:** Version bump only for package @bitgo/statics

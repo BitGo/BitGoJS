@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.3.0...@bitgo/sdk-lib-mpc@8.3.1) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/sdk-lib-mpc
+
 # 8.3.0 (2023-05-17)
 
 ### Features
