@@ -4,9 +4,9 @@ import { randomCoPrimeLessThan } from '../../util';
 // Security parameters.
 const k = 128;
 const alpha = 2;
+const m = Math.ceil(k / Math.log2(alpha));
 
 export async function generateP(n: bigint): Promise<Array<bigint>> {
-  const m = k / Math.log2(alpha);
   return Promise.all(
     Array(m)
       .fill(null)
@@ -34,8 +34,7 @@ export async function verify(n: bigint, p: Array<bigint>, sigma: Array<bigint>):
     throw new Error('unsupported alpha value');
   }
   // b) Check that $\sigma_i$ is a positive integer $i = 1...m$.
-  const m = k / Math.log2(alpha);
-  if (sigma.length != m) {
+  if (sigma.length !== m) {
     return false;
   }
   if (!sigma.every((sigma_i) => sigma_i > 0)) {
@@ -45,7 +44,7 @@ export async function verify(n: bigint, p: Array<bigint>, sigma: Array<bigint>):
   return new Promise(function (resolve) {
     setTimeout(() => {
       for (let i = 0; i < m; i++) {
-        if (p[i] != modPow(sigma[i], n, n)) {
+        if (p[i] !== modPow(sigma[i], n, n)) {
           resolve(false);
           return;
         }
