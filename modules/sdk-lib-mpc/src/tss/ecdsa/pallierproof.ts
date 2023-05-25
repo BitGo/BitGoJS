@@ -2,12 +2,12 @@ import { bitLength } from 'bigint-crypto-utils';
 import { modInv, modPow } from 'bigint-mod-arith';
 
 import { randomPositiveCoPrimeLessThan } from '../../util';
+import { minModulusBitLength } from './index';
 
 // Security parameters.
 const k = 128;
 const alpha = 2;
 export const m = Math.ceil(k / Math.log2(alpha));
-const minBitLength = 3072;
 
 /**
  * Generate a set of challenges $p$ for a given pallier public key modulus $n$.
@@ -15,7 +15,7 @@ const minBitLength = 3072;
  * @returns {Promise<Array<bigint>>} - array of challenges $p_i$
  */
 export async function generateP(n: bigint): Promise<Array<bigint>> {
-  if (bitLength(n) < minBitLength) {
+  if (bitLength(n) < minModulusBitLength) {
     throw new Error('modulus n must have a bit length larger than or equal to 3072');
   }
   return Promise.all(

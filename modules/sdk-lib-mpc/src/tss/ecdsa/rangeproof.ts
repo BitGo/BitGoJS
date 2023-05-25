@@ -17,6 +17,7 @@ import {
 } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE, randomPositiveCoPrimeTo } from '../../util';
 import { OpenSSL } from '../../openssl';
+import { minModulusBitLength } from './index';
 
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
 const ITERATIONS = 128;
@@ -30,8 +31,8 @@ export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]
   return await Promise.all(promises);
 }
 
-async function generateModulus(bitlength = 3072): Promise<RSAModulus> {
-  if (bitlength < 3072) {
+async function generateModulus(bitlength = minModulusBitLength): Promise<RSAModulus> {
+  if (bitlength < minModulusBitLength) {
     // https://www.keylength.com/en/6/
     // eslint-disable-next-line no-console
     console.warn('Generating a modulus with less than 3072 is not recommended!');

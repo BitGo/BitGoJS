@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { generateP, m } from '../../../../src/tss/ecdsa/pallierProof';
-import { randomBigInt } from '../../../../src';
+import { minModulusBitLength, randomBigInt } from '../../../../src';
 
 describe('EcdsaPallierProof', function () {
   it('m should equal 128', async function () {
@@ -20,7 +20,7 @@ describe('EcdsaPallierProof', function () {
     });
 
     it('should generate 128 challenges', async function () {
-      const n = await randomBigInt(3072);
+      const n = await randomBigInt(minModulusBitLength);
       assert.strictEqual((await generateP(BigInt(n))).length, 128);
     });
   });
