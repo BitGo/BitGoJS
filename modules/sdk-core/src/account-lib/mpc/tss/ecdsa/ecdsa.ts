@@ -8,7 +8,7 @@ import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, EcdsaTypes, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes, randomPositiveCoPrimeTo } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -333,7 +333,7 @@ export default class Ecdsa {
     }
 
     const k = Ecdsa.curve.scalarRandom();
-    const rk = await randomCoPrimeTo(pk.n);
+    const rk = await randomPositiveCoPrimeTo(pk.n);
     const ck = pk.encrypt(k, rk);
     const gamma = Ecdsa.curve.scalarRandom();
 
@@ -569,7 +569,7 @@ export default class Ecdsa {
         'hex'
       );
       const g = hexToBigInt(bShareParticipant.gamma);
-      const rb = await randomCoPrimeTo(pka.n);
+      const rb = await randomPositiveCoPrimeTo(pka.n);
       const cb = pka.encrypt(beta0, rb);
       const alpha = pka.addition(pka.multiply(k, g), cb);
       aShareToBeSent.alpha = bigIntToBufferBE(alpha, 32).toString('hex');
@@ -613,7 +613,7 @@ export default class Ecdsa {
         'hex'
       );
       const w = hexToBigInt(bShareParticipant.w);
-      const rn = await randomCoPrimeTo(pka.n);
+      const rn = await randomPositiveCoPrimeTo(pka.n);
       const cn = pka.encrypt(nu0, rn);
       const mu = pka.addition(pka.multiply(k, w), cn);
       shareToBeSent.mu = bigIntToBufferBE(mu, 32).toString('hex');

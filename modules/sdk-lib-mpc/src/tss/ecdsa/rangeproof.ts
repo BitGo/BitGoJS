@@ -15,7 +15,7 @@ import {
   RangeProofWithCheck,
   DeserializedNtildeWithProofs,
 } from './types';
-import { bigIntFromBufferBE, bigIntToBufferBE, randomCoPrimeTo } from '../../util';
+import { bigIntFromBufferBE, bigIntToBufferBE, randomPositiveCoPrimeTo } from '../../util';
 import { OpenSSL } from '../../openssl';
 
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
@@ -30,9 +30,10 @@ export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]
   return await Promise.all(promises);
 }
 
-async function generateModulus(bitlength: number): Promise<RSAModulus> {
+async function generateModulus(bitlength = 3072): Promise<RSAModulus> {
   if (bitlength < 3072) {
     // https://www.keylength.com/en/6/
+    // eslint-disable-next-line no-console
     console.warn('Generating a modulus with less than 3072 is not recommended!');
   }
   const bitlengthP = Math.floor(bitlength / 2);
@@ -57,7 +58,7 @@ async function generateModulus(bitlength: number): Promise<RSAModulus> {
  */
 export async function generateNtilde(bitlength: number): Promise<DeserializedNtildeWithProofs> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
-  const [f1, f2] = await Promise.all([randomCoPrimeTo(ntilde), randomCoPrimeTo(ntilde)]);
+  const [f1, f2] = await Promise.all([randomPositiveCoPrimeTo(ntilde), randomPositiveCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
   const h2 = modPow(h1, f2, ntilde);
   const beta = modInv(f2, q1 * q2);
@@ -216,7 +217,7 @@ export async function prove(
   const qntilde = q * ntilde.ntilde;
   const q3ntilde = q3 * ntilde.ntilde;
   const alpha = randBetween(q3);
-  const beta = await randomCoPrimeTo(pk.n);
+  const beta = await randomPositiveCoPrimeTo(pk.n);
   const gamma = randBetween(q3ntilde);
   const rho = randBetween(qntilde);
   const z = (modPow(ntilde.h1, m, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;
@@ -291,10 +292,7 @@ export function verify(
     (((modPow(ntilde.h1, proof.s1, ntilde.ntilde) * modPow(ntilde.h2, proof.s2, ntilde.ntilde)) % ntilde.ntilde) *
       modPow(proof.z, -e, ntilde.ntilde)) %
     ntilde.ntilde;
-  if (proof.w !== products) {
-    return false;
-  }
-  return true;
+  return proof.w === products;
 }
 
 /**
@@ -334,7 +332,7 @@ export async function proveWithCheck(
   const sigma = randBetween(qntilde);
   const tau = randBetween(q3ntilde);
   const rhoprm = randBetween(q3ntilde);
-  const beta = await randomCoPrimeTo(pk.n);
+  const beta = await randomPositiveCoPrimeTo(pk.n);
   const gamma = randBetween(q7);
   const u = curve.basePointMult(curve.scalarReduce(alpha));
   const z = (modPow(ntilde.h1, x, ntilde.ntilde) * modPow(ntilde.h2, rho, ntilde.ntilde)) % ntilde.ntilde;
@@ -435,7 +433,7 @@ export function verifyWithCheck(
   const e = bigIntFromBufferBE(hash.digest()) % q;
   const gS1 = curve.basePointMult(curve.scalarReduce(proof.s1));
   const xEU = curve.pointAdd(curve.pointMultiply(X, e), proof.u);
-  if (gS1 != xEU) {
+  if (gS1 !== xEU) {
     return false;
   }
   let left, right;
@@ -461,8 +459,5 @@ export function verifyWithCheck(
   left = (((c1ExpS1 * sExpN) % pk._n2) * gammaExpT1) % pk._n2;
   const c2ExpE = modPow(c2, e, pk._n2);
   right = (c2ExpE * proof.v) % pk._n2;
-  if (left !== right) {
-    return false;
-  }
-  return true;
+  return left === right;
 }
