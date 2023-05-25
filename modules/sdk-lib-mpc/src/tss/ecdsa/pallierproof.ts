@@ -1,20 +1,9 @@
-import { bitLength, randBits } from 'bigint-crypto-utils';
-import { bigIntFromBufferBE } from '../../util';
-import { gcd, modInv, modPow } from 'bigint-mod-arith';
+import { modInv, modPow } from 'bigint-mod-arith';
+import { randomCoPrimeLessThan } from '../../util';
 
 // Security parameters.
 const k = 128;
 const alpha = 2;
-
-// Generate a random coprime less than x with the same bit depth.
-async function randomCoPrimeLessThan(x: bigint): Promise<bigint> {
-  while (true) {
-    const y = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(x), true)));
-    if (y > BigInt(0) && y < x && gcd(x, y) === BigInt(1)) {
-      return y;
-    }
-  }
-}
 
 export async function generateP(n: bigint): Promise<Array<bigint>> {
   const m = k / Math.log2(alpha);
