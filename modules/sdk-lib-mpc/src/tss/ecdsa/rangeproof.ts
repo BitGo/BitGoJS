@@ -31,7 +31,7 @@ export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]
   return await Promise.all(promises);
 }
 
-async function generateModulus(bitlength = minModulusBitLength): Promise<RSAModulus> {
+async function generateModulus(bitlength = minModulusBitLength, retry = 10): Promise<RSAModulus> {
   if (bitlength < minModulusBitLength) {
     // https://www.keylength.com/en/6/
     // eslint-disable-next-line no-console
@@ -39,16 +39,18 @@ async function generateModulus(bitlength = minModulusBitLength): Promise<RSAModu
   }
   const bitlengthP = Math.floor(bitlength / 2);
   const bitlengthQ = bitlength - bitlengthP;
-  const [p, q] = await generateSafePrimes([bitlengthP, bitlengthQ]);
-  const n = p * q;
-  // We never expect this to happen unless something went wrong with the wasm/openssl module
-  if (bitLength(n) !== bitlength) {
-    throw new Error(
-      `Unable to generate modulus with bit length of ${bitlength}. Expected length ${bitlength}, got 
-      ${bitLength(n)}. please try again or reach out to support@bitgo.com`
-    );
+  for (let i = 0; i < retry; i++) {
+    const [p, q] = await generateSafePrimes([bitlengthP, bitlengthQ]);
+    const n = p * q;
+    // For large bit lengths, the probability of generating a modulus with the wrong bit length is very low.
+    if (bitLength(n) !== bitlength) {
+      continue;
+    }
+    return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
   }
-  return { n, q1: (p - BigInt(1)) / BigInt(2), q2: (q - BigInt(1)) / BigInt(2) };
+  throw new Error(
+    `Unable to generate modulus with bit length of ${bitlength} after ${retry} tries. Please try again or reach out to support@bitgo.com`
+  );
 }
 
 /**
