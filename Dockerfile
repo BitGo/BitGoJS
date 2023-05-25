@@ -42,6 +42,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 RUN cd /var/modules/sdk-core && yarn link
 COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 RUN cd /var/modules/bls-dkg && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
+RUN cd /var/modules/sdk-lib-mpc && yarn link
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 RUN cd /var/modules/statics && yarn link
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
@@ -142,6 +144,7 @@ RUN cd /var/modules/sdk-coin-zec && yarn link
 RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-core && \
     yarn link @bitgo/bls-dkg && \
+    yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
@@ -192,9 +195,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 17 May 2023 15:18:50 GMT"
-LABEL version=9.26.2
-LABEL git_hash=7ccf98a50341a3d923e3156d1b0efc1c2380bb6f
+LABEL created="Thu, 25 May 2023 16:07:18 GMT"
+LABEL version=9.26.3
+LABEL git_hash=5d97fba87a565f6291dcec6a7be6d0696510893f
 #LABEL_END
 
 USER node
