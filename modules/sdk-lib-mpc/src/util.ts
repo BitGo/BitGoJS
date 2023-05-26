@@ -98,10 +98,11 @@ export function getPaillierPublicKey(n: bigint): PublicKey {
 }
 
 /**
- * Generate a random number co-prime to x
+ * Generate a random positive integer co-prime to x
  * @param x
+ * @returns {Promise<bigint>}
  */
-export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
+export async function randomPositiveCoPrimeTo(x: bigint): Promise<bigint> {
   while (true) {
     const y = await randomBigInt(bitLength(x));
     if (y > BigInt(0) && gcd(x, y) === BigInt(1)) {
@@ -111,8 +112,26 @@ export async function randomCoPrimeTo(x: bigint): Promise<bigint> {
 }
 
 /**
+ * Generate a random positive integer coprime less than x with the same bit depth.
+ * @param x
+ * @returns {Promise<bigint>}
+ */
+export async function randomPositiveCoPrimeLessThan(x: bigint): Promise<bigint> {
+  if (x <= BigInt(2)) {
+    throw new Error('x must be larger than 2');
+  }
+  while (true) {
+    const y = await randomBigInt(bitLength(x));
+    if (y > BigInt(0) && y < x && gcd(x, y) === BigInt(1)) {
+      return y;
+    }
+  }
+}
+
+/**
  * Generate a random number of a given bitlength
  * @param bitlength
+ * @returns {Promise<bigint>}
  */
 export async function randomBigInt(bitlength: number): Promise<bigint> {
   return bigIntFromBufferBE(Buffer.from(await randBits(bitlength, true)));

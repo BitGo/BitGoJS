@@ -597,24 +597,26 @@ describe('TSS Ecdsa Utils:', async function () {
         h2: serializedEntChallenge.h2,
       } });
 
-      const [userSigningKeyWithChallenge, bitgoSigningKeyWithChallenge] = await Promise.all([MPC.appendChallenge(userSigningKey.xShare, userSigningKey.yShares[3], serializedEntChallenge), MPC.appendChallenge(bitgoSigningKey.xShare, bitgoSigningKey.yShares[1], serializedBitgoChallenge)]);
-
+      const [userXShare, bitgoXShare] = await Promise.all([
+        MPC.appendChallenge(userSigningKey.xShare, serializedEntChallenge),
+        MPC.appendChallenge(bitgoSigningKey.xShare, serializedBitgoChallenge)]);
+      const bitgoYShare = await MPC.appendChallenge(userSigningKey.yShares[3], serializedBitgoChallenge);
       /**
        * START STEP ONE
        * 1) User creates signShare, saves wShare and sends kShare to bitgo
        * 2) Bitgo performs signConvert operation using its private xShare , yShare
        *  and KShare from user and responds back with aShare and saves bShare for later use
        */
-      userSignShare = await ECDSAMethods.createUserSignShare(userSigningKeyWithChallenge.xShare, bitgoSigningKeyWithChallenge.yShares[1]);
+      userSignShare = await ECDSAMethods.createUserSignShare(userXShare, bitgoYShare);
       const signatureShareOneFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
         share: ECDSAMethods.convertKShare(userSignShare.kShare).share.replace(ECDSAMethods.delimeter, ''),
       };
       const getBitgoAandBShare = await MPC.signConvert({
+        xShare: bitgoXShare,
+        yShare: bitgoSigningKey.yShares[1], // corresponds to the user
         kShare: userSignShare.kShare,
-        xShare: bitgoSigningKeyWithChallenge.xShare,
-        yShare: bitgoSigningKey.yShares['1'], // corresponds to the user
       });
       const bitgoAshare = getBitgoAandBShare.aShare as ECDSA.AShare;
       aShare = bitgoAshare;

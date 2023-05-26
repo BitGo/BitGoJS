@@ -1,6 +1,9 @@
-import 'should';
-import { bigIntFromBufferBE } from '../../src/util';
+import assert from 'assert';
 import { Buffer } from 'buffer';
+import 'should';
+
+import { bigIntFromBufferBE, randomBigInt, randomPositiveCoPrimeLessThan, randomPositiveCoPrimeTo } from '../../src';
+import { gcd } from 'bigint-mod-arith';
 
 describe('mpc utils', () => {
   describe('bigIntFromBufferBE', () => {
@@ -28,6 +31,48 @@ describe('mpc utils', () => {
       (() => {
         bigIntFromBufferBE(new Buffer('', 'hex'));
       }).should.throw('Cannot convert 0x to a BigInt');
+    });
+  });
+
+  describe('randomPositiveCoPrimeLessThan', function () {
+    it('should throw an error if x <= 2', async function () {
+      const testCases = [BigInt(2), BigInt(1), BigInt(0), BigInt(-1)];
+      for (const testCase of testCases) {
+        try {
+          await randomPositiveCoPrimeLessThan(testCase);
+          assert.fail('should throw');
+        } catch (e) {
+          assert.strictEqual(e.message, 'x must be larger than 2');
+        }
+      }
+    });
+
+    it('should find valid coprime less than x', async function () {
+      const testCases = [BigInt(3), BigInt(5)];
+      const expectedValues = [[BigInt(2)], [BigInt(2), BigInt(3), BigInt(4)]];
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        const validResults = expectedValues[i];
+        const res = await randomPositiveCoPrimeLessThan(testCase);
+        assert.strictEqual(validResults.includes(res), true);
+      }
+    });
+  });
+
+  describe('randomPositiveCoPrimeTo', function () {
+    it('should find a valid positive coprime', async function () {
+      const testCases = await Promise.all([
+        randomBigInt(256),
+        randomBigInt(256),
+        randomBigInt(128),
+        randomBigInt(3072),
+      ]);
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        const res = await randomPositiveCoPrimeTo(testCase);
+        assert.strictEqual(res > 0, true);
+        assert.strictEqual(gcd(res, testCase), BigInt(1));
+      }
     });
   });
 });

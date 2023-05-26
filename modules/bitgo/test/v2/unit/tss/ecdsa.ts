@@ -283,19 +283,8 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNtilde = {
-          ...shares.xShare,
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
-        const yShare: ECDSAMethodTypes.YShareWithNtilde = {
-          ...userKey.yShares[3],
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
+        const xShare = await mpc.appendChallenge(userKey.xShare);
+        const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 });
         const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
         userSignShare.should.have.properties(['wShare', 'kShare']);
         const { wShare, kShare } = userSignShare;
@@ -321,14 +310,13 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        const shares = await mpc.appendChallenge(userKey.xShare, userKey.yShares[3]);
-        const xShare: ECDSAMethodTypes.XShareWithNtilde = { ...shares.xShare, i: 3 };
-        const yShare: ECDSAMethodTypes.YShareWithNtilde = {
-          ...userKey.yShares[3],
-          ntilde: shares.xShare.ntilde,
-          h1: shares.xShare.h1,
-          h2: shares.xShare.h2,
-        };
+        let xShare = await mpc.appendChallenge(userKey.xShare);
+        xShare = { ...xShare, i: 3 };
+        const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], {
+          ntilde: xShare.ntilde,
+          h1: xShare.h1,
+          h2: xShare.h2,
+        });
         await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
       });
     });
