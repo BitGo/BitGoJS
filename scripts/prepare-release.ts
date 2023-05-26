@@ -29,9 +29,9 @@ const getLernaModules = async (): Promise<void> => {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
 
   const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{name: string, location: string}> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
+  const modules: Array<{ name: string, location: string }> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
   lernaModules = modules.map(({ name }) => name);
-  lernaModuleLocations = modules.map(({ location }) => location );
+  lernaModuleLocations = modules.map(({ location }) => location);
 };
 
 const walk = (dir: string): string[] => {
@@ -56,7 +56,7 @@ const walk = (dir: string): string[] => {
   return results;
 };
 
-const changeScopeInFile = (filePath:string): void => {
+const changeScopeInFile = (filePath: string): void => {
   const oldContent = readFileSync(filePath, { encoding: 'utf8' });
   let newContent = oldContent;
   lernaModules.forEach((moduleName) => {
@@ -81,7 +81,7 @@ const replacePackageScopes = () => {
 /**
  * Makes an HTTP request to fetch all the dist tags for a given package. 
  */
- const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
+const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
   return new Promise((resolve) => {
     httpGet(`https://registry.npmjs.org/-/package/${packageName}/dist-tags`, (res) => {
       let data = '';
@@ -119,36 +119,35 @@ const incrementVersions = async (preid: string = 'beta') => {
       const modulePath = lernaModuleLocations[i];
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
       const tags = await getDistTags(json.name);
-      if (tags[preid]) {
-        const next = inc(tags[preid], 'prerelease', undefined, preid);
-        console.log(`Setting next version for ${json.name} to ${next}`);
-        json.version = next;
-        writeFileSync(
-          path.join(modulePath, 'package.json'),
-          JSON.stringify(json, null, 2) + '\n'
-        );
-        // since we're manually setting new versions, we must also reconcile all other lerna packages to now use the 'next' version for this module
-        lernaModuleLocations.forEach((otherModulePath) => {
-          // skip it for the current version
-          if (otherModulePath === modulePath) {
-            return;
+
+      const next = inc(tags[preid] || tags['latest'], 'prerelease', undefined, preid);
+      console.log(`Setting next version for ${json.name} to ${next}`);
+      json.version = next;
+      writeFileSync(
+        path.join(modulePath, 'package.json'),
+        JSON.stringify(json, null, 2) + '\n'
+      );
+      // since we're manually setting new versions, we must also reconcile all other lerna packages to now use the 'next' version for this module
+      lernaModuleLocations.forEach((otherModulePath) => {
+        // skip it for the current version
+        if (otherModulePath === modulePath) {
+          return;
+        }
+        const otherJsonContent = readFileSync(path.join(otherModulePath, 'package.json'), { encoding: 'utf-8' });
+        if (otherJsonContent.includes(json.name)) {
+          const otherJson = JSON.parse(otherJsonContent);
+          if (otherJson.dependencies && otherJson.dependencies[json.name]) {
+            otherJson.dependencies[json.name] = next;
           }
-          const otherJsonContent = readFileSync(path.join(otherModulePath, 'package.json'), { encoding: 'utf-8' });
-          if (otherJsonContent.includes(json.name)) {
-            const otherJson = JSON.parse(otherJsonContent);
-            if (otherJson.dependencies && otherJson.dependencies[json.name]) {
-              otherJson.dependencies[json.name] = next;
-            }
-            if (otherJson.devDependencies && otherJson.devDependencies[json.name]) {
-              otherJson.devDependencies[json.name] = next;
-            }
-            writeFileSync(
-              path.join(otherModulePath, 'package.json'),
-              JSON.stringify(otherJson, null, 2) + '\n'
-            );
+          if (otherJson.devDependencies && otherJson.devDependencies[json.name]) {
+            otherJson.devDependencies[json.name] = next;
           }
-        });
-      }
+          writeFileSync(
+            path.join(otherModulePath, 'package.json'),
+            JSON.stringify(otherJson, null, 2) + '\n'
+          );
+        }
+      });
     } catch (e) {
       // it's not necessarily a blocking error. Let lerna try and publish anyways
       console.warn(`Couldn't set next version for ${lernaModuleLocations[i]}`, e);
