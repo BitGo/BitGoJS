@@ -29,9 +29,9 @@ const getLernaModules = async (): Promise<void> => {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
 
   const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{name: string, location: string}> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
+  const modules: Array<{ name: string, location: string }> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
   lernaModules = modules.map(({ name }) => name);
-  lernaModuleLocations = modules.map(({ location }) => location );
+  lernaModuleLocations = modules.map(({ location }) => location);
 };
 
 const walk = (dir: string): string[] => {
@@ -56,7 +56,7 @@ const walk = (dir: string): string[] => {
   return results;
 };
 
-const changeScopeInFile = (filePath:string): void => {
+const changeScopeInFile = (filePath: string): void => {
   const oldContent = readFileSync(filePath, { encoding: 'utf8' });
   let newContent = oldContent;
   lernaModules.forEach((moduleName) => {
@@ -81,7 +81,7 @@ const replacePackageScopes = () => {
 /**
  * Makes an HTTP request to fetch all the dist tags for a given package. 
  */
- const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
+const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
   return new Promise((resolve) => {
     httpGet(`https://registry.npmjs.org/-/package/${packageName}/dist-tags`, (res) => {
       let data = '';
@@ -108,19 +108,56 @@ const replaceBitGoPackageScope = () => {
   );
 };
 
+/** Small version checkers in place of an npm dependency installation */
+function compareversion(version1, version2) {
+
+  let result = false;
+
+  if (typeof version1 !== 'object') { version1 = version1.toString().split('.'); }
+  if (typeof version2 !== 'object') { version2 = version2.toString().split('.'); }
+
+  for (let i = 0;i < (Math.max(version1.length, version2.length));i++) {
+
+    if (version1[i] === undefined) { version1[i] = 0; }
+    if (version2[i] === undefined) { version2[i] = 0; }
+
+    if (Number(version1[i]) < Number(version2[i])) {
+      result = true;
+      break;
+    }
+    if (version1[i] !== version2[i]) {
+      break;
+    }
+  }
+  return (result);
+}
+
 /**
  * increment the version based on the preid. default to `beta`
  * 
  * @param {String | undefined} preid
  */
-const incrementVersions = async (preid: string = 'beta') => {
+const incrementVersions = async (preid = 'beta') => {
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     try {
       const modulePath = lernaModuleLocations[i];
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
       const tags = await getDistTags(json.name);
-      if (tags[preid]) {
-        const next = inc(tags[preid], 'prerelease', undefined, preid);
+
+      let prevTag: string | undefined = undefined;
+
+      if (typeof tags !== 'string') {
+        if (tags[preid]) {
+          const version = tags[preid].split('-');
+          const latest = tags?.latest?.split('-') ?? ['0.0.0'];
+          prevTag = compareversion(version[0], latest[0]) ? `${tags.latest}-${preid}` : tags[preid];
+        } else {
+          prevTag = `${tags.latest}-${preid}`;
+        }
+      }
+
+      if (prevTag) {
+        const next = inc(prevTag, 'prerelease', undefined, preid);
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(
