@@ -650,28 +650,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     );
 
     const bitgoIndex = 3;
-    const userIndex = 1;
-    const yShare = {
-      i: userSigningMaterial.pShare.i,
-      j: bitgoIndex,
-      n: signingKey.nShares[bitgoIndex].n,
-    };
+    const userIndex = userSigningMaterial.pShare.i;
 
     const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, 0);
-    const signingKeyWithChallenge = await MPC.appendChallenge(
-      signingKey.xShare,
-      yShare,
-      challenges.enterpriseChallenge
+    const userXShare = await MPC.appendChallenge(signingKey.xShare, challenges.enterpriseChallenge);
+    const bitgoYShare = await MPC.appendChallenge(
+      {
+        i: userIndex,
+        j: bitgoIndex,
+        n: signingKey.nShares[bitgoIndex].n,
+      },
+      challenges.bitgoChallenge
     );
 
-    const userSignShare = await ECDSAMethods.createUserSignShare(signingKeyWithChallenge.xShare, {
-      i: userIndex,
-      j: bitgoIndex,
-      n: userSigningMaterial.bitgoNShare.n,
-      ntilde: challenges.bitgoChallenge.ntilde,
-      h1: challenges.bitgoChallenge.h1,
-      h2: challenges.bitgoChallenge.h2,
-    });
+    const userSignShare = await ECDSAMethods.createUserSignShare(userXShare, bitgoYShare);
     const u = signingKey.nShares[bitgoIndex].u;
 
     let chaincode = userSigningMaterial.bitgoNShare.chaincode;

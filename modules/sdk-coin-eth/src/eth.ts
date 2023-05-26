@@ -1040,9 +1040,7 @@ export class Eth extends BaseCoin {
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = (
-      await MPC.appendChallenge(userKeyCombined.xShare, userKeyCombined.yShares[signerTwoIndex])
-    ).xShare;
+    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(userKeyCombined.xShare);
     const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
       ...userKeyCombined.yShares[signerTwoIndex],
       ntilde: userXShare.ntilde,

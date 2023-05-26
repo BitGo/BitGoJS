@@ -4,18 +4,16 @@ import * as secp from '@noble/secp256k1';
 import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
-import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, EcdsaTypes, randomPositiveCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes, randomPositiveCoPrimeTo, hexToBigInt } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
   DShare,
   GShare,
   KeyCombined,
-  KeyCombinedWithNtilde,
   KeyShare,
   KShare,
   MUShare,
@@ -286,34 +284,23 @@ export default class Ecdsa {
   /**
    * Appends a given range proof challenge to the shares previously created
    * by #keyCombine. Generates a new challenge if not provided.
-   * @param {XShare} xShare Private xShare of signer
-   * @param {YShare} yShare YShare of the other participant involved in
-   * this signing operation
+   * @param {XShare | YShare} share Private xShare or yShare of the signing operation
    * @param {EcdsaTypes.SerializedNtilde} challenge
-   * @returns {KeyCombined} The new XShare and YShares with the amended
-   * challenge values
+   * @returns {KeyCombined} The share with amended challenge values
    */
-  async appendChallenge(
-    xShare: XShare,
-    yShare: YShare,
+  async appendChallenge<T extends XShare | YShare>(
+    share: T,
     challenge?: EcdsaTypes.SerializedNtilde
-  ): Promise<KeyCombinedWithNtilde> {
+  ): Promise<T & EcdsaTypes.SerializedNtilde> {
     if (!challenge) {
       challenge = EcdsaTypes.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
     }
     const { ntilde, h1, h2 } = challenge;
     return {
-      xShare: { ...xShare, ntilde, h1, h2 },
-      yShares: {
-        [yShare.j]: {
-          i: yShare.j,
-          j: yShare.i,
-          n: xShare.n,
-          ntilde,
-          h1,
-          h2,
-        },
-      },
+      ...share,
+      ntilde,
+      h1,
+      h2,
     };
   }
 
@@ -329,7 +316,7 @@ export default class Ecdsa {
 
     // Generate a challenge if ntilde is not present in the xShare.
     if (!hasNtilde(xShare)) {
-      xShare = (await this.appendChallenge(xShare, yShare)).xShare;
+      xShare = await this.appendChallenge(xShare);
     }
 
     const k = Ecdsa.curve.scalarRandom();

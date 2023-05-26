@@ -230,36 +230,44 @@ describe('TSS ECDSA TESTS', function () {
         // Step One
         // signerOne, signerTwo have decided to sign the message
         const signerOne = config[index].signerOne;
-        const signerOneIndex = config[index].signerOne.xShare.i;
+        const signerOneIndex = signerOne.xShare.i;
         const signerTwo = config[index].signerTwo;
+        const signerTwoIndex = signerTwo.xShare.i;
 
         // Step Two
-        // Second signer generates their range proof challenge.
-        const signerTwoWithChallenge: ECDSA.KeyCombinedWithNtilde = await MPC.appendChallenge(
-          signerTwo.xShare,
-          signerTwo.yShares[signerOneIndex],
-        );
+        // First signer generates their range proof challenge.
+        const signerOneXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(signerOne.xShare);
 
         // Step Three
+        //  Second signer generates their range proof challenge.
+        const signerTwoXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(signerTwo.xShare);
+        const signerTwoChallenge = { ntilde: signerTwoXShare.ntilde, h1: signerTwoXShare.h1, h2: signerTwoXShare.h2 };
+
+        // Step Four
+        // First signer receives the challenge from the second signer and appends it to their YShare
+        const signerTwoYShare: ECDSA.YShareWithNtilde = await MPC.appendChallenge(
+          signerOne.yShares[signerTwoIndex],
+          signerTwoChallenge,
+        );
+
+        // Step Five
         // Sign Shares are created by one of the participants (signerOne)
         // with its private XShare and YShare corresponding to the other participant (signerTwo)
         // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-        const signShares: ECDSA.SignShareRT = await MPC.signShare(
-          signerOne.xShare,
-          signerTwoWithChallenge.yShares[signerOneIndex],
-        );
+        const signShares: ECDSA.SignShareRT = await MPC.signShare(signerOneXShare, signerTwoYShare);
 
-        // Step Four
+        // Step Six
         // signerTwo receives the KShare from signerOne and uses it produce private
         // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
         // which is sent to signerOne
+
         let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
-          xShare: signerTwoWithChallenge.xShare,
+          xShare: signerTwoXShare,
           yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
         });
 
-        // Step Five
+        // Step Seven
         // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
         // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
         // is sent to signerTwo to produce its Gamma Share
@@ -268,7 +276,7 @@ describe('TSS ECDSA TESTS', function () {
           wShare: signShares.wShare,
         });
 
-        // Step Six
+        // Step Eight
         // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
         // uses it produce private GShare (Gamma Share)
         signConvertS21 = await MPC.signConvert({
@@ -276,7 +284,7 @@ describe('TSS ECDSA TESTS', function () {
           bShare: signConvertS21.bShare,
         });
 
-        // Step Seven
+        // Step Nine
         // signerOne and signerTwo both have successfully generated GShares and they use
         // the sign combine function to generate their private omicron shares and
         // delta shares which they share to each other
@@ -300,7 +308,7 @@ describe('TSS ECDSA TESTS', function () {
 
         const MESSAGE = Buffer.from('TOO MANY SECRETS');
 
-        // Step Eight
+        // Step Ten
         // signerOne and signerTwo shares the delta share from each other
         // and finally signs the message using their private OShare
         // and delta share received from the other signer
@@ -325,12 +333,12 @@ describe('TSS ECDSA TESTS', function () {
           ),
         ];
 
-        // Step Nine
+        // Step Eleven
         // Construct the final signature
 
         const signature = MPC.constructSignature([signA, signB]);
 
-        // Step Ten
+        // Step Twelve
         // Verify signature
 
         const isValid = MPC.verify(MESSAGE, signature, hashGenerator(config[index].hash), config[index].shouldHash);

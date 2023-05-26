@@ -51,16 +51,20 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('A and B signing', async () => {
-      const [A_sign_challenge, B_sign_challenge] = await Promise.all([
-        MPC.appendChallenge(A_combine.xShare, A_combine.yShares[2]),
-        MPC.appendChallenge(B_combine.xShare, B_combine.yShares[1]),
+      const [B_x_share, A_x_share] = await Promise.all([
+        await MPC.appendChallenge(B_combine.xShare),
+        await MPC.appendChallenge(A_combine.xShare),
       ]);
 
-      const B_sign_share = await MPC.signShare(B_sign_challenge.xShare, A_sign_challenge.yShares[2]);
+      const A_challenge = { ntilde: A_x_share.ntilde, h1: A_x_share.h1, h2: A_x_share.h2 };
+
+      const A_y_share = await MPC.appendChallenge(B_combine.yShares[1], A_challenge);
+
+      const B_sign_share = await MPC.signShare(B_x_share, A_y_share);
 
       const A_sign_convert = await MPC.signConvert({
-        xShare: A_sign_challenge.xShare,
-        yShare: B_sign_challenge.yShares[1],
+        xShare: A_x_share,
+        yShare: A_combine.yShares[2],
         kShare: B_sign_share.kShare,
       });
 
@@ -98,16 +102,20 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('A and C signing', async () => {
-      const [A_sign_challenge, C_sign_challenge] = await Promise.all([
-        MPC.appendChallenge(A_combine.xShare, A_combine.yShares[3]),
-        MPC.appendChallenge(C_combine.xShare, C_combine.yShares[1]),
+      const [A_x_share, C_x_share] = await Promise.all([
+        MPC.appendChallenge(A_combine.xShare),
+        MPC.appendChallenge(C_combine.xShare),
       ]);
 
-      const C_sign_share = await MPC.signShare(C_sign_challenge.xShare, A_sign_challenge.yShares[3]);
+      const A_challenge = { ntilde: A_x_share.ntilde, h1: A_x_share.h1, h2: A_x_share.h2 };
+
+      const A_y_share = await MPC.appendChallenge(C_combine.yShares[1], A_challenge);
+
+      const C_sign_share = await MPC.signShare(C_x_share, A_y_share);
 
       const A_sign_convert = await MPC.signConvert({
-        xShare: A_sign_challenge.xShare,
-        yShare: C_sign_challenge.yShares[1],
+        xShare: A_x_share,
+        yShare: A_combine.yShares[3],
         kShare: C_sign_share.kShare,
       });
 
@@ -145,16 +153,20 @@ describe('BSC Transfer Builder', () => {
     });
 
     it('B and C signing', async () => {
-      const [B_sign_challenge, C_sign_challenge] = await Promise.all([
-        MPC.appendChallenge(B_combine.xShare, B_combine.yShares[3]),
-        MPC.appendChallenge(C_combine.xShare, C_combine.yShares[2]),
+      const [B_x_share, C_x_share] = await Promise.all([
+        MPC.appendChallenge(B_combine.xShare),
+        MPC.appendChallenge(C_combine.xShare),
       ]);
 
-      const C_sign_share = await MPC.signShare(C_sign_challenge.xShare, B_sign_challenge.yShares[3]);
+      const B_challenge = { ntilde: B_x_share.ntilde, h1: B_x_share.h1, h2: B_x_share.h2 };
+
+      const B_y_share = await MPC.appendChallenge(C_combine.yShares[2], B_challenge);
+
+      const C_sign_share = await MPC.signShare(C_x_share, B_y_share);
 
       const B_sign_convert = await MPC.signConvert({
-        xShare: B_sign_challenge.xShare,
-        yShare: C_sign_challenge.yShares[2],
+        xShare: B_x_share,
+        yShare: B_combine.yShares[3],
         kShare: C_sign_share.kShare,
       });
 
