@@ -640,6 +640,7 @@ export class Wallet implements IWallet {
       'minConfirms',
       'enforceMinConfirmsForChange',
       'targetAddress',
+      'txFormat',
 
       routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
       'numUnspentsToMake',
