@@ -36,10 +36,6 @@ import {
 
 const _5n = BigInt(5);
 
-function hasNtilde(share: XShare | YShare): share is XShareWithNtilde | YShareWithNtilde {
-  return 'ntilde' in share;
-}
-
 /**
  * ECDSA TSS implementation supporting 2:n Threshold
  */
@@ -285,17 +281,14 @@ export default class Ecdsa {
    * Appends a given range proof challenge to the shares previously created
    * by #keyCombine. Generates a new challenge if not provided.
    * @param {XShare | YShare} share Private xShare or yShare of the signing operation
-   * @param {EcdsaTypes.SerializedNtilde} challenge
+   * @param rangeProofChallenge - challenge generated via generateNtilde
    * @returns {KeyCombined} The share with amended challenge values
    */
   async appendChallenge<T extends XShare | YShare>(
     share: T,
-    challenge?: EcdsaTypes.SerializedNtilde
+    rangeProofChallenge: EcdsaTypes.SerializedNtilde
   ): Promise<T & EcdsaTypes.SerializedNtilde> {
-    if (!challenge) {
-      challenge = EcdsaTypes.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
-    }
-    const { ntilde, h1, h2 } = challenge;
+    const { ntilde, h1, h2 } = rangeProofChallenge;
     return {
       ...share,
       ntilde,
@@ -311,13 +304,8 @@ export default class Ecdsa {
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  async signShare(xShare: XShare | XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShareRT> {
+  async signShare(xShare: XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShareRT> {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
-
-    // Generate a challenge if ntilde is not present in the xShare.
-    if (!hasNtilde(xShare)) {
-      xShare = await this.appendChallenge(xShare);
-    }
 
     const k = Ecdsa.curve.scalarRandom();
     const rk = await randomPositiveCoPrimeTo(pk.n);
@@ -392,7 +380,7 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another
    * signer.
-   * @param {SignConvert}
+   * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
   async signConvert(shares: SignConvert): Promise<SignConvertRT> {

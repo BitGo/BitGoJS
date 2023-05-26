@@ -9,7 +9,6 @@ import {
   RequestType,
   SignatureShareType,
 } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
@@ -17,7 +16,6 @@ import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
 import nock = require('nock');
-import * as sinon from 'sinon';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -77,7 +75,6 @@ describe('Ecdsa tss helper functions tests', function () {
     backupGpgKeypair = gpgKeypairs[1];
     bitgoGpgKeypair = gpgKeypairs[2];
 
-    sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs));
   });
 
   after(function () {
@@ -283,7 +280,7 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const xShare = await mpc.appendChallenge(userKey.xShare);
+        const xShare = await mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
         const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 });
         const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
         userSignShare.should.have.properties(['wShare', 'kShare']);
@@ -310,7 +307,7 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        let xShare = await mpc.appendChallenge(userKey.xShare);
+        let xShare = await mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
         xShare = { ...xShare, i: 3 };
         const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], {
           ntilde: xShare.ntilde,

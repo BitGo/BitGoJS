@@ -588,7 +588,6 @@ describe('TSS Ecdsa Utils:', async function () {
       const serializedBitgoChallenge = mockChallengeB;
 
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
-
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
       await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {

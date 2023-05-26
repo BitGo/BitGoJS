@@ -1,5 +1,9 @@
+/**
+ * @prettier
+ */
+import { Hash, randomBytes } from 'crypto';
 import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -12,10 +16,6 @@ import {
   mockEKeyShare,
   mockFKeyShare,
 } from '../fixtures/ecdsa';
-import { Hash, randomBytes } from 'crypto';
-/**
- * @prettier
- */
 
 describe('TSS ECDSA TESTS', function () {
   const MPC = new Ecdsa();
@@ -190,7 +190,6 @@ describe('TSS ECDSA TESTS', function () {
 
   describe('ECDSA Signing', async function () {
     let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: string; shouldHash?: boolean }[];
-    let ntildeMock;
 
     before(() => {
       const [A, B, C, D, E, F, G, H] = keyShares;
@@ -214,15 +213,6 @@ describe('TSS ECDSA TESTS', function () {
         // Checks with derived subkey
         { signerOne: G, signerTwo: H },
       ];
-
-      ntildeMock = sinon.stub(EcdsaRangeProof, 'generateNtilde');
-      for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as EcdsaTypes.DeserializedNtildeWithProofs);
-      }
-    });
-
-    after(() => {
-      ntildeMock.reset();
     });
 
     for (let index = 0; index < 9; index++) {
@@ -236,11 +226,17 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Two
         // First signer generates their range proof challenge.
-        const signerOneXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(signerOne.xShare);
+        const signerOneXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(
+          signerOne.xShare,
+          EcdsaTypes.serializeNtilde(ntildes[index]),
+        );
 
         // Step Three
         //  Second signer generates their range proof challenge.
-        const signerTwoXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(signerTwo.xShare);
+        const signerTwoXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(
+          signerTwo.xShare,
+          EcdsaTypes.serializeNtilde(ntildes[index + 1]),
+        );
         const signerTwoChallenge = { ntilde: signerTwoXShare.ntilde, h1: signerTwoXShare.h1, h2: signerTwoXShare.h2 };
 
         // Step Four
