@@ -7,7 +7,13 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, EcdsaTypes, randomPositiveCoPrimeTo, hexToBigInt } from '@bitgo/sdk-lib-mpc';
+import {
+  EcdsaRangeProof,
+  EcdsaTypes,
+  randomPositiveCoPrimeTo,
+  hexToBigInt,
+  minModulusBitLength,
+} from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -71,9 +77,9 @@ export default class Ecdsa {
     // Generate additively homomorphic encryption key.
     let paillierKeyPair: paillierBigint.KeyPair;
     if (!sync) {
-      paillierKeyPair = await paillierBigint.generateRandomKeys(3072, true);
+      paillierKeyPair = await paillierBigint.generateRandomKeys(minModulusBitLength, true);
     } else {
-      paillierKeyPair = paillierBigint.generateRandomKeysSync(3072, true);
+      paillierKeyPair = paillierBigint.generateRandomKeysSync(minModulusBitLength, true);
     }
     const { publicKey, privateKey } = paillierKeyPair;
     // Accept a 64 byte seed and create an extended private key from that seed
@@ -343,7 +349,7 @@ export default class Ecdsa {
     const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
     const proof = await EcdsaRangeProof.prove(
       Ecdsa.curve,
-      3072,
+      minModulusBitLength,
       pk,
       {
         ntilde: hexToBigInt(ntildeb),
@@ -424,7 +430,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildea,
@@ -455,7 +461,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildea,
@@ -518,7 +524,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verify(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildeb,
@@ -552,7 +558,7 @@ export default class Ecdsa {
       const gx = Ecdsa.curve.basePointMult(g);
       let proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
-        3072,
+        minModulusBitLength,
         pka,
         {
           ntilde: ntildea,
@@ -596,7 +602,7 @@ export default class Ecdsa {
       const wx = Ecdsa.curve.basePointMult(w);
       proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
-        3072,
+        minModulusBitLength,
         pka,
         {
           ntilde: ntildea,

@@ -1,5 +1,5 @@
 import 'should';
-import { OpenSSL } from '../../src';
+import { OpenSSL, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bitLength, isProbablyPrime } from 'bigint-crypto-utils';
 import { NODE_MAJOR_VERSION } from '../node.utils';
 
@@ -7,7 +7,7 @@ describe('openssl', function () {
   it('should throw an error if module is not initialized', async function () {
     const openssl = new OpenSSL();
     await openssl
-      .generateSafePrime(3072)
+      .generateSafePrime(minModulusBitLength)
       .should.be.rejectedWith('The OpenSSl class is not initialized! Please call OpenSSL.init().');
   });
 
