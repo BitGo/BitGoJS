@@ -189,7 +189,8 @@ export const coins = CoinMap.fromCoins([
     'Bitcoin SV',
     Networks.main.bitcoinSV,
     UnderlyingAsset.BSV,
-    BaseUnit.BTC
+    BaseUnit.BTC,
+    [CoinFeature.DEPRECATED, ...UtxoCoin.DEFAULT_FEATURES]
   ),
   utxo(
     '7cb81518-85d7-400f-960e-7bc00b3bfa62',
@@ -197,7 +198,8 @@ export const coins = CoinMap.fromCoins([
     'Testnet Bitcoin SV',
     Networks.test.bitcoinSV,
     UnderlyingAsset.BSV,
-    BaseUnit.BTC
+    BaseUnit.BTC,
+    [CoinFeature.DEPRECATED, ...UtxoCoin.DEFAULT_FEATURES]
   ),
   utxo(
     '5c1691c5-c9cc-49ed-abe0-c433dab2edaa',
