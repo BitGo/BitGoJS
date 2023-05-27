@@ -15,10 +15,11 @@ export function convertHexArrToBigIntArr(values: string[]): bigint[] {
 /**
  * Returns a hex string array from a bigint array
  * @param values
+ * @param hexLength - length to pad each big int number too
  */
-export function convertBigIntArrToHexArr(values: bigint[]): string[] {
+export function convertBigIntArrToHexArr(values: bigint[], hexLength?: number): string[] {
   return values.map((value) => {
-    return bigIntToHex(value);
+    return bigIntToHex(value, hexLength);
   });
 }
 

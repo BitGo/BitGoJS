@@ -5,7 +5,7 @@ import {
   generateSafePrimes,
   verifyNtildeProof,
 } from '../../../../src/tss/ecdsa/rangeproof';
-import { OpenSSL } from '../../../../src/openssl';
+import { OpenSSL } from '../../../../src';
 
 describe('h1H2DiscreteLogProofs', function () {
   let switchPrime = false;
