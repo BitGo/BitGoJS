@@ -14,8 +14,6 @@ import {
   verifySignatureWithUnspent,
 } from '../../../src/bitgo';
 
-import { testutil } from '../../../src';
-
 import { getKeyTriple, verifyFullySignedSignatures } from '../../../src/testutil';
 import {
   createTapInternalKey,
@@ -27,7 +25,6 @@ import {
   musig2PartialSign,
   assertPsbtMusig2Nonces,
   Musig2NonceStore,
-  isTransactionWithKeyPathSpendInput,
 } from '../../../src/bitgo/Musig2';
 import { scriptTypes2Of3, toXOnlyPublicKey } from '../../../src/bitgo/outputScripts';
 import {
@@ -141,7 +138,7 @@ describe('p2trMusig2', function () {
 
       psbt.finalizeAllInputs();
       assert.throws(
-        () => parsePsbtInput(psbt, 0),
+        () => parsePsbtInput(psbt.data.inputs[0]),
         (e) => e.message === 'Finalized PSBT parsing is not supported'
       );
 
@@ -714,96 +711,6 @@ describe('p2trMusig2', function () {
         (e) => e.message === `Invalid nonce keydata tapOutputKey`
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
-    });
-
-    describe('isTransactionWithKeyPathSpendInput', function () {
-      describe('transaction input', function () {
-        it('taprootKeyPath inputs successfully triggers', function () {
-          const psbt = testutil.constructPsbt(
-            [
-              { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
-              { scriptType: 'p2sh', value: BigInt(1e8) },
-            ],
-            [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
-            network,
-            rootWalletKeys,
-            'fullsigned'
-          );
-          assert(psbt.validateSignaturesOfAllInputs());
-          psbt.finalizeAllInputs();
-          const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
-
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), true);
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), true);
-        });
-
-        it('no taprootKeyPath inputs successfully does not trigger', function () {
-          const psbt = testutil.constructPsbt(
-            [
-              { scriptType: 'p2trMusig2', value: BigInt(1e8) },
-              { scriptType: 'p2sh', value: BigInt(1e8) },
-            ],
-            [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
-            network,
-            rootWalletKeys,
-            'fullsigned'
-          );
-          assert(psbt.validateSignaturesOfAllInputs());
-          psbt.finalizeAllInputs();
-          const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
-
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
-        });
-
-        it('unsigned inputs successfully fail', function () {
-          const psbt = testutil.constructPsbt(
-            [
-              { scriptType: 'p2wsh', value: BigInt(1e8) },
-              { scriptType: 'p2sh', value: BigInt(1e8) },
-            ],
-            [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
-            network,
-            rootWalletKeys,
-            'unsigned'
-          );
-          const tx = psbt.getUnsignedTx();
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
-        });
-      });
-
-      describe('psbt input', function () {
-        it('psbt with taprootKeyPathInputs successfully triggers', function () {
-          const psbt = testutil.constructPsbt(
-            [
-              { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
-              { scriptType: 'p2sh', value: BigInt(1e8) },
-            ],
-            [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
-            network,
-            rootWalletKeys,
-            'unsigned'
-          );
-
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), true);
-        });
-
-        it('psbt without taprootKeyPathInputs successfully does not trigger', function () {
-          const psbt = testutil.constructPsbt(
-            [
-              { scriptType: 'p2wsh', value: BigInt(1e8) },
-              { scriptType: 'p2sh', value: BigInt(1e8) },
-            ],
-            [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
-            network,
-            rootWalletKeys,
-            'halfsigned'
-          );
-
-          assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), false);
-        });
-      });
     });
   });
 

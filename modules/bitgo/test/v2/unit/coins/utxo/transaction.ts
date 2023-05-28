@@ -235,11 +235,9 @@ function run<TNumber extends number | bigint = number>(
       const psbt = utxolib.bitgo.createPsbtFromHex(tx.txHex, coin.network);
       const unspents = getUnspentsForPsbt();
       psbt.data.inputs.forEach((input, index) => {
-        const parsedInput = utxolib.bitgo.parsePsbtInput(psbt, index);
-        assert.ok(parsedInput);
         const unspent = unspents[index];
         if (!utxolib.bitgo.isWalletUnspent(unspent)) {
-          assert.ok(parsedInput.scriptType, 'p2shP2pk');
+          assert.ok(utxolib.bitgo.getPsbtInputScriptType(input), 'p2shP2pk');
           return;
         }
         const pubkeys = walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys;
