@@ -128,20 +128,22 @@ export function validatePsbtParsing(
       return;
     }
     const scriptType = scriptTypeForChain(u.chain);
-    const psbtParsed = parsePsbtInput(psbt, i);
 
     if (signatureTarget === 'unsigned') {
       if (scriptType === 'p2tr') {
-        assert.deepStrictEqual(psbtParsed, undefined);
+        assert.throws(
+          () => parsePsbtInput(psbt.data.inputs[i]),
+          (e) => e.message === 'could not parse input'
+        );
       } else {
-        assert.ok(psbtParsed);
+        const psbtParsed = parsePsbtInput(psbt.data.inputs[i]);
         assert.deepStrictEqual(psbtParsed.scriptType, scriptType);
         validateScript(psbtParsed, undefined);
         validatePublicKeys(psbtParsed, undefined);
         validateSignature(psbtParsed, undefined);
       }
     } else {
-      assert.ok(psbtParsed);
+      const psbtParsed = parsePsbtInput(psbt.data.inputs[i]);
       assert.strictEqual(psbtParsed.scriptType, scriptType === 'p2tr' ? 'taprootScriptPathSpend' : scriptType);
       assert.ok(psbtParsed.scriptType !== 'p2shP2pk');
       const txParsed = parseSignatureScript2Of3(tx.ins[i]);

@@ -74,14 +74,10 @@ export function signAndVerifyPsbt(
       const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
       outputIds.push(outputId);
 
-      const parsedInput = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
-      parsedInputs.push(parsedInput?.scriptType);
+      const scriptType = utxolib.bitgo.getPsbtInputScriptType(input);
+      parsedInputs.push(scriptType);
 
-      if (!parsedInput) {
-        return new InputSigningError<bigint>(inputIndex, { id: outputId }, 'could not parse input');
-      }
-
-      if (parsedInput.scriptType === 'p2shP2pk') {
+      if (scriptType === 'p2shP2pk') {
         debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, psbt.data.inputs.length);
         return;
       }

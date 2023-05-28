@@ -83,7 +83,9 @@ const testDimensionsFromPsbt = (
       const signedPsbt = constructPsbt(keys, inputTypes, outputTypes, 'fullysigned');
 
       inputTypes.forEach((input: any, i: number) =>
-        Dimensions.fromPsbtInput(signedPsbt, i).should.eql(Dimensions.sum(getInputDimensionsForUnspentType(input)))
+        Dimensions.fromPsbtInput(signedPsbt.data.inputs[i]).should.eql(
+          Dimensions.sum(getInputDimensionsForUnspentType(input))
+        )
       );
     });
   });

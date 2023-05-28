@@ -31,6 +31,7 @@ import {
 import { mockWalletUnspent } from '../../../src/testutil';
 import { bip32, networks } from '../../../src';
 import { BIP32Interface } from 'bip32';
+import { isPsbtInputFinalized } from '../../../src/bitgo/PsbtUtil';
 
 export const network = networks.bitcoin;
 const outputType = 'p2trMusig2';
@@ -226,8 +227,8 @@ export function validateFinalizedInput(
   unspent: WalletUnspent<bigint>,
   spendType?: 'keyPath' | 'scriptPath'
 ): void {
-  assert.ok(psbt.isInputFinalized(index));
   const input = psbt.data.inputs[index];
+  assert.ok(isPsbtInputFinalized(input));
   if (scriptTypeForChain(unspent.chain) === 'p2trMusig2' && spendType === 'keyPath') {
     assert.strictEqual(input.finalScriptWitness?.length, 66);
   }
@@ -239,8 +240,7 @@ export function validateParsedTaprootKeyPathPsbt(
   index: number,
   signature: 'unsigned' | 'halfsigned' | 'fullysigned'
 ): void {
-  const parsed = parsePsbtInput(psbt, 0);
-  assert.ok(parsed);
+  const parsed = parsePsbtInput(psbt.data.inputs[0]);
   assert.ok(parsed.scriptType === 'taprootKeyPathSpend');
   assert.strictEqual(parsed.pubScript.length, 34);
   assert.strictEqual(parsed.publicKeys.length, 1);
@@ -268,8 +268,7 @@ export function validateParsedTaprootScriptPathPsbt(
   signature: 'unsigned' | 'halfsigned' | 'fullysigned'
 ): void {
   const input = psbt.data.inputs[index];
-  const parsed = parsePsbtInput(psbt, 0);
-  assert.ok(parsed);
+  const parsed = parsePsbtInput(psbt.data.inputs[0]);
   assert.ok(parsed.scriptType === 'taprootScriptPathSpend');
   assert.ok(input.tapLeafScript);
   assert.ok(parsed.pubScript.equals(input.tapLeafScript[0].script));
