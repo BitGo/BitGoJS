@@ -714,6 +714,70 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return 0.015;
   }
 
+  private getPsbtTxInputs(txHex: string) {
+    const psbt = bitgo.createPsbtFromHex(txHex, this.network);
+    const txInputs = psbt.txInputs;
+    return psbt.data.inputs.map((input, index) => {
+      let address: string;
+      let value: bigint;
+      if (input.witnessUtxo) {
+        address = utxolib.address.fromOutputScript(input.witnessUtxo.script, this.network);
+        value = input.witnessUtxo.value;
+      } else if (input.nonWitnessUtxo) {
+        const tx = bitgo.createTransactionFromBuffer<bigint>(input.nonWitnessUtxo, this.network, {
+          amountType: 'bigint',
+        });
+        const prevTxOutputIndex = txInputs[index].index;
+        address = utxolib.address.fromOutputScript(tx.outs[prevTxOutputIndex].script, this.network);
+        value = tx.outs[prevTxOutputIndex].value;
+      } else {
+        throw new Error('psbt input is missing both witnessUtxo and nonWitnessUtxo');
+      }
+      return { address, value, valueString: value.toString() };
+    });
+  }
+
+  private async getTxInputs<TNumber extends number | bigint>(
+    txPrebuild: TransactionPrebuild<TNumber>,
+    disableNetworking: boolean,
+    reqId?: IRequestTracer
+  ): Promise<{ address: string; value: TNumber; valueString: string }[]> {
+    if (!txPrebuild.txHex) {
+      throw new Error(`txPrebuild.txHex not set`);
+    }
+    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+    const transactionCache = {};
+    return await Promise.all(
+      transaction.ins.map(async (currentInput): Promise<{ address: string; value: TNumber; valueString: string }> => {
+        const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
+        const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
+        if (txHex) {
+          const localTx = this.createTransactionFromHex<TNumber>(txHex);
+          if (localTx.getId() !== transactionId) {
+            throw new Error('input transaction hex does not match id');
+          }
+          const currentOutput = localTx.outs[currentInput.index];
+          const address = utxolib.address.fromOutputScript(currentOutput.script, this.network);
+          return {
+            address,
+            value: currentOutput.value,
+            valueString: currentOutput.value.toString(),
+          };
+        } else if (!transactionCache[transactionId]) {
+          if (disableNetworking) {
+            throw new Error('attempting to retrieve transaction details externally with networking disabled');
+          }
+          if (reqId) {
+            this.bitgo.setRequestTracer(reqId);
+          }
+          transactionCache[transactionId] = await this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
+        }
+        const transactionDetails = transactionCache[transactionId];
+        return transactionDetails.outputs[currentInput.index];
+      })
+    );
+  }
+
   /**
    * Verify that a transaction prebuild complies with the original intention
    *
@@ -731,20 +795,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    const { txParams, txPrebuild: txPrebuildObj, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
-    let txPrebuild: TransactionPrebuild<TNumber>;
-
-    // TODO: BG-77743 Add native psbt support - we make a deep copy of the txPrebuild object here to avoid
-    // modifying the original object so that we can still use it later on in the function
-    if (txPrebuildObj.txHex && bitgo.isPsbt(Buffer.from(txPrebuildObj.txHex, 'hex'))) {
-      if (txPrebuildObj.txInfo?.unspents) {
-        throw new Error('should not have unspents in txInfo for psbt');
-      }
-
-      const psbt = bitgo.createPsbtFromHex(txPrebuildObj.txHex, this.network);
-      txPrebuild = { ...txPrebuildObj, txHex: psbt.getUnsignedTx().toHex() };
-    } else {
-      txPrebuild = txPrebuildObj;
+    const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+    const isPsbt = txPrebuild.txHex && bitgo.isPsbt(txPrebuild.txHex);
+    if (isPsbt && txPrebuild.txInfo?.unspents) {
+      throw new Error('should not have unspents in txInfo for psbt');
     }
 
     const disableNetworking = !!verification.disableNetworking;
@@ -839,38 +893,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (!txPrebuild.txHex) {
       throw new Error(`txPrebuild.txHex not set`);
     }
-    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
-    const transactionCache = {};
-    const inputs = await Promise.all(
-      transaction.ins.map(async (currentInput) => {
-        const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
-        const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
-        if (txHex) {
-          const localTx = this.createTransactionFromHex<TNumber>(txHex);
-          if (localTx.getId() !== transactionId) {
-            throw new Error('input transaction hex does not match id');
-          }
-          const currentOutput = localTx.outs[currentInput.index];
-          const address = utxolib.address.fromOutputScript(currentOutput.script, this.network);
-          return {
-            address,
-            value: currentOutput.value,
-            valueString: currentOutput.value.toString(),
-          };
-        } else if (!transactionCache[transactionId]) {
-          if (disableNetworking) {
-            throw new Error('attempting to retrieve transaction details externally with networking disabled');
-          }
-          if (reqId) {
-            this.bitgo.setRequestTracer(reqId);
-          }
-          transactionCache[transactionId] = await this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
-        }
-        const transactionDetails = transactionCache[transactionId];
-        return transactionDetails.outputs[currentInput.index];
-      })
-    );
-
+    const inputs = isPsbt
+      ? this.getPsbtTxInputs(txPrebuild.txHex).map((v) => ({ ...v, value: bitgo.toTNumber(v.value, this.amountType) }))
+      : await this.getTxInputs(txPrebuild, disableNetworking, reqId);
     // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field
     const inputAmount = inputs.reduce(
       (sum: bigint, i) => sum + BigInt(this.amountType === 'bigint' ? i.valueString : i.value),
@@ -1203,46 +1228,26 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     });
   }
 
-  /**
-   * Decompose a raw transaction into useful information, such as the total amounts,
-   * change amounts, and transaction outputs.
-   * @param params
-   */
-  async explainTransaction<TNumber extends number | bigint = number>(
+  private explainCommon<TNumber extends number | bigint>(
+    tx: bitgo.UtxoTransaction<TNumber>,
     params: ExplainTransactionOptions<TNumber>
-  ): Promise<TransactionExplanation> {
-    const txHex = _.get(params, 'txHex');
-    if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
-      throw new Error('invalid transaction hex, must be a valid hex string');
-    }
+  ) {
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
+    let spendAmount = BigInt(0);
+    let changeAmount = BigInt(0);
+    const changeOutputs: Output[] = [];
+    const outputs: Output[] = [];
 
-    let transaction;
-    try {
-      transaction = this.createTransactionFromHex(txHex);
-    } catch (e) {
-      throw new Error('failed to parse transaction hex');
-    }
+    const { changeAddresses = [] } = params.txInfo ?? {};
 
-    const id = transaction.getId();
-    let spendAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
-    let changeAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
-    const explanation = {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
-      id: id,
-      outputs: [] as Output[],
-      changeOutputs: [] as Output[],
-    } as TransactionExplanation;
-
-    const { changeAddresses = [], unspents = [] } = params.txInfo ?? {};
-
-    transaction.outs.forEach((currentOutput) => {
+    tx.outs.forEach((currentOutput) => {
       const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
-      const currentAmount = currentOutput.value;
+      const currentAmount = BigInt(currentOutput.value);
 
       if (changeAddresses.includes(currentAddress)) {
         // this is change
         changeAmount += currentAmount;
-        explanation.changeOutputs.push({
+        changeOutputs.push({
           address: currentAddress,
           amount: currentAmount.toString(),
         });
@@ -1250,57 +1255,131 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       spendAmount += currentAmount;
-      explanation.outputs.push({
+      outputs.push({
         address: currentAddress,
         amount: currentAmount.toString(),
       });
     });
-    explanation.outputAmount = spendAmount.toString();
-    explanation.changeAmount = changeAmount.toString();
 
-    // add fee info if available
+    const outputDetails = {
+      outputAmount: spendAmount.toString(),
+      changeAmount: changeAmount.toString(),
+      outputs,
+      changeOutputs,
+    };
+
+    let fee: string | undefined;
+    let locktime: number | undefined;
+
     if (params.feeInfo) {
-      explanation.displayOrder.push('fee');
-      explanation.fee = params.feeInfo;
+      displayOrder.push('fee');
+      fee = params.feeInfo;
     }
 
-    if (_.isInteger(transaction.locktime) && transaction.locktime > 0) {
-      explanation.locktime = transaction.locktime;
-      explanation.displayOrder.push('locktime');
+    if (Number.isInteger(tx.locktime) && tx.locktime > 0) {
+      displayOrder.push('locktime');
+      locktime = tx.locktime;
     }
 
-    const prevOutputs = params.txInfo?.unspents?.map((u) => toOutput<TNumber>(u, this.network));
+    return { displayOrder, id: tx.getId(), ...outputDetails, fee, locktime };
+  }
 
-    // if keys are provided, prepare the keys for input signature checking
+  private getRootWalletKeys<TNumber extends number | bigint = number>(params: ExplainTransactionOptions<TNumber>) {
     const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
-    const walletKeys = keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
+    return keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
+  }
+
+  private getPsbtInputSignaturesCount<TNumber extends number | bigint>(
+    psbt: bitgo.UtxoPsbt,
+    params: ExplainTransactionOptions<TNumber>
+  ) {
+    const rootWalletKeys = this.getRootWalletKeys(params);
+    return rootWalletKeys
+      ? bitgo.getSignatureValidationArrayPsbt(psbt, rootWalletKeys).map((sv) => sv[1].filter((v) => v).length)
+      : (Array(psbt.data.inputs.length) as number[]).fill(0);
+  }
+
+  private async explainPsbt<TNumber extends number | bigint>(
+    params: ExplainTransactionOptions<TNumber>
+  ): Promise<TransactionExplanation> {
+    const { txHex } = params;
+    let psbt: bitgo.UtxoPsbt;
+    try {
+      psbt = bitgo.createPsbtFromHex(txHex, this.network);
+    } catch (e) {
+      throw new Error('failed to parse psbt hex');
+    }
+    const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
+    const common = this.explainCommon(tx, params);
+    const inputSignaturesCount = this.getPsbtInputSignaturesCount(psbt, params);
+    return {
+      ...common,
+      inputSignatures: inputSignaturesCount,
+      signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
+    } as TransactionExplanation;
+  }
+
+  private getTxInputSignaturesCount<TNumber extends number | bigint>(
+    tx: bitgo.UtxoTransaction<TNumber>,
+    params: ExplainTransactionOptions<TNumber>
+  ) {
+    const prevOutputs = params.txInfo?.unspents?.map((u) => toOutput<TNumber>(u, this.network));
+    const rootWalletKeys = this.getRootWalletKeys(params);
+    const { unspents = [] } = params.txInfo ?? {};
 
     // get the number of signatures per input
-    const inputSignatureCounts = transaction.ins.map((input, idx): number => {
-      if (unspents.length !== transaction.ins.length) {
+    return tx.ins.map((input, idx): number => {
+      if (unspents.length !== tx.ins.length) {
         return 0;
       }
-
       if (!prevOutputs) {
         throw new Error(`invalid state`);
       }
-
-      if (!walletKeys) {
+      if (!rootWalletKeys) {
         // no pub keys or incorrect number of pub keys
         return 0;
       }
-
       try {
-        return verifySignatureWithUnspent<TNumber>(transaction, idx, unspents, walletKeys).filter((v) => v).length;
+        return verifySignatureWithUnspent<TNumber>(tx, idx, unspents, rootWalletKeys).filter((v) => v).length;
       } catch (e) {
         // some other error occurred and we can't validate the signatures
         return 0;
       }
     });
+  }
 
-    explanation.inputSignatures = inputSignatureCounts;
-    explanation.signatures = _.max(inputSignatureCounts) as number;
-    return explanation;
+  private async explainTx<TNumber extends number | bigint>(
+    params: ExplainTransactionOptions<TNumber>
+  ): Promise<TransactionExplanation> {
+    const { txHex } = params;
+    let tx;
+    try {
+      tx = this.createTransactionFromHex(txHex);
+    } catch (e) {
+      throw new Error('failed to parse transaction hex');
+    }
+    const common = this.explainCommon(tx, params);
+    const inputSignaturesCount = this.getTxInputSignaturesCount(tx, params);
+    return {
+      ...common,
+      inputSignatures: inputSignaturesCount,
+      signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
+    } as TransactionExplanation;
+  }
+
+  /**
+   * Decompose a raw psbt/transaction into useful information, such as the total amounts,
+   * change amounts, and transaction outputs.
+   * @param params
+   */
+  async explainTransaction<TNumber extends number | bigint = number>(
+    params: ExplainTransactionOptions<TNumber>
+  ): Promise<TransactionExplanation> {
+    const { txHex } = params;
+    if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
+      throw new Error('invalid transaction hex, must be a valid hex string');
+    }
+    return utxolib.bitgo.isPsbt(txHex) ? this.explainPsbt(params) : this.explainTx(params);
   }
 
   /**

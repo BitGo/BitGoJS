@@ -6,9 +6,10 @@ import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromTransaction } from '../transaction';
 import { BIP32Interface } from 'bip32';
+import * as bs58check from 'bs58check';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
 import { checkForInput } from 'bip174/src/lib/utils';
-import { PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
+import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
 import {
   getLeafVersion,
   calculateScriptPathLevel,
@@ -25,7 +26,7 @@ import {
   parseSignatureScript,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
-import { isTuple } from '../types';
+import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { script as bscript, TxInput } from 'bitcoinjs-lib';
 import { opcodes } from '../../index';
@@ -92,6 +93,11 @@ interface WalletSigner {
   walletKey: BIP32Interface;
   rootKey: BIP32Interface;
 }
+
+/**
+ * psbt input index and its user, backup, bitgo signatures status
+ */
+export type SignatureValidation = [index: number, sigTriple: Triple<boolean>];
 
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
   const parsedPublicKeys = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
@@ -411,7 +417,7 @@ export function getStrictSignatureCount(input: TxInput | PsbtInputType): 0 | 1 |
 }
 
 /**
- * @returns parse input and get signature count for all inputs.
+ * @returns strictly parse input and get signature count for all inputs.
  * 0=unsigned, 1=half-signed or 2=fully-signed
  */
 export function getStrictSignatureCounts(
@@ -456,5 +462,81 @@ export function isTransactionWithKeyPathSpendInput(
       return false;
     }
     return parseSignatureScript(input).scriptType === 'taprootKeyPathSpend';
+  });
+}
+
+/**
+ * Set the RootWalletKeys as the globalXpubs on the psbt
+ *
+ * We do all the matching of the (tap)bip32Derivations masterFingerprint to the fingerprint of the
+ * extendedPubkey.
+ */
+export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): void {
+  const xPubs = rootWalletKeys.triple.map(
+    (bip32): GlobalXpub => ({
+      extendedPubkey: bs58check.decode(bip32.toBase58()),
+      masterFingerprint: bip32.fingerprint,
+      // TODO: BG-73797 - bip174 currently requires m prefix for this to be a valid globalXpub
+      path: 'm',
+    })
+  );
+  psbt.updateGlobal({ globalXpub: xPubs });
+}
+
+/** Since the globalXpub ordering on a psbt is not conserved during (de)serialization, we must
+ * reorder the signatureValidationArray so that it corresponds to the correct key. We do this
+ * matching based on the fingerprints of the rootWalletKeys to the masterFingerprint in the
+ * globalXpub
+ *
+ * @returns the relative ordering of the RootWalletKeys in the globalXpubs
+ */
+export function getReorderIdxsOfPsbtSigValArray(
+  globalXpubs: { extendedPubkey: Buffer; masterFingerprint: Buffer; path: string }[],
+  rootWalletKeys: RootWalletKeys
+): Triple<number> {
+  function idxInBufferArray(arr: Buffer[], ele: Buffer): number {
+    for (let i = 0; i < arr.length; i++) {
+      if (ele.equals(arr[i])) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  if (globalXpubs.length !== 3) {
+    throw new Error('There must be 3 globalXpubs');
+  }
+  if (new Set(globalXpubs.map((b) => b.masterFingerprint.toString('hex'))).size !== globalXpubs.length) {
+    throw new Error('There must not be duplicates of globalXpub masterFingerprints');
+  }
+  const bufferList = globalXpubs.map((g) => g.masterFingerprint);
+  return rootWalletKeys.triple.map((bip32, i) => {
+    const idx = idxInBufferArray(bufferList, bip32.fingerprint);
+    const keyName = ['user', 'backup', 'bitgo'][i];
+    if (idx === -1) {
+      throw new Error(`could not find the ${keyName} key in the globalXpubs`);
+    }
+    if (bip32.toBase58() !== bs58check.encode(globalXpubs[idx].extendedPubkey)) {
+      throw new Error(`xpub of ${keyName} globalXpub does not match rootWalletKeys`);
+    }
+    return idx;
+  }) as Triple<number>;
+}
+
+/**
+ * validates signatures for each 2 of 3 input against user, backup, bitgo keys derived from rootWalletKeys.
+ * @returns array of input index and its [is valid user sig exist, is valid backup sig exist, is valid user bitgo exist]
+ * For p2shP2pk input, [false, false, false] is returned since it is not a 2 of 3 sig input.
+ */
+export function getSignatureValidationArrayPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): SignatureValidation[] {
+  if (!psbt.data.globalMap.globalXpub) {
+    throw new Error('psbt must have globalXpubs');
+  }
+
+  const reorderIndexes = getReorderIdxsOfPsbtSigValArray(psbt.data.globalMap.globalXpub, rootWalletKeys);
+  return psbt.data.inputs.map((input, i) => {
+    const scriptType = getPsbtInputScriptType(input);
+    const sigValArrayForInput = scriptType === 'p2shP2pk' ? [false, false, false] : psbt.getSignatureValidationArray(i);
+    return [i, reorderIndexes.map((j) => sigValArrayForInput[j])] as SignatureValidation;
   });
 }

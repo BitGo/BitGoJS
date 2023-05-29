@@ -1,5 +1,7 @@
 import * as assert from 'assert';
 
+import { BIP32Interface } from 'bip32';
+import * as bs58check from 'bs58check';
 import { Network, getNetworkName, networks, getNetworkList, testutil } from '../../../src';
 import {
   getExternalChainCode,
@@ -16,14 +18,21 @@ import {
   getInternalChainCode,
   getStrictSignatureCounts,
   UtxoTransaction,
+  RootWalletKeys,
   getStrictSignatureCount,
   isTransactionWithKeyPathSpendInput,
+  getReorderIdxsOfPsbtSigValArray,
+  addXpubsToPsbt,
+  getSignatureValidationArrayPsbt,
 } from '../../../src/bitgo';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
 import {
   constructPsbt,
   getDefaultWalletKeys,
+  getKey,
+  getKeyTriple,
+  InputScriptType,
   inputScriptTypes,
   mockReplayProtectionUnspent,
   outputScriptTypes,
@@ -35,6 +44,7 @@ import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtPar
 import { mockUnspents } from '../../../src/testutil/mock';
 import { constructTxnBuilder, txnInputScriptTypes, txnOutputScriptTypes } from '../../../src/testutil/transaction';
 import { getPsbtInputSignatureCount, isPsbt } from '../../../src/bitgo/PsbtUtil';
+import { Triple } from '../../../src/bitgo/types';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -53,6 +63,62 @@ function getScriptTypes2Of3() {
 }
 
 describe('signature utils', function () {
+  const neutratedRootWalletKeys = new RootWalletKeys(
+    rootWalletKeys.triple.map((bip32) => bip32.neutered()) as Triple<BIP32Interface>,
+    rootWalletKeys.derivationPrefixes
+  );
+  function getSigValidArray(scriptType: InputScriptType, sign: SignatureTargetType): Triple<boolean> {
+    if (scriptType === 'p2shP2pk' || sign === 'unsigned') {
+      return [false, false, false];
+    }
+    if (sign === 'halfsigned') {
+      return [true, false, false];
+    }
+    return scriptType === 'p2trMusig2' ? [true, true, false] : [true, false, true];
+  }
+
+  it('psbt', function () {
+    const inputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
+    const outputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
+      let psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      addXpubsToPsbt(psbt, neutratedRootWalletKeys);
+      psbt = createPsbtFromHex(psbt.toHex(), network);
+
+      const sigValidations = getSignatureValidationArrayPsbt(psbt, neutratedRootWalletKeys);
+      const counts = getStrictSignatureCounts(psbt);
+      const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
+
+      assert.strictEqual(counts.length, psbt.data.inputs.length);
+      assert.strictEqual(countsFromInputs.length, psbt.data.inputs.length);
+      psbt.data.inputs.forEach((input, inputIndex) => {
+        const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
+        assert.strictEqual(getPsbtInputSignatureCount(input), expectedCount);
+        assert.strictEqual(getStrictSignatureCount(input), expectedCount);
+        assert.strictEqual(counts[inputIndex], expectedCount);
+        assert.strictEqual(countsFromInputs[inputIndex], expectedCount);
+        const sigValid = sigValidations.find((sv) => sv[0] === inputIndex);
+        assert.ok(sigValid);
+        const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
+        sigValid[1].forEach((sv, i) => assert.strictEqual(sv, expectedSigValid[i]));
+      });
+
+      if (sign === 'fullsigned') {
+        const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
+        const counts = getStrictSignatureCounts(tx);
+        const countsFromIns = getStrictSignatureCounts(tx.ins);
+
+        tx.ins.forEach((input, inputIndex) => {
+          const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' ? 1 : signatureCount;
+          assert.strictEqual(getStrictSignatureCount(input), expectedCount);
+          assert.strictEqual(counts[inputIndex], expectedCount);
+          assert.strictEqual(countsFromIns[inputIndex], expectedCount);
+        });
+      }
+    });
+  });
+
   it('tx', function () {
     const inputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
     const outputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
@@ -60,51 +126,84 @@ describe('signature utils', function () {
     (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
       const txb = constructTxnBuilder(inputs, outputs, network, rootWalletKeys, sign);
       const tx = sign === 'fullsigned' ? txb.build() : txb.buildIncomplete();
+
       const counts = getStrictSignatureCounts(tx);
       const countsFromIns = getStrictSignatureCounts(tx.ins);
+
       assert.strictEqual(counts.length, tx.ins.length);
       assert.strictEqual(countsFromIns.length, tx.ins.length);
       tx.ins.forEach((input, inputIndex) => {
-        // p2shP2pk is at 4th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 4 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-        assert.strictEqual(counts[inputIndex], expectedSigCount);
-        assert.strictEqual(countsFromIns[inputIndex], expectedSigCount);
+        const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
+        assert.strictEqual(getStrictSignatureCount(input), expectedCount);
+        assert.strictEqual(counts[inputIndex], expectedCount);
+        assert.strictEqual(countsFromIns[inputIndex], expectedCount);
       });
     });
   });
+});
 
-  it('psbt', function () {
-    const inputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-    const outputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+describe('getReorderIdxsOfPsbtSigValArray', function () {
+  const rootWalletKeys = new RootWalletKeys(getKeyTriple('gabagool'));
+  const globalXpubs = rootWalletKeys.triple.map((bip32) => ({
+    extendedPubkey: bs58check.decode(bip32.toBase58()),
+    masterFingerprint: bip32.fingerprint,
+    path: 'm',
+  }));
 
-    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      const counts = getStrictSignatureCounts(psbt);
-      const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
-      assert.strictEqual(counts.length, psbt.data.inputs.length);
-      assert.strictEqual(countsFromInputs.length, psbt.data.inputs.length);
-      psbt.data.inputs.forEach((input, inputIndex) => {
-        // p2shP2pk is at 6th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 6 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getPsbtInputSignatureCount(input), expectedSigCount);
-        assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-        assert.strictEqual(counts[inputIndex], expectedSigCount);
-        assert.strictEqual(countsFromInputs[inputIndex], expectedSigCount);
-      });
+  it('should fail if there are not 3 masterFingerprints', function () {
+    assert.throws(
+      () => getReorderIdxsOfPsbtSigValArray([globalXpubs[0]], rootWalletKeys),
+      (e) => e.message === 'There must be 3 globalXpubs'
+    );
+  });
 
-      if (sign === 'fullsigned') {
-        const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
-        const counts = getStrictSignatureCounts(tx);
-        const countsFromIns = getStrictSignatureCounts(tx.ins);
-        tx.ins.forEach((input, inputIndex) => {
-          // p2shP2pk is at 6th index, and it will only have one signature.
-          const expectedSigCount = inputIndex === 6 ? 1 : signatureCount;
-          assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-          assert.strictEqual(counts[inputIndex], expectedSigCount);
-          assert.strictEqual(countsFromIns[inputIndex], expectedSigCount);
-        });
-      }
+  it('should fail if one of the key fingerprints dont match', function () {
+    const emptyBuffer = Buffer.alloc(4, 0);
+    ['user', 'backup', 'bitgo'].forEach((keyName, i) => {
+      const globalXpubsDontMatch = globalXpubs.map((globalXpub, j) =>
+        j === i ? { ...globalXpub, masterFingerprint: emptyBuffer } : globalXpub
+      );
+      assert.throws(
+        () => getReorderIdxsOfPsbtSigValArray(globalXpubsDontMatch, rootWalletKeys),
+        (e) => e.message === `could not find the ${keyName} key in the globalXpubs`
+      );
+    });
+  });
+
+  it('should fail if there are duplicates of fingerprints in the globalXpubs', function () {
+    assert.throws(
+      () => getReorderIdxsOfPsbtSigValArray([globalXpubs[0], globalXpubs[1], globalXpubs[0]], rootWalletKeys),
+      (e) => e.message === 'There must not be duplicates of globalXpub masterFingerprints'
+    );
+  });
+
+  it('should fail if the xpub in the globalXpub does not match the rootWalletKey', function () {
+    ['user', 'backup', 'bitgo'].forEach((keyName, i) => {
+      const globalXpubsDontMatch = globalXpubs.map((globalXpub, j) =>
+        j === i ? { ...globalXpub, extendedPubkey: bs58check.decode(getKey('gabagoolio').toBase58()) } : globalXpub
+      );
+      assert.throws(
+        () => getReorderIdxsOfPsbtSigValArray(globalXpubsDontMatch, rootWalletKeys),
+        (e) => e.message === `xpub of ${keyName} globalXpub does not match rootWalletKeys`
+      );
+    });
+  });
+
+  it('should return the right order if the globalXpubs are in the right order originally', function () {
+    const idxs = getReorderIdxsOfPsbtSigValArray(globalXpubs, rootWalletKeys);
+    assert(idxs.length === 3);
+    idxs.map((idx, i) => assert(idx === i));
+  });
+
+  it('should return the right order if the globalXpubs are not in the right order originally', function () {
+    const reorgIdxs = [2, 0, 1];
+    const unorderedGlobalXpubs = reorgIdxs.map((i) => globalXpubs[i]);
+    const idxs = getReorderIdxsOfPsbtSigValArray(unorderedGlobalXpubs, rootWalletKeys);
+    assert(idxs.length === 3);
+    const reorderedGlobalXpubs = idxs.map((i) => unorderedGlobalXpubs[i]);
+    reorderedGlobalXpubs.map((globalXpub, i) => {
+      assert(rootWalletKeys.triple[i].fingerprint.equals(globalXpub.masterFingerprint));
+      assert(rootWalletKeys.triple[i].toBase58() === bs58check.encode(globalXpub.extendedPubkey));
     });
   });
 });
