@@ -80,9 +80,6 @@ export { Near };
 import * as Bsc from '@bitgo/sdk-coin-bsc';
 export { Bsc };
 
-import * as Osmo from '@bitgo/sdk-coin-osmo';
-export { Osmo };
-
 import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
