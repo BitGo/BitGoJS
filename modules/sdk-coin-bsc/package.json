@@ -43,7 +43,6 @@
     "@bitgo/abstract-eth": "^1.2.18",
     "@bitgo/sdk-coin-eth": "^4.4.0",
     "@bitgo/sdk-core": "^8.2.0",
-    "@bitgo/sdk-lib-mpc": "^8.2.0",
     "@bitgo/statics": "^15.1.0",
     "@ethereumjs/common": "^2.4.0"
   },
