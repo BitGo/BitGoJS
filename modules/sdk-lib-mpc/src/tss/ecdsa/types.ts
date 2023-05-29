@@ -192,6 +192,8 @@ export function serializePallierChallengeWithProofs(
   };
 }
 
+export type SerializedEcdsaChallenges = SerializedNtilde & SerializedPallierChallenge;
+
 export interface RSAModulus {
   n: bigint;
   // Sophie Germain primes.

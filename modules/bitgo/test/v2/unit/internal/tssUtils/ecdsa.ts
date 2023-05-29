@@ -6,7 +6,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { mockSerializedChallengeWithProofs, mockSerializedChallengeWithProofs2, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo, createSharedDataProof } from '../../../../../src';
+import { BitGo, createSharedDataProof, Enterprise } from '../../../../../src';
 import {
   BackupGpgKey,
   BackupKeyShare,
@@ -1126,7 +1126,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     it('should upload challenge without generating if passed in', async function() {
-      const stubUploadChallenge = sinon.stub(ECDSAUtils.EcdsaUtils, 'uploadChallengesToEnterprise');
+      const stubUploadChallenge = sinon.stub(Enterprise, 'uploadTssEcdsaChallengeConfig');
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
 
       const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
@@ -1145,7 +1145,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     it('should generate a challenge and if one is not provided', async function() {
-      const stubUploadChallenge = sinon.stub(ECDSAUtils.EcdsaUtils, 'uploadChallengesToEnterprise');
+      const stubUploadChallenge = sinon.stub(Enterprise, 'uploadTssEcdsaChallengeConfig');
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 

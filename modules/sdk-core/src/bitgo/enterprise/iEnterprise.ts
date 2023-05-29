@@ -7,11 +7,40 @@ import { BitGoProofSignatures } from '../utils/tss/ecdsa';
 
 export type EnterpriseFeatureFlag = 'useEnterpriseEcdsaTssChallenge';
 
-export interface EnterpriseData {
+export type EnterpriseData = {
   id: string;
   name: string;
   featureFlags?: string[];
-}
+};
+
+/**
+ * Tss Ecdsa Challenge Verifiers
+ */
+export type ChallengeVerifiers = {
+  verifiers: {
+    adminSignature: string;
+  };
+};
+
+export type UpdateTssEcdsaChallenge = {
+  enterprise: EcdsaTypes.SerializedNtildeWithProofs & ChallengeVerifiers;
+  bitgoNitroHsm: ChallengeVerifiers;
+  bitgoInstitutionalHsm: ChallengeVerifiers;
+};
+
+export type TssEcdsaPartyChallengeConfig = {
+  enterprise: EcdsaTypes.SerializedNtilde & ChallengeVerifiers;
+  bitgoNitroHsm: EcdsaTypes.SerializedNtilde & ChallengeVerifiers;
+  bitgoInstitutionalHsm: EcdsaTypes.SerializedNtilde & ChallengeVerifiers;
+  createdBy: string;
+};
+
+export type EnterpriseTssConfig = {
+  enterpriseId: string;
+  ecdsa: {
+    challenge: TssEcdsaPartyChallengeConfig;
+  };
+};
 
 export interface IEnterprise {
   url(query?: string): string;
@@ -31,6 +60,5 @@ export interface IEnterprise {
     bitgoNitroChallengeProofSignature: Buffer,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void>;
-  getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs>;
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean;
 }

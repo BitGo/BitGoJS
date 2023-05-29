@@ -2,14 +2,22 @@
  * @prettier
  */
 import * as _ from 'lodash';
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
+import {
+  EnterpriseData,
+  EnterpriseFeatureFlag,
+  EnterpriseTssConfig,
+  IEnterprise,
+  TssEcdsaPartyChallengeConfig,
+  UpdateTssEcdsaChallenge,
+} from '../enterprise';
 import { getFirstPendingTransaction } from '../internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -181,5 +189,21 @@ export class Enterprise implements IEnterprise {
    */
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean {
     return flags.every((targetFlag) => this._enterprise.featureFlags?.includes(targetFlag));
+  }
+
+  static async getTssConfig(bitgo: BitGoBase, enterpriseId: string): Promise<EnterpriseTssConfig> {
+    const urlPath = `/enterprise/${enterpriseId}/tssconfig`;
+    return await bitgo.get(bitgo.url(urlPath, 2)).send().result();
+  }
+
+  static async uploadTssEcdsaChallengeConfig(
+    bitgo: BitGoBase,
+    enterpriseId: string,
+    body: UpdateTssEcdsaChallenge
+  ): Promise<TssEcdsaPartyChallengeConfig> {
+    return await bitgo
+      .put(bitgo.url(`/enterprise/${enterpriseId}/tssconfig/ecdsa/challenge`, 2))
+      .send(body)
+      .result();
   }
 }

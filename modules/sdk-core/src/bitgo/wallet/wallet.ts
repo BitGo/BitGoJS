@@ -79,7 +79,6 @@ import {
   UpdateAddressOptions,
   WalletCoinSpecific,
   WalletData,
-  WalletEcdsaChallenges,
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
@@ -3018,18 +3017,5 @@ export class Wallet implements IWallet {
     const url = this.url(`/forwarders/balances`);
     const response = await this.bitgo.get(url).query(query).result();
     return response as ForwarderBalance[];
-  }
-
-  /**
-   * Gets the ecdsa tss challenges for a wallet.
-   * These are static challenges that have been verified by an enterprise admin.
-   * Callers should verify that an enterprise admin signed the challenge values before using them.
-   *
-   * @returns {Promise<WalletEcdsaChallenges>}
-   */
-  async getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges> {
-    // note: this is not a coin specific route, we cannot use this.url(..)
-    const url = this.bitgo.url(`/wallet/${this.id()}/challenges`, 2);
-    return await this.bitgo.get(url).query({}).result();
   }
 }
