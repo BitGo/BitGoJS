@@ -98,6 +98,9 @@
       "path": "./modules/sdk-coin-near"
     },
     {
+      "path": "./modules/sdk-coin-osmo"
+    },
+    {
       "path": "./modules/sdk-coin-polygon"
     },
     {
@@ -141,6 +144,9 @@
     },
     {
       "path": "./modules/sdk-test"
+    },
+    {
+      "path": "./modules/sdk-unified-wallet"
     },
     {
       "path": "./modules/statics"

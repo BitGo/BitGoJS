@@ -38,6 +38,7 @@ import {
   Ltc,
   Ofc,
   OfcToken,
+  Osmo,
   Polygon,
   PolygonToken,
   Rbtc,
@@ -69,6 +70,7 @@ import {
   TfiatUsd,
   Thbar,
   Tltc,
+  Tosmo,
   Tpolygon,
   Trbtc,
   Trx,
@@ -123,6 +125,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ltc', Ltc.createInstance);
   globalCoinFactory.register('near', Near.createInstance);
   globalCoinFactory.register('ofc', Ofc.createInstance);
+  globalCoinFactory.register('osmo', Osmo.createInstance);
   globalCoinFactory.register('polygon', Polygon.createInstance);
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
@@ -154,6 +157,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('tltc', Tltc.createInstance);
   globalCoinFactory.register('tnear', TNear.createInstance);
+  globalCoinFactory.register('tosmo', Tosmo.createInstance);
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
   globalCoinFactory.register('trx', Trx.createInstance);

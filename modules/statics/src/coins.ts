@@ -139,6 +139,7 @@ const MATIC_FEATURES = [
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -710,6 +711,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
     ATOM_FEATURES
+  ),
+  account(
+    '8352bdf2-71e7-4ff1-a5b0-9b88c61aef1d',
+    'osmo',
+    'Osmosis',
+    Networks.main.osmo,
+    6,
+    UnderlyingAsset.OSMO,
+    BaseUnit.OSMO,
+    OSMO_FEATURES
+  ),
+  account(
+    'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
+    'tosmo',
+    'Testnet Osmosis',
+    Networks.test.osmo,
+    6,
+    UnderlyingAsset.OSMO,
+    BaseUnit.OSMO,
+    OSMO_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',

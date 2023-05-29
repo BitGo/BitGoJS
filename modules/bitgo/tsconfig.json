@@ -108,6 +108,9 @@
       "path": "../sdk-coin-near"
     },
     {
+      "path": "../sdk-coin-osmo"
+    },
+    {
       "path": "../sdk-coin-polygon"
     },
     {
