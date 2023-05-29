@@ -49,7 +49,6 @@ modules/sdk-coin-dot/ @BitGo/altcoins
 modules/sdk-coin-eos/ @BitGo/altcoins
 modules/sdk-coin-hbar/ @BitGo/altcoins
 modules/sdk-coin-near/ @BitGo/altcoins
-modules/sdk-coin-osmo/ @BitGo/altcoins
 modules/sdk-coin-polygon/ @BitGo/eth-team
 modules/sdk-coin-sol/ @BitGo/altcoins
 modules/sdk-coin-stx/ @BitGo/altcoins
