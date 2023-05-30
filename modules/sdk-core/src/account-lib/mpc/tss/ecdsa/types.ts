@@ -199,7 +199,7 @@ export interface GShare {
   nu: string;
 }
 export interface SignConvert {
-  xShare?: XShare; // XShare of the current participant
+  xShare?: XShareWithNtilde; // XShare of the current participant
   yShare?: YShare; // YShare corresponding to the other participant
   kShare?: KShare; // KShare received from the other participant
   bShare?: BShare; // Private Beta share of the participant

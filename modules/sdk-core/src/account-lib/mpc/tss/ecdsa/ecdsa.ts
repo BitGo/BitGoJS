@@ -7,7 +7,13 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
-import { EcdsaRangeProof, EcdsaTypes, randomPositiveCoPrimeTo, hexToBigInt } from '@bitgo/sdk-lib-mpc';
+import {
+  EcdsaRangeProof,
+  EcdsaTypes,
+  randomPositiveCoPrimeTo,
+  hexToBigInt,
+  minModulusBitLength,
+} from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
   BShare,
@@ -35,10 +41,6 @@ import {
 } from './types';
 
 const _5n = BigInt(5);
-
-function hasNtilde(share: XShare | YShare): share is XShareWithNtilde | YShareWithNtilde {
-  return 'ntilde' in share;
-}
 
 /**
  * ECDSA TSS implementation supporting 2:n Threshold
@@ -75,9 +77,9 @@ export default class Ecdsa {
     // Generate additively homomorphic encryption key.
     let paillierKeyPair: paillierBigint.KeyPair;
     if (!sync) {
-      paillierKeyPair = await paillierBigint.generateRandomKeys(3072, true);
+      paillierKeyPair = await paillierBigint.generateRandomKeys(minModulusBitLength, true);
     } else {
-      paillierKeyPair = paillierBigint.generateRandomKeysSync(3072, true);
+      paillierKeyPair = paillierBigint.generateRandomKeysSync(minModulusBitLength, true);
     }
     const { publicKey, privateKey } = paillierKeyPair;
     // Accept a 64 byte seed and create an extended private key from that seed
@@ -285,17 +287,14 @@ export default class Ecdsa {
    * Appends a given range proof challenge to the shares previously created
    * by #keyCombine. Generates a new challenge if not provided.
    * @param {XShare | YShare} share Private xShare or yShare of the signing operation
-   * @param {EcdsaTypes.SerializedNtilde} challenge
+   * @param rangeProofChallenge - challenge generated via generateNtilde
    * @returns {KeyCombined} The share with amended challenge values
    */
   async appendChallenge<T extends XShare | YShare>(
     share: T,
-    challenge?: EcdsaTypes.SerializedNtilde
+    rangeProofChallenge: EcdsaTypes.SerializedNtilde
   ): Promise<T & EcdsaTypes.SerializedNtilde> {
-    if (!challenge) {
-      challenge = EcdsaTypes.serializeNtilde(await EcdsaRangeProof.generateNtilde(3072));
-    }
-    const { ntilde, h1, h2 } = challenge;
+    const { ntilde, h1, h2 } = rangeProofChallenge;
     return {
       ...share,
       ntilde,
@@ -311,13 +310,8 @@ export default class Ecdsa {
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
-  async signShare(xShare: XShare | XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShareRT> {
+  async signShare(xShare: XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShareRT> {
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
-
-    // Generate a challenge if ntilde is not present in the xShare.
-    if (!hasNtilde(xShare)) {
-      xShare = await this.appendChallenge(xShare);
-    }
 
     const k = Ecdsa.curve.scalarRandom();
     const rk = await randomPositiveCoPrimeTo(pk.n);
@@ -355,7 +349,7 @@ export default class Ecdsa {
     const { ntilde: ntildeb, h1: h1b, h2: h2b } = yShare;
     const proof = await EcdsaRangeProof.prove(
       Ecdsa.curve,
-      3072,
+      minModulusBitLength,
       pk,
       {
         ntilde: hexToBigInt(ntildeb),
@@ -392,7 +386,7 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another
    * signer.
-   * @param {SignConvert}
+   * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
   async signConvert(shares: SignConvert): Promise<SignConvertRT> {
@@ -436,7 +430,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildea,
@@ -467,7 +461,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verifyWithCheck(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildea,
@@ -530,7 +524,7 @@ export default class Ecdsa {
       if (
         !EcdsaRangeProof.verify(
           Ecdsa.curve,
-          3072,
+          minModulusBitLength,
           pka,
           {
             ntilde: ntildeb,
@@ -564,7 +558,7 @@ export default class Ecdsa {
       const gx = Ecdsa.curve.basePointMult(g);
       let proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
-        3072,
+        minModulusBitLength,
         pka,
         {
           ntilde: ntildea,
@@ -608,7 +602,7 @@ export default class Ecdsa {
       const wx = Ecdsa.curve.basePointMult(w);
       proof = await EcdsaRangeProof.proveWithCheck(
         Ecdsa.curve,
-        3072,
+        minModulusBitLength,
         pka,
         {
           ntilde: ntildea,

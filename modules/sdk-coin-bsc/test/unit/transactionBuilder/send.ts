@@ -1,10 +1,8 @@
 import { getBuilder } from '../getBuilder';
 import { Ecdsa, ECDSA, TransactionType } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { keyShares } from '../../fixtures/ecdsa';
 import should from 'should';
 import { mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
-import * as sinon from 'sinon';
 
 describe('BSC Transfer Builder', () => {
   describe('TSS Signing with 2 of 3', () => {
@@ -40,20 +38,12 @@ describe('BSC Transfer Builder', () => {
 
       const unsignedTransaction = await txBuilder.build();
       serializedTransaction = Buffer.from(unsignedTransaction.toBroadcastFormat());
-
-      sinon
-        .stub(EcdsaRangeProof, 'generateNtilde')
-        .resolves(EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs));
-    });
-
-    after(() => {
-      sinon.restore();
     });
 
     it('A and B signing', async () => {
       const [B_x_share, A_x_share] = await Promise.all([
-        await MPC.appendChallenge(B_combine.xShare),
-        await MPC.appendChallenge(A_combine.xShare),
+        await MPC.appendChallenge(B_combine.xShare, mockSerializedChallengeWithProofs),
+        await MPC.appendChallenge(A_combine.xShare, mockSerializedChallengeWithProofs),
       ]);
 
       const A_challenge = { ntilde: A_x_share.ntilde, h1: A_x_share.h1, h2: A_x_share.h2 };
@@ -103,8 +93,8 @@ describe('BSC Transfer Builder', () => {
 
     it('A and C signing', async () => {
       const [A_x_share, C_x_share] = await Promise.all([
-        MPC.appendChallenge(A_combine.xShare),
-        MPC.appendChallenge(C_combine.xShare),
+        MPC.appendChallenge(A_combine.xShare, mockSerializedChallengeWithProofs),
+        MPC.appendChallenge(C_combine.xShare, mockSerializedChallengeWithProofs),
       ]);
 
       const A_challenge = { ntilde: A_x_share.ntilde, h1: A_x_share.h1, h2: A_x_share.h2 };
@@ -154,8 +144,8 @@ describe('BSC Transfer Builder', () => {
 
     it('B and C signing', async () => {
       const [B_x_share, C_x_share] = await Promise.all([
-        MPC.appendChallenge(B_combine.xShare),
-        MPC.appendChallenge(C_combine.xShare),
+        MPC.appendChallenge(B_combine.xShare, mockSerializedChallengeWithProofs),
+        MPC.appendChallenge(C_combine.xShare, mockSerializedChallengeWithProofs),
       ]);
 
       const B_challenge = { ntilde: B_x_share.ntilde, h1: B_x_share.h1, h2: B_x_share.h2 };

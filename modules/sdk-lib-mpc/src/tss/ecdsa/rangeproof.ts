@@ -59,7 +59,7 @@ async function generateModulus(bitlength = minModulusBitLength, retry = 10): Pro
  * be the same as the bit length of the paillier public keys used for MtA.
  * @returns {DeserializedNtilde} The generated Ntilde values.
  */
-export async function generateNtilde(bitlength: number): Promise<DeserializedNtildeWithProofs> {
+export async function generateNtilde(bitlength = minModulusBitLength): Promise<DeserializedNtildeWithProofs> {
   const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
   const [f1, f2] = await Promise.all([randomPositiveCoPrimeTo(ntilde), randomPositiveCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);

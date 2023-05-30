@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import { Key, SerializedKeyPair } from 'openpgp';
 import * as openpgp from 'openpgp';
 
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
@@ -797,7 +797,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     })();
 
     if (!shouldUseEnterpriseChallenge) {
-      const entChallenge = await EcdsaRangeProof.generateNtilde(3072);
+      const entChallenge = await EcdsaRangeProof.generateNtilde(minModulusBitLength);
       return {
         enterpriseChallenge: EcdsaTypes.serializeNtilde(entChallenge),
         bitgoChallenge: await getTxRequestChallenge(
@@ -1111,7 +1111,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     // Generate and sign enterprise challenge
-    const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(3072));
+    const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(minModulusBitLength));
     const serializedEntChallengeWithProof = EcdsaTypes.serializeNtildeWithProofs(entChallengeWithProof);
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       serializedEntChallengeWithProof,

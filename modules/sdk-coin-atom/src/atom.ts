@@ -21,16 +21,16 @@ import {
   ECDSAMethodTypes,
   ECDSA,
 } from '@bitgo/sdk-core';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
 import { createHash, Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
-import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
 import url from 'url';
 import querystring from 'querystring';
-import { KeyPair as AtomKeyPair, Transaction } from './lib';
+import { KeyPair as AtomKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import * as request from 'superagent';
 import { Buffer } from 'buffer';
 import { FeeData, SendMessage } from './lib/iface';
@@ -606,13 +606,23 @@ export class Atom extends BaseCoin {
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string
+    txHex: string,
+    {
+      rangeProofChallenge,
+    }: {
+      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
+    } = {}
   ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(userKeyCombined.xShare);
+    rangeProofChallenge =
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge
+    );
     const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
       ...userKeyCombined.yShares[signerTwoIndex],
       ntilde: userXShare.ntilde,

@@ -47,6 +47,7 @@ import {
   TypedData,
   PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
+import { EcdsaTypes, EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
 
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
@@ -1034,13 +1035,23 @@ export class Eth extends BaseCoin {
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string
+    txHex: string,
+    {
+      rangeProofChallenge,
+    }: {
+      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
+    } = {}
   ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(userKeyCombined.xShare);
+    rangeProofChallenge =
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge
+    );
     const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
       ...userKeyCombined.yShares[signerTwoIndex],
       ntilde: userXShare.ntilde,
