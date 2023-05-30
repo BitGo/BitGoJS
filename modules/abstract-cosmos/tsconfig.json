@@ -11,13 +11,13 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../sdk-coin-atom"
-    },
-    {
       "path": "../sdk-core"
     },
     {
       "path": "../statics"
+    },
+    {
+      "path": "../utxo-lib"
     }
   ]
 }

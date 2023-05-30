@@ -25,12 +25,19 @@ import {
 import utils from './utils';
 
 export class CosmosTransaction extends BaseTransaction {
-  private _cosmosLikeTransaction: CosmosLikeTransaction;
-  private _accountNumber: number;
-  private _chainId: string;
+  protected _cosmosLikeTransaction: CosmosLikeTransaction;
+  protected _accountNumber: number;
+  protected _chainId: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._cosmosLikeTransaction = {
+      sequence: 0,
+      sendMessages: [],
+      gasBudget: { gasLimit: 0, amount: [] },
+    };
+    this._accountNumber = 0;
+    this._chainId = '';
   }
 
   get cosmosLikeTransaction(): CosmosLikeTransaction {

@@ -13,7 +13,7 @@ import { randomBytes } from 'crypto';
 import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 
 /**
- * Cosmosis keys and address management.
+ * Cosmos keys and address management.
  */
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
@@ -42,7 +42,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   }
 
   /**
-   * Cosmosis default keys format: raw private and compressed public key
+   * Cosmos default keys format: raw private and compressed public key
    * @returns { DefaultKeys } The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
