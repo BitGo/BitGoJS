@@ -395,6 +395,7 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another signer.
    * Connection 1.2 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer A completed signShare initially (input to this fn), then this step is completed by signer B.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
@@ -568,6 +569,7 @@ export default class Ecdsa {
    * Perform multiplicitive-to-additive (MtA) share conversion with another
    * signer.
    * Connection 2.1 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer B completed signConvertStep1, then this step is completed by signer A.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
@@ -801,6 +803,7 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another signer.
    * Connection 2.2 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer A completed signConvertStep2, then this step is completed by signer B.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
