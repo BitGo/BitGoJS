@@ -88,35 +88,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
         .reply(200, params.addressInfo)
     );
 
-    // Nock the previous transaction txids
-    params.prebuild.getUnsignedTx().ins.forEach((input, inputIndex) => {
-      const unspent = utxolib.testutil.toUnspent(
-        {
-          scriptType: inputScripts[inputIndex],
-          value: BigInt(1e8),
-        },
-        inputIndex,
-        coin.network,
-        rootWalletKeys
-      );
-      // Only thing we care about is that the address and value is at the correct respective previous
-      // output index
-      const payload = {
-        outputs: params.prebuild.data.inputs.map((_, ii) =>
-          ii === inputIndex
-            ? {
-                address: unspent.address,
-                value: BigInt(unspent.value).toString(),
-                valueString: BigInt(unspent.value).toString(),
-              }
-            : {}
-        ),
-      };
-      const txId = (Buffer.from(input.hash).reverse() as Buffer).toString('hex');
-
-      nocks.push(nock(params.bgUrl).get(`/api/v2/${coin.getChain()}/public/tx/${txId}`).reply(200, payload));
-    });
-
     // nock the deterministic nonce response
     if (inputScripts.includes('taprootKeyPathSpend')) {
       const psbt = params.prebuild.clone();

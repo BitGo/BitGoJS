@@ -70,9 +70,9 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
+import { explainPsbt, explainTx, getPsbtTxInputs, getTxInputs } from './transaction';
 
-const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
-  bitgo;
+const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
@@ -731,20 +731,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    const { txParams, txPrebuild: txPrebuildObj, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
-    let txPrebuild: TransactionPrebuild<TNumber>;
-
-    // TODO: BG-77743 Add native psbt support - we make a deep copy of the txPrebuild object here to avoid
-    // modifying the original object so that we can still use it later on in the function
-    if (txPrebuildObj.txHex && bitgo.isPsbt(Buffer.from(txPrebuildObj.txHex, 'hex'))) {
-      if (txPrebuildObj.txInfo?.unspents) {
-        throw new Error('should not have unspents in txInfo for psbt');
-      }
-
-      const psbt = bitgo.createPsbtFromHex(txPrebuildObj.txHex, this.network);
-      txPrebuild = { ...txPrebuildObj, txHex: psbt.getUnsignedTx().toHex() };
-    } else {
-      txPrebuild = txPrebuildObj;
+    const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+    const isPsbt = txPrebuild.txHex && bitgo.isPsbt(txPrebuild.txHex);
+    if (isPsbt && txPrebuild.txInfo?.unspents) {
+      throw new Error('should not have unspents in txInfo for psbt');
     }
 
     const disableNetworking = !!verification.disableNetworking;
@@ -839,38 +829,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (!txPrebuild.txHex) {
       throw new Error(`txPrebuild.txHex not set`);
     }
-    const transaction = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
-    const transactionCache = {};
-    const inputs = await Promise.all(
-      transaction.ins.map(async (currentInput) => {
-        const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
-        const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
-        if (txHex) {
-          const localTx = this.createTransactionFromHex<TNumber>(txHex);
-          if (localTx.getId() !== transactionId) {
-            throw new Error('input transaction hex does not match id');
-          }
-          const currentOutput = localTx.outs[currentInput.index];
-          const address = utxolib.address.fromOutputScript(currentOutput.script, this.network);
-          return {
-            address,
-            value: currentOutput.value,
-            valueString: currentOutput.value.toString(),
-          };
-        } else if (!transactionCache[transactionId]) {
-          if (disableNetworking) {
-            throw new Error('attempting to retrieve transaction details externally with networking disabled');
-          }
-          if (reqId) {
-            this.bitgo.setRequestTracer(reqId);
-          }
-          transactionCache[transactionId] = await this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
-        }
-        const transactionDetails = transactionCache[transactionId];
-        return transactionDetails.outputs[currentInput.index];
-      })
-    );
-
+    const inputs = isPsbt
+      ? getPsbtTxInputs(txPrebuild.txHex, this.network).map((v) => ({
+          ...v,
+          value: bitgo.toTNumber(v.value, this.amountType),
+        }))
+      : await getTxInputs({ txPrebuild, bitgo: this.bitgo, coin: this, disableNetworking, reqId });
     // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field
     const inputAmount = inputs.reduce(
       (sum: bigint, i) => sum + BigInt(this.amountType === 'bigint' ? i.valueString : i.value),
@@ -1114,7 +1078,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // We can only be the first signature on a transaction with taproot key path spend inputs because
       // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
       // deserialized from a hex.
-      if (isTransactionWithKeyPathSpendInput) {
+      if (params.isLastSignature && isTransactionWithKeyPathSpendInput) {
         throw new Error('Cannot be last signature on a transaction with key path spend inputs');
       }
 
@@ -1204,103 +1168,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Decompose a raw transaction into useful information, such as the total amounts,
+   * Decompose a raw psbt/transaction into useful information, such as the total amounts,
    * change amounts, and transaction outputs.
    * @param params
    */
   async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
-    const txHex = _.get(params, 'txHex');
-    if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
+    const { txHex } = params;
+    if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
     }
-
-    let transaction;
-    try {
-      transaction = this.createTransactionFromHex(txHex);
-    } catch (e) {
-      throw new Error('failed to parse transaction hex');
-    }
-
-    const id = transaction.getId();
-    let spendAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
-    let changeAmount = utxolib.bitgo.toTNumber<TNumber>(0, this.amountType);
-    const explanation = {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
-      id: id,
-      outputs: [] as Output[],
-      changeOutputs: [] as Output[],
-    } as TransactionExplanation;
-
-    const { changeAddresses = [], unspents = [] } = params.txInfo ?? {};
-
-    transaction.outs.forEach((currentOutput) => {
-      const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
-      const currentAmount = currentOutput.value;
-
-      if (changeAddresses.includes(currentAddress)) {
-        // this is change
-        changeAmount += currentAmount;
-        explanation.changeOutputs.push({
-          address: currentAddress,
-          amount: currentAmount.toString(),
-        });
-        return;
-      }
-
-      spendAmount += currentAmount;
-      explanation.outputs.push({
-        address: currentAddress,
-        amount: currentAmount.toString(),
-      });
-    });
-    explanation.outputAmount = spendAmount.toString();
-    explanation.changeAmount = changeAmount.toString();
-
-    // add fee info if available
-    if (params.feeInfo) {
-      explanation.displayOrder.push('fee');
-      explanation.fee = params.feeInfo;
-    }
-
-    if (_.isInteger(transaction.locktime) && transaction.locktime > 0) {
-      explanation.locktime = transaction.locktime;
-      explanation.displayOrder.push('locktime');
-    }
-
-    const prevOutputs = params.txInfo?.unspents?.map((u) => toOutput<TNumber>(u, this.network));
-
-    // if keys are provided, prepare the keys for input signature checking
-    const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
-    const walletKeys = keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
-
-    // get the number of signatures per input
-    const inputSignatureCounts = transaction.ins.map((input, idx): number => {
-      if (unspents.length !== transaction.ins.length) {
-        return 0;
-      }
-
-      if (!prevOutputs) {
-        throw new Error(`invalid state`);
-      }
-
-      if (!walletKeys) {
-        // no pub keys or incorrect number of pub keys
-        return 0;
-      }
-
-      try {
-        return verifySignatureWithUnspent<TNumber>(transaction, idx, unspents, walletKeys).filter((v) => v).length;
-      } catch (e) {
-        // some other error occurred and we can't validate the signatures
-        return 0;
-      }
-    });
-
-    explanation.inputSignatures = inputSignatureCounts;
-    explanation.signatures = _.max(inputSignatureCounts) as number;
-    return explanation;
+    return utxolib.bitgo.isPsbt(txHex) ? explainPsbt(params, this.network) : explainTx(params, this);
   }
 
   /**
