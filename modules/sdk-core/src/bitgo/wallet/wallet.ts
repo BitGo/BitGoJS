@@ -2082,11 +2082,14 @@ export class Wallet implements IWallet {
       'type',
       'trustlines',
       'transferId',
+      'txFormat',
       'stakingOptions',
       'hop',
       'type',
       'sourceChain',
       'destinationChain',
+      'cpfpFeeRate',
+      'cpfpTxIds',
     ]);
 
     if (this._wallet.type === 'custodial') {
