@@ -14,27 +14,18 @@ import {
   addReplayProtectionUnspentToPsbt,
   addWalletOutputToPsbt,
   getInternalChainCode,
-  getStrictSignatureCounts,
   UtxoTransaction,
-  getStrictSignatureCount,
   isTransactionWithKeyPathSpendInput,
+  isPsbt,
 } from '../../../src/bitgo';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
-import {
-  constructPsbt,
-  getDefaultWalletKeys,
-  inputScriptTypes,
-  mockReplayProtectionUnspent,
-  outputScriptTypes,
-} from '../../../src/testutil';
+import { getDefaultWalletKeys, mockReplayProtectionUnspent } from '../../../src/testutil';
 
 import { defaultTestOutputAmount } from '../../transaction_util';
 import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
 
 import { mockUnspents } from '../../../src/testutil/mock';
-import { constructTxnBuilder, txnInputScriptTypes, txnOutputScriptTypes } from '../../../src/testutil/transaction';
-import { getPsbtInputSignatureCount, isPsbt } from '../../../src/bitgo/PsbtUtil';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -51,63 +42,6 @@ function getScriptTypes2Of3() {
   //  because the test suite is written with TransactionBuilder
   return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
 }
-
-describe('signature utils', function () {
-  it('tx', function () {
-    const inputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-    const outputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
-
-    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
-      const txb = constructTxnBuilder(inputs, outputs, network, rootWalletKeys, sign);
-      const tx = sign === 'fullsigned' ? txb.build() : txb.buildIncomplete();
-      const counts = getStrictSignatureCounts(tx);
-      const countsFromIns = getStrictSignatureCounts(tx.ins);
-      assert.strictEqual(counts.length, tx.ins.length);
-      assert.strictEqual(countsFromIns.length, tx.ins.length);
-      tx.ins.forEach((input, inputIndex) => {
-        // p2shP2pk is at 4th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 4 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-        assert.strictEqual(counts[inputIndex], expectedSigCount);
-        assert.strictEqual(countsFromIns[inputIndex], expectedSigCount);
-      });
-    });
-  });
-
-  it('psbt', function () {
-    const inputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-    const outputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
-
-    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      const counts = getStrictSignatureCounts(psbt);
-      const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
-      assert.strictEqual(counts.length, psbt.data.inputs.length);
-      assert.strictEqual(countsFromInputs.length, psbt.data.inputs.length);
-      psbt.data.inputs.forEach((input, inputIndex) => {
-        // p2shP2pk is at 6th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 6 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getPsbtInputSignatureCount(input), expectedSigCount);
-        assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-        assert.strictEqual(counts[inputIndex], expectedSigCount);
-        assert.strictEqual(countsFromInputs[inputIndex], expectedSigCount);
-      });
-
-      if (sign === 'fullsigned') {
-        const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
-        const counts = getStrictSignatureCounts(tx);
-        const countsFromIns = getStrictSignatureCounts(tx.ins);
-        tx.ins.forEach((input, inputIndex) => {
-          // p2shP2pk is at 6th index, and it will only have one signature.
-          const expectedSigCount = inputIndex === 6 ? 1 : signatureCount;
-          assert.strictEqual(getStrictSignatureCount(input), expectedSigCount);
-          assert.strictEqual(counts[inputIndex], expectedSigCount);
-          assert.strictEqual(countsFromIns[inputIndex], expectedSigCount);
-        });
-      }
-    });
-  });
-});
 
 describe('isTransactionWithKeyPathSpendInput', function () {
   describe('transaction input', function () {

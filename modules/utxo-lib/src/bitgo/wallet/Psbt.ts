@@ -1,14 +1,17 @@
 import * as assert from 'assert';
+
+import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
+import { checkForInput } from 'bip174/src/lib/utils';
+import { BIP32Interface } from 'bip32';
+import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromTransaction } from '../transaction';
-import { BIP32Interface } from 'bip32';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
-import { checkForInput } from 'bip174/src/lib/utils';
-import { PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
+
 import {
   getLeafVersion,
   calculateScriptPathLevel,
@@ -25,7 +28,7 @@ import {
   parseSignatureScript,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
-import { isTuple } from '../types';
+import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { script as bscript, TxInput } from 'bitcoinjs-lib';
 import { opcodes } from '../../index';
@@ -92,6 +95,11 @@ interface WalletSigner {
   walletKey: BIP32Interface;
   rootKey: BIP32Interface;
 }
+
+/**
+ * psbt input index and its user, backup, bitgo signatures status
+ */
+export type SignatureValidation = [index: number, sigTriple: Triple<boolean>];
 
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
   const parsedPublicKeys = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
@@ -411,7 +419,7 @@ export function getStrictSignatureCount(input: TxInput | PsbtInputType): 0 | 1 |
 }
 
 /**
- * @returns parse input and get signature count for all inputs.
+ * @returns strictly parse input and get signature count for all inputs.
  * 0=unsigned, 1=half-signed or 2=fully-signed
  */
 export function getStrictSignatureCounts(
@@ -456,5 +464,38 @@ export function isTransactionWithKeyPathSpendInput(
       return false;
     }
     return parseSignatureScript(input).scriptType === 'taprootKeyPathSpend';
+  });
+}
+
+/**
+ * Set the RootWalletKeys as the globalXpubs on the psbt
+ *
+ * We do all the matching of the (tap)bip32Derivations masterFingerprint to the fingerprint of the
+ * extendedPubkey.
+ */
+export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): void {
+  const xPubs = rootWalletKeys.triple.map(
+    (bip32): GlobalXpub => ({
+      extendedPubkey: bs58check.decode(bip32.toBase58()),
+      masterFingerprint: bip32.fingerprint,
+      // TODO: BG-73797 - bip174 currently requires m prefix for this to be a valid globalXpub
+      path: 'm',
+    })
+  );
+  psbt.updateGlobal({ globalXpub: xPubs });
+}
+
+/**
+ * validates signatures for each 2 of 3 input against user, backup, bitgo keys derived from rootWalletKeys.
+ * @returns array of input index and its [is valid user sig exist, is valid backup sig exist, is valid user bitgo exist]
+ * For p2shP2pk input, [false, false, false] is returned since it is not a 2 of 3 sig input.
+ */
+export function getSignatureValidationArrayPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): SignatureValidation[] {
+  return psbt.data.inputs.map((input, i) => {
+    const sigValArrayForInput: Triple<boolean> =
+      getPsbtInputScriptType(input) === 'p2shP2pk'
+        ? [false, false, false]
+        : psbt.getSignatureValidationArray(i, { rootNodes: rootWalletKeys.triple });
+    return [i, sigValArrayForInput];
   });
 }
