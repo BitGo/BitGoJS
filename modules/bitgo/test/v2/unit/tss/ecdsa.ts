@@ -280,8 +280,8 @@ describe('Ecdsa tss helper functions tests', function () {
 
     describe('createUserSignShare:', async function () {
       it('should succeed to create User SignShare', async function () {
-        const xShare = await mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
-        const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 });
+        const xShare = mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
+        const yShare = mpc.appendChallenge(userKey.yShares[3], { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 });
         const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
         userSignShare.should.have.properties(['wShare', 'kShare']);
         const { wShare, kShare } = userSignShare;
@@ -307,9 +307,9 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        let xShare = await mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
+        let xShare = mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs);
         xShare = { ...xShare, i: 3 };
-        const yShare: ECDSAMethodTypes.YShareWithNtilde = await mpc.appendChallenge(userKey.yShares[3], {
+        const yShare = mpc.appendChallenge(userKey.yShares[3], {
           ntilde: xShare.ntilde,
           h1: xShare.h1,
           h2: xShare.h2,

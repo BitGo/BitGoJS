@@ -603,6 +603,7 @@ export class Atom extends BaseCoin {
     return [userKeyDerivedCombined, backupKeyCombined];
   }
 
+  // TODO(BG-78714): Reduce code duplication between this and eth.ts
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
@@ -619,24 +620,21 @@ export class Atom extends BaseCoin {
 
     rangeProofChallenge =
       rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(
-      userKeyCombined.xShare,
-      rangeProofChallenge
-    );
-    const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
+
+    const userXShare = MPC.appendChallenge(userKeyCombined.xShare, rangeProofChallenge);
+    const userYShare: ECDSAMethodTypes.YShareWithChallenges = {
       ...userKeyCombined.yShares[signerTwoIndex],
       ntilde: userXShare.ntilde,
       h1: userXShare.h1,
       h2: userXShare.h2,
     };
-    const backupXShare: ECDSAMethodTypes.XShareWithNtilde = {
+    const backupXShare: ECDSAMethodTypes.XShareWithChallenges = {
       ...backupKeyCombined.xShare,
       ntilde: userXShare.ntilde,
       h1: userXShare.h1,
       h2: userXShare.h2,
     };
-
-    const backupYShare: ECDSAMethodTypes.YShareWithNtilde = {
+    const backupYShare: ECDSAMethodTypes.YShareWithChallenges = {
       ...backupKeyCombined.yShares[signerOneIndex],
       ntilde: backupXShare.ntilde,
       h1: backupXShare.h1,
@@ -645,35 +643,33 @@ export class Atom extends BaseCoin {
 
     const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
-    let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS21 = await MPC.signConvertStep1({
       xShare: backupXShare,
       yShare: backupYShare, // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
-
-    const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS12 = await MPC.signConvertStep2({
       aShare: signConvertS21.aShare,
       wShare: signShares.wShare,
     });
-
-    signConvertS21 = await MPC.signConvert({
+    const signConvertS21_2 = await MPC.signConvertStep3({
       muShare: signConvertS12.muShare,
       bShare: signConvertS21.bShare,
     });
 
     const [signCombineOne, signCombineTwo] = [
       MPC.signCombine({
-        gShare: signConvertS12.gShare as ECDSA.GShare,
+        gShare: signConvertS12.gShare,
         signIndex: {
-          i: (signConvertS12.muShare as ECDSA.MUShare).i,
-          j: (signConvertS12.muShare as ECDSA.MUShare).j,
+          i: signConvertS12.muShare.i,
+          j: signConvertS12.muShare.j,
         },
       }),
       MPC.signCombine({
-        gShare: signConvertS21.gShare as ECDSA.GShare,
+        gShare: signConvertS21_2.gShare,
         signIndex: {
-          i: (signConvertS21.muShare as ECDSA.MUShare).i,
-          j: (signConvertS21.muShare as ECDSA.MUShare).j,
+          i: signConvertS21_2.signIndex.i,
+          j: signConvertS21_2.signIndex.j,
         },
       }),
     ];

@@ -653,8 +653,8 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userIndex = userSigningMaterial.pShare.i;
 
     const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, 0);
-    const userXShare = await MPC.appendChallenge(signingKey.xShare, challenges.enterpriseChallenge);
-    const bitgoYShare = await MPC.appendChallenge(
+    const userXShare = MPC.appendChallenge(signingKey.xShare, challenges.enterpriseChallenge);
+    const bitgoYShare = MPC.appendChallenge(
       {
         i: userIndex,
         j: bitgoIndex,
