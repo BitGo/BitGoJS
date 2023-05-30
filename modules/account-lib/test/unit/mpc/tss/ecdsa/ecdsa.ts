@@ -226,14 +226,14 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Two
         // First signer generates their range proof challenge.
-        const signerOneXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(
+        const signerOneXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerOne.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index]),
         );
 
         // Step Three
         //  Second signer generates their range proof challenge.
-        const signerTwoXShare: ECDSA.XShareWithNtilde = await MPC.appendChallenge(
+        const signerTwoXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerTwo.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index + 1]),
         );
@@ -241,7 +241,7 @@ describe('TSS ECDSA TESTS', function () {
 
         // Step Four
         // First signer receives the challenge from the second signer and appends it to their YShare
-        const signerTwoYShare: ECDSA.YShareWithNtilde = await MPC.appendChallenge(
+        const signerTwoYShare: ECDSA.YShareWithChallenges = MPC.appendChallenge(
           signerOne.yShares[signerTwoIndex],
           signerTwoChallenge,
         );
@@ -250,14 +250,14 @@ describe('TSS ECDSA TESTS', function () {
         // Sign Shares are created by one of the participants (signerOne)
         // with its private XShare and YShare corresponding to the other participant (signerTwo)
         // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-        const signShares: ECDSA.SignShareRT = await MPC.signShare(signerOneXShare, signerTwoYShare);
+        const signShares = await MPC.signShare(signerOneXShare, signerTwoYShare);
 
         // Step Six
         // signerTwo receives the KShare from signerOne and uses it produce private
         // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
         // which is sent to signerOne
 
-        let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
+        const signConvertS21 = await MPC.signConvertStep1({
           xShare: signerTwoXShare,
           yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
@@ -267,7 +267,7 @@ describe('TSS ECDSA TESTS', function () {
         // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
         // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
         // is sent to signerTwo to produce its Gamma Share
-        const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+        const signConvertS12 = await MPC.signConvertStep2({
           aShare: signConvertS21.aShare,
           wShare: signShares.wShare,
         });
@@ -275,7 +275,7 @@ describe('TSS ECDSA TESTS', function () {
         // Step Eight
         // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
         // uses it produce private GShare (Gamma Share)
-        signConvertS21 = await MPC.signConvert({
+        const signConvertS21_2 = await MPC.signConvertStep3({
           muShare: signConvertS12.muShare,
           bShare: signConvertS21.bShare,
         });
@@ -287,17 +287,17 @@ describe('TSS ECDSA TESTS', function () {
 
         const [signCombineOne, signCombineTwo] = [
           MPC.signCombine({
-            gShare: signConvertS12.gShare as ECDSA.GShare,
+            gShare: signConvertS12.gShare,
             signIndex: {
-              i: (signConvertS12.muShare as ECDSA.MUShare).i,
-              j: (signConvertS12.muShare as ECDSA.MUShare).j,
+              i: signConvertS12.muShare.i,
+              j: signConvertS12.muShare.j,
             },
           }),
           MPC.signCombine({
-            gShare: signConvertS21.gShare as ECDSA.GShare,
+            gShare: signConvertS21_2.gShare,
             signIndex: {
-              i: (signConvertS21.muShare as ECDSA.MUShare).i,
-              j: (signConvertS21.muShare as ECDSA.MUShare).j,
+              i: signConvertS21_2.signIndex.i,
+              j: signConvertS21_2.signIndex.j,
             },
           }),
         ];

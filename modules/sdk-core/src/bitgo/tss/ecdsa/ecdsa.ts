@@ -5,7 +5,6 @@ import {
   SigningMaterial,
   EncryptedNShare,
   AShare,
-  CreateUserGammaAndMuShareRT,
   CreateUserOmicronAndDeltaShareRT,
   DShare,
   GShare,
@@ -16,8 +15,8 @@ import {
   SignatureShare,
   SignShare,
   WShare,
-  XShareWithNtilde,
-  YShareWithNtilde,
+  XShareWithChallenges,
+  YShareWithChallenges,
   SendShareToBitgoRT,
   ReceivedShareType,
   BShare,
@@ -26,7 +25,14 @@ import {
 import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from '../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
-import { KShare, MUShare, SShare } from '../../../account-lib/mpc/tss/ecdsa/types';
+import {
+  KShare,
+  MUShare,
+  RangeProofShare,
+  RangeProofWithCheckShare,
+  SignConvertStep2Response,
+  SShare,
+} from '../../../account-lib/mpc/tss/ecdsa/types';
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
@@ -106,7 +112,10 @@ export async function createCombinedKey(
  * @param {YShare} yShare YShare from Bitgo
  * @returns {Promise<SignShare>}
  */
-export async function createUserSignShare(xShare: XShareWithNtilde, yShare: YShareWithNtilde): Promise<SignShare> {
+export async function createUserSignShare(
+  xShare: XShareWithChallenges,
+  yShare: YShareWithChallenges
+): Promise<SignShare> {
   if (xShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid XShare, XShare doesn't belong to the User`);
   }
@@ -121,17 +130,16 @@ export async function createUserSignShare(xShare: XShareWithNtilde, yShare: YSha
  * Creates the Gamma Share and MuShare with User WShare and AShare From BitGo
  * @param {WShare} wShare User WShare
  * @param {AShare} aShare AShare from Bitgo
- * @returns {Promise<CreateUserGammaAndMuShareRT>}
+ * @returns {Promise<SignConvertStep2Response>}
  */
-export async function createUserGammaAndMuShare(wShare: WShare, aShare: AShare): Promise<CreateUserGammaAndMuShareRT> {
+export async function createUserGammaAndMuShare(wShare: WShare, aShare: AShare): Promise<SignConvertStep2Response> {
   if (wShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid WShare, doesn't belong to the User`);
   }
   if (aShare.i !== ShareKeyPosition.USER || aShare.j !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid AShare, is not from Bitgo to User');
   }
-
-  return MPC.signConvert({ wShare, aShare });
+  return MPC.signConvertStep2({ wShare, aShare });
 }
 
 /**
@@ -464,21 +472,19 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
-
   validateSharesLength(shares, 11, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
 
-  let proof;
-  if (hasProof) {
-    proof = {
-      z: shares[5],
-      u: shares[6],
-      w: shares[7],
-      s: shares[8],
-      s1: shares[9],
-      s2: shares[10],
-    };
-  }
+  const proof: RangeProofShare | undefined = hasProof
+    ? {
+        z: shares[5],
+        u: shares[6],
+        w: shares[7],
+        s: shares[8],
+        s1: shares[9],
+        s2: shares[10],
+      }
+    : undefined;
 
   return {
     i: getParticipantIndex(share.to),
@@ -521,53 +527,50 @@ export function parseAShare(share: SignatureShareRecord): AShare {
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
 
-  let proof;
-  if (hasProof) {
-    proof = {
-      z: shares[7],
-      u: shares[8],
-      w: shares[9],
-      s: shares[10],
-      s1: shares[11],
-      s2: shares[12],
-    };
-  }
+  const proof: RangeProofShare | undefined = hasProof
+    ? {
+        z: shares[7],
+        u: shares[8],
+        w: shares[9],
+        s: shares[10],
+        s1: shares[11],
+        s2: shares[12],
+      }
+    : undefined;
 
-  let gammaProof;
-  if (hasGammaProof) {
-    gammaProof = {
-      z: shares[13],
-      zprm: shares[14],
-      t: shares[15],
-      v: shares[16],
-      w: shares[17],
-      s: shares[18],
-      s1: shares[19],
-      s2: shares[20],
-      t1: shares[21],
-      t2: shares[22],
-      u: shares[23],
-      x: shares[24],
-    };
-  }
+  const gammaProof: RangeProofWithCheckShare | undefined = hasGammaProof
+    ? {
+        z: shares[13],
+        zprm: shares[14],
+        t: shares[15],
+        v: shares[16],
+        w: shares[17],
+        s: shares[18],
+        s1: shares[19],
+        s2: shares[20],
+        t1: shares[21],
+        t2: shares[22],
+        u: shares[23],
+        x: shares[24],
+      }
+    : undefined;
 
-  let wProof;
-  if (hasWProof) {
-    wProof = {
-      z: shares[25],
-      zprm: shares[26],
-      t: shares[27],
-      v: shares[28],
-      w: shares[29],
-      s: shares[30],
-      s1: shares[31],
-      s2: shares[32],
-      t1: shares[33],
-      t2: shares[34],
-      u: shares[35],
-      x: shares[36],
-    };
-  }
+  const wProof: RangeProofWithCheckShare | undefined = hasWProof
+    ? {
+        z: shares[25],
+        zprm: shares[26],
+        t: shares[27],
+        v: shares[28],
+        w: shares[29],
+        s: shares[30],
+        s1: shares[31],
+        s2: shares[32],
+        t1: shares[33],
+        t2: shares[34],
+        u: shares[35],
+        x: shares[36],
+      }
+    : undefined;
 
   return {
     i: getParticipantIndex(share.to),

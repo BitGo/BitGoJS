@@ -33,23 +33,23 @@ import {
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
+  PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  TypedData,
   UnexpectedAddressError,
   Util,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
-  TypedData,
-  PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
-import { EcdsaTypes, EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
-import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
@@ -63,7 +63,7 @@ import {
 } from './lib';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
-import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
+import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -1048,23 +1048,20 @@ export class Eth extends BaseCoin {
 
     rangeProofChallenge =
       rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = await MPC.appendChallenge(
-      userKeyCombined.xShare,
-      rangeProofChallenge
-    );
-    const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
+    const userXShare = MPC.appendChallenge(userKeyCombined.xShare, rangeProofChallenge);
+    const userYShare: ECDSAMethodTypes.YShareWithChallenges = {
       ...userKeyCombined.yShares[signerTwoIndex],
       ntilde: userXShare.ntilde,
       h1: userXShare.h1,
       h2: userXShare.h2,
     };
-    const backupXShare: ECDSAMethodTypes.XShareWithNtilde = {
+    const backupXShare: ECDSAMethodTypes.XShareWithChallenges = {
       ...backupKeyCombined.xShare,
       ntilde: userXShare.ntilde,
       h1: userXShare.h1,
       h2: userXShare.h2,
     };
-    const backupYShare: ECDSAMethodTypes.YShareWithNtilde = {
+    const backupYShare: ECDSAMethodTypes.YShareWithChallenges = {
       ...backupKeyCombined.yShares[signerOneIndex],
       ntilde: backupXShare.ntilde,
       h1: backupXShare.h1,
@@ -1073,35 +1070,33 @@ export class Eth extends BaseCoin {
 
     const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
-    let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS21 = await MPC.signConvertStep1({
       xShare: backupXShare,
       yShare: backupYShare, // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
-
-    const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS12 = await MPC.signConvertStep2({
       aShare: signConvertS21.aShare,
       wShare: signShares.wShare,
     });
-
-    signConvertS21 = await MPC.signConvert({
+    const signConvertS21_2 = await MPC.signConvertStep3({
       muShare: signConvertS12.muShare,
       bShare: signConvertS21.bShare,
     });
 
     const [signCombineOne, signCombineTwo] = [
       MPC.signCombine({
-        gShare: signConvertS12.gShare as ECDSA.GShare,
+        gShare: signConvertS12.gShare,
         signIndex: {
-          i: (signConvertS12.muShare as ECDSA.MUShare).i,
-          j: (signConvertS12.muShare as ECDSA.MUShare).j,
+          i: signConvertS12.muShare.i,
+          j: signConvertS12.muShare.j,
         },
       }),
       MPC.signCombine({
-        gShare: signConvertS21.gShare as ECDSA.GShare,
+        gShare: signConvertS21_2.gShare,
         signIndex: {
-          i: (signConvertS21.muShare as ECDSA.MUShare).i,
-          j: (signConvertS21.muShare as ECDSA.MUShare).j,
+          i: signConvertS21_2.signIndex.i,
+          j: signConvertS21_2.signIndex.j,
         },
       }),
     ];
@@ -1113,9 +1108,7 @@ export class Eth extends BaseCoin {
       MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
     ];
 
-    const signature = MPC.constructSignature([signA, signB]);
-
-    return signature;
+    return MPC.constructSignature([signA, signB]);
   }
 
   /**
