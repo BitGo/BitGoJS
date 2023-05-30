@@ -1,13 +1,22 @@
 import should from 'should';
 
-import { m, generateP, prove, verify } from '../../../../src/tss/ecdsa/paillierProof';
+import { alpha, m, generateP, prove, verify } from '../../../../src/tss/ecdsa/paillierProof';
 import { hexToBigInt, minModulusBitLength, randomBigInt } from '../../../../src';
 import { deserializePallierChallenge, deserializePallierChallengeProofs } from '../../../../src/tss/ecdsa/types';
 import { mockedPallierProofs } from '../../../paillierproof.util';
+import { primesSmallerThan319567 } from '../../../../src/tss/ecdsa/primes';
 
 describe('EcdsaPallierProof', function () {
   it('m should equal 7', async function () {
     should(m).equal(7);
+  });
+
+  it('alpha should equal 319567', async function () {
+    // If you need to change this alpha and update this test,
+    // then regenerate the primes.ts file using something like
+    // https://www.geeksforgeeks.org/print-all-prime-numbers-less-than-or-equal-to-n/
+    should(alpha).equal(319567);
+    should(primesSmallerThan319567.length).equal(27572);
   });
 
   describe('generateP', async function () {

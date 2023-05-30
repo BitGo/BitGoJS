@@ -9,7 +9,7 @@ import { primesSmallerThan319567 } from './primes';
 const k = 128;
 // eprint.iacr.org/2018/057.pdf#page6 section 5
 // https://github.com/BitGo/BitGoJS/pull/3502#discussion_r1203070392
-const alpha = 319567;
+export const alpha = 319567;
 export const m = Math.ceil(k / Math.log2(alpha));
 
 /**
