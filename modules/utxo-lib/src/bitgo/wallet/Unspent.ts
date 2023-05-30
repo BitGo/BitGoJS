@@ -132,7 +132,7 @@ export function addReplayProtectionUnspentToPsbt(
   if (network !== psbt.network) {
     throw new Error(`network parameter does not match psbt.network`);
   }
-  const { txid, vout } = toPrevOutput(u, psbt.network);
+  const { txid, vout, script, value } = toPrevOutput(u, psbt.network);
   const isZcash = getMainnet(psbt.network) === networks.zcash;
 
   // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
@@ -146,7 +146,9 @@ export function addReplayProtectionUnspentToPsbt(
     index: vout,
     redeemScript,
   });
-  if (!isZcash) {
+  if (isZcash) {
+    psbt.updateInput(psbt.inputCount - 1, { witnessUtxo: { script, value } });
+  } else {
     psbt.updateInput(psbt.inputCount - 1, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
   }
 }

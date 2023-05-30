@@ -38,7 +38,7 @@ import {
   musig2DeterministicSign,
   createMusig2DeterministicNonce,
 } from './Musig2';
-import { isTuple, Triple, Tuple } from './types';
+import { isTriple, isTuple, Triple, Tuple } from './types';
 import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
@@ -619,19 +619,35 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @param inputIndex
+   * @param rootNodes optional input root bip32 nodes to verify with. If it is not provided, globalXpub will be used.
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
-  getSignatureValidationArray(inputIndex: number): Triple<boolean> {
-    if (this.data.globalMap.globalXpub?.length !== 3) {
+  getSignatureValidationArray(
+    inputIndex: number,
+    { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+  ): Triple<boolean> {
+    if (!rootNodes && (!this.data.globalMap.globalXpub?.length || !isTriple(this.data.globalMap.globalXpub))) {
       throw new Error('Cannot get signature validation array without 3 global xpubs');
     }
+
+    const bip32s = rootNodes
+      ? rootNodes
+      : this.data.globalMap.globalXpub?.map((xpub) =>
+          BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
+        );
+
+    if (!bip32s) {
+      throw new Error('either globalMap or rootNodes is required');
+    }
+
     const input = checkForInput(this.data.inputs, inputIndex);
     if (!getPsbtInputSignatureCount(input)) {
       return [false, false, false];
     }
-    return this.data.globalMap.globalXpub.map((xpub) => {
-      const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
+
+    return bip32s.map((bip32) => {
       const pubKey = input.tapBip32Derivation?.length
         ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation)?.publicKey
         : input.bip32Derivation?.length
