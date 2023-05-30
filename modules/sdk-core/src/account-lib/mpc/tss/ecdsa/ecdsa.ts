@@ -252,7 +252,7 @@ export default class Ecdsa {
       shares.nShares[P_j.j] = {
         i: P_j.j,
         j: P_i.i,
-        n: P_j.n,
+        n: P_i.n,
         u: bigIntToBufferBE(split_u[P_j.j], 32).toString('hex'),
         y: bigIntToBufferBE(contribY, 32).toString('hex'),
         v: bigIntToBufferBE(v[0], 32).toString('hex'),
@@ -303,7 +303,7 @@ export default class Ecdsa {
     share: T,
     rangeProofChallenge: EcdsaTypes.SerializedNtilde,
     paillierProofChallenge: EcdsaTypes.SerializedPaillierChallenge
-  ): T & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge {
+  ): T & EcdsaTypes.SerializedEcdsaChallenges {
     const { ntilde, h1, h2 } = rangeProofChallenge;
     const { p } = paillierProofChallenge;
     return {
