@@ -1,9 +1,9 @@
 import should from 'should';
 
-import { m, generateP, prove, verify } from '../../../../src/tss/ecdsa/pallierProof';
+import { m, generateP, prove, verify } from '../../../../src/tss/ecdsa/paillierProof';
 import { hexToBigInt, minModulusBitLength, randomBigInt } from '../../../../src';
 import { deserializePallierChallenge, deserializePallierChallengeProofs } from '../../../../src/tss/ecdsa/types';
-import { mockedPallierProofs } from '../../../pallierproof.util';
+import { mockedPallierProofs } from '../../../paillierproof.util';
 
 describe('EcdsaPallierProof', function () {
   it('m should equal 7', async function () {
@@ -33,11 +33,11 @@ describe('EcdsaPallierProof', function () {
     });
 
     it(`should throw an error for negative challenge value`, async function () {
-      const n = hexToBigInt(mockedPallierProof.pallierKey.n);
-      const lambda = hexToBigInt(mockedPallierProof.pallierKey.lambda);
+      const n = hexToBigInt(mockedPallierProof.paillierKey.n);
+      const lambda = hexToBigInt(mockedPallierProof.paillierKey.lambda);
       const p = deserializePallierChallenge({ p: mockedPallierProof.p }).p;
       p[p.length - 1] = BigInt(-99);
-      should(() => prove(n, lambda, p)).throw('All pallier challenge values must be positive.');
+      should(() => prove(n, lambda, p)).throw('All paillier challenge values must be positive.');
     });
   });
 
@@ -45,30 +45,30 @@ describe('EcdsaPallierProof', function () {
     const mockedPallierProof = mockedPallierProofs[0];
 
     it(`should throw an error for negative challenge value`, function () {
-      const n = hexToBigInt(mockedPallierProof.pallierKey.n);
+      const n = hexToBigInt(mockedPallierProof.paillierKey.n);
       const p = deserializePallierChallenge({ p: mockedPallierProof.p }).p;
       p[p.length - 1] = BigInt(-99);
       const sigma = deserializePallierChallengeProofs({ sigma: mockedPallierProof.sigma }).sigma;
-      should(() => verify(n, p, sigma)).throw('All pallier challenge values must be positive.');
+      should(() => verify(n, p, sigma)).throw('All paillier challenge values must be positive.');
     });
 
     it(`should throw an error for negative challenge proof value`, function () {
-      const n = hexToBigInt(mockedPallierProof.pallierKey.n);
+      const n = hexToBigInt(mockedPallierProof.paillierKey.n);
       const p = deserializePallierChallenge({ p: mockedPallierProof.p }).p;
       const sigma = deserializePallierChallengeProofs({ sigma: mockedPallierProof.sigma }).sigma;
       sigma[sigma.length - 1] = BigInt(-99);
-      should(() => verify(n, p, sigma)).throw('All pallier challenge proof values must be positive.');
+      should(() => verify(n, p, sigma)).throw('All paillier challenge proof values must be positive.');
     });
   });
 
   describe('prove and verify', function () {
     mockedPallierProofs.forEach((mockedPallierProof, i) => {
       it(`should create a challenge, prove it, and verify the proofs ${i} of ${mockedPallierProofs.length}`, async function () {
-        const n = hexToBigInt(mockedPallierProof.pallierKey.n);
-        const lambda = hexToBigInt(mockedPallierProof.pallierKey.lambda);
+        const n = hexToBigInt(mockedPallierProof.paillierKey.n);
+        const lambda = hexToBigInt(mockedPallierProof.paillierKey.lambda);
         const p = await generateP(n);
         const sigma = await prove(n, lambda, p);
-        const res = await verify(hexToBigInt(mockedPallierProof.pallierKey.n), p, sigma);
+        const res = await verify(hexToBigInt(mockedPallierProof.paillierKey.n), p, sigma);
         should(res).be.true();
       });
     });

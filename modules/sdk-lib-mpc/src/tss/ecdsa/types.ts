@@ -102,93 +102,94 @@ export function serializeNtildeWithProofs(challenge: DeserializedNtildeWithProof
   };
 }
 
-type PallierChallenge<T> = {
+type PaillierChallenge<T> = {
   p: T[];
 };
 
-type PallierChallengeProof<T> = {
+type PaillierChallengeProof<T> = {
   sigma: T[];
 };
 
-export type DeserializedPallierChallenge = PallierChallenge<bigint>;
-export type SerializedPallierChallenge = PallierChallenge<string>;
-export type DeserializedPallierChallengeProofs = PallierChallengeProof<bigint>;
-export type SerializedPallierChallengeProofs = PallierChallengeProof<string>;
+export type DeserializedPaillierChallenge = PaillierChallenge<bigint>;
+export type SerializedPaillierChallenge = PaillierChallenge<string>;
+export type DeserializedPaillierChallengeProofs = PaillierChallengeProof<bigint>;
+export type SerializedPaillierChallengeProofs = PaillierChallengeProof<string>;
 /**
- * The pallier proofs are done interactively between two parties.
- * If party A is completing a pallier proof $sigma$ with party B, then $p$ refers to
+ * The paillier proofs are done interactively between two parties.
+ * If party A is completing a paillier proof $sigma$ with party B, then $p$ refers to
  * a challenge given to A by B, and $sigma$ represents the proof to the challenge
  */
-export type DeserializedPallierChallengeWithProofs = DeserializedPallierChallenge & DeserializedPallierChallengeProofs;
-export type SerializedPallierChallengeWithProofs = SerializedPallierChallenge & SerializedPallierChallengeProofs;
+export type DeserializedPaillierChallengeWithProofs = DeserializedPaillierChallenge &
+  DeserializedPaillierChallengeProofs;
+export type SerializedPaillierChallengeWithProofs = SerializedPaillierChallenge & SerializedPaillierChallengeProofs;
 
 /**
- * Deserializes a pallier challenge to hex strings.
+ * Deserializes a paillier challenge to hex strings.
  * @param challenge
  */
-export function deserializePallierChallenge(challenge: SerializedPallierChallenge): DeserializedPallierChallenge {
+export function deserializePaillierChallenge(challenge: SerializedPaillierChallenge): DeserializedPaillierChallenge {
   return {
     p: convertHexArrToBigIntArr(challenge.p),
   };
 }
 
 /**
- * Deserializes a pallier challenge proof to hex strings.
+ * Deserializes a paillier challenge proof to hex strings.
  * @param challenge
  */
-export function deserializePallierChallengeProofs(
-  challenge: SerializedPallierChallengeProofs
-): DeserializedPallierChallengeProofs {
+export function deserializePaillierChallengeProofs(
+  challenge: SerializedPaillierChallengeProofs
+): DeserializedPaillierChallengeProofs {
   return {
     sigma: convertHexArrToBigIntArr(challenge.sigma),
   };
 }
 
 /**
- * Deserializes a pallier challenge and its proof to hex strings.
+ * Deserializes a paillier challenge and its proof to hex strings.
  * @param challengeWithProofs
  */
-export function deserializePallierChallengeWithProofs(
-  challengeWithProofs: SerializedPallierChallengeWithProofs
-): DeserializedPallierChallengeWithProofs {
+export function deserializePaillierChallengeWithProofs(
+  challengeWithProofs: SerializedPaillierChallengeWithProofs
+): DeserializedPaillierChallengeWithProofs {
   return {
-    p: deserializePallierChallenge(challengeWithProofs).p,
-    sigma: deserializePallierChallengeProofs(challengeWithProofs).sigma,
+    p: deserializePaillierChallenge(challengeWithProofs).p,
+    sigma: deserializePaillierChallengeProofs(challengeWithProofs).sigma,
   };
 }
 
 /**
- * Serializes a pallier challenge to hex strings.
+ * Serializes a paillier challenge to hex strings.
  * @param challenge
  */
-export function serializePallierChallenge(challenge: DeserializedPallierChallenge): SerializedPallierChallenge {
+export function serializePaillierChallenge(challenge: DeserializedPaillierChallenge): SerializedPaillierChallenge {
   return {
     p: convertBigIntArrToHexArr(challenge.p, 384),
   };
 }
 
 /**
- * Serializes a pallier challenge proof to hex strings.
+ * Serializes a paillier challenge proof to hex strings.
  * @param challenge
  */
-export function serializePallierChallengeProofs(
-  challenge: DeserializedPallierChallengeProofs
-): SerializedPallierChallengeProofs {
+export function serializePaillierChallengeProofs(
+  challenge: DeserializedPaillierChallengeProofs
+): SerializedPaillierChallengeProofs {
   return {
     sigma: convertBigIntArrToHexArr(challenge.sigma, 384),
   };
 }
 
 /**
- * Serializes a pallier challenge and its proof to hex strings.
+ * Serializes a paillier challenge and its proof to hex strings.
  * @param challengeWithProofs
  */
-export function serializePallierChallengeWithProofs(
-  challengeWithProofs: DeserializedPallierChallengeWithProofs
-): SerializedPallierChallengeWithProofs {
+export function serializePaillierChallengeWithProofs(
+  challengeWithProofs: DeserializedPaillierChallengeWithProofs
+): SerializedPaillierChallengeWithProofs {
   return {
-    ...serializePallierChallenge(challengeWithProofs),
-    ...serializePallierChallengeProofs(challengeWithProofs),
+    ...serializePaillierChallenge(challengeWithProofs),
+    ...serializePaillierChallengeProofs(challengeWithProofs),
   };
 }
 

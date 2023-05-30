@@ -295,7 +295,7 @@ export default class Ecdsa {
    * by #keyCombine. Generates a new challenge if not provided.
    * @param {XShare | YShare} share Private xShare or yShare of the signing operation
    * @param rangeProofChallenge - challenge generated via generateNtilde
-   * @param pallierProofChallenge
+   * @param paillierProofChallenge
    * @returns {KeyCombined} The share with amended challenge values
    */
   appendChallenge<T>(share: T, rangeProofChallenge: EcdsaTypes.SerializedNtilde): T & EcdsaTypes.SerializedNtilde {

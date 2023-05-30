@@ -28,7 +28,7 @@ describe('TSS ECDSA TESTS', function () {
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
-    const pallierMock = sinon
+    const paillierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
       .onCall(0)
       .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
@@ -45,7 +45,7 @@ describe('TSS ECDSA TESTS', function () {
     [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     // Needs to run this serially for testing deterministic key generation
-    // to get specific pallier keys to be assigned
+    // to get specific paillier keys to be assigned
     const D = await MPC.keyShare(1, 2, 3, seed);
     const E = await MPC.keyShare(2, 2, 3, seed);
     const F = await MPC.keyShare(3, 2, 3, seed);
@@ -78,8 +78,8 @@ describe('TSS ECDSA TESTS', function () {
       hKeyCombine,
     ];
     commonPublicKey = aKeyCombine.xShare.y;
-    pallierMock.reset();
-    pallierMock.restore();
+    paillierMock.reset();
+    paillierMock.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {

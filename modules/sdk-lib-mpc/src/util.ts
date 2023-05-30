@@ -90,7 +90,7 @@ export function clamp(u: bigint): bigint {
 }
 
 /**
- * Function get pallier public key simple varient
+ * Function get paillier public key simple varient
  * @param {bigint} n
  * @returns {bigint}
  */
