@@ -24,7 +24,7 @@ import { Any } from 'cosmjs-types/google/protobuf/any';
 
 import * as constants from './constants';
 import { CosmosLikeTransaction, FeeData, MessageData } from './iface';
-import { KeyPair } from './keyPair';
+import { CosmosKeyPair as KeyPair } from './keyPair';
 
 export class CosmosLikeUtils implements BaseUtils {
   private registry = new Registry([...defaultRegistryTypes]);

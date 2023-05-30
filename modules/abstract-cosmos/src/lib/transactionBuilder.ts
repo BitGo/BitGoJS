@@ -16,7 +16,7 @@ import {
   SendMessage,
   WithdrawDelegatorRewardsMessage,
 } from './iface';
-import { KeyPair } from './keyPair';
+import { CosmosKeyPair as KeyPair } from './keyPair';
 import { CosmosTransaction } from './transaction';
 import utils from './utils';
 

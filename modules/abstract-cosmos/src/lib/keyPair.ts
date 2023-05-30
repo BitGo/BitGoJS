@@ -7,7 +7,6 @@ import {
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/utxo-lib';
-import { pubkeyToAddress } from '@cosmjs/amino';
 import { randomBytes } from 'crypto';
 
 import { DEFAULT_SEED_SIZE_BYTES } from './constants';
@@ -15,7 +14,7 @@ import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 /**
  * Cosmos keys and address management.
  */
-export class KeyPair extends Secp256k1ExtendedKeyPair {
+export class CosmosKeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    * @param { KeyPairOptions } source Either a master seed, a private key (extended or raw), or a public key
@@ -50,17 +49,5 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       pub: this.getPublicKey({ compressed: true }).toString('hex'),
       prv: this.getPrivateKey()?.toString('hex'),
     };
-  }
-
-  /** @inheritdoc */
-  getAddress(): string {
-    const base64String = Buffer.from(this.getKeys().pub.slice(0, 66), 'hex').toString('base64');
-    return pubkeyToAddress(
-      {
-        type: 'tendermint/PubKeySecp256k1',
-        value: base64String,
-      },
-      'osmo'
-    );
   }
 }
