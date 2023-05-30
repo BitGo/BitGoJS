@@ -399,15 +399,15 @@ export default class Ecdsa {
    * @returns {SignConvertRT}
    */
   async signConvertStep1(shares: SignConvertStep1): Promise<SignConvertStep1Response> {
+    const receivedKShare = shares.kShare;
     const xShare = shares.xShare; // currentParticipant secret xShare
     const yShare: YShareWithChallenges = {
       ...shares.yShare,
-      ntilde: shares.kShare.ntilde,
-      h1: shares.kShare.h1,
-      h2: shares.kShare.h2,
+      ntilde: receivedKShare.ntilde,
+      h1: receivedKShare.h1,
+      h2: receivedKShare.h2,
     };
     const signShare = await this.signShare(xShare, yShare);
-    const receivedKShare = shares.kShare;
     const shareParticipant = signShare.wShare;
 
     if (shareParticipant.i !== receivedKShare.i) {
