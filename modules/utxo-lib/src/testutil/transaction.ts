@@ -34,10 +34,12 @@ export interface TxnInput<TNumber extends number | bigint> {
 }
 
 /**
+ * should set either address or scriptType, never both.
  * set isInternalAddress=true for internal output address
  */
 export interface TxnOutput<TNumber extends number | bigint> {
-  scriptType: TxnOutputScriptType;
+  address?: string;
+  scriptType?: TxnOutputScriptType;
   value: TNumber;
   isInternalAddress?: boolean;
 }
@@ -148,6 +150,10 @@ export function constructTxnBuilder<TNumber extends number | bigint>(
   const totalInputAmount = inputs.reduce((sum, input) => sum + BigInt(input.value), BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + BigInt(output.value), BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
+  assert(
+    !outputs.some((o) => (o.scriptType && o.address) || (!o.scriptType && !o.address)),
+    'only either output script type or address should be provided'
+  );
 
   const txb = createTransactionBuilderForNetwork<TNumber>(network);
 
@@ -158,15 +164,18 @@ export function constructTxnBuilder<TNumber extends number | bigint>(
   });
 
   outputs.forEach((output, i) => {
-    txb.addOutput(
-      getWalletAddress(
-        rootWalletKeys,
-        output.isInternalAddress ? getInternalChainCode(output.scriptType) : getExternalChainCode(output.scriptType),
-        i,
-        network
-      ),
-      output.value
-    );
+    const address = output.scriptType
+      ? getWalletAddress(
+          rootWalletKeys,
+          output.isInternalAddress ? getInternalChainCode(output.scriptType) : getExternalChainCode(output.scriptType),
+          i,
+          network
+        )
+      : output.address;
+    if (!address) {
+      throw new Error('address is missing');
+    }
+    txb.addOutput(address, output.value);
   });
 
   if (sign === 'unsigned') {

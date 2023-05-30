@@ -299,15 +299,11 @@ export class Dimensions {
 
   /**
    * Create Dimensions from psbt input
-   * @param psbt - psbt
-   * @param inputIndex - psbt input index
+   * @param input - psbt input
    */
-  static fromPsbtInput(psbt: bitgo.UtxoPsbt, inputIndex: number): Dimensions {
-    const parsed = utxolib.bitgo.parsePsbtInput(psbt, inputIndex);
-    if (parsed && parsed.scriptType) {
-      return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
-    }
-    throw new Error(`illegal input ${inputIndex}: empty script`);
+  static fromPsbtInput(input: bitgo.PsbtInputType): Dimensions {
+    const parsed = bitgo.parsePsbtInput(input);
+    return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
   }
 
   /**
@@ -324,15 +320,14 @@ export class Dimensions {
 
   /**
    * Create Dimensions from multiple psbt inputs
-   * @param psbt
-   * @param params - @see Dimensions.fromInput()
-   * @return {Dimensions} sum of the dimensions for each input (@see Dimensions.fromInput())
+   * @param inputs psbt input array
+   * @return {Dimensions} sum of the dimensions for each input (@see Dimensions.fromPsbtInput())
    */
-  static fromPsbtInputs(psbt: bitgo.UtxoPsbt): Dimensions {
-    if (!Array.isArray(psbt.txInputs)) {
-      throw new TypeError(`psbt must have inputs`);
+  static fromPsbtInputs(inputs: bitgo.PsbtInputType[]): Dimensions {
+    if (!Array.isArray(inputs)) {
+      throw new TypeError(`inputs must be array`);
     }
-    return Dimensions.sum(...psbt.txInputs.map((input, inputIndex) => Dimensions.fromPsbtInput(psbt, inputIndex)));
+    return Dimensions.sum(...inputs.map((input, _) => Dimensions.fromPsbtInput(input)));
   }
 
   /**
@@ -440,7 +435,7 @@ export class Dimensions {
    * @return {Dimensions}
    */
   static fromPsbt(psbt: bitgo.UtxoPsbt): Dimensions {
-    return Dimensions.fromPsbtInputs(psbt).plus(Dimensions.fromOutputs(psbt.getUnsignedTx().outs));
+    return Dimensions.fromPsbtInputs(psbt.data.inputs).plus(Dimensions.fromOutputs(psbt.getUnsignedTx().outs));
   }
 
   /**

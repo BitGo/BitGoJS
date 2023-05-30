@@ -1107,7 +1107,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     const isTransactionWithKeyPathSpendInput =
-      tx instanceof bitgo.UtxoPsbt && bitgo.musig2.isTransactionWithKeyPathSpendInput(tx);
+      tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
     let isLastSignature = false;
     if (_.isBoolean(params.isLastSignature)) {

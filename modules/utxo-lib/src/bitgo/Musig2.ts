@@ -1,7 +1,5 @@
-import { TxInput } from 'bitcoinjs-lib';
 import { SessionKey } from '@brandonblack/musig';
 
-import { PSBT_PROPRIETARY_IDENTIFIER, ProprietaryKeyValue, UtxoPsbt, ProprietaryKeySubtype } from './UtxoPsbt';
 import {
   checkPlainPublicKey,
   checkTapMerkleRoot,
@@ -13,9 +11,13 @@ import { ecc, musig } from '../noble_ecc';
 import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
 import { Transaction } from '../index';
-import { UtxoTransaction } from './UtxoTransaction';
-import { getSignatureCount, parsePsbtInput } from './wallet';
-import { parseSignatureScript } from './parseInput';
+import { PsbtInput } from 'bip174/src/lib/interfaces';
+import {
+  getPsbtInputProprietaryKeyVals,
+  ProprietaryKeySubtype,
+  ProprietaryKeyValue,
+  PSBT_PROPRIETARY_IDENTIFIER,
+} from './PsbtUtil';
 
 /**
  *  Participant key value object.
@@ -304,8 +306,8 @@ export function createMusig2SigningSession(sessionArgs: {
  * @returns psbt proprietary key for musig2 participant key value data
  * If no key value exists, undefined is returned.
  */
-export function parsePsbtMusig2Participants(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2Participants | undefined {
-  const participantsKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
+export function parsePsbtMusig2Participants(input: PsbtInput): PsbtMusig2Participants | undefined {
+  const participantsKeyVals = getPsbtInputProprietaryKeyVals(input, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
   });
@@ -325,8 +327,8 @@ export function parsePsbtMusig2Participants(psbt: UtxoPsbt, inputIndex: number):
  * @returns psbt proprietary key for musig2 public nonce key value data
  * If no key value exists, undefined is returned.
  */
-export function parsePsbtMusig2Nonces(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2PubNonce[] | undefined {
-  const nonceKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
+export function parsePsbtMusig2Nonces(input: PsbtInput): PsbtMusig2PubNonce[] | undefined {
+  const nonceKeyVals = getPsbtInputProprietaryKeyVals(input, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PUB_NONCE,
   });
@@ -346,8 +348,8 @@ export function parsePsbtMusig2Nonces(psbt: UtxoPsbt, inputIndex: number): PsbtM
  * @returns psbt proprietary key for musig2 partial sig key value data
  * If no key value exists, undefined is returned.
  */
-export function parsePsbtMusig2PartialSigs(psbt: UtxoPsbt, inputIndex: number): PsbtMusig2PartialSig[] | undefined {
-  const sigKeyVals = psbt.getProprietaryKeyVals(inputIndex, {
+export function parsePsbtMusig2PartialSigs(input: PsbtInput): PsbtMusig2PartialSig[] | undefined {
+  const sigKeyVals = getPsbtInputProprietaryKeyVals(input, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
   });
@@ -480,28 +482,4 @@ export function musig2DeterministicSign(params: PsbtMusig2DeterministicParams): 
     msg: params.hash,
   });
   return { sig: Buffer.from(sig), sessionKey, publicNonce: Buffer.from(publicNonce) };
-}
-
-/**
- * @returns true iff given psbt/transaction/tx-input-array contains at least one taproot key path spend input
- */
-export function isTransactionWithKeyPathSpendInput(
-  data: UtxoPsbt | UtxoTransaction<bigint | number> | TxInput[]
-): boolean {
-  if (data instanceof UtxoPsbt) {
-    return data.data.inputs.some((_, inputIndex) => {
-      const parsedInput = parsePsbtInput(data, inputIndex);
-      return parsedInput?.scriptType === 'taprootKeyPathSpend';
-    });
-  }
-  const inputs = data instanceof UtxoTransaction ? data.ins : data;
-  return inputs.some((input, inputIndex) => {
-    // If the input is not signed, it cannot be a taprootKeyPathSpend input because you can only
-    // extract a fully signed psbt into a transaction with taprootKeyPathSpend inputs.
-    if (getSignatureCount(data, inputIndex) === 0) {
-      return false;
-    }
-    const parsedInput = parseSignatureScript(input);
-    return parsedInput?.scriptType === 'taprootKeyPathSpend';
-  });
 }
