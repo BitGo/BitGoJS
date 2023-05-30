@@ -8,6 +8,7 @@ import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPubli
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
 import {
+  EcdsaPaillierProof,
   EcdsaRangeProof,
   EcdsaTypes,
   randomPositiveCoPrimeTo,
@@ -298,13 +299,19 @@ export default class Ecdsa {
    * @param paillierProofChallenge
    * @returns {KeyCombined} The share with amended challenge values
    */
-  appendChallenge<T>(share: T, rangeProofChallenge: EcdsaTypes.SerializedNtilde): T & EcdsaTypes.SerializedNtilde {
+  appendChallenge<T>(
+    share: T,
+    rangeProofChallenge: EcdsaTypes.SerializedNtilde,
+    paillierProofChallenge: EcdsaTypes.SerializedPaillierChallenge
+  ): T & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge {
     const { ntilde, h1, h2 } = rangeProofChallenge;
+    const { p } = paillierProofChallenge;
     return {
       ...share,
       ntilde,
       h1,
       h2,
+      p,
     };
   }
 
@@ -342,6 +349,7 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
+      p: xShare.p,
       k: bigIntToBufferBE(k, 32).toString('hex'),
       ck: bigIntToBufferBE(ck, 768).toString('hex'),
       w: bigIntToBufferBE(w, 32).toString('hex'),
@@ -363,6 +371,12 @@ export default class Ecdsa {
       rk
     );
 
+    // create paillier challenge proof based on the other signers challenge
+    const sigma = EcdsaPaillierProof.prove(
+      hexToBigInt(xShare.n),
+      hexToBigInt(xShare.l),
+      EcdsaTypes.deserializePaillierChallenge(yShare).p
+    );
     const proofShare = {
       z: bigIntToBufferBE(proof.z, 384).toString('hex'),
       u: bigIntToBufferBE(proof.u, 768).toString('hex'),
@@ -382,7 +396,9 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
+      p: xShare.p,
       k: bigIntToBufferBE(ck, 768).toString('hex'),
+      sigma: EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma }).sigma,
       proof: proofShare,
     };
 
@@ -407,6 +423,7 @@ export default class Ecdsa {
       ntilde: receivedKShare.ntilde,
       h1: receivedKShare.h1,
       h2: receivedKShare.h2,
+      p: receivedKShare.p,
     };
     const signShare = await this.signShare(xShare, yShare);
     const shareParticipant = signShare.wShare;
@@ -425,12 +442,22 @@ export default class Ecdsa {
     const ntildea = hexToBigInt(receivedKShare.ntilde);
     const h1a = hexToBigInt(receivedKShare.h1);
     const h2a = hexToBigInt(receivedKShare.h2);
+    // the current participants paillier proof challenge
+    const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge(shareParticipant);
+    // the other signing parties proof to the current participants paillier proof challenge
+    const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs(receivedKShare);
     // the current participant's range proof challenge
     const ntildeb = hexToBigInt(shareParticipant.ntilde);
     const h1b = hexToBigInt(shareParticipant.h1);
     const h2b = hexToBigInt(shareParticipant.h2);
 
     const k = hexToBigInt(receivedKShare.k);
+
+    if (
+      !(await EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma))
+    ) {
+      throw new Error('Could not verify signing A share paillier proof');
+    }
     if (
       !EcdsaRangeProof.verify(
         Ecdsa.curve,
@@ -556,6 +583,9 @@ export default class Ecdsa {
         proof: proofToBeSent,
         gammaProof: gammaProofToBeSent,
         wProof: wProofToBeSent,
+        // provide the share participants proof
+        // to the paillier challenge in the receivedKShare from the other signer
+        sigma: signShare.kShare.sigma,
       },
       bShare: {
         ...shareParticipant,
@@ -581,12 +611,18 @@ export default class Ecdsa {
     if (!receivedAShare.wProof) {
       throw new Error('Unexpected missing wProof on aShareToBeSent');
     }
+    const n = hexToBigInt(receivedAShare.n); // Paillier pub from other signer
     // current participant public key
     const pka = getPaillierPublicKey(hexToBigInt(shares.wShare.n));
     const ntildea = hexToBigInt(shares.wShare.ntilde);
     const h1a = hexToBigInt(shares.wShare.h1);
     const h2a = hexToBigInt(shares.wShare.h2);
     const ck = hexToBigInt(shares.wShare.ck);
+    const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge(shares.wShare);
+    const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs(shares.aShare);
+    if (!EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma)) {
+      throw new Error('could not verify signing share for paillier proof');
+    }
     // Verify $\gamma_i \in Z_{N^2}$.
     if (
       !EcdsaRangeProof.verifyWithCheck(
@@ -664,7 +700,6 @@ export default class Ecdsa {
     if (!receivedAShare.proof) {
       throw new Error('Unexpected missing proof on aShareToBeSent');
     }
-    const n = hexToBigInt(receivedAShare.n); // Paillier pub from other signer
     const pkb = getPaillierPublicKey(n);
     const ntildeb = hexToBigInt(receivedAShare.ntilde);
     const h1b = hexToBigInt(receivedAShare.h1);
@@ -926,6 +961,7 @@ export default class Ecdsa {
         ntilde: shares.kShare.ntilde,
         h1: shares.kShare.h1,
         h2: shares.kShare.h2,
+        p: shares.kShare.p,
       };
       const signShare = await this.signShare(xShare, yShare);
       kShare = signShare.kShare;

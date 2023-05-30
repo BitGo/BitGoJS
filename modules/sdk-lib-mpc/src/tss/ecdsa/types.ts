@@ -164,7 +164,7 @@ export function deserializePaillierChallengeWithProofs(
  */
 export function serializePaillierChallenge(challenge: DeserializedPaillierChallenge): SerializedPaillierChallenge {
   return {
-    p: convertBigIntArrToHexArr(challenge.p, 384),
+    p: convertBigIntArrToHexArr(challenge.p, 768),
   };
 }
 
@@ -176,7 +176,7 @@ export function serializePaillierChallengeProofs(
   challenge: DeserializedPaillierChallengeProofs
 ): SerializedPaillierChallengeProofs {
   return {
-    sigma: convertBigIntArrToHexArr(challenge.sigma, 384),
+    sigma: convertBigIntArrToHexArr(challenge.sigma, 768),
   };
 }
 

@@ -653,14 +653,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const userIndex = userSigningMaterial.pShare.i;
 
     const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, 0);
-    const userXShare = MPC.appendChallenge(signingKey.xShare, challenges.enterpriseChallenge);
+    // TODO: Pass correct challenges
+    const userXShare = MPC.appendChallenge(
+      signingKey.xShare,
+      challenges.enterpriseChallenge,
+      {} as any as EcdsaTypes.SerializedPaillierChallenge
+    );
     const bitgoYShare = MPC.appendChallenge(
       {
         i: userIndex,
         j: bitgoIndex,
         n: signingKey.nShares[bitgoIndex].n,
       },
-      challenges.bitgoChallenge
+      challenges.bitgoChallenge,
+      {} as any as EcdsaTypes.SerializedPaillierChallenge
     );
 
     const userSignShare = await ECDSAMethods.createUserSignShare(userXShare, bitgoYShare);

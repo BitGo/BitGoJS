@@ -1,28 +1,28 @@
 import { Ecdsa } from './../../../account-lib/mpc/tss';
 import {
-  DecryptableNShare,
-  CombinedKey,
-  SigningMaterial,
-  EncryptedNShare,
   AShare,
+  BShare,
+  CombinedKey,
   CreateUserOmicronAndDeltaShareRT,
+  DecryptableNShare,
   DShare,
+  EncryptedNShare,
   GShare,
   KeyShare,
   NShare,
   OShare,
+  ReceivedShareType,
+  SendShareToBitgoRT,
   SendShareType,
+  Signature,
   SignatureShare,
+  SigningMaterial,
   SignShare,
   WShare,
   XShareWithChallenges,
   YShareWithChallenges,
-  SendShareToBitgoRT,
-  ReceivedShareType,
-  BShare,
-  Signature,
 } from './types';
-import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from '../../utils';
+import { createShareProof, RequestType, SignatureShareRecord, SignatureShareType } from '../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import {
@@ -403,6 +403,7 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
 /**
  * Decrypts encrypted n share
  * @param encryptedNShare - decryptable n share with recipient private gpg key armor and sender public gpg key
+ * @param isbs58Encoded
  * @returns N share
  */
 export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58Encoded = true): Promise<NShare> {
@@ -422,7 +423,7 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
     u = prv.slice(0, 64);
   }
 
-  const nShare: NShare = {
+  return {
     i: encryptedNShare.nShare.i,
     j: encryptedNShare.nShare.j,
     n: encryptedNShare.nShare.n,
@@ -431,13 +432,11 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
     chaincode: encryptedNShare.nShare.publicShare.slice(66, 130),
     v: encryptedNShare.nShare.vssProof,
   };
-
-  return nShare;
 }
 
 /**
- * Gets public key from common key chain
- * @param commonKeyChain - common key chain of ecdsa tss
+ * Gets public key from common keychain
+ * @param commonKeyChain - common keychain of ecdsa tss
  * @returns public key
  */
 export function getPublicKey(commonKeyChain: string): string {
@@ -472,7 +471,7 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 11, 'K');
+  validateSharesLength(shares, 11 + 2 * 128, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
 
   const proof: RangeProofShare | undefined = hasProof
@@ -495,6 +494,8 @@ export function parseKShare(share: SignatureShareRecord): KShare {
     h1: shares[3],
     h2: shares[4],
     proof,
+    p: shares.slice(11, 11 + 128),
+    sigma: shares.slice(11 + 128),
   };
 }
 
@@ -511,7 +512,9 @@ export function convertKShare(share: KShare): SignatureShareRecord {
       share.h2
     }${delimeter}${share.proof?.z || ''}${delimeter}${share.proof?.u || ''}${delimeter}${
       share.proof?.w || ''
-    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}`,
+    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${
+      share.proof?.s2 || ''
+    }${delimeter}${share.p.join(delimeter)}${delimeter}${share.sigma.join(delimeter)}`,
   };
 }
 
@@ -522,7 +525,7 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 37, 'A');
+  validateSharesLength(shares, 37 + 128, 'A');
   const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
@@ -585,6 +588,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     proof,
     gammaProof,
     wProof,
+    sigma: shares.slice(37),
   };
 }
 
@@ -619,7 +623,7 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.wProof?.s2 || ''
     }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
       share.wProof?.u || ''
-    }${delimeter}${share.wProof?.x || ''}`,
+    }${delimeter}${share.wProof?.x || ''}${delimeter}${share.sigma.join(delimeter)}`,
   };
 }
 
@@ -813,6 +817,8 @@ export function parseCombinedSignature(share: SignatureShareRecord): Signature {
 /**
  * convert signature share to signature share record
  * @param share - Signature share
+ * @param senderIndex
+ * @param recipientIndex
  * @returns signature share record
  */
 export function convertSignatureShare(
@@ -836,7 +842,11 @@ export function convertBShare(share: BShare): SignatureShareRecord {
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(share.i),
-    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}`,
+    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${
+      share.w
+    }${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${
+      share.ntilde
+    }${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}${delimeter}${share.p.join(delimeter)}`,
   };
 }
 
@@ -847,7 +857,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 13, 'B');
+  validateSharesLength(shares, 13 + 128, 'B');
 
   return {
     i: getParticipantIndex(share.to),
@@ -864,6 +874,7 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     h1: shares[10],
     h2: shares[11],
     ck: shares[12],
+    p: shares.slice(13),
   };
 }
 
