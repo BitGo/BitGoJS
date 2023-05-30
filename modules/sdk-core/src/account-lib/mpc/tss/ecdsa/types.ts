@@ -204,28 +204,28 @@ export type SignConvert = {
 };
 
 export type SignConvertStep1 = {
-  xShare: XShareWithChallenges; // XShare of the current participant
-  yShare: YShare; // YShare corresponding to the other participant
+  xShare: XShareWithChallenges; // XShare of the current participant (does not get sent to other participant)
+  yShare: YShare; // YShare corresponding to the other participant (does not get sent to other participant)
   kShare: KShare; // share to be modified and sent to other participant
 };
 
 export type SignConvertStep1Response = {
-  bShare: BShare; // participant share
+  bShare: BShare; // private participant share (does not get sent to other participant)
   aShare: AShare; // share to be sent to other participant
 };
 
 export type SignConvertStep2 = {
-  wShare: WShare; // participant share
+  wShare: WShare; // private participant share (does not get sent to other participant)
   aShare: AShare; // share to be modified and sent to other participant
 };
 
 export type SignConvertStep2Response = {
-  gShare: GShare; // participant share
+  gShare: GShare; // private participant share (does not get sent to other participant)
   muShare: MUShare; // share to be sent to other participant
 };
 
 export type SignConvertStep3 = {
-  bShare: BShare; // participant share
+  bShare: BShare; // private participant share (does not get sent to other participant)
   muShare: MUShare; // share to be modified and sent to other participant
 };
 
