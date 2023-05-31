@@ -8,6 +8,7 @@ import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPubli
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
 import {
+  EcdsaPaillierProof,
   EcdsaRangeProof,
   EcdsaTypes,
   randomPositiveCoPrimeTo,
@@ -251,7 +252,7 @@ export default class Ecdsa {
       shares.nShares[P_j.j] = {
         i: P_j.j,
         j: P_i.i,
-        n: P_j.n,
+        n: P_i.n,
         u: bigIntToBufferBE(split_u[P_j.j], 32).toString('hex'),
         y: bigIntToBufferBE(contribY, 32).toString('hex'),
         v: bigIntToBufferBE(v[0], 32).toString('hex'),
@@ -295,16 +296,21 @@ export default class Ecdsa {
    * by #keyCombine. Generates a new challenge if not provided.
    * @param {XShare | YShare} share Private xShare or yShare of the signing operation
    * @param rangeProofChallenge - challenge generated via generateNtilde
-   * @param pallierProofChallenge
+   * @param paillierProofChallenge
    * @returns {KeyCombined} The share with amended challenge values
    */
-  appendChallenge<T>(share: T, rangeProofChallenge: EcdsaTypes.SerializedNtilde): T & EcdsaTypes.SerializedNtilde {
+  appendChallenge<T>(
+    share: T,
+    rangeProofChallenge: EcdsaTypes.SerializedNtilde,
+    paillierProofChallenge?: EcdsaTypes.SerializedPaillierChallenge
+  ): T & EcdsaTypes.SerializedEcdsaChallenges {
     const { ntilde, h1, h2 } = rangeProofChallenge;
     return {
       ...share,
       ntilde,
       h1,
       h2,
+      p: paillierProofChallenge ? paillierProofChallenge.p : undefined,
     };
   }
 
@@ -342,6 +348,7 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
+      p: xShare.p,
       k: bigIntToBufferBE(k, 32).toString('hex'),
       ck: bigIntToBufferBE(ck, 768).toString('hex'),
       w: bigIntToBufferBE(w, 32).toString('hex'),
@@ -363,6 +370,15 @@ export default class Ecdsa {
       rk
     );
 
+    // create paillier challenge proof based on the other signers challenge
+    const sigma = yShare.p
+      ? EcdsaPaillierProof.prove(
+          hexToBigInt(xShare.n),
+          hexToBigInt(xShare.l),
+          EcdsaTypes.deserializePaillierChallenge({ p: yShare.p }).p
+        )
+      : undefined;
+
     const proofShare = {
       z: bigIntToBufferBE(proof.z, 384).toString('hex'),
       u: bigIntToBufferBE(proof.u, 768).toString('hex'),
@@ -382,7 +398,9 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
+      p: xShare.p,
       k: bigIntToBufferBE(ck, 768).toString('hex'),
+      sigma: sigma ? EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma }).sigma : undefined,
       proof: proofShare,
     };
 
@@ -395,19 +413,21 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another signer.
    * Connection 1.2 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer A completed signShare initially (input to this fn), then this step is completed by signer B.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
   async signConvertStep1(shares: SignConvertStep1): Promise<SignConvertStep1Response> {
+    const receivedKShare = shares.kShare;
     const xShare = shares.xShare; // currentParticipant secret xShare
     const yShare: YShareWithChallenges = {
       ...shares.yShare,
-      ntilde: shares.kShare.ntilde,
-      h1: shares.kShare.h1,
-      h2: shares.kShare.h2,
+      ntilde: receivedKShare.ntilde,
+      h1: receivedKShare.h1,
+      h2: receivedKShare.h2,
+      p: receivedKShare.p,
     };
     const signShare = await this.signShare(xShare, yShare);
-    const receivedKShare = shares.kShare;
     const shareParticipant = signShare.wShare;
 
     if (shareParticipant.i !== receivedKShare.i) {
@@ -424,12 +444,30 @@ export default class Ecdsa {
     const ntildea = hexToBigInt(receivedKShare.ntilde);
     const h1a = hexToBigInt(receivedKShare.h1);
     const h2a = hexToBigInt(receivedKShare.h2);
+
     // the current participant's range proof challenge
     const ntildeb = hexToBigInt(shareParticipant.ntilde);
     const h1b = hexToBigInt(shareParticipant.h1);
     const h2b = hexToBigInt(shareParticipant.h2);
 
     const k = hexToBigInt(receivedKShare.k);
+
+    if (shareParticipant.p && receivedKShare.sigma) {
+      // the current participants paillier proof challenge
+      const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge({ p: shareParticipant.p });
+      // the other signing parties proof to the current participants paillier proof challenge
+      const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs({
+        sigma: receivedKShare.sigma,
+      });
+      if (
+        !(await EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma))
+      ) {
+        throw new Error('Could not verify signing A share paillier proof');
+      }
+    } else {
+      console.warn('Missing paillier proof, skipping verification');
+    }
+
     if (
       !EcdsaRangeProof.verify(
         Ecdsa.curve,
@@ -555,6 +593,9 @@ export default class Ecdsa {
         proof: proofToBeSent,
         gammaProof: gammaProofToBeSent,
         wProof: wProofToBeSent,
+        // provide the share participants proof
+        // to the paillier challenge in the receivedKShare from the other signer
+        sigma: signShare.kShare.sigma,
       },
       bShare: {
         ...shareParticipant,
@@ -568,6 +609,7 @@ export default class Ecdsa {
    * Perform multiplicitive-to-additive (MtA) share conversion with another
    * signer.
    * Connection 2.1 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer B completed signConvertStep1, then this step is completed by signer A.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
@@ -579,12 +621,26 @@ export default class Ecdsa {
     if (!receivedAShare.wProof) {
       throw new Error('Unexpected missing wProof on aShareToBeSent');
     }
+    const n = hexToBigInt(receivedAShare.n); // Paillier pub from other signer
     // current participant public key
     const pka = getPaillierPublicKey(hexToBigInt(shares.wShare.n));
     const ntildea = hexToBigInt(shares.wShare.ntilde);
     const h1a = hexToBigInt(shares.wShare.h1);
     const h2a = hexToBigInt(shares.wShare.h2);
     const ck = hexToBigInt(shares.wShare.ck);
+
+    if (shares.wShare.p && shares.aShare.sigma) {
+      const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge({ p: shares.wShare.p });
+      const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs({
+        sigma: shares.aShare.sigma,
+      });
+      if (!EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma)) {
+        throw new Error('could not verify signing share for paillier proof');
+      }
+    } else {
+      console.warn('Missing paillier proof, skipping verification');
+    }
+
     // Verify $\gamma_i \in Z_{N^2}$.
     if (
       !EcdsaRangeProof.verifyWithCheck(
@@ -662,7 +718,6 @@ export default class Ecdsa {
     if (!receivedAShare.proof) {
       throw new Error('Unexpected missing proof on aShareToBeSent');
     }
-    const n = hexToBigInt(receivedAShare.n); // Paillier pub from other signer
     const pkb = getPaillierPublicKey(n);
     const ntildeb = hexToBigInt(receivedAShare.ntilde);
     const h1b = hexToBigInt(receivedAShare.h1);
@@ -801,6 +856,7 @@ export default class Ecdsa {
   /**
    * Perform multiplicitive-to-additive (MtA) share conversion with another signer.
    * Connection 2.2 in https://lucid.app/lucidchart/7061785b-bc5c-4002-b546-3f4a3612fc62/edit?page=IAVmvYO4FvKc#
+   * If signer A completed signConvertStep2, then this step is completed by signer B.
    * @param {SignConvert} shares
    * @returns {SignConvertRT}
    */
@@ -923,6 +979,7 @@ export default class Ecdsa {
         ntilde: shares.kShare.ntilde,
         h1: shares.kShare.h1,
         h2: shares.kShare.h2,
+        p: shares.kShare.p,
       };
       const signShare = await this.signShare(xShare, yShare);
       kShare = signShare.kShare;

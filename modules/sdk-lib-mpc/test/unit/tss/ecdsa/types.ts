@@ -3,14 +3,14 @@ import {
   serializeNtilde,
   deserializeNtildeWithProofs,
   serializeNtildeWithProofs,
-  deserializePallierChallengeWithProofs,
-  serializePallierChallengeWithProofs,
-  deserializePallierChallenge,
-  serializePallierChallenge,
-  deserializePallierChallengeProofs,
-  serializePallierChallengeProofs,
+  deserializePaillierChallengeWithProofs,
+  serializePaillierChallengeWithProofs,
+  deserializePaillierChallenge,
+  serializePaillierChallenge,
+  deserializePaillierChallengeProofs,
+  serializePaillierChallengeProofs,
 } from '../../../../src/tss/ecdsa/types';
-import { mockedPallierProofs } from '../../../pallierproof.util';
+import { mockedPaillierProofs } from '../../../paillierproof.util';
 import { ntildeProofs, rangeProofChallenges } from '../../../rangeproof.util';
 
 describe('Ecdsa', function () {
@@ -36,46 +36,48 @@ describe('Ecdsa', function () {
     });
   });
 
-  it('serializePallierChallenge and deserializePallierChallenge are deterministic', function () {
-    const pallierChallenges = mockedPallierProofs.map((value) => {
+  it('serializePaillierChallenge and deserializePaillierChallenge are deterministic', function () {
+    const paillierChallenges = mockedPaillierProofs.map((value) => {
       return {
         p: value.p,
       };
     });
-    pallierChallenges.forEach((serializedChallengeBefore) => {
-      const deserializedChallenge = deserializePallierChallenge(serializedChallengeBefore);
-      const serializedChallengeAfter = serializePallierChallenge(deserializedChallenge);
+    paillierChallenges.forEach((serializedChallengeBefore) => {
+      const deserializedChallenge = deserializePaillierChallenge(serializedChallengeBefore);
+      const serializedChallengeAfter = serializePaillierChallenge(deserializedChallenge);
       serializedChallengeBefore.should.deepEqual(serializedChallengeAfter);
     });
   });
 
-  it('serializePallierChallengeProofs and deserializePallierChallengeProofs are deterministic', function () {
-    const pallierChallengeProofs = mockedPallierProofs.map((value) => {
+  it('serializePaillierChallengeProofs and deserializePaillierChallengeProofs are deterministic', function () {
+    const paillierChallengeProofs = mockedPaillierProofs.map((value) => {
       return {
         sigma: value.sigma,
       };
     });
-    pallierChallengeProofs.forEach((serializedPallierChallengeProofBefore) => {
-      const deserializedPallierChallengeProof = deserializePallierChallengeProofs(
-        serializedPallierChallengeProofBefore
+    paillierChallengeProofs.forEach((serializedPaillierChallengeProofBefore) => {
+      const deserializedPaillierChallengeProof = deserializePaillierChallengeProofs(
+        serializedPaillierChallengeProofBefore
       );
-      const serializedPallierChallengeProofAfter = serializePallierChallengeProofs(deserializedPallierChallengeProof);
-      serializedPallierChallengeProofBefore.should.deepEqual(serializedPallierChallengeProofAfter);
+      const serializedPaillierChallengeProofAfter = serializePaillierChallengeProofs(
+        deserializedPaillierChallengeProof
+      );
+      serializedPaillierChallengeProofBefore.should.deepEqual(serializedPaillierChallengeProofAfter);
     });
   });
 
-  it('serializePallierChallengeWithProofs and deserializePallierChallengeWithProofs are deterministic', function () {
-    const pallierChallengesWithProofs = mockedPallierProofs.map((value) => {
+  it('serializePaillierChallengeWithProofs and deserializePaillierChallengeWithProofs are deterministic', function () {
+    const paillierChallengesWithProofs = mockedPaillierProofs.map((value) => {
       return {
         p: value.p,
         sigma: value.sigma,
       };
     });
-    pallierChallengesWithProofs.forEach((serializedChallengeWithProofsBefore) => {
-      const deserializedChallengeWithProofs = deserializePallierChallengeWithProofs(
+    paillierChallengesWithProofs.forEach((serializedChallengeWithProofsBefore) => {
+      const deserializedChallengeWithProofs = deserializePaillierChallengeWithProofs(
         serializedChallengeWithProofsBefore
       );
-      const serializedChallengeWithProofsAfter = serializePallierChallengeWithProofs(deserializedChallengeWithProofs);
+      const serializedChallengeWithProofsAfter = serializePaillierChallengeWithProofs(deserializedChallengeWithProofs);
       serializedChallengeWithProofsBefore.should.deepEqual(serializedChallengeWithProofsAfter);
     });
   });

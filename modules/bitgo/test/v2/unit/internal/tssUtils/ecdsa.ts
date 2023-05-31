@@ -25,7 +25,7 @@ import {
   Wallet,
   EnterpriseData,
 } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo/sdk-lib-mpc';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
 import {
@@ -596,10 +596,15 @@ describe('TSS Ecdsa Utils:', async function () {
         h2: serializedEntChallenge.h2,
       } });
 
+      const [userToBitgoPaillierChallenge, bitgoToUserPaillierChallenge] = await Promise.all([
+        EcdsaPaillierProof.generateP(hexToBigInt(userSigningKey.yShares[3].n)),
+        EcdsaPaillierProof.generateP(hexToBigInt(bitgoSigningKey.yShares[1].n)),
+      ]);
       const [userXShare, bitgoXShare] = [
-        MPC.appendChallenge(userSigningKey.xShare, serializedEntChallenge),
-        MPC.appendChallenge(bitgoSigningKey.xShare, serializedBitgoChallenge)];
-      const bitgoYShare = MPC.appendChallenge(userSigningKey.yShares[3], serializedBitgoChallenge);
+        MPC.appendChallenge(userSigningKey.xShare, serializedEntChallenge, EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge })),
+        MPC.appendChallenge(bitgoSigningKey.xShare, serializedBitgoChallenge, EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })),
+      ];
+      const bitgoYShare = MPC.appendChallenge(userSigningKey.yShares[3], serializedBitgoChallenge, EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }));
       /**
        * START STEP ONE
        * 1) User creates signShare, saves wShare and sends kShare to bitgo
@@ -826,10 +831,20 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   describe('getEcdsaSigningChallenges', function() {
+    const mockEntPaillierKey = {
+      n: 'f47be4c2d8bc1e28f88c6c4da634da97d92a1c279a7b0fe7b87c337c36a27b32ce0ff0c45f16e4e15bbd20e4e640de12047eff9b1a2b98144f9a268d406bd000d192a35b6847a17e40fb85f55b314d001ff87393481cafe391807d0eb83eff9e38614b38e5f25fc4449cb01caed805584d026b5d866c723f3d4d4f1e462662f2113b1561eb2bf755b4b91d0308d8eacc439167da8b7d6e108524f226960360af00215d9614457414ebdbe8834999689e2e903208c8713ff5d9901f9eaba3aa81d705323cbbba61ba7fa9f3228f30853fb55da1b3d3ed7db1dfc6545bc96aa8d2eb848931c1b807fdfe8f65af72f68638a82fe9e22ac1f0f032e621066806a1f144b5719a5f091986867b384be6c34146c8241cbfbd781966ebbcd19e6caa27fab040e62e5a162888aa8624d046c8fe3b72244f04a7264c4a36b6366dbe7da98afb201d34be2c0d6dd11982af35bf7535582b263914725aaec280d52290527382d3ab297d746c41aacd8de98c09fcfb85a95e02de1b34d4933e51045e2f1ce8af',
+      lambda:
+        'f47be4c2d8bc1e28f88c6c4da634da97d92a1c279a7b0fe7b87c337c36a27b32ce0ff0c45f16e4e15bbd20e4e640de12047eff9b1a2b98144f9a268d406bd000d192a35b6847a17e40fb85f55b314d001ff87393481cafe391807d0eb83eff9e38614b38e5f25fc4449cb01caed805584d026b5d866c723f3d4d4f1e462662f2113b1561eb2bf755b4b91d0308d8eacc439167da8b7d6e108524f226960360af00215d9614457414ebdbe8834999689e2e903208c8713ff5d9901f9eaba3aa7fc3d0c0bcc5bff644156ab887146d51bcee1eef70f45c486147d687ee37def1f8a16bc945eff22dd4dca3614a99158823acd9492e347f7ec79a7771024205d07f27b30cd20340e330411da8fa2da209e5cc688da94d1dbef54bfd9c69b4e99cf06d67309a3420b82c78a0fe0dd0b9c31382eae38746cfdd27fa90022a50532246c8ae1339c93e183c03bf6fd7014be3658abc73baae1fa5b86dab94b9f125395a818e54dde6235c45d3dbc032b3078e9df1cad69d8ac19a7cb6405a558b7bfba8',
+    };
+    const mockBitgoPaillierKey = {
+      n: 'f010d294effceb8c4f96af1978ab367c4fbb272c2169317e41ae87220652cae2ce929696ee55ec6831aa6b4b3b931babc2bac9c1a20fddbca925cc99680791f7c3157b3d31256ee72c47d47db567e0f070dce121c3a4d9e003c1f1389073acb252c65d2b0723e86e3265f67a137cb1e23f4551544405644d0ae63d35f25f40becd2b693879f3bdbec3f7250791a3f3c975a5ac78a0e81dcd1a87eb2ca67010dff880b2338556275de23d9e88d21b77da0d524ddc2b394f8de00b1af0ce85f6eee2e05a184e05494d66d2c636045bf70ed15ebd0f41a8eea2920af85e6d68a0ce11fc2abbcb3cebcc3c23ec2e148c318683a5426e15b5207efd3b9b05cb919ec4340f74dff336986d0c923df10a789007b1da9daddf8edf3014e93989f30243f27f9a307d55d630cbfcd16cd6a95a41dee10c31acc293df6834ce0e3ea5b68f170bd7938ea0c2eeb788e16f30af57b3f0888fb44d3610e7eeba60e7fd8cc4a8f044718dfc6174bf4a380690dc1dc77472a48892eb3e81775540ea0acc9e89b639',
+      lambda:
+        'f010d294effceb8c4f96af1978ab367c4fbb272c2169317e41ae87220652cae2ce929696ee55ec6831aa6b4b3b931babc2bac9c1a20fddbca925cc99680791f7c3157b3d31256ee72c47d47db567e0f070dce121c3a4d9e003c1f1389073acb252c65d2b0723e86e3265f67a137cb1e23f4551544405644d0ae63d35f25f40becd2b693879f3bdbec3f7250791a3f3c975a5ac78a0e81dcd1a87eb2ca67010dff880b2338556275de23d9e88d21b77da0d524ddc2b394f8de00b1af0ce85f6ecdef8a4bc955a28ecef7d97cded079d390e77c80998d78ad9510cbabfeb8f0a157dbfc590b4d59ee8c0b088f9d89473b557320078a117478624f5d1df36e30f320b6722a4217dcb46b978cc6c8f1a21c8a6c74bce84d82c481402c99a69b798e3c05f23350b4aade4f79784b1c09692b6a33cfba7f145597d82b799cccef620c36f1fbbe2cb4ac0ea395c476e381bc475d41722320f541ae9bf56aa4a12dff3ea7ab11174fb5b8df7429c9f57d36f8fc51e1a8c647d5b8fa0189fb8acdbd0a780',
+    };
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const txRequestId = 'fakeTxRequestId';
     const rawEntChallengeWithProofs: EcdsaTypes.SerializedNtildeWithProofs = mockSerializedChallengeWithProofs;
-    const rawBitGoChallenge: EcdsaTypes.SerializedNtilde = EcdsaTypes.serializeNtilde(EcdsaTypes.deserializeNtilde(mockSerializedChallengeWithProofs2));
+    let rawBitgoChallenge: EcdsaTypes.SerializedEcdsaChallenges;
     const adminEcdhKey = bitgo.keychains().create();
     const fakeAdminEcdhKey = bitgo.keychains().create();
     const derivationPath = 'm/0/0';
@@ -841,6 +856,14 @@ describe('TSS Ecdsa Utils:', async function () {
       ecdhKeychain: 'my keychain',
     };
 
+    before(async function () {
+      const p = await EcdsaPaillierProof.generateP(hexToBigInt(mockEntPaillierKey.n));
+      rawBitgoChallenge = {
+        ...EcdsaTypes.serializeNtilde(EcdsaTypes.deserializeNtilde(mockSerializedChallengeWithProofs2)),
+        p: EcdsaTypes.serializePaillierChallenge({ p }).p,
+      };
+    });
+
     afterEach(function() {
       sinon.restore();
       nock.cleanAll();
@@ -848,30 +871,44 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('should generate an ephemeral enterprise challenge and use txRequest challenge without the ent feature flag', async function() {
       await nockGetEnterprise({ enterpriseId: enterpriseId, response: enterpriseData, times: 1 });
-      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitGoChallenge });
+      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(rawEntChallengeWithProofs);
       const generateNtildeStub = sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
-      const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0);
+      const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, {
+        enterprise: mockEntPaillierKey.n,
+        bitgo: mockBitgoPaillierKey.n,
+      }, 0);
       should.exist(challenges);
-      challenges.should.deepEqual(({
+      should.exist(challenges.enterpriseChallenge.p);
+
+      const expectedRangeProofChallenges = {
+        enterpriseChallenge: {
+          ntilde: challenges.enterpriseChallenge.ntilde,
+          h1: challenges.enterpriseChallenge.h1,
+          h2: challenges.enterpriseChallenge.h2,
+        },
+        bitgoChallenge: rawBitgoChallenge,
+      };
+      expectedRangeProofChallenges.should.deepEqual(({
         enterpriseChallenge: {
           ntilde: rawEntChallengeWithProofs.ntilde,
           h1: rawEntChallengeWithProofs.h1,
           h2: rawEntChallengeWithProofs.h2,
         },
-        bitgoChallenge: rawBitGoChallenge,
+        bitgoChallenge: rawBitgoChallenge,
       }));
       generateNtildeStub.calledOnce.should.be.true();
     });
 
     it('should fetch static ent and bitgo challenges with the ent feature flag and verify them', async function() {
+      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
       await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
         ...enterpriseData,
         featureFlags: ['useEnterpriseEcdsaTssChallenge'],
       }, times: 1 });
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
       const adminSignatureEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, adminEcdhKey.xprv, derivationPath);
-      const adminSignatureBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitGoChallenge, adminEcdhKey.xprv, derivationPath);
+      const adminSignatureBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, adminEcdhKey.xprv, derivationPath);
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -880,7 +917,7 @@ describe('TSS Ecdsa Utils:', async function () {
           },
         },
         bitgoChallenge: {
-          ...rawBitGoChallenge,
+          ...rawBitgoChallenge,
           verifiers: {
             adminSignature: adminSignatureBitGoChallenge.toString('hex'),
           },
@@ -889,20 +926,32 @@ describe('TSS Ecdsa Utils:', async function () {
       };
 
       await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
-      const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0);
+      const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, {
+        enterprise: mockEntPaillierKey.n,
+        bitgo: mockBitgoPaillierKey.n,
+      }, 0);
       should.exist(challenges);
-      challenges.should.deepEqual({
+      const expectedRangeProofChallenges = {
+        enterpriseChallenge: {
+          ntilde: challenges.enterpriseChallenge.ntilde,
+          h1: challenges.enterpriseChallenge.h1,
+          h2: challenges.enterpriseChallenge.h2,
+        },
+        bitgoChallenge: rawBitgoChallenge,
+      };
+      expectedRangeProofChallenges.should.deepEqual({
         enterpriseChallenge: {
           ntilde: rawEntChallengeWithProofs.ntilde,
           h1: rawEntChallengeWithProofs.h1,
           h2: rawEntChallengeWithProofs.h2,
         },
-        bitgoChallenge: rawBitGoChallenge,
+        bitgoChallenge: rawBitgoChallenge,
       });
     });
 
 
     it('Fails if the enterprise challenge signature is different from the admin ecdh key', async function() {
+      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
       await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
         ...enterpriseData,
         featureFlags: ['useEnterpriseEcdsaTssChallenge'],
@@ -910,7 +959,7 @@ describe('TSS Ecdsa Utils:', async function () {
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
       // Bad sign
       const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, fakeAdminEcdhKey.xprv, derivationPath);
-      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitGoChallenge, adminEcdhKey.xprv, derivationPath);
+      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, adminEcdhKey.xprv, derivationPath);
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -919,7 +968,7 @@ describe('TSS Ecdsa Utils:', async function () {
           },
         },
         bitgoChallenge: {
-          ...rawBitGoChallenge,
+          ...rawBitgoChallenge,
           verifiers: {
             adminSignature: adminSignedBitGoChallenge.toString('hex'),
           },
@@ -927,10 +976,14 @@ describe('TSS Ecdsa Utils:', async function () {
         createdBy: 'id',
       };
       await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
-      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0).should.be.rejectedWith('Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.');
+      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, {
+        enterprise: mockEntPaillierKey.n,
+        bitgo: mockBitgoPaillierKey.n,
+      }).should.be.rejectedWith('Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.');
     });
 
     it('Fails if the bitgo challenge signature is different from the admin ecdh key', async function() {
+      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
       await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
         ...enterpriseData,
         featureFlags: ['useEnterpriseEcdsaTssChallenge'],
@@ -938,7 +991,7 @@ describe('TSS Ecdsa Utils:', async function () {
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
       const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, adminEcdhKey.xprv, derivationPath);
       // Bad sign
-      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitGoChallenge, fakeAdminEcdhKey.xprv, derivationPath);
+      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, fakeAdminEcdhKey.xprv, derivationPath);
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -947,7 +1000,7 @@ describe('TSS Ecdsa Utils:', async function () {
           },
         },
         bitgoChallenge: {
-          ...rawBitGoChallenge,
+          ...rawBitgoChallenge,
           verifiers: {
             adminSignature: adminSignedBitGoChallenge.toString('hex'),
           },
@@ -955,7 +1008,10 @@ describe('TSS Ecdsa Utils:', async function () {
         createdBy: 'id',
       };
       await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
-      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0).should.be.rejectedWith('Admin signature for BitGo\'s challenge is not valid. Please contact your enterprise admin.');
+      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, {
+        enterprise: mockEntPaillierKey.n,
+        bitgo: mockBitgoPaillierKey.n,
+      }).should.be.rejectedWith('Admin signature for BitGo\'s challenge is not valid. Please contact your enterprise admin.');
     });
   });
 

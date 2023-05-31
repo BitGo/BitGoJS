@@ -2,8 +2,8 @@
  * @prettier
  */
 import { Hash, randomBytes } from 'crypto';
-import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -28,7 +28,7 @@ describe('TSS ECDSA TESTS', function () {
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
-    const pallierMock = sinon
+    const paillierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
       .onCall(0)
       .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
@@ -45,7 +45,7 @@ describe('TSS ECDSA TESTS', function () {
     [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     // Needs to run this serially for testing deterministic key generation
-    // to get specific pallier keys to be assigned
+    // to get specific paillier keys to be assigned
     const D = await MPC.keyShare(1, 2, 3, seed);
     const E = await MPC.keyShare(2, 2, 3, seed);
     const F = await MPC.keyShare(3, 2, 3, seed);
@@ -78,8 +78,8 @@ describe('TSS ECDSA TESTS', function () {
       hKeyCombine,
     ];
     commonPublicKey = aKeyCombine.xShare.y;
-    pallierMock.reset();
-    pallierMock.restore();
+    paillierMock.reset();
+    paillierMock.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {
@@ -224,11 +224,16 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwo = config[index].signerTwo;
         const signerTwoIndex = signerTwo.xShare.i;
 
+        const [signerOneToTwoPaillierChallenge, signerTwoToOnePaillierChallenge] = await Promise.all([
+          EcdsaPaillierProof.generateP(hexToBigInt(signerOne.yShares[signerTwoIndex].n)),
+          EcdsaPaillierProof.generateP(hexToBigInt(signerTwo.yShares[signerOneIndex].n)),
+        ]);
         // Step Two
         // First signer generates their range proof challenge.
         const signerOneXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerOne.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerOneToTwoPaillierChallenge }),
         );
 
         // Step Three
@@ -236,6 +241,7 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwoXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerTwo.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index + 1]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
         );
         const signerTwoChallenge = { ntilde: signerTwoXShare.ntilde, h1: signerTwoXShare.h1, h2: signerTwoXShare.h2 };
 
@@ -244,6 +250,7 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwoYShare: ECDSA.YShareWithChallenges = MPC.appendChallenge(
           signerOne.yShares[signerTwoIndex],
           signerTwoChallenge,
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
         );
 
         // Step Five

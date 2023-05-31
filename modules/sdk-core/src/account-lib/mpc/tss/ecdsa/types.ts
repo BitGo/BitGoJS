@@ -77,14 +77,20 @@ export type XShare = {
   chaincode: string;
 };
 
-export type XShareWithChallenges = XShare & EcdsaTypes.SerializedNtilde;
+// TODO(BG-78794): Make this mandatory
+export type XShareWithChallenges = XShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 // YShares used during signature generation
 export type YShare = SignIndex & {
   n: string;
 };
 
-export type YShareWithChallenges = YShare & EcdsaTypes.SerializedNtilde;
+// TODO(BG-78794): Make this mandatory
+export type YShareWithChallenges = YShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 export interface KeyCombined {
   xShare: XShare;
@@ -101,17 +107,18 @@ export type SubkeyShare = {
   nShares: Record<number, NShare>;
 };
 
-export type WShare = EcdsaTypes.SerializedNtilde & {
-  i: number;
-  l: string;
-  m: string;
-  n: string;
-  y: string; // combined public key
-  ck: string;
-  k: string;
-  w: string;
-  gamma: string;
-};
+export type WShare = EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge> & {
+    i: number;
+    l: string;
+    m: string;
+    n: string;
+    y: string; // combined public key
+    ck: string;
+    k: string;
+    w: string;
+    gamma: string;
+  };
 
 export type RangeProofShare = {
   z: string;
@@ -123,7 +130,11 @@ export type RangeProofShare = {
 };
 
 export type KShare = SignIndex &
-  EcdsaTypes.SerializedNtilde & {
+  EcdsaTypes.SerializedNtilde &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallenge> &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
     n: string;
     k: string;
     // TODO(BG-78713): this shouldn't be optional
@@ -152,7 +163,9 @@ export type RangeProofWithCheckShare = {
 
 // Alpha Share
 export type AShare = SignIndex &
-  EcdsaTypes.SerializedNtilde & {
+  EcdsaTypes.SerializedNtilde &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
     n: string;
     k: string;
     alpha: string;
@@ -204,28 +217,28 @@ export type SignConvert = {
 };
 
 export type SignConvertStep1 = {
-  xShare: XShareWithChallenges; // XShare of the current participant
-  yShare: YShare; // YShare corresponding to the other participant
+  xShare: XShareWithChallenges; // XShare of the current participant (does not get sent to other participant)
+  yShare: YShare; // YShare corresponding to the other participant (does not get sent to other participant)
   kShare: KShare; // share to be modified and sent to other participant
 };
 
 export type SignConvertStep1Response = {
-  bShare: BShare; // participant share
+  bShare: BShare; // private participant share (does not get sent to other participant)
   aShare: AShare; // share to be sent to other participant
 };
 
 export type SignConvertStep2 = {
-  wShare: WShare; // participant share
+  wShare: WShare; // private participant share (does not get sent to other participant)
   aShare: AShare; // share to be modified and sent to other participant
 };
 
 export type SignConvertStep2Response = {
-  gShare: GShare; // participant share
+  gShare: GShare; // private participant share (does not get sent to other participant)
   muShare: MUShare; // share to be sent to other participant
 };
 
 export type SignConvertStep3 = {
-  bShare: BShare; // participant share
+  bShare: BShare; // private participant share (does not get sent to other participant)
   muShare: MUShare; // share to be modified and sent to other participant
 };
 

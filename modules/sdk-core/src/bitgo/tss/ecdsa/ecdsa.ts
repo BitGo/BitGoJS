@@ -1,28 +1,28 @@
 import { Ecdsa } from './../../../account-lib/mpc/tss';
 import {
-  DecryptableNShare,
-  CombinedKey,
-  SigningMaterial,
-  EncryptedNShare,
   AShare,
+  BShare,
+  CombinedKey,
   CreateUserOmicronAndDeltaShareRT,
+  DecryptableNShare,
   DShare,
+  EncryptedNShare,
   GShare,
   KeyShare,
   NShare,
   OShare,
+  ReceivedShareType,
+  SendShareToBitgoRT,
   SendShareType,
+  Signature,
   SignatureShare,
+  SigningMaterial,
   SignShare,
   WShare,
   XShareWithChallenges,
   YShareWithChallenges,
-  SendShareToBitgoRT,
-  ReceivedShareType,
-  BShare,
-  Signature,
 } from './types';
-import { SignatureShareRecord, SignatureShareType, RequestType, createShareProof } from '../../utils';
+import { createShareProof, RequestType, SignatureShareRecord, SignatureShareType } from '../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
 import {
@@ -41,6 +41,7 @@ import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 import { Hash } from 'crypto';
+import { EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
 
 const MPC = new Ecdsa();
 
@@ -403,6 +404,7 @@ export async function buildNShareFromAPIKeyShare(keyShare: ApiKeyShare): Promise
 /**
  * Decrypts encrypted n share
  * @param encryptedNShare - decryptable n share with recipient private gpg key armor and sender public gpg key
+ * @param isbs58Encoded
  * @returns N share
  */
 export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58Encoded = true): Promise<NShare> {
@@ -422,7 +424,7 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
     u = prv.slice(0, 64);
   }
 
-  const nShare: NShare = {
+  return {
     i: encryptedNShare.nShare.i,
     j: encryptedNShare.nShare.j,
     n: encryptedNShare.nShare.n,
@@ -431,13 +433,11 @@ export async function decryptNShare(encryptedNShare: DecryptableNShare, isbs58En
     chaincode: encryptedNShare.nShare.publicShare.slice(66, 130),
     v: encryptedNShare.nShare.vssProof,
   };
-
-  return nShare;
 }
 
 /**
- * Gets public key from common key chain
- * @param commonKeyChain - common key chain of ecdsa tss
+ * Gets public key from common keychain
+ * @param commonKeyChain - common keychain of ecdsa tss
  * @returns public key
  */
 export function getPublicKey(commonKeyChain: string): string {
@@ -472,8 +472,18 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 11, 'K');
+  // TODO: once p and sigma are mandatory, make the exepcted length 11 + 2 * EcdsaPaillierProof.m
+  // and remove the validateOptionalValues check
+  validateSharesLength(shares, 11 + 2, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
+  const hasP = validateOptionalValues(shares, 11, 11 + EcdsaPaillierProof.m, 'K', 'p');
+  const hasSigma = validateOptionalValues(
+    shares,
+    11 + EcdsaPaillierProof.m,
+    11 + 2 * EcdsaPaillierProof.m,
+    'K',
+    'sigma'
+  );
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -495,6 +505,8 @@ export function parseKShare(share: SignatureShareRecord): KShare {
     h1: shares[3],
     h2: shares[4],
     proof,
+    p: hasP ? shares.slice(11, 11 + EcdsaPaillierProof.m) : undefined,
+    sigma: hasSigma ? shares.slice(11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m) : undefined,
   };
 }
 
@@ -511,7 +523,9 @@ export function convertKShare(share: KShare): SignatureShareRecord {
       share.h2
     }${delimeter}${share.proof?.z || ''}${delimeter}${share.proof?.u || ''}${delimeter}${
       share.proof?.w || ''
-    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${share.proof?.s2 || ''}`,
+    }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${
+      share.proof?.s2 || ''
+    }${delimeter}${(share.p || []).join(delimeter)}${delimeter}${(share.sigma || []).join(delimeter)}`,
   };
 }
 
@@ -522,10 +536,12 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 37, 'A');
+  // TODO: once sigma is mandatory, make expected length 37 + EcdsaPaillierProof.m
+  validateSharesLength(shares, 37 + 1, 'A');
   const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
+  const hasSigma = validateOptionalValues(shares, 37, 37 + EcdsaPaillierProof.m, 'A', 'sigma');
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -585,6 +601,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     proof,
     gammaProof,
     wProof,
+    sigma: hasSigma ? shares.slice(37) : undefined,
   };
 }
 
@@ -619,7 +636,7 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.wProof?.s2 || ''
     }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
       share.wProof?.u || ''
-    }${delimeter}${share.wProof?.x || ''}`,
+    }${delimeter}${share.wProof?.x || ''}${delimeter}${(share.sigma || []).join(delimeter)}`,
   };
 }
 
@@ -813,6 +830,8 @@ export function parseCombinedSignature(share: SignatureShareRecord): Signature {
 /**
  * convert signature share to signature share record
  * @param share - Signature share
+ * @param senderIndex
+ * @param recipientIndex
  * @returns signature share record
  */
 export function convertSignatureShare(
@@ -836,7 +855,13 @@ export function convertBShare(share: BShare): SignatureShareRecord {
   return {
     to: SignatureShareType.BITGO,
     from: getParticipantFromIndex(share.i),
-    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${share.w}${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${share.ntilde}${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}`,
+    share: `${share.beta}${delimeter}${share.gamma}${delimeter}${share.k}${delimeter}${share.nu}${delimeter}${
+      share.w
+    }${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${
+      share.ntilde
+    }${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}${delimeter}${(share.p || []).join(
+      delimeter
+    )}`,
   };
 }
 
@@ -847,7 +872,9 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 13, 'B');
+  // TODO: once p is mandatory, make expectedLength 13 + EcdsaPaillierProof.m
+  validateSharesLength(shares, 13 + 1, 'B');
+  const hasP = validateOptionalValues(shares, 13, 13 + EcdsaPaillierProof.m, 'K', 'p');
 
   return {
     i: getParticipantIndex(share.to),
@@ -864,6 +891,7 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     h1: shares[10],
     h2: shares[11],
     ck: shares[12],
+    p: hasP ? shares.slice(13, 13 + EcdsaPaillierProof.m) : undefined,
   };
 }
 

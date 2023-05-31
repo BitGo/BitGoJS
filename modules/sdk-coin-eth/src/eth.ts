@@ -26,6 +26,7 @@ import {
   getIsKrsRecovery,
   getIsUnsignedSweep,
   HalfSignedTransaction,
+  hexToBigInt,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IWallet,
@@ -47,7 +48,7 @@ import {
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
@@ -1048,25 +1049,34 @@ export class Eth extends BaseCoin {
 
     rangeProofChallenge =
       rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
-    const userXShare = MPC.appendChallenge(userKeyCombined.xShare, rangeProofChallenge);
-    const userYShare: ECDSAMethodTypes.YShareWithChallenges = {
-      ...userKeyCombined.yShares[signerTwoIndex],
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
-    const backupXShare: ECDSAMethodTypes.XShareWithChallenges = {
-      ...backupKeyCombined.xShare,
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
-    const backupYShare: ECDSAMethodTypes.YShareWithChallenges = {
-      ...backupKeyCombined.yShares[signerOneIndex],
-      ntilde: backupXShare.ntilde,
-      h1: backupXShare.h1,
-      h2: backupXShare.h2,
-    };
+
+    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
+    );
+    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
+    );
+
+    const userXShare = MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
+    const userYShare = MPC.appendChallenge(
+      userKeyCombined.yShares[signerTwoIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupXShare = MPC.appendChallenge(
+      backupKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupYShare = MPC.appendChallenge(
+      backupKeyCombined.yShares[signerOneIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
 
     const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
