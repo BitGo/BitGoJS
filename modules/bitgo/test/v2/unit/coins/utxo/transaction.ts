@@ -54,13 +54,14 @@ function run<TNumber extends number | bigint = number>(
 
     const isTransactionWithKeyPathSpend = inputScripts.some((s) => s === 'taprootKeyPathSpend');
     const isTransactionWithReplayProtection = inputScripts.some((s) => s === 'p2shP2pk');
+    const isTransactionWithP2tr = inputScripts.some((s) => s === 'p2tr');
+    const isTransactionWithP2trMusig2 = inputScripts.some((s) => s === 'p2trMusig2');
 
     const value = (amountType === 'bigint' ? BigInt('10999999800000001') : 1e8) as TNumber;
     const wallet = getUtxoWallet(coin, { id: '5b34252f1bf349930e34020a00000000', coin: coin.getChain() });
     const walletKeys = getDefaultWalletKeys();
 
-    // once full psbt support is added to abstract-utxo module, below txFormat check can be removed.
-    const fullSign = !(txFormat === 'psbt' || isTransactionWithReplayProtection);
+    const fullSign = !(isTransactionWithReplayProtection || isTransactionWithKeyPathSpend);
 
     function getUnspentsForPsbt(): Unspent<bigint>[] {
       return inputScripts.map((t, index) => {
@@ -174,13 +175,15 @@ function run<TNumber extends number | bigint = number>(
           : createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress());
 
       const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.bitgo);
-      const fullSignedUserBitGo = fullSign
-        ? await createFullSignedTransaction(halfSignedUserBitGo, walletKeys.bitgo, walletKeys.user)
-        : undefined;
+      const fullSignedUserBitGo =
+        fullSign && !isTransactionWithP2trMusig2
+          ? await createFullSignedTransaction(halfSignedUserBitGo, walletKeys.bitgo, walletKeys.user)
+          : undefined;
 
-      const halfSignedUserBackup = isTransactionWithKeyPathSpend
-        ? undefined
-        : await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.backup);
+      const halfSignedUserBackup =
+        !isTransactionWithKeyPathSpend && !(txFormat === 'psbt' && isTransactionWithP2tr)
+          ? await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.backup)
+          : undefined;
       const fullSignedUserBackup =
         fullSign && halfSignedUserBackup
           ? await createFullSignedTransaction(halfSignedUserBackup, walletKeys.backup, walletKeys.user)
@@ -247,12 +250,19 @@ function run<TNumber extends number | bigint = number>(
       });
     }
 
-    function testValidSignatures(tx: HalfSignedUtxoTransaction | FullySignedTransaction, signedBy: BIP32Interface[]) {
-      if (txFormat === 'psbt') {
+    function testValidSignatures(
+      tx: HalfSignedUtxoTransaction | FullySignedTransaction,
+      signedBy: BIP32Interface[],
+      sign: 'halfsigned' | 'fullsigned'
+    ) {
+      if (txFormat === 'psbt' && sign === 'halfsigned') {
         testPsbtValidSignatures(tx, signedBy);
         return;
       }
-      const unspents = getUnspents();
+      const unspents =
+        txFormat === 'psbt'
+          ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
+          : getUnspents();
       const prevOutputs = unspents.map(
         (u): utxolib.TxOutput<TNumber> => ({
           script: utxolib.address.toOutputScript(u.address, coin.network),
@@ -345,38 +355,39 @@ function run<TNumber extends number | bigint = number>(
 
     it('have valid signature for half-signed transaction', function () {
       if (transactionStages.halfSignedUserBackup) {
-        testValidSignatures(transactionStages.halfSignedUserBackup, [walletKeys.user]);
+        testValidSignatures(transactionStages.halfSignedUserBackup, [walletKeys.user], 'halfsigned');
       }
-      testValidSignatures(transactionStages.halfSignedUserBitGo, [walletKeys.user]);
+      testValidSignatures(transactionStages.halfSignedUserBitGo, [walletKeys.user], 'halfsigned');
     });
 
     it('have valid signatures for full-signed transaction', function () {
       if (!fullSign) {
         return this.skip();
       }
-      assert(transactionStages.fullSignedUserBackup && transactionStages.fullSignedUserBitGo);
-      testValidSignatures(transactionStages.fullSignedUserBackup, [walletKeys.user, walletKeys.backup]);
-      testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo]);
+      if (transactionStages.fullSignedUserBackup) {
+        testValidSignatures(transactionStages.fullSignedUserBackup, [walletKeys.user, walletKeys.backup], 'fullsigned');
+      }
+      if (transactionStages.fullSignedUserBitGo) {
+        testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo], 'fullsigned');
+      }
     });
 
     it('have correct results for explainTransaction', async function () {
       for (const [stageName, stageTx] of Object.entries(transactionStages)) {
-        // once psbt support is added to explainTransaction function, the below prebuild can be removed.
-        if (!stageTx || (txFormat === 'psbt' && stageName !== 'prebuild')) {
+        if (!stageTx) {
           continue;
         }
 
         const txHex =
-          stageTx instanceof utxolib.bitgo.UtxoPsbt
-            ? stageTx.getUnsignedTx().toBuffer().toString('hex')
-            : stageTx instanceof utxolib.bitgo.UtxoTransaction
+          stageTx instanceof utxolib.bitgo.UtxoPsbt || stageTx instanceof utxolib.bitgo.UtxoTransaction
             ? stageTx.toBuffer().toString('hex')
-            : utxolib.bitgo.isPsbt(stageTx.txHex)
-            ? utxolib.bitgo.createPsbtFromHex(stageTx.txHex, coin.network).getUnsignedTx().toBuffer().toString('hex')
             : stageTx.txHex;
 
         const pubs = walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
-        const unspents = txFormat === 'psbt' ? undefined : getUnspents();
+        const unspents =
+          txFormat === 'psbt'
+            ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
+            : getUnspents();
         await testExplainTx(stageName, txHex, unspents, pubs);
         await testExplainTx(stageName, txHex, unspents);
       }
