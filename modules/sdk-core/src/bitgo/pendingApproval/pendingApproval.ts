@@ -178,6 +178,13 @@ export class PendingApproval implements IPendingApproval {
       canRecreateTransaction = false;
     }
 
+    // If there are no recipients, then the transaction cannot be recreated
+    const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
+    const type = this.info()?.transactionRequest?.buildParams?.type;
+    if (recipients.length === 0 && type !== 'consolidate') {
+      canRecreateTransaction = false;
+    }
+
     const reqId = new RequestTracer();
 
     /*
