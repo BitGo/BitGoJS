@@ -1,4 +1,4 @@
-export const mockedPallierProofs: {
+export const mockedPaillierProofs: {
   paillierKey: {
     n: string;
     lambda: string;
