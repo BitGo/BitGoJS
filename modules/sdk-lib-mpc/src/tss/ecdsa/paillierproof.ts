@@ -19,7 +19,7 @@ export const m = Math.ceil(k / Math.log2(alpha));
  */
 export async function generateP(n: bigint): Promise<Array<bigint>> {
   if (bitLength(n) < minModulusBitLength) {
-    throw new Error('modulus n must have a bit length larger than or equal to 3072');
+    throw new Error(`modulus n must have a bit length larger than or equal to ${minModulusBitLength}`);
   }
   return Promise.all(
     Array(m)
