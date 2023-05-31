@@ -2,8 +2,8 @@
  * @prettier
  */
 import { Hash, randomBytes } from 'crypto';
-import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -224,11 +224,16 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwo = config[index].signerTwo;
         const signerTwoIndex = signerTwo.xShare.i;
 
+        const [signerOneToTwoPaillierChallenge, signerTwoToOnePaillierChallenge] = await Promise.all([
+          EcdsaPaillierProof.generateP(hexToBigInt(signerOne.yShares[signerTwoIndex].n)),
+          EcdsaPaillierProof.generateP(hexToBigInt(signerTwo.yShares[signerOneIndex].n)),
+        ]);
         // Step Two
         // First signer generates their range proof challenge.
         const signerOneXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerOne.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerOneToTwoPaillierChallenge }),
         );
 
         // Step Three
@@ -236,6 +241,7 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwoXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
           signerTwo.xShare,
           EcdsaTypes.serializeNtilde(ntildes[index + 1]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
         );
         const signerTwoChallenge = { ntilde: signerTwoXShare.ntilde, h1: signerTwoXShare.h1, h2: signerTwoXShare.h2 };
 
@@ -244,6 +250,7 @@ describe('TSS ECDSA TESTS', function () {
         const signerTwoYShare: ECDSA.YShareWithChallenges = MPC.appendChallenge(
           signerOne.yShares[signerTwoIndex],
           signerTwoChallenge,
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
         );
 
         // Step Five

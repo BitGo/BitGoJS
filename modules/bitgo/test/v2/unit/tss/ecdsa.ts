@@ -14,7 +14,22 @@ import * as should from 'should';
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
-import { gammaAndMuShareCreationParams, omicronAndDeltaShareCreationParams, keyShares, createUserSignatureParams, mockSignRT, mockAShare, mockMuShare, mockDShare, mockSShareFromUser, mockDShareToBitgo, mockedBitgoBShare, mockedBitgoOAndDShare, mockSShare } from '../../fixtures/tss/ecdsaFixtures';
+import {
+  gammaAndMuShareCreationParams,
+  omicronAndDeltaShareCreationParams,
+  keyShares,
+  createUserSignatureParams,
+  mockSignRT,
+  mockAShare,
+  mockMuShare,
+  mockDShare,
+  mockSShareFromUser,
+  mockDShareToBitgo,
+  mockedBitgoBShare,
+  mockedBitgoOAndDShare,
+  mockSShare,
+  mockSignWithPaillierChallengeRT, mockAShareWithPaillierChallenge, mockedBitgoBShareWithPaillierChallenge,
+} from '../../fixtures/tss/ecdsaFixtures';
 import nock = require('nock');
 
 type KeyShare = ECDSA.KeyShare;
@@ -400,6 +415,17 @@ describe('Ecdsa tss helper functions tests', function () {
           signerShare: 'a valid signer share',
         },
         {
+          shareToSend: 'KShare',
+          mockShareToSend: mockSignWithPaillierChallengeRT.kShare,
+          mockShareToSendString: ECDSAMethods.convertKShare(mockSignWithPaillierChallengeRT.kShare).share,
+          sendType: ECDSAMethodTypes.SendShareType.KShare,
+          mockShareAsResponse: mockAShareWithPaillierChallenge,
+          mockShareAsResponseString: ECDSAMethods.convertAShare(mockAShareWithPaillierChallenge).share,
+          shareReceived: 'AShare',
+          incorrectReceivedShareString: mockAShareWithPaillierChallenge.k,
+          signerShare: 'a valid signer share',
+        },
+        {
           shareToSend: 'MUShare',
           mockShareToSend: { muShare: mockMuShare, dShare: mockDShareToBitgo, i: mockMuShare.i },
           mockShareToSendString: `${ECDSAMethods.convertMuShare(mockMuShare).share}${ECDSAMethods.secondaryDelimeter}${ECDSAMethods.convertDShare(mockDShareToBitgo).share}`,
@@ -464,7 +490,7 @@ describe('Ecdsa tss helper functions tests', function () {
         nock.cleanAll();
       });
 
-      it('should successfully parse K share', function () {
+      it('should successfully parse K share without paillier challenge', function () {
         const bitgoKShare = mockSignRT.kShare;
         const share = {
           to: SignatureShareType.BITGO,
@@ -472,13 +498,21 @@ describe('Ecdsa tss helper functions tests', function () {
           share: ECDSAMethods.convertKShare(mockSignRT.kShare).share,
         } as SignatureShareRecord;
         const kShare = ECDSAMethods.parseKShare(share);
-        kShare.i.should.equal(bitgoKShare.i);
-        kShare.j.should.equal(bitgoKShare.j);
-        kShare.k.should.equal(bitgoKShare.k);
-        kShare.n.should.equal(bitgoKShare.n);
+        kShare.should.deepEqual(bitgoKShare);
       });
 
-      it('should successfully convert K share to signature share record', function () {
+      it('should successfully parse K share with paillier challenge', function () {
+        const bitgoKShare = mockSignWithPaillierChallengeRT.kShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: ECDSAMethods.convertKShare(mockSignWithPaillierChallengeRT.kShare).share,
+        } as SignatureShareRecord;
+        const kShare = ECDSAMethods.parseKShare(share);
+        kShare.should.deepEqual(bitgoKShare);
+      });
+
+      it('should successfully convert K share to signature share record without paillier challenge', function () {
         const bitgoKShare = mockSignRT.kShare;
         const share = {
           to: SignatureShareType.BITGO,
@@ -487,7 +521,7 @@ describe('Ecdsa tss helper functions tests', function () {
             mockSignRT.kShare.h2
           }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.z || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.u || ''}${ECDSAMethods.delimeter}${
             mockSignRT.kShare.proof?.w || ''
-          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s2 || ''}`,
+          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
 
         const kshare = ECDSAMethods.convertKShare(bitgoKShare);
@@ -496,7 +530,25 @@ describe('Ecdsa tss helper functions tests', function () {
         kshare.share.should.equal(share.share);
       });
 
-      it('should successfully parse A share', function() {
+      it('should successfully convert K share to signature share record with paillier challenge', function () {
+        const bitgoKShare = mockSignWithPaillierChallengeRT.kShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: `${mockSignRT.kShare.k}${ECDSAMethods.delimeter}${mockSignRT.kShare.n}${ECDSAMethods.delimeter}${mockSignRT.kShare.ntilde}${ECDSAMethods.delimeter}${mockSignRT.kShare.h1}${ECDSAMethods.delimeter}${
+            mockSignRT.kShare.h2
+          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.z || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.u || ''}${ECDSAMethods.delimeter}${
+            mockSignRT.kShare.proof?.w || ''
+          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${bitgoKShare.p.join(ECDSAMethods.delimeter)}${ECDSAMethods.delimeter}${bitgoKShare.sigma.join(ECDSAMethods.delimeter)}`,
+        } as SignatureShareRecord;
+
+        const kshare = ECDSAMethods.convertKShare(bitgoKShare);
+        kshare.from.should.equal(share.from);
+        kshare.to.should.equal(share.to);
+        kshare.share.should.equal(share.share);
+      });
+
+      it('should successfully parse A share without paillier challenge', function() {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
@@ -504,15 +556,21 @@ describe('Ecdsa tss helper functions tests', function () {
         } as SignatureShareRecord;
         const aShare = ECDSAMethods.parseAShare(share);
         should.exist(aShare);
-        aShare.i.should.equal(mockAShare.i);
-        aShare.j.should.equal(mockAShare.j);
-        aShare!.k!.should.equal(mockAShare.k);
-        aShare!.alpha!.should.equal(mockAShare.alpha);
-        aShare!.mu!.should.equal(mockAShare.mu);
-        aShare!.n!.should.equal(mockAShare.n);
+        aShare.should.deepEqual(mockAShare);
       });
 
-      it('should successfully convert A share to signature share record', function () {
+      it('should successfully parse A share with paillier challenge', function() {
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: ECDSAMethods.convertAShare(mockAShareWithPaillierChallenge).share,
+        } as SignatureShareRecord;
+        const aShare = ECDSAMethods.parseAShare(share);
+        should.exist(aShare);
+        aShare.should.deepEqual(mockAShareWithPaillierChallenge);
+      });
+
+      it('should successfully convert A share to signature share record without paillier challenge', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
@@ -538,10 +596,46 @@ describe('Ecdsa tss helper functions tests', function () {
             mockAShare.wProof?.s2 || ''
           }${ECDSAMethods.delimeter}${mockAShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockAShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
             mockAShare.wProof?.u || ''
-          }${ECDSAMethods.delimeter}${mockAShare.wProof?.x || ''}`,
+          }${ECDSAMethods.delimeter}${mockAShare.wProof?.x || ''}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
 
         const aShare = ECDSAMethods.convertAShare(mockAShare);
+        aShare.from.should.equal(share.from);
+        aShare.to.should.equal(share.to);
+        aShare.share.should.equal(share.share);
+      });
+
+      it('should successfully convert A share to signature share record with paillier challenge', function () {
+        const mockShare = mockAShareWithPaillierChallenge;
+        const share = {
+          to: SignatureShareType.USER,
+          from: SignatureShareType.BITGO,
+          share: `${mockShare.k}${ECDSAMethods.delimeter}${mockShare.alpha}${ECDSAMethods.delimeter}${mockShare.mu}${ECDSAMethods.delimeter}${mockShare.n}${ECDSAMethods.delimeter}${
+            mockShare.ntilde
+          }${ECDSAMethods.delimeter}${mockShare.h1}${ECDSAMethods.delimeter}${mockShare.h2}${ECDSAMethods.delimeter}${mockShare.proof?.z || ''}${ECDSAMethods.delimeter}${
+            mockShare.proof?.u || ''
+          }${ECDSAMethods.delimeter}${mockShare.proof?.w || ''}${ECDSAMethods.delimeter}${mockShare.proof?.s || ''}${ECDSAMethods.delimeter}${
+            mockShare.proof?.s1 || ''
+          }${ECDSAMethods.delimeter}${mockShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.t1 || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.z || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.zprm || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.t || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.w || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.s2 || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.u || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.x || ''}${ECDSAMethods.delimeter}${mockShare.sigma!.join(ECDSAMethods.delimeter)}`,
+        } as SignatureShareRecord;
+
+        const aShare = ECDSAMethods.convertAShare(mockShare);
         aShare.from.should.equal(share.from);
         aShare.to.should.equal(share.to);
         aShare.share.should.equal(share.share);
@@ -681,12 +775,12 @@ describe('Ecdsa tss helper functions tests', function () {
         signatureShare.share.should.equal(share.share);
       });
 
-      it('should successfully convert B share to signature share record', function() {
+      it('should successfully convert B share to signature share record without paillier challenge', function() {
         const bShare = mockedBitgoBShare.bShare;
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.BITGO,
-          share: `${bShare.beta}${ECDSAMethods.delimeter}${bShare.gamma}${ECDSAMethods.delimeter}${bShare.k}${ECDSAMethods.delimeter}${bShare.nu}${ECDSAMethods.delimeter}${bShare.w}${ECDSAMethods.delimeter}${bShare.y}${ECDSAMethods.delimeter}${bShare.l}${ECDSAMethods.delimeter}${bShare.m}${ECDSAMethods.delimeter}${bShare.n}${ECDSAMethods.delimeter}${bShare.ntilde}${ECDSAMethods.delimeter}${bShare.h1}${ECDSAMethods.delimeter}${bShare.h2}${ECDSAMethods.delimeter}${bShare.ck}`,
+          share: `${bShare.beta}${ECDSAMethods.delimeter}${bShare.gamma}${ECDSAMethods.delimeter}${bShare.k}${ECDSAMethods.delimeter}${bShare.nu}${ECDSAMethods.delimeter}${bShare.w}${ECDSAMethods.delimeter}${bShare.y}${ECDSAMethods.delimeter}${bShare.l}${ECDSAMethods.delimeter}${bShare.m}${ECDSAMethods.delimeter}${bShare.n}${ECDSAMethods.delimeter}${bShare.ntilde}${ECDSAMethods.delimeter}${bShare.h1}${ECDSAMethods.delimeter}${bShare.h2}${ECDSAMethods.delimeter}${bShare.ck}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
         const signatureShare = ECDSAMethods.convertBShare(bShare);
         signatureShare.from.should.equal(share.from);
@@ -694,7 +788,22 @@ describe('Ecdsa tss helper functions tests', function () {
         signatureShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse B share', function() {
+      it('should successfully convert B share to signature share record with paillier challenge', function() {
+        const bShare = mockedBitgoBShareWithPaillierChallenge.bShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.BITGO,
+          share: `${bShare.beta}${ECDSAMethods.delimeter}${bShare.gamma}${ECDSAMethods.delimeter}${bShare.k}${ECDSAMethods.delimeter}${bShare.nu}${ECDSAMethods.delimeter}${bShare.w}${ECDSAMethods.delimeter}${bShare.y}${ECDSAMethods.delimeter}${bShare.l}${ECDSAMethods.delimeter}${bShare.m}${ECDSAMethods.delimeter}${bShare.n}${ECDSAMethods.delimeter}${bShare.ntilde}${ECDSAMethods.delimeter}${bShare.h1}${ECDSAMethods.delimeter}${bShare.h2}${ECDSAMethods.delimeter}${bShare.ck}${ECDSAMethods.delimeter}${bShare.p!.join(
+            ECDSAMethods.delimeter
+          )}`,
+        } as SignatureShareRecord;
+        const signatureShare = ECDSAMethods.convertBShare(bShare);
+        signatureShare.from.should.equal(share.from);
+        signatureShare.to.should.equal(share.to);
+        signatureShare.share.should.equal(share.share);
+      });
+
+      it('should successfully parse B share without paillier challenge', function() {
         const bShare = mockedBitgoBShare.bShare;
         const share = {
           to: SignatureShareType.BITGO,
@@ -702,16 +811,18 @@ describe('Ecdsa tss helper functions tests', function () {
           share: ECDSAMethods.convertBShare(mockedBitgoBShare.bShare).share,
         } as SignatureShareRecord;
         const parsedBShare = ECDSAMethods.parseBShare(share);
-        parsedBShare.i.should.equal(bShare.i);
-        parsedBShare.l.should.equal(bShare.l);
-        parsedBShare.m.should.equal(bShare.m);
-        parsedBShare.n.should.equal(bShare.n);
-        parsedBShare.y.should.equal(bShare.y);
-        parsedBShare.k.should.equal(bShare.k);
-        parsedBShare.w.should.equal(bShare.w);
-        parsedBShare.gamma.should.equal(bShare.gamma);
-        parsedBShare.beta.should.equal(bShare.beta);
-        parsedBShare.nu.should.equal(bShare.nu);
+        parsedBShare.should.deepEqual(bShare);
+      });
+
+      it('should successfully parse B share with paillier challenge', function() {
+        const bShare = mockedBitgoBShareWithPaillierChallenge.bShare;
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.BITGO,
+          share: ECDSAMethods.convertBShare(mockedBitgoBShareWithPaillierChallenge.bShare).share,
+        } as SignatureShareRecord;
+        const parsedBShare = ECDSAMethods.parseBShare(share);
+        parsedBShare.should.deepEqual(bShare);
       });
 
       it('should successfully convert O share to signature share record', function() {
@@ -728,7 +839,7 @@ describe('Ecdsa tss helper functions tests', function () {
         oShareSigRecord.share.should.equal(share.share);
       });
 
-      it('should successfully parse B share', function() {
+      it('should successfully parse O share', function() {
         const oShare = mockedBitgoOAndDShare.oShare;
         const delimeter = ECDSAMethods.delimeter;
         const share = {

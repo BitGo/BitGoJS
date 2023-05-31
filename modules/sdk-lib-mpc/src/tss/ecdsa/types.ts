@@ -38,6 +38,9 @@ export type SerializedNtildeWithProofs = SerializedNtilde & {
   ntildeProof: SerializedNtildeProofs;
 };
 
+// TODO(BG-78794): Make mandatory
+export type SerializedEcdsaChallenges = SerializedNtilde & Partial<SerializedPaillierChallenge>;
+
 /**
  * Deserializes a challenge from hex strings to bigint
  * @param challenge
@@ -153,8 +156,8 @@ export function deserializePaillierChallengeWithProofs(
   challengeWithProofs: SerializedPaillierChallengeWithProofs
 ): DeserializedPaillierChallengeWithProofs {
   return {
-    p: deserializePaillierChallenge(challengeWithProofs).p,
-    sigma: deserializePaillierChallengeProofs(challengeWithProofs).sigma,
+    ...deserializePaillierChallenge(challengeWithProofs),
+    ...deserializePaillierChallengeProofs(challengeWithProofs),
   };
 }
 

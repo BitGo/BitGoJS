@@ -41,6 +41,7 @@ import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 import { Hash } from 'crypto';
+import { EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
 
 const MPC = new Ecdsa();
 
@@ -471,8 +472,18 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 11 + 2 * 128, 'K');
+  // TODO: once p and sigma are mandatory, make the exepcted length 11 + 2 * EcdsaPaillierProof.m
+  // and remove the validateOptionalValues check
+  validateSharesLength(shares, 11 + 2, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
+  const hasP = validateOptionalValues(shares, 11, 11 + EcdsaPaillierProof.m, 'K', 'p');
+  const hasSigma = validateOptionalValues(
+    shares,
+    11 + EcdsaPaillierProof.m,
+    11 + 2 * EcdsaPaillierProof.m,
+    'K',
+    'sigma'
+  );
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -494,8 +505,8 @@ export function parseKShare(share: SignatureShareRecord): KShare {
     h1: shares[3],
     h2: shares[4],
     proof,
-    p: shares.slice(11, 11 + 128),
-    sigma: shares.slice(11 + 128),
+    p: hasP ? shares.slice(11, 11 + EcdsaPaillierProof.m) : undefined,
+    sigma: hasSigma ? shares.slice(11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m) : undefined,
   };
 }
 
@@ -514,7 +525,7 @@ export function convertKShare(share: KShare): SignatureShareRecord {
       share.proof?.w || ''
     }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${
       share.proof?.s2 || ''
-    }${delimeter}${share.p.join(delimeter)}${delimeter}${share.sigma.join(delimeter)}`,
+    }${delimeter}${(share.p || []).join(delimeter)}${delimeter}${(share.sigma || []).join(delimeter)}`,
   };
 }
 
@@ -525,10 +536,12 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 37 + 128, 'A');
+  // TODO: once sigma is mandatory, make expected length 37 + EcdsaPaillierProof.m
+  validateSharesLength(shares, 37 + 1, 'A');
   const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
+  const hasSigma = validateOptionalValues(shares, 37, 37 + EcdsaPaillierProof.m, 'A', 'sigma');
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -588,7 +601,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     proof,
     gammaProof,
     wProof,
-    sigma: shares.slice(37),
+    sigma: hasSigma ? shares.slice(37) : undefined,
   };
 }
 
@@ -623,7 +636,7 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.wProof?.s2 || ''
     }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
       share.wProof?.u || ''
-    }${delimeter}${share.wProof?.x || ''}${delimeter}${share.sigma.join(delimeter)}`,
+    }${delimeter}${share.wProof?.x || ''}${delimeter}${(share.sigma || []).join(delimeter)}`,
   };
 }
 
@@ -846,7 +859,9 @@ export function convertBShare(share: BShare): SignatureShareRecord {
       share.w
     }${delimeter}${share.y}${delimeter}${share.l}${delimeter}${share.m}${delimeter}${share.n}${delimeter}${
       share.ntilde
-    }${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}${delimeter}${share.p.join(delimeter)}`,
+    }${delimeter}${share.h1}${delimeter}${share.h2}${delimeter}${share.ck}${delimeter}${(share.p || []).join(
+      delimeter
+    )}`,
   };
 }
 
@@ -857,7 +872,9 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  validateSharesLength(shares, 13 + 128, 'B');
+  // TODO: once p is mandatory, make expectedLength 13 + EcdsaPaillierProof.m
+  validateSharesLength(shares, 13 + 1, 'B');
+  const hasP = validateOptionalValues(shares, 13, 13 + EcdsaPaillierProof.m, 'K', 'p');
 
   return {
     i: getParticipantIndex(share.to),
@@ -874,7 +891,7 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     h1: shares[10],
     h2: shares[11],
     ck: shares[12],
-    p: shares.slice(13),
+    p: hasP ? shares.slice(13, 13 + EcdsaPaillierProof.m) : undefined,
   };
 }
 

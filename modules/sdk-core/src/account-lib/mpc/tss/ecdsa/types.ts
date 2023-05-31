@@ -77,14 +77,20 @@ export type XShare = {
   chaincode: string;
 };
 
-export type XShareWithChallenges = XShare & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge;
+// TODO(BG-78794): Make this mandatory
+export type XShareWithChallenges = XShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 // YShares used during signature generation
 export type YShare = SignIndex & {
   n: string;
 };
 
-export type YShareWithChallenges = YShare & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge;
+// TODO(BG-78794): Make this mandatory
+export type YShareWithChallenges = YShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 export interface KeyCombined {
   xShare: XShare;
@@ -102,7 +108,7 @@ export type SubkeyShare = {
 };
 
 export type WShare = EcdsaTypes.SerializedNtilde &
-  EcdsaTypes.SerializedPaillierChallenge & {
+  Partial<EcdsaTypes.SerializedPaillierChallenge> & {
     i: number;
     l: string;
     m: string;
@@ -125,8 +131,10 @@ export type RangeProofShare = {
 
 export type KShare = SignIndex &
   EcdsaTypes.SerializedNtilde &
-  EcdsaTypes.SerializedPaillierChallenge &
-  EcdsaTypes.SerializedPaillierChallengeProofs & {
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallenge> &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
     n: string;
     k: string;
     // TODO(BG-78713): this shouldn't be optional
@@ -156,7 +164,8 @@ export type RangeProofWithCheckShare = {
 // Alpha Share
 export type AShare = SignIndex &
   EcdsaTypes.SerializedNtilde &
-  EcdsaTypes.SerializedPaillierChallengeProofs & {
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
     n: string;
     k: string;
     alpha: string;

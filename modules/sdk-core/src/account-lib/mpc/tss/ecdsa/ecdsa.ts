@@ -302,16 +302,15 @@ export default class Ecdsa {
   appendChallenge<T>(
     share: T,
     rangeProofChallenge: EcdsaTypes.SerializedNtilde,
-    paillierProofChallenge: EcdsaTypes.SerializedPaillierChallenge
+    paillierProofChallenge?: EcdsaTypes.SerializedPaillierChallenge
   ): T & EcdsaTypes.SerializedEcdsaChallenges {
     const { ntilde, h1, h2 } = rangeProofChallenge;
-    const { p } = paillierProofChallenge;
     return {
       ...share,
       ntilde,
       h1,
       h2,
-      p,
+      p: paillierProofChallenge ? paillierProofChallenge.p : undefined,
     };
   }
 
@@ -372,11 +371,14 @@ export default class Ecdsa {
     );
 
     // create paillier challenge proof based on the other signers challenge
-    const sigma = EcdsaPaillierProof.prove(
-      hexToBigInt(xShare.n),
-      hexToBigInt(xShare.l),
-      EcdsaTypes.deserializePaillierChallenge(yShare).p
-    );
+    const sigma = yShare.p
+      ? EcdsaPaillierProof.prove(
+          hexToBigInt(xShare.n),
+          hexToBigInt(xShare.l),
+          EcdsaTypes.deserializePaillierChallenge({ p: yShare.p }).p
+        )
+      : undefined;
+
     const proofShare = {
       z: bigIntToBufferBE(proof.z, 384).toString('hex'),
       u: bigIntToBufferBE(proof.u, 768).toString('hex'),
@@ -398,7 +400,7 @@ export default class Ecdsa {
       h2: h2a,
       p: xShare.p,
       k: bigIntToBufferBE(ck, 768).toString('hex'),
-      sigma: EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma }).sigma,
+      sigma: sigma ? EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma }).sigma : undefined,
       proof: proofShare,
     };
 
@@ -442,10 +444,7 @@ export default class Ecdsa {
     const ntildea = hexToBigInt(receivedKShare.ntilde);
     const h1a = hexToBigInt(receivedKShare.h1);
     const h2a = hexToBigInt(receivedKShare.h2);
-    // the current participants paillier proof challenge
-    const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge(shareParticipant);
-    // the other signing parties proof to the current participants paillier proof challenge
-    const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs(receivedKShare);
+
     // the current participant's range proof challenge
     const ntildeb = hexToBigInt(shareParticipant.ntilde);
     const h1b = hexToBigInt(shareParticipant.h1);
@@ -453,11 +452,22 @@ export default class Ecdsa {
 
     const k = hexToBigInt(receivedKShare.k);
 
-    if (
-      !(await EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma))
-    ) {
-      throw new Error('Could not verify signing A share paillier proof');
+    if (shareParticipant.p && receivedKShare.sigma) {
+      // the current participants paillier proof challenge
+      const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge({ p: shareParticipant.p });
+      // the other signing parties proof to the current participants paillier proof challenge
+      const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs({
+        sigma: receivedKShare.sigma,
+      });
+      if (
+        !(await EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma))
+      ) {
+        throw new Error('Could not verify signing A share paillier proof');
+      }
+    } else {
+      console.warn('Missing paillier proof, skipping verification');
     }
+
     if (
       !EcdsaRangeProof.verify(
         Ecdsa.curve,
@@ -618,11 +628,19 @@ export default class Ecdsa {
     const h1a = hexToBigInt(shares.wShare.h1);
     const h2a = hexToBigInt(shares.wShare.h2);
     const ck = hexToBigInt(shares.wShare.ck);
-    const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge(shares.wShare);
-    const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs(shares.aShare);
-    if (!EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma)) {
-      throw new Error('could not verify signing share for paillier proof');
+
+    if (shares.wShare.p && shares.aShare.sigma) {
+      const shareParticipantPaillierChallenge = EcdsaTypes.deserializePaillierChallenge({ p: shares.wShare.p });
+      const receivedPaillierChallengeProof = EcdsaTypes.deserializePaillierChallengeProofs({
+        sigma: shares.aShare.sigma,
+      });
+      if (!EcdsaPaillierProof.verify(n, shareParticipantPaillierChallenge.p, receivedPaillierChallengeProof.sigma)) {
+        throw new Error('could not verify signing share for paillier proof');
+      }
+    } else {
+      console.warn('Missing paillier proof, skipping verification');
     }
+
     // Verify $\gamma_i \in Z_{N^2}$.
     if (
       !EcdsaRangeProof.verifyWithCheck(
