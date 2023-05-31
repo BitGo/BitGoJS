@@ -226,3 +226,9 @@ export interface RangeProofWithCheck {
   t2: bigint;
   u: bigint;
 }
+
+export interface ZkVProof {
+  Alpha: bigint;
+  t: bigint;
+  u: bigint;
+}

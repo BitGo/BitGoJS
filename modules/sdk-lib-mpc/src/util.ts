@@ -52,12 +52,12 @@ export function bigIntToHex(bigint: bigint, hexLength?: number): string {
   return hex;
 }
 
-export function bigIntToBufferLE(n: bigint, bytes?: number): Buffer {
+export function bigIntToBufferLE(n: bigint, minBytes?: number): Buffer {
   let v = n.toString(16);
   v = '0'.slice(0, v.length % 2) + v;
   const buf = Buffer.from(v, 'hex').reverse();
-  if (bytes && buf.length < bytes) {
-    return Buffer.concat([buf, Buffer.alloc(bytes - buf.length)]);
+  if (minBytes && buf.length < minBytes) {
+    return Buffer.concat([buf, Buffer.alloc(minBytes - buf.length)]);
   }
   return buf;
 }
@@ -66,12 +66,12 @@ export function bigIntFromBufferLE(buf: Buffer): bigint {
   return BigInt('0x' + Buffer.from(buf).reverse().toString('hex'));
 }
 
-export function bigIntToBufferBE(n: bigint, bytes?: number): Buffer {
+export function bigIntToBufferBE(n: bigint, minBytes?: number): Buffer {
   let v = n.toString(16);
   v = '0'.slice(0, v.length % 2) + v;
   const buf = Buffer.from(v, 'hex');
-  if (bytes && buf.length < bytes) {
-    return Buffer.concat([Buffer.alloc(bytes - buf.length), buf]);
+  if (minBytes && buf.length < minBytes) {
+    return Buffer.concat([Buffer.alloc(minBytes - buf.length), buf]);
   }
   return buf;
 }

@@ -16,11 +16,11 @@ describe('mpc utils', () => {
     it('should convert buffer to bigInt', () => {
       const tests = [
         {
-          input: new Buffer('abcdef123', 'hex'),
+          input: Buffer.from('abcdef123', 'hex'),
           output: '2882400018',
         },
         {
-          input: new Buffer(
+          input: Buffer.from(
             'f1e4e82273030db23fe0e5e235caf0341b3e2c10e1e38b24901315f70e1b9d1efa44c53ce95e7328dd09924b1ab35b395cbbd32310e01d5fb166aafd03bd283885cb8be02e99c3de1c29137c3eb1394afa80e207fab8b7a80b176795469622d4f92650b3e4ad5d26119c514ebac5fba6a54251f32847faa6c23b53dfa079b6e0796b2b6bdb9af430c8346919756b5735500eb9621605f3e5712608e01b0a180231e8f912c6a0ed910e13e0df4e12f92d67faea8642f01b0c5aa7e5678016465bef75608e4b956be686a108e5d36b1d053c02932a5be26680e5f4db9e9a84491a32ea14c49d3dd7604fd0e4ced918399702969bc59481ec4a235b5181a2fe0b3031f791d495a0136e91e0288775645ec8cb05f2ac103b8dbe9a6febbdb43ccd16b14bc9705e8bd67591b7d6089155c9c20b90240d9cc082f26a721f77dacc458963352ee2b088652295197e16dce90a0dee9ca1a2e8b8244f53c64e69f04bbd104f06a3976b20a1fd64bc39459216463ee121f80176402c7ee11cc3708d0f2199',
             'hex'
           ),
@@ -35,7 +35,7 @@ describe('mpc utils', () => {
 
     it('should throw an error for empty input', () => {
       (() => {
-        bigIntFromBufferBE(new Buffer('', 'hex'));
+        bigIntFromBufferBE(Buffer.from('', 'hex'));
       }).should.throw('Cannot convert 0x to a BigInt');
     });
   });

@@ -53,4 +53,8 @@ export interface BaseCurve {
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean;
   // order of the curve
   order: () => bigint;
+  // the size of scalar of the curve in bytes
+  scalarBytes: number;
+  // the size of point of the curve in bytes
+  pointBytes: number;
 }
