@@ -129,8 +129,8 @@ const testnetBase: EnvironmentTemplate = {
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
-    full: 'http://47.252.81.135:8090',
-    solidity: 'http://47.252.81.135:8091',
+    full: 'https://api.shasta.trongrid.io',
+    solidity: 'https://api.shasta.trongrid.io',
   },
   hmacVerificationEnforced: false,
 };
