@@ -1,12 +1,11 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
-import { sendMsgTypeUrl } from './constants';
-import { SendMessage } from './iface';
-import { TransactionBuilder } from './transactionBuilder';
+import { OsmoTransactionBuilder } from './transactionBuilder';
 import utils from './utils';
+import { SendMessage, CosmosConstants } from '@bitgo/abstract-cosmos';
 
-export class TransferBuilder extends TransactionBuilder {
+export class OsmoTransferBuilder extends OsmoTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -20,7 +19,7 @@ export class TransferBuilder extends TransactionBuilder {
     this._messages = sendMessages.map((sendMessage) => {
       utils.validateSendMessage(sendMessage);
       return {
-        typeUrl: sendMsgTypeUrl,
+        typeUrl: CosmosConstants.sendMsgTypeUrl,
         value: sendMessage,
       };
     });

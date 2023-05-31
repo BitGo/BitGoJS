@@ -1,8 +1,8 @@
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
-import { TransferBuilder } from './transferBuilder';
+import { OsmoTransactionBuilder } from './transactionBuilder';
+import { OsmoTransferBuilder } from './transferBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Transaction } from './transaction';
+import { OsmoTransaction } from './transaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -10,8 +10,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
-    const tx = new Transaction(this._coinConfig);
+  from(raw: string): OsmoTransactionBuilder {
+    const tx = new OsmoTransaction(this._coinConfig);
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -26,8 +26,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: OsmoTransaction): OsmoTransferBuilder {
+    return this.initializeBuilder(tx, new OsmoTransferBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
@@ -38,11 +38,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /**
    * Initialize the builder with the given transaction
    *
-   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @param {TransactionBuilder} builder - the builder to be initialized
-   * @returns {TransactionBuilder} the builder initialized
+   * @param {OsmoTransaction | undefined} tx - the transaction used to initialize the builder
+   * @param {OsmoTransactionBuilder} builder - the builder to be initialized
+   * @returns {OsmoTransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+  private initializeBuilder<T extends OsmoTransactionBuilder>(tx: OsmoTransaction | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }

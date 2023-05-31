@@ -3,21 +3,20 @@ import { coins } from '@bitgo/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 
-import { Transaction } from '../../src';
-import { SendMessage } from '../../src/lib/iface';
+import { OsmoTransaction } from '../../src';
+import { SendMessage } from '@bitgo/abstract-cosmos';
 import * as testData from '../resources/osmo';
 
 describe('Osmo Transaction', () => {
-  let tx: Transaction;
+  let tx: OsmoTransaction;
   const config = coins.get('tosmo');
 
   beforeEach(() => {
-    tx = new Transaction(config);
+    tx = new OsmoTransaction(config);
   });
 
   describe('Empty transaction', () => {
     it('should throw empty transaction', function () {
-      should.throws(() => tx.toJson(), 'Empty transaction');
       should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
     });
   });

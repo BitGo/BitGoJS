@@ -78,6 +78,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
 RUN cd /var/modules/sdk-coin-bsc && yarn link
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 RUN cd /var/modules/abstract-eth && yarn link
+COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
+RUN cd /var/modules/abstract-cosmos && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
 RUN cd /var/modules/sdk-coin-celo && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
@@ -162,6 +164,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-bsc && \
     yarn link @bitgo/abstract-eth && \
+    yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-celo && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \

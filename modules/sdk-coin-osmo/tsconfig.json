@@ -18,6 +18,9 @@
     },
     {
       "path": "../sdk-test"
+    },
+    {
+      "path": "../abstract-cosmos"
     }
   ]
 }
