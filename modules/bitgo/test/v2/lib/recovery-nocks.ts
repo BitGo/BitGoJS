@@ -534,7 +534,7 @@ module.exports.nockXlmRecovery = function () {
 
 module.exports.nockTronRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .post('/wallet/createtransaction')
     .reply(200, {
       visible: false,
@@ -563,7 +563,7 @@ module.exports.nockTronRecovery = function () {
     });
 
   // full node - retrieve account information call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .get('/v1/accounts/TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE')
     .reply(200, {
       data: [
@@ -639,7 +639,7 @@ module.exports.nockTronRecovery = function () {
 
 module.exports.nockTronTokenRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .post('/wallet/triggersmartcontract')
     .reply(200, {
       result: {
@@ -674,7 +674,7 @@ module.exports.nockTronTokenRecovery = function () {
     });
 
   // full node - retrieve account information call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .get('/v1/accounts/TKdtdoNiqqEyGsMmJyb5pgwSYf7dTCcmKY')
     .reply(200, {
       data: [
