@@ -1,6 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair } from '../../src/lib';
+import { OsmoKeyPair as KeyPair } from '../../src';
+
 import { TEST_ACCOUNT } from '../resources/osmo';
 
 describe('OSMO Key Pair', () => {
