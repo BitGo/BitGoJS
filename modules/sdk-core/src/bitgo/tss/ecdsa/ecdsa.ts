@@ -476,14 +476,10 @@ export function parseKShare(share: SignatureShareRecord): KShare {
   // and remove the validateOptionalValues check
   validateSharesLength(shares, 11 + 2, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
-  const hasP = validateOptionalValues(shares, 11, 11 + EcdsaPaillierProof.m, 'K', 'p');
-  const hasSigma = validateOptionalValues(
-    shares,
-    11 + EcdsaPaillierProof.m,
-    11 + 2 * EcdsaPaillierProof.m,
-    'K',
-    'sigma'
-  );
+  const hasP = validateOptionalValues(shares, 11, 11 + 1, 'K', 'p');
+  const hasSigma = hasP
+    ? validateOptionalValues(shares, 11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m, 'K', 'sigma')
+    : false;
 
   const proof: RangeProofShare | undefined = hasProof
     ? {

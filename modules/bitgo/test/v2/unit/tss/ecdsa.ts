@@ -512,6 +512,24 @@ describe('Ecdsa tss helper functions tests', function () {
         kShare.should.deepEqual(bitgoKShare);
       });
 
+      it('should successfully parse K share with sigma but no p', function () {
+        const bitgoKShare = {
+          ...mockSignWithPaillierChallengeRT.kShare,
+          p: undefined,
+        };
+        const share = {
+          to: SignatureShareType.BITGO,
+          from: SignatureShareType.USER,
+          share: ECDSAMethods.convertKShare(bitgoKShare).share,
+        } as SignatureShareRecord;
+        const kShare = ECDSAMethods.parseKShare(share);
+        kShare.should.deepEqual({
+          ...bitgoKShare,
+          p: undefined,
+          sigma: undefined,
+        });
+      });
+
       it('should successfully convert K share to signature share record without paillier challenge', function () {
         const bitgoKShare = mockSignRT.kShare;
         const share = {
