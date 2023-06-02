@@ -27,6 +27,7 @@ export enum CoinFamily {
   AVAXP = 'avaxp',
   BCH = 'bch',
   BCHA = 'bcha',
+  BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
@@ -209,6 +210,7 @@ export enum UnderlyingAsset {
   AXLV2 = 'axlv2',
   BCH = 'bch',
   BCHA = 'bcha',
+  BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
@@ -1264,6 +1266,7 @@ export enum BaseUnit {
   FIAT = 'fiatCoin',
   TIA = 'utia',
   HASH = 'nHASH',
+  BLD = 'ubld',
 }
 
 export interface BaseCoinConstructorOptions {

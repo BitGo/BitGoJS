@@ -608,6 +608,18 @@ class HashTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.test.provenance.io/tx/';
 }
 
+class BLD extends Mainnet implements AccountNetwork {
+  name = 'Agoric';
+  family = CoinFamily.BLD;
+  explorerUrl = 'https://bigdipper.live/agoric/transactions/';
+}
+
+class BLDTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Agoric';
+  family = CoinFamily.BLD;
+  explorerUrl = 'https://testnet.ping.pub/agoric-devnet/tx/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -757,6 +769,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    bld: Object.freeze(new BLD()),
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
@@ -799,6 +812,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    bld: Object.freeze(new BLDTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
