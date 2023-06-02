@@ -583,6 +583,19 @@ class OsmoTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.osmosis.explorers.guru/';
 }
 
+class Tia extends Mainnet implements AccountNetwork {
+  name = 'Celestia';
+  family = CoinFamily.TIA;
+  //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+}
+
+class TiaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Celestia';
+  family = CoinFamily.TIA;
+  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -757,6 +770,7 @@ export const Networks = {
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
+    tia: Object.freeze(new Tia()),
     trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
@@ -797,6 +811,7 @@ export const Networks = {
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    tia: Object.freeze(new TiaTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),

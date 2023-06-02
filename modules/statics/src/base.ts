@@ -53,6 +53,7 @@ export enum CoinFamily {
   SUI = 'sui',
   STX = 'stx',
   SUSD = 'susd',
+  TIA = 'tia', // Celestia
   TRX = 'trx',
   XLM = 'xlm',
   XRP = 'xrp',
@@ -234,6 +235,7 @@ export enum UnderlyingAsset {
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
+  TIA = 'tia', // Celestia
   TRX = 'trx',
   USD = 'usd',
   XLM = 'xlm',
@@ -1258,6 +1260,7 @@ export enum BaseUnit {
   OFC = 'ofcCoin',
   OSMO = 'uosmo',
   FIAT = 'fiatCoin',
+  TIA = 'utia',
 }
 
 export interface BaseCoinConstructorOptions {

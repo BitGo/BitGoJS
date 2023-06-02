@@ -140,6 +140,7 @@ const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeat
 const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -731,6 +732,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
     OSMO_FEATURES
+  ),
+  account(
+    '6e35c0dc-7ee8-4273-985d-254aa3641c9d',
+    'tia',
+    'celestia',
+    Networks.main.tia,
+    6,
+    UnderlyingAsset.TIA,
+    BaseUnit.TIA,
+    TIA_FEATURES
+  ),
+  account(
+    '6ea4f120-6d26-4070-a12a-a0cac39ea552',
+    'ttia',
+    'Testnet celestia',
+    Networks.test.tia,
+    6,
+    UnderlyingAsset.TIA,
+    BaseUnit.TIA,
+    TIA_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
