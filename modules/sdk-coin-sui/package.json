@@ -13,7 +13,7 @@
     "prepare": "npm run build",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha"
+    "unit-test": "mocha --spec 'test/unit/**/*.ts'"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
