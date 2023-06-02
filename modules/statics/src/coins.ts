@@ -143,6 +143,7 @@ const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFea
 const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const BLD_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const SEI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -794,6 +795,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BLD,
     BaseUnit.BLD,
     BLD_FEATURES
+  ),
+  account(
+    '4777265e-37f4-44d8-bccd-13e56189fcae',
+    'sei',
+    'Sei',
+    Networks.main.sei,
+    6,
+    UnderlyingAsset.SEI,
+    BaseUnit.SEI,
+    SEI_FEATURES
+  ),
+  account(
+    '5be8a3f3-5c71-41ff-8d87-1ade63ce2543',
+    'tsei',
+    'Testnet Sei',
+    Networks.test.sei,
+    6,
+    UnderlyingAsset.SEI,
+    BaseUnit.SEI,
+    SEI_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',

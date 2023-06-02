@@ -51,6 +51,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   OSMO = 'osmo',
   RBTC = 'rbtc',
+  SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
@@ -236,6 +237,7 @@ export enum UnderlyingAsset {
   OSMO = 'osmo',
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
+  SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
@@ -1267,6 +1269,7 @@ export enum BaseUnit {
   TIA = 'utia',
   HASH = 'nHASH',
   BLD = 'ubld',
+  SEI = 'usei',
 }
 
 export interface BaseCoinConstructorOptions {

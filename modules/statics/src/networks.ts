@@ -620,6 +620,19 @@ class BLDTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.ping.pub/agoric-devnet/tx/';
 }
 
+class Sei extends Mainnet implements AccountNetwork {
+  name = 'Sei';
+  family = CoinFamily.SEI;
+  //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://sei.explorers.guru/transaction/';
+}
+
+class SeiTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Sei';
+  family = CoinFamily.SEI;
+  explorerUrl = 'https://sei.explorers.guru/transaction/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -791,6 +804,7 @@ export const Networks = {
     osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
+    sei: Object.freeze(new Sei()),
     sol: Object.freeze(new Sol()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
@@ -834,6 +848,7 @@ export const Networks = {
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
+    sei: Object.freeze(new SeiTestnet()),
     sol: Object.freeze(new SolTestnet()),
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
