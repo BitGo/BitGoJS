@@ -1,10 +1,9 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-
 import { BitGoBase } from '../bitgoBase';
 import { RequestType, TxRequest, verifyPrimaryUserWrapper, SignatureShareRecord } from '../utils';
+import { TxRequestChallengeResponse } from './types';
 
 /**
  * Gets the latest Tx Request by id
@@ -138,7 +137,7 @@ export async function getTxRequestChallenge(
   index: string,
   requestType: RequestType,
   paillierModulus: string
-): Promise<EcdsaTypes.SerializedEcdsaChallenges> {
+): Promise<TxRequestChallengeResponse> {
   let addendum = '';
   switch (requestType) {
     case RequestType.tx:

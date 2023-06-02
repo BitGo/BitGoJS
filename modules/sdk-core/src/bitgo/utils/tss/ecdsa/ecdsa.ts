@@ -37,6 +37,7 @@ import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignat
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
 import { Enterprises } from '../../../enterprise';
+import { TxRequestChallengeResponse } from '../../../tss/types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -652,18 +653,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoIndex = 3;
     const userIndex = userSigningMaterial.pShare.i;
 
-    const challenges = await this.getEcdsaSigningChallenges(
-      txRequest.txRequestId,
-      requestType,
-      {
-        enterprise: signingKey.xShare.n,
-        bitgo: signingKey.nShares[bitgoIndex].n,
-      },
-      0
-    );
-    // TODO: Pass correct challenges
+    const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, signingKey.xShare.n, 0);
     const { ntilde: ntildea, h1: h1a, h2: h2a, p: pa } = challenges.enterpriseChallenge;
-    const { ntilde: ntildeb, h1: h1b, h2: h2b, p: pb } = challenges.bitgoChallenge;
+    const { ntilde: ntildeb, h1: h1b, h2: h2b, p: pb, n: nb } = challenges.bitgoChallenge;
     const userXShare = MPC.appendChallenge(
       signingKey.xShare,
       { ntilde: ntildea, h1: h1a, h2: h2a },
@@ -673,7 +665,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       {
         i: userIndex,
         j: bitgoIndex,
-        n: signingKey.nShares[bitgoIndex].n,
+        // TODO(BG-78794): remove this non-null assertion
+        // n is not used downstream, so it's safe to pass undefined
+        n: nb!,
       },
       { ntilde: ntildeb, h1: h1b, h2: h2b },
       pb ? { p: pb } : undefined
@@ -793,20 +787,17 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * Only returns the challenges if they are verified by the user's enterprise admin's ecdh key
    * @param {string} txRequestId - transaction request id
    * @param {RequestType} requestType -  (0 for tx, 1 for message)
-   * @param modulus
+   * @param {string} walletPaillierModulus - paillier pubkey $n$
    * @param {number} index - index of the requestType
    */
   async getEcdsaSigningChallenges(
     txRequestId: string,
     requestType: RequestType,
-    modulus: {
-      enterprise: string;
-      bitgo: string;
-    },
+    walletPaillierModulus: string,
     index = 0
   ): Promise<{
     enterpriseChallenge: EcdsaTypes.SerializedEcdsaChallenges;
-    bitgoChallenge: EcdsaTypes.SerializedEcdsaChallenges;
+    bitgoChallenge: TxRequestChallengeResponse;
   }> {
     const enterpriseId = this.wallet.toJSON().enterprise;
     if (!enterpriseId) {
@@ -824,30 +815,31 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId,
       index.toString(),
       requestType,
-      modulus.enterprise
+      walletPaillierModulus
     );
-    const bitgoToEnterprisePaillierChallenge = createBitgoChallengeResponse.p
-      ? { p: createBitgoChallengeResponse.p }
-      : undefined;
-    const enterpriseToBitgoPaillierChallenge = createBitgoChallengeResponse.p
-      ? EcdsaTypes.serializePaillierChallenge({
-          p: await EcdsaPaillierProof.generateP(hexToBigInt(modulus.bitgo)),
-        })
-      : undefined;
 
     if (!shouldUseEnterpriseChallenge) {
       const entChallenge = await EcdsaRangeProof.generateNtilde(minModulusBitLength);
       return {
         enterpriseChallenge: {
           ...EcdsaTypes.serializeNtilde(entChallenge),
-          p: enterpriseToBitgoPaillierChallenge ? enterpriseToBitgoPaillierChallenge.p : undefined,
         },
         bitgoChallenge: {
           ...createBitgoChallengeResponse,
-          p: bitgoToEnterprisePaillierChallenge ? bitgoToEnterprisePaillierChallenge.p : undefined,
+          p: undefined,
         },
       };
     }
+
+    const bitgoToEnterprisePaillierChallenge = createBitgoChallengeResponse.p
+      ? { p: createBitgoChallengeResponse.p }
+      : undefined;
+    const enterpriseToBitgoPaillierChallenge =
+      createBitgoChallengeResponse.p && createBitgoChallengeResponse.n
+        ? EcdsaTypes.serializePaillierChallenge({
+            p: await EcdsaPaillierProof.generateP(hexToBigInt(createBitgoChallengeResponse.n)),
+          })
+        : undefined;
 
     // TODO(BG-78764): once the paillier proofs are complete, reduce challenge creation to one API call
     const walletChallenges = await this.wallet.getChallengesForEcdsaSigning();
@@ -874,11 +866,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     // Verify that the BitGo challenge's ZK proofs have been verified by the admin
-    const bitgoChallenge: EcdsaTypes.SerializedEcdsaChallenges = {
+    const bitgoChallenge: TxRequestChallengeResponse = {
       ntilde: walletChallenges.bitgoChallenge.ntilde,
       h1: walletChallenges.bitgoChallenge.h1,
       h2: walletChallenges.bitgoChallenge.h2,
       p: bitgoToEnterprisePaillierChallenge ? bitgoToEnterprisePaillierChallenge.p : undefined,
+      n: createBitgoChallengeResponse.n,
     };
     const adminVerificationSignatureForBitGoChallenge = walletChallenges.bitgoChallenge.verifiers.adminSignature;
     if (

@@ -322,6 +322,8 @@ export default class Ecdsa {
    * and k-share to be distributed to other participant signer
    */
   async signShare(xShare: XShareWithChallenges, yShare: YShareWithChallenges): Promise<SignShareRT> {
+    const shouldSendPaillierValues = xShare.p && yShare.p;
+
     const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
     const k = Ecdsa.curve.scalarRandom();
@@ -348,7 +350,7 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
-      p: xShare.p,
+      p: shouldSendPaillierValues ? xShare.p : undefined,
       k: bigIntToBufferBE(k, 32).toString('hex'),
       ck: bigIntToBufferBE(ck, 768).toString('hex'),
       w: bigIntToBufferBE(w, 32).toString('hex'),
@@ -371,11 +373,12 @@ export default class Ecdsa {
     );
 
     // create paillier challenge proof based on the other signers challenge
-    const sigma = yShare.p
+    // only send sigma if we also send challenge p
+    const sigma = shouldSendPaillierValues
       ? EcdsaPaillierProof.prove(
           hexToBigInt(xShare.n),
           hexToBigInt(xShare.l),
-          EcdsaTypes.deserializePaillierChallenge({ p: yShare.p }).p
+          EcdsaTypes.deserializePaillierChallenge({ p: yShare.p! }).p
         )
       : undefined;
 
@@ -398,9 +401,11 @@ export default class Ecdsa {
       ntilde: ntildea,
       h1: h1a,
       h2: h2a,
-      p: xShare.p,
+      p: shouldSendPaillierValues ? xShare.p : undefined,
       k: bigIntToBufferBE(ck, 768).toString('hex'),
-      sigma: sigma ? EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma }).sigma : undefined,
+      sigma: shouldSendPaillierValues
+        ? EcdsaTypes.serializePaillierChallengeProofs({ sigma: sigma! }).sigma
+        : undefined,
       proof: proofShare,
     };
 
