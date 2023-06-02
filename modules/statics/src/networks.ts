@@ -580,7 +580,7 @@ class Osmo extends Mainnet implements AccountNetwork {
 class OsmoTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Osmosis';
   family = CoinFamily.OSMO;
-  explorerUrl = 'https://testnet.osmosis.explorers.guru/';
+  explorerUrl = 'https://testnet.osmosis.explorers.guru/transaction/';
 }
 
 class Tia extends Mainnet implements AccountNetwork {
