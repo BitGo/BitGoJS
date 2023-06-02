@@ -596,6 +596,18 @@ class TiaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
 }
 
+class Hash extends Mainnet implements AccountNetwork {
+  name = 'Provenance';
+  family = CoinFamily.HASH;
+  explorerUrl = 'https://explorer.provenance.io/tx/';
+}
+
+class HashTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Provenance';
+  family = CoinFamily.HASH;
+  explorerUrl = 'https://explorer.test.provenance.io/tx/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -758,6 +770,7 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
+    hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
@@ -797,6 +810,7 @@ export const Networks = {
     fiat: Object.freeze(new FiatTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
+    hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),

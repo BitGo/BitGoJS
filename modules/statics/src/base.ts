@@ -42,6 +42,7 @@ export enum CoinFamily {
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
+  HASH = 'hash', // Provenance
   HBAR = 'hbar',
   LTC = 'ltc',
   POLYGON = 'polygon',
@@ -226,6 +227,7 @@ export enum UnderlyingAsset {
   EUROC = 'euroc',
   GBP = 'gbp',
   GTC = 'gtc',
+  HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
   NEAR = 'near',
@@ -1261,6 +1263,7 @@ export enum BaseUnit {
   OSMO = 'uosmo',
   FIAT = 'fiatCoin',
   TIA = 'utia',
+  HASH = 'nHASH',
 }
 
 export interface BaseCoinConstructorOptions {

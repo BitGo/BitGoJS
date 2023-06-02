@@ -141,6 +141,7 @@ const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -752,6 +753,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
     TIA_FEATURES
+  ),
+  account(
+    '2e20e302-d743-457c-a023-58b80e8d3a15',
+    'hash',
+    'Provenance',
+    Networks.main.hash,
+    9,
+    UnderlyingAsset.HASH,
+    BaseUnit.HASH,
+    HASH_FEATURES
+  ),
+  account(
+    'feadf3d5-5a9a-427e-8144-7a5085b4d258',
+    'thash',
+    'Testnet Provenance',
+    Networks.test.hash,
+    9,
+    UnderlyingAsset.HASH,
+    BaseUnit.HASH,
+    HASH_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
