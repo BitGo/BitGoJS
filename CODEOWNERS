@@ -67,7 +67,8 @@ modules/blake2b/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
 modules/express/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
 modules/key-card/ @BitGo/wallets
 modules/sdk-api/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/sdk-core/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+modules/sdk-core/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets @BitGo/hsm
+modules/sdk-lib-mpc/ @BitGo/wallets @BitGo/hsm
 modules/sdk-rpc-wrapper @BitGo/defi-team
 modules/sdk-test/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
 modules/sdk-unified-wallet @BitGo/defi-team
