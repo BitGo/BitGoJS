@@ -45,6 +45,7 @@ export enum CoinFamily {
   FIAT = 'fiat',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
+  INJ = 'inj', // Injective
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
@@ -1270,6 +1271,7 @@ export enum BaseUnit {
   HASH = 'nhash',
   BLD = 'ubld',
   SEI = 'usei',
+  INJ = 'inj',
 }
 
 export interface BaseCoinConstructorOptions {
