@@ -31,13 +31,6 @@ export class CosmosTransaction extends BaseTransaction {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._cosmosLikeTransaction = {
-      sequence: 0,
-      sendMessages: [],
-      gasBudget: { gasLimit: 0, amount: [] },
-    };
-    this._accountNumber = 0;
-    this._chainId = '';
   }
 
   get cosmosLikeTransaction(): CosmosLikeTransaction {

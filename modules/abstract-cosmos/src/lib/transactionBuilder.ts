@@ -34,12 +34,6 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new CosmosTransaction(_coinConfig);
-    this._sequence = 0;
-    this._messages = [];
-    this._gasBudget = { gasLimit: 0, amount: [] };
-    this._signature = Buffer.alloc(0);
-    this._signer = new KeyPair();
   }
 
   /**
