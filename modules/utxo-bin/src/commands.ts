@@ -4,8 +4,6 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
-const stdin: any = process.stdin;
-
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { ParserNode } from './Parser';
@@ -20,6 +18,7 @@ import {
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
+import { readStdin } from './readStdin';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -145,8 +144,13 @@ export const cmdParseTx = {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
-      console.log('reading from stdin');
-      data = fs.readFileSync(stdin.fd, 'utf8');
+      console.log('Reading from stdin. Please paste hex-encoded transaction data.');
+      console.log('Press Ctrl-D to finish, or Ctrl-C to cancel.');
+      if (process.stdin.isTTY) {
+        data = await readStdin();
+      } else {
+        data = await fs.promises.readFile('/dev/stdin', 'utf8');
+      }
     } else if (argv.path) {
       if (data) {
         throw new Error(`conflicting arguments`);
