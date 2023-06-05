@@ -56,6 +56,10 @@ describe('V2 Keychains', function () {
       && n.asset !== UnderlyingAsset.USD
       && n.asset !== UnderlyingAsset.AVAXP
       && n.asset !== UnderlyingAsset.DOGE
+      && n.asset !== UnderlyingAsset.TIA  // ToDo(BG-79045) remove flag after adding coin specific module
+      && n.asset !== UnderlyingAsset.HASH
+      && n.asset !== UnderlyingAsset.BLD
+      && n.asset !== UnderlyingAsset.SEI
       && n.asset !== UnderlyingAsset.ETHW
       && coinFamilyValues.includes(n.name));
 

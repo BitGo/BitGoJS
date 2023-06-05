@@ -1267,7 +1267,7 @@ export enum BaseUnit {
   OSMO = 'uosmo',
   FIAT = 'fiatCoin',
   TIA = 'utia',
-  HASH = 'nHASH',
+  HASH = 'nhash',
   BLD = 'ubld',
   SEI = 'usei',
 }
