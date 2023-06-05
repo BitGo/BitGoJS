@@ -30,7 +30,7 @@ export interface ApproveOptions {
   otp?: string;
   tx?: string;
   xprv?: string;
-  previewPendingApprovals?: boolean;
+  previewPendingTxs?: boolean;
 }
 
 export interface PendingApprovalInfo {

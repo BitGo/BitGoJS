@@ -191,7 +191,7 @@ export class Wallet implements IWallet {
       'numBlocks',
       'nonce',
       'preview',
-      'previewPendingApprovals',
+      'previewPendingTxs',
       'receiveAddress',
       'recipients',
       'reservation',
