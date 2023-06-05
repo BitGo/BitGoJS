@@ -12,6 +12,7 @@ import {
   KeyName,
   outputScripts,
   UtxoPsbt,
+  WalletUnspent,
 } from '../../../src/bitgo';
 import { getNetworkName, Network, networks } from '../../../src';
 import { createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
@@ -60,7 +61,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         assert(redeemScript);
         addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
       } else {
-        const unspents = mockUnspents(walletKeys, [scriptType], BigInt(1e8), network);
+        const unspents = mockUnspents(walletKeys, [scriptType], BigInt(1e8), network) as WalletUnspent<bigint>[];
         unspents.forEach((unspent) => addWalletUnspentToPsbt(psbt, unspent, walletKeys, signerName, cosignerName));
       }
 
