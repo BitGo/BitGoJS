@@ -16,10 +16,11 @@ module.exports = {
     parserOpts: {
       issuePrefixes: [
         'BG-',
+        'BTC-',
         'CR-',
         'STLX-',
         'BOS-',
-        'EA-', // Eth-Alt 
+        'EA-', // Eth-Alt
         '#', // Prefix used by GitHub issues
       ],
     },
