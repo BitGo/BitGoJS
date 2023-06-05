@@ -25,12 +25,14 @@ import {
   TransactionRecipient as Recipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  BaseTransaction,
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
 import { TransactionReceipt } from './lib/iface';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
+export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -78,7 +80,14 @@ export interface RecoveryOptions {
   walletPassphrase?: string;
 }
 
+export interface FeeInfo {
+  fee: string;
+}
+
 export interface RecoveryTransaction {
+  txHex?: string;
+  feeInfo?: FeeInfo;
+  coin?: string;
   tx?: TransactionPrebuild;
   recoveryAmount?: number;
   tokenTxs?: TransactionReceipt[];
@@ -356,23 +365,23 @@ export class Trx extends BaseCoin {
     return hdNode.privateKey.toString('hex');
   }
 
+  private getNodeUrl(node: NodeTypes): string {
+    switch (node) {
+      case NodeTypes.Full:
+        return common.Environments[this.bitgo.getEnv()].tronNodes.full;
+      case NodeTypes.Solidity:
+        return common.Environments[this.bitgo.getEnv()].tronNodes.solidity;
+      default:
+        throw new Error('node type not found');
+    }
+  }
   /**
    * Make a query to Trongrid for information such as balance, token balance, solidity calls
    * @param query {Object} key-value pairs of parameters to append after /api
    * @returns {Object} response from Trongrid
    */
   private async recoveryPost(query: { path: string; jsonObj: any; node: NodeTypes }): Promise<any> {
-    let nodeUri = '';
-    switch (query.node) {
-      case NodeTypes.Full:
-        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.full;
-        break;
-      case NodeTypes.Solidity:
-        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.solidity;
-        break;
-      default:
-        throw new Error('node type not found');
-    }
+    const nodeUri = this.getNodeUrl(query.node);
 
     const response = await request
       .post(nodeUri + query.path)
@@ -393,17 +402,7 @@ export class Trx extends BaseCoin {
    * @returns {Object} response from Trongrid
    */
   private async recoveryGet(query: { path: string; jsonObj: any; node: NodeTypes }): Promise<any> {
-    let nodeUri = '';
-    switch (query.node) {
-      case NodeTypes.Full:
-        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.full;
-        break;
-      case NodeTypes.Solidity:
-        nodeUri = common.Environments[this.bitgo.getEnv()].tronNodes.solidity;
-        break;
-      default:
-        throw new Error('node type not found');
-    }
+    const nodeUri = this.getNodeUrl(query.node);
 
     const response = await request
       .get(nodeUri + query.path)
@@ -501,6 +500,26 @@ export class Trx extends BaseCoin {
         throw new Error('owner permission is invalid for this structure');
       }
     });
+  }
+
+  /**
+   * Format for offline vault signing
+   * @param {BaseTransaction} tx
+   * @param {number} fee
+   * @param {number} recoveryAmount
+   * @returns {RecoveryTransaction}
+   */
+  formatForOfflineVault(tx: BaseTransaction, fee: number, recoveryAmount: number): RecoveryTransaction {
+    const txJSON = tx.toJson();
+    return {
+      txHex: JSON.stringify(txJSON),
+      recoveryAmount,
+      feeInfo: {
+        fee: `${fee}`,
+      },
+      tx: txJSON, // Leaving it as txJSON for backwards compatibility
+      coin: this.getChain(),
+    };
   }
 
   /**
@@ -636,13 +655,14 @@ export class Trx extends BaseCoin {
 
     // construct our tx
     const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);
+    // Default expiry is 1 minute which is too short for recovery purposes
+    // extend the expiry to 1 day
+    txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+    const tx = await txBuilder.build();
 
     // this tx should be enough to drop into a node
     if (isUnsignedSweep) {
-      return {
-        tx: (await txBuilder.build()).toJson(),
-        recoveryAmount: recoveryAmountMinusFees,
-      };
+      return this.formatForOfflineVault(tx, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees);
     }
 
     const userPrv = this.xprvToCompressedPrv(userXPrv);
@@ -656,11 +676,8 @@ export class Trx extends BaseCoin {
 
       txBuilder.sign({ key: backupPrv });
     }
-
-    return {
-      tx: (await txBuilder.build()).toJson(),
-      recoveryAmount: recoveryAmountMinusFees,
-    };
+    const txSigned = await txBuilder.build();
+    return this.formatForOfflineVault(txSigned, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees);
   }
 
   /**
