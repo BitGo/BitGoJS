@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.6.0...@bitgo/account-lib@4.7.0) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** pallier -> paillier ([9d0a12d](https://github.com/BitGo/BitGoJS/commit/9d0a12dd1d2e1d6e3107f62e2757263fb2fd258e))
+
+### Features
+
+- **root:** add optional paillier proof plumbing ([18093bf](https://github.com/BitGo/BitGoJS/commit/18093bfc370745130958075349814d493d5a8c72))
+- **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+- **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+- **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
 # [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.5.3...@bitgo/account-lib@4.6.0) (2023-05-25)
 
 ### Features

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.6.0...@bitgo/sdk-core@8.7.0) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-core:** add previewPendingApprovals flag ([7efad87](https://github.com/BitGo/BitGoJS/commit/7efad873b339e4a246859383e099a6d022962e05))
+- **sdk-core:** fix pending approval for consolidation ([3589434](https://github.com/BitGo/BitGoJS/commit/35894347a5e03e67ae97c37f921f803878b89396))
+- **sdk-core:** pass correct n value for keyDerive ([7c7e82f](https://github.com/BitGo/BitGoJS/commit/7c7e82fd1d473ce31bd2a12b1d0496c4df8c050a))
+- **sdk-core:** retrieve bitgo modulus for ecdsa signing ([b43279b](https://github.com/BitGo/BitGoJS/commit/b43279beecba52fa21a480d994d01b3706bdf583))
+- **sdk-lib-mpc:** pallier -> paillier ([9d0a12d](https://github.com/BitGo/BitGoJS/commit/9d0a12dd1d2e1d6e3107f62e2757263fb2fd258e))
+
+### Features
+
+- **root:** add optional paillier proof plumbing ([18093bf](https://github.com/BitGo/BitGoJS/commit/18093bfc370745130958075349814d493d5a8c72))
+- **sdk-coin-osmo:** staking implementation with testcases ([a90c00b](https://github.com/BitGo/BitGoJS/commit/a90c00bd6e49d2a7898b8d4624514708c4f90fb9))
+- **sdk-core:** paillier proof user<>backup ([8c0a381](https://github.com/BitGo/BitGoJS/commit/8c0a381318be2088572e06e34c3627323d7bfe38))
+- **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+- **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+- **sdk-lib-mpc:** add tests for palierproof and utils ([7c4674b](https://github.com/BitGo/BitGoJS/commit/7c4674b430741ccb33f4b447b4efca7942ee70e7))
+- **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
 # [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.5.0...@bitgo/sdk-core@8.6.0) (2023-05-25)
 
 ### Bug Fixes

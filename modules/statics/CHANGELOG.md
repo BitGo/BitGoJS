@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.0.0...@bitgo/statics@16.1.0) (2023-06-05)
+
+### Bug Fixes
+
+- **statics:** fix osmo url ([98cdffd](https://github.com/BitGo/BitGoJS/commit/98cdffde73faf34391076ad73c708d5b16506053))
+
+### Features
+
+- **sdk-coin-osmo:** osmosis sdk init ([cc20a59](https://github.com/BitGo/BitGoJS/commit/cc20a5908528d2ad6bcc4a588acd7b1c8b0af379))
+- **static:** add celestia config ([80bbe9b](https://github.com/BitGo/BitGoJS/commit/80bbe9b37cbf79adfb391cd048462363d08b2476))
+- **statics:** add agoric config ([ae8312b](https://github.com/BitGo/BitGoJS/commit/ae8312b955045bf6b53c07026616a58aa8a63120))
+- **statics:** add Provenance config ([481f840](https://github.com/BitGo/BitGoJS/commit/481f840937a3e82c95e48f7d796c18e5998f946f))
+- **statics:** add sei config ([660ace0](https://github.com/BitGo/BitGoJS/commit/660ace00b24a6e96d274c6a437c7a1a4345cc53c))
+- **statics:** set bsv coin feature as deprecated ([a520367](https://github.com/BitGo/BitGoJS/commit/a5203671638e8f8a0dc8c9243cf495a3a42eb095))
+
 # [16.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@15.1.2...@bitgo/statics@16.0.0) (2023-05-25)
 
 ### chore

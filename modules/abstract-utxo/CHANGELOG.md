@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.3.0...@bitgo/abstract-utxo@3.0.0) (2023-06-05)
+
+### Bug Fixes
+
+- **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+### Features
+
+- **abstract-utxo:** add psbt support to explain and verify Tx ([4189659](https://github.com/BitGo/BitGoJS/commit/41896593cdc180cb5a60145a8d31fdf55dba6bb2))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** functions signature is changed
+
 # [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.2.1...@bitgo/abstract-utxo@2.3.0) (2023-05-25)
 
 ### Features

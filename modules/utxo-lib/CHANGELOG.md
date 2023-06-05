@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.4.0...@bitgo/utxo-lib@9.0.0) (2023-06-05)
+
+### Bug Fixes
+
+- **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+### Features
+
+- **utxo-lib:** move getSignatureValidationArrayPsbt from WP ([6283b21](https://github.com/BitGo/BitGoJS/commit/6283b219c4a2fe0dae4854dc08ef023e0d4c75ea))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** functions signature is changed
+
 # [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.3.0...@bitgo/utxo-lib@8.4.0) (2023-05-25)
 
 ### Features

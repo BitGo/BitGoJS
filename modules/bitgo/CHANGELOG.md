@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.5.0...bitgo@19.0.0) (2023-06-05)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** fix trx recovery ([8c28f2f](https://github.com/BitGo/BitGoJS/commit/8c28f2ff2c2b29be1e27617f6fb830a5f18b7ced))
+* **sdk-core:** fix pending approval for consolidation ([3589434](https://github.com/BitGo/BitGoJS/commit/35894347a5e03e67ae97c37f921f803878b89396))
+* **sdk-core:** retrieve bitgo modulus for ecdsa signing ([b43279b](https://github.com/BitGo/BitGoJS/commit/b43279beecba52fa21a480d994d01b3706bdf583))
+* **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+
+### Features
+
+* **abstract-utxo:** add psbt support to explain and verify Tx ([4189659](https://github.com/BitGo/BitGoJS/commit/41896593cdc180cb5a60145a8d31fdf55dba6bb2))
+* **root:** add optional paillier proof plumbing ([18093bf](https://github.com/BitGo/BitGoJS/commit/18093bfc370745130958075349814d493d5a8c72))
+* **sdk-coin-osmo:** osmosis sdk init ([cc20a59](https://github.com/BitGo/BitGoJS/commit/cc20a5908528d2ad6bcc4a588acd7b1c8b0af379))
+* **sdk-coin-trx:** add receive address tron recovery ([2a120fe](https://github.com/BitGo/BitGoJS/commit/2a120fef44345c270f2fa0ff5749f78f821e0d1b))
+* **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+* **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+* **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
+
+### BREAKING CHANGES
+
+* **utxo-lib:** functions signature is changed
+
+
+
+
+
 # [18.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.4.0...bitgo@18.5.0) (2023-05-25)
 
 

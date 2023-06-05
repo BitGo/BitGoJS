@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.7.6...@bitgo/sdk-coin-trx@1.8.0) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** fix trx recovery ([8c28f2f](https://github.com/BitGo/BitGoJS/commit/8c28f2ff2c2b29be1e27617f6fb830a5f18b7ced))
+
+### Features
+
+- **sdk-coin-trx:** add receive address tron recovery ([2a120fe](https://github.com/BitGo/BitGoJS/commit/2a120fef44345c270f2fa0ff5749f78f821e0d1b))
+
 ## [1.7.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.7.5...@bitgo/sdk-coin-trx@1.7.6) (2023-05-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

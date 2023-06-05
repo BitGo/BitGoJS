@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.6...@bitgo/sdk-coin-sui@3.0.7) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add src/lib/mystenlab to .prettierignore ([a90139b](https://github.com/BitGo/BitGoJS/commit/a90139ba7fe07129a1eaa63531c9a61ac23a6759))
+
 ## [3.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.5...@bitgo/sdk-coin-sui@3.0.6) (2023-05-25)
 
 ### Bug Fixes
