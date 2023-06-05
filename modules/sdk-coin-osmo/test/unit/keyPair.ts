@@ -98,7 +98,7 @@ describe('OSMO Key Pair', () => {
     });
   });
 
-  describe('should get address ', () => {
+  describe('should get unique address', () => {
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: TEST_ACCOUNT.privateKey });
       should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
@@ -107,6 +107,12 @@ describe('OSMO Key Pair', () => {
     it('from a compressed public key', () => {
       const keyPair = new KeyPair({ pub: TEST_ACCOUNT.compressedPublicKey });
       should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
+    });
+
+    it('should be different for different public keys', () => {
+      const keyPairOne = new KeyPair({ pub: TEST_ACCOUNT.compressedPublicKey });
+      const keyPairTwo = new KeyPair({ pub: TEST_ACCOUNT.compressedPublicKeyTwo });
+      should.notEqual(keyPairOne.getAddress(), keyPairTwo.getAddress());
     });
   });
 });
