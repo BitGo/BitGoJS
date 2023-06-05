@@ -1150,8 +1150,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error(`Invalid sessionId size ${params.sessionId.length}`);
     }
 
-    const inputs = inputIndex === undefined ? this.data.inputs : [checkForInput(this.data.inputs, inputIndex)];
-    inputs.forEach((input, index) => {
+    const inputIndexes = inputIndex === undefined ? [...Array(this.inputCount).keys()] : [inputIndex];
+    inputIndexes.forEach((index) => {
       if (!this.isTaprootKeyPathInput(index)) {
         return;
       }
