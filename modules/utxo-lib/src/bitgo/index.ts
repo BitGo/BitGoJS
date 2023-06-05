@@ -16,3 +16,4 @@ export * from './wallet';
 export * from './zcash';
 export * from './tnumber';
 export * from './litecoin';
+export * from './PsbtUtil';

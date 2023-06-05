@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Network, getNetworkName, networks, getNetworkList } from '../../../src';
+import { Network, getNetworkName, networks, getNetworkList, testutil } from '../../../src';
 import {
   getExternalChainCode,
   outputScripts,
@@ -14,25 +14,18 @@ import {
   addReplayProtectionUnspentToPsbt,
   addWalletOutputToPsbt,
   getInternalChainCode,
-  getSignatureCount,
   UtxoTransaction,
+  isTransactionWithKeyPathSpendInput,
   isPsbt,
 } from '../../../src/bitgo';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../../../src/bitgo/outputScripts';
 
-import {
-  constructPsbt,
-  getDefaultWalletKeys,
-  inputScriptTypes,
-  mockReplayProtectionUnspent,
-  outputScriptTypes,
-} from '../../../src/testutil';
+import { getDefaultWalletKeys, mockReplayProtectionUnspent } from '../../../src/testutil';
 
 import { defaultTestOutputAmount } from '../../transaction_util';
 import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
 
 import { mockUnspents } from '../../../src/testutil/mock';
-import { constructTxnBuilder, txnInputScriptTypes, txnOutputScriptTypes } from '../../../src/testutil/transaction';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -50,44 +43,106 @@ function getScriptTypes2Of3() {
   return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
 }
 
-describe('getSignatureCount', function () {
-  it('tx', function () {
-    const inputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-    const outputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+describe('isTransactionWithKeyPathSpendInput', function () {
+  describe('transaction input', function () {
+    it('empty inputs', function () {
+      const tx = testutil.constructTxnBuilder([], [], network, rootWalletKeys, 'unsigned').buildIncomplete();
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
+    });
 
-    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
-      const txb = constructTxnBuilder(inputs, outputs, network, rootWalletKeys, sign);
-      const tx = sign === 'fullsigned' ? txb.build() : txb.buildIncomplete();
-      assert.strictEqual(getSignatureCount(tx), signatureCount);
-      tx.ins.forEach((input, inputIndex) => {
-        // p2shP2pk is at 4th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 4 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getSignatureCount([tx.ins[inputIndex]], 0), expectedSigCount);
-      });
+    it('taprootKeyPath inputs successfully triggers', function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
+          { scriptType: 'p2sh', value: BigInt(1e8) },
+        ],
+        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        network,
+        rootWalletKeys,
+        'fullsigned'
+      );
+      assert(psbt.validateSignaturesOfAllInputs());
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), true);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), true);
+    });
+
+    it('no taprootKeyPath inputs successfully does not trigger', function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'p2trMusig2', value: BigInt(1e8) },
+          { scriptType: 'p2sh', value: BigInt(1e8) },
+        ],
+        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        network,
+        rootWalletKeys,
+        'fullsigned'
+      );
+      assert(psbt.validateSignaturesOfAllInputs());
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
+    });
+
+    it('unsigned inputs successfully fail', function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'p2wsh', value: BigInt(1e8) },
+          { scriptType: 'p2sh', value: BigInt(1e8) },
+        ],
+        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      const tx = psbt.getUnsignedTx();
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
     });
   });
 
-  it('psbt', function () {
-    const inputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-    const outputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+  describe('psbt input', function () {
+    it('empty inputs', function () {
+      const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), false);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), false);
+    });
 
-    (['unsigned', 'halfsigned', 'fullsigned'] as const).forEach((sign, signatureCount) => {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      assert.strictEqual(getSignatureCount(psbt), signatureCount);
-      psbt.data.inputs.forEach((input, inputIndex) => {
-        // p2shP2pk is at 6th index, and it will only have one signature.
-        const expectedSigCount = inputIndex === 6 && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getSignatureCount(psbt, inputIndex), expectedSigCount);
-      });
+    it('psbt with taprootKeyPathInputs successfully triggers', function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
+          { scriptType: 'p2sh', value: BigInt(1e8) },
+        ],
+        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
 
-      if (sign === 'fullsigned') {
-        const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
-        tx.ins.forEach((input, inputIndex) => {
-          // p2shP2pk is at 6th index, and it will only have one signature.
-          const expectedSigCount = inputIndex === 6 ? 1 : signatureCount;
-          assert.strictEqual(getSignatureCount([tx.ins[inputIndex]], 0), expectedSigCount);
-        });
-      }
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), true);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), true);
+    });
+
+    it('psbt without taprootKeyPathInputs successfully does not trigger', function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'p2wsh', value: BigInt(1e8) },
+          { scriptType: 'p2sh', value: BigInt(1e8) },
+        ],
+        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        network,
+        rootWalletKeys,
+        'halfsigned'
+      );
+
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), false);
+      assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), false);
     });
   });
 });
@@ -101,25 +156,26 @@ describe('Parse PSBT', function () {
     assert(redeemScript);
     addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
     addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode('p2sh'), 0, BigInt(1e8 - 10000));
-    let parsed = parsePsbtInput(psbt, 0);
+    const input = psbt.data.inputs[0];
+    let parsed = parsePsbtInput(input);
 
-    assert.strictEqual(parsed?.scriptType, 'p2shP2pk');
-    assert.strictEqual(parsed?.signatures, undefined);
-    assert.strictEqual(parsed?.publicKeys.length, 1);
-    assert.ok(parsed?.publicKeys[0].length === 33);
-    assert.ok(parsed?.pubScript.equals(redeemScript));
+    assert.strictEqual(parsed.scriptType, 'p2shP2pk');
+    assert.strictEqual(parsed.signatures, undefined);
+    assert.strictEqual(parsed.publicKeys.length, 1);
+    assert.ok(parsed.publicKeys[0].length === 33);
+    assert.ok(parsed.pubScript.equals(redeemScript));
 
     psbt.signAllInputs(signer);
     assert.ok(psbt.validateSignaturesOfAllInputs());
 
-    parsed = parsePsbtInput(psbt, 0);
+    parsed = parsePsbtInput(input);
 
-    assert.strictEqual(parsed?.scriptType, 'p2shP2pk');
-    assert.strictEqual(parsed?.signatures?.length, 1);
-    assert.strictEqual(parsed?.signatures[0].length, 72);
-    assert.strictEqual(parsed?.publicKeys.length, 1);
-    assert.ok(parsed?.publicKeys[0].length === 33);
-    assert.ok(parsed?.pubScript.equals(redeemScript));
+    assert.strictEqual(parsed.scriptType, 'p2shP2pk');
+    assert.strictEqual(parsed.signatures?.length, 1);
+    assert.strictEqual(parsed.signatures[0].length, 72);
+    assert.strictEqual(parsed.publicKeys.length, 1);
+    assert.ok(parsed.publicKeys[0].length === 33);
+    assert.ok(parsed.pubScript.equals(redeemScript));
   });
 
   it('fail to parse finalized psbt', function () {
@@ -145,7 +201,7 @@ describe('Parse PSBT', function () {
     psbt.finalizeAllInputs();
     psbt.data.inputs.forEach((input, i) => {
       assert.throws(
-        () => parsePsbtInput(psbt, i),
+        () => parsePsbtInput(input),
         (e) => e.message === 'Finalized PSBT parsing is not supported'
       );
     });
@@ -173,7 +229,7 @@ describe('Parse PSBT', function () {
     psbtP2tr.updateInput(0, { redeemScript });
 
     assert.throws(
-      () => parsePsbtInput(psbtP2tr, 0),
+      () => parsePsbtInput(psbtP2tr.data.inputs[0]),
       (e) => e.message === 'Found both p2sh and taprootScriptPath PSBT metadata.'
     );
   });
@@ -226,47 +282,8 @@ describe('Parse PSBT', function () {
       psbtP2tr3.updateInput(0, { tapLeafScript: tapLeafScripts });
 
       assert.throws(
-        () => parsePsbtInput(psbtP2tr3, 0),
+        () => parsePsbtInput(psbtP2tr3.data.inputs[0]),
         (e) => e.message === 'Bitgo only supports a single tap leaf script per input.'
-      );
-    }
-  });
-
-  it('fail to parse input with signatures and without script', function () {
-    const unspents = mockUnspents(rootWalletKeys, ['p2tr'], BigInt('10000000000000000'), network);
-
-    const txBuilderParams = {
-      signer: 'user',
-      cosigner: 'bitgo',
-      amountType: 'bigint',
-      outputType: 'p2sh',
-      signatureTarget: 'halfsigned',
-      network,
-      changeIndex: CHANGE_INDEX,
-      fee: FEE,
-    } as const;
-
-    const txP2tr1 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams);
-    const psbtP2tr1 = toWalletPsbt(txP2tr1, toBigInt([unspents[0]]), rootWalletKeys);
-
-    const txBuilderParams2 = {
-      signer: 'user',
-      cosigner: 'bitgo',
-      amountType: 'bigint',
-      outputType: 'p2sh',
-      signatureTarget: 'unsigned',
-      network,
-      changeIndex: CHANGE_INDEX,
-      fee: FEE,
-    } as const;
-    const txP2tr2 = constructTransactionUsingTxBuilder([unspents[0]], rootWalletKeys, txBuilderParams2);
-    const psbtP2tr2 = toWalletPsbt(txP2tr2, toBigInt([unspents[0]]), rootWalletKeys);
-    if (psbtP2tr1.data.inputs[0].tapScriptSig) {
-      psbtP2tr2.updateInput(0, { tapScriptSig: psbtP2tr1.data.inputs[0].tapScriptSig });
-
-      assert.throws(
-        () => parsePsbtInput(psbtP2tr2, 0),
-        (e) => e.message === 'Invalid PSBT state. Signatures found without scripts.'
       );
     }
   });

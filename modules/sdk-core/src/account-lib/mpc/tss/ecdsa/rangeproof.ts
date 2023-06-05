@@ -2,7 +2,7 @@
  * Zero Knowledge Range Proofs as described in (Two-party generation of DSA signatures)[1].
  * [1]: https://reitermk.github.io/papers/2004/IJIS.pdf
  */
-import { EcdsaRangeProof, randomCoPrimeTo } from '@bitgo/sdk-lib-mpc';
+import { EcdsaRangeProof, randomPositiveCoPrimeTo } from '@bitgo/sdk-lib-mpc';
 
 const {
   generateSafePrimes,
@@ -20,7 +20,7 @@ const {
  */
 export {
   generateSafePrimes,
-  randomCoPrimeTo,
+  randomPositiveCoPrimeTo,
   generateNtilde,
   generateNtildeProof,
   verifyNtildeProof,

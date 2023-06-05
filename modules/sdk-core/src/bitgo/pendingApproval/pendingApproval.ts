@@ -162,6 +162,7 @@ export class PendingApproval implements IPendingApproval {
     common.validateParams(params, [], ['walletPassphrase', 'otp']);
 
     let canRecreateTransaction = true;
+    params.previewPendingApprovals = true;
     /*
      * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
      *
@@ -175,6 +176,13 @@ export class PendingApproval implements IPendingApproval {
     const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
     const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
     if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
+      canRecreateTransaction = false;
+    }
+
+    // If there are no recipients, then the transaction cannot be recreated
+    const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
+    const type = this.info()?.transactionRequest?.buildParams?.type;
+    if (recipients.length === 0 && type !== 'consolidate') {
       canRecreateTransaction = false;
     }
 

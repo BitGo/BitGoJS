@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^8.6.0",
     "@bitgo/statics": "^16.0.0",
     "@bitgo/utxo-lib": "^8.4.0",
+    "@bitgo/sdk-lib-mpc": "^8.2.0",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@ethereumjs/util": "8.0.3",

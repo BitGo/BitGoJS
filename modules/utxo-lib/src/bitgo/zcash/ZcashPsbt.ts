@@ -1,4 +1,4 @@
-import { PSBT_PROPRIETARY_IDENTIFIER, PsbtOpts, ProprietaryKeySubtype, UtxoPsbt } from '../UtxoPsbt';
+import { PsbtOpts, UtxoPsbt } from '../UtxoPsbt';
 import {
   getDefaultConsensusBranchIdForVersion,
   getDefaultVersionGroupIdForVersion,
@@ -8,6 +8,7 @@ import { Network, PsbtTransaction, Signer } from '../../';
 import { Psbt as PsbtBase } from 'bip174';
 import * as types from 'bitcoinjs-lib/src/types';
 import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
+import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 const typeforce = require('typeforce');
 
 const CONSENSUS_BRANCH_ID_KEY = Buffer.concat([

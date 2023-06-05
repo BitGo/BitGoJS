@@ -34,7 +34,7 @@ export type SerializedNtilde = EcdsaTypes.SerializedNtilde;
 export type SerializedNtildeWithProofs = EcdsaTypes.SerializedNtildeWithProofs;
 
 // Private share of the user generated during key generation
-export interface PShare {
+export type PShare = {
   i: number; // participant index
   t?: number; // threshold
   c?: number; // number of shares
@@ -45,7 +45,7 @@ export interface PShare {
   n: string; // n => (p . q) where p and q are the two random prime numbers chosen for paillier encryption
   y: string;
   chaincode: string;
-}
+};
 
 export type SignIndex = {
   i: number; // participant index
@@ -67,7 +67,7 @@ export type KeyShare = {
 };
 
 // Private XShare of the current participant
-export interface XShare {
+export type XShare = {
   i: number;
   l: string;
   m: string;
@@ -75,71 +75,78 @@ export interface XShare {
   y: string; // combined public key
   x: string; // combined secret
   chaincode: string;
-}
+};
 
-export type XShareWithNtilde = XShare & EcdsaTypes.SerializedNtilde;
+// TODO(BG-78794): Make this mandatory
+export type XShareWithChallenges = XShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 // YShares used during signature generation
 export type YShare = SignIndex & {
   n: string;
 };
 
-export type YShareWithNtilde = YShare & EcdsaTypes.SerializedNtilde;
+// TODO(BG-78794): Make this mandatory
+export type YShareWithChallenges = YShare &
+  EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge>;
 
 export interface KeyCombined {
   xShare: XShare;
   yShares: Record<number, YShare>;
 }
 
-export interface KeyCombinedWithNtilde {
-  xShare: XShareWithNtilde;
-  yShares: Record<number, YShareWithNtilde>;
-}
+export type KeyCombinedWithNtilde = {
+  xShare: XShareWithChallenges;
+  yShares: Record<number, YShareWithChallenges>;
+};
 
-export interface SubkeyShare {
+export type SubkeyShare = {
   xShare: XShare;
   nShares: Record<number, NShare>;
-}
+};
 
-export interface WShare {
-  i: number;
-  l: string;
-  m: string;
-  n: string;
-  y: string; // combined public key
-  ntilde: string;
-  h1: string;
-  h2: string;
-  ck: string;
-  k: string;
-  w: string;
-  gamma: string;
-}
+export type WShare = EcdsaTypes.SerializedNtilde &
+  Partial<EcdsaTypes.SerializedPaillierChallenge> & {
+    i: number;
+    l: string;
+    m: string;
+    n: string;
+    y: string; // combined public key
+    ck: string;
+    k: string;
+    w: string;
+    gamma: string;
+  };
 
-export interface RangeProofShare {
+export type RangeProofShare = {
   z: string;
   u: string;
   w: string;
   s: string;
   s1: string;
   s2: string;
-}
-
-export type KShare = SignIndex & {
-  n: string;
-  ntilde: string;
-  h1: string;
-  h2: string;
-  k: string;
-  proof: RangeProofShare;
 };
 
-export interface SignShareRT {
+export type KShare = SignIndex &
+  EcdsaTypes.SerializedNtilde &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallenge> &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
+    n: string;
+    k: string;
+    // TODO(BG-78713): this shouldn't be optional
+    proof?: RangeProofShare;
+  };
+
+export type SignShareRT = {
   wShare: WShare;
   kShare: KShare;
-}
+};
 
-export interface RangeProofWithCheckShare {
+export type RangeProofWithCheckShare = {
   z: string;
   zprm: string;
   t: string;
@@ -152,28 +159,28 @@ export interface RangeProofWithCheckShare {
   t2: string;
   u: string;
   x: string;
-}
-
-// Alpha Share
-export type AShare = SignIndex & {
-  n: string;
-  ntilde: string;
-  h1: string;
-  h2: string;
-  k: string;
-  alpha: string;
-  mu: string;
-  proof: RangeProofShare;
-  gammaProof: RangeProofWithCheckShare;
-  wProof: RangeProofWithCheckShare;
 };
 
+// Alpha Share
+export type AShare = SignIndex &
+  EcdsaTypes.SerializedNtilde &
+  // TODO(BG-78794): Make this mandatory
+  Partial<EcdsaTypes.SerializedPaillierChallengeProofs> & {
+    n: string;
+    k: string;
+    alpha: string;
+    mu: string;
+    // TODO(BG-78713): these shouldn't be optional
+    proof?: RangeProofShare;
+    gammaProof?: RangeProofWithCheckShare;
+    wProof?: RangeProofWithCheckShare;
+  };
+
 // Beta Share
-export interface BShare extends WShare {
-  gamma: string;
+export type BShare = WShare & {
   beta: string;
   nu: string;
-}
+};
 
 // Mu Share
 export type MUShare = SignIndex & {
@@ -184,7 +191,7 @@ export type MUShare = SignIndex & {
 };
 
 // Gamma Share
-export interface GShare {
+export type GShare = {
   i: number;
   l?: string;
   m?: string;
@@ -197,58 +204,90 @@ export interface GShare {
   mu: string;
   beta: string;
   nu: string;
-}
-export interface SignConvert {
-  xShare?: XShare; // XShare of the current participant
+};
+
+export type SignConvert = {
+  xShare?: XShareWithChallenges; // XShare of the current participant
   yShare?: YShare; // YShare corresponding to the other participant
   kShare?: KShare; // KShare received from the other participant
   bShare?: BShare; // Private Beta share of the participant
   muShare?: MUShare; // muShare received from the other participant
   aShare?: AShare;
   wShare?: WShare;
-}
+};
 
-export interface SignConvertRT {
+export type SignConvertStep1 = {
+  xShare: XShareWithChallenges; // XShare of the current participant (does not get sent to other participant)
+  yShare: YShare; // YShare corresponding to the other participant (does not get sent to other participant)
+  kShare: KShare; // share to be modified and sent to other participant
+};
+
+export type SignConvertStep1Response = {
+  bShare: BShare; // private participant share (does not get sent to other participant)
+  aShare: AShare; // share to be sent to other participant
+};
+
+export type SignConvertStep2 = {
+  wShare: WShare; // private participant share (does not get sent to other participant)
+  aShare: AShare; // share to be modified and sent to other participant
+};
+
+export type SignConvertStep2Response = {
+  gShare: GShare; // private participant share (does not get sent to other participant)
+  muShare: MUShare; // share to be sent to other participant
+};
+
+export type SignConvertStep3 = {
+  bShare: BShare; // private participant share (does not get sent to other participant)
+  muShare: MUShare; // share to be modified and sent to other participant
+};
+
+export type SignConvertStep3Response = {
+  gShare: GShare; // participant share
+  signIndex: SignIndex;
+};
+
+export type SignConvertRT = {
   aShare?: AShare;
   bShare?: BShare;
   muShare?: MUShare;
   gShare?: GShare;
-}
+};
 
-export interface OShare {
+export type OShare = {
   i: number;
   y: string;
   k: string;
   omicron: string;
   delta: string;
   Gamma: string;
-}
+};
 
 export type DShare = SignIndex & {
   delta: string;
   Gamma: string;
 };
 
-export interface SShare {
+export type SShare = {
   i: number;
   R: string;
   s: string;
   y: string;
-}
+};
 
-export interface SignCombine {
+export type SignCombine = {
   gShare: GShare;
   signIndex: SignIndex;
-}
+};
 
-export interface SignCombineRT {
+export type SignCombineRT = {
   oShare: OShare;
   dShare: DShare;
-}
+};
 
-export interface Signature {
+export type Signature = {
   y: string;
   recid: number;
   r: string;
   s: string;
-}
+};

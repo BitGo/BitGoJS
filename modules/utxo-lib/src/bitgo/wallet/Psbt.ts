@@ -1,14 +1,17 @@
 import * as assert from 'assert';
+
+import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
+import { checkForInput } from 'bip174/src/lib/utils';
+import { BIP32Interface } from 'bip32';
+import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromTransaction } from '../transaction';
-import { BIP32Interface } from 'bip32';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
-import { checkForInput } from 'bip174/src/lib/utils';
-import { PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
+
 import {
   getLeafVersion,
   calculateScriptPathLevel,
@@ -25,10 +28,11 @@ import {
   parseSignatureScript,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
-import { isTuple } from '../types';
+import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { script as bscript, TxInput } from 'bitcoinjs-lib';
 import { opcodes } from '../../index';
+import { getPsbtInputSignatureCount, isPsbtInputFinalized, PsbtInputType } from '../PsbtUtil';
 
 // only used for building `SignatureContainer`
 type BaseSignatureContainer<T> = {
@@ -92,6 +96,11 @@ interface WalletSigner {
   rootKey: BIP32Interface;
 }
 
+/**
+ * psbt input index and its user, backup, bitgo signatures status
+ */
+export type SignatureValidation = [index: number, sigTriple: Triple<boolean>];
+
 function getTaprootSigners(script: Buffer, walletKeys: DerivedWalletKeys): [WalletSigner, WalletSigner] {
   const parsedPublicKeys = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
   const walletSigners = parsedPublicKeys.map((publicKey) => {
@@ -112,7 +121,8 @@ function updatePsbtInput(
   unspent: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys
 ): void {
-  const signatureCount = psbt.getSignatureCount(inputIndex);
+  const input = checkForInput(psbt.data.inputs, inputIndex);
+  const signatureCount = getPsbtInputSignatureCount(input);
   const scriptType = scriptTypeForChain(unspent.chain);
   if (signatureCount === 0 && scriptType === 'p2tr') {
     return;
@@ -120,8 +130,6 @@ function updatePsbtInput(
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
 
   if (scriptType === 'p2tr') {
-    const input = psbt.data.inputs[inputIndex];
-
     if (!Array.isArray(input.tapLeafScript) || input.tapLeafScript.length === 0) {
       throw new Error('Invalid PSBT state. Missing required fields.');
     }
@@ -213,7 +221,10 @@ export function signWalletPsbt(
   }
 }
 
-function getScriptType(input: PsbtInput): ParsedScriptType | undefined {
+/**
+ * @returns script type of the input
+ */
+export function getPsbtInputScriptType(input: PsbtInputType): ParsedScriptType {
   const isP2pk = (script: Buffer) => {
     try {
       const chunks = bscript.decompile(script);
@@ -250,11 +261,14 @@ function getScriptType(input: PsbtInput): ParsedScriptType | undefined {
     }
     scriptType = 'taprootKeyPathSpend';
   }
-  return scriptType;
+  if (scriptType) {
+    return scriptType;
+  }
+  throw new Error('could not parse input');
 }
 
-function parseTaprootKeyPathSignatures(psbt: UtxoPsbt, inputIndex: number): TaprootKeyPathSignatureContainer {
-  const partialSigs = parsePsbtMusig2PartialSigs(psbt, inputIndex);
+function parseTaprootKeyPathSignatures(input: PsbtInputType): TaprootKeyPathSignatureContainer {
+  const partialSigs = parsePsbtMusig2PartialSigs(input);
   if (!partialSigs) {
     return { signatures: undefined, participantPublicKeys: undefined };
   }
@@ -277,20 +291,18 @@ function parsePartialOrTapScriptSignatures(sig: PartialSig[] | TapScriptSig[] | 
 }
 
 function parseSignatures(
-  psbt: UtxoPsbt,
-  inputIndex: number,
+  input: PsbtInputType,
   scriptType: ParsedScriptType
 ): SignatureContainer | TaprootKeyPathSignatureContainer {
-  const input = checkForInput(psbt.data.inputs, inputIndex);
   return scriptType === 'taprootKeyPathSpend'
-    ? parseTaprootKeyPathSignatures(psbt, inputIndex)
+    ? parseTaprootKeyPathSignatures(input)
     : scriptType === 'taprootScriptPathSpend'
     ? parsePartialOrTapScriptSignatures(input.tapScriptSig)
     : parsePartialOrTapScriptSignatures(input.partialSig);
 }
 
 function parseScript(
-  input: PsbtInput,
+  input: PsbtInputType,
   scriptType: ParsedScriptType
 ): ParsedPubScriptP2ms | ParsedPubScriptTaproot | ParsedPubScriptP2shP2pk {
   let pubScript: Buffer | undefined;
@@ -313,14 +325,26 @@ function parseScript(
   return parsePubScript(pubScript, scriptType);
 }
 
-function parseInputMetadata(
-  psbt: UtxoPsbt,
-  inputIndex: number,
-  scriptType: ParsedScriptType
-): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk {
-  const input = checkForInput(psbt.data.inputs, inputIndex);
+/**
+ * @return psbt metadata are parsed as per below conditions.
+ * redeemScript/witnessScript/tapLeafScript matches BitGo.
+ * signature and public key count matches BitGo.
+ * P2SH-P2PK => scriptType, redeemScript, public key, signature.
+ * P2SH => scriptType, redeemScript, public keys, signatures.
+ * PW2SH => scriptType, witnessScript, public keys, signatures.
+ * P2SH-PW2SH => scriptType, redeemScript, witnessScript, public keys, signatures.
+ * P2TR and P2TR MUSIG2 script path => scriptType (taprootScriptPathSpend), pubScript (leaf script), controlBlock,
+ * scriptPathLevel, leafVersion, public keys, signatures.
+ * P2TR MUSIG2 kep path => scriptType (taprootKeyPathSpend), pubScript (scriptPubKey), participant pub keys (signer),
+ * public key (tapOutputkey), signatures (partial signer sigs).
+ */
+export function parsePsbtInput(input: PsbtInputType): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk {
+  if (isPsbtInputFinalized(input)) {
+    throw new Error('Finalized PSBT parsing is not supported');
+  }
+  const scriptType = getPsbtInputScriptType(input);
   const parsedPubScript = parseScript(input, scriptType);
-  const signatures = parseSignatures(psbt, inputIndex, scriptType);
+  const signatures = parseSignatures(input, scriptType);
 
   if (parsedPubScript.scriptType === 'taprootKeyPathSpend' && 'participantPublicKeys' in signatures) {
     return {
@@ -369,95 +393,109 @@ function parseInputMetadata(
 }
 
 /**
- * @return psbt metadata are parsed as per below conditions.
- * redeemScript/witnessScript/tapLeafScript matches BitGo.
- * signature and public key count matches BitGo.
- * P2SH-P2PK => scriptType, redeemScript, public key, signature.
- * P2SH => scriptType, redeemScript, public keys, signatures.
- * PW2SH => scriptType, witnessScript, public keys, signatures.
- * P2SH-PW2SH => scriptType, redeemScript, witnessScript, public keys, signatures.
- * P2TR and P2TR MUSIG2 script path => scriptType (taprootScriptPathSpend), pubScript (leaf script), controlBlock,
- * scriptPathLevel, leafVersion, public keys, signatures.
- * P2TR MUSIG2 kep path => scriptType (taprootKeyPathSpend), pubScript (scriptPubKey), participant pub keys (signer),
- * public key (tapOutputkey), signatures (partial signer sigs).
- * Any unsigned PSBT and without required metadata is returned with undefined.
+ * @returns strictly parse the input and get signature count.
+ * unsigned(0), half-signed(1) or fully-signed(2)
  */
-export function parsePsbtInput(
-  psbt: UtxoPsbt,
-  inputIndex: number
-): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk | undefined {
-  const input = checkForInput(psbt.data.inputs, inputIndex);
-  if (psbt.isInputFinalized(inputIndex)) {
-    throw new Error('Finalized PSBT parsing is not supported');
-  }
-  const scriptType = getScriptType(input);
-  if (!scriptType) {
-    if (psbt.getSignatureCount(inputIndex) > 0) {
-      throw new Error('Invalid PSBT state. Signatures found without scripts.');
+export function getStrictSignatureCount(input: TxInput | PsbtInputType): 0 | 1 | 2 {
+  const calculateSignatureCount = (
+    signatures: [Buffer | 0, Buffer | 0, Buffer | 0] | [Buffer, Buffer] | [Buffer] | undefined
+  ): 0 | 1 | 2 => {
+    const count = signatures ? signatures.filter((s) => !isPlaceholderSignature(s)).length : 0;
+    if (count === 0 || count === 1 || count === 2) {
+      return count;
     }
-    return undefined;
-  }
-  return parseInputMetadata(psbt, inputIndex, scriptType);
-}
-
-function parseSignatureCount(
-  signatures: [Buffer | 0, Buffer | 0, Buffer | 0] | [Buffer, Buffer] | [Buffer] | undefined
-): 0 | 1 | 2 {
-  const count = signatures ? signatures.filter((s) => !isPlaceholderSignature(s)).length : 0;
-  if (count === 0 || count === 1 || count === 2) {
-    return count;
-  }
-  throw new Error('invalid signature count');
-}
-
-function getInputSignatureCount(param: TxInput | { psbt: UtxoPsbt; inputIndex: number }): 0 | 1 | 2 {
-  if ('psbt' in param) {
-    const parsedInput = parsePsbtInput(param.psbt, param.inputIndex);
-    assert(parsedInput, 'invalid psbt input');
-    return parseSignatureCount(parsedInput.signatures);
-  } else {
-    if (param.script?.length || param.witness?.length) {
-      const parsedInput = parseSignatureScript(param);
-      return parsedInput.scriptType === 'taprootKeyPathSpend' ? 2 : parseSignatureCount(parsedInput.signatures);
-    }
-    return 0;
-  }
-}
-
-/**
- * @returns maximum number of signatures across all inputs - 0, 1 and 2.
- * It can be used to check given psbt/transaction/array of TxInputs is unsigned(0), half-signed(1) or fully-signed(2).
- */
-export function getSignatureCount(
-  tx: UtxoPsbt | UtxoTransaction<number | bigint> | TxInput[],
-  inputIndex?: number
-): 0 | 1 | 2 {
-  const constructParam = (tx: UtxoPsbt | UtxoTransaction<number | bigint> | TxInput[], inputIndex: number) => {
-    return tx instanceof UtxoPsbt
-      ? { psbt: tx, inputIndex }
-      : (tx instanceof UtxoTransaction ? tx.ins : tx)[inputIndex];
+    throw new Error('invalid signature count');
   };
 
-  const inputs = tx instanceof UtxoPsbt ? tx.data.inputs : tx instanceof UtxoTransaction ? tx.ins : tx;
-  assert(inputIndex === undefined || (inputIndex >= 0 && inputIndex < inputs.length), 'invalid inputIndex range');
-  const indices = inputIndex === undefined ? inputs.map((_, index) => index) : [inputIndex];
-  return indices
-    .map((index, _) => getInputSignatureCount(constructParam(tx, index)))
-    .reduce((prev, curr) => (curr > prev ? curr : prev), 0);
+  if ('hash' in input) {
+    if (input.script?.length || input.witness?.length) {
+      const parsedInput = parseSignatureScript(input);
+      return parsedInput.scriptType === 'taprootKeyPathSpend' ? 2 : calculateSignatureCount(parsedInput.signatures);
+    }
+    return 0;
+  } else {
+    return calculateSignatureCount(parsePsbtInput(input).signatures);
+  }
 }
 
 /**
- * @return true iff data starts with magic PSBT byte sequence
- * @param data byte array or hex string
+ * @returns strictly parse input and get signature count for all inputs.
+ * 0=unsigned, 1=half-signed or 2=fully-signed
+ */
+export function getStrictSignatureCounts(
+  tx: UtxoPsbt | UtxoTransaction<number | bigint> | PsbtInputType[] | TxInput[]
+): (0 | 1 | 2)[] {
+  const inputs = tx instanceof UtxoPsbt ? tx.data.inputs : tx instanceof UtxoTransaction ? tx.ins : tx;
+  return inputs.map((input, _) => getStrictSignatureCount(input));
+}
+
+/**
+ * @return true iff inputs array is of PsbtInputType type
  * */
-export function isPsbt(data: Buffer | string): boolean {
-  // https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#specification
-  // 0x70736274 - ASCII for 'psbt'. 0xff - separator
-  if (typeof data === 'string') {
-    if (data.length < 10) {
+export function isPsbtInputArray(inputs: PsbtInputType[] | TxInput[]): inputs is PsbtInputType[] {
+  return !isTxInputArray(inputs);
+}
+
+/**
+ * @return true iff inputs array is of TxInput type
+ * */
+export function isTxInputArray(inputs: PsbtInputType[] | TxInput[]): inputs is TxInput[] {
+  assert(!!inputs.length, 'empty inputs array');
+  return 'hash' in inputs[0];
+}
+
+/**
+ * @returns true iff given psbt/transaction/tx-input-array/psbt-input-array contains at least one taproot key path spend input
+ */
+export function isTransactionWithKeyPathSpendInput(
+  data: UtxoPsbt | UtxoTransaction<bigint | number> | PsbtInput[] | TxInput[]
+): boolean {
+  const inputs = data instanceof UtxoPsbt ? data.data.inputs : data instanceof UtxoTransaction ? data.ins : data;
+  if (!inputs.length) {
+    return false;
+  }
+  if (isPsbtInputArray(inputs)) {
+    return inputs.some((input, _) => getPsbtInputScriptType(input) === 'taprootKeyPathSpend');
+  }
+  return inputs.some((input, _) => {
+    // If the input is not signed, it cannot be a taprootKeyPathSpend input because you can only
+    // extract a fully signed psbt into a transaction with taprootKeyPathSpend inputs.
+    if (getStrictSignatureCount(input) === 0) {
       return false;
     }
-    data = Buffer.from(data.slice(0, 10), 'hex');
-  }
-  return 5 <= data.length && data.readUInt32BE(0) === 0x70736274 && data.readUInt8(4) === 0xff;
+    return parseSignatureScript(input).scriptType === 'taprootKeyPathSpend';
+  });
+}
+
+/**
+ * Set the RootWalletKeys as the globalXpubs on the psbt
+ *
+ * We do all the matching of the (tap)bip32Derivations masterFingerprint to the fingerprint of the
+ * extendedPubkey.
+ */
+export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): void {
+  const xPubs = rootWalletKeys.triple.map(
+    (bip32): GlobalXpub => ({
+      extendedPubkey: bs58check.decode(bip32.toBase58()),
+      masterFingerprint: bip32.fingerprint,
+      // TODO: BG-73797 - bip174 currently requires m prefix for this to be a valid globalXpub
+      path: 'm',
+    })
+  );
+  psbt.updateGlobal({ globalXpub: xPubs });
+}
+
+/**
+ * validates signatures for each 2 of 3 input against user, backup, bitgo keys derived from rootWalletKeys.
+ * @returns array of input index and its [is valid user sig exist, is valid backup sig exist, is valid user bitgo exist]
+ * For p2shP2pk input, [false, false, false] is returned since it is not a 2 of 3 sig input.
+ */
+export function getSignatureValidationArrayPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): SignatureValidation[] {
+  return psbt.data.inputs.map((input, i) => {
+    const sigValArrayForInput: Triple<boolean> =
+      getPsbtInputScriptType(input) === 'p2shP2pk'
+        ? [false, false, false]
+        : psbt.getSignatureValidationArray(i, { rootNodes: rootWalletKeys.triple });
+    return [i, sigValArrayForInput];
+  });
 }

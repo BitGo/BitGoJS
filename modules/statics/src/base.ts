@@ -27,6 +27,7 @@ export enum CoinFamily {
   AVAXP = 'avaxp',
   BCH = 'bch',
   BCHA = 'bcha',
+  BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
@@ -42,16 +43,20 @@ export enum CoinFamily {
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
+  HASH = 'hash', // Provenance
   HBAR = 'hbar',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
   OFC = 'ofc',
+  OSMO = 'osmo',
   RBTC = 'rbtc',
+  SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
   SUSD = 'susd',
+  TIA = 'tia', // Celestia
   TRX = 'trx',
   XLM = 'xlm',
   XRP = 'xrp',
@@ -206,6 +211,7 @@ export enum UnderlyingAsset {
   AXLV2 = 'axlv2',
   BCH = 'bch',
   BCHA = 'bcha',
+  BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
   BTC = 'btc',
@@ -224,14 +230,18 @@ export enum UnderlyingAsset {
   EUROC = 'euroc',
   GBP = 'gbp',
   GTC = 'gtc',
+  HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
   NEAR = 'near',
+  OSMO = 'osmo',
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
+  SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
+  TIA = 'tia', // Celestia
   TRX = 'trx',
   USD = 'usd',
   XLM = 'xlm',
@@ -1254,7 +1264,12 @@ export enum BaseUnit {
   SUI = 'MIST',
   NEAR = 'yocto',
   OFC = 'ofcCoin',
+  OSMO = 'uosmo',
   FIAT = 'fiatCoin',
+  TIA = 'utia',
+  HASH = 'nhash',
+  BLD = 'ubld',
+  SEI = 'usei',
 }
 
 export interface BaseCoinConstructorOptions {

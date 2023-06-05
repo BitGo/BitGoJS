@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+*   @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -61,31 +61,32 @@ modules/sdk-coin-xtz/ @BitGo/altcoins
 
 
 # Core Modules
-modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/blake2b-wasm/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/blake2b/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/express/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/key-card/ @BitGo/wallets
-modules/sdk-api/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/sdk-core/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/blake2b-wasm/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/blake2b/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/express/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/key-card/ @BitGo/wallet-platform
+modules/sdk-api/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/sdk-core/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform @BitGo/hsm
+modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
 modules/sdk-rpc-wrapper @BitGo/defi-team
-modules/sdk-test/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+modules/sdk-test/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 modules/sdk-unified-wallet @BitGo/defi-team
-modules/sjcl/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/statics/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-modules/web-demo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-scripts/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-types/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-webpack/ @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+modules/sjcl/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/statics/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+modules/web-demo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+scripts/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+types/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+webpack/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 
-.eslintrc.json @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-.prettierrc.yml @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-check-package-versions.js @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+.eslintrc.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+.prettierrc.yml @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+check-package-versions.js @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 CODEOWNERS @BitGo/git-admins
-DEVELOPERS.md @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-commitlint.config.js @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-Dockerfile @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-lerna.json @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-package.json @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-tsconfig.json @BitGo/coins @BitGo/custody-experience @BitGo/wallets
-tsconfig.packages.json @BitGo/coins @BitGo/custody-experience @BitGo/wallets
+DEVELOPERS.md @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+commitlint.config.js @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+Dockerfile @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+lerna.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+package.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+tsconfig.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+tsconfig.packages.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform

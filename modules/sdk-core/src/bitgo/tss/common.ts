@@ -1,10 +1,9 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-
 import { BitGoBase } from '../bitgoBase';
 import { RequestType, TxRequest, verifyPrimaryUserWrapper, SignatureShareRecord } from '../utils';
+import { TxRequestChallengeResponse } from './types';
 
 /**
  * Gets the latest Tx Request by id
@@ -129,7 +128,7 @@ export async function commonVerifyWalletSignature(params: {
  * @param txRequestId
  * @param index
  * @param requestType
- * @param mpcAlgorithm
+ * @param paillierModulus
  */
 export async function getTxRequestChallenge(
   bitgo: BitGoBase,
@@ -137,21 +136,17 @@ export async function getTxRequestChallenge(
   txRequestId: string,
   index: string,
   requestType: RequestType,
-  mpcAlgorithm: 'eddsa' | 'ecdsa' = 'ecdsa'
-): Promise<EcdsaTypes.SerializedNtilde> {
+  paillierModulus: string
+): Promise<TxRequestChallengeResponse> {
   let addendum = '';
   switch (requestType) {
     case RequestType.tx:
-      if (mpcAlgorithm === 'ecdsa') {
-        addendum = '/transactions/' + index;
-      }
+      addendum = '/transactions/' + index;
       break;
     case RequestType.message:
-      if (mpcAlgorithm === 'ecdsa') {
-        addendum = '/messages/' + index;
-      }
+      addendum = '/messages/' + index;
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
-  return await bitgo.post(bitgo.url(urlPath, 2)).send({}).result();
+  return await bitgo.post(bitgo.url(urlPath, 2)).send({ paillierModulus }).result();
 }

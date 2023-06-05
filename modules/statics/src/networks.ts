@@ -571,6 +571,68 @@ class AtomTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.theta-testnet.polypore.xyz/transactions/';
 }
 
+class Osmo extends Mainnet implements AccountNetwork {
+  name = 'Osmosis';
+  family = CoinFamily.OSMO;
+  explorerUrl = 'https://www.mintscan.io/osmosis/txs/';
+}
+
+class OsmoTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Osmosis';
+  family = CoinFamily.OSMO;
+  explorerUrl = 'https://testnet.osmosis.explorers.guru/transaction/';
+}
+
+class Tia extends Mainnet implements AccountNetwork {
+  name = 'Celestia';
+  family = CoinFamily.TIA;
+  //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+}
+
+class TiaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Celestia';
+  family = CoinFamily.TIA;
+  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+}
+
+class Hash extends Mainnet implements AccountNetwork {
+  name = 'Provenance';
+  family = CoinFamily.HASH;
+  explorerUrl = 'https://explorer.provenance.io/tx/';
+}
+
+class HashTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Provenance';
+  family = CoinFamily.HASH;
+  explorerUrl = 'https://explorer.test.provenance.io/tx/';
+}
+
+class Bld extends Mainnet implements AccountNetwork {
+  name = 'Agoric';
+  family = CoinFamily.BLD;
+  explorerUrl = 'https://bigdipper.live/agoric/transactions/';
+}
+
+class BldTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Agoric';
+  family = CoinFamily.BLD;
+  explorerUrl = 'https://testnet.ping.pub/agoric-devnet/tx/';
+}
+
+class Sei extends Mainnet implements AccountNetwork {
+  name = 'Sei';
+  family = CoinFamily.SEI;
+  //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://sei.explorers.guru/transaction/';
+}
+
+class SeiTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Sei';
+  family = CoinFamily.SEI;
+  explorerUrl = 'https://sei.explorers.guru/transaction/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -720,6 +782,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
@@ -733,17 +796,21 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
+    hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
+    osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
+    sei: Object.freeze(new Sei()),
     sol: Object.freeze(new Sol()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
+    tia: Object.freeze(new Tia()),
     trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
@@ -759,6 +826,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
@@ -770,19 +838,23 @@ export const Networks = {
     fiat: Object.freeze(new FiatTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
+    hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
+    sei: Object.freeze(new SeiTestnet()),
     sol: Object.freeze(new SolTestnet()),
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    tia: Object.freeze(new TiaTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),

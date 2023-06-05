@@ -26,6 +26,7 @@ import {
   getIsKrsRecovery,
   getIsUnsignedSweep,
   HalfSignedTransaction,
+  hexToBigInt,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IWallet,
@@ -33,22 +34,23 @@ import {
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
+  PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  TypedData,
   UnexpectedAddressError,
   Util,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
-  TypedData,
-  PrebuildTransactionResult,
 } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
-import { BaseCoin as StaticsBaseCoin, EthereumNetwork, ethGasConfigs, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
@@ -62,7 +64,7 @@ import {
 } from './lib';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
-import { TypedDataUtils, SignTypedDataVersion, TypedMessage } from '@metamask/eth-sig-util';
+import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 
 export { Recipient, HalfSignedTransaction, FullySignedTransaction };
 
@@ -1034,65 +1036,77 @@ export class Eth extends BaseCoin {
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string
+    txHex: string,
+    {
+      rangeProofChallenge,
+    }: {
+      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
+    } = {}
   ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = (
-      await MPC.appendChallenge(userKeyCombined.xShare, userKeyCombined.yShares[signerTwoIndex])
-    ).xShare;
-    const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
-      ...userKeyCombined.yShares[signerTwoIndex],
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
-    const backupXShare: ECDSAMethodTypes.XShareWithNtilde = {
-      ...backupKeyCombined.xShare,
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
-    const backupYShare: ECDSAMethodTypes.YShareWithNtilde = {
-      ...backupKeyCombined.yShares[signerOneIndex],
-      ntilde: backupXShare.ntilde,
-      h1: backupXShare.h1,
-      h2: backupXShare.h2,
-    };
+    rangeProofChallenge =
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+
+    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
+    );
+    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
+    );
+
+    const userXShare = MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
+    const userYShare = MPC.appendChallenge(
+      userKeyCombined.yShares[signerTwoIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupXShare = MPC.appendChallenge(
+      backupKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupYShare = MPC.appendChallenge(
+      backupKeyCombined.yShares[signerOneIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
 
     const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
-    let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS21 = await MPC.signConvertStep1({
       xShare: backupXShare,
       yShare: backupYShare, // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
-
-    const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS12 = await MPC.signConvertStep2({
       aShare: signConvertS21.aShare,
       wShare: signShares.wShare,
     });
-
-    signConvertS21 = await MPC.signConvert({
+    const signConvertS21_2 = await MPC.signConvertStep3({
       muShare: signConvertS12.muShare,
       bShare: signConvertS21.bShare,
     });
 
     const [signCombineOne, signCombineTwo] = [
       MPC.signCombine({
-        gShare: signConvertS12.gShare as ECDSA.GShare,
+        gShare: signConvertS12.gShare,
         signIndex: {
-          i: (signConvertS12.muShare as ECDSA.MUShare).i,
-          j: (signConvertS12.muShare as ECDSA.MUShare).j,
+          i: signConvertS12.muShare.i,
+          j: signConvertS12.muShare.j,
         },
       }),
       MPC.signCombine({
-        gShare: signConvertS21.gShare as ECDSA.GShare,
+        gShare: signConvertS21_2.gShare,
         signIndex: {
-          i: (signConvertS21.muShare as ECDSA.MUShare).i,
-          j: (signConvertS21.muShare as ECDSA.MUShare).j,
+          i: signConvertS21_2.signIndex.i,
+          j: signConvertS21_2.signIndex.j,
         },
       }),
     ];
@@ -1104,9 +1118,7 @@ export class Eth extends BaseCoin {
       MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
     ];
 
-    const signature = MPC.constructSignature([signA, signB]);
-
-    return signature;
+    return MPC.constructSignature([signA, signB]);
   }
 
   /**

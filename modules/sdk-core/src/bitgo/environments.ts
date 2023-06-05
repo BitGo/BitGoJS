@@ -24,6 +24,7 @@ interface EnvironmentTemplate {
   solNodeUrl: string;
   adaNodeUrl: string;
   atomNodeUrl: string;
+  osmoNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -97,6 +98,7 @@ const mainnetBase: EnvironmentTemplate = {
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
+  osmoNodeUrl: 'https://lcd.osmosis.zone',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -127,10 +129,11 @@ const testnetBase: EnvironmentTemplate = {
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
+  osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
-    full: 'http://47.252.81.135:8090',
-    solidity: 'http://47.252.81.135:8091',
+    full: 'https://api.shasta.trongrid.io',
+    solidity: 'https://api.shasta.trongrid.io',
   },
   hmacVerificationEnforced: false,
 };

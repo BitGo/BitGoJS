@@ -534,7 +534,7 @@ module.exports.nockXlmRecovery = function () {
 
 module.exports.nockTronRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .post('/wallet/createtransaction')
     .reply(200, {
       visible: false,
@@ -563,7 +563,7 @@ module.exports.nockTronRecovery = function () {
     });
 
   // full node - retrieve account information call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .get('/v1/accounts/TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE')
     .reply(200, {
       data: [
@@ -637,9 +637,254 @@ module.exports.nockTronRecovery = function () {
     });
 };
 
+module.exports.nockTronReceiveRecovery = function () {
+  // full node - sendTrx from tronweb, build transaction call
+  nock('https://api.shasta.trongrid.io')
+    .post('/wallet/createtransaction')
+    .reply(200, {
+      visible: false,
+      txID: 'cb9a1b5569e8c09197d1e9bba51357159ffa8b7e6b18306ea615073fc8842b64',
+      raw_data: {
+        contract: [
+          {
+            parameter: {
+              value: {
+                amount: 199000000,
+                owner_address: '418b04ecdc3db7e8da7cd838492f66e424a051e2cd',
+                to_address: '4132c753bf8d3de7358748a75fcf299f146dff6e4e',
+              },
+              type_url: 'type.googleapis.com/protocol.TransferContract',
+            },
+            type: 'TransferContract',
+          },
+        ],
+        ref_block_bytes: '81e0',
+        ref_block_hash: '5b1b20e9ebeaa4f8',
+        expiration: 1685952282000,
+        timestamp: 1685952224483,
+      },
+      raw_data_hex:
+        '0a0281e022085b1b20e9ebeaa4f84090fbd8d488315a68080112640a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412330a15418b04ecdc3db7e8da7cd838492f66e424a051e2cd12154132c753bf8d3de7358748a75fcf299f146dff6e4e18c0fff15e70e3b9d5d48831',
+    });
+
+  // full node - retrieve account information call
+  // Zero Balance
+  nock('https://api.shasta.trongrid.io')
+    .get('/v1/accounts/TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE')
+    .reply(200, {
+      data: [
+        {
+          latest_opration_time: 1685950887000,
+          owner_permission: {
+            keys: [
+              {
+                address: 'TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE',
+                weight: 1,
+              },
+              {
+                address: 'TDtGJarCHn1HN9APyvh3q2HVk6kW3qnpmF',
+                weight: 1,
+              },
+              {
+                address: 'TGqQdH1jEJwsUTY5Pyfz8GBMio8BgPb6nK',
+                weight: 1,
+              },
+            ],
+            threshold: 2,
+            permission_name: 'owner',
+          },
+          free_net_usage: 335,
+          account_resource: {
+            latest_consume_time_for_energy: 1676487672000,
+            energy_window_size: 28800,
+          },
+          active_permission: [
+            {
+              operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+              keys: [
+                {
+                  address: 'TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE',
+                  weight: 1,
+                },
+                {
+                  address: 'TDtGJarCHn1HN9APyvh3q2HVk6kW3qnpmF',
+                  weight: 1,
+                },
+                {
+                  address: 'TGqQdH1jEJwsUTY5Pyfz8GBMio8BgPb6nK',
+                  weight: 1,
+                },
+              ],
+              threshold: 2,
+              id: 2,
+              type: 'Active',
+              permission_name: 'active0',
+            },
+          ],
+          frozenV2: [
+            {},
+            {
+              type: 'ENERGY',
+            },
+            {
+              type: 'UNKNOWN_ENUM_VALUE_ResourceCode_2',
+            },
+          ],
+          address: '41e7e11df2c5704888c3cb63fb43a9498bd1812cb2',
+          create_time: 1676487288000,
+          trc20: [],
+          latest_consume_free_time: 1685950887000,
+          net_window_size: 28800,
+        },
+      ],
+      success: true,
+      meta: {
+        at: 1685951137816,
+        page_size: 1,
+      },
+    });
+
+  // receive address with balance
+  nock('https://api.shasta.trongrid.io')
+    .get('/v1/accounts/TNeGpwAurk7kjQLdcdWhFr8YP8E9Za8w1x')
+    .reply(200, {
+      data: [
+        {
+          owner_permission: {
+            keys: [
+              {
+                address: 'TNeGpwAurk7kjQLdcdWhFr8YP8E9Za8w1x',
+                weight: 1,
+              },
+            ],
+            threshold: 1,
+            permission_name: 'owner',
+          },
+          account_resource: {
+            energy_window_size: 28800,
+          },
+          active_permission: [
+            {
+              operations: '7fff1fc0033ec307000000000000000000000000000000000000000000000000',
+              keys: [
+                {
+                  address: 'TNeGpwAurk7kjQLdcdWhFr8YP8E9Za8w1x',
+                  weight: 1,
+                },
+              ],
+              threshold: 1,
+              id: 2,
+              type: 'Active',
+              permission_name: 'active',
+            },
+          ],
+          frozenV2: [
+            {},
+            {
+              type: 'ENERGY',
+            },
+            {
+              type: 'UNKNOWN_ENUM_VALUE_ResourceCode_2',
+            },
+          ],
+          address: '418b04ecdc3db7e8da7cd838492f66e424a051e2cd',
+          balance: 200000000,
+          create_time: 1685952000000,
+          trc20: [],
+          net_window_size: 28800,
+        },
+      ],
+      success: true,
+      meta: {
+        at: 1685952122106,
+        page_size: 1,
+      },
+    });
+};
+
+module.exports.nockTronReceiveRecoveryZeroFunds = function () {
+  // full node - retrieve account information call
+  // Nocking Zero Balance
+  nock('https://api.shasta.trongrid.io')
+    .persist()
+    .get((uri) => uri.includes('/v1/accounts/'))
+    .reply(200, {
+      data: [
+        {
+          latest_opration_time: 1685950887000,
+          owner_permission: {
+            keys: [
+              {
+                address: 'TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE',
+                weight: 1,
+              },
+              {
+                address: 'TDtGJarCHn1HN9APyvh3q2HVk6kW3qnpmF',
+                weight: 1,
+              },
+              {
+                address: 'TGqQdH1jEJwsUTY5Pyfz8GBMio8BgPb6nK',
+                weight: 1,
+              },
+            ],
+            threshold: 2,
+            permission_name: 'owner',
+          },
+          free_net_usage: 335,
+          account_resource: {
+            latest_consume_time_for_energy: 1676487672000,
+            energy_window_size: 28800,
+          },
+          active_permission: [
+            {
+              operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+              keys: [
+                {
+                  address: 'TX7GmmrfbgTGYK6a2C8vnBr5TuQbrGmVHE',
+                  weight: 1,
+                },
+                {
+                  address: 'TDtGJarCHn1HN9APyvh3q2HVk6kW3qnpmF',
+                  weight: 1,
+                },
+                {
+                  address: 'TGqQdH1jEJwsUTY5Pyfz8GBMio8BgPb6nK',
+                  weight: 1,
+                },
+              ],
+              threshold: 2,
+              id: 2,
+              type: 'Active',
+              permission_name: 'active0',
+            },
+          ],
+          frozenV2: [
+            {},
+            {
+              type: 'ENERGY',
+            },
+            {
+              type: 'UNKNOWN_ENUM_VALUE_ResourceCode_2',
+            },
+          ],
+          address: '41e7e11df2c5704888c3cb63fb43a9498bd1812cb2',
+          create_time: 1676487288000,
+          trc20: [],
+          latest_consume_free_time: 1685950887000,
+          net_window_size: 28800,
+        },
+      ],
+      success: true,
+      meta: {
+        at: 1685951137816,
+        page_size: 1,
+      },
+    });
+};
+
 module.exports.nockTronTokenRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .post('/wallet/triggersmartcontract')
     .reply(200, {
       result: {
@@ -674,7 +919,7 @@ module.exports.nockTronTokenRecovery = function () {
     });
 
   // full node - retrieve account information call
-  nock('http://47.252.81.135:8090')
+  nock('https://api.shasta.trongrid.io')
     .get('/v1/accounts/TKdtdoNiqqEyGsMmJyb5pgwSYf7dTCcmKY')
     .reply(200, {
       data: [

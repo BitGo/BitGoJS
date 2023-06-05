@@ -1,5 +1,9 @@
-import { Ecdsa, ECDSA } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+/**
+ * @prettier
+ */
+import { Hash, randomBytes } from 'crypto';
+import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
@@ -12,10 +16,6 @@ import {
   mockEKeyShare,
   mockFKeyShare,
 } from '../fixtures/ecdsa';
-import { Hash, randomBytes } from 'crypto';
-/**
- * @prettier
- */
 
 describe('TSS ECDSA TESTS', function () {
   const MPC = new Ecdsa();
@@ -28,7 +28,7 @@ describe('TSS ECDSA TESTS', function () {
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
-    const pallierMock = sinon
+    const paillierMock = sinon
       .stub(paillierBigint, 'generateRandomKeys')
       .onCall(0)
       .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
@@ -45,7 +45,7 @@ describe('TSS ECDSA TESTS', function () {
     [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     // Needs to run this serially for testing deterministic key generation
-    // to get specific pallier keys to be assigned
+    // to get specific paillier keys to be assigned
     const D = await MPC.keyShare(1, 2, 3, seed);
     const E = await MPC.keyShare(2, 2, 3, seed);
     const F = await MPC.keyShare(3, 2, 3, seed);
@@ -78,8 +78,8 @@ describe('TSS ECDSA TESTS', function () {
       hKeyCombine,
     ];
     commonPublicKey = aKeyCombine.xShare.y;
-    pallierMock.reset();
-    pallierMock.restore();
+    paillierMock.reset();
+    paillierMock.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {
@@ -190,7 +190,6 @@ describe('TSS ECDSA TESTS', function () {
 
   describe('ECDSA Signing', async function () {
     let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined; hash?: string; shouldHash?: boolean }[];
-    let ntildeMock;
 
     before(() => {
       const [A, B, C, D, E, F, G, H] = keyShares;
@@ -214,15 +213,6 @@ describe('TSS ECDSA TESTS', function () {
         // Checks with derived subkey
         { signerOne: G, signerTwo: H },
       ];
-
-      ntildeMock = sinon.stub(EcdsaRangeProof, 'generateNtilde');
-      for (let i = 0; i < ntildes.length; i++) {
-        ntildeMock.onCall(i).resolves(ntildes[i] as unknown as EcdsaTypes.DeserializedNtildeWithProofs);
-      }
-    });
-
-    after(() => {
-      ntildeMock.reset();
     });
 
     for (let index = 0; index < 9; index++) {
@@ -230,77 +220,98 @@ describe('TSS ECDSA TESTS', function () {
         // Step One
         // signerOne, signerTwo have decided to sign the message
         const signerOne = config[index].signerOne;
-        const signerOneIndex = config[index].signerOne.xShare.i;
+        const signerOneIndex = signerOne.xShare.i;
         const signerTwo = config[index].signerTwo;
+        const signerTwoIndex = signerTwo.xShare.i;
 
+        const [signerOneToTwoPaillierChallenge, signerTwoToOnePaillierChallenge] = await Promise.all([
+          EcdsaPaillierProof.generateP(hexToBigInt(signerOne.yShares[signerTwoIndex].n)),
+          EcdsaPaillierProof.generateP(hexToBigInt(signerTwo.yShares[signerOneIndex].n)),
+        ]);
         // Step Two
-        // Second signer generates their range proof challenge.
-        const signerTwoWithChallenge: ECDSA.KeyCombinedWithNtilde = await MPC.appendChallenge(
-          signerTwo.xShare,
-          signerTwo.yShares[signerOneIndex],
+        // First signer generates their range proof challenge.
+        const signerOneXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
+          signerOne.xShare,
+          EcdsaTypes.serializeNtilde(ntildes[index]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerOneToTwoPaillierChallenge }),
         );
 
         // Step Three
+        //  Second signer generates their range proof challenge.
+        const signerTwoXShare: ECDSA.XShareWithChallenges = MPC.appendChallenge(
+          signerTwo.xShare,
+          EcdsaTypes.serializeNtilde(ntildes[index + 1]),
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
+        );
+        const signerTwoChallenge = { ntilde: signerTwoXShare.ntilde, h1: signerTwoXShare.h1, h2: signerTwoXShare.h2 };
+
+        // Step Four
+        // First signer receives the challenge from the second signer and appends it to their YShare
+        const signerTwoYShare: ECDSA.YShareWithChallenges = MPC.appendChallenge(
+          signerOne.yShares[signerTwoIndex],
+          signerTwoChallenge,
+          EcdsaTypes.serializePaillierChallenge({ p: signerTwoToOnePaillierChallenge }),
+        );
+
+        // Step Five
         // Sign Shares are created by one of the participants (signerOne)
         // with its private XShare and YShare corresponding to the other participant (signerTwo)
         // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-        const signShares: ECDSA.SignShareRT = await MPC.signShare(
-          signerOne.xShare,
-          signerTwoWithChallenge.yShares[signerOneIndex],
-        );
+        const signShares = await MPC.signShare(signerOneXShare, signerTwoYShare);
 
-        // Step Four
+        // Step Six
         // signerTwo receives the KShare from signerOne and uses it produce private
         // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
         // which is sent to signerOne
-        let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
-          xShare: signerTwoWithChallenge.xShare,
+
+        const signConvertS21 = await MPC.signConvertStep1({
+          xShare: signerTwoXShare,
           yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
           kShare: signShares.kShare,
         });
 
-        // Step Five
+        // Step Seven
         // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
         // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
         // is sent to signerTwo to produce its Gamma Share
-        const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+        const signConvertS12 = await MPC.signConvertStep2({
           aShare: signConvertS21.aShare,
           wShare: signShares.wShare,
         });
 
-        // Step Six
+        // Step Eight
         // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
         // uses it produce private GShare (Gamma Share)
-        signConvertS21 = await MPC.signConvert({
+        const signConvertS21_2 = await MPC.signConvertStep3({
           muShare: signConvertS12.muShare,
           bShare: signConvertS21.bShare,
         });
 
-        // Step Seven
+        // Step Nine
         // signerOne and signerTwo both have successfully generated GShares and they use
         // the sign combine function to generate their private omicron shares and
         // delta shares which they share to each other
 
         const [signCombineOne, signCombineTwo] = [
           MPC.signCombine({
-            gShare: signConvertS12.gShare as ECDSA.GShare,
+            gShare: signConvertS12.gShare,
             signIndex: {
-              i: (signConvertS12.muShare as ECDSA.MUShare).i,
-              j: (signConvertS12.muShare as ECDSA.MUShare).j,
+              i: signConvertS12.muShare.i,
+              j: signConvertS12.muShare.j,
             },
           }),
           MPC.signCombine({
-            gShare: signConvertS21.gShare as ECDSA.GShare,
+            gShare: signConvertS21_2.gShare,
             signIndex: {
-              i: (signConvertS21.muShare as ECDSA.MUShare).i,
-              j: (signConvertS21.muShare as ECDSA.MUShare).j,
+              i: signConvertS21_2.signIndex.i,
+              j: signConvertS21_2.signIndex.j,
             },
           }),
         ];
 
         const MESSAGE = Buffer.from('TOO MANY SECRETS');
 
-        // Step Eight
+        // Step Ten
         // signerOne and signerTwo shares the delta share from each other
         // and finally signs the message using their private OShare
         // and delta share received from the other signer
@@ -325,12 +336,12 @@ describe('TSS ECDSA TESTS', function () {
           ),
         ];
 
-        // Step Nine
+        // Step Eleven
         // Construct the final signature
 
         const signature = MPC.constructSignature([signA, signB]);
 
-        // Step Ten
+        // Step Twelve
         // Verify signature
 
         const isValid = MPC.verify(MESSAGE, signature, hashGenerator(config[index].hash), config[index].shouldHash);

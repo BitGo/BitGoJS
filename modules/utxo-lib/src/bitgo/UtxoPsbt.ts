@@ -10,7 +10,7 @@ import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
-import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
+import { decodeProprietaryKey, encodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
 import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
@@ -38,17 +38,16 @@ import {
   musig2DeterministicSign,
   createMusig2DeterministicNonce,
 } from './Musig2';
-import { isTuple, Triple, Tuple } from './types';
+import { isTriple, isTuple, Triple, Tuple } from './types';
 import { getTaprootOutputKey } from '../taproot';
-
-export const PSBT_PROPRIETARY_IDENTIFIER = 'BITGO';
-
-export enum ProprietaryKeySubtype {
-  ZEC_CONSENSUS_BRANCH_ID = 0x00,
-  MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
-  MUSIG2_PUB_NONCE = 0x02,
-  MUSIG2_PARTIAL_SIG = 0x03,
-}
+import {
+  getPsbtInputProprietaryKeyVals,
+  getPsbtInputSignatureCount,
+  ProprietaryKeySearch,
+  ProprietaryKeySubtype,
+  ProprietaryKeyValue,
+  PSBT_PROPRIETARY_IDENTIFIER,
+} from './PsbtUtil';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -117,27 +116,6 @@ export interface PsbtOpts {
   network: Network;
   maximumFeeRate?: number; // [sat/byte]
   bip32PathsAbsolute?: boolean;
-}
-
-/**
- * Psbt proprietary keydata object.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- * => <bytes valuedata>
- */
-export interface ProprietaryKeyValue {
-  key: ProprietaryKey;
-  value: Buffer;
-}
-
-/**
- * Psbt proprietary keydata object search fields.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- */
-export interface ProprietaryKeySearch {
-  identifier: string;
-  subtype?: number;
-  keydata?: Buffer;
-  identifierEncoding?: BufferEncoding;
 }
 
 // TODO: upstream does `checkInputsForPartialSigs` before doing things like
@@ -214,32 +192,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
   toHex(): string {
     return this.toBuffer().toString('hex');
-  }
-
-  /**
-   * @return true iff PSBT input is finalized
-   */
-  isInputFinalized(inputIndex: number): boolean {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
-  }
-
-  /**
-   * @return partialSig/tapScriptSig count iff input is not finalized
-   */
-  getSignatureCount(inputIndex: number): number {
-    if (this.isInputFinalized(inputIndex)) {
-      throw new Error('Input is already finalized');
-    }
-    const input = checkForInput(this.data.inputs, inputIndex);
-    return Math.max(
-      Array.isArray(input.partialSig) ? input.partialSig.length : 0,
-      Array.isArray(input.tapScriptSig) ? input.tapScriptSig.length : 0,
-      this.getProprietaryKeyVals(inputIndex, {
-        identifier: PSBT_PROPRIETARY_IDENTIFIER,
-        subtype: ProprietaryKeySubtype.MUSIG2_PARTIAL_SIG,
-      }).length
-    );
   }
 
   getNonWitnessPreviousTxids(): string[] {
@@ -452,7 +404,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * IMPORTANT: Always call validate* function before finalizing.
    */
   finalizeTaprootMusig2Input(inputIndex: number): this {
-    const partialSigs = parsePsbtMusig2PartialSigs(this, inputIndex);
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const partialSigs = parsePsbtMusig2PartialSigs(input);
     if (partialSigs?.length !== 2) {
       throw new Error(`invalid number of partial signatures ${partialSigs ? partialSigs.length : 0} to finalize`);
     }
@@ -590,7 +543,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * For invalid state of input data, it will throw errors.
    */
   validateTaprootMusig2SignaturesOfInput(inputIndex: number, pubkey?: Buffer): boolean {
-    const partialSigs = parsePsbtMusig2PartialSigs(this, inputIndex);
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const partialSigs = parsePsbtMusig2PartialSigs(input);
     if (!partialSigs) {
       throw new Error(`No signatures to validate`);
     }
@@ -665,19 +619,35 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @param inputIndex
+   * @param rootNodes optional input root bip32 nodes to verify with. If it is not provided, globalXpub will be used.
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
    */
-  getSignatureValidationArray(inputIndex: number): Triple<boolean> {
-    if (this.data.globalMap.globalXpub?.length !== 3) {
+  getSignatureValidationArray(
+    inputIndex: number,
+    { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+  ): Triple<boolean> {
+    if (!rootNodes && (!this.data.globalMap.globalXpub?.length || !isTriple(this.data.globalMap.globalXpub))) {
       throw new Error('Cannot get signature validation array without 3 global xpubs');
     }
-    if (!this.getSignatureCount(inputIndex)) {
+
+    const bip32s = rootNodes
+      ? rootNodes
+      : this.data.globalMap.globalXpub?.map((xpub) =>
+          BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
+        );
+
+    if (!bip32s) {
+      throw new Error('either globalMap or rootNodes is required');
+    }
+
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!getPsbtInputSignatureCount(input)) {
       return [false, false, false];
     }
-    const input = checkForInput(this.data.inputs, inputIndex);
-    return this.data.globalMap.globalXpub.map((xpub) => {
-      const bip32 = BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey));
+
+    return bip32s.map((bip32) => {
       const pubKey = input.tapBip32Derivation?.length
         ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation)?.publicKey
         : input.bip32Derivation?.length
@@ -798,7 +768,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   private getMusig2Participants(inputIndex: number, tapInternalKey: Buffer, tapMerkleRoot: Buffer) {
-    const participantsKeyValData = parsePsbtMusig2Participants(this, inputIndex);
+    const participantsKeyValData = parsePsbtMusig2Participants(this.data.inputs[inputIndex]);
     if (!participantsKeyValData) {
       throw new Error(`Found 0 matching participant key value instead of 1`);
     }
@@ -807,7 +777,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   private getMusig2Nonces(inputIndex: number, participantsKeyValData: PsbtMusig2Participants) {
-    const noncesKeyValsData = parsePsbtMusig2Nonces(this, inputIndex);
+    const noncesKeyValsData = parsePsbtMusig2Nonces(this.data.inputs[inputIndex]);
     if (!noncesKeyValsData || !isTuple(noncesKeyValsData)) {
       throw new Error(
         `Found ${noncesKeyValsData?.length ? noncesKeyValsData.length : 0} matching nonce key value instead of 2`
@@ -1054,24 +1024,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
     const input = checkForInput(this.data.inputs, inputIndex);
-    if (!input.unknownKeyVals?.length) {
-      return [];
-    }
-    if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
-      throw new Error('invalid proprietary key search filter combination. subtype is required');
-    }
-    const keyVals = input.unknownKeyVals.map(({ key, value }, i) => {
-      return { key: decodeProprietaryKey(key), value };
-    });
-    return keyVals.filter((keyVal) => {
-      return (
-        keySearch === undefined ||
-        (keySearch.identifier === keyVal.key.identifier &&
-          (keySearch.subtype === undefined ||
-            (keySearch.subtype === keyVal.key.subtype &&
-              (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
-      );
-    });
+    return getPsbtInputProprietaryKeyVals(input, keySearch);
   }
 
   /**
@@ -1126,7 +1079,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!derivedKeyPair.privateKey) {
       throw new Error('privateKey is required to create nonce');
     }
-    const participants = parsePsbtMusig2Participants(this, inputIndex);
+    const participants = parsePsbtMusig2Participants(input);
     if (!participants) {
       throw new Error(`Found 0 matching participant key value instead of 1`);
     }
@@ -1149,7 +1102,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!participantPubKey.equals(participantPubKeys[1])) {
         throw new Error(`Only the cosigner's nonce can be set deterministically`);
       }
-      const nonces = parsePsbtMusig2Nonces(this, inputIndex);
+      const nonces = parsePsbtMusig2Nonces(input);
       if (!nonces) {
         throw new Error(`No nonces found on input #${inputIndex}`);
       }
@@ -1223,7 +1176,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     derivedKeyPair: BIP32Interface,
     params: { sessionId?: Buffer; deterministic?: boolean } = { deterministic: false }
   ): this {
-    // TODO: This should take an inputIndex and only apply to that input with this derived key.
     return this.setMusig2NoncesInner(derivedKeyPair, 'derived', inputIndex, params);
   }
 

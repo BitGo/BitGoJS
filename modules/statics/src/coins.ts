@@ -139,6 +139,11 @@ const MATIC_FEATURES = [
 const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const TRX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const BLD_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const SEI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -189,7 +194,8 @@ export const coins = CoinMap.fromCoins([
     'Bitcoin SV',
     Networks.main.bitcoinSV,
     UnderlyingAsset.BSV,
-    BaseUnit.BTC
+    BaseUnit.BTC,
+    [CoinFeature.DEPRECATED, ...UtxoCoin.DEFAULT_FEATURES]
   ),
   utxo(
     '7cb81518-85d7-400f-960e-7bc00b3bfa62',
@@ -197,7 +203,8 @@ export const coins = CoinMap.fromCoins([
     'Testnet Bitcoin SV',
     Networks.test.bitcoinSV,
     UnderlyingAsset.BSV,
-    BaseUnit.BTC
+    BaseUnit.BTC,
+    [CoinFeature.DEPRECATED, ...UtxoCoin.DEFAULT_FEATURES]
   ),
   utxo(
     '5c1691c5-c9cc-49ed-abe0-c433dab2edaa',
@@ -708,6 +715,106 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
     ATOM_FEATURES
+  ),
+  account(
+    '8352bdf2-71e7-4ff1-a5b0-9b88c61aef1d',
+    'osmo',
+    'Osmosis',
+    Networks.main.osmo,
+    6,
+    UnderlyingAsset.OSMO,
+    BaseUnit.OSMO,
+    OSMO_FEATURES
+  ),
+  account(
+    'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
+    'tosmo',
+    'Testnet Osmosis',
+    Networks.test.osmo,
+    6,
+    UnderlyingAsset.OSMO,
+    BaseUnit.OSMO,
+    OSMO_FEATURES
+  ),
+  account(
+    '6e35c0dc-7ee8-4273-985d-254aa3641c9d',
+    'tia',
+    'celestia',
+    Networks.main.tia,
+    6,
+    UnderlyingAsset.TIA,
+    BaseUnit.TIA,
+    TIA_FEATURES
+  ),
+  account(
+    '6ea4f120-6d26-4070-a12a-a0cac39ea552',
+    'ttia',
+    'Testnet celestia',
+    Networks.test.tia,
+    6,
+    UnderlyingAsset.TIA,
+    BaseUnit.TIA,
+    TIA_FEATURES
+  ),
+  account(
+    '2e20e302-d743-457c-a023-58b80e8d3a15',
+    'hash',
+    'Provenance',
+    Networks.main.hash,
+    9,
+    UnderlyingAsset.HASH,
+    BaseUnit.HASH,
+    HASH_FEATURES
+  ),
+  account(
+    'feadf3d5-5a9a-427e-8144-7a5085b4d258',
+    'thash',
+    'Testnet Provenance',
+    Networks.test.hash,
+    9,
+    UnderlyingAsset.HASH,
+    BaseUnit.HASH,
+    HASH_FEATURES
+  ),
+  account(
+    '36700514-fa3c-42d8-9503-98cdcab0b3c3',
+    'bld',
+    'Agoric',
+    Networks.main.bld,
+    6,
+    UnderlyingAsset.BLD,
+    BaseUnit.BLD,
+    BLD_FEATURES
+  ),
+  account(
+    'e093184f-4134-455f-b870-da0bac213f00',
+    'tbld',
+    'Testnet Agoric',
+    Networks.test.bld,
+    6,
+    UnderlyingAsset.BLD,
+    BaseUnit.BLD,
+    BLD_FEATURES
+  ),
+  account(
+    '4777265e-37f4-44d8-bccd-13e56189fcae',
+    'sei',
+    'Sei',
+    Networks.main.sei,
+    6,
+    UnderlyingAsset.SEI,
+    BaseUnit.SEI,
+    SEI_FEATURES
+  ),
+  account(
+    '5be8a3f3-5c71-41ff-8d87-1ade63ce2543',
+    'tsei',
+    'Testnet Sei',
+    Networks.test.sei,
+    6,
+    UnderlyingAsset.SEI,
+    BaseUnit.SEI,
+    SEI_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',

@@ -191,6 +191,7 @@ export class Wallet implements IWallet {
       'numBlocks',
       'nonce',
       'preview',
+      'previewPendingApprovals',
       'receiveAddress',
       'recipients',
       'reservation',
@@ -640,6 +641,7 @@ export class Wallet implements IWallet {
       'minConfirms',
       'enforceMinConfirmsForChange',
       'targetAddress',
+      'txFormat',
 
       routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
       'numUnspentsToMake',

@@ -19,6 +19,7 @@ module.exports = {
         'CR-',
         'STLX-',
         'BOS-',
+        'EA-', // Eth-Alt 
         '#', // Prefix used by GitHub issues
       ],
     },

@@ -3,8 +3,11 @@ import {
   BaseTransaction,
   BitGoBase,
   Ecdsa,
+  ECDSA,
+  ECDSAMethodTypes,
   Environments,
   ExplanationResult,
+  hexToBigInt,
   InvalidAddressError,
   InvalidMemoIdError,
   KeyPair,
@@ -18,19 +21,17 @@ import {
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  ECDSAMethodTypes,
-  ECDSA,
 } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
 import { createHash, Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
-import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
 import url from 'url';
 import querystring from 'querystring';
-import { KeyPair as AtomKeyPair, Transaction } from './lib';
+import { KeyPair as AtomKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import * as request from 'superagent';
 import { Buffer } from 'buffer';
 import { FeeData, SendMessage } from './lib/iface';
@@ -603,69 +604,82 @@ export class Atom extends BaseCoin {
     return [userKeyDerivedCombined, backupKeyCombined];
   }
 
+  // TODO(BG-78714): Reduce code duplication between this and eth.ts
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string
+    txHex: string,
+    {
+      rangeProofChallenge,
+    }: {
+      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
+    } = {}
   ): Promise<ECDSAMethodTypes.Signature> {
     const MPC = new Ecdsa();
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
-    const userXShare: ECDSAMethodTypes.XShareWithNtilde = (
-      await MPC.appendChallenge(userKeyCombined.xShare, userKeyCombined.yShares[signerTwoIndex])
-    ).xShare;
-    const userYShare: ECDSAMethodTypes.YShareWithNtilde = {
-      ...userKeyCombined.yShares[signerTwoIndex],
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
-    const backupXShare: ECDSAMethodTypes.XShareWithNtilde = {
-      ...backupKeyCombined.xShare,
-      ntilde: userXShare.ntilde,
-      h1: userXShare.h1,
-      h2: userXShare.h2,
-    };
+    // Since this is a user <> backup signing, we will reuse the same range proof challenge
+    rangeProofChallenge =
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
 
-    const backupYShare: ECDSAMethodTypes.YShareWithNtilde = {
-      ...backupKeyCombined.yShares[signerOneIndex],
-      ntilde: backupXShare.ntilde,
-      h1: backupXShare.h1,
-      h2: backupXShare.h2,
-    };
+    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
+    );
+    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
+    );
+
+    const userXShare = MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
+    const userYShare = MPC.appendChallenge(
+      userKeyCombined.yShares[signerTwoIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupXShare = MPC.appendChallenge(
+      backupKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupYShare = MPC.appendChallenge(
+      backupKeyCombined.yShares[signerOneIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
 
     const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
 
-    let signConvertS21: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS21 = await MPC.signConvertStep1({
       xShare: backupXShare,
       yShare: backupYShare, // YShare corresponding to the other participant signerOne
       kShare: signShares.kShare,
     });
-
-    const signConvertS12: ECDSA.SignConvertRT = await MPC.signConvert({
+    const signConvertS12 = await MPC.signConvertStep2({
       aShare: signConvertS21.aShare,
       wShare: signShares.wShare,
     });
-
-    signConvertS21 = await MPC.signConvert({
+    const signConvertS21_2 = await MPC.signConvertStep3({
       muShare: signConvertS12.muShare,
       bShare: signConvertS21.bShare,
     });
 
     const [signCombineOne, signCombineTwo] = [
       MPC.signCombine({
-        gShare: signConvertS12.gShare as ECDSA.GShare,
+        gShare: signConvertS12.gShare,
         signIndex: {
-          i: (signConvertS12.muShare as ECDSA.MUShare).i,
-          j: (signConvertS12.muShare as ECDSA.MUShare).j,
+          i: signConvertS12.muShare.i,
+          j: signConvertS12.muShare.j,
         },
       }),
       MPC.signCombine({
-        gShare: signConvertS21.gShare as ECDSA.GShare,
+        gShare: signConvertS21_2.gShare,
         signIndex: {
-          i: (signConvertS21.muShare as ECDSA.MUShare).i,
-          j: (signConvertS21.muShare as ECDSA.MUShare).j,
+          i: signConvertS21_2.signIndex.i,
+          j: signConvertS21_2.signIndex.j,
         },
       }),
     ];
@@ -677,7 +691,6 @@ export class Atom extends BaseCoin {
       MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, createHash('sha256')),
     ];
 
-    const signature = MPC.constructSignature([signA, signB]);
-    return signature;
+    return MPC.constructSignature([signA, signB]);
   }
 }

@@ -46,6 +46,8 @@ import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
 export { Hbar, Thbar };
 import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';
 export { Ltc, Tltc };
+import { Osmo, Tosmo } from '@bitgo/sdk-coin-osmo';
+export { Osmo, Tosmo };
 import { Polygon, Tpolygon, PolygonToken } from '@bitgo/sdk-coin-polygon';
 export { Polygon, Tpolygon, PolygonToken };
 import { Rbtc, Trbtc } from '@bitgo/sdk-coin-rbtc';
