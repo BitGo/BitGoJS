@@ -67,7 +67,7 @@ export function signAndVerifyPsbt(
 ): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];
-  const parsedInputs: (PsbtParsedScriptTypes | undefined)[] = [];
+  const scriptTypes: PsbtParsedScriptTypes[] = [];
 
   const signErrors: InputSigningError<bigint>[] = psbt.data.inputs
     .map((input, inputIndex: number) => {
@@ -75,7 +75,7 @@ export function signAndVerifyPsbt(
       outputIds.push(outputId);
 
       const scriptType = utxolib.bitgo.getPsbtInputScriptType(input);
-      parsedInputs.push(scriptType);
+      scriptTypes.push(scriptType);
 
       if (scriptType === 'p2shP2pk') {
         debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, psbt.data.inputs.length);
@@ -93,13 +93,8 @@ export function signAndVerifyPsbt(
 
   const verifyErrors: InputSigningError<bigint>[] = psbt.data.inputs
     .map((input, inputIndex) => {
-      const outputId = outputIds[inputIndex];
-
-      const parsedInput = parsedInputs[inputIndex];
-      if (!parsedInput) {
-        return new InputSigningError<bigint>(inputIndex, { id: outputId }, 'could not parse input');
-      }
-      if (parsedInput === 'p2shP2pk') {
+      const scriptType = scriptTypes[inputIndex];
+      if (scriptType === 'p2shP2pk') {
         debug(
           'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
           inputIndex + 1,
@@ -108,6 +103,7 @@ export function signAndVerifyPsbt(
         return;
       }
 
+      const outputId = outputIds[inputIndex];
       try {
         if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
           return new InputSigningError(inputIndex, { id: outputId }, new Error(`invalid signature`));

@@ -202,7 +202,7 @@ export interface AddressDetails {
 export interface SignTransactionOptions<TNumber extends number | bigint = number> extends BaseSignTransactionOptions {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
-    walletId: string;
+    walletId?: string;
     txHex: string;
     txInfo: TransactionInfo<TNumber>;
   };
@@ -1108,6 +1108,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
     if (tx instanceof bitgo.UtxoPsbt && isTransactionWithKeyPathSpendInput) {
+      assert(txPrebuild.walletId, 'walletId is required for MuSig2 nonce');
       tx.setAllInputsMusig2NonceHD(signerKeychain);
       const response = await this.signPsbt(tx.toHex(), txPrebuild.walletId);
       const psbt = bitgo.createPsbtFromHex(response.psbt, this.network);
