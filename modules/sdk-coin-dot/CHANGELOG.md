@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.3.0...@bitgo/sdk-coin-dot@2.3.1) (2023-06-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.2.10...@bitgo/sdk-coin-dot@2.3.0) (2023-05-25)
+
+### Features
+
+- **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+
+## [2.2.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.2.9...@bitgo/sdk-coin-dot@2.2.10) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+## [2.2.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.2.8...@bitgo/sdk-coin-dot@2.2.9) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+## [2.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.2.7...@bitgo/sdk-coin-dot@2.2.8) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
 ## [2.2.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@2.2.6...@bitgo/sdk-coin-dot@2.2.7) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

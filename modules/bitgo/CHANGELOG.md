@@ -3,6 +3,98 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.5.0...bitgo@19.0.0) (2023-06-05)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** fix trx recovery ([8c28f2f](https://github.com/BitGo/BitGoJS/commit/8c28f2ff2c2b29be1e27617f6fb830a5f18b7ced))
+* **sdk-core:** fix pending approval for consolidation ([3589434](https://github.com/BitGo/BitGoJS/commit/35894347a5e03e67ae97c37f921f803878b89396))
+* **sdk-core:** retrieve bitgo modulus for ecdsa signing ([b43279b](https://github.com/BitGo/BitGoJS/commit/b43279beecba52fa21a480d994d01b3706bdf583))
+* **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+
+### Features
+
+* **abstract-utxo:** add psbt support to explain and verify Tx ([4189659](https://github.com/BitGo/BitGoJS/commit/41896593cdc180cb5a60145a8d31fdf55dba6bb2))
+* **root:** add optional paillier proof plumbing ([18093bf](https://github.com/BitGo/BitGoJS/commit/18093bfc370745130958075349814d493d5a8c72))
+* **sdk-coin-osmo:** osmosis sdk init ([cc20a59](https://github.com/BitGo/BitGoJS/commit/cc20a5908528d2ad6bcc4a588acd7b1c8b0af379))
+* **sdk-coin-trx:** add receive address tron recovery ([2a120fe](https://github.com/BitGo/BitGoJS/commit/2a120fef44345c270f2fa0ff5749f78f821e0d1b))
+* **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+* **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+* **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
+
+### BREAKING CHANGES
+
+* **utxo-lib:** functions signature is changed
+
+
+
+
+
+# [18.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.4.0...bitgo@18.5.0) (2023-05-25)
+
+
+### Bug Fixes
+
+* **bitgo:** should skip password validation in external signing ([a0cde4d](https://github.com/BitGo/BitGoJS/commit/a0cde4dacf7a48669f487d17f896e414fb5ee9df))
+* **sdk-core:** fix time issue when checking gpg wallet signatures from bitgo ([a7fa97b](https://github.com/BitGo/BitGoJS/commit/a7fa97b5b483168ad2385f4d4590d39f1476ed94))
+
+
+### Features
+
+* **abstract-utxo:** add psbt and musig2 support for sdk-api ([7a23991](https://github.com/BitGo/BitGoJS/commit/7a23991079e5609d43d7483f8137189163943dfc))
+* **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+
+
+
+
+
+# [18.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.3.0...bitgo@18.4.0) (2023-05-17)
+
+
+### Bug Fixes
+
+* **bitgo:** drone is no longer used in this repo so can safely be removed ([badc0de](https://github.com/BitGo/BitGoJS/commit/badc0ded6870f56a0dc3925eba639b0fdb313c2b)), closes [#3554](https://github.com/BitGo/BitGoJS/issues/3554) [#3554](https://github.com/BitGo/BitGoJS/issues/3554)
+
+
+### Features
+
+* **sdk-core:** method to parse json from OVC to create TSS bitgo key ([c045934](https://github.com/BitGo/BitGoJS/commit/c04593412b5988dbb27769500c64feed27c1a75a))
+
+
+
+
+
+# [18.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.1...bitgo@18.3.0) (2023-05-10)
+
+
+### Bug Fixes
+
+* **sdk-coin-eth:** fix eth multisig recoveries ([6e49792](https://github.com/BitGo/BitGoJS/commit/6e49792bfdb670a9e10dad10df932767b8ac6cdd))
+
+
+### Features
+
+* **sdk-core:** pre validate wallet pass phrase ([77f37e6](https://github.com/BitGo/BitGoJS/commit/77f37e6e811aa61a8ba577136f01fab073ef8fe4))
+* **sdk-core:** stop calling staking service send api for full version ([49d13f1](https://github.com/BitGo/BitGoJS/commit/49d13f1c4a3660bfd75b7072f19f612fe040b0e4))
+
+
+
+
+
+## [18.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@18.2.0...bitgo@18.2.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix url path of fetching tss config API ([0d61a31](https://github.com/BitGo/BitGoJS/commit/0d61a31f3dfd6b5e892bbeb38889f56540a12cda))
+
+
+
+
+
 # [18.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.1.1...bitgo@18.2.0) (2023-04-25)
 
 

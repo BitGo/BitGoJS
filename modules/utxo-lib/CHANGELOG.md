@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.4.0...@bitgo/utxo-lib@9.0.0) (2023-06-05)
+
+### Bug Fixes
+
+- **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+### Features
+
+- **utxo-lib:** move getSignatureValidationArrayPsbt from WP ([6283b21](https://github.com/BitGo/BitGoJS/commit/6283b219c4a2fe0dae4854dc08ef023e0d4c75ea))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** functions signature is changed
+
+# [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.3.0...@bitgo/utxo-lib@8.4.0) (2023-05-25)
+
+### Features
+
+- **utxo-lib:** add utils for sdk-api support musig2 ([1104f13](https://github.com/BitGo/BitGoJS/commit/1104f13f418e50c82634c7e936ee32b041cc15ba))
+
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.2.0...@bitgo/utxo-lib@8.3.0) (2023-05-17)
+
+### Bug Fixes
+
+- **utxo-lib:** calculate signature count for psbt and tx ([1110d20](https://github.com/BitGo/BitGoJS/commit/1110d204160ff88778a2aded084dcf4fc1848930))
+- **utxo-lib:** improve taproot input check ([5ab10bf](https://github.com/BitGo/BitGoJS/commit/5ab10bfbfe3248d69d669197364a0508885c0f93))
+- **utxo-lib:** specify tapTweaks as xOnly for deterministic ([defda9f](https://github.com/BitGo/BitGoJS/commit/defda9f0791707c82bcea353fffde138283f3b97))
+- **utxo-lib:** unwrap parseSignatureScript from try/catch ([9eed2dc](https://github.com/BitGo/BitGoJS/commit/9eed2dcdb634c55ab0a1f82808fadae760fe1f5f))
+- **utxo-lib:** wrap parseSignatureScript in try/catch ([6a5c902](https://github.com/BitGo/BitGoJS/commit/6a5c9026d802a74cb0a862498c73e1c764703794))
+
+### Features
+
+- **utxo-lib:** verify fully signed MUSIGKP as tx ([65ce04c](https://github.com/BitGo/BitGoJS/commit/65ce04c5973c7e467d39d38f4752dffc41033c50))
+
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.1.0...@bitgo/utxo-lib@8.2.0) (2023-05-10)
+
+### Bug Fixes
+
+- **utxo-lib:** witness utxo should not be added for non-segwit PSBT input ([5921045](https://github.com/BitGo/BitGoJS/commit/59210451ff32ef6f9dea1a4d008a7a8b80c58b23))
+
+### Features
+
+- **utxo-lib:** add musig2 nonce at input index ([9991d3f](https://github.com/BitGo/BitGoJS/commit/9991d3ff4fbecc326c8fc67e523a5108843a0f9d))
+- **utxo-lib:** migrate deterministic signing into utxopsbt ([535ba30](https://github.com/BitGo/BitGoJS/commit/535ba30e1478c6809cf255d4a45a50cfe18969e6))
+- **utxo-lib:** verify fully signed musig2 tx signature ([dc8174e](https://github.com/BitGo/BitGoJS/commit/dc8174e59184818a58920cc2149fbd359c57a490))
+
+# [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.2...@bitgo/utxo-lib@8.1.0) (2023-05-03)
+
+### Features
+
+- **utxo-lib:** add ease of use fns for HSM testing ([5e82bab](https://github.com/BitGo/BitGoJS/commit/5e82bab7d54b9b405c2436b8df83b436e9542852))
+- **utxo-lib:** add index file for create psbt util function ([cc3e8db](https://github.com/BitGo/BitGoJS/commit/cc3e8db2440f08bc0fd7f47f3970d368d6ac05d0))
+- **utxo-lib:** add test util function to create psbt ([d052beb](https://github.com/BitGo/BitGoJS/commit/d052beb6f6fa6c65be4b97ccfc61881117bdf61c))
+- **utxo-lib:** deterministic sign and nonce gen for psbts ([9399291](https://github.com/BitGo/BitGoJS/commit/939929195337a6380fc6376b80b425d089de21df))
+- **utxo-lib:** fix "Argument must be a Buffer" bug in the frontend ([bd0bda8](https://github.com/BitGo/BitGoJS/commit/bd0bda8cabb54dc4964619375dbf7067006134f7))
+- **utxo-lib:** implement mweb parsing for ltc ([1a77f01](https://github.com/BitGo/BitGoJS/commit/1a77f01ae8f1fd8bb4bcfbf220f89294bea55ff7))
+- **utxo-lib:** signature validates only with low S ([389c4f9](https://github.com/BitGo/BitGoJS/commit/389c4f969bc5c9cbbbae26c574279d7320e9cdad))
+- **utxo-lib:** use chronological musig2 key order ([c63ac4e](https://github.com/BitGo/BitGoJS/commit/c63ac4e630bf5db39a32c9e2f0a446a3e6c4a6b7))
+
 ## [8.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.0.1...@bitgo/utxo-lib@8.0.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

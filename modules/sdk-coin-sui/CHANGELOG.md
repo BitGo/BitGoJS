@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.6...@bitgo/sdk-coin-sui@3.0.7) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add src/lib/mystenlab to .prettierignore ([a90139b](https://github.com/BitGo/BitGoJS/commit/a90139ba7fe07129a1eaa63531c9a61ac23a6759))
+
+## [3.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.5...@bitgo/sdk-coin-sui@3.0.6) (2023-05-25)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix amount parsing ([b7e2b40](https://github.com/BitGo/BitGoJS/commit/b7e2b40711161a9f9fe739bcb71f5af00da2c689))
+- **sdk-coin-sui:** fix large transaction ([050f66d](https://github.com/BitGo/BitGoJS/commit/050f66d58e4ad15f16ba94a6d9cc07d4e0ea19c6))
+- **sdk-coin-sui:** fix split transaction ([a46eaff](https://github.com/BitGo/BitGoJS/commit/a46eaffc48506ba568e4c36237e874c32b5a0a24))
+
+## [3.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.4...@bitgo/sdk-coin-sui@3.0.5) (2023-05-17)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** support split coin ([cf34f73](https://github.com/BitGo/BitGoJS/commit/cf34f7391d47080ca0427a3bc62173afc0102f12))
+
+## [3.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.3...@bitgo/sdk-coin-sui@3.0.4) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+## [3.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.2...@bitgo/sdk-coin-sui@3.0.3) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
 ## [3.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.1...@bitgo/sdk-coin-sui@3.0.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

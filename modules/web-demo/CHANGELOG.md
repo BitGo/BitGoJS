@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.3...@bitgo/web-demo@1.7.4) (2023-06-05)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+## [1.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.2...@bitgo/web-demo@1.7.3) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.1...@bitgo/web-demo@1.7.2) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.0...@bitgo/web-demo@1.7.1) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.6.1...@bitgo/web-demo@1.7.0) (2023-05-03)
+
+### Features
+
+- **utxo-lib:** fix "Argument must be a Buffer" bug in the frontend ([bd0bda8](https://github.com/BitGo/BitGoJS/commit/bd0bda8cabb54dc4964619375dbf7067006134f7))
+
 ## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.6.0...@bitgo/web-demo@1.6.1) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/web-demo

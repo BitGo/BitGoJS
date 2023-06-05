@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.14.2...@bitgo/unspents@0.15.0) (2023-06-05)
+
+### Bug Fixes
+
+- **utxo-lib:** use PsbtInput instead of UtxoPsbt ([1f73539](https://github.com/BitGo/BitGoJS/commit/1f73539409cf69fc55ab8aedb9d8873bb82bc375))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** functions signature is changed
+
+## [0.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.14.1...@bitgo/unspents@0.14.2) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+## [0.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.14.0...@bitgo/unspents@0.14.1) (2023-05-17)
+
+### Bug Fixes
+
+- **bitgo:** drone is no longer used in this repo so can safely be removed ([badc0de](https://github.com/BitGo/BitGoJS/commit/badc0ded6870f56a0dc3925eba639b0fdb313c2b)), closes [#3554](https://github.com/BitGo/BitGoJS/issues/3554) [#3554](https://github.com/BitGo/BitGoJS/issues/3554)
+
+# [0.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.2...@bitgo/unspents@0.14.0) (2023-05-10)
+
+### Features
+
+- **utxo-lib:** add musig2 nonce at input index ([9991d3f](https://github.com/BitGo/BitGoJS/commit/9991d3ff4fbecc326c8fc67e523a5108843a0f9d))
+
+## [0.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.1...@bitgo/unspents@0.13.2) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/unspents
+
 ## [0.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.13.0...@bitgo/unspents@0.13.1) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/unspents

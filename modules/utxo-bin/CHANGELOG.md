@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.3...@bitgo/utxo-bin@2.9.4) (2023-06-05)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+## [2.9.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.2...@bitgo/utxo-bin@2.9.3) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+## [2.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.1...@bitgo/utxo-bin@2.9.2) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+## [2.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.0...@bitgo/utxo-bin@2.9.1) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.8.2...@bitgo/utxo-bin@2.9.0) (2023-05-03)
+
+### Features
+
+- **utxo-lib:** use chronological musig2 key order ([c63ac4e](https://github.com/BitGo/BitGoJS/commit/c63ac4e630bf5db39a32c9e2f0a446a3e6c4a6b7))
+
 ## [2.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.8.1...@bitgo/utxo-bin@2.8.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

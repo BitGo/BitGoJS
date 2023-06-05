@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.4.0...@bitgo/sdk-coin-near@1.4.1) (2023-06-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.21...@bitgo/sdk-coin-near@1.4.0) (2023-05-25)
+
+### Features
+
+- **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+
+## [1.3.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.20...@bitgo/sdk-coin-near@1.3.21) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+## [1.3.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.19...@bitgo/sdk-coin-near@1.3.20) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+## [1.3.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.18...@bitgo/sdk-coin-near@1.3.19) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
 ## [1.3.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@1.3.17...@bitgo/sdk-coin-near@1.3.18) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

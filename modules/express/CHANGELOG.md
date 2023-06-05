@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.26.3...@bitgo/express@9.27.0) (2023-06-05)
+
+
+### Features
+
+* **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+* **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+
+
+
+
+
+## [9.26.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.26.2...@bitgo/express@9.26.3) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.26.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.26.1...@bitgo/express@9.26.2) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+## [9.26.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.26.0...@bitgo/express@9.26.1) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+# [9.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.25.2...@bitgo/express@9.26.0) (2023-05-03)
+
+
+### Features
+
+* express route to sign payloads in external signing mode ([f0c6c80](https://github.com/BitGo/BitGoJS/commit/f0c6c807433fcf36cff4e3d5c826438dfff07cfd))
+
+
+
+
+
 ## [9.25.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.25.1...@bitgo/express@9.25.2) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/express

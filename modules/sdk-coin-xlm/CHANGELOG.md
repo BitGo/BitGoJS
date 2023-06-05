@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.8...@bitgo/sdk-coin-xlm@2.0.9) (2023-06-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.7...@bitgo/sdk-coin-xlm@2.0.8) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.6...@bitgo/sdk-coin-xlm@2.0.7) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.5...@bitgo/sdk-coin-xlm@2.0.6) (2023-05-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.4...@bitgo/sdk-coin-xlm@2.0.5) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
 ## [2.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.3...@bitgo/sdk-coin-xlm@2.0.4) (2023-04-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

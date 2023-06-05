@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.4...@bitgo/sdk-coin-eth@4.5.0) (2023-06-05)
+
+### Bug Fixes
+
+- **root:** update module deps ([98e0945](https://github.com/BitGo/BitGoJS/commit/98e09451f3ead6a0dd7c3aa3df62f8d000ba2f0e))
+
+### Features
+
+- **sdk-core:** paillier proof user<>backup ([8c0a381](https://github.com/BitGo/BitGoJS/commit/8c0a381318be2088572e06e34c3627323d7bfe38))
+- **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+- **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+- **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
+## [4.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.3...@bitgo/sdk-coin-eth@4.4.4) (2023-05-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
+## [4.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.2...@bitgo/sdk-coin-eth@4.4.3) (2023-05-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
+## [4.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.1...@bitgo/sdk-coin-eth@4.4.2) (2023-05-10)
+
+### Bug Fixes
+
+- **sdk-coin-eth:** fix eth multisig recoveries ([6e49792](https://github.com/BitGo/BitGoJS/commit/6e49792bfdb670a9e10dad10df932767b8ac6cdd))
+
+## [4.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.0...@bitgo/sdk-coin-eth@4.4.1) (2023-05-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
 # [4.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.3.1...@bitgo/sdk-coin-eth@4.4.0) (2023-04-25)
 
 ### Features

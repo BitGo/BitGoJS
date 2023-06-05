@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.6.0...@bitgo/sdk-core@8.7.0) (2023-06-05)
+
+### Bug Fixes
+
+- **sdk-core:** add previewPendingApprovals flag ([7efad87](https://github.com/BitGo/BitGoJS/commit/7efad873b339e4a246859383e099a6d022962e05))
+- **sdk-core:** fix pending approval for consolidation ([3589434](https://github.com/BitGo/BitGoJS/commit/35894347a5e03e67ae97c37f921f803878b89396))
+- **sdk-core:** pass correct n value for keyDerive ([7c7e82f](https://github.com/BitGo/BitGoJS/commit/7c7e82fd1d473ce31bd2a12b1d0496c4df8c050a))
+- **sdk-core:** retrieve bitgo modulus for ecdsa signing ([b43279b](https://github.com/BitGo/BitGoJS/commit/b43279beecba52fa21a480d994d01b3706bdf583))
+- **sdk-lib-mpc:** pallier -> paillier ([9d0a12d](https://github.com/BitGo/BitGoJS/commit/9d0a12dd1d2e1d6e3107f62e2757263fb2fd258e))
+
+### Features
+
+- **root:** add optional paillier proof plumbing ([18093bf](https://github.com/BitGo/BitGoJS/commit/18093bfc370745130958075349814d493d5a8c72))
+- **sdk-coin-osmo:** staking implementation with testcases ([a90c00b](https://github.com/BitGo/BitGoJS/commit/a90c00bd6e49d2a7898b8d4624514708c4f90fb9))
+- **sdk-core:** paillier proof user<>backup ([8c0a381](https://github.com/BitGo/BitGoJS/commit/8c0a381318be2088572e06e34c3627323d7bfe38))
+- **sdk-core:** refactor signConvert to steps ([94e2cae](https://github.com/BitGo/BitGoJS/commit/94e2cae6e1292a4e9684c3c2ab7141221137d52e))
+- **sdk-core:** simplify mpc.appendChallenge ([67bee8f](https://github.com/BitGo/BitGoJS/commit/67bee8f1b4f37cd12d6d14ea4d51ddcfde679563))
+- **sdk-lib-mpc:** add tests for palierproof and utils ([7c4674b](https://github.com/BitGo/BitGoJS/commit/7c4674b430741ccb33f4b447b4efca7942ee70e7))
+- **sdk-lib-mpc:** make rangeProof challenges mandatory for appendChallenge ([1f68b30](https://github.com/BitGo/BitGoJS/commit/1f68b30676966720cb1a42c039e35d3ddeea4974))
+
+# [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.5.0...@bitgo/sdk-core@8.6.0) (2023-05-25)
+
+### Bug Fixes
+
+- **bitgo:** should skip password validation in external signing ([a0cde4d](https://github.com/BitGo/BitGoJS/commit/a0cde4dacf7a48669f487d17f896e414fb5ee9df))
+- **sdk-core:** fix time issue when checking gpg wallet signatures from bitgo ([a7fa97b](https://github.com/BitGo/BitGoJS/commit/a7fa97b5b483168ad2385f4d4590d39f1476ed94))
+
+### Features
+
+- **abstract-utxo:** add psbt and musig2 support for sdk-api ([7a23991](https://github.com/BitGo/BitGoJS/commit/7a23991079e5609d43d7483f8137189163943dfc))
+- **root:** implement eddsa signing with commitment ([d67ac81](https://github.com/BitGo/BitGoJS/commit/d67ac81f5b77451de1e03eba3c93a9b0e11e7b7c))
+- **sdk-coin-atom:** add recover mechanism for ATOM ([0e4cfc7](https://github.com/BitGo/BitGoJS/commit/0e4cfc74201f9a44ec3b4b9c7591a6fbd3f2efb6))
+
+# [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.4.0...@bitgo/sdk-core@8.5.0) (2023-05-17)
+
+### Features
+
+- **sdk-core:** method to parse json from OVC to create TSS bitgo key ([c045934](https://github.com/BitGo/BitGoJS/commit/c04593412b5988dbb27769500c64feed27c1a75a))
+
+# [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.3.0...@bitgo/sdk-core@8.4.0) (2023-05-10)
+
+### Features
+
+- **sdk-core:** add more whitelisted build params ([f468837](https://github.com/BitGo/BitGoJS/commit/f4688370df274e42622cb1e67b617f30c486ab70))
+- **sdk-core:** pre validate wallet pass phrase ([77f37e6](https://github.com/BitGo/BitGoJS/commit/77f37e6e811aa61a8ba577136f01fab073ef8fe4))
+- **sdk-core:** stop calling staking service send api for full version ([49d13f1](https://github.com/BitGo/BitGoJS/commit/49d13f1c4a3660bfd75b7072f19f612fe040b0e4))
+
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.2.0...@bitgo/sdk-core@8.3.0) (2023-05-03)
+
+### Bug Fixes
+
+- **sdk-core:** fix incorrect check verifying range proof ([3c74334](https://github.com/BitGo/BitGoJS/commit/3c74334721a1517b474540f38a7443368f0e8e3b))
+- **sdk-core:** fix url path of fetching tss config API ([0d61a31](https://github.com/BitGo/BitGoJS/commit/0d61a31f3dfd6b5e892bbeb38889f56540a12cda))
+- **sdk-core:** use coin agnostic url for get challenges ([3661ff8](https://github.com/BitGo/BitGoJS/commit/3661ff8a8fcf52d8290c5fff54339c53938bdcbf))
+
+### Features
+
+- **sdk-core:** enable signing with enterprise challenge ([68391c1](https://github.com/BitGo/BitGoJS/commit/68391c1b165ae63f67ef37f2ea2344aeb21cc9d8))
+- **sdk-core:** move ntilde (de/se)rialize methods ([5ee0e41](https://github.com/BitGo/BitGoJS/commit/5ee0e41f8aff8bbc232f6c504a3938dd1e27cba1))
+- **sdk-core:** save enterprise data on get ([58109d3](https://github.com/BitGo/BitGoJS/commit/58109d3a916d09c0e29072fbaecc442fea930873))
+
 # [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.1.0...@bitgo/sdk-core@8.2.0) (2023-04-25)
 
 ### Features
