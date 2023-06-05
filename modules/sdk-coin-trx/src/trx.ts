@@ -30,6 +30,7 @@ import {
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
 import { TransactionReceipt } from './lib/iface';
+import { isInteger, isUndefined } from 'lodash';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
@@ -78,6 +79,8 @@ export interface RecoveryOptions {
   recoveryDestination: string; // base58 address
   krsProvider?: string;
   walletPassphrase?: string;
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 export interface FeeInfo {
@@ -91,6 +94,7 @@ export interface RecoveryTransaction {
   tx?: TransactionPrebuild;
   recoveryAmount?: number;
   tokenTxs?: TransactionReceipt[];
+  addressInfo?: AddressInfo;
 }
 
 export enum NodeTypes {
@@ -509,9 +513,14 @@ export class Trx extends BaseCoin {
    * @param {number} recoveryAmount
    * @returns {RecoveryTransaction}
    */
-  formatForOfflineVault(tx: BaseTransaction, fee: number, recoveryAmount: number): RecoveryTransaction {
+  formatForOfflineVault(
+    tx: BaseTransaction,
+    fee: number,
+    recoveryAmount: number,
+    addressInfo?: AddressInfo
+  ): RecoveryTransaction {
     const txJSON = tx.toJson();
-    return {
+    const format = {
       txHex: JSON.stringify(txJSON),
       recoveryAmount,
       feeInfo: {
@@ -520,6 +529,7 @@ export class Trx extends BaseCoin {
       tx: txJSON, // Leaving it as txJSON for backwards compatibility
       coin: this.getChain(),
     };
+    return addressInfo ? { ...format, addressInfo } : format;
   }
 
   /**
@@ -538,20 +548,88 @@ export class Trx extends BaseCoin {
       throw new Error('Invalid destination address!');
     }
 
+    let startIdx = params.startingScanIndex;
+    if (isUndefined(startIdx)) {
+      startIdx = 1;
+    } else if (!isInteger(startIdx) || startIdx < 0) {
+      throw new Error('Invalid starting index to scan for addresses');
+    }
+    let numIteration = params.scan;
+    if (isUndefined(numIteration)) {
+      numIteration = 20;
+    } else if (!isInteger(numIteration) || numIteration <= 0) {
+      throw new Error('Invalid scanning factor');
+    }
+
     // get our user, backup keys
     const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
 
     // we need to decode our bitgoKey to a base58 address
     const bitgoHexAddr = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
     const recoveryAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
+    let accountToRecoverAddr = bitgoHexAddr;
 
-    // call the node to get our account balance
-    const account = await this.getAccountBalancesFromNode(Utils.getBase58AddressFromHex(bitgoHexAddr));
-    const recoveryAmount = account.data[0].balance;
+    // call the node to get our account balance for base address
+    let account = await this.getAccountBalancesFromNode(Utils.getBase58AddressFromHex(accountToRecoverAddr));
+    let recoveryAmount = account.data[0].balance;
 
-    const userXPub = keys[0].neutered().toBase58();
-    const userXPrv = keys[0].toBase58();
-    const backupXPub = keys[1].neutered().toBase58();
+    let userXPrv = keys[0].toBase58();
+    let isReceiveAddress = false;
+    let addressInfo: AddressInfo | undefined;
+
+    if (recoveryAmount > 0) {
+      const userXPub = keys[0].neutered().toBase58();
+      const backupXPub = keys[1].neutered().toBase58();
+
+      // check multisig permissions
+      const keyHexAddresses = [
+        this.pubToHexAddress(this.xpubToUncompressedPub(userXPub)),
+        this.pubToHexAddress(this.xpubToUncompressedPub(backupXPub)),
+        bitgoHexAddr,
+      ];
+      // run checks to ensure this is a valid tx - permissions match our signer keys
+      const ownerKeys: { address: string; weight: number }[] = [];
+      for (const key of account.data[0].owner_permission.keys) {
+        const address = Utils.getHexAddressFromBase58Address(key.address);
+        const weight = key.weight;
+        ownerKeys.push({ address, weight });
+      }
+      const activePermissionKeys: { address: string; weight: number }[] = [];
+      for (const key of account.data[0].active_permission[0].keys) {
+        const address = Utils.getHexAddressFromBase58Address(key.address);
+        const weight = key.weight;
+        activePermissionKeys.push({ address, weight });
+      }
+      this.checkPermissions(ownerKeys, keyHexAddresses);
+      this.checkPermissions(activePermissionKeys, keyHexAddresses);
+    } else {
+      // Check receive addresses for funds
+      // Check for first derived wallet with funds
+      // Receive addresses are derived from the user key
+      for (let i = startIdx; i < numIteration + startIdx; i++) {
+        const derivationPath = `0/0/0/${i}`;
+        const userKey = keys[0].derivePath(derivationPath);
+        const xpub = userKey.neutered();
+        const receiveAddress = this.pubToHexAddress(this.xpubToUncompressedPub(xpub.toBase58()));
+        const address = Utils.getBase58AddressFromHex(receiveAddress);
+        // call the node to get our account balance
+        const accountInfo = await this.getAccountBalancesFromNode(address);
+
+        if (accountInfo.data[0] && accountInfo.data[0].balance > MINIMUM_TRON_MSIG_TRANSACTION_FEE) {
+          account = accountInfo;
+          recoveryAmount = accountInfo.data[0].balance;
+          userXPrv = userKey.toBase58(); // assign derived userXPrx
+          isReceiveAddress = true;
+          accountToRecoverAddr = receiveAddress;
+          addressInfo = {
+            address,
+            chain: 0,
+            index: i,
+          };
+          break;
+        }
+      }
+    }
 
     // first construct token txns
     const tokenTxns: any = [];
@@ -561,15 +639,27 @@ export class Trx extends BaseCoin {
         const amount = token.TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8;
         const contractAddr = Utils.getHexAddressFromBase58Address('TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8');
         tokenTxns.push(
-          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
-            .transaction
+          (
+            await this.getTriggerSmartContractTransaction(
+              recoveryAddressHex,
+              accountToRecoverAddr,
+              amount,
+              contractAddr
+            )
+          ).transaction
         );
       } else if (token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t) {
         const amount = token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t;
         const contractAddr = Utils.getHexAddressFromBase58Address('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');
         tokenTxns.push(
-          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
-            .transaction
+          (
+            await this.getTriggerSmartContractTransaction(
+              recoveryAddressHex,
+              accountToRecoverAddr,
+              amount,
+              contractAddr
+            )
+          ).transaction
         );
 
         // testnet tokens
@@ -577,46 +667,36 @@ export class Trx extends BaseCoin {
         const amount = token.TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id;
         const contractAddr = Utils.getHexAddressFromBase58Address('TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id');
         tokenTxns.push(
-          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
-            .transaction
+          (
+            await this.getTriggerSmartContractTransaction(
+              recoveryAddressHex,
+              accountToRecoverAddr,
+              amount,
+              contractAddr
+            )
+          ).transaction
         );
       } else if (token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs) {
         const amount = token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs;
         const contractAddr = Utils.getHexAddressFromBase58Address('TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs');
         tokenTxns.push(
-          (await this.getTriggerSmartContractTransaction(recoveryAddressHex, bitgoHexAddr, amount, contractAddr))
-            .transaction
+          (
+            await this.getTriggerSmartContractTransaction(
+              recoveryAddressHex,
+              accountToRecoverAddr,
+              amount,
+              contractAddr
+            )
+          ).transaction
         );
       }
     }
     // construct the tx -
     // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
     // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun or 1 Tron)
-    if (MINIMUM_TRON_MSIG_TRANSACTION_FEE > recoveryAmount) {
+    if (!recoveryAmount || MINIMUM_TRON_MSIG_TRANSACTION_FEE > recoveryAmount) {
       throw new Error('Amount of funds to recover wouldnt be able to fund a send');
     }
-
-    const keyHexAddresses = [
-      this.pubToHexAddress(this.xpubToUncompressedPub(userXPub)),
-      this.pubToHexAddress(this.xpubToUncompressedPub(backupXPub)),
-      bitgoHexAddr,
-    ];
-
-    // run checks to ensure this is a valid tx - permissions match our signer keys
-    const ownerKeys: { address: string; weight: number }[] = [];
-    for (const key of account.data[0].owner_permission.keys) {
-      const address = Utils.getHexAddressFromBase58Address(key.address);
-      const weight = key.weight;
-      ownerKeys.push({ address, weight });
-    }
-    const activePermissionKeys: { address: string; weight: number }[] = [];
-    for (const key of account.data[0].active_permission[0].keys) {
-      const address = Utils.getHexAddressFromBase58Address(key.address);
-      const weight = key.weight;
-      activePermissionKeys.push({ address, weight });
-    }
-    this.checkPermissions(ownerKeys, keyHexAddresses);
-    this.checkPermissions(activePermissionKeys, keyHexAddresses);
 
     // build and sign token txns
     const finalTokenTxs: any = [];
@@ -634,7 +714,7 @@ export class Trx extends BaseCoin {
       txBuilder.sign({ key: userPrv });
 
       // krs recoveries don't get signed
-      if (!isKrsRecovery) {
+      if (!isKrsRecovery && !isReceiveAddress) {
         const backupXPrv = keys[1].toBase58();
         const backupPrv = this.xprvToCompressedPrv(backupXPrv);
 
@@ -651,7 +731,7 @@ export class Trx extends BaseCoin {
     }
 
     const recoveryAmountMinusFees = recoveryAmount - MINIMUM_TRON_MSIG_TRANSACTION_FEE;
-    const buildTx = await this.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
+    const buildTx = await this.getBuildTransaction(recoveryAddressHex, accountToRecoverAddr, recoveryAmountMinusFees);
 
     // construct our tx
     const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);
@@ -662,7 +742,7 @@ export class Trx extends BaseCoin {
 
     // this tx should be enough to drop into a node
     if (isUnsignedSweep) {
-      return this.formatForOfflineVault(tx, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees);
+      return this.formatForOfflineVault(tx, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
     }
 
     const userPrv = this.xprvToCompressedPrv(userXPrv);
@@ -670,14 +750,19 @@ export class Trx extends BaseCoin {
     txBuilder.sign({ key: userPrv });
 
     // krs recoveries don't get signed
-    if (!isKrsRecovery) {
+    if (!isKrsRecovery && !isReceiveAddress) {
       const backupXPrv = keys[1].toBase58();
       const backupPrv = this.xprvToCompressedPrv(backupXPrv);
 
       txBuilder.sign({ key: backupPrv });
     }
     const txSigned = await txBuilder.build();
-    return this.formatForOfflineVault(txSigned, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees);
+    return this.formatForOfflineVault(
+      txSigned,
+      MINIMUM_TRON_MSIG_TRANSACTION_FEE,
+      recoveryAmountMinusFees,
+      addressInfo
+    );
   }
 
   /**
