@@ -258,12 +258,16 @@ describe('Recovery:', function () {
         recoveryDestination: 'TYPgx8NfDxB8pyiyTeiMkYzem1dNA6G12i',
       });
 
-      should.exist(recoveryTx.tx);
+      should.exist(recoveryTx);
 
-      recoveryTx.tx.signature[0].should.equal('ccc22e9c6bc61aff3907ad4df1a29a41ee937225f51b42ab22eafab74f78e66a7fdf5130c9bc025fdb46bb170513c6a7e791a66f0b5a81d01a0c33b0b854b91300');
-      recoveryTx.tx.signature[1].should.equal('20a60c97283962f57a4ab844be4587343ee7bc4229ad578c3b22b5bd740c3243beeda9ef233b04af63b11288c9cce94b60b0cd058b770ae22be0a7ca7216c17200');
-      recoveryTx.tx.txID.should.equal('312c9254667b7dc4823f69e9e20ed55c2fb81f0421f956c5e85680d098e75ac8');
-      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f8d9e785e6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
+      recoveryTx.coin.should.equal('ttrx');
+      recoveryTx.feeInfo.fee.should.equal('1000000');
+      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.txHex.should.equal('{\"visible\":false,\"txID\":\"98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49\",\"raw_data\":{\"contract\":[{\"parameter\":{\"value\":{\"amount\":10000000,\"owner_address\":\"41e7e11df2c5704888c3cb63fb43a9498bd1812cb2\",\"to_address\":\"41f5f414d447aafe70bb9b9d93912cbc4c54f0c014\"},\"type_url\":\"type.googleapis.com/protocol.TransferContract\"},\"type\":\"TransferContract\"}],\"ref_block_bytes\":\"a762\",\"ref_block_hash\":\"18dfe946fbf7a0ac\",\"expiration\":1676746443000,\"timestamp\":1676659983799},\"raw_data_hex\":\"0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630\",\"signature\":[\"79a110116657e75be81400ad4a9f738fd098695fc5fc6009176aa1c27924c4cdb2989fe2052b70c739b10cd3881c9872660b83998dc9316e6c8d11fb588d731d00\",\"250d0bae2491596bd800d830aa9d4c6d25e1d01a4c860b856d6000a8ab8fa2082a1ae20168e0ab97c9ffd64824b483b9843db74e9553d5d9e68a3a64d414dd1201\"]}');
+      recoveryTx.tx.signature[0].should.equal('79a110116657e75be81400ad4a9f738fd098695fc5fc6009176aa1c27924c4cdb2989fe2052b70c739b10cd3881c9872660b83998dc9316e6c8d11fb588d731d00');
+      recoveryTx.tx.signature[1].should.equal('250d0bae2491596bd800d830aa9d4c6d25e1d01a4c860b856d6000a8ab8fa2082a1ae20168e0ab97c9ffd64824b483b9843db74e9553d5d9e68a3a64d414dd1201');
+      recoveryTx.tx.txID.should.equal('98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49');
+      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
     });
 
     it('should generate recovery tx with unencrypted keys', async function () {
@@ -275,10 +279,13 @@ describe('Recovery:', function () {
         recoveryDestination: 'TYPgx8NfDxB8pyiyTeiMkYzem1dNA6G12i',
       });
 
-      should.exist(recoveryTx.tx);
+      should.exist(recoveryTx);
 
-      recoveryTx.tx.txID.should.equal('312c9254667b7dc4823f69e9e20ed55c2fb81f0421f956c5e85680d098e75ac8');
-      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f8d9e785e6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
+      recoveryTx.coin.should.equal('ttrx');
+      recoveryTx.feeInfo.fee.should.equal('1000000');
+      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.tx.txID.should.equal('98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49');
+      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
     });
 
     it('should generate an unsigned sweep', async function () {
@@ -291,10 +298,13 @@ describe('Recovery:', function () {
         recoveryDestination: 'TYPgx8NfDxB8pyiyTeiMkYzem1dNA6G12i',
       });
 
-      should.exist(recoveryTx.tx);
+      should.exist(recoveryTx);
 
-      recoveryTx.tx.txID.should.equal('312c9254667b7dc4823f69e9e20ed55c2fb81f0421f956c5e85680d098e75ac8');
-      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f8d9e785e6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
+      recoveryTx.coin.should.equal('ttrx');
+      recoveryTx.feeInfo.fee.should.equal('1000000');
+      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.tx.txID.should.equal('98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49');
+      recoveryTx.tx.raw_data_hex.should.equal('0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630');
     });
 
     it('should generate a token recovery tx from encrypted user and backup keys', async function () {
