@@ -100,7 +100,7 @@ function run<TNumber extends number | bigint = number>(
       };
       return {
         txPrebuild: {
-          walletId: wallet.id(),
+          walletId: isTransactionWithKeyPathSpend ? wallet.id() : undefined,
           txHex: prebuildHex,
           txInfo,
         },
