@@ -819,7 +819,7 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
-    'inj',
+    'injective',
     'Injective',
     Networks.main.inj,
     18,
@@ -829,7 +829,7 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '6ae81d6a-011c-499c-a3c8-15ac7dcac48a',
-    'tinj',
+    'tinjective',
     'Testnet Injective',
     Networks.test.inj,
     18,

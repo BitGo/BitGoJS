@@ -45,7 +45,7 @@ export enum CoinFamily {
   FIAT = 'fiat',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
-  INJ = 'inj', // Injective
+  INJ = 'injective',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
