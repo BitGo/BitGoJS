@@ -162,6 +162,7 @@ export class PendingApproval implements IPendingApproval {
     common.validateParams(params, [], ['walletPassphrase', 'otp']);
 
     let canRecreateTransaction = true;
+    params.previewPendingApprovals = true;
     /*
      * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
      *
