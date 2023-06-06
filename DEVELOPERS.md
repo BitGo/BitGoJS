@@ -228,6 +228,10 @@ As a result of BitGoJS running a monolithic code base with multiple packages sup
 - Most dependencies found in the `dependencies` object are required in order for a package to run and/or compile. You should not run into issues where a dependency needs to be hoisted to the root level `package.json` file.
 - Please move dependencies that are not needed for build/run-time to the `devDependencies` object. From there further evaluate if they belong in a given module or at the root level.
 
+### Update `yarn.lock`
+
+Make sure to run `yarn install` after adding a new dependency to a module. This will update the `yarn.lock` file. Include the updated `yarn.lock` file in your PR.
+
 ### Tests
 
 - Testing libraries should be unified, installed, and ran from the root level of BitGoJS. Since development, ci/cd, publishing, etc... on BitGoJS requires installing from the root, all testing libraries should be in the root `devDependencies` object. They will then be consumed in respective module testing suites.
