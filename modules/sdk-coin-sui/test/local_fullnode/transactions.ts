@@ -32,11 +32,13 @@ async function getAllCoins(conn: RpcClient, address: string): Promise<SuiObjectR
   });
 }
 
-async function getFirstStakedSui(conn: RpcClient, owner: string): Promise<SuiObjectRef> {
+async function getAllActiveStakedSuis(conn: RpcClient, owner: string): Promise<SuiObjectRef[]> {
   const all = await conn.getStakes(owner);
-  assert(all.length > 0, 'No records found');
-  assert(all[0].stakes.length > 0, 'No stakes found');
-  return (await conn.getObject(all[0].stakes[0].stakedSuiId)).data;
+  return Promise.all(
+    all
+      .flatMap((s) => s.stakes.flatMap((v) => (v.status === 'Active' ? [v.stakedSuiId] : [])))
+      .map(async (id) => (await conn.getObject(id)).data)
+  );
 }
 
 async function signAndSubmit(
@@ -118,15 +120,19 @@ describe('Sui Transaction Types', function () {
     await signAndSubmit(conn, keyPair, txb);
   });
 
-  it('can unstake coins', async function () {
-    await getAllCoins(conn, address);
-    const builder = getBuilderFactory('tsui').getUnstakingBuilder();
-    const txb = builder
-      .type(SuiTransactionType.WithdrawStake)
-      .sender(address)
-      .unstake({ stakedSui: await getFirstStakedSui(conn, address) })
-      .gasData(await getDefaultGasData());
+  it('can unstake all coins', async function () {
+    const activeStakedSui = await getAllActiveStakedSuis(conn, address);
+    assert(activeStakedSui.length > 0, 'No staked coins found');
 
-    await signAndSubmit(conn, keyPair, txb);
+    for (const stakedSui of activeStakedSui) {
+      const builder = getBuilderFactory('tsui').getUnstakingBuilder();
+      const txb = builder
+        .type(SuiTransactionType.WithdrawStake)
+        .sender(address)
+        .unstake({ stakedSui })
+        .gasData(await getDefaultGasData());
+
+      await signAndSubmit(conn, keyPair, txb);
+    }
   });
 });
