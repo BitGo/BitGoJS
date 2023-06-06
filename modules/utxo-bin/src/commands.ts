@@ -4,8 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
-const stdin: any = process.stdin;
-
+import * as clipboardy from 'clipboardy';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { ParserNode } from './Parser';
@@ -20,12 +19,14 @@ import {
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
+import { readStdin } from './readStdin';
 
 type OutputFormat = 'tree' | 'json';
 
 type ArgsParseTransaction = {
   network: string;
   stdin: boolean;
+  clipboard: boolean;
   path?: string;
   txid?: string;
   all: boolean;
@@ -112,6 +113,7 @@ export const cmdParseTx = {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
+      .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
       .option('fetchAll', { type: 'boolean', default: false })
       .option('fetchStatus', { type: 'boolean', default: false })
@@ -137,7 +139,6 @@ export const cmdParseTx = {
     const httpClient = await getClient({ cache: argv.cache });
 
     if (argv.txid) {
-      console.log('fetching txHex via blockapi...');
       data = await fetchTransactionHex(httpClient, argv.txid, network);
     }
 
@@ -145,9 +146,23 @@ export const cmdParseTx = {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
-      console.log('reading from stdin');
-      data = fs.readFileSync(stdin.fd, 'utf8');
-    } else if (argv.path) {
+      console.log('Reading from stdin. Please paste hex-encoded transaction data.');
+      console.log('Press Ctrl-D to finish, or Ctrl-C to cancel.');
+      if (process.stdin.isTTY) {
+        data = await readStdin();
+      } else {
+        data = await fs.promises.readFile('/dev/stdin', 'utf8');
+      }
+    }
+
+    if (argv.clipboard) {
+      if (data) {
+        throw new Error(`conflicting arguments`);
+      }
+      data = await clipboardy.read();
+    }
+
+    if (argv.path) {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
