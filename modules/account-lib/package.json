@@ -10,7 +10,7 @@
     "coverage": "npm run gen-coverage && npm run upload-coverage",
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
-    "prepare": "npm run build-ts && cp -r ./resources ./dist",
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
@@ -58,7 +58,8 @@
     "@types/bs58": "^4.0.1",
     "@types/keccak": "^3.0.1",
     "keccak": "3.0.2",
-    "paillier-bigint": "3.3.0"
+    "paillier-bigint": "3.3.0",
+    "shx": "^0.3.4"
   },
   "nyc": {
     "extension": [
