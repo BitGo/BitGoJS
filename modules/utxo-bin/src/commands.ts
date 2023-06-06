@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
+import * as clipboardy from 'clipboardy';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { ParserNode } from './Parser';
@@ -25,6 +26,7 @@ type OutputFormat = 'tree' | 'json';
 type ArgsParseTransaction = {
   network: string;
   stdin: boolean;
+  clipboard: boolean;
   path?: string;
   txid?: string;
   all: boolean;
@@ -111,6 +113,7 @@ export const cmdParseTx = {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
+      .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
       .option('fetchAll', { type: 'boolean', default: false })
       .option('fetchStatus', { type: 'boolean', default: false })
@@ -151,11 +154,23 @@ export const cmdParseTx = {
       } else {
         data = await fs.promises.readFile('/dev/stdin', 'utf8');
       }
-    } else if (argv.path) {
+      console.log(`Read ${data.length} characters from stdin.`);
+    }
+
+    if (argv.clipboard) {
+      if (data) {
+        throw new Error(`conflicting arguments`);
+      }
+      data = await clipboardy.read();
+      console.log(`Read ${data.length} characters from clipboard.`);
+    }
+
+    if (argv.path) {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
+      console.log(`Read ${data.length} characters from ${argv.path}.`);
     }
 
     if (!data) {
