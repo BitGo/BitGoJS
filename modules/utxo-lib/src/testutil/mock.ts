@@ -122,15 +122,20 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
 
 export function mockUnspents<TNumber extends number | bigint>(
   rootWalletKeys: RootWalletKeys,
-  inputScriptTypes: InputType[],
+  inputScriptTypes: (InputType | outputScripts.ScriptTypeP2shP2pk)[],
   testOutputAmount: TNumber,
   network: Network
-): WalletUnspent<TNumber>[] {
-  return inputScriptTypes.map((t, i): WalletUnspent<TNumber> => {
+): (Unspent<TNumber> | WalletUnspent<TNumber>)[] {
+  return inputScriptTypes.map((t, i): Unspent<TNumber> => {
     if (outputScripts.isScriptType2Of3(t)) {
       return mockWalletUnspent(network, testOutputAmount, {
         keys: rootWalletKeys,
         chain: getExternalChainCode(t),
+        vout: i,
+      });
+    } else if (t === outputScripts.scriptTypeP2shP2pk) {
+      return mockReplayProtectionUnspent(network, testOutputAmount, {
+        key: replayProtectionKeyPair,
         vout: i,
       });
     }

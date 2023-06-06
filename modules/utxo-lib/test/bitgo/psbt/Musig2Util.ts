@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 
 import {
+  addReplayProtectionUnspentToPsbt,
   addWalletOutputToPsbt,
   addWalletUnspentToPsbt,
   createPsbtForNetwork,
@@ -24,11 +25,12 @@ import {
 } from '../../../src/bitgo';
 import {
   createKeyPathP2trMusig2,
+  createOutputScriptP2shP2pk,
   createPaymentP2trMusig2,
   ScriptType2Of3,
   toXOnlyPublicKey,
 } from '../../../src/bitgo/outputScripts';
-import { mockWalletUnspent } from '../../../src/testutil';
+import { mockWalletUnspent, replayProtectionKeyPair } from '../../../src/testutil';
 import { bip32, networks } from '../../../src';
 import { BIP32Interface } from 'bip32';
 import { isPsbtInputFinalized } from '../../../src/bitgo/PsbtUtil';
@@ -64,7 +66,7 @@ export function constructPsbt(
   signer: KeyName,
   cosigner: KeyName,
   outputType: outputScripts.ScriptType2Of3
-): UtxoPsbt<UtxoTransaction<bigint>> {
+): UtxoPsbt {
   const psbt = createPsbtForNetwork({ network });
   const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
   addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode(outputType), CHANGE_INDEX, total - FEE);
@@ -72,7 +74,9 @@ export function constructPsbt(
     if (isWalletUnspent(u)) {
       addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signer, cosigner);
     } else {
-      throw new Error(`invalid unspent`);
+      const { redeemScript } = createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey);
+      assert.ok(redeemScript);
+      addReplayProtectionUnspentToPsbt(psbt, u, redeemScript);
     }
   });
   return psbt;

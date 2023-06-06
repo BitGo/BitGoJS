@@ -14,12 +14,22 @@ import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { KeyName, RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { Triple } from '../types';
-import { toOutput, UnspentWithPrevTx, Unspent, isUnspentWithPrevTx, toPrevOutput } from '../Unspent';
+import {
+  toOutput,
+  UnspentWithPrevTx,
+  Unspent,
+  isUnspentWithPrevTx,
+  toPrevOutput,
+  parseOutputId,
+  getOutputIdForInput,
+} from '../Unspent';
 import { ChainCode, isSegwit } from './chains';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { encodePsbtMusig2Participants } from '../Musig2';
 import { createTransactionFromBuffer } from '../transaction';
 import { parseSignatureScript } from '../parseInput';
+import { checkForInput } from 'bip174/src/lib/utils';
+import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
@@ -120,6 +130,65 @@ export interface WalletUnspentLegacy<TNumber extends number | bigint = number> e
   witnessScript?: string;
 }
 
+/**
+ * @param psbt
+ * @param inputIndex
+ * @param id Unspent ID
+ * @returns true iff the unspent ID on the unspent and psbt input match
+ */
+export function psbtIncludesUnspentAtIndex(psbt: UtxoPsbt, inputIndex: number, id: string): boolean {
+  checkForInput(psbt.data.inputs, inputIndex);
+
+  const { txid, vout } = parseOutputId(id);
+  const psbtOutPoint = getOutputIdForInput(psbt.txInputs[inputIndex]);
+  return psbtOutPoint.txid === txid && psbtOutPoint.vout === vout;
+}
+
+/**
+ * Update the psbt input at the given index
+ * @param psbt
+ * @param inputIndex
+ * @param u
+ * @param redeemScript Only overrides if there is no redeemScript in the input currently
+ */
+export function updateReplayProtectionUnspentToPsbt(
+  psbt: UtxoPsbt,
+  inputIndex: number,
+  u: Unspent<bigint>,
+  redeemScript?: Buffer
+): void {
+  if (!psbtIncludesUnspentAtIndex(psbt, inputIndex, u.id)) {
+    throw new Error(`unspent does not correspond to psbt input`);
+  }
+  const input = checkForInput(psbt.data.inputs, inputIndex);
+
+  if (redeemScript && !input.redeemScript) {
+    psbt.updateInput(inputIndex, { redeemScript });
+  }
+
+  // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
+  // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
+  // segwit transactions
+  const isZcash = getMainnet(psbt.network) === networks.zcash;
+  if (!isUnspentWithPrevTx(u) && !isZcash) {
+    throw new Error('Error, require previous tx to add to PSBT');
+  }
+  if (isZcash && !input.witnessUtxo) {
+    const { script, value } = toPrevOutput(u, psbt.network);
+    psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
+  } else if (!isZcash && !input.nonWitnessUtxo) {
+    psbt.updateInput(inputIndex, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
+  }
+}
+
+function addUnspentToPsbt(psbt: UtxoPsbt, id: string): void {
+  const { txid, vout } = parseOutputId(id);
+  psbt.addInput({
+    hash: txid,
+    index: vout,
+  });
+}
+
 export function addReplayProtectionUnspentToPsbt(
   psbt: UtxoPsbt,
   u: Unspent<bigint>,
@@ -129,27 +198,147 @@ export function addReplayProtectionUnspentToPsbt(
    */
   network: Network = psbt.network
 ): void {
-  if (network !== psbt.network) {
-    throw new Error(`network parameter does not match psbt.network`);
+  if (psbt.network !== network) {
+    throw new Error('psbt network does not match network');
   }
-  const { txid, vout, script, value } = toPrevOutput(u, psbt.network);
-  const isZcash = getMainnet(psbt.network) === networks.zcash;
+  addUnspentToPsbt(psbt, u.id);
+  updateReplayProtectionUnspentToPsbt(psbt, psbt.inputCount - 1, u, redeemScript);
+}
+
+/**
+ * Update the PSBT with the unspent data for the input at the given index if the data is not there already.
+ *
+ * @param psbt
+ * @param inputIndex
+ * @param u
+ * @param rootWalletKeys
+ * @param signer
+ * @param cosigner
+ */
+export function updateWalletUnspentForPsbt(
+  psbt: UtxoPsbt,
+  inputIndex: number,
+  u: WalletUnspent<bigint>,
+  rootWalletKeys: RootWalletKeys,
+  signer: KeyName,
+  cosigner: KeyName
+): void {
+  if (!psbtIncludesUnspentAtIndex(psbt, inputIndex, u.id)) {
+    throw new Error(`unspent does not correspond to psbt input`);
+  }
+  const input = checkForInput(psbt.data.inputs, inputIndex);
 
   // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
-  if (!isUnspentWithPrevTx(u) && !isZcash) {
-    throw new Error('Error, require previous tx to add to PSBT');
+  const isZcashOrSegwit = isSegwit(u.chain) || getMainnet(psbt.network) === networks.zcash;
+  if (isZcashOrSegwit && !input.witnessUtxo) {
+    const { script, value } = toPrevOutput(u, psbt.network);
+    psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
+  } else if (!isZcashOrSegwit) {
+    if (!isUnspentWithPrevTx(u)) {
+      throw new Error('Error, require previous tx to add to PSBT');
+    }
+
+    if (!input.witnessUtxo && !input.nonWitnessUtxo) {
+      // Force the litecoin transaction to have no MWEB advanced transaction flag
+      if (getMainnet(psbt.network) === networks.litecoin) {
+        u.prevTx = createTransactionFromBuffer(u.prevTx, psbt.network, { amountType: 'bigint' }).toBuffer();
+      }
+
+      psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
+    }
   }
-  psbt.addInput({
-    hash: txid,
-    index: vout,
-    redeemScript,
-  });
-  if (isZcash) {
-    psbt.updateInput(psbt.inputCount - 1, { witnessUtxo: { script, value } });
+
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
+  const scriptType = scriptTypeForChain(u.chain);
+  const isBackupFlow = signer === 'backup' || cosigner === 'backup';
+
+  if (scriptType === 'p2tr' || (scriptType === 'p2trMusig2' && isBackupFlow)) {
+    if (input.tapLeafScript && input.tapBip32Derivation) {
+      return;
+    }
+    const createSpendScriptP2trFn = scriptType === 'p2tr' ? createSpendScriptP2tr : createSpendScriptP2trMusig2;
+    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2trFn(walletKeys.publicKeys, [
+      walletKeys[signer].publicKey,
+      walletKeys[cosigner].publicKey,
+    ]);
+    if (!input.tapLeafScript) {
+      psbt.updateInput(inputIndex, {
+        tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
+      });
+    }
+    if (!input.tapBip32Derivation) {
+      psbt.updateInput(inputIndex, {
+        tapBip32Derivation: [signer, cosigner].map((key) => ({
+          leafHashes: [leafHash],
+          pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
+          path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
+          masterFingerprint: rootWalletKeys[key].fingerprint,
+        })),
+      });
+    }
+  } else if (scriptType === 'p2trMusig2') {
+    const {
+      internalPubkey: tapInternalKey,
+      outputPubkey: tapOutputKey,
+      taptreeRoot,
+    } = createKeyPathP2trMusig2(walletKeys.publicKeys);
+
+    if (
+      psbt.getProprietaryKeyVals(inputIndex, {
+        identifier: PSBT_PROPRIETARY_IDENTIFIER,
+        subtype: ProprietaryKeySubtype.MUSIG2_PARTICIPANT_PUB_KEYS,
+      }).length === 0
+    ) {
+      const participantsKeyValData = encodePsbtMusig2Participants({
+        tapOutputKey,
+        tapInternalKey,
+        participantPubKeys: [walletKeys.user.publicKey, walletKeys.bitgo.publicKey],
+      });
+      psbt.addProprietaryKeyValToInput(inputIndex, participantsKeyValData);
+    }
+
+    if (!input.tapInternalKey) {
+      psbt.updateInput(inputIndex, {
+        tapInternalKey: tapInternalKey,
+      });
+    }
+
+    if (!input.tapMerkleRoot) {
+      psbt.updateInput(inputIndex, {
+        tapMerkleRoot: taptreeRoot,
+      });
+    }
+
+    if (!input.tapBip32Derivation) {
+      psbt.updateInput(inputIndex, {
+        tapBip32Derivation: [signer, cosigner].map((key) => ({
+          leafHashes: [],
+          pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
+          path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
+          masterFingerprint: rootWalletKeys[key].fingerprint,
+        })),
+      });
+    }
   } else {
-    psbt.updateInput(psbt.inputCount - 1, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
+    if (!input.bip32Derivation) {
+      psbt.updateInput(inputIndex, {
+        bip32Derivation: [0, 1, 2].map((idx) => ({
+          pubkey: walletKeys.triple[idx].publicKey,
+          path: walletKeys.paths[idx],
+          masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
+        })),
+      });
+    }
+
+    const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
+    if (witnessScript && !input.witnessScript) {
+      psbt.updateInput(inputIndex, { witnessScript });
+    }
+    if (redeemScript && !input.redeemScript) {
+      psbt.updateInput(inputIndex, { redeemScript });
+    }
   }
 }
 
@@ -164,85 +353,9 @@ export function addWalletUnspentToPsbt(
    */
   network: Network = psbt.network
 ): void {
-  if (network !== psbt.network) {
-    throw new Error(`network parameter does not match psbt.network`);
+  if (psbt.network !== network) {
+    throw new Error('psbt network does not match network');
   }
-  const { txid, vout, script, value } = toPrevOutput(u, psbt.network);
-
-  psbt.addInput({ hash: txid, index: vout });
-  const inputIndex = psbt.inputCount - 1;
-
-  // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
-  // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
-  // segwit transactions
-  if (isSegwit(u.chain) || getMainnet(psbt.network) === networks.zcash) {
-    psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
-  } else {
-    if (!isUnspentWithPrevTx(u)) {
-      throw new Error('Error, require previous tx to add to PSBT');
-    }
-    // Force the litecoin transaction to have no MWEB advanced transaction flag
-    if (getMainnet(psbt.network) === networks.litecoin) {
-      u.prevTx = createTransactionFromBuffer(u.prevTx, psbt.network, { amountType: 'bigint' }).toBuffer();
-    }
-    psbt.updateInput(inputIndex, { nonWitnessUtxo: u.prevTx });
-  }
-
-  const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
-  const scriptType = scriptTypeForChain(u.chain);
-  const isBackupFlow = signer === 'backup' || cosigner === 'backup';
-
-  if (scriptType === 'p2tr' || (scriptType === 'p2trMusig2' && isBackupFlow)) {
-    const createSpendScriptP2trFn = scriptType === 'p2tr' ? createSpendScriptP2tr : createSpendScriptP2trMusig2;
-    const { controlBlock, witnessScript, leafVersion, leafHash } = createSpendScriptP2trFn(walletKeys.publicKeys, [
-      walletKeys[signer].publicKey,
-      walletKeys[cosigner].publicKey,
-    ]);
-    psbt.updateInput(inputIndex, {
-      tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
-      tapBip32Derivation: [signer, cosigner].map((key) => ({
-        leafHashes: [leafHash],
-        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
-        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
-        masterFingerprint: rootWalletKeys[key].fingerprint,
-      })),
-    });
-  } else if (scriptType === 'p2trMusig2') {
-    const {
-      internalPubkey: tapInternalKey,
-      outputPubkey: tapOutputKey,
-      taptreeRoot,
-    } = createKeyPathP2trMusig2(walletKeys.publicKeys);
-    const participantsKeyValData = encodePsbtMusig2Participants({
-      tapOutputKey,
-      tapInternalKey,
-      participantPubKeys: [walletKeys.user.publicKey, walletKeys.bitgo.publicKey],
-    });
-    psbt.addProprietaryKeyValToInput(inputIndex, participantsKeyValData);
-    psbt.updateInput(inputIndex, {
-      tapInternalKey: tapInternalKey,
-      tapMerkleRoot: taptreeRoot,
-      tapBip32Derivation: [signer, cosigner].map((key) => ({
-        leafHashes: [],
-        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
-        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], u.chain, u.index),
-        masterFingerprint: rootWalletKeys[key].fingerprint,
-      })),
-    });
-  } else {
-    const { witnessScript, redeemScript } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
-    psbt.updateInput(inputIndex, {
-      bip32Derivation: [0, 1, 2].map((idx) => ({
-        pubkey: walletKeys.triple[idx].publicKey,
-        path: walletKeys.paths[idx],
-        masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
-      })),
-    });
-    if (witnessScript) {
-      psbt.updateInput(inputIndex, { witnessScript });
-    }
-    if (redeemScript) {
-      psbt.updateInput(inputIndex, { redeemScript });
-    }
-  }
+  addUnspentToPsbt(psbt, u.id);
+  updateWalletUnspentForPsbt(psbt, psbt.inputCount - 1, u, rootWalletKeys, signer, cosigner);
 }

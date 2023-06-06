@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import { networks } from '../../../src';
 import * as utxolib from '../../../src';
-import { addWalletOutputToPsbt, getInternalChainCode, ZcashPsbt } from '../../../src/bitgo';
+import { addWalletOutputToPsbt, getInternalChainCode, WalletUnspent, ZcashPsbt } from '../../../src/bitgo';
 import { getDefaultWalletKeys } from '../../../src/testutil';
 
 import { mockUnspents } from '../../../src/testutil/mock';
@@ -17,7 +17,7 @@ describe('Zcash PSBT', function () {
     psbt = await utxolib.bitgo.ZcashPsbt.createPsbt({ network });
 
     unspents.forEach((unspent) => {
-      utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, rootWalletKeys, 'user', 'bitgo');
+      utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent as WalletUnspent<bigint>, rootWalletKeys, 'user', 'bitgo');
     });
     addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode('p2sh'), 0, BigInt('1000000000000000'));
   });

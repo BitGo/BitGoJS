@@ -180,18 +180,7 @@ export function signPsbt(
         signWalletPsbt(psbt, i, rootWalletKeys[signer], u);
       }
       signWalletPsbt(psbt, i, rootWalletKeys[cosigner], u);
-
-      // unsigned p2tr does not contain tapLeafScript & tapBip32Derivation.
-      // So it's signing is expected to fail
-      assert.deepStrictEqual(
-        signatureTarget === 'unsigned' && scriptTypeForChain(u.chain) === 'p2tr',
-        false,
-        'unsigned p2tr sign should fail'
-      );
     } catch (err) {
-      if (err.message === 'unsigned p2tr sign should fail') {
-        throw err;
-      }
       assert.deepStrictEqual(signatureTarget, 'unsigned');
       assert.deepStrictEqual(scriptTypeForChain(u.chain), 'p2tr');
       assert.deepStrictEqual(psbt.data.inputs[i].tapLeafScript, undefined);
