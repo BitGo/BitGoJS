@@ -60,6 +60,7 @@ describe('V2 Keychains', function () {
       && n.asset !== UnderlyingAsset.HASH
       && n.asset !== UnderlyingAsset.BLD
       && n.asset !== UnderlyingAsset.SEI
+      && n.asset !== UnderlyingAsset.INJ
       && n.asset !== UnderlyingAsset.ETHW
       && coinFamilyValues.includes(n.name));
 
