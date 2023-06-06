@@ -139,7 +139,6 @@ export const cmdParseTx = {
     const httpClient = await getClient({ cache: argv.cache });
 
     if (argv.txid) {
-      console.log('fetching txHex via blockapi...');
       data = await fetchTransactionHex(httpClient, argv.txid, network);
     }
 
@@ -154,7 +153,6 @@ export const cmdParseTx = {
       } else {
         data = await fs.promises.readFile('/dev/stdin', 'utf8');
       }
-      console.log(`Read ${data.length} characters from stdin.`);
     }
 
     if (argv.clipboard) {
@@ -162,7 +160,6 @@ export const cmdParseTx = {
         throw new Error(`conflicting arguments`);
       }
       data = await clipboardy.read();
-      console.log(`Read ${data.length} characters from clipboard.`);
     }
 
     if (argv.path) {
@@ -170,7 +167,6 @@ export const cmdParseTx = {
         throw new Error(`conflicting arguments`);
       }
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
-      console.log(`Read ${data.length} characters from ${argv.path}.`);
     }
 
     if (!data) {
