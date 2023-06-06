@@ -363,6 +363,9 @@ export const ADD_STAKE =
 export const WITHDRAW_STAKED_SUI =
   'AAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEA7m38PaMuIVQaKurfzSUPigoju3q9qciYhAf8MgaMN0ZhBAAAAAAAACDJYCWUFis6HawzxGyErvRT03pYayRliLki0kYsV0XCBAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMKc3VpX3N5c3RlbRZyZXF1ZXN0X3dpdGhkcmF3X3N0YWtlAAIBAAABAQCYghiLo+gHCpuwaulEbPYHkU7o7ljtgwaj46//Whu7cQIJxAUirtVLzs+kg2BcXaWCGxcawaobYVlx+43+J+0T/VEEAAAAAAAAILZEZ8lcLtxXB9dIMp0rBAH+s8LT/e12XMNKiaW4bnuyJ90A5/zNyHtNlbY4S3ORGbkfKoGha67ep/TgBo5SlDfZAAAAAAAAACC+KT7TKlmOYLySRsTgG25Ck38WiZCIOmogUHrCwU0nJ5iCGIuj6AcKm7Bq6URs9geRTujuWO2DBqPjr/9aG7tx6AMAAAAAAAAALTEBAAAAAAA=';
 
+export const WITHDRAW_STAKED_SUI_WITH_AMOUNT =
+  'AAADAQDubfw9oy4hVBoq6t/NJQ+KCiO7er2pyJiEB/wyBow3RmEEAAAAAAAAIMlgJZQWKzodrDPEbISu9FPTelhrJGWIuSLSRixXRcIEAAgAypo7AAAAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAECAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDHN0YWtpbmdfcG9vbAVzcGxpdAACAQAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADCnN1aV9zeXN0ZW0WcmVxdWVzdF93aXRoZHJhd19zdGFrZQACAQIAAwAAAACYghiLo+gHCpuwaulEbPYHkU7o7ljtgwaj46//Whu7cQIJxAUirtVLzs+kg2BcXaWCGxcawaobYVlx+43+J+0T/VEEAAAAAAAAILZEZ8lcLtxXB9dIMp0rBAH+s8LT/e12XMNKiaW4bnuyJ90A5/zNyHtNlbY4S3ORGbkfKoGha67ep/TgBo5SlDfZAAAAAAAAACC+KT7TKlmOYLySRsTgG25Ck38WiZCIOmogUHrCwU0nJ5iCGIuj6AcKm7Bq6URs9geRTujuWO2DBqPjr/9aG7tx6AMAAAAAAAAALTEBAAAAAAA=';
+
 export const invalidRecipients: Recipient[] = [
   {
     address: addresses.invalidAddresses[0],
@@ -389,4 +392,154 @@ export const requestWithdrawStakedSui: RequestWithdrawStakedSui = {
     version: 1121,
     digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
   },
+};
+
+export const txBlockUnstakeNoAmount = {
+  inputs: [
+    {
+      kind: 'Input',
+      value: {
+        Object: {
+          Shared: {
+            objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+            initialSharedVersion: 1,
+            mutable: true,
+          },
+        },
+      },
+      index: 0,
+      type: 'object',
+    },
+    {
+      kind: 'Input',
+      value: {
+        Object: {
+          ImmOrOwned: {
+            objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+            version: 1121,
+            digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+          },
+        },
+      },
+      index: 1,
+      type: 'pure',
+    },
+  ],
+  transactions: [
+    {
+      kind: 'MoveCall',
+      target: '0x3::sui_system::request_withdraw_stake',
+      arguments: [
+        {
+          kind: 'Input',
+          value: {
+            Object: {
+              Shared: {
+                objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+                initialSharedVersion: 1,
+                mutable: true,
+              },
+            },
+          },
+          index: 0,
+          type: 'object',
+        },
+        {
+          kind: 'Input',
+          value: {
+            Object: {
+              ImmOrOwned: {
+                objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+                version: 1121,
+                digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+              },
+            },
+          },
+          index: 1,
+          type: 'pure',
+        },
+      ],
+      typeArguments: [],
+    },
+  ],
+};
+
+export const txBlockUnstakeWithAmount = {
+  inputs: [
+    {
+      kind: 'Input',
+      value: {
+        Object: {
+          ImmOrOwned: {
+            objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+            version: 1121,
+            digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+          },
+        },
+      },
+      index: 0,
+      type: 'object',
+    },
+    { kind: 'Input', value: '1000000000', index: 1, type: 'pure' },
+    {
+      kind: 'Input',
+      value: {
+        Object: {
+          Shared: {
+            objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+            initialSharedVersion: 1,
+            mutable: true,
+          },
+        },
+      },
+      index: 2,
+      type: 'object',
+    },
+  ],
+  transactions: [
+    {
+      kind: 'MoveCall',
+      target: '0x3::staking_pool::split',
+      arguments: [
+        {
+          kind: 'Input',
+          value: {
+            Object: {
+              ImmOrOwned: {
+                objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+                version: 1121,
+                digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+              },
+            },
+          },
+          index: 0,
+          type: 'object',
+        },
+        { kind: 'Input', value: '1000000000', index: 1, type: 'pure' },
+      ],
+      typeArguments: [],
+    },
+    {
+      kind: 'MoveCall',
+      target: '0x3::sui_system::request_withdraw_stake',
+      arguments: [
+        {
+          kind: 'Input',
+          value: {
+            Object: {
+              Shared: {
+                objectId: '0x0000000000000000000000000000000000000000000000000000000000000005',
+                initialSharedVersion: 1,
+                mutable: true,
+              },
+            },
+          },
+          index: 2,
+          type: 'object',
+        },
+        { kind: 'NestedResult', index: 0, resultIndex: 0 },
+      ],
+      typeArguments: [],
+    },
+  ],
 };

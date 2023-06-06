@@ -10,3 +10,5 @@ export const SER_BUFFER_SIZE = 8192;
 export const SUI_INTENT_BYTES = Buffer.from([0, 0, 0]);
 
 export const SIGNATURE_SCHEME_BYTES = [0x00];
+
+export const MIN_STAKING_THRESHOLD = 1_000_000_000; // 1 SUI
