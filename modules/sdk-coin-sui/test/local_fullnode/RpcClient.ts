@@ -12,13 +12,13 @@ function elideResponse(method: string): boolean {
 
 function unwrapResult<A>(method: string, v: { result: A } | { error: { code: number; message: string } }): A {
   if ('error' in v) {
-    debug('< ERROR', v.error);
+    debug('< %s ERROR', method, v.error);
     throw new Error(JSON.stringify(v.error));
   }
   if (elideResponse(method)) {
-    debug('< ', '...');
+    debug('< %s ...', method);
   } else {
-    debug('< ', util.inspect(v.result, { depth: 10 }));
+    debug('< %s', method, util.inspect(v.result, { depth: 10 }));
   }
   return v.result;
 }
@@ -71,7 +71,7 @@ export class RpcClient {
     } catch (e) {
       if (e.isAxiosError && e.response) {
         e = e as AxiosError;
-        debug('< ERROR', e.response.statusText, util.inspect(e.response.data, { depth: 10 }));
+        debug('< %s ERROR', method, e.response.statusText, util.inspect(e.response.data, { depth: 10 }));
         e = e as AxiosError;
         const { error = {} } = e.response.data;
         throw new RpcError(error);
