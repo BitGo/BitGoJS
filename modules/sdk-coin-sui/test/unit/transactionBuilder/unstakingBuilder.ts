@@ -1,45 +1,39 @@
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { SuiTransactionType, UnstakingProgrammableTransaction } from '../../../src/lib/iface';
-import { AMOUNT_UNKNOWN_TEXT } from '../../../src/lib/constants';
 
 describe('Sui unstaking Builder', () => {
   const factory = getBuilderFactory('tsui');
 
-  describe('Succeed', () => {
-    it('should build a unstaking tx', async function () {
-      const txBuilder = factory.getUnstakingBuilder();
-      txBuilder.type(SuiTransactionType.WithdrawStake);
-      txBuilder.sender(testData.sender.address);
-      txBuilder.unstake(testData.requestWithdrawStakedSui);
-      txBuilder.gasData(testData.gasData);
-      const tx = await txBuilder.build();
-      should.equal(tx.type, TransactionType.StakingClaim);
-      (tx as SuiTransaction<UnstakingProgrammableTransaction>).suiTransaction.gasData.payment!.should.deepEqual(
-        testData.coinsGasPayment
-      );
+  function testUnstakingBuilder(amount: number | undefined) {
+    describe(`Success (amount=${amount})`, () => {
+      it(`should build a unstaking tx`, async function () {
+        const txBuilder = factory.getUnstakingBuilder();
+        txBuilder.type(SuiTransactionType.WithdrawStake);
+        txBuilder.sender(testData.sender.address);
+        txBuilder.unstake({ ...testData.requestWithdrawStakedSui, amount });
+        txBuilder.gasData(testData.gasData);
+        const tx = (await txBuilder.build()) as SuiTransaction<UnstakingProgrammableTransaction>;
 
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: testData.requestWithdrawStakedSui.stakedSui.objectId,
-        value: AMOUNT_UNKNOWN_TEXT,
-        coin: 'tsui',
+        tx.suiTransaction.tx.should.eql(
+          amount === undefined ? testData.txBlockUnstakeNoAmount : testData.txBlockUnstakeWithAmount,
+          JSON.stringify(tx.suiTransaction.tx)
+        );
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(utils.isValidRawTransaction(rawTx), true);
+        should.equal(
+          rawTx,
+          amount === undefined ? testData.WITHDRAW_STAKED_SUI : testData.WITHDRAW_STAKED_SUI_WITH_AMOUNT
+        );
       });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.sender.address,
-        value: AMOUNT_UNKNOWN_TEXT,
-        coin: 'tsui',
-      });
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.WITHDRAW_STAKED_SUI);
     });
-  });
+  }
+
+  testUnstakingBuilder(undefined);
+  testUnstakingBuilder(1e9);
 
   describe('Fail', () => {
     it('should fail for invalid sender', async function () {

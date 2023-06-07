@@ -17,12 +17,17 @@ import {
   Inputs,
 } from './mystenlab/builder';
 import {
+  SUI_STAKING_POOL_MODULE_NAME,
+  SUI_STAKING_POOL_SPLIT_FUN_NAME,
   SUI_SYSTEM_ADDRESS,
   SUI_SYSTEM_MODULE_NAME,
   SUI_SYSTEM_STATE_OBJECT,
   WITHDRAW_STAKE_FUN_NAME,
 } from './mystenlab/framework';
 import { UnstakingTransaction } from './unstakingTransaction';
+import utils from './utils';
+import { SuiObjectRef } from './mystenlab/types';
+import { SerializedTransactionDataBuilder } from './mystenlab/builder/TransactionDataBlock';
 
 export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTransaction> {
   protected _withdrawDelegation: RequestWithdrawStakedSui;
@@ -80,6 +85,11 @@ export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTr
    */
   unstake(request: RequestWithdrawStakedSui): this {
     this.validateSuiObjectRef(request.stakedSui, 'stakedSui');
+    if (request.amount !== undefined) {
+      if (!utils.isValidAmount(request.amount)) {
+        throw new Error(`invalid amount: ${request.amount}`);
+      }
+    }
     this._withdrawDelegation = request;
     return this;
   }
@@ -150,26 +160,45 @@ export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTr
     this.validateGasData(this._gasData);
   }
 
+  static getTransactionBlockData(objectRef: SuiObjectRef, amount?: bigint): SerializedTransactionDataBuilder {
+    const txb = new ProgrammingTransactionBlockBuilder();
+    const targetSplit =
+      `${SUI_SYSTEM_ADDRESS}::${SUI_STAKING_POOL_MODULE_NAME}::${SUI_STAKING_POOL_SPLIT_FUN_NAME}` as `${string}::${string}::${string}`;
+    const targetWithdrawStake =
+      `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${WITHDRAW_STAKE_FUN_NAME}` as `${string}::${string}::${string}`;
+    if (amount === undefined) {
+      txb.moveCall({
+        target: targetWithdrawStake,
+        arguments: [txb.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)), txb.pure(Inputs.ObjectRef(objectRef))],
+      });
+    } else {
+      txb.moveCall({
+        target: targetSplit,
+        arguments: [txb.object(Inputs.ObjectRef(objectRef)), txb.pure(amount)],
+      });
+      txb.moveCall({
+        target: targetWithdrawStake,
+        arguments: [
+          txb.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
+          { kind: 'NestedResult', index: 0, resultIndex: 0 },
+        ],
+      });
+    }
+    return txb.blockData;
+  }
+
   /**
    * Build SuiTransaction
    *
-   * @return {BitGoSuiTransaction<MoveCallTx>}
+   * @return {SuiTransaction<UnstakingProgrammableTransaction>}
    * @protected
    */
   protected buildSuiTransaction(): SuiTransaction<UnstakingProgrammableTransaction> {
     this.validateTransactionFields();
-
-    const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
-    // Unstake staked object.
-    programmableTxBuilder.moveCall({
-      target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${WITHDRAW_STAKE_FUN_NAME}`,
-      arguments: [
-        programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
-        programmableTxBuilder.pure(Inputs.ObjectRef(this._withdrawDelegation.stakedSui)),
-      ],
-    } as MoveCallTransaction);
-
-    const txData = programmableTxBuilder.blockData;
+    const txData = UnstakingBuilder.getTransactionBlockData(
+      this._withdrawDelegation.stakedSui,
+      this._withdrawDelegation.amount === undefined ? undefined : BigInt(this._withdrawDelegation.amount)
+    );
     return {
       type: this._type,
       sender: this._sender,

@@ -65,6 +65,7 @@ export interface RequestAddStake {
 }
 
 export interface RequestWithdrawStakedSui {
+  amount?: number;
   stakedSui: SuiObjectRef;
 }
 
