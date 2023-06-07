@@ -13,7 +13,7 @@
     "prepare": "npm run build",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha"
+    "unit-test": "mocha --spec 'test/unit/**/*.ts'"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -53,6 +53,8 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^1.10.5",
     "@bitgo/sdk-test": "^1.2.23",
-    "@types/lodash": "^4.14.183"
+    "@types/lodash": "^4.14.183",
+    "axios": "^1.4.0",
+    "debug": "^4.3.4"
   }
 }
