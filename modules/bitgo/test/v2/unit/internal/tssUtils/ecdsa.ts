@@ -878,8 +878,8 @@ describe('TSS Ecdsa Utils:', async function () {
       const generateNtildeStub = sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
       const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n, 0);
       should.exist(challenges);
-      should.not.exist(challenges.enterpriseChallenge.p);
-      should.not.exist(challenges.bitgoChallenge.p);
+      should.exist(challenges.enterpriseChallenge.p);
+      should.exist(challenges.bitgoChallenge.p);
 
       const expectedRangeProofChallenges = {
         enterpriseChallenge: {

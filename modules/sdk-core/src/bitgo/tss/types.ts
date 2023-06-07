@@ -7,6 +7,5 @@ export enum ShareKeyPosition {
 }
 
 export type TxRequestChallengeResponse = EcdsaTypes.SerializedEcdsaChallenges & {
-  // TODO(BG-78794): make this mandatory
-  n?: string;
+  n: string;
 };
