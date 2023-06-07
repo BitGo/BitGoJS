@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.7.0...@bitgo/account-lib@4.7.1) (2023-06-07)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** os agnostic commands ([6a740f2](https://github.com/BitGo/BitGoJS/commit/6a740f22ac8e79bdadbe28ee14a8a62cb554bd65))
+
 # [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.6.0...@bitgo/account-lib@4.7.0) (2023-06-05)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.4...@bitgo/utxo-bin@2.10.0) (2023-06-07)
+
+### Bug Fixes
+
+- **utxo-bin:** improve `--stdin` to read from terminal input ([06cfedf](https://github.com/BitGo/BitGoJS/commit/06cfedf50448df6e80a143b74248173d6534b957))
+- **utxo-bin:** remove some `console.log` statements ([64cacc5](https://github.com/BitGo/BitGoJS/commit/64cacc5186b63024d0743678b0690277775443b2))
+
+### Features
+
+- **utxo-bin:** add option `--clipboard` ([02dd051](https://github.com/BitGo/BitGoJS/commit/02dd051968bddf79471181be1d6be333b04511cf))
+- **utxo-bin:** update readme ([70041e4](https://github.com/BitGo/BitGoJS/commit/70041e4d2d5000bbff91c8391acf68562ed363ef))
+
 ## [2.9.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.9.3...@bitgo/utxo-bin@2.9.4) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

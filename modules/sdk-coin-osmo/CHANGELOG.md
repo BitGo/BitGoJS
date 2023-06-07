@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.1.0...@bitgo/sdk-coin-osmo@1.2.0) (2023-06-07)
+
+### Features
+
+- **sdk-coin-osmo:** testcases added for txn building and staking ([32fb4dc](https://github.com/BitGo/BitGoJS/commit/32fb4dc05c43d05c19ba9e6ec89034c2d91cdb87))
+
 # 1.1.0 (2023-06-05)
 
 ### Features

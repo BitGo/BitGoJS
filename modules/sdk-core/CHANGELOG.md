@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.7.0...@bitgo/sdk-core@8.7.1) (2023-06-07)
+
+### Bug Fixes
+
+- **sdk-core:** add previewPendingTxs flag ([c3c5eb0](https://github.com/BitGo/BitGoJS/commit/c3c5eb02ff62ce33cb8e42c306fb72196a802536))
+
 # [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.6.0...@bitgo/sdk-core@8.7.0) (2023-06-05)
 
 ### Bug Fixes

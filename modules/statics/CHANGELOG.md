@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.1.0...@bitgo/statics@16.2.0) (2023-06-07)
+
+### Features
+
+- **statics:** add Injective config ([750e817](https://github.com/BitGo/BitGoJS/commit/750e8178f50c6814e7dc92148b70beb287719b8a))
+- **statics:** fix name ([090beb5](https://github.com/BitGo/BitGoJS/commit/090beb519e56505e3e8c900b91a43b4ba5d04f06))
+
 # [16.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.0.0...@bitgo/statics@16.1.0) (2023-06-05)
 
 ### Bug Fixes

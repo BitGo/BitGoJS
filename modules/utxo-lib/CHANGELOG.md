@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.0.0...@bitgo/utxo-lib@9.1.0) (2023-06-07)
+
+### Bug Fixes
+
+- **utxo-lib:** correctly get indices for setMusig2NoncesInner ([0b841cf](https://github.com/BitGo/BitGoJS/commit/0b841cf8bf02adf8919f0e8366017d3b77b10a78))
+
+### Features
+
+- **utxo-lib:** refactor psbt input update from adding ([5f38384](https://github.com/BitGo/BitGoJS/commit/5f38384b0b9420217e608d082c35b90206054f34))
+
 # [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@8.4.0...@bitgo/utxo-lib@9.0.0) (2023-06-05)
 
 ### Bug Fixes

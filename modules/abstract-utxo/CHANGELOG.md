@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.0.0...@bitgo/abstract-utxo@3.1.0) (2023-06-07)
+
+### Features
+
+- **abstract-utxo:** make walletId param optional for signtx ([f5aff50](https://github.com/BitGo/BitGoJS/commit/f5aff5087727fb1842dc7cda64756553ab364c2b))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@2.3.0...@bitgo/abstract-utxo@3.0.0) (2023-06-05)
 
 ### Bug Fixes

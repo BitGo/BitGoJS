@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.0.0...bitgo@19.1.0) (2023-06-07)
+
+
+### Features
+
+* **abstract-utxo:** make walletId param optional for signtx ([f5aff50](https://github.com/BitGo/BitGoJS/commit/f5aff5087727fb1842dc7cda64756553ab364c2b))
+* **statics:** add Injective config ([750e817](https://github.com/BitGo/BitGoJS/commit/750e8178f50c6814e7dc92148b70beb287719b8a))
+
+
+
+
+
 # [19.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.5.0...bitgo@19.0.0) (2023-06-05)
 
 
