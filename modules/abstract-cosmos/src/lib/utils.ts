@@ -355,7 +355,7 @@ export class CosmosUtils implements BaseUtils {
 
   /**
    * Returns whether or not the string is a valid protocol public key
-   * @param {string} publicKey - the  public key to be validated
+   * @param {string | undefined} publicKey - the  public key to be validated
    */
   validatePublicKey(publicKey: string | undefined) {
     if (publicKey !== undefined) {

@@ -47,6 +47,7 @@ import {
   Stx,
   Sui,
   Susd,
+  Tia,
   Talgo,
   TavaxC,
   Tada,
@@ -74,6 +75,7 @@ import {
   Tpolygon,
   Trbtc,
   Trx,
+  Ttia,
   Tsol,
   Tstx,
   Tsui,
@@ -132,6 +134,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
+  globalCoinFactory.register('tia', Tia.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
   globalCoinFactory.register('tada', Tada.createInstance);
   globalCoinFactory.register('tatom', Tatom.createInstance);
@@ -165,6 +168,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tstx', Tstx.createInstance);
   globalCoinFactory.register('tsui', Tsui.createInstance);
   globalCoinFactory.register('tsusd', Tsusd.createInstance);
+  globalCoinFactory.register('ttia', Ttia.createInstance);
   globalCoinFactory.register('ttrx', Ttrx.createInstance);
   globalCoinFactory.register('txlm', Txlm.createInstance);
   globalCoinFactory.register('txrp', Txrp.createInstance);

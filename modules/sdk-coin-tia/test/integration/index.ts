@@ -3,14 +3,14 @@ import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
-import { Osmo, Tosmo } from '../../src/index';
+import { Tia, Ttia } from '../../src/index';
 
-describe('OSMO', function () {
+describe('TIA', function () {
   let bitgo: TestBitGoAPI;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('osmo', Osmo.createInstance);
-    bitgo.safeRegister('tosmo', Tosmo.createInstance);
+    bitgo.safeRegister('tia', Tia.createInstance);
+    bitgo.safeRegister('ttia', Ttia.createInstance);
     bitgo.initializeTestVars();
   });
 });

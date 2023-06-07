@@ -2,7 +2,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { Osmo, Tosmo } from '../../src';
+import { Tia, Ttia } from '../../src';
 import utils from '../../src/lib/utils';
 import {
   TEST_DELEGATE_TX,
@@ -11,33 +11,33 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   address,
-} from '../resources/osmo';
+} from '../resources/tia';
 import should = require('should');
 
-describe('OSMO', function () {
+describe('TIA', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('osmo', Osmo.createInstance);
-    bitgo.safeRegister('tosmo', Tosmo.createInstance);
+    bitgo.safeRegister('tia', Tia.createInstance);
+    bitgo.safeRegister('ttia', Ttia.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tosmo');
+    basecoin = bitgo.coin('ttia');
   });
 
   it('should retun the right info', function () {
-    const osmo = bitgo.coin('osmo');
-    const tosmo = bitgo.coin('tosmo');
+    const tia = bitgo.coin('tia');
+    const ttia = bitgo.coin('ttia');
 
-    osmo.getChain().should.equal('osmo');
-    osmo.getFamily().should.equal('osmo');
-    osmo.getFullName().should.equal('Osmosis');
-    osmo.getBaseFactor().should.equal(1e6);
+    tia.getChain().should.equal('tia');
+    tia.getFamily().should.equal('tia');
+    tia.getFullName().should.equal('Celestia');
+    tia.getBaseFactor().should.equal(1e6);
 
-    tosmo.getChain().should.equal('tosmo');
-    tosmo.getFamily().should.equal('osmo');
-    tosmo.getFullName().should.equal('Testnet Osmosis');
-    tosmo.getBaseFactor().should.equal(1e6);
+    ttia.getChain().should.equal('ttia');
+    ttia.getFamily().should.equal('tia');
+    ttia.getFullName().should.equal('Testnet Celestia');
+    ttia.getBaseFactor().should.equal(1e6);
   });
 
   describe('Address Validation', () => {
@@ -67,9 +67,9 @@ describe('OSMO', function () {
 
     it('should validate wallet receive address', async function () {
       const receiveAddress = {
-        address: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus?memoId=7',
+        address: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n?memoId=7',
         coinSpecific: {
-          rootAddress: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
+          rootAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
           memoID: '7',
         },
       };
@@ -328,7 +328,7 @@ describe('OSMO', function () {
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Osmo.prototype, 'explainTransaction');
+      const stub = sinon.stub(Tia.prototype, 'explainTransaction');
       stub.resolves(undefined);
       await basecoin
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
