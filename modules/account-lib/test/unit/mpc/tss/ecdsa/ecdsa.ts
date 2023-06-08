@@ -196,8 +196,11 @@ describe('TSS ECDSA TESTS', function () {
 
       config = [
         { signerOne: A, signerTwo: B },
+        { signerOne: A, signerTwo: C },
+        { signerOne: B, signerTwo: A },
         { signerOne: B, signerTwo: C },
         { signerOne: C, signerTwo: A },
+        { signerOne: C, signerTwo: B },
 
         // Checks signing with specific seed
         { signerOne: D, signerTwo: E },

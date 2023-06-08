@@ -38,8 +38,7 @@ export type SerializedNtildeWithProofs = SerializedNtilde & {
   ntildeProof: SerializedNtildeProofs;
 };
 
-// TODO(BG-78794): Make mandatory
-export type SerializedEcdsaChallenges = SerializedNtilde & Partial<SerializedPaillierChallenge>;
+export type SerializedEcdsaChallenges = SerializedNtilde & SerializedPaillierChallenge;
 
 /**
  * Deserializes a challenge from hex strings to bigint

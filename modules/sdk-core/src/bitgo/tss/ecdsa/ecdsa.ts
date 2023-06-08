@@ -472,14 +472,8 @@ function validateOptionalValues(shares: string[], start: number, end: number, sh
  */
 export function parseKShare(share: SignatureShareRecord): KShare {
   const shares = share.share.split(delimeter);
-  // TODO: once p and sigma are mandatory, make the exepcted length 11 + 2 * EcdsaPaillierProof.m
-  // and remove the validateOptionalValues check
-  validateSharesLength(shares, 11 + 2, 'K');
+  validateSharesLength(shares, 11 + 2 * EcdsaPaillierProof.m, 'K');
   const hasProof = validateOptionalValues(shares, 5, 11, 'K', 'proof');
-  const hasP = validateOptionalValues(shares, 11, 11 + 1, 'K', 'p');
-  const hasSigma = hasP
-    ? validateOptionalValues(shares, 11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m, 'K', 'sigma')
-    : false;
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -501,8 +495,8 @@ export function parseKShare(share: SignatureShareRecord): KShare {
     h1: shares[3],
     h2: shares[4],
     proof,
-    p: hasP ? shares.slice(11, 11 + EcdsaPaillierProof.m) : undefined,
-    sigma: hasSigma ? shares.slice(11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m) : undefined,
+    p: shares.slice(11, 11 + EcdsaPaillierProof.m),
+    sigma: shares.slice(11 + EcdsaPaillierProof.m, 11 + 2 * EcdsaPaillierProof.m),
   };
 }
 
@@ -532,12 +526,10 @@ export function convertKShare(share: KShare): SignatureShareRecord {
  */
 export function parseAShare(share: SignatureShareRecord): AShare {
   const shares = share.share.split(delimeter);
-  // TODO: once sigma is mandatory, make expected length 37 + EcdsaPaillierProof.m
-  validateSharesLength(shares, 37 + 1, 'A');
+  validateSharesLength(shares, 37 + EcdsaPaillierProof.m, 'A');
   const hasProof = validateOptionalValues(shares, 7, 13, 'A', 'proof');
   const hasGammaProof = validateOptionalValues(shares, 13, 25, 'A', 'gammaProof');
   const hasWProof = validateOptionalValues(shares, 25, 37, 'A', 'wProof');
-  const hasSigma = validateOptionalValues(shares, 37, 37 + EcdsaPaillierProof.m, 'A', 'sigma');
 
   const proof: RangeProofShare | undefined = hasProof
     ? {
@@ -597,7 +589,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     proof,
     gammaProof,
     wProof,
-    sigma: hasSigma ? shares.slice(37) : undefined,
+    sigma: shares.slice(37),
   };
 }
 
@@ -868,9 +860,7 @@ export function convertBShare(share: BShare): SignatureShareRecord {
  */
 export function parseBShare(share: SignatureShareRecord): BShare {
   const shares = share.share.split(delimeter);
-  // TODO: once p is mandatory, make expectedLength 13 + EcdsaPaillierProof.m
-  validateSharesLength(shares, 13 + 1, 'B');
-  const hasP = validateOptionalValues(shares, 13, 13 + EcdsaPaillierProof.m, 'K', 'p');
+  validateSharesLength(shares, 13 + EcdsaPaillierProof.m, 'B');
 
   return {
     i: getParticipantIndex(share.to),
@@ -887,7 +877,7 @@ export function parseBShare(share: SignatureShareRecord): BShare {
     h1: shares[10],
     h2: shares[11],
     ck: shares[12],
-    p: hasP ? shares.slice(13, 13 + EcdsaPaillierProof.m) : undefined,
+    p: shares.slice(13, 13 + EcdsaPaillierProof.m),
   };
 }
 
