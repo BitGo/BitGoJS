@@ -28,6 +28,7 @@ import {
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
+import { toOutputScript } from '../address';
 
 /**
  * input script type and value.
@@ -185,7 +186,7 @@ export function constructPsbt(
       );
     } else if (output.address) {
       const { address, value } = output;
-      psbt.addOutput({ address, value });
+      psbt.addOutput({ script: toOutputScript(address, network), value });
     }
   });
 
