@@ -22,90 +22,172 @@ interface DuplicateCoinObject {
 
 const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   algo: {
-    features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  avaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  avaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  avaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  avaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   btc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
   bch: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  btg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  cspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  doge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  eos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  btg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  cspr: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+  celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  doge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  eos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   eth: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
   etc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+    ],
   },
-  hbar: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  hbar: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ltc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
   matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  polygon: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  polygon: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
   xrp: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  rbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  sol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  stx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  rbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  sol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  stx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   xlm: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  trx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  trx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   // Test Coins
   talgo: {
-    features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  tavaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tavaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  tavaxc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tavaxp: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tbtc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
   tbch: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  tbtg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tcspr: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  tbtg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tcspr: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+  tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gteth: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
   tetc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  thbar: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  thbar: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tltc: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
   tmatic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  tpolygon: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  tpolygon: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
   txrp: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  trbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tsol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
-  tstx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  trbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tsol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tstx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   txlm: {
-    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_NEW_YORK],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
   },
-  ttrx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY] },
+  ttrx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
 };
 
 describe('CoinMap', function () {
@@ -200,6 +282,7 @@ coins.forEach((coin, coinName) => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_FRANKFURT).should.eql(false);
       });
     } else {
       it('should return true for CUSTODY and CUSTODY_BITGO_TRUST coin feature', () => {
@@ -211,6 +294,7 @@ coins.forEach((coin, coinName) => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_FRANKFURT).should.eql(false);
       });
     }
   });
