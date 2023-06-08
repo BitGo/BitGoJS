@@ -65,6 +65,9 @@ export { Algo };
 import * as Atom from '@bitgo/sdk-coin-atom';
 export { Atom };
 
+import * as Osmo from '@bitgo/sdk-coin-osmo';
+export { Osmo };
+
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
 
@@ -125,6 +128,8 @@ const coinBuilderMap = {
   tsui: Sui.TransactionBuilderFactory,
   atom: Atom.TransactionBuilderFactory,
   tatom: Atom.TransactionBuilderFactory,
+  osmo: Osmo.TransactionBuilderFactory,
+  tosmo: Osmo.TransactionBuilderFactory,
 };
 
 /**
