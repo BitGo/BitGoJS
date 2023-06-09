@@ -317,7 +317,7 @@ export default class Ecdsa {
   /**
    * Create signing shares.
    * @param {xShare} xShare Private xShare of current participant signer
-   * @param {YShare} yShare yShare corresponding to the other participant signer
+   * @param {YShare} yShare yShare corresponding to material sent from the other participant signer
    * @returns {SignShareRT} Returns the participant private w-share
    * and k-share to be distributed to other participant signer
    */
