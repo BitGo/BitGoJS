@@ -1,11 +1,14 @@
+import {
+  CosmosTransaction,
+  CosmosTransactionBuilder,
+  CosmosTransferBuilder,
+  StakingActivateBuilder,
+  StakingDeactivateBuilder,
+  StakingWithdrawRewardsBuilder,
+} from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { OsmoTransactionBuilder } from './transactionBuilder';
-import { OsmoTransferBuilder } from './transferBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { OsmoTransaction } from './transaction';
-import { StakingActivateBuilder } from './StakingActivateBuilder';
-import { StakingDeactivateBuilder } from './StakingDeactivateBuilder';
-import { StakingWithdrawRewardsBuilder } from './StakingWithdrawRewardsBuilder';
+import osmoUtils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -13,8 +16,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): OsmoTransactionBuilder {
-    const tx = new OsmoTransaction(this._coinConfig);
+  from(raw: string): CosmosTransactionBuilder {
+    const tx = new CosmosTransaction(this._coinConfig, osmoUtils);
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -35,23 +38,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: OsmoTransaction): OsmoTransferBuilder {
-    return this.initializeBuilder(tx, new OsmoTransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
+    return this.initializeBuilder(tx, new CosmosTransferBuilder(this._coinConfig, osmoUtils));
   }
 
   /** @inheritdoc */
-  getStakingActivateBuilder(tx?: OsmoTransaction): StakingActivateBuilder {
-    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
+  getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
+    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig, osmoUtils));
   }
 
   /** @inheritdoc */
-  getStakingDeactivateBuilder(tx?: OsmoTransaction): StakingDeactivateBuilder {
-    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
+    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig, osmoUtils));
   }
 
   /** @inheritdoc */
-  getStakingWithdrawRewardsBuilder(tx?: OsmoTransaction): StakingWithdrawRewardsBuilder {
-    return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig));
+  getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
+    return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig, osmoUtils));
   }
 
   /** @inheritdoc */
@@ -62,11 +65,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /**
    * Initialize the builder with the given transaction
    *
-   * @param {OsmoTransaction | undefined} tx - the transaction used to initialize the builder
-   * @param {OsmoTransactionBuilder} builder - the builder to be initialized
-   * @returns {OsmoTransactionBuilder} the builder initialized
+   * @param {CosmosTransaction | undefined} tx - the transaction used to initialize the builder
+   * @param {CosmosTransactionBuilder} builder - the builder to be initialized
+   * @returns {CosmosTransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends OsmoTransactionBuilder>(tx: OsmoTransaction | undefined, builder: T): T {
+  protected initializeBuilder<T extends CosmosTransactionBuilder>(tx: CosmosTransaction | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }

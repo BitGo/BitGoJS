@@ -1,12 +1,16 @@
 import {
+  BaseAddress,
   BaseKey,
+  PublicKey as BasePublicKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  PublicKey as BasePublicKey,
+  InvalidTransactionError,
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Secp256k1, sha256 } from '@cosmjs/crypto';
+import { makeSignBytes } from '@cosmjs/proto-signing';
 import BigNumber from 'bignumber.js';
 
 import {
@@ -18,7 +22,7 @@ import {
 } from './iface';
 import { CosmosKeyPair as KeyPair } from './keyPair';
 import { CosmosTransaction } from './transaction';
-import utils from './utils';
+import { CosmosUtils } from './utils';
 
 export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: CosmosTransaction;
@@ -32,8 +36,11 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   protected _signer: KeyPair;
   protected _memo?: string;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  protected _utils: CosmosUtils;
+
+  constructor(_coinConfig: Readonly<CoinConfig>, _utils: CosmosUtils) {
     super(_coinConfig);
+    this._transaction = new CosmosTransaction(_coinConfig, _utils);
   }
 
   /**
@@ -63,7 +70,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   sequence(sequence: number): this {
-    utils.validateSequence(sequence);
+    this._utils.validateSequence(sequence);
     this._sequence = sequence;
     return this;
   }
@@ -127,5 +134,124 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
     } catch {
       throw new BuildTransactionError(`Key validation failed`);
     }
+  }
+
+  /**
+   * Sets gas budget of this transaction
+   * Gas budget consist of fee amount and gas limit. Division feeAmount/gasLimit represents
+   * the gas-fee and it should be more than minimum required gas-fee to process the transaction
+   * @param {FeeData} gasBudget
+   * @returns {TransactionBuilder} this transaction builder
+   */
+  gasBudget(gasBudget: FeeData): this {
+    this._utils.validateGasBudget(gasBudget);
+    this._gasBudget = gasBudget;
+    return this;
+  }
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   * @param {CosmosTransaction} tx the transaction data
+   */
+  initBuilder(tx: CosmosTransaction): void {
+    this._transaction = tx;
+    const txData = tx.toJson();
+    this.gasBudget(txData.gasBudget);
+    this.messages(
+      txData.sendMessages.map((message) => {
+        return message.value;
+      })
+    );
+    this.sequence(txData.sequence);
+    this.publicKey(txData.publicKey);
+    this.accountNumber(txData.accountNumber);
+    this.chainId(txData.chainId);
+    this.memo(txData.memo);
+    if (tx.signature && tx.signature.length > 0) {
+      this.addSignature({ pub: txData.publicKey } as any, Buffer.from(tx.signature[0], 'hex'));
+    }
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string): CosmosTransaction {
+    const tx = new CosmosTransaction(this._coinConfig, this._utils);
+    tx.enrichTransactionDetailsFromRawTransaction(rawTransaction);
+    this.initBuilder(tx);
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<CosmosTransaction> {
+    this.transaction.transactionType = this.transactionType;
+    if (this._accountNumber) {
+      this.transaction.accountNumber = this._accountNumber;
+    }
+    if (this._chainId) {
+      this.transaction.chainId = this._chainId;
+    }
+    this.transaction.cosmosLikeTransaction = this._utils.createTransaction(
+      this._sequence,
+      this._messages,
+      this._gasBudget,
+      this._publicKey,
+      this._memo
+    );
+
+    const privateKey = this._signer?.getPrivateKey();
+    if (privateKey !== undefined && this.transaction.cosmosLikeTransaction.publicKey !== undefined) {
+      const signDoc = this._utils.createSignDoc(
+        this.transaction.cosmosLikeTransaction,
+        this._accountNumber,
+        this._chainId
+      );
+      const txnHash = sha256(makeSignBytes(signDoc));
+      const signature = await Secp256k1.createSignature(txnHash, privateKey);
+      const compressedSig = Buffer.concat([signature.r(), signature.s()]);
+      this.addSignature({ pub: this.transaction.cosmosLikeTransaction.publicKey }, compressedSig);
+    }
+
+    if (this._signature !== undefined) {
+      this.transaction.addSignature(this._signature.toString('hex'));
+      this.transaction.cosmosLikeTransaction = this._utils.createTransactionWithHash(
+        this._sequence,
+        this._messages,
+        this._gasBudget,
+        this._publicKey,
+        this._signature,
+        this._memo
+      );
+    }
+    this.transaction.loadInputsAndOutputs();
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  validateAddress(address: BaseAddress, addressFormat?: string): void {
+    if (!(this._utils.isValidAddress(address.address) || this._utils.isValidValidatorAddress(address.address))) {
+      throw new BuildTransactionError('transactionBuilder: address isValidAddress check failed: ' + address.address);
+    }
+  }
+
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Invalid raw transaction: Undefined rawTransaction');
+    }
+    try {
+    } catch (e) {
+      throw new InvalidTransactionError('Invalid raw transaction: ' + e.message);
+    }
+    const cosmosTransaction = this._utils.deserializeTransaction(rawTransaction);
+    this._utils.validateTransaction(cosmosTransaction);
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction: CosmosTransaction): void {
+    this._utils.validateTransaction({
+      sequence: this._sequence,
+      sendMessages: this._messages,
+      gasBudget: this._gasBudget,
+      publicKey: this._publicKey,
+    });
   }
 }
