@@ -13,6 +13,18 @@ describe('utils', () => {
     should.equal(Utils.default.isValidAddress('dfjk35y'), false);
     should.equal(Utils.default.isValidAddress(undefined as unknown as string), false);
     should.equal(Utils.default.isValidAddress(''), false);
+
+    // validator addresses
+    should.equal(Utils.default.isValidAddress(address.address7), true);
+    should.equal(Utils.default.isValidAddress(address.address8), true);
+    should.equal(Utils.default.isValidAddress(address.address9), false);
+    should.equal(Utils.default.isValidAddress(address.address10), false);
+    should.equal(Utils.default.isValidAddress(address.address11), false);
+    should.equal(Utils.default.isValidAddress(address.address12), false);
+    should.equal(Utils.default.isValidAddress(address.address13), false);
+    should.equal(Utils.default.isValidAddress(address.address14), true);
+    should.equal(Utils.default.isValidAddress(address.address15), true);
+    should.equal(Utils.default.isValidAddress(address.address16), false);
   });
 
   it('should create stake and payment keys correctly', () => {
