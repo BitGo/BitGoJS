@@ -629,7 +629,7 @@ export class Wallet implements IWallet {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
-    const filteredParams = _.pick(params, [
+    let filteredParams = _.pick(params, [
       'feeRate',
       'maxFeeRate',
       'maxFeePercentage',
@@ -646,6 +646,12 @@ export class Wallet implements IWallet {
       routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
       'numUnspentsToMake',
     ]);
+
+    // If we are not returning the txPrebuild, we can force the txFormat='psbt'
+    if (option === ManageUnspentsOptions.BUILD_SIGN_SEND) {
+      filteredParams = { ...filteredParams, txFormat: 'psbt' };
+    }
+
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo
       .post(this.url(`/${routeName}Unspents`))

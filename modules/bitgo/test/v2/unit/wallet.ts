@@ -1323,8 +1323,9 @@ describe('V2 Wallet:', function () {
 
     it('should pass maxFeeRate parameter when consolidating unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`;
+      // When doing option=BUILD_SIGN_SEND, we automatically set txFormat='psbt'
       const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       nock(bgUrl)
@@ -1379,7 +1380,7 @@ describe('V2 Wallet:', function () {
     it('should pass maxFeeRate parameter when calling fanout unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
