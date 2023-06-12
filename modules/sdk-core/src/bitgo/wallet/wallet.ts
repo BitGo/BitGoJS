@@ -832,7 +832,6 @@ export class Wallet implements IWallet {
     common.validateParams(params, ['address'], ['walletPassphrase', 'xprv', 'otp']);
 
     // The sweep API endpoint is only available to utxo-based coins
-
     if (!this.baseCoin.sweepWithSendMany()) {
       if (this.confirmedBalanceString() !== this.balanceString()) {
         throw new Error(
@@ -2065,8 +2064,7 @@ export class Wallet implements IWallet {
       Object.assign(selectParams, extraParams);
       return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
     }
-
-    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
+    const halfSignedTransaction = await this.prebuildAndSignTransaction({ ...params, txFormat: 'psbt' });
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
     return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
