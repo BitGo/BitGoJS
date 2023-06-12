@@ -629,7 +629,7 @@ export class Wallet implements IWallet {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
-    const filteredParams = _.pick(params, [
+    let filteredParams = _.pick(params, [
       'feeRate',
       'maxFeeRate',
       'maxFeePercentage',
@@ -646,6 +646,12 @@ export class Wallet implements IWallet {
       routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
       'numUnspentsToMake',
     ]);
+
+    // If we are not returning the txPrebuild, we can force the txFormat='psbt'
+    if (option === ManageUnspentsOptions.BUILD_SIGN_SEND) {
+      filteredParams = { ...filteredParams, txFormat: 'psbt' };
+    }
+
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo
       .post(this.url(`/${routeName}Unspents`))
@@ -832,7 +838,6 @@ export class Wallet implements IWallet {
     common.validateParams(params, ['address'], ['walletPassphrase', 'xprv', 'otp']);
 
     // The sweep API endpoint is only available to utxo-based coins
-
     if (!this.baseCoin.sweepWithSendMany()) {
       if (this.confirmedBalanceString() !== this.balanceString()) {
         throw new Error(
@@ -864,7 +869,10 @@ export class Wallet implements IWallet {
       'allowPartialSweep',
     ]);
     this.bitgo.setRequestTracer(reqId);
-    const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
+    const response = await this.bitgo
+      .post(this.url('/sweepWallet'))
+      .send({ ...filteredParams, txFormat: 'psbt' })
+      .result();
 
     // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
@@ -1923,7 +1931,7 @@ export class Wallet implements IWallet {
     params.recipients = [];
 
     // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
-    const submitParams = Object.assign(params, await this.prebuildAndSignTransaction(params));
+    const submitParams = Object.assign(params, await this.prebuildAndSignTransaction({ ...params, txFormat: 'psbt' }));
     delete (submitParams as any).wallet;
     return await this.submitTransaction(submitParams);
   }
@@ -2065,8 +2073,7 @@ export class Wallet implements IWallet {
       Object.assign(selectParams, extraParams);
       return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
     }
-
-    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
+    const halfSignedTransaction = await this.prebuildAndSignTransaction({ ...params, txFormat: 'psbt' });
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
     return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
