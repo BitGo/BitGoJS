@@ -1364,7 +1364,7 @@ describe('V2 Wallet:', function () {
     it('should pass maxFeeRate parameter when calling sweep wallets', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ address, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ address, maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
@@ -1413,7 +1413,7 @@ describe('V2 Wallet:', function () {
     it('should pass allowPartialSweep parameter when calling sweep wallets', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ address, allowPartialSweep })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ address, allowPartialSweep, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {

@@ -869,7 +869,10 @@ export class Wallet implements IWallet {
       'allowPartialSweep',
     ]);
     this.bitgo.setRequestTracer(reqId);
-    const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
+    const response = await this.bitgo
+      .post(this.url('/sweepWallet'))
+      .send({ ...filteredParams, txFormat: 'psbt' })
+      .result();
 
     // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
