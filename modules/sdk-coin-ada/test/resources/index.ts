@@ -6,6 +6,17 @@ export const address = {
     '37btjrVyb4KDXBNC4haBVPCrro8AQPHwvCMp3RFhhSVWwfFmZ6wwzSK6JK1hY6wHNmtrpTf1kdbva8TCneM2YsiXT7mrzT21EacHnPpz5YyUdj64na',
   address4: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
   address6: 'addr_test1vqje364ylpl3alxxcclnlt6dcp7ecumzzaxnuy3gg8kyd7ssaj27y',
+  // validator addresses
+  address7: '290401c779b426c134d7a193aeda69bfda40365ecf41c32312676bb1',
+  address8: '550f5dc96814537404c7544175d348262699e448d74005dfa26540d3',
+  address9: '550f5dc96814537404c7544175d348262699e448d74005dfa26540d',
+  address10: '1c779b426c134d7a193aeda69bfda40365ecf41c3231',
+  address11: '1c779b426c134d7a193aeda_69bfda40365ecf41c3231',
+  address12: '290401c779b426c134d7a193aeda69bfda40365e-f41c32312676bb1',
+  address13: '290401c779b426c134d7a193aeda69bfda40365ecf41c32312676bB1',
+  address14: 'pool19yzqr3meksnvzdxh5xf6aknfhldyqdj7eaquxgcjva4mzt5kg3v',
+  address15: 'pool1ddskftmsscw92d7vnj89pldwx5feegkgcmamgt5t0e4lkd7mdp8',
+  address16: 'pool1ddskftmsscw92d7vnj89pldwx5feegkgcmamgt5t0e4lkd7mdp3',
 };
 
 export const blockHash = {
