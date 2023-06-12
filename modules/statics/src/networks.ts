@@ -1,5 +1,4 @@
 import { CoinFamily } from './base';
-import { mainnetMetadataRpc, westendMetadataRpc } from '../resources/dot';
 
 export enum NetworkType {
   MAINNET = 'mainnet',
@@ -70,7 +69,6 @@ export interface DotNetwork extends AccountNetwork {
   readonly genesisHash: string;
   readonly specVersion: number;
   readonly chainName: string;
-  readonly metadataRpc: `0x${string}`;
   readonly txVersion: number;
 }
 
@@ -331,7 +329,6 @@ class Polkadot extends Mainnet implements DotNetwork {
   genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   specVersion = 9140;
   chainName = 'Polkadot';
-  metadataRpc = mainnetMetadataRpc as `0x${string}`;
   txVersion = 9;
 }
 
@@ -343,7 +340,6 @@ class PolkadotTestnet extends Testnet implements DotNetwork {
   genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
   specVersion = 9320;
   chainName = 'Westend';
-  metadataRpc = westendMetadataRpc as `0x${string}`;
   txVersion = 14;
 }
 
