@@ -1230,6 +1230,7 @@ describe('V2 Wallet:', function () {
         maxFee: 1,
       };
 
+      // Should always pass through txFormat='psbt'
       const prebuildReturn = Object.assign({ txHex: '123' }, params);
       const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
 
@@ -1238,9 +1239,9 @@ describe('V2 Wallet:', function () {
         .post(path, _.matches(prebuildReturn))
         .reply(200);
 
-      await wallet.accelerateTransaction(params);
-
-      prebuildStub.should.have.been.calledOnceWith(params);
+      // Make a deep copy of the params because the function mutates the object
+      await wallet.accelerateTransaction(JSON.parse(JSON.stringify(params)));
+      prebuildStub.should.be.calledOnceWith({ ...params, txFormat: 'psbt', recipients: [] });
 
       sinon.restore();
     });
