@@ -1230,7 +1230,6 @@ describe('V2 Wallet:', function () {
         maxFee: 1,
       };
 
-      // Should always pass through txFormat='psbt'
       const prebuildReturn = Object.assign({ txHex: '123' }, params);
       const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
 
@@ -1239,9 +1238,9 @@ describe('V2 Wallet:', function () {
         .post(path, _.matches(prebuildReturn))
         .reply(200);
 
-      // Make a deep copy of the params because the function mutates the object
-      await wallet.accelerateTransaction(JSON.parse(JSON.stringify(params)));
-      prebuildStub.should.be.calledOnceWith({ ...params, txFormat: 'psbt', recipients: [] });
+      await wallet.accelerateTransaction(params);
+
+      prebuildStub.should.have.been.calledOnceWith(params);
 
       sinon.restore();
     });
@@ -1323,9 +1322,8 @@ describe('V2 Wallet:', function () {
 
     it('should pass maxFeeRate parameter when consolidating unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`;
-      // When doing option=BUILD_SIGN_SEND, we automatically set txFormat='psbt'
       const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       nock(bgUrl)
@@ -1364,7 +1362,7 @@ describe('V2 Wallet:', function () {
     it('should pass maxFeeRate parameter when calling sweep wallets', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ address, maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ address, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
@@ -1380,7 +1378,7 @@ describe('V2 Wallet:', function () {
     it('should pass maxFeeRate parameter when calling fanout unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
@@ -1413,7 +1411,7 @@ describe('V2 Wallet:', function () {
     it('should pass allowPartialSweep parameter when calling sweep wallets', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
-        .post(path, _.matches({ address, allowPartialSweep, txFormat: 'psbt' })) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(path, _.matches({ address, allowPartialSweep })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
