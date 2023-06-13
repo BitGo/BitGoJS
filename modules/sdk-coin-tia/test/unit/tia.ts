@@ -25,7 +25,7 @@ describe('TIA', function () {
     basecoin = bitgo.coin('ttia');
   });
 
-  it('should retun the right info', function () {
+  it('should return the right info', function () {
     const tia = bitgo.coin('tia');
     const ttia = bitgo.coin('ttia');
 
@@ -308,17 +308,17 @@ describe('TIA', function () {
   });
 
   describe('Parse Transactions: ', () => {
-    const transferInputsResponse = {
-      address: TEST_SEND_TX.recipient,
-      amount: new BigNumber(TEST_SEND_TX.sendAmount).plus(TEST_SEND_TX.gasBudget.amount[0].amount).toFixed(),
-    };
-
-    const transferOutputsResponse = {
-      address: TEST_SEND_TX.recipient,
-      amount: TEST_SEND_TX.sendAmount,
-    };
-
     it('should parse a transfer transaction', async function () {
+      const transferInputsResponse = {
+        address: TEST_SEND_TX.recipient,
+        amount: new BigNumber(TEST_SEND_TX.sendAmount).plus(TEST_SEND_TX.gasBudget.amount[0].amount).toFixed(),
+      };
+
+      const transferOutputsResponse = {
+        address: TEST_SEND_TX.recipient,
+        amount: TEST_SEND_TX.sendAmount,
+      };
+
       const parsedTransaction = await basecoin.parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 });
 
       parsedTransaction.should.deepEqual({
