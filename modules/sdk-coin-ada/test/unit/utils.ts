@@ -22,8 +22,8 @@ describe('utils', () => {
     should.equal(Utils.default.isValidAddress(address.address11), false);
     should.equal(Utils.default.isValidAddress(address.address12), false);
     should.equal(Utils.default.isValidAddress(address.address13), false);
-    should.equal(Utils.default.isValidAddress(address.address14), true);
-    should.equal(Utils.default.isValidAddress(address.address15), true);
+    should.equal(Utils.default.isValidAddress(address.address14), false);
+    should.equal(Utils.default.isValidAddress(address.address15), false);
     should.equal(Utils.default.isValidAddress(address.address16), false);
   });
 
