@@ -11,5 +11,5 @@
     "allowJs": false,
     "strict": true
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "test/**/*", "bin/**/*"]
 }
