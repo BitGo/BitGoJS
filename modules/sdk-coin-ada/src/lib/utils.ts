@@ -78,12 +78,11 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   // this will validate both stake and payment addresses
   isValidAddress(address: string): boolean {
-    const bech32PrefixList = ['addr', 'addr_test', 'stake', 'stake_test', 'pool'];
+    const bech32PrefixList = ['addr', 'addr_test', 'stake', 'stake_test'];
     const BASE_ADDR_LEN = 92;
     const REWARD_AND_ENTERPRISE_ADDR_LEN = 47;
     const POINTER_ADDR_LEN = 52;
     const VALIDATOR_ADDR_LEN = 56;
-    const VALIDATOR_DECODED_LEN = 45;
 
     // test if this is a bech32 address first
     if (new RegExp(bech32PrefixList.join('|')).test(address)) {
@@ -96,15 +95,14 @@ export class Utils implements BaseUtils {
         return (
           wordLength === BASE_ADDR_LEN ||
           wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
-          wordLength === POINTER_ADDR_LEN ||
-          wordLength === VALIDATOR_DECODED_LEN
+          wordLength === POINTER_ADDR_LEN
         );
       } catch (err) {
         return false;
       }
     } else {
       // maybe this is a validator address
-      return new RegExp(`^[a-z0-9]\{${VALIDATOR_ADDR_LEN}\}$`).test(address);
+      return new RegExp(`^(?!pool)[a-z0-9]\{${VALIDATOR_ADDR_LEN}\}$`).test(address);
     }
   }
 
