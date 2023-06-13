@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.1.0...@bitgo/utxo-lib@9.1.1) (2023-06-13)
+
+### Bug Fixes
+
+- **utxo-lib:** use utxolib toOutputScript when adding outputs ([2b1480e](https://github.com/BitGo/BitGoJS/commit/2b1480e9fd4bb0addd092f79e2248b73f21caacf))
+
 # [9.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.0.0...@bitgo/utxo-lib@9.1.0) (2023-06-07)
 
 ### Bug Fixes

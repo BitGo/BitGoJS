@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.1.0...bitgo@19.2.0) (2023-06-13)
+
+
+### Features
+
+* **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+* **sdk-core:** accelerateTransaction always uses txFormat=psbt ([41da856](https://github.com/BitGo/BitGoJS/commit/41da85613862753e301f57163f3e5c10ed7477de))
+* **sdk-core:** make paillier proofs mandatory ([4c62dd8](https://github.com/BitGo/BitGoJS/commit/4c62dd8bae41b0a66a4aa840c16f2cdf5abc9997))
+* **sdk-core:** manageUnspents overrides txFormat during bss ([1f53a9d](https://github.com/BitGo/BitGoJS/commit/1f53a9d91767c8e0c3deca74a66b881f92a2d2b6))
+* **sdk-core:** sendMany always builds with psbt format for non-tss ([8c894b2](https://github.com/BitGo/BitGoJS/commit/8c894b2adef167abb1e8eb57b5643e1eaf69cc77))
+* **sdk-core:** sweepWallet uses txFormat='psbt' ([bc80b3d](https://github.com/BitGo/BitGoJS/commit/bc80b3db5d917961bd5f8446bba8bef2f89f5c8e))
+
+
+
+
+
 # [19.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.0.0...bitgo@19.1.0) (2023-06-07)
 
 

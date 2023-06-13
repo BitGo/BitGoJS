@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.2.0...@bitgo/statics@17.0.0) (2023-06-13)
+
+### chore
+
+- **statics:** refactor metadatarpc out ([f64607d](https://github.com/BitGo/BitGoJS/commit/f64607d35084fd783a82d9254447a9ea84bc2c6e))
+
+### Features
+
+- **bitgo:** add Frankfurt CoinFeature ([4a116ad](https://github.com/BitGo/BitGoJS/commit/4a116ad583126135b3d3f8fe1f8834ecd7ccabb6))
+- **bitgo:** coins Frankfurt Coinfeature ([7c3ccf9](https://github.com/BitGo/BitGoJS/commit/7c3ccf98e3fe0dff37e174e3ded36e2c78c26b4b))
+- **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+
+### BREAKING CHANGES
+
+- **statics:** metadatarpc no longer defined in statics
+
 # [16.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.1.0...@bitgo/statics@16.2.0) (2023-06-07)
 
 ### Features
