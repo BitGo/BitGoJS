@@ -1,11 +1,32 @@
 import { Chalk, Instance } from 'chalk';
 import * as archy from 'archy';
-import { ParserNode, ParserNodeValue } from './Parser';
+import { isParserNodeValue, Parser, ParserNode, ParserNodeValue } from './Parser';
 
 const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];
 
-export function formatSat(v: number): string {
-  return (v / 1e8).toFixed(8);
+export function formatSat(v: number | bigint): string {
+  return (Number(v) / 1e8).toFixed(8);
+}
+
+export function unknownToNode(p: Parser, label: number | string, obj: unknown): ParserNode {
+  if (isParserNodeValue(obj)) {
+    return p.node(label, obj);
+  }
+  if (typeof obj !== 'object' || obj === null) {
+    throw new Error(`expected object, got ${typeof obj}`);
+  }
+  if (Array.isArray(obj)) {
+    return p.node(
+      label,
+      undefined,
+      obj.map((v, i) => unknownToNode(p, i, v))
+    );
+  }
+  return p.node(
+    label,
+    undefined,
+    Object.entries(obj).map(([k, v]) => unknownToNode(p, k, v))
+  );
 }
 
 export function formatTree(
@@ -27,6 +48,7 @@ export function formatTree(
       case 'boolean':
       case 'number':
       case 'string':
+      case 'bigint':
         return String(v);
       case 'object':
         if (v === null) {
@@ -36,7 +58,7 @@ export function formatTree(
           return v.length === 0 ? '[]' : v.toString('hex');
         }
     }
-    throw new Error(`could not get label from value`);
+    throw new Error(`could not get label from value ${typeof v}`);
   }
 
   function toArchy(n: ParserNode): archy.Data {

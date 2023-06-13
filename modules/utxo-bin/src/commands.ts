@@ -169,15 +169,29 @@ export const cmdParseTx = {
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
     }
 
+    // strip whitespace
+    data = data?.replace(/\s*/g, '');
     if (!data) {
       throw new Error(`no txdata`);
     }
-    data = data.replace(/\s*/g, '');
 
-    const tx = utxolib.bitgo.createTransactionFromHex(data, network);
-    const txid = tx.getId();
-    if (argv.txid && txid !== argv.txid) {
-      throw new Error(`computed txid does not match txid argument`);
+    const bytes = Buffer.from(data, 'hex');
+
+    // make sure hex was parsed
+    if (bytes.toString('hex') !== data) {
+      throw new Error(`invalid hex`);
+    }
+
+    const tx = utxolib.bitgo.isPsbt(bytes)
+      ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
+      : utxolib.bitgo.createTransactionFromBuffer(bytes, network);
+
+    let txid: string | undefined;
+    if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+      txid = tx.getId();
+      if (argv.txid && txid !== argv.txid) {
+        throw new Error(`computed txid does not match txid argument`);
+      }
     }
 
     if (argv.fetchAll) {
@@ -187,10 +201,19 @@ export const cmdParseTx = {
     }
 
     const parsed = getTxParser(argv).parse(tx, {
-      status: argv.fetchStatus ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
-      prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : undefined,
-      prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(httpClient, tx) : undefined,
-      outputSpends: argv.fetchSpends ? await fetchOutputSpends(httpClient, tx) : undefined,
+      status: argv.fetchStatus && txid ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
+      prevOutputs:
+        argv.fetchInputs && tx instanceof utxolib.bitgo.UtxoTransaction
+          ? await fetchPrevOutputs(httpClient, tx)
+          : undefined,
+      prevOutputSpends:
+        argv.fetchSpends && tx instanceof utxolib.bitgo.UtxoTransaction
+          ? await fetchPrevOutputSpends(httpClient, tx)
+          : undefined,
+      outputSpends:
+        argv.fetchSpends && tx instanceof utxolib.bitgo.UtxoTransaction
+          ? await fetchOutputSpends(httpClient, tx)
+          : undefined,
     });
 
     console.log(formatString(parsed, argv));

@@ -3,6 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Parser, ParserNode } from './Parser';
 import { formatSat } from './format';
 import { InputOutputParser } from './InputOutputParser';
+import { PsbtTxInput } from '@bitgo/utxo-lib';
 
 function formatConsensusBranchId(branchId: number): string {
   const map: Record<string, number> = {
@@ -50,7 +51,11 @@ export class TxParser extends Parser {
     super();
   }
 
-  parseIns(ins: utxolib.TxInput[], tx: utxolib.bitgo.UtxoTransaction, outputInfo: ChainInfo): ParserNode[] {
+  parseIns(
+    ins: utxolib.TxInput[],
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
+    outputInfo: ChainInfo
+  ): ParserNode[] {
     const txid = tx.getId();
     const ioParser = new InputOutputParser(this.params);
     return ins.flatMap((input, i) =>
@@ -60,7 +65,18 @@ export class TxParser extends Parser {
     );
   }
 
-  parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): ParserNode[] {
+  parseInsPsbt(ins: PsbtTxInput[], tx: utxolib.bitgo.UtxoPsbt): ParserNode[] {
+    const ioParser = new InputOutputParser(this.params);
+    return ins.flatMap((input, i) =>
+      this.params.vin === undefined || this.params.vin.includes(i) ? [ioParser.parsePsbtTxInput(tx, input, i)] : []
+    );
+  }
+
+  parseOuts(
+    outs: utxolib.TxOutput<number | bigint>[],
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
+    params: ChainInfo
+  ): ParserNode[] {
     if (outs.length > (this.params.maxOutputs ?? 200)) {
       return [this.node('(omitted)', undefined)];
     }
@@ -70,7 +86,7 @@ export class TxParser extends Parser {
     return outs.map((o, i) => ioParser.parseOutput(txid, o, i, tx.network, params));
   }
 
-  parseStatus(tx: utxolib.bitgo.UtxoTransaction, status?: TransactionStatus): ParserNode[] {
+  parseStatus(tx: utxolib.bitgo.UtxoTransaction<number | bigint>, status?: TransactionStatus): ParserNode[] {
     if (!status) {
       return [this.node('status', 'unknown')];
     }
@@ -92,7 +108,7 @@ export class TxParser extends Parser {
     ];
   }
 
-  parseVersion(tx: utxolib.bitgo.UtxoTransaction): ParserNode {
+  parseVersion(tx: utxolib.bitgo.UtxoTransaction<number | bigint>): ParserNode {
     return this.node(
       'version',
       tx.version,
@@ -106,13 +122,13 @@ export class TxParser extends Parser {
     );
   }
 
-  parse(tx: utxolib.bitgo.UtxoTransaction, chainInfo: ChainInfo = {}): ParserNode {
+  parseLegacy(tx: utxolib.bitgo.UtxoTransaction<number | bigint>, chainInfo: ChainInfo = {}): ParserNode {
     const weight = tx.weight();
     const vsize = tx.virtualSize();
-    const outputSum = tx.outs.reduce((sum, o) => sum + o.value, 0);
-    const inputSum = chainInfo.prevOutputs?.reduce((sum, o) => sum + o.value, 0);
+    const outputSum = tx.outs.reduce((sum, o) => sum + BigInt(o.value), BigInt(0));
+    const inputSum = chainInfo.prevOutputs?.reduce((sum, o) => sum + BigInt(o.value), BigInt(0));
     const fee = inputSum ? inputSum - outputSum : undefined;
-    const feeRate = fee ? fee / vsize : undefined;
+    const feeRate = fee ? Number(fee) / vsize : undefined;
     return this.node('transaction', tx.getId(), [
       this.node(
         'parsedAs',
@@ -138,5 +154,19 @@ export class TxParser extends Parser {
         this.parseOuts(tx.outs, tx, chainInfo)
       ),
     ]);
+  }
+
+  parsePsbt(tx: utxolib.bitgo.UtxoPsbt, chainInfo: ChainInfo = {}): ParserNode {
+    return this.node('psbt', undefined, [
+      this.node('version', tx.version),
+      // this.parseLegacy(tx.getUnsignedTx(), chainInfo),
+      this.node('inputs', undefined, this.parseInsPsbt(tx.txInputs, tx)),
+    ]);
+  }
+
+  parse(tx: utxolib.bitgo.UtxoTransaction | utxolib.bitgo.UtxoPsbt, chainInfo: ChainInfo = {}): ParserNode {
+    return tx instanceof utxolib.bitgo.UtxoTransaction
+      ? this.parseLegacy(tx, chainInfo)
+      : this.parsePsbt(tx, chainInfo);
   }
 }

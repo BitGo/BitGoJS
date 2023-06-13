@@ -4,10 +4,15 @@ import { script, ScriptSignature } from 'bitcoinjs-lib';
 
 import { Parser, ParserNode } from './Parser';
 import { AddressParser } from './AddressParser';
-import { formatSat } from './format';
+import { formatSat, unknownToNode } from './format';
 import { ChainInfo } from './TxParser';
 import { parseHollowSegwitSpend, HollowSegwitSpend, getHollowSpendMessage } from './hollowSegwitSpend';
 import { isHighS } from './ecdsa';
+import { PsbtTxInput } from '@bitgo/utxo-lib';
+
+function getOutputId(v: { hash: Buffer; index: number }): string {
+  return utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(v));
+}
 
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
@@ -141,7 +146,7 @@ export class InputOutputParser extends Parser {
 
   parseSignatures(
     parsed: utxolib.bitgo.ParsedSignatureScriptP2ms,
-    tx: utxolib.bitgo.UtxoTransaction,
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
     inputIndex: number,
     prevOutputs?: utxolib.TxOutput[]
   ): ParserNode {
@@ -169,7 +174,7 @@ export class InputOutputParser extends Parser {
   }
 
   parseSigScriptWithType(
-    tx: utxolib.bitgo.UtxoTransaction,
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
     inputIndex: number,
     parsed: utxolib.bitgo.ParsedSignatureScript | HollowSegwitSpend,
     prevOutputs?: utxolib.TxOutput[]
@@ -180,7 +185,13 @@ export class InputOutputParser extends Parser {
         parsed.scriptType === 'taprootScriptPathSpend' ||
         parsed.scriptType === 'taprootKeyPathSpend')
     ) {
-      const parsed2Of3 = parsed.scriptType === 'taprootScriptPathSpend' ? { ...parsed, scriptType: 'p2tr' } : parsed;
+      const parsed2Of3 =
+        parsed.scriptType === 'taprootScriptPathSpend'
+          ? {
+              ...parsed,
+              scriptType: 'p2tr',
+            }
+          : parsed;
       return this.node('sigScript', parsed2Of3.scriptType, [
         this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScriptP2ms),
         this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScriptP2ms, tx, inputIndex, prevOutputs),
@@ -194,7 +205,11 @@ export class InputOutputParser extends Parser {
     return this.node('sigScript', parsed.scriptType ?? 'unknown');
   }
 
-  parseSigScript(tx: utxolib.bitgo.UtxoTransaction, inputIndex: number, prevOutputs?: utxolib.TxOutput[]): ParserNode {
+  parseSigScript(
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
+    inputIndex: number,
+    prevOutputs?: utxolib.TxOutput[]
+  ): ParserNode {
     try {
       return this.parseSigScriptWithType(
         tx,
@@ -231,12 +246,12 @@ export class InputOutputParser extends Parser {
 
   parseInput(
     txid: string,
-    tx: utxolib.bitgo.UtxoTransaction,
+    tx: utxolib.bitgo.UtxoTransaction<number | bigint>,
     i: number,
     input: utxolib.TxInput,
     outputInfo: ChainInfo
   ): ParserNode {
-    return this.node(i, utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(input)), [
+    return this.node(i, getOutputId(input), [
       this.node('sequence', toBufferUInt32BE(input.sequence)),
       this.parseInputScript(input.script),
       this.parseWitness(input.witness),
@@ -244,6 +259,30 @@ export class InputOutputParser extends Parser {
       ...this.parsePrevOut(input, i, tx.network, outputInfo.prevOutputs),
       ...this.parseSpend(txid, i, outputInfo.prevOutputSpends, { conflict: true }),
     ]);
+  }
+
+  parsePsbtInput(tx: utxolib.bitgo.UtxoPsbt, input: utxolib.bitgo.PsbtInputType, i: number): ParserNode[] {
+    const parsed = utxolib.bitgo.parsePsbtInput(input);
+    return [
+      unknownToNode(this, 'raw', input),
+      unknownToNode(this, 'parsed', parsed),
+      this.node(
+        'signatures',
+        undefined,
+        tx
+          .getSignatureValidationArray(i)
+          .map((sig, j) =>
+            this.node(j, undefined, [
+              this.node(`xpub fingerprint`, tx.data.globalMap.globalXpub?.[j].masterFingerprint),
+              this.node(`signature`, sig ? 'valid' : 'invalid'),
+            ])
+          )
+      ),
+    ];
+  }
+
+  parsePsbtTxInput(tx: utxolib.bitgo.UtxoPsbt, input: PsbtTxInput, i: number): ParserNode {
+    return this.node(i, getOutputId(input), this.parsePsbtInput(tx, tx.data.inputs[i], i));
   }
 
   parseSpend(
@@ -267,7 +306,13 @@ export class InputOutputParser extends Parser {
     return [this.node('spent', `${spend.txid}:${spend.vin}`, params.conflict ? [this.node('conflict', true)] : [])];
   }
 
-  parseOutput(txid: string, o: utxolib.TxOutput, i: number, network: utxolib.Network, params: ChainInfo): ParserNode {
+  parseOutput(
+    txid: string,
+    o: utxolib.TxOutput<number | bigint>,
+    i: number,
+    network: utxolib.Network,
+    params: ChainInfo
+  ): ParserNode {
     let address;
     try {
       address = utxolib.address.fromOutputScript(o.script, network);

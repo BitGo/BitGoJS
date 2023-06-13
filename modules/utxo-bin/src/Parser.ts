@@ -1,4 +1,18 @@
-export type ParserNodeValue = number | string | Buffer | boolean | undefined | null;
+export type ParserNodeValue = number | bigint | string | Buffer | boolean | undefined | null;
+
+export function isParserNodeValue(v: unknown): v is ParserNodeValue {
+  switch (typeof v) {
+    case 'undefined':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'bigint':
+      return true;
+    case 'object':
+      return v === null || Buffer.isBuffer(v);
+  }
+  return false;
+}
 
 export type ParserNode = {
   type: 'node';
