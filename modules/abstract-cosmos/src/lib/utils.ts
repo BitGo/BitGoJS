@@ -362,7 +362,7 @@ export class CosmosUtils implements BaseUtils {
       try {
         new KeyPair({ pub: publicKey });
       } catch {
-        throw new InvalidTransactionError(`Key validation failed`);
+        throw new InvalidTransactionError(`Invalid Public Key`);
       }
     }
   }
