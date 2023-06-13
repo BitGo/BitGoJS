@@ -12,6 +12,7 @@ export interface BitGoAPIOptions {
   env?: EnvironmentName;
   etherscanApiToken?: string;
   polygonscanApiToken?: string;
+  snowtraceApiToken?: string;
   hmacVerification?: boolean;
   proxy?: string;
   refreshToken?: string;

@@ -8,7 +8,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { toBase64 } from '@cosmjs/encoding';
+import { fromHex, toBase64 } from '@cosmjs/encoding';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 
@@ -22,15 +22,18 @@ import {
   TxData,
   WithdrawDelegatorRewardsMessage,
 } from './iface';
-import utils from './utils';
+import { CosmosUtils } from './utils';
 
 export class CosmosTransaction extends BaseTransaction {
   protected _cosmosLikeTransaction: CosmosLikeTransaction;
   protected _accountNumber: number;
   protected _chainId: string;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  protected _utils: CosmosUtils;
+
+  constructor(_coinConfig: Readonly<CoinConfig>, utils: CosmosUtils) {
     super(_coinConfig);
+    this._utils = utils;
   }
 
   get cosmosLikeTransaction(): CosmosLikeTransaction {
@@ -142,9 +145,13 @@ export class CosmosTransaction extends BaseTransaction {
    * @returns {string} serialized base64 encoded transaction
    */
   serialize(): string {
-    const txRaw = utils.createTxRawFromCosmosLikeTransaction(this.cosmosLikeTransaction);
+    const txRaw = this._utils.createTxRawFromCosmosLikeTransaction(this.cosmosLikeTransaction);
     if (this.cosmosLikeTransaction?.publicKey !== undefined && this._signatures.length > 0) {
-      const signedRawTx = utils.createSignedTxRaw(this.cosmosLikeTransaction.publicKey, this._signatures[0], txRaw);
+      const signedRawTx = this._utils.createSignedTxRaw(
+        this.cosmosLikeTransaction.publicKey,
+        this._signatures[0],
+        txRaw
+      );
       return toBase64(TxRaw.encode(signedRawTx).finish());
     }
     return toBase64(TxRaw.encode(txRaw).finish());
@@ -153,7 +160,7 @@ export class CosmosTransaction extends BaseTransaction {
   /** @inheritdoc **/
   get signablePayload(): Buffer {
     return Buffer.from(
-      makeSignBytes(utils.createSignDoc(this.cosmosLikeTransaction, this._accountNumber, this._chainId))
+      makeSignBytes(this._utils.createSignDoc(this.cosmosLikeTransaction, this._accountNumber, this._chainId))
     );
   }
 
@@ -227,6 +234,11 @@ export class CosmosTransaction extends BaseTransaction {
     };
   }
 
+  /**
+   * Load the input and output data on this transaction using the transaction json
+   * if there are outputs. For transactions without outputs (e.g. wallet initializations),
+   * this function will not do anything
+   */
   loadInputsAndOutputs(): void {
     if (this.type === undefined || !this.cosmosLikeTransaction) {
       throw new InvalidTransactionError('Transaction type or cosmosLikeTransaction is not set');
@@ -280,5 +292,27 @@ export class CosmosTransaction extends BaseTransaction {
     }
     this._inputs = inputs;
     this._outputs = outputs;
+  }
+
+  /**
+   * Sets this transaction payload
+   * @param rawTransaction raw transaction in base64 encoded string
+   */
+  enrichTransactionDetailsFromRawTransaction(rawTransaction: string): void {
+    if (this._utils.isValidHexString(rawTransaction)) {
+      this.cosmosLikeTransaction = this._utils.deserializeTransaction(toBase64(fromHex(rawTransaction)));
+    } else {
+      this.cosmosLikeTransaction = this._utils.deserializeTransaction(rawTransaction);
+    }
+    if (this.cosmosLikeTransaction.signature) {
+      this.addSignature(Buffer.from(this.cosmosLikeTransaction.signature).toString('hex'));
+    }
+    const typeUrl = this.cosmosLikeTransaction.sendMessages[0].typeUrl;
+    const transactionType = this._utils.getTransactionTypeFromTypeUrl(typeUrl);
+
+    if (transactionType === undefined) {
+      throw new Error('Transaction type is not supported ' + typeUrl);
+    }
+    this.transactionType = transactionType;
   }
 }

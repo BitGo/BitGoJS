@@ -47,6 +47,9 @@
       "path": "../sdk-coin-near"
     },
     {
+      "path": "../sdk-coin-osmo"
+    },
+    {
       "path": "../sdk-coin-polygon"
     },
     {
@@ -57,6 +60,9 @@
     },
     {
       "path": "../sdk-coin-stx"
+    },
+    {
+      "path": "../sdk-coin-tia"
     },
     {
       "path": "../sdk-coin-trx"

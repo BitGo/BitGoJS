@@ -1,15 +1,15 @@
-import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  acountLibCrypto,
-  accountLibBaseCoin,
   BaseBuilder,
   BaseTransactionBuilderFactory,
   BuildTransactionError,
   Ed25519BIP32,
   Ed25519KeyDeriver,
   Eddsa,
+  accountLibBaseCoin,
+  acountLibCrypto,
 } from '@bitgo/sdk-core';
-export { Eddsa, Ed25519BIP32 };
+import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+export { Ed25519BIP32, Eddsa };
 
 /**
  * Deprecated after version 2.19.0
@@ -65,8 +65,14 @@ export { Algo };
 import * as Atom from '@bitgo/sdk-coin-atom';
 export { Atom };
 
+import * as Osmo from '@bitgo/sdk-coin-osmo';
+export { Osmo };
+
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
+
+import * as Tia from '@bitgo/sdk-coin-tia';
+export { Tia };
 
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
@@ -123,8 +129,12 @@ const coinBuilderMap = {
   tpolygon: Polygon.TransactionBuilder,
   sui: Sui.TransactionBuilderFactory,
   tsui: Sui.TransactionBuilderFactory,
+  tia: Tia.TransactionBuilderFactory,
+  ttia: Tia.TransactionBuilderFactory,
   atom: Atom.TransactionBuilderFactory,
   tatom: Atom.TransactionBuilderFactory,
+  osmo: Osmo.TransactionBuilderFactory,
+  tosmo: Osmo.TransactionBuilderFactory,
 };
 
 /**

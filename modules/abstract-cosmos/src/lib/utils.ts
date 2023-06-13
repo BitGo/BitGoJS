@@ -9,24 +9,32 @@ import { encodeSecp256k1Pubkey, encodeSecp256k1Signature } from '@cosmjs/amino';
 import { fromBase64, fromHex, toHex } from '@cosmjs/encoding';
 import {
   DecodedTxRaw,
+  EncodeObject,
+  Registry,
   decodePubkey,
   decodeTxRaw,
-  EncodeObject,
   encodePubkey,
   makeAuthInfoBytes,
   makeSignDoc,
-  Registry,
 } from '@cosmjs/proto-signing';
 import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
 
+import * as crypto from 'crypto';
 import * as constants from './constants';
-import { CosmosLikeTransaction, FeeData, MessageData } from './iface';
+import {
+  CosmosLikeTransaction,
+  DelegateOrUndelegeteMessage,
+  FeeData,
+  MessageData,
+  SendMessage,
+  WithdrawDelegatorRewardsMessage,
+} from './iface';
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
-export class CosmosLikeUtils implements BaseUtils {
+export class CosmosUtils implements BaseUtils {
   private registry = new Registry([...defaultRegistryTypes]);
 
   /** @inheritdoc */
@@ -124,6 +132,10 @@ export class CosmosLikeUtils implements BaseUtils {
     return decodedTx.body.messages;
   }
 
+  /**
+   * Checks the txn sequence is valid or not
+   * @param {number} sequence
+   */
   validateSequence(sequence: number) {
     if (sequence < 0) {
       throw new InvalidTransactionError('Invalid sequence: less than zero');
@@ -142,7 +154,7 @@ export class CosmosLikeUtils implements BaseUtils {
   /**
    * Pulls the typeUrl from the encoded message of a DecodedTxRaw
    * @param {DecodedTxRaw} decodedTx
-   * @returns {string} osmosis proto type url
+   * @returns {string} cosmos proto type url
    */
   getTypeUrlFromDecodedTx(decodedTx: DecodedTxRaw): string {
     const encodedMessage = this.getEncodedMessagesFromDecodedTx(decodedTx)[0];
@@ -249,7 +261,7 @@ export class CosmosLikeUtils implements BaseUtils {
   }
 
   /**
-   * Determines bitgo transaction type based on osmosis proto type url
+   * Determines bitgo transaction type based on cosmos proto type url
    * @param {string} typeUrl
    * @returns {TransactionType | undefined} TransactionType if url is supported else undefined
    */
@@ -341,24 +353,18 @@ export class CosmosLikeUtils implements BaseUtils {
     return false;
   }
 
+  /**
+   * Returns whether or not the string is a valid protocol public key
+   * @param {string | undefined} publicKey - the  public key to be validated
+   */
   validatePublicKey(publicKey: string | undefined) {
     if (publicKey !== undefined) {
       try {
         new KeyPair({ pub: publicKey });
       } catch {
-        throw new InvalidTransactionError(`Key validation failed`);
+        throw new InvalidTransactionError(`Invalid Public Key`);
       }
     }
-  }
-
-  /**
-   * Validates if the address matches with regex @see accountAddressRegex
-   *
-   * @param {string} address
-   * @returns {boolean} - the validation result
-   */
-  isValidAddress(address: string): boolean {
-    throw new NotImplementedError('isValidAddress not implemented');
   }
 
   /**
@@ -381,15 +387,292 @@ export class CosmosLikeUtils implements BaseUtils {
     if (!cosmosLikeTransaction) {
       throw new Error('cosmosLikeTransaction is required to create a sign doc');
     }
-    const txRaw = utils.createTxRawFromCosmosLikeTransaction(cosmosLikeTransaction);
+    const txRaw = this.createTxRawFromCosmosLikeTransaction(cosmosLikeTransaction);
     return makeSignDoc(txRaw.bodyBytes, txRaw.authInfoBytes, chainId, accountNumber);
   }
 
+  /**
+   * Returns whether or not the string is a valid hex
+   * @param hexString - hex string format
+   * @returns {boolean} true if string is hex else false
+   */
   isValidHexString(hexString: string): boolean {
     return /^[0-9A-Fa-f]*$/.test(hexString);
   }
+
+  /**
+   * Validates the WithdrawDelegatorRewardsMessage
+   * @param {WithdrawDelegatorRewardsMessage} withdrawRewardsMessage - The WithdrawDelegatorRewardsMessage to validate.
+   * @throws {InvalidTransactionError} Throws an error if the validatorAddress or delegatorAddress is invalid or missing.
+   */
+  validateWithdrawRewardsMessage(withdrawRewardsMessage: WithdrawDelegatorRewardsMessage) {
+    if (
+      !withdrawRewardsMessage.validatorAddress ||
+      !this.isValidValidatorAddress(withdrawRewardsMessage.validatorAddress)
+    ) {
+      throw new InvalidTransactionError(
+        `Invalid WithdrawDelegatorRewardsMessage validatorAddress: ` + withdrawRewardsMessage.validatorAddress
+      );
+    }
+    if (!withdrawRewardsMessage.delegatorAddress || !this.isValidAddress(withdrawRewardsMessage.delegatorAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid WithdrawDelegatorRewardsMessage delegatorAddress: ` + withdrawRewardsMessage.delegatorAddress
+      );
+    }
+  }
+
+  /**
+   * Helper method to check if the specified properties in an object are missing or null.
+   * @param {Object} obj - The object to check.
+   * @param {string[]} keys - An array of property keys to check.
+   * @throws {Error} Throws an error if any of the specified properties are missing or null.
+   */
+  isObjPropertyNull(obj: { [key: string]: any }, keys: Array<string>) {
+    for (const key of keys) {
+      if (obj[key] == null) {
+        throw new Error(`Missing or null value for property ${key}`);
+      }
+    }
+  }
+
+  /**
+   * Validates the DelegateOrUndelegeteMessage
+   * @param {DelegateOrUndelegeteMessage} delegateMessage - The DelegateOrUndelegeteMessage to validate.
+   * @throws {InvalidTransactionError} Throws an error if the validatorAddress, delegatorAddress, or amount is invalid or missing.
+   */
+  validateDelegateOrUndelegateMessage(delegateMessage: DelegateOrUndelegeteMessage) {
+    this.isObjPropertyNull(delegateMessage, ['validatorAddress', 'delegatorAddress']);
+
+    if (!this.isValidValidatorAddress(delegateMessage.validatorAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid DelegateOrUndelegeteMessage validatorAddress: ` + delegateMessage.validatorAddress
+      );
+    }
+    if (!this.isValidAddress(delegateMessage.delegatorAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid DelegateOrUndelegeteMessage delegatorAddress: ` + delegateMessage.delegatorAddress
+      );
+    }
+    this.validateAmount(delegateMessage.amount);
+  }
+
+  /**
+   * Validates the MessageData
+   * @param {MessageData} messageData - The MessageData to validate.
+   * @throws {InvalidTransactionError} Throws an error if the messageData is invalid or missing required fields.
+   */
+  validateMessageData(messageData: MessageData): void {
+    if (messageData == null) {
+      throw new InvalidTransactionError(`Invalid MessageData: undefined`);
+    }
+    if (messageData.typeUrl == null || this.getTransactionTypeFromTypeUrl(messageData.typeUrl) == null) {
+      throw new InvalidTransactionError(`Invalid MessageData typeurl: ` + messageData.typeUrl);
+    }
+
+    const type = this.getTransactionTypeFromTypeUrl(messageData.typeUrl);
+    switch (type) {
+      case TransactionType.Send: {
+        const value = messageData.value as SendMessage;
+        this.isObjPropertyNull(value, ['toAddress', 'fromAddress']);
+        break;
+      }
+      case TransactionType.StakingActivate:
+      case TransactionType.StakingDeactivate: {
+        const value = messageData.value as DelegateOrUndelegeteMessage;
+        this.isObjPropertyNull(value, ['validatorAddress', 'delegatorAddress']);
+        this.validateAmount(value.amount);
+        break;
+      }
+      case TransactionType.StakingWithdraw: {
+        const value = messageData.value as WithdrawDelegatorRewardsMessage;
+        this.isObjPropertyNull(value, ['validatorAddress', 'delegatorAddress']);
+        break;
+      }
+      default:
+        throw new InvalidTransactionError(`Invalid MessageData TypeUrl is not supported: ` + messageData.typeUrl);
+    }
+  }
+
+  /**
+   * Validates the Cosmos-like transaction.
+   * @param {CosmosLikeTransaction} tx - The transaction to validate.
+   * @throws {InvalidTransactionError} Throws an error if the transaction is invalid or missing required fields.
+   */
+  validateTransaction(tx: CosmosLikeTransaction): void {
+    this.validateSequence(tx.sequence);
+    this.validateGasBudget(tx.gasBudget);
+    this.validatePublicKey(tx.publicKey);
+    if (tx.sendMessages === undefined || tx.sendMessages.length === 0) {
+      throw new InvalidTransactionError('Invalid transaction: messages is required');
+    } else {
+      tx.sendMessages.forEach((message) => this.validateMessageData(message));
+    }
+  }
+
+  /**
+   * Creates a Cosmos-like transaction.
+   * @param {number} sequence - The sender address sequence number for the transaction.
+   * @param {MessageData[]} messages - The array of message data for the transaction.
+   * @param {FeeData} gasBudget - The fee data for the transaction.
+   * @param {string} [publicKey] - The public key associated with the sender.
+   * @param {string} [memo] - The memo for the transaction.
+   * @returns {CosmosLikeTransaction} Returns the created Cosmos-like transaction.
+   * @throws {InvalidTransactionError} Throws an error if the created transaction is invalid.
+   */
+  createTransaction(
+    sequence: number,
+    messages: MessageData[],
+    gasBudget: FeeData,
+    publicKey?: string,
+    memo?: string
+  ): CosmosLikeTransaction {
+    const cosmosLikeTxn = {
+      sequence: sequence,
+      sendMessages: messages,
+      gasBudget: gasBudget,
+      publicKey: publicKey,
+      memo: memo,
+    };
+    this.validateTransaction(cosmosLikeTxn);
+    return cosmosLikeTxn;
+  }
+
+  /**
+   * Creates a Cosmos-like transaction with a hash.
+   * @param {number} sequence - The sender address sequence number for the transaction.
+   * @param {MessageData[]} messages - The array of message data for the transaction.
+   * @param {FeeData} gasBudget - The fee data for the transaction.
+   * @param {string} [publicKey] - The public key associated with the transaction.
+   * @param {Buffer} [signature] - The signature for the transaction.
+   * @param {string} [memo] - The memo for the transaction.
+   * @returns {CosmosLikeTransaction} Returns the created Cosmos-like transaction with the hash and signature if provided.
+   */
+  createTransactionWithHash(
+    sequence: number,
+    messages: MessageData[],
+    gasBudget: FeeData,
+    publicKey?: string,
+    signature?: Buffer,
+    memo?: string
+  ): CosmosLikeTransaction {
+    const cosmosLikeTxn = this.createTransaction(sequence, messages, gasBudget, publicKey, memo);
+    let hash = constants.UNAVAILABLE_TEXT;
+    if (signature !== undefined) {
+      const unsignedTx = this.createTxRawFromCosmosLikeTransaction(cosmosLikeTxn);
+      const signedTx = TxRaw.fromPartial({
+        bodyBytes: unsignedTx.bodyBytes,
+        authInfoBytes: unsignedTx.authInfoBytes,
+        signatures: [signature],
+      });
+      hash = crypto
+        .createHash('sha256')
+        .update(TxRaw.encode(signedTx).finish())
+        .digest()
+        .toString('hex')
+        .toLocaleUpperCase('en-US');
+      return { ...cosmosLikeTxn, hash: hash, signature: signature };
+    }
+    return { ...cosmosLikeTxn, hash: hash };
+  }
+
+  /**
+   * Deserializes base64 enocded raw transaction string into @see CosmosLikeTransaction
+   * @param {string} rawTx base64 enocded raw transaction string
+   * @returns {CosmosLikeTransaction} Deserialized cosmosLikeTransaction
+   */
+  deserializeTransaction(rawTx: string): CosmosLikeTransaction {
+    const decodedTx = this.getDecodedTxFromRawBase64(rawTx);
+    const typeUrl = this.getTypeUrlFromDecodedTx(decodedTx);
+    const type: TransactionType | undefined = this.getTransactionTypeFromTypeUrl(typeUrl);
+    let sendMessageData: MessageData[];
+    if (type === TransactionType.Send) {
+      sendMessageData = this.getSendMessageDataFromDecodedTx(decodedTx);
+    } else if (type === TransactionType.StakingActivate || type === TransactionType.StakingDeactivate) {
+      sendMessageData = this.getDelegateOrUndelegateMessageDataFromDecodedTx(decodedTx);
+    } else if (type === TransactionType.StakingWithdraw) {
+      sendMessageData = this.getWithdrawRewardsMessageDataFromDecodedTx(decodedTx);
+    } else {
+      throw new Error('Transaction type not supported: ' + typeUrl);
+    }
+    const sequence = this.getSequenceFromDecodedTx(decodedTx);
+    const gasBudget = this.getGasBudgetFromDecodedTx(decodedTx);
+    const publicKey = this.getPublicKeyFromDecodedTx(decodedTx);
+    const signature = decodedTx.signatures?.[0] !== undefined ? Buffer.from(decodedTx.signatures[0]) : undefined;
+    return this.createTransactionWithHash(
+      sequence,
+      sendMessageData,
+      gasBudget,
+      publicKey,
+      signature,
+      decodedTx.body?.memo
+    );
+  }
+
+  /**
+   * Validates an array of coin amounts.
+   * @param {Coin[]} amountArray - The array of coin amounts to validate.
+   */
+  validateAmountData(amountArray: Coin[]): void {
+    amountArray.forEach((coinAmount) => {
+      this.validateAmount(coinAmount);
+    });
+  }
+
+  /**
+   * Validates the gas limit and gas amount for a transaction.
+   * @param {FeeData} gasBudget - The gas budget to validate.
+   * @throws {InvalidTransactionError} Throws an error if the gas budget is invalid.
+   */
+  validateGasBudget(gasBudget: FeeData): void {
+    if (gasBudget.gasLimit <= 0) {
+      throw new InvalidTransactionError('Invalid gas limit ' + gasBudget.gasLimit);
+    }
+    this.validateAmountData(gasBudget.amount);
+  }
+
+  /**
+   * Validates a send message for a transaction.
+   * @param {SendMessage} sendMessage - The send message to validate.
+   * @throws {InvalidTransactionError} Throws an error if the send message is invalid.
+   */
+  validateSendMessage(sendMessage: SendMessage) {
+    if (!sendMessage.toAddress || !this.isValidAddress(sendMessage.toAddress)) {
+      throw new InvalidTransactionError(`Invalid SendMessage toAddress: ` + sendMessage.toAddress);
+    }
+    if (!sendMessage.fromAddress || !this.isValidAddress(sendMessage.fromAddress)) {
+      throw new InvalidTransactionError(`Invalid SendMessage fromAddress: ` + sendMessage.fromAddress);
+    }
+    this.validateAmountData(sendMessage.amount);
+  }
+
+  /**
+   * Validates a coin amount.
+   * @param {Coin} amount - The coin amount to validate.
+   * @throws {InvalidTransactionError} Throws an error if the coin amount is invalid.
+   */
+  validateAmount(amount: Coin): void {
+    throw new NotImplementedError('validateAmount not implemented');
+  }
+
+  /**
+   * Validates if the address matches with regex @see accountAddressRegex
+   * @param {string} address
+   * @returns {boolean} - the validation result
+   */
+  isValidValidatorAddress(address: string): boolean {
+    throw new NotImplementedError('isValidValidatorAddress not implemented');
+  }
+
+  /**
+   * Validates if the address matches with regex @see accountAddressRegex
+   * @param {string} address
+   * @returns {boolean} - the validation result
+   */
+  isValidAddress(address: string): boolean {
+    throw new NotImplementedError('isValidAddress not implemented');
+  }
 }
 
-const utils = new CosmosLikeUtils();
+const utils = new CosmosUtils();
 
 export default utils;

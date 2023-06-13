@@ -28,35 +28,35 @@ modules/utxo-lib/ @BitGo/btc-team
 modules/utxo-ord/ @BitGo/btc-team
 
 # Eth
-modules/account-lib/ @BitGo/eth-team
-modules/sdk-coin-celo/ @BitGo/eth-team
-modules/sdk-coin-etc/ @BitGo/eth-team
-modules/sdk-coin-eth/ @BitGo/eth-team
-modules/sdk-coin-eth2/ @BitGo/eth-team
-modules/sdk-coin-rbtc/ @BitGo/eth-team
-modules/bitgo/test/v2/unit/coins/staking/ @BitGo/eth-team
-modules/bitgo/test/v2/unit/coins/token.ts @BitGo/eth-team
+modules/account-lib/ @BitGo/ethalt-team
+modules/sdk-coin-celo/ @BitGo/ethalt-team
+modules/sdk-coin-etc/ @BitGo/ethalt-team
+modules/sdk-coin-eth/ @BitGo/ethalt-team
+modules/sdk-coin-eth2/ @BitGo/ethalt-team
+modules/sdk-coin-rbtc/ @BitGo/ethalt-team
+modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ethalt-team
+modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
 
 # All other coins
-modules/sdk-coin-ada/ @BitGo/altcoins
-modules/sdk-coin-algo/ @BitGo/altcoins
-modules/sdk-coin-atom/ @BitGo/altcoins
-modules/sdk-coin-avaxc/ @BitGo/altcoins
-modules/sdk-coin-avaxp/ @BitGo/altcoins
-modules/sdk-coin-bsc/ @BitGo/eth-team
-modules/sdk-coin-cspr/ @BitGo/altcoins
-modules/sdk-coin-dot/ @BitGo/altcoins
-modules/sdk-coin-eos/ @BitGo/altcoins
-modules/sdk-coin-hbar/ @BitGo/altcoins
-modules/sdk-coin-near/ @BitGo/altcoins
-modules/sdk-coin-polygon/ @BitGo/eth-team
-modules/sdk-coin-sol/ @BitGo/altcoins
-modules/sdk-coin-stx/ @BitGo/altcoins
-modules/sdk-coin-sui/ @BitGo/altcoins
-modules/sdk-coin-trx/ @BitGo/altcoins
-modules/sdk-coin-xlm/ @BitGo/altcoins
-modules/sdk-coin-xrp/ @BitGo/altcoins
-modules/sdk-coin-xtz/ @BitGo/altcoins
+modules/sdk-coin-ada/ @BitGo/ethalt-team
+modules/sdk-coin-algo/ @BitGo/ethalt-team
+modules/sdk-coin-atom/ @BitGo/ethalt-team
+modules/sdk-coin-avaxc/ @BitGo/ethalt-team
+modules/sdk-coin-avaxp/ @BitGo/ethalt-team
+modules/sdk-coin-bsc/ @BitGo/ethalt-team
+modules/sdk-coin-cspr/ @BitGo/ethalt-team
+modules/sdk-coin-dot/ @BitGo/ethalt-team
+modules/sdk-coin-eos/ @BitGo/ethalt-team
+modules/sdk-coin-hbar/ @BitGo/ethalt-team
+modules/sdk-coin-near/ @BitGo/ethalt-team
+modules/sdk-coin-polygon/ @BitGo/ethalt-team
+modules/sdk-coin-sol/ @BitGo/ethalt-team
+modules/sdk-coin-stx/ @BitGo/ethalt-team
+modules/sdk-coin-sui/ @BitGo/ethalt-team
+modules/sdk-coin-trx/ @BitGo/ethalt-team
+modules/sdk-coin-xlm/ @BitGo/ethalt-team
+modules/sdk-coin-xrp/ @BitGo/ethalt-team
+modules/sdk-coin-xtz/ @BitGo/ethalt-team
 
 
 
@@ -69,9 +69,9 @@ modules/key-card/ @BitGo/wallet-platform
 modules/sdk-api/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 modules/sdk-core/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform @BitGo/hsm
 modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
-modules/sdk-rpc-wrapper @BitGo/defi-team
+modules/sdk-rpc-wrapper @BitGo/ethalt-team
 modules/sdk-test/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-modules/sdk-unified-wallet @BitGo/defi-team
+modules/sdk-unified-wallet @BitGo/ethalt-team
 modules/sjcl/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 modules/statics/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 modules/web-demo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform

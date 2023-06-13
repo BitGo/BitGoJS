@@ -1,18 +1,18 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
-import should = require('should');
 import sinon from 'sinon';
 import { Osmo, Tosmo } from '../../src';
 import utils from '../../src/lib/utils';
 import {
-  address,
   TEST_DELEGATE_TX,
   TEST_SEND_TX,
+  TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
-  TEST_TX_WITH_MEMO,
+  address,
 } from '../resources/osmo';
+import should = require('should');
 
 describe('OSMO', function () {
   let bitgo: TestBitGoAPI;

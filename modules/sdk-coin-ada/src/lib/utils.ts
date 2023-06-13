@@ -82,23 +82,27 @@ export class Utils implements BaseUtils {
     const BASE_ADDR_LEN = 92;
     const REWARD_AND_ENTERPRISE_ADDR_LEN = 47;
     const POINTER_ADDR_LEN = 52;
+    const VALIDATOR_ADDR_LEN = 56;
 
-    try {
-      const decodedBech = bech32.decode(address, 108);
-      const wordLength = decodedBech.words.length;
-      if (!bech32PrefixList.includes(decodedBech.prefix)) {
+    // test if this is a bech32 address first
+    if (new RegExp(bech32PrefixList.join('|')).test(address)) {
+      try {
+        const decodedBech = bech32.decode(address, 108);
+        const wordLength = decodedBech.words.length;
+        if (!bech32PrefixList.includes(decodedBech.prefix)) {
+          return false;
+        }
+        return (
+          wordLength === BASE_ADDR_LEN ||
+          wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
+          wordLength === POINTER_ADDR_LEN
+        );
+      } catch (err) {
         return false;
       }
-      if (
-        wordLength !== BASE_ADDR_LEN &&
-        wordLength !== REWARD_AND_ENTERPRISE_ADDR_LEN &&
-        wordLength !== POINTER_ADDR_LEN
-      ) {
-        return false;
-      }
-      return true;
-    } catch (err) {
-      return false;
+    } else {
+      // maybe this is a validator address
+      return new RegExp(`^(?!pool)[a-z0-9]\{${VALIDATOR_ADDR_LEN}\}$`).test(address);
     }
   }
 

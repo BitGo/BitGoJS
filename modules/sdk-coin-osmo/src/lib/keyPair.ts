@@ -6,7 +6,7 @@ import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
 /**
  * Osmosis keys and address management.
  */
-export class OsmoKeyPair extends CosmosKeyPair {
+export class KeyPair extends CosmosKeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
   }
