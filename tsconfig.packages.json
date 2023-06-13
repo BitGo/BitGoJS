@@ -119,6 +119,9 @@
       "path": "./modules/sdk-coin-sui"
     },
     {
+      "path": "./modules/sdk-coin-tia"
+    },
+    {
       "path": "./modules/sdk-coin-trx"
     },
     {
@@ -141,9 +144,6 @@
     },
     {
       "path": "./modules/sdk-rpc-wrapper"
-    },
-    {
-      "path": "./modules/sdk-unified-wallet"
     },
     {
       "path": "./modules/sdk-test"

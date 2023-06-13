@@ -113,7 +113,6 @@ export class CosmosCoin extends BaseCoin {
   /** @inheritDoc **/
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
-    // const coinConfig = coins.get(this.getChain());
     const { txPrebuild, txParams } = params;
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {

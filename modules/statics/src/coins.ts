@@ -787,7 +787,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '6e35c0dc-7ee8-4273-985d-254aa3641c9d',
     'tia',
-    'celestia',
+    'Celestia',
     Networks.main.tia,
     6,
     UnderlyingAsset.TIA,
@@ -797,7 +797,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '6ea4f120-6d26-4070-a12a-a0cac39ea552',
     'ttia',
-    'Testnet celestia',
+    'Testnet Celestia',
     Networks.test.tia,
     6,
     UnderlyingAsset.TIA,

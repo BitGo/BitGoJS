@@ -126,6 +126,9 @@
       "path": "../sdk-coin-sui"
     },
     {
+      "path": "../sdk-coin-tia"
+    },
+    {
       "path": "../sdk-coin-trx"
     },
     {

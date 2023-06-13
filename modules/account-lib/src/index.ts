@@ -71,6 +71,9 @@ export { Osmo };
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
 
+import * as Tia from '@bitgo/sdk-coin-tia';
+export { Tia };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -126,6 +129,8 @@ const coinBuilderMap = {
   tpolygon: Polygon.TransactionBuilder,
   sui: Sui.TransactionBuilderFactory,
   tsui: Sui.TransactionBuilderFactory,
+  tia: Tia.TransactionBuilderFactory,
+  ttia: Tia.TransactionBuilderFactory,
   atom: Atom.TransactionBuilderFactory,
   tatom: Atom.TransactionBuilderFactory,
   osmo: Osmo.TransactionBuilderFactory,

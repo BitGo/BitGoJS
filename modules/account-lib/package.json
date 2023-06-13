@@ -46,6 +46,7 @@
     "@bitgo/sdk-coin-sol": "^2.5.1",
     "@bitgo/sdk-coin-stx": "^2.0.7",
     "@bitgo/sdk-coin-sui": "^3.0.7",
+    "@bitgo/sdk-coin-tia": "^1.0.0",
     "@bitgo/sdk-coin-trx": "^1.8.0",
     "@bitgo/sdk-coin-xtz": "^1.4.23",
     "@bitgo/sdk-core": "^8.7.0",

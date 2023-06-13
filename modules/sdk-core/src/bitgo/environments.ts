@@ -25,6 +25,7 @@ interface EnvironmentTemplate {
   adaNodeUrl: string;
   atomNodeUrl: string;
   osmoNodeUrl: string;
+  tiaNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -99,6 +100,7 @@ const mainnetBase: EnvironmentTemplate = {
   adaNodeUrl: 'https://api.koios.rest/api/v0',
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
   osmoNodeUrl: 'https://lcd.osmosis.zone',
+  tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -129,7 +131,8 @@ const testnetBase: EnvironmentTemplate = {
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
-  osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone/',
+  osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone',
+  tiaNodeUrl: 'https://api-mocha.pops.one',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',

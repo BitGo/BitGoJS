@@ -136,6 +136,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-osmo /var/modules/sdk-coin-osmo/
 RUN cd /var/modules/sdk-coin-osmo && yarn link
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 RUN cd /var/modules/abstract-cosmos && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-tia /var/modules/sdk-coin-tia/
+RUN cd /var/modules/sdk-coin-tia && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 RUN cd /var/modules/sdk-coin-xlm && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
@@ -195,15 +197,16 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ltc && \
     yarn link @bitgo/sdk-coin-osmo && \
     yarn link @bitgo/abstract-cosmos && \
+    yarn link @bitgo/sdk-coin-tia && \
     yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 05 Jun 2023 16:57:03 GMT"
+LABEL created="Tue, 06 Jun 2023 10:54:43 GMT"
 LABEL version=9.27.0
-LABEL git_hash=9efc360c50ab1809e58cb5b0024850f14d62943a
+LABEL git_hash=82d33792e150f3ad67bda641c6c12f5e4d7322e0
 #LABEL_END
 
 USER node
