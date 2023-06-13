@@ -1,12 +1,10 @@
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { TransactionType } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
-
 import { Osmo, Tosmo } from '../../../src';
-
 import * as testData from '../../resources/osmo';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('Osmo Transfer Builder', () => {
   let bitgo: TestBitGoAPI;

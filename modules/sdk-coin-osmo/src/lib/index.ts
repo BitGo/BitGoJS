@@ -1,10 +1,10 @@
 import * as Constants from './constants';
 import * as Utils from './utils';
 
-export { OsmoTransaction } from './transaction';
-export { OsmoTransactionBuilder } from './transactionBuilder';
+export {
+  CosmosTransaction as Transaction,
+  CosmosTransactionBuilder as TransactionBuilder,
+} from '@bitgo/abstract-cosmos';
+export { KeyPair } from './keyPair';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
-export { OsmoTransferBuilder } from './transferBuilder';
-export { OsmoKeyPair } from './keyPair';
-
 export { Constants, Utils };

@@ -4,8 +4,8 @@
  * @format
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { Osmo } from './osmo';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Osmo } from './osmo';
 
 export class Tosmo extends Osmo {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -21,19 +21,5 @@ export class Tosmo extends Osmo {
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tosmo(bitgo, staticsCoin);
-  }
-
-  /**
-   * Identifier for the blockchain which supports this coin
-   */
-  public getChain(): string {
-    return this._staticsCoin.name;
-  }
-
-  /**
-   * Complete human-readable name of this coin
-   */
-  public getFullName(): string {
-    return this._staticsCoin.fullName;
   }
 }

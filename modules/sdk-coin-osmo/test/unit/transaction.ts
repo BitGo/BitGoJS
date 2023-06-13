@@ -3,16 +3,21 @@ import { coins } from '@bitgo/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 
-import { OsmoTransaction } from '../../src';
-import { DelegateOrUndelegeteMessage, SendMessage, WithdrawDelegatorRewardsMessage } from '@bitgo/abstract-cosmos';
+import {
+  CosmosTransaction,
+  DelegateOrUndelegeteMessage,
+  SendMessage,
+  WithdrawDelegatorRewardsMessage,
+} from '@bitgo/abstract-cosmos';
+import utils from '../../src/lib/utils';
 import * as testData from '../resources/osmo';
 
 describe('Osmo Transaction', () => {
-  let tx: OsmoTransaction;
+  let tx: CosmosTransaction;
   const config = coins.get('tosmo');
 
   beforeEach(() => {
-    tx = new OsmoTransaction(config);
+    tx = new CosmosTransaction(config, utils);
   });
 
   describe('Empty transaction', () => {

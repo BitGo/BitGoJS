@@ -1,15 +1,15 @@
-import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  acountLibCrypto,
-  accountLibBaseCoin,
   BaseBuilder,
   BaseTransactionBuilderFactory,
   BuildTransactionError,
   Ed25519BIP32,
   Ed25519KeyDeriver,
   Eddsa,
+  accountLibBaseCoin,
+  acountLibCrypto,
 } from '@bitgo/sdk-core';
-export { Eddsa, Ed25519BIP32 };
+import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+export { Ed25519BIP32, Eddsa };
 
 /**
  * Deprecated after version 2.19.0
