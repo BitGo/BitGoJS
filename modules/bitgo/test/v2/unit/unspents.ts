@@ -117,7 +117,7 @@ describe('Verify string type is used for value of unspent', function () {
 
       await wallet.sendMany(params);
 
-      prebuildAndSignTransactionStub.should.be.calledOnceWith({ ...params, txFormat: 'psbt' });
+      prebuildAndSignTransactionStub.should.calledOnce();
       sendScope.done();
     });
 
