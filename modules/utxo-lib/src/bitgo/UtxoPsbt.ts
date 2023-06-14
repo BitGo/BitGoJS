@@ -12,7 +12,18 @@ import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
-import { taproot, HDSigner, Psbt, PsbtTransaction, Transaction, TxOutput, Network, ecc as eccLib } from '..';
+import {
+  taproot,
+  HDSigner,
+  Psbt,
+  PsbtTransaction,
+  Transaction,
+  TxOutput,
+  Network,
+  ecc as eccLib,
+  getMainnet,
+  networks,
+} from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 import { getOutputIdForInput } from './Unspent';
 import { isSegwit } from './psbt/scriptTypes';
@@ -59,13 +70,22 @@ type SignatureParams = {
   sighashTypes: number[];
 };
 
-const defaultSignatureParams = {
-  deterministic: false,
-  sighashTypes: [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL],
-};
+function defaultSighashTypes(network: Network): number[] {
+  const sighashTypes = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL];
+  switch (getMainnet(network)) {
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+    case networks.ecash:
+      return [...sighashTypes, ...sighashTypes.map((s) => s | UtxoTransaction.SIGHASH_FORKID)];
+    default:
+      return sighashTypes;
+  }
+}
 
-function toSignatureParams(v: Partial<SignatureParams> | number[]): SignatureParams {
-  return Array.isArray(v) ? toSignatureParams({ sighashTypes: v }) : { ...defaultSignatureParams, ...v };
+function toSignatureParams(network: Network, v?: Partial<SignatureParams> | number[]): SignatureParams {
+  if (Array.isArray(v)) return toSignatureParams(network, { sighashTypes: v });
+  return { deterministic: false, sighashTypes: defaultSighashTypes(network), ...v };
 }
 
 export interface HDTaprootSigner extends HDSigner {
@@ -673,12 +693,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   signAllInputsHD(
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
-    params: number[] | Partial<SignatureParams> = defaultSignatureParams
+    params?: number[] | Partial<SignatureParams>
   ): this {
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
       throw new Error('Need HDSigner to sign input');
     }
-    const { sighashTypes, deterministic } = toSignatureParams(params);
+    const { sighashTypes, deterministic } = toSignatureParams(this.network, params);
 
     const results: boolean[] = [];
     for (let i = 0; i < this.data.inputs.length; i++) {
@@ -757,9 +777,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   signInputHD(
     inputIndex: number,
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
-    params: number[] | Partial<SignatureParams> = defaultSignatureParams
+    params?: number[] | Partial<SignatureParams>
   ): this {
-    const { sighashTypes, deterministic } = toSignatureParams(params);
+    const { sighashTypes, deterministic } = toSignatureParams(this.network, params);
     if (this.isTaprootInput(inputIndex)) {
       return this.signTaprootInputHD(inputIndex, hdKeyPair, { sighashTypes, deterministic });
     } else {

@@ -1189,10 +1189,32 @@
     elliptic "^6.5.4"
     libsodium-wrappers "^0.7.6"
 
+"@cosmjs/crypto@^0.30.1":
+  version "0.30.1"
+  resolved "https://registry.yarnpkg.com/@cosmjs/crypto/-/crypto-0.30.1.tgz#21e94d5ca8f8ded16eee1389d2639cb5c43c3eb5"
+  integrity sha512-rAljUlake3MSXs9xAm87mu34GfBLN0h/1uPPV6jEwClWjNkAMotzjC0ab9MARy5FFAvYHL3lWb57bhkbt2GtzQ==
+  dependencies:
+    "@cosmjs/encoding" "^0.30.1"
+    "@cosmjs/math" "^0.30.1"
+    "@cosmjs/utils" "^0.30.1"
+    "@noble/hashes" "^1"
+    bn.js "^5.2.0"
+    elliptic "^6.5.4"
+    libsodium-wrappers "^0.7.6"
+
 "@cosmjs/encoding@^0.29.5":
   version "0.29.5"
   resolved "https://registry.yarnpkg.com/@cosmjs/encoding/-/encoding-0.29.5.tgz#009a4b1c596cdfd326f30ccfa79f5e56daa264f2"
   integrity sha512-G4rGl/Jg4dMCw5u6PEZHZcoHnUBlukZODHbm/wcL4Uu91fkn5jVo5cXXZcvs4VCkArVGrEj/52eUgTZCmOBGWQ==
+  dependencies:
+    base64-js "^1.3.0"
+    bech32 "^1.1.4"
+    readonly-date "^1.0.0"
+
+"@cosmjs/encoding@^0.30.1":
+  version "0.30.1"
+  resolved "https://registry.yarnpkg.com/@cosmjs/encoding/-/encoding-0.30.1.tgz#b5c4e0ef7ceb1f2753688eb96400ed70f35c6058"
+  integrity sha512-rXmrTbgqwihORwJ3xYhIgQFfMSrwLu1s43RIK9I8EBudPx3KmnmyAKzMOVsRDo9edLFNuZ9GIvysUCwQfq3WlQ==
   dependencies:
     base64-js "^1.3.0"
     bech32 "^1.1.4"
@@ -1210,6 +1232,13 @@
   version "0.29.5"
   resolved "https://registry.yarnpkg.com/@cosmjs/math/-/math-0.29.5.tgz#722c96e080d6c2b62215ce9f4c70da7625b241b6"
   integrity sha512-2GjKcv+A9f86MAWYLUkjhw1/WpRl2R1BTb3m9qPG7lzMA7ioYff9jY5SPCfafKdxM4TIQGxXQlYGewQL16O68Q==
+  dependencies:
+    bn.js "^5.2.0"
+
+"@cosmjs/math@^0.30.1":
+  version "0.30.1"
+  resolved "https://registry.yarnpkg.com/@cosmjs/math/-/math-0.30.1.tgz#8b816ef4de5d3afa66cb9fdfb5df2357a7845b8a"
+  integrity sha512-yaoeI23pin9ZiPHIisa6qqLngfnBR/25tSaWpkTm8Cy10MX70UF5oN4+/t1heLaM6SSmRrhk3psRkV4+7mH51Q==
   dependencies:
     bn.js "^5.2.0"
 
@@ -1281,6 +1310,11 @@
   version "0.29.5"
   resolved "https://registry.yarnpkg.com/@cosmjs/utils/-/utils-0.29.5.tgz#3fed1b3528ae8c5f1eb5d29b68755bebfd3294ee"
   integrity sha512-m7h+RXDUxOzEOGt4P+3OVPX7PuakZT3GBmaM/Y2u+abN3xZkziykD/NvedYFvvCCdQo714XcGl33bwifS9FZPQ==
+
+"@cosmjs/utils@^0.30.1":
+  version "0.30.1"
+  resolved "https://registry.yarnpkg.com/@cosmjs/utils/-/utils-0.30.1.tgz#6d92582341be3c2ec8d82090253cfa4b7f959edb"
+  integrity sha512-KvvX58MGMWh7xA+N+deCfunkA/ZNDvFLw4YbOmX3f/XBIkqrVY7qlotfy2aNb1kgp6h4B6Yc8YawJPDTfvWX7g==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -6113,7 +6147,7 @@ axios@^0.26.1:
   dependencies:
     follow-redirects "^1.14.8"
 
-axios@^1.0.0, axios@^1.3.4:
+axios@^1.0.0, axios@^1.3.4, axios@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.4.0.tgz#38a7bf1224cd308de271146038b551d725f0be1f"
   integrity sha512-S4XCWMEmzvo64T9GfvQDOXgYRDJ/wsSZc7Jvdgx5u1sd0JwsuPLqb3SYmusag+edF6ziyMensPVqLTSc1PiSEA==
@@ -6394,10 +6428,10 @@ bip174@^2.1.0:
   resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.0.0-rc.1.tgz#6ca32dc75513744a9ae914255f915494056541b4"
   integrity sha512-eGi5die7Q7O3yPtkcGF1gD7qLlJLiLnYI4DpFTF6tUhUo71gy3RoXAAeeJA2fLpnVoJofXnLdLfpcO6OEZAsvw==
 
-"bip174@npm:@bitgo-forks/bip174@3.1.0-master.3":
-  version "3.1.0-master.3"
-  resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.1.0-master.3.tgz#1bc23abf2a0e190770463196a714330f711b2b79"
-  integrity sha512-yhSm1JeFJGztAqnqrpWNQqBCfR6SMpdM/XKKlpy02Ks7O+x98KpXjrRmX+jfAJERp/XXVfkgqUs3efSWxR7xZA==
+"bip174@npm:@bitgo-forks/bip174@3.1.0-master.4":
+  version "3.1.0-master.4"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.1.0-master.4.tgz#0c8a750cc98097120169e753e7fccc23b1cb9eaa"
+  integrity sha512-WDRNzPSdJGDqQNqfN+L5KHNHFDmNOPYnUnT7NkEkfHWn5m1jSOfcf8Swaslt5P0xcSDiERdN2gZxFc6XtOqRYg==
 
 bip32@^3.0.1, bip32@^3.1.0:
   version "3.1.0"
@@ -6470,13 +6504,13 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.5":
-  version "7.1.0-master.5"
-  resolved "https://registry.yarnpkg.com/@bitgo-forks/bitcoinjs-lib/-/bitcoinjs-lib-7.1.0-master.5.tgz#20eb034b2e30f19f772f5b363983c55a8ab6b9be"
-  integrity sha512-slAMm562sRa0XH19nMsML/dvqLkIODhPK3TLfHvp3jVg7Z+I3Tx+maXh87fY3mUCDfVG9hrQjhPTpQLRFOmOSA==
+"bitcoinjs-lib@npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.6":
+  version "7.1.0-master.6"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/bitcoinjs-lib/-/bitcoinjs-lib-7.1.0-master.6.tgz#effac792ec752e928f63b6128d93781c2f110b68"
+  integrity sha512-Cvf0odjJKy4frbcmVfTuRpQmAhu5wIFNmYNhJg3qxrV8pdR5WDbRICfGvrorxofZgB8Cv4UDTmbeoOF/ggmXnA==
   dependencies:
     bech32 "^2.0.0"
-    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.3"
+    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.4"
     bs58check "^2.1.2"
     create-hash "^1.1.0"
     fastpriorityqueue "^0.7.1"
@@ -17390,9 +17424,10 @@ superstruct@^1.0.3:
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-1.0.3.tgz#de626a5b49c6641ff4d37da3c7598e7a87697046"
   integrity sha512-8iTn3oSS8nRGn+C2pgXSKPI3jmpm6FExNazNpjvqS6ZUJQCej3PUXEKM8NjHBOs54ExM+LPW/FBRhymrdcCiSg==
 
-"supertest-as-promised@https://github.com/WhoopInc/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz":
+supertest-as-promised@1.0.0:
   version "1.0.0"
-  resolved "https://github.com/WhoopInc/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz#baae1dacb049ba958e2f693398acc69ee8b6ef12"
+  resolved "https://registry.yarnpkg.com/supertest-as-promised/-/supertest-as-promised-1.0.0.tgz#735dcd3705a17085db235df51d818953c1fbb7ac"
+  integrity sha512-N8ibuLjZDithNkCffompScmzumrZVMprwSkE2H460fMffZExDmpaJELC6pgffEwMzCJ+rTrJndEKl1dGvyNaPQ==
   dependencies:
     bluebird "^1.2.4"
     methods "^1.0.0"

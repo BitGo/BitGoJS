@@ -39,7 +39,7 @@ export type InputScriptType = ScriptType | 'taprootKeyPathSpend';
 export type OutputScriptType = ScriptType2Of3;
 
 /**
- * output script type and value
+ * input script type and value
  */
 export interface Input {
   scriptType: InputScriptType;

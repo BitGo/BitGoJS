@@ -8,6 +8,7 @@ import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
   createSpendScriptP2tr,
+  ScriptType,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
@@ -316,7 +317,7 @@ export function verifySignatureWithPublicKey<TNumber extends number | bigint>(
   return verifySignatureWithPublicKeys(transaction, inputIndex, prevOutputs, [publicKey])[0];
 }
 
-export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
+export function getDefaultSigHash(network: Network, scriptType?: ScriptType): number {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
