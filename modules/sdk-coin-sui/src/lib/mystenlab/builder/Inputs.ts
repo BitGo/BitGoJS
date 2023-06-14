@@ -35,7 +35,7 @@ export const Inputs = {
   },
 };
 
-export function getIdFromCallArg(arg: ObjectId | ObjectCallArg) {
+export function getIdFromCallArg(arg: ObjectId | ObjectCallArg): string {
   if (typeof arg === 'string') {
     return normalizeSuiAddress(arg);
   }

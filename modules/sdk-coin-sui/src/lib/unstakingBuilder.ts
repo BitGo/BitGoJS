@@ -10,12 +10,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import assert from 'assert';
 import { TransferTransaction } from './transferTransaction';
-import {
-  TransactionBlock as ProgrammingTransactionBlockBuilder,
-  TransactionBlockInput,
-  MoveCallTransaction,
-  Inputs,
-} from './mystenlab/builder';
+import { TransactionBlock as ProgrammingTransactionBlockBuilder, Inputs } from './mystenlab/builder';
 import {
   SUI_STAKING_POOL_MODULE_NAME,
   SUI_STAKING_POOL_SPLIT_FUN_NAME,
@@ -26,7 +21,7 @@ import {
 } from './mystenlab/framework';
 import { UnstakingTransaction } from './unstakingTransaction';
 import utils from './utils';
-import { SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SerializedTransactionDataBuilder } from './mystenlab/builder/TransactionDataBlock';
 
 export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTransaction> {
@@ -136,14 +131,16 @@ export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTr
     this.type(SuiTransactionType.WithdrawStake);
     this.sender(txData.sender);
     this.gasData(txData.gasData);
-
-    const stakedSuiInputIdx = (
-      (txData.kind.ProgrammableTransaction.transactions[0] as MoveCallTransaction).arguments[1] as TransactionBlockInput
-    ).index;
-    const stakedSuiInput = txData.kind.ProgrammableTransaction.inputs[stakedSuiInputIdx] as TransactionBlockInput;
-    const stakedSui = 'value' in stakedSuiInput ? stakedSuiInput.value : stakedSuiInput;
-
-    this.unstake({ stakedSui: stakedSui.Object.ImmOrOwned });
+    const parsed = UnstakingTransaction.parseTransaction(tx.suiTransaction.tx);
+    this.unstake({
+      stakedSui: {
+        // it is a bit unclear why we have to normalize this way
+        ...parsed.stakedObjectRef,
+        objectId: normalizeSuiObjectId(parsed.stakedObjectRef.objectId),
+        version: Number(parsed.stakedObjectRef.version),
+      },
+      amount: parsed.amount === undefined ? undefined : Number(parsed.amount),
+    });
   }
 
   /**
