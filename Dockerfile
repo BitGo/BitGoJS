@@ -94,6 +94,10 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
 RUN cd /var/modules/sdk-coin-hbar && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
 RUN cd /var/modules/sdk-coin-near && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-osmo /var/modules/sdk-coin-osmo/
+RUN cd /var/modules/sdk-coin-osmo && yarn link
+COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
+RUN cd /var/modules/abstract-cosmos && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-polygon /var/modules/sdk-coin-polygon/
 RUN cd /var/modules/sdk-coin-polygon && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
@@ -104,6 +108,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-stx /var/modules/sdk-coin-stx/
 RUN cd /var/modules/sdk-coin-stx && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sui /var/modules/sdk-coin-sui/
 RUN cd /var/modules/sdk-coin-sui && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-tia /var/modules/sdk-coin-tia/
+RUN cd /var/modules/sdk-coin-tia && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
 RUN cd /var/modules/sdk-coin-trx && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
@@ -132,12 +138,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 RUN cd /var/modules/sdk-coin-ethw && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 RUN cd /var/modules/sdk-coin-ltc && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-osmo /var/modules/sdk-coin-osmo/
-RUN cd /var/modules/sdk-coin-osmo && yarn link
-COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
-RUN cd /var/modules/abstract-cosmos && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-tia /var/modules/sdk-coin-tia/
-RUN cd /var/modules/sdk-coin-tia && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 RUN cd /var/modules/sdk-coin-xlm && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
@@ -176,11 +176,14 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-hbar && \
     yarn link @bitgo/sdk-coin-near && \
+    yarn link @bitgo/sdk-coin-osmo && \
+    yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-polygon && \
     yarn link @bitgo/sdk-coin-rbtc && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-sui && \
+    yarn link @bitgo/sdk-coin-tia && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-xtz && \
     yarn link @bitgo/sdk-coin-ada && \
@@ -195,18 +198,15 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eos && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-ltc && \
-    yarn link @bitgo/sdk-coin-osmo && \
-    yarn link @bitgo/abstract-cosmos && \
-    yarn link @bitgo/sdk-coin-tia && \
     yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 07 Jun 2023 20:03:24 GMT"
-LABEL version=9.27.1
-LABEL git_hash=968f6e132c14bc69d20ec1991a4e316166ecdbdd
+LABEL created="Tue, 13 Jun 2023 23:28:27 GMT"
+LABEL version=9.27.2
+LABEL git_hash=eecfb716f412ea5577f302a5c970d2b83fbe5b1b
 #LABEL_END
 
 USER node
