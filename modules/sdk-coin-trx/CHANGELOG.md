@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.8.2...@bitgo/sdk-coin-trx@1.8.3) (2023-06-14)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** replace isValidHexAddress method for correct pattern ([5886259](https://github.com/BitGo/BitGoJS/commit/5886259caf4a45bc9016d276e9b2155d969900cf))
+
 ## [1.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.8.1...@bitgo/sdk-coin-trx@1.8.2) (2023-06-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

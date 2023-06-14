@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.2.0...bitgo@19.3.0) (2023-06-14)
+
+
+### Features
+
+* **root:** use eddsa commitment for tss utils and signing ([b14b64f](https://github.com/BitGo/BitGoJS/commit/b14b64fbcb4cf65880154586b777992be0e49d37))
+* **sdk-core:** remove ecdsa tss feature flag ([1382684](https://github.com/BitGo/BitGoJS/commit/1382684250102d13ff829f84d724331f8c8dd073))
+
+
+
+
+
 # [19.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.1.0...bitgo@19.2.0) (2023-06-13)
 
 

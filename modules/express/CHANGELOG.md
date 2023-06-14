@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.27.2...@bitgo/express@9.28.0) (2023-06-14)
+
+
+### Features
+
+* **root:** use eddsa commitment for tss utils and signing ([b14b64f](https://github.com/BitGo/BitGoJS/commit/b14b64fbcb4cf65880154586b777992be0e49d37))
+
+
+
+
+
 ## [9.27.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.27.1...@bitgo/express@9.27.2) (2023-06-13)
 
 **Note:** Version bump only for package @bitgo/express
