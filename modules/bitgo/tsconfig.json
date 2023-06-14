@@ -57,6 +57,9 @@
       "path": "../sdk-coin-bcha"
     },
     {
+      "path": "../sdk-coin-bld"
+    },
+    {
       "path": "../sdk-coin-bsc"
     },
     {
