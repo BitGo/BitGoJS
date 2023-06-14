@@ -16,6 +16,9 @@ import {
   Ed25519BIP32,
   Eddsa,
   SignShare,
+  CommitmentShareRecord,
+  CommitmentType,
+  SignatureShareType,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
@@ -350,7 +353,12 @@ describe('test tss helper functions', function () {
         }],
     };
     const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex);
-
+    const bitgoToUserCommitment: CommitmentShareRecord = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: validBitgoToUserSignShare.rShares[1].commitment!,
+      type: CommitmentType.COMMITMENT,
+    };
 
     let MPC: Eddsa;
 
@@ -558,6 +566,71 @@ describe('test tss helper functions', function () {
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload
+        ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
+      });
+    });
+
+    describe('createUserToBitGoGShare with commitment:', async function() {
+      it('should succeed to create a UserToBitGo GShare', async function() {
+
+        const userToBitgoGShare = await createUserToBitGoGShare(
+          validUserSignShare,
+          txRequest.signatureShares[0] as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload,
+          bitgoToUserCommitment,
+        );
+        userToBitgoGShare.should.deepEqual(validUserToBitgoGShare);
+      });
+
+      it('should fail when XShare doesnt belong to the user', async function() {
+        const invalidUserSignShare = _.cloneDeep(validUserSignShare) ;
+        invalidUserSignShare.xShare.i = 3;
+        await createUserToBitGoGShare(
+          invalidUserSignShare,
+          txRequest.signatureShares[0] as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload,
+          bitgoToUserCommitment,
+        ).should.be.rejectedWith('Invalid XShare, doesnt belong to the User');
+      });
+
+      it('should fail when commitment is invalid', async function() {
+        const invalidBitgoToUserCommitment = _.cloneDeep(bitgoToUserCommitment) ;
+        invalidBitgoToUserCommitment.share = 'deadbeef';
+        await createUserToBitGoGShare(
+          validUserSignShare,
+          txRequest.signatureShares[0] as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload,
+          invalidBitgoToUserCommitment,
+        ).should.be.rejectedWith('Could not verify other player share');
+      });
+
+      it('should fail when RShare doesnt belong to Bitgo', async function() {
+        const invalidBitgoRShare = _.cloneDeep(txRequest.signatureShares[0]);
+        invalidBitgoRShare.from = 'user';
+        await createUserToBitGoGShare(
+          validUserSignShare,
+          invalidBitgoRShare as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload,
+          bitgoToUserCommitment,
+        ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
+
+        const invalidBitgoRShare2 = _.cloneDeep(txRequest.signatureShares[0]);
+        invalidBitgoRShare2.to = 'bitgo';
+        await createUserToBitGoGShare(
+          validUserSignShare,
+          invalidBitgoRShare2 as SignatureShareRecord,
+          validUserSigningMaterial.backupYShare,
+          validUserSigningMaterial.bitgoYShare,
+          signablePayload,
+          bitgoToUserCommitment,
         ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
       });
     });

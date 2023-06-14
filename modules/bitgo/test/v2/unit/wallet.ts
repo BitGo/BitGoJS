@@ -1852,6 +1852,7 @@ describe('V2 Wallet:', function () {
           derivationPath: 'm/0',
         },
         signatureShares: [],
+        commitmentShares: [],
       }],
       unsignedTxs: [],
       apiVersion: 'full',

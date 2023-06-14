@@ -1,4 +1,4 @@
-import { SignatureShareRecord } from '@bitgo/sdk-core';
+import { ExchangeCommitmentResponse, SignatureShareRecord } from '@bitgo/sdk-core';
 import * as nock from 'nock';
 
 export async function nockSendTxRequest(params: {coin:string, walletId: string, txRequestId: string}): Promise<nock.Scope> {
@@ -39,6 +39,18 @@ export async function nockGetTxRequest(params: {walletId: string, txRequestId: s
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
+    .reply(200, params.response);
+}
+
+export async function nockExchangeCommitments(params: {walletId: string, txRequestId: string, response: ExchangeCommitmentResponse, apiMode?: 'lite' | 'full', notPersist?: boolean}): Promise<nock.Scope> {
+  const { apiMode = 'lite' } = params;
+  let addendum = '';
+  if (apiMode === 'full') {
+    addendum = '/transactions/0';
+  }
+  return nock('https://bitgo.fakeurl')
+    .persist(true)
+    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}${addendum}/commit`)
     .reply(200, params.response);
 }
 
