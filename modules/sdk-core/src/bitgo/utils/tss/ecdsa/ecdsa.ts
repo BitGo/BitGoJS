@@ -36,7 +36,6 @@ import { BackupProvider, IWallet } from '../../../wallet';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
-import { Enterprises } from '../../../enterprise';
 import { TxRequestChallengeResponse } from '../../../tss/types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -797,10 +796,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     if (!enterpriseId) {
       throw new Error('Wallet must be an enterprise wallet.');
     }
-    const shouldUseEnterpriseChallenge = await (async () => {
-      const enterprise = await new Enterprises(this.bitgo, this.baseCoin).get({ id: enterpriseId });
-      return enterprise.hasFeatureFlags(['useEnterpriseEcdsaTssChallenge']);
-    })();
 
     // create BitGo range proof and paillier proof challenge
     const createBitgoChallengeResponse = await getTxRequestChallenge(
@@ -816,20 +811,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const enterpriseToBitgoPaillierChallenge = EcdsaTypes.serializePaillierChallenge({
       p: await EcdsaPaillierProof.generateP(hexToBigInt(createBitgoChallengeResponse.n)),
     });
-
-    if (!shouldUseEnterpriseChallenge) {
-      const entChallenge = await EcdsaRangeProof.generateNtilde(minModulusBitLength);
-      return {
-        enterpriseChallenge: {
-          ...EcdsaTypes.serializeNtilde(entChallenge),
-          p: enterpriseToBitgoPaillierChallenge.p,
-        },
-        bitgoChallenge: {
-          ...createBitgoChallengeResponse,
-          p: bitgoToEnterprisePaillierChallenge.p,
-        },
-      };
-    }
 
     // TODO(BG-78764): once the paillier proofs are complete, reduce challenge creation to one API call
     const walletChallenges = await this.wallet.getChallengesForEcdsaSigning();
