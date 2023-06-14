@@ -10,18 +10,18 @@ import {
 } from '@bitgo/sdk-core';
 import { UnstakingProgrammableTransaction, SuiTransaction, TransactionExplanation, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
+import utils, { isImmOrOwnedObj } from './utils';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 import {
   builder,
-  getIdFromCallArg,
   Inputs,
   MoveCallTransaction,
   ObjectCallArg,
+  PureCallArg,
   TransactionBlockInput,
 } from './mystenlab/builder';
-import { CallArg, normalizeSuiAddress, SuiObjectRef } from './mystenlab/types';
+import { bcs, CallArg, normalizeSuiAddress, SuiObjectRef } from './mystenlab/types';
 import { BCS } from '@mysten/bcs';
 import { AMOUNT_UNKNOWN_TEXT, SUI_ADDRESS_LENGTH } from './constants';
 import { UnstakingBuilder } from './unstakingBuilder';
@@ -124,15 +124,11 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     this._type = transactionType;
   }
 
-  getEntriesForStakedSuiInput(
-    stakedSuiInput: TransactionBlockInput,
-    amount?: bigint
-  ): { inputs: Entry[]; outputs: Entry[] } {
-    const stakedSui = 'value' in stakedSuiInput ? stakedSuiInput.value : stakedSuiInput;
+  getEntriesForStakedSuiInput(stakedSuiInput: SuiObjectRef, amount?: bigint): { inputs: Entry[]; outputs: Entry[] } {
     return {
       inputs: [
         {
-          address: normalizeSuiAddress(getIdFromCallArg(stakedSui)),
+          address: normalizeSuiAddress(stakedSuiInput.objectId),
           value: amount === undefined ? AMOUNT_UNKNOWN_TEXT : amount.toString(),
           coin: this._coinConfig.name,
         },
@@ -147,12 +143,48 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     };
   }
 
-  getEntriesForTransactionPair(
+  /**
+   * @param inputs
+   * @param transactions
+   */
+  static getEntriesForTransactionPairReserialized(
+    inputs: [unknown, unknown, unknown],
+    transactions: [unknown, unknown]
+  ): {
+    stakedObjectRef: SuiObjectRef;
+    amount: bigint;
+  } {
+    const [inputStakedSui, inputAmount, inputSharedObj] = inputs;
+
+    if (!ObjectCallArg.is(inputStakedSui)) {
+      throw new Error('Invalid input staked sui');
+    }
+
+    if (!PureCallArg.is(inputAmount)) {
+      throw new Error('Invalid input amount');
+    }
+
+    if (!ObjectCallArg.is(inputSharedObj)) {
+      throw new Error('Invalid input shared object');
+    }
+
+    const amount = BigInt(bcs.de(BCS.U64, Uint8Array.from(inputAmount.Pure)));
+    if (!isImmOrOwnedObj(inputStakedSui.Object)) {
+      throw new Error('Invalid input shared object');
+    }
+
+    return {
+      stakedObjectRef: inputStakedSui.Object.ImmOrOwned,
+      amount,
+    };
+  }
+
+  static parseTransactionPair(
     inputs: SuiTransaction['tx']['inputs'],
     transactions: unknown[]
   ): {
-    inputs: Entry[];
-    outputs: Entry[];
+    stakedObjectRef: SuiObjectRef;
+    amount: bigint;
   } {
     if (transactions.length !== 2) {
       throw new Error('Invalid transaction pair');
@@ -166,15 +198,22 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       throw new Error('Invalid inputs');
     }
 
-    function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
-      return 'ImmOrOwned' in obj;
-    }
-
     const [inputStakedSui, inputAmount, inputSharedObj] = inputs;
     if (
       !TransactionBlockInput.is(inputStakedSui) ||
       !TransactionBlockInput.is(inputAmount) ||
-      !TransactionBlockInput.is(inputSharedObj) ||
+      !TransactionBlockInput.is(inputSharedObj)
+    ) {
+      // for unclear reasons there seem to be two different serialization formats that we are dealing with
+      // try the other one here
+      return this.getEntriesForTransactionPairReserialized(
+        // we have length checked these earlier
+        inputs as [unknown, unknown, unknown],
+        transactions as [unknown, unknown]
+      );
+    }
+
+    if (
       inputStakedSui.type !== 'object' ||
       inputAmount.type !== 'pure' ||
       typeof inputAmount.value !== 'string' ||
@@ -193,28 +232,56 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       UnstakingBuilder.getTransactionBlockData(inputStakedSui.value.Object.ImmOrOwned, amount)
     );
 
-    return this.getEntriesForStakedSuiInput(inputStakedSui, amount);
+    return {
+      stakedObjectRef: inputStakedSui.value.Object.ImmOrOwned,
+      amount,
+    };
   }
 
-  getEntriesForSingleTransaction(
+  static parseTransactionSingle(
     inputs: SuiTransaction['tx']['inputs'],
     tx: unknown
   ): {
-    inputs: Entry[];
-    outputs: Entry[];
+    stakedObjectRef: SuiObjectRef;
   } {
     if (!MoveCallTransaction.is(tx) || !TransactionBlockInput.is(tx.arguments[1])) {
       throw new Error('Invalid transaction');
     }
     const stakedSuiInputIdx = tx.arguments[1].index;
-    const stakedSuiInput = inputs[stakedSuiInputIdx];
+    let stakedSuiInput: unknown | SuiObjectRef = inputs[stakedSuiInputIdx];
     if (!TransactionBlockInput.is(stakedSuiInput)) {
       // for unclear reasons, in tests the stakedSuiInput is not a TransactionBlockInput sometimes
       if (!ObjectCallArg.is(stakedSuiInput)) {
         throw new Error('Invalid transaction');
       }
     }
-    return this.getEntriesForStakedSuiInput(stakedSuiInput as TransactionBlockInput);
+    if ('Object' in stakedSuiInput && isImmOrOwnedObj(stakedSuiInput.Object)) {
+      stakedSuiInput = stakedSuiInput.Object.ImmOrOwned as SuiObjectRef;
+    } else if ('value' in stakedSuiInput && isImmOrOwnedObj(stakedSuiInput.value.Object)) {
+      stakedSuiInput = stakedSuiInput.value.Object.ImmOrOwned as SuiObjectRef;
+    } else {
+      throw new Error('Invalid transaction');
+    }
+    if (!SuiObjectRef.is(stakedSuiInput)) {
+      throw new Error('Invalid transaction');
+    }
+    return {
+      stakedObjectRef: stakedSuiInput,
+    };
+  }
+
+  static parseTransaction(tx: UnstakingProgrammableTransaction): {
+    stakedObjectRef: SuiObjectRef;
+    amount?: bigint;
+  } {
+    const { inputs, transactions } = tx;
+    if (transactions.length === 1) {
+      return UnstakingTransaction.parseTransactionSingle(inputs, transactions[0]);
+    } else if (transactions.length === 2) {
+      return UnstakingTransaction.parseTransactionPair(inputs, transactions);
+    } else {
+      throw new InvalidTransactionError('Invalid transaction');
+    }
   }
 
   /**
@@ -225,18 +292,10 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       return;
     }
 
-    let parsed;
-    const { inputs, transactions } = this.suiTransaction.tx;
-    if (transactions.length === 1) {
-      parsed = this.getEntriesForSingleTransaction(inputs, transactions[0]);
-    } else if (transactions.length === 2) {
-      parsed = this.getEntriesForTransactionPair(inputs, transactions);
-    } else {
-      throw new InvalidTransactionError('Invalid transaction');
-    }
-
-    this._inputs = parsed.inputs;
-    this._outputs = parsed.outputs;
+    const parsed = UnstakingTransaction.parseTransaction(this.suiTransaction.tx);
+    const { inputs, outputs } = this.getEntriesForStakedSuiInput(parsed.stakedObjectRef, parsed.amount);
+    this._inputs = inputs;
+    this._outputs = outputs;
   }
 
   /**

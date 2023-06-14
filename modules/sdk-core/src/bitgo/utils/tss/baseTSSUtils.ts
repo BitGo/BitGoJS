@@ -24,6 +24,7 @@ import {
   IntentOptionsForTypedData,
   PopulatedIntentForTypedDataSigning,
   CreateBitGoKeychainParamsBase,
+  CommitmentShareRecord,
 } from './baseTypes';
 import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
 
@@ -143,6 +144,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {string} prv - user signing material
    * @param {SignatureShareRecord} bitgoToUserRShare - BitGo to User R Share
    * @param {SignShare} userToBitgoRShare - User to BitGo R Share
+   * @param {string} [bitgoToUserCommitment] - BitGo to User Commitment
    * @returns {Promise<GShare>} - GShare from User to BitGo
    */
   createGShareFromTxRequest(params: {
@@ -150,6 +152,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     prv: string;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
+    bitgoToUserCommitment?: CommitmentShareRecord;
   }): Promise<GShare> {
     throw new Error('Method not implemented.');
   }

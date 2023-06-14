@@ -5,6 +5,7 @@ import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
 import { BitGoProofSignatures } from '../utils/tss/ecdsa';
 
+// useEnterpriseEcdsaTssChallenge is deprecated
 export type EnterpriseFeatureFlag = 'useEnterpriseEcdsaTssChallenge';
 
 export interface EnterpriseData {

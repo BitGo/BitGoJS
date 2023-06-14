@@ -4,18 +4,14 @@ import should from 'should';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { SuiTransactionType, UnstakingProgrammableTransaction } from '../../../src/lib/iface';
+import { UnstakingBuilder } from '../../../src';
 
 describe('Sui unstaking Builder', () => {
   const factory = getBuilderFactory('tsui');
 
   function testUnstakingBuilder(amount: number | undefined) {
     describe(`Success (amount=${amount})`, () => {
-      it(`should build a unstaking tx`, async function () {
-        const txBuilder = factory.getUnstakingBuilder();
-        txBuilder.type(SuiTransactionType.WithdrawStake);
-        txBuilder.sender(testData.sender.address);
-        txBuilder.unstake({ ...testData.requestWithdrawStakedSui, amount });
-        txBuilder.gasData(testData.gasData);
+      async function assertMatchesFixture(txBuilder: UnstakingBuilder, rebuild = true) {
         const tx = (await txBuilder.build()) as SuiTransaction<UnstakingProgrammableTransaction>;
 
         tx.suiTransaction.tx.should.eql(
@@ -28,6 +24,21 @@ describe('Sui unstaking Builder', () => {
           rawTx,
           amount === undefined ? testData.WITHDRAW_STAKED_SUI : testData.WITHDRAW_STAKED_SUI_WITH_AMOUNT
         );
+
+        if (rebuild) {
+          const txBuilder = factory.getUnstakingBuilder();
+          txBuilder.from(rawTx);
+          await assertMatchesFixture(txBuilder, false);
+        }
+      }
+
+      it(`should build a unstaking tx`, async function () {
+        const txBuilder = factory.getUnstakingBuilder();
+        txBuilder.type(SuiTransactionType.WithdrawStake);
+        txBuilder.sender(testData.sender.address);
+        txBuilder.unstake({ ...testData.requestWithdrawStakedSui, amount });
+        txBuilder.gasData(testData.gasData);
+        await assertMatchesFixture(txBuilder);
       });
     });
   }

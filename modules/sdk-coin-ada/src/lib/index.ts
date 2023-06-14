@@ -8,4 +8,5 @@ export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { StakingActivateBuilder } from './stakingActivateBuilder';
 export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 export { StakingWithdrawRewardsBuilder } from './stakingWithdrawRewardsBuilder';
+export { StakingPledgeBuilder } from './stakingPledgeBuilder';
 export { Utils };

@@ -6,7 +6,7 @@ import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../../../account-lib';
 import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType, CreateBackupOptions } from '../../../keychain';
+import { AddKeychainOptions, Keychain, CreateBackupOptions } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { encryptText, getBitgoGpgPubKey, createShareProof, generateGPGKeyPair } from '../../opengpgUtils';
 import {
@@ -19,15 +19,21 @@ import {
   SigningMaterial,
 } from '../../../tss';
 import {
+  CommitmentShareRecord,
+  CommitmentType,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
+  EncryptedSignerShareRecord,
+  EncryptedSignerShareType,
   SignatureShareRecord,
+  SignatureShareType,
   TSSParams,
   TxRequest,
 } from '../baseTypes';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
+import { exchangeEddsaCommitments } from '../../../tss/common';
 
 /**
  * Utility functions for TSS work flows.
@@ -151,7 +157,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const userKeychainParams: AddKeychainOptions = {
       source: 'user',
-      keyType: 'tss' as KeyType,
+      keyType: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       originalPasscodeEncryptionCode,
     };
@@ -397,10 +403,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     prv: string;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
+    bitgoToUserCommitment?: CommitmentShareRecord;
   }): Promise<GShare> {
     let txRequestResolved: TxRequest;
 
-    const { txRequest, prv, bitgoToUserRShare, userToBitgoRShare } = params;
+    const { txRequest, prv, bitgoToUserCommitment, bitgoToUserRShare, userToBitgoRShare } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -426,7 +433,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserRShare,
       userSigningMaterial.backupYShare,
       userSigningMaterial.bitgoYShare,
-      signablePayload
+      signablePayload,
+      bitgoToUserCommitment
     );
     return userToBitGoGShare;
   }
@@ -476,7 +484,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
-    const { txRequest, prv, apiVersion } = params;
+    const { txRequest, prv } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -494,11 +502,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
+    const { apiVersion } = txRequestResolved;
     assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
-      txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions![0].unsignedTx
-        : txRequestResolved.unsignedTxs[0];
+      apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
 
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
@@ -513,7 +520,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoIndex = 3;
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
-    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+    const bitgoToUserEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.yShares[bitgoIndex].u, 'eddsa');
@@ -521,12 +528,27 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userPublicGpgKey = userGpgKey.publicKey;
     const publicShare = signingKey.yShares[bitgoIndex].y + signingKey.yShares[bitgoIndex].chaincode;
 
+    const userToBitgoCommitment = userSignShare.rShares[bitgoIndex].commitment;
+    assert(userToBitgoCommitment, 'Missing userToBitgoCommitment commitment');
+
+    const commitmentShare = this.createUserToBitgoCommitmentShare(userToBitgoCommitment);
+    const encryptedSignerShare = this.createUserToBitgoEncryptedSignerShare(bitgoToUserEncryptedSignerShare);
+
+    const { commitmentShare: bitgoToUserCommitment } = await exchangeEddsaCommitments(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      commitmentShare,
+      encryptedSignerShare,
+      apiVersion
+    );
+
     await offerUserToBitgoRShare(
       this.bitgo,
       this.wallet.id(),
       txRequestId,
       userSignShare,
-      encryptedSignerShare,
+      bitgoToUserEncryptedSignerShare,
       apiVersion,
       vssProof,
       privateShareProof,
@@ -541,7 +563,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserRShare,
       userSigningMaterial.backupYShare,
       userSigningMaterial.bitgoYShare,
-      signablePayload
+      signablePayload,
+      bitgoToUserCommitment
     );
 
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion);
@@ -561,6 +584,24 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     }
     const commonPubHexStr = commonKeychain.slice(0, 64);
     return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
+  }
+
+  createUserToBitgoCommitmentShare(commitment: string): CommitmentShareRecord {
+    return {
+      from: SignatureShareType.USER,
+      to: SignatureShareType.BITGO,
+      share: commitment,
+      type: CommitmentType.COMMITMENT,
+    };
+  }
+
+  createUserToBitgoEncryptedSignerShare(encryptedSignerShare: string): EncryptedSignerShareRecord {
+    return {
+      from: SignatureShareType.USER,
+      to: SignatureShareType.BITGO,
+      share: encryptedSignerShare,
+      type: EncryptedSignerShareType.ENCRYPTED_SIGNER_SHARE,
+    };
   }
 }
 /**

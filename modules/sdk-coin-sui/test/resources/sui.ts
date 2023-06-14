@@ -261,8 +261,8 @@ export const txInputWithdrawStaked = [
     value: {
       Object: {
         ImmOrOwned: {
-          objectId: 'ee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
-          version: '1121',
+          objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+          version: 1121,
           digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
         },
       },
@@ -295,8 +295,8 @@ export const txTransactionsWithdrawStaked = [
         value: {
           Object: {
             ImmOrOwned: {
-              objectId: 'ee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
-              version: '1121',
+              objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+              version: 1121,
               digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
             },
           },

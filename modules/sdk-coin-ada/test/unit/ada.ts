@@ -20,6 +20,7 @@ import {
 import * as _ from 'lodash';
 import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
+import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
 
 describe('ADA', function () {
   const coinName = 'ada';
@@ -273,6 +274,26 @@ describe('ADA', function () {
       } catch (error) {
         should.equal(error.message, 'Invalid transaction');
       }
+    });
+  });
+
+  describe('Parse Raw Transactions', () => {
+    it('should parse staking pledge transaction', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedPledgeTx);
+      should.equal(tx.type, TransactionType.StakingPledge);
+    });
+
+    it('should parse staking activation tx', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedStakingActiveTx);
+      should.equal(tx.type, TransactionType.StakingActivate);
+    });
+
+    it('should parse staking deactivation tx', function () {
+      const tx = new Transaction(basecoin);
+      tx.fromRawTransaction(rawTx.unsignedStakingDeactiveTx);
+      should.equal(tx.type, TransactionType.StakingDeactivate);
     });
   });
 

@@ -177,8 +177,121 @@ describe('External signer', () => {
       i: ShareKeyPosition.BITGO,
       j: ShareKeyPosition.USER,
       u: result.signingKeyYShare.u,
+      v: result.rShare.rShares[3].v,
       r: result.rShare.rShares[3].r,
       R: result.rShare.rShares[3].R,
+    };
+    const bitgoGShare = MPC.sign(
+      Buffer.from(tMessage, 'hex'),
+      bitgoSignShare.xShare,
+      [userToBitgoRShare],
+      [backup.yShares[3]]
+    );
+    const signature = MPC.signCombine([userGShare, bitgoGShare]);
+    const veriResult = MPC.verify(Buffer.from(tMessage, 'hex'), signature);
+    veriResult.should.be.true();
+    readFileStub.restore();
+    envStub.restore();
+  });
+
+  it('should read an encrypted prv from signerFileSystemPath and pass it to R and G share generators, with commitment', async () => {
+    const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+    const userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    const bg = new BitGo({ env: 'test' });
+    const walletPassphrase = 'testPass';
+    const validPrv = bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
+    const output: Output = {};
+    output[walletID] = validPrv;
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
+    const envStub = sinon
+      .stub(process, 'env')
+      .value({ WALLET_62fe536a6b4cf70007acb48c0e7bb0b0_PASSPHRASE: walletPassphrase });
+    const tMessage = 'testMessage';
+    const bgTest = new BitGo({ env: 'test' });
+    const reqR = {
+      bitgo: bgTest,
+      body: {
+        txRequest: {
+          apiVersion: 'full',
+          state: 'pendingCommitment',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath: 'm/0',
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+      },
+      params: {
+        coin: 'tsol',
+        sharetype: 'R',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const result = await handleV2GenerateShareTSS(reqR);
+    const bitgoCombine = MPC.keyCombine(bitgo.uShare, [result.signingKeyYShare, backup.yShares[3]]);
+    const bitgoSignShare = await MPC.signShare(Buffer.from(tMessage, 'hex'), bitgoCombine.pShare, [
+      bitgoCombine.jShares[1],
+    ]);
+    const signatureShareRec = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: bitgoSignShare.rShares[1].r + bitgoSignShare.rShares[1].R,
+    };
+    const bitgoToUserCommitmentShare = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: bitgoSignShare.rShares[1].commitment,
+      type: 'commitment',
+    };
+    const reqG = {
+      bitgo: bgTest,
+      body: {
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath: 'm/0',
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        userToBitgoRShare: result.rShare,
+        bitgoToUserRShare: signatureShareRec,
+        bitgoToUserCommitment: bitgoToUserCommitmentShare,
+      },
+      params: {
+        coin: 'tsol',
+        sharetype: 'G',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const userGShare = await handleV2GenerateShareTSS(reqG);
+    const userToBitgoRShare = {
+      i: ShareKeyPosition.BITGO,
+      j: ShareKeyPosition.USER,
+      u: result.signingKeyYShare.u,
+      v: result.rShare.rShares[3].v,
+      r: result.rShare.rShares[3].r,
+      R: result.rShare.rShares[3].R,
+      commitment: result.rShare.rShares[3].commitment,
     };
     const bitgoGShare = MPC.sign(
       Buffer.from(tMessage, 'hex'),

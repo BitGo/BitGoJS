@@ -69,10 +69,6 @@ export interface SignShare {
   rShares: Record<number, RShare>;
 }
 
-export interface ExchangeCommitmentResponse {
-  commitment: string;
-}
-
 export interface GShare {
   i: number;
   y: string;

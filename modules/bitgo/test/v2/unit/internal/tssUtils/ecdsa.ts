@@ -590,17 +590,26 @@ describe('TSS Ecdsa Utils:', async function () {
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
-      await nockGetChallenge({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, addendum: '/transactions/0', response: {
-        ntilde: serializedEntChallenge.ntilde,
-        h1: serializedEntChallenge.h1,
-        h2: serializedEntChallenge.h2,
-        n: bitgoSigningKey.xShare.n,
-      } });
-
       const [userToBitgoPaillierChallenge, bitgoToUserPaillierChallenge] = await Promise.all([
         EcdsaPaillierProof.generateP(hexToBigInt(userSigningKey.yShares[3].n)),
         EcdsaPaillierProof.generateP(hexToBigInt(bitgoSigningKey.yShares[1].n)),
       ]);
+
+      const bitgoChallenges = {
+        ...serializedBitgoChallenge,
+        p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
+        n: bitgoSigningKey.xShare.n,
+      };
+      const enterpriseChallenges = {
+        ...serializedEntChallenge,
+        p: EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge }).p,
+        n: bitgoSigningKey.xShare.n,
+      };
+      sinon.stub(ECDSAUtils.EcdsaUtils.prototype, 'getEcdsaSigningChallenges').resolves({
+        enterpriseChallenge: enterpriseChallenges,
+        bitgoChallenge: bitgoChallenges,
+      });
+
       const [userXShare, bitgoXShare] = [
         MPC.appendChallenge(userSigningKey.xShare, serializedEntChallenge, EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge })),
         MPC.appendChallenge(bitgoSigningKey.xShare, serializedBitgoChallenge, EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })),
@@ -871,41 +880,8 @@ describe('TSS Ecdsa Utils:', async function () {
       nock.cleanAll();
     });
 
-    it('should generate an ephemeral enterprise challenge and use txRequest challenge without the ent feature flag', async function() {
-      await nockGetEnterprise({ enterpriseId: enterpriseId, response: enterpriseData, times: 1 });
-      await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
-      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(rawEntChallengeWithProofs);
-      const generateNtildeStub = sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
-      const challenges = await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n, 0);
-      should.exist(challenges);
-      should.exist(challenges.enterpriseChallenge.p);
-      should.exist(challenges.bitgoChallenge.p);
-
-      const expectedRangeProofChallenges = {
-        enterpriseChallenge: {
-          ntilde: challenges.enterpriseChallenge.ntilde,
-          h1: challenges.enterpriseChallenge.h1,
-          h2: challenges.enterpriseChallenge.h2,
-        },
-        bitgoChallenge: rawBitgoChallenge,
-      };
-      expectedRangeProofChallenges.should.deepEqual(({
-        enterpriseChallenge: {
-          ntilde: rawEntChallengeWithProofs.ntilde,
-          h1: rawEntChallengeWithProofs.h1,
-          h2: rawEntChallengeWithProofs.h2,
-        },
-        bitgoChallenge: rawBitgoChallenge,
-      }));
-      generateNtildeStub.calledOnce.should.be.true();
-    });
-
     it('should fetch static ent and bitgo challenges with the ent feature flag and verify them', async function() {
       await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
-      await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
-        ...enterpriseData,
-        featureFlags: ['useEnterpriseEcdsaTssChallenge'],
-      }, times: 1 });
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
       const adminSignatureEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, adminEcdhKey.xprv, derivationPath);
       const adminSignatureBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, adminEcdhKey.xprv, derivationPath);
