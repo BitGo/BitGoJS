@@ -96,7 +96,7 @@ async function getStakes(
   if (result.length) {
     return result;
   }
-  const { attempts = 10, sleepMs = 1000 } = params;
+  const { attempts = 60, sleepMs = 1000 } = params;
   if (0 < attempts) {
     await new Promise((resolve) => setTimeout(resolve, sleepMs));
     return await getStakes(conn, owner, { ...params, attempts: attempts - 1, sleepMs });

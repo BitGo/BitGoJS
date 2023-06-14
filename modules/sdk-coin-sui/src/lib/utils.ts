@@ -26,9 +26,18 @@ import {
   SuiJsonValue,
   SuiObjectRef,
 } from './mystenlab/types';
-import { builder, TransactionBlockInput, TransactionType as TransactionCommandType } from './mystenlab/builder';
+import {
+  builder,
+  ObjectCallArg,
+  TransactionBlockInput,
+  TransactionType as TransactionCommandType,
+} from './mystenlab/builder';
 import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
 import blake2b from '@bitgo/blake2b';
+
+export function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
+  return 'ImmOrOwned' in obj;
+}
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
