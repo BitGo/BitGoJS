@@ -9,7 +9,12 @@ import {
   toXOnlyPublicKey,
 } from '../outputScripts';
 import { toOutputScript } from '../../address';
-import { getSignatureVerifications, signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
+import {
+  getDefaultSigHash,
+  getSignatureVerifications,
+  signInput2Of3,
+  verifySignatureWithPublicKeys,
+} from '../signature';
 import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { KeyName, RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -252,6 +257,10 @@ export function updateWalletUnspentForPsbt(
 
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(u.chain, u.index);
   const scriptType = scriptTypeForChain(u.chain);
+  const sighashType = getDefaultSigHash(psbt.network, scriptType);
+  if (psbt.data.inputs[inputIndex].sighashType === undefined) {
+    psbt.updateInput(inputIndex, { sighashType });
+  }
   const isBackupFlow = signer === 'backup' || cosigner === 'backup';
 
   if (scriptType === 'p2tr' || (scriptType === 'p2trMusig2' && isBackupFlow)) {
