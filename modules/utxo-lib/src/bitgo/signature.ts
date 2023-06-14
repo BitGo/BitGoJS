@@ -324,7 +324,13 @@ export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3)
     case networks.ecash:
       return Transaction.SIGHASH_ALL | UtxoTransaction.SIGHASH_FORKID;
     default:
-      return scriptType === 'p2tr' ? Transaction.SIGHASH_DEFAULT : Transaction.SIGHASH_ALL;
+      switch (scriptType) {
+        case 'p2tr':
+        case 'p2trMusig2':
+          return Transaction.SIGHASH_DEFAULT;
+        default:
+          return Transaction.SIGHASH_ALL;
+      }
   }
 }
 
