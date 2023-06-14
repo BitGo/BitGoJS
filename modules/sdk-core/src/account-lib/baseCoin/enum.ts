@@ -52,6 +52,8 @@ export enum TransactionType {
   RecoveryWalletDeployment,
   // Add staking
   StakingAdd,
+  // Staking pledge (e.g. ADA)
+  StakingPledge,
 }
 
 /**

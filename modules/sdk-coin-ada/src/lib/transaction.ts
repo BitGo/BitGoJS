@@ -217,14 +217,21 @@ export class Transaction extends BaseTransaction {
       this._id = Buffer.from(CardanoWasm.hash_transaction(txn.body()).to_bytes()).toString('hex');
       this._type = TransactionType.Send;
       if (this._transaction.body().certs()) {
+        const certs: CardanoWasm.Certificate[] = [];
         for (let i = 0; i < this._transaction.body().certs()!.len(); i++) {
           const cert = this._transaction.body().certs()!.get(i);
-          if (cert.as_stake_registration() !== undefined) {
-            this._type = TransactionType.StakingActivate;
-          }
-          if (cert.as_stake_deregistration() !== undefined) {
-            this._type = TransactionType.StakingDeactivate;
-          }
+          certs.push(cert);
+        }
+
+        if (
+          certs.some((c) => c.as_stake_delegation() !== undefined) &&
+          certs.some((c) => c.as_pool_registration() !== undefined)
+        ) {
+          this._type = TransactionType.StakingPledge;
+        } else if (certs.some((c) => c.as_stake_registration() !== undefined)) {
+          this._type = TransactionType.StakingActivate;
+        } else if (certs.some((c) => c.as_stake_deregistration() !== undefined)) {
+          this._type = TransactionType.StakingDeactivate;
         }
       }
       if (this._transaction.body().withdrawals()) {
@@ -271,7 +278,11 @@ export class Transaction extends BaseTransaction {
         ? 'StakingActivate'
         : this._type === TransactionType.StakingWithdraw
         ? 'StakingWithdraw'
-        : 'StakingDeactivate';
+        : this._type === TransactionType.StakingDeactivate
+        ? 'StakingDeactivate'
+        : this._type === TransactionType.StakingPledge
+        ? 'StakingPledge'
+        : 'undefined';
     return {
       displayOrder,
       id: txJson.id,
