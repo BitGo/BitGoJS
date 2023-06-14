@@ -14,6 +14,7 @@ import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
+  CustomCommitmentGeneratingFunction,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
   TokenEnablement,
@@ -156,6 +157,7 @@ export interface WalletSignBaseOptions {
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   txPrebuild?: TransactionPrebuild;
+  customCommitmentGeneratingFunction?: CustomCommitmentGeneratingFunction;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
   customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
   apiVersion?: ApiVersion;

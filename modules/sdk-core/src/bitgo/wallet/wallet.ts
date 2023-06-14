@@ -1594,7 +1594,11 @@ export class Wallet implements IWallet {
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
     const { txPrebuild, apiVersion } = params;
 
-    if (_.isFunction(params.customGShareGeneratingFunction) && _.isFunction(params.customRShareGeneratingFunction)) {
+    if (
+      _.isFunction(params.customCommitmentGeneratingFunction) &&
+      _.isFunction(params.customGShareGeneratingFunction) &&
+      _.isFunction(params.customRShareGeneratingFunction)
+    ) {
       // invoke external signer TSS for EdDSA workflow
       return this.signTransactionTssExternalSignerEdDSA(params, this.baseCoin);
     }
@@ -2780,6 +2784,10 @@ export class Wallet implements IWallet {
       throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
     }
 
+    if (!params.customCommitmentGeneratingFunction) {
+      throw new Error('Generator function for commitment required to sign transactions with External Signer.');
+    }
+
     if (!params.customRShareGeneratingFunction) {
       throw new Error('Generator function for R share required to sign transactions with External Signer.');
     }
@@ -2791,6 +2799,7 @@ export class Wallet implements IWallet {
     try {
       const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
         txRequestId,
+        params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
       );

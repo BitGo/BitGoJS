@@ -8,7 +8,9 @@ import {
   UnsupportedCoinError,
   GShare,
   SignShare,
-  YShare,
+  CustomCommitmentGeneratingFunction,
+  CommitmentShareRecord,
+  EncryptedSignerShareRecord,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -409,13 +411,17 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
   const coin = bitgo.coin(req.params.coin);
   const eddUtils = new EddsaUtils(bitgo, coin);
   req.body.prv = privKey;
+  req.body.walletPassphrase = walletPw;
   try {
-    if (req.params.sharetype == 'R') {
-      return await eddUtils.createRShareFromTxRequest(req.body);
-    } else if (req.params.sharetype == 'G') {
-      return await eddUtils.createGShareFromTxRequest(req.body);
-    } else {
-      throw new Error('Share type not supported, only G and R share generation is supported.');
+    switch (req.params.sharetype) {
+      case 'commitment':
+        return await eddUtils.createCommitmentShareFromTxRequest(req.body);
+      case 'R':
+        return await eddUtils.createRShareFromTxRequest(req.body);
+      case 'G':
+        return await eddUtils.createGShareFromTxRequest(req.body);
+      default:
+        throw new Error('Share type not supported, only commitment, G and R share generation is supported.');
     }
   } catch (error) {
     console.error('error while signing wallet transaction ', error);
@@ -788,6 +794,10 @@ function createTSSSendParams(req: express.Request) {
   if (req.config.externalSignerUrl !== undefined) {
     return {
       ...req.body,
+      customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
+        req.config.externalSignerUrl,
+        req.params.coin
+      ),
       customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
       customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
     };
@@ -1092,8 +1102,27 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
   };
 }
 
+export function createCustomCommitmentGenerator(
+  externalSignerUrl: string,
+  coin: string
+): CustomCommitmentGeneratingFunction {
+  return async function (params): Promise<{
+    userToBitgoCommitment: CommitmentShareRecord;
+    encryptedSignerShare: EncryptedSignerShareRecord;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/commitment`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
 export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
-  return async function (params): Promise<{ rShare: SignShare; signingKeyYShare: YShare }> {
+  return async function (params): Promise<{ rShare: SignShare }> {
     const { body: rShare } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
       (err, tryCount) => {

@@ -25,8 +25,10 @@ import {
   PopulatedIntentForTypedDataSigning,
   CreateBitGoKeychainParamsBase,
   CommitmentShareRecord,
+  EncryptedSignerShareRecord,
+  CustomCommitmentGeneratingFunction,
 } from './baseTypes';
-import { GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
+import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -117,6 +119,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   signUsingExternalSigner(
     txRequest: string | TxRequest,
+    externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction
   ): Promise<TxRequest> {
@@ -124,27 +127,51 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   /**
+   * Create an Commitment (User to BitGo) share from an unsigned transaction and private user signing material
+   * EDDSA only
+   *
+   * @param {Object} params - params object
+   * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
+   * @param {string} params.prv - user signing material
+   * @param {string} params.walletPassphrase - wallet passphrase
+   *
+   * @returns {Promise<{ userToBitgoCommitment: CommitmentShareRecor, encryptedSignerShare: EncryptedSignerShareRecord }>} - Commitment Share and the Encrypted Signer Share to BitGo
+   */
+  createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
+    userToBitgoCommitment: CommitmentShareRecord;
+    encryptedSignerShare: EncryptedSignerShareRecord;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
    * Create an R (User to BitGo) share from an unsigned transaction and private user signing material
    *
-   * @param {TxRequest} txRequest - transaction request with unsigned transaction
-   * @param {string} prv - user signing material
-   * @returns {Promise<{ rShare: SignShare; signingKeyYShare: YShare }>} - R Share and the Signing Key's Y share to BitGo
+   * @param {Object} params - params object
+   * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
+   * @param {string} params.prv - user signing material
+   * @param {string} [params.walletPassphrase] - wallet passphrase
+   * @param {EncryptedSignerShareRecord} [params.encryptedUserToBitgoRShare] - encrypted user to bitgo R share generated in the commitment phase
+   * @returns {Promise<{ rShare: SignShare }>} - R Share to BitGo
    */
   createRShareFromTxRequest(params: {
     txRequest: TxRequest;
-    prv: string;
-  }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }> {
+    walletPassphrase: string;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }): Promise<{ rShare: SignShare }> {
     throw new Error('Method not implemented.');
   }
 
   /**
    * Create a G (User to BitGo) share from an unsigned transaction and private user signing material
    *
-   * @param {TxRequest} txRequest - transaction request with unsigned transaction
-   * @param {string} prv - user signing material
-   * @param {SignatureShareRecord} bitgoToUserRShare - BitGo to User R Share
-   * @param {SignShare} userToBitgoRShare - User to BitGo R Share
-   * @param {string} [bitgoToUserCommitment] - BitGo to User Commitment
+   * @param {Object} params - params object
+   * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
+   * @param {string} params.prv - user signing material
+   * @param {SignatureShareRecord} params.bitgoToUserRShare - BitGo to User R Share
+   * @param {SignShare} params.userToBitgoRShare - User to BitGo R Share
+   * @param {CommitmentShareRecord} params.bitgoToUserCommitment - BitGo to User Commitment
    * @returns {Promise<GShare>} - GShare from User to BitGo
    */
   createGShareFromTxRequest(params: {
@@ -152,7 +179,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     prv: string;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
-    bitgoToUserCommitment?: CommitmentShareRecord;
+    bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare> {
     throw new Error('Method not implemented.');
   }
