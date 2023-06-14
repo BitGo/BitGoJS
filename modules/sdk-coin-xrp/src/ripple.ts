@@ -53,6 +53,8 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
       SigningPubKey: publicKey,
       TxnSignature: computeSignature(tx, privateKey, options.signAs),
     };
+    // Ordering of private key signing matters, or the Ripple fullnode will throw an 'Unsorted Signers array' error.
+    // Additional signers must be added to the front of the signers array list.
     if (tx.TxnSignature || tx.Signers) {
       tx.Signers.unshift({ Signer: signer });
     } else {

@@ -268,8 +268,8 @@ export class Xrp extends BaseCoin {
       signAs: userAddress,
     });
 
-    // Normally the SDK provides the first signature for an XRP tx, but occasionally it provides the second and final one
-    // for recovery transactions
+    // Normally the SDK provides the first signature for an XRP tx, but occasionally it provides the final one as well
+    // (recoveries)
     if (isLastSignature) {
       return { txHex: tx.signedTransaction };
     }
@@ -305,7 +305,7 @@ export class Xrp extends BaseCoin {
    */
   async explainTransaction(params: ExplainTransactionOptions = {}): Promise<TransactionExplanation> {
     let transaction;
-    let txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    let txHex: string = params.txHex || ((params.halfSigned && params.halfSigned.txHex) as string);
     if (!txHex) {
       throw new Error('missing required param txHex');
     }
@@ -357,7 +357,7 @@ export class Xrp extends BaseCoin {
       fee: {
         fee: transaction.Fee,
         feeRate: null,
-        size: txHex!.length / 2,
+        size: txHex.length / 2,
       },
     } as any;
   }
