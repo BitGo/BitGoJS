@@ -309,6 +309,50 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('Wallet Transactions', function () {
+    it('should use a custom signing function if provided', async function () {
+      const customSigningFunction: CustomSigningFunction = sinon.stub().returns({
+        txHex: 'this-is-a-tx',
+      });
+
+      const stubs = [
+        sinon.stub(wallet.baseCoin, 'postProcessPrebuild').returnsArg(0),
+        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves(true),
+        sinon.stub(wallet.baseCoin, 'signTransaction').resolves({ txHex: 'this-is-a-tx' }),
+      ];
+
+      const recipients = [
+        { address: 'abc', amount: 123 },
+        { address: 'def', amount: 456 },
+      ];
+
+      const txPrebuild = {
+        txHex: 'this-is-a-tx',
+      };
+
+      const scope = nock(bgUrl)
+        .post(wallet.url('/tx/build').replace(bgUrl, ''))
+        .reply(200, txPrebuild)
+        .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
+        .reply(200, { pub: 'pub' })
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
+        .reply(200, { pub: 'pub' })
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
+        .reply(200, { pub: 'pub' })
+        .post(wallet.url('/tx/send').replace(bgUrl, ''))
+        .reply(200, { ok: true });
+
+      const result = await wallet.sendMany({ recipients, customSigningFunction });
+
+      result.should.have.property('ok', true);
+      customSigningFunction.should.have.been.calledTwice();
+      scope.done();
+      stubs.forEach((s) => s.restore());
+    });
+  });
+
   describe('TETH Wallet Transactions', function () {
     let ethWallet;
 
@@ -528,52 +572,6 @@ describe('V2 Wallet:', function () {
         e.message.should.not.equal(errorMessage);
       }
       nockKeychain.isDone().should.be.true();
-    });
-
-    it('should use a custom signing function if provided', async function () {
-      const customSigningFunction: CustomSigningFunction = sinon.stub();
-      const builtInSigningMethod = sinon.spy();
-
-      const stubs = [
-        sinon.stub(wallet.baseCoin, 'postProcessPrebuild').returnsArg(0),
-        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves(true),
-        sinon.stub(wallet.baseCoin, 'signTransaction').callsFake(builtInSigningMethod),
-      ];
-
-      const recipients = [
-        { address: 'abc', amount: 123 },
-        { address: 'def', amount: 456 },
-      ];
-
-      const txPrebuild = {
-        txHex: 'this-is-a-tx',
-      };
-
-      const scope = nock(bgUrl)
-        .post(wallet.url('/tx/build').replace(bgUrl, ''))
-        .reply(200, txPrebuild)
-        .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
-        .reply(200)
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .post(wallet.url('/tx/send').replace(bgUrl, ''))
-        .reply(200, { ok: true });
-
-      const result = await wallet.sendMany({ recipients, customSigningFunction });
-
-      result.should.have.property('ok', true);
-      customSigningFunction.should.have.been.calledOnceWith(sinon.match({
-        recipients,
-        txPrebuild,
-        pubs: sinon.match.array,
-      }));
-      builtInSigningMethod.called.should.be.false();
-      scope.done();
-      stubs.forEach((s) => s.restore());
     });
   });
 

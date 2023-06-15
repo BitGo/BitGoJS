@@ -279,6 +279,13 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   *  Check whether a coin utxo-based
+   */
+  usesUnspentModel(): boolean {
+    return false;
+  }
+
+  /**
    * Check whether a coin supports message signing
    * @returns {boolean}
    */

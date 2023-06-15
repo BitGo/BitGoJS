@@ -445,6 +445,7 @@ export interface IBaseCoin {
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
+  usesUnspentModel(): boolean;
   supportsMessageSigning(): boolean;
   supportsSigningTypedData(): boolean;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;

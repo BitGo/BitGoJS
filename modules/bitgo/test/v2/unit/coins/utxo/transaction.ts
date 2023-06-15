@@ -22,6 +22,8 @@ import {
   transactionHexToObj,
   createPrebuildTransaction,
   getDefaultWalletKeys,
+  getUtxoCoin,
+  keychainsBase58,
 } from './util';
 
 import {
@@ -40,6 +42,90 @@ type WalletUnspent<TNumber extends number | bigint = number> = bitgo.WalletUnspe
 function getScriptTypes2Of3() {
   return [...bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend'] as const;
 }
+
+describe(`UTXO coin signTransaction`, async function () {
+  const bgUrl = common.Environments[TestBitGo.decorate(BitGo, { env: 'mock' }).getEnv()].uri;
+
+  const coin = getUtxoCoin('btc');
+  const wallet = getUtxoWallet(coin, { id: '5b34252f1bf349930e34020a00000000', coin: coin.getChain() });
+  const rootWalletKeys = getDefaultWalletKeys();
+  const userPrv = rootWalletKeys.user.toBase58();
+  const pubs = keychainsBase58.map((v) => v.pub) as Triple<string>;
+
+  async function signTransaction(
+    tx: utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint>,
+    unspents?: Unspent<bigint>[]
+  ) {
+    const isPsbt = tx instanceof utxolib.bitgo.UtxoPsbt;
+    const isTxWithTaprootKeyPathSpend = isPsbt && utxolib.bitgo.isTransactionWithKeyPathSpendInput(tx);
+    const txHex = tx.toHex();
+
+    const signerNoncePsbt = await coin.signTransaction({
+      txPrebuild: { txHex, txInfo: {} },
+      prv: isTxWithTaprootKeyPathSpend ? userPrv : undefined,
+      signingStep: 'signerNonce',
+    });
+    assert.ok('txHex' in signerNoncePsbt);
+    const cosignerNoncePsbt = await coin.signTransaction({
+      txPrebuild: { ...signerNoncePsbt, txInfo: {}, walletId: isTxWithTaprootKeyPathSpend ? wallet.id() : undefined },
+      signingStep: 'cosignerNonce',
+    });
+    assert.ok('txHex' in cosignerNoncePsbt);
+    await coin.signTransaction({
+      txPrebuild: { ...cosignerNoncePsbt, txInfo: { unspents: isPsbt ? undefined : unspents } },
+      prv: userPrv,
+      pubs: isPsbt ? undefined : pubs,
+      signingStep: 'signerSignature',
+    });
+  }
+
+  it('success when called like customSigningFunction flow - PSBT with taprootKeyPathSpend inputs', async function () {
+    const inputs: testutil.Input[] = testutil.inputScriptTypes.map((scriptType) => ({
+      scriptType,
+      value: BigInt(1000),
+    }));
+    const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
+    const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
+
+    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+
+    const scope = nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/signpsbt`, (body) => body.psbt)
+      .reply(200, { psbt: psbt.clone().setAllInputsMusig2NonceHD(rootWalletKeys.bitgo).toHex() });
+
+    await signTransaction(psbt);
+    assert.strictEqual(scope.isDone(), true);
+  });
+
+  it('success when called like customSigningFunction flow - PSBT without taprootKeyPathSpend inputs', async function () {
+    const inputs: testutil.Input[] = testutil.inputScriptTypes
+      .filter((v) => v !== 'taprootKeyPathSpend')
+      .map((scriptType) => ({
+        scriptType,
+        value: BigInt(1000),
+      }));
+    const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
+    const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
+    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+
+    await signTransaction(psbt);
+  });
+
+  it('success when called like customSigningFunction flow - Network Tx', async function () {
+    const inputs: testutil.TxnInput<bigint>[] = testutil.txnInputScriptTypes
+      .filter((v) => v !== 'p2shP2pk')
+      .map((scriptType) => ({
+        scriptType,
+        value: BigInt(1000),
+      }));
+    const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
+    const outputs: testutil.TxnOutput<bigint>[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
+    const txBuilder = testutil.constructTxnBuilder(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const unspents = inputs.map((v, i) => testutil.toTxnUnspent(v, i, coin.network, rootWalletKeys));
+
+    await signTransaction(txBuilder.buildIncomplete(), unspents);
+  });
+});
 
 function run<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,

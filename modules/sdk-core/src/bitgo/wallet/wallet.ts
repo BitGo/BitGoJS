@@ -41,6 +41,7 @@ import {
   CreatePolicyRuleOptions,
   CreateShareOptions,
   CrossChainUTXO,
+  CustomSigningFunction,
   DeployForwardersOptions,
   DownloadKeycardOptions,
   FanoutUnspentsOptions,
@@ -1584,6 +1585,38 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Signs a UTXO coin transaction/psbt using external signer.
+   */
+  private async signTransactionUtxoExternalSigner(
+    customSigningFunction: CustomSigningFunction,
+    signTransactionParams: { txPrebuild: TransactionPrebuild; pubs?: string[]; coin: IBaseCoin }
+  ) {
+    const getTxHex = (v: SignedTransaction): string => {
+      if ('txHex' in v) {
+        return v.txHex;
+      }
+      throw new Error('txHex not found in signTransaction result');
+    };
+
+    const signerNonceTx = await customSigningFunction({
+      ...signTransactionParams,
+      signingStep: 'signerNonce',
+    });
+
+    const cosignerNonceTx = await this.baseCoin.signTransaction({
+      ...signTransactionParams,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(signerNonceTx) },
+      signingStep: 'cosignerNonce',
+    });
+
+    return await customSigningFunction({
+      ...signTransactionParams,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(cosignerNonceTx) },
+      signingStep: 'signerSignature',
+    });
+  }
+
+  /**
    * Sign a transaction
    * @param params
    * - txPrebuild
@@ -1624,12 +1657,15 @@ export class Wallet implements IWallet {
 
     const signTransactionParams = {
       ...presign,
-      txPrebuild,
+      txPrebuild: { ...txPrebuild, walletId: this.id() },
       pubs,
       coin: this.baseCoin,
     };
 
     if (_.isFunction(params.customSigningFunction)) {
+      if (this.baseCoin.usesUnspentModel()) {
+        return await this.signTransactionUtxoExternalSigner(params.customSigningFunction, signTransactionParams);
+      }
       return params.customSigningFunction(signTransactionParams);
     }
     return this.baseCoin.signTransaction({

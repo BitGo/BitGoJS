@@ -141,7 +141,30 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
 }
 
 export interface CustomSigningFunction {
-  (params: { coin: IBaseCoin; txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
+  (params: {
+    coin: IBaseCoin;
+    txPrebuild: TransactionPrebuild;
+    pubs?: string[];
+    /**
+     * This UTXO coins related flag becomes applicable under two conditions are met:
+     * 1) When the external express signer is activated
+     * 2) When the PSBT includes at least one taprootKeyPathSpend input.
+     *
+     * The taprootKeyPathSpend input is unique in that it can only be spent using both user and bitgo keys.
+     *
+     * The signing process of a taprootKeyPathSpend input is a 4-step sequence:
+     * i) user nonce generation - signerNonce - this is the first call to external express signer signTransaction
+     * ii) bitgo nonce generation - cosignerNonce - this is the second call to local signTransaction
+     * iii) user signature - signerSignature - this is the third call to external express signer signTransaction
+     * iv) bitgo signature - not in signTransaction method’s scope
+     *
+     * In the absence of this flag, the aforementioned first three sequence is executed in a single signTransaction call.
+     *
+     * NOTE: We make a strong assumption that the external express signer and its caller uses sticky sessions,
+     * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
+     */
+    signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
+  }): Promise<SignedTransaction>;
 }
 
 export interface WalletSignBaseOptions {
