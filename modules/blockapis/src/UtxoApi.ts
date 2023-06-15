@@ -75,12 +75,17 @@ async function mapInputs<TOut>(
  * @param network
  */
 export async function fetchInputs(
-  ins: utxolib.TxInput[],
+  ins: utxolib.TxInput[] | utxolib.bitgo.TxOutPoint[],
   api: UtxoApi,
   network: utxolib.Network
 ): Promise<utxolib.TxOutput[]> {
   return mapInputs(
-    ins.map((input) => utxolib.bitgo.getOutputIdForInput(input)),
+    ins.map((i: utxolib.TxInput | utxolib.bitgo.TxOutPoint) => {
+      if ('txid' in i) {
+        return i;
+      }
+      return utxolib.bitgo.getOutputIdForInput(i);
+    }),
     async (txid) => utxolib.bitgo.createTransactionFromHex(await api.getTransactionHex(txid), network).outs
   );
 }
