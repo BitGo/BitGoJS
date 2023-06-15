@@ -97,7 +97,7 @@ describe('isTransactionWithKeyPathSpendInput', function () {
       );
       assert(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
-      const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
+      const tx = psbt.extractTransaction();
 
       assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
       assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);

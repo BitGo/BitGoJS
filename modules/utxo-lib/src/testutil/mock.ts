@@ -59,7 +59,7 @@ export function mockPrevTx(
   });
   psbtFromNetwork.validateSignaturesOfAllInputs();
   psbtFromNetwork.finalizeAllInputs();
-  return psbtFromNetwork.extractTransaction() as UtxoTransaction<bigint>;
+  return psbtFromNetwork.extractTransaction();
 }
 
 export const replayProtectionKeyPair = getKey('replay-protection');
