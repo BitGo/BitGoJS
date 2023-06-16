@@ -89,50 +89,59 @@ describe('Pending Approvals:', () => {
     scope.done();
   });
 
-  it('should no recreate the transaction during approving a pending approval if there are no recipients', async () => {
-    const pendingApprovalDataTemp: PendingApprovalData = {
-      id: 'pa0',
-      info: {
-        type: Type.TRANSACTION_REQUEST,
-        transactionRequest: {
-          coinSpecific: {
-            [coin]: { txHex: 'gabagool' },
+  function testRecreateTransaction(coinName: string, recreateTransaction: boolean) {
+    it(`[${coinName}] should ${
+      recreateTransaction ? 'not ' : ''
+    }recreate the transaction during approving a pending approval if there are no recipients`, async () => {
+      const pendingApprovalDataTemp: PendingApprovalData = {
+        id: 'pa0',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+          transactionRequest: {
+            coinSpecific: {
+              [coinName]: { txHex: 'gabagool' },
+            },
+            recipients: [],
+            buildParams: {},
+            sourceWallet: walletId,
           },
-          recipients: [],
-          buildParams: {},
-          sourceWallet: walletId,
         },
-      },
-      state: State.PENDING,
-      creator: 'test',
-    };
+        state: State.PENDING,
+        creator: 'test',
+      };
 
-    const walletDataTemp = {
-      id: walletId,
-      coin,
-      pendingApprovals: [pendingApprovalDataTemp],
-    };
-    const walletTemp = new Wallet(bitgo, basecoin, walletDataTemp);
-    (pendingApprovalDataTemp as any).wallet = walletTemp;
+      const walletDataTemp = {
+        id: walletId,
+        coinName,
+        pendingApprovals: [pendingApprovalDataTemp],
+      };
+      const walletTemp = new Wallet(bitgo, bitgo.coin(coinName), walletDataTemp);
+      (pendingApprovalDataTemp as any).wallet = walletTemp;
 
-    const pendingApprovals = walletTemp.pendingApprovals();
-    pendingApprovals.should.have.length(1);
-    const pendingApproval = pendingApprovals[0];
+      const pendingApprovals = walletTemp.pendingApprovals();
+      pendingApprovals.should.have.length(1);
+      const pendingApproval = pendingApprovals[0];
 
-    const buildScope = nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/tx/build`).reply(200);
-    const paScope = nock(bgUrl)
-      .put(`/api/v2/${coin}/pendingapprovals/${pendingApprovalDataTemp.id}`, {
+      const stub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTransaction').resolves({
         state: 'approved',
         halfSigned: { txHex: 'gabagool' },
-      })
-      .reply(200);
+      });
+      const paScope = nock(bgUrl)
+        .put(`/api/v2/${coinName}/pendingapprovals/${pendingApprovalDataTemp.id}`, {
+          state: 'approved',
+          halfSigned: { txHex: 'gabagool' },
+        })
+        .reply(200);
 
-    await pendingApproval.approve({ xprv: 'nonsense' });
+      await pendingApproval.approve({ xprv: 'nonsense', walletPassphrase: 'gabagoolio' });
 
-    // Should not call build and should call pa
-    buildScope.isDone().should.be.false();
-    paScope.isDone().should.be.true();
-  });
+      // Should not call build and should call pa
+      paScope.isDone().should.be.true();
+      stub.calledOnce.should.equal(recreateTransaction);
+    });
+  }
+  testRecreateTransaction('tbtc', false);
+  testRecreateTransaction('tsol', true);
 
   it('should call approve and do the TSS flow and fail if the txRequestId is missing', async () => {
     const pendingApproval = wallet.pendingApprovals()[0];

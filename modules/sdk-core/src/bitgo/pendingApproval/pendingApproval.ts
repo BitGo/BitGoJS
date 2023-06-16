@@ -182,7 +182,10 @@ export class PendingApproval implements IPendingApproval {
     // If there are no recipients, then the transaction cannot be recreated
     const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
     const type = this.info()?.transactionRequest?.buildParams?.type;
-    if (recipients.length === 0 && type !== 'consolidate') {
+
+    // We only want to not recreate transactions with no recipients if it is an UTXO coin.
+    // There is no easy way to do this in sdk-core, but `network` is only set on UTXO coins.
+    if ('network' in this.baseCoin && recipients.length === 0 && type !== 'consolidate') {
       canRecreateTransaction = false;
     }
 
