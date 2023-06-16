@@ -31,6 +31,7 @@ import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IRequestTracer,
+  isTriple,
   ITransactionExplanation as BaseTransactionExplanation,
   IWallet,
   Keychain,
@@ -71,6 +72,32 @@ import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
 import { explainPsbt, explainTx, getPsbtTxInputs, getTxInputs } from './transaction';
+
+type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
+  (params: {
+    txPrebuild: TransactionPrebuild<TNumber>;
+    pubs?: string[];
+    /**
+     * This UTXO coins related flag becomes applicable under two conditions are met:
+     * 1) When the external express signer is activated
+     * 2) When the PSBT includes at least one taprootKeyPathSpend input.
+     *
+     * The taprootKeyPathSpend input is unique in that it can only be spent using both user and bitgo keys.
+     *
+     * The signing process of a taprootKeyPathSpend input is a 4-step sequence:
+     * i) user nonce generation - signerNonce - this is the first call to external express signer signTransaction
+     * ii) bitgo nonce generation - cosignerNonce - this is the second call to local signTransaction
+     * iii) user signature - signerSignature - this is the third call to external express signer signTransaction
+     * iv) bitgo signature - not in signTransaction method’s scope
+     *
+     * In the absence of this flag, the aforementioned first three sequence is executed in a single signTransaction call.
+     *
+     * NOTE: We make a strong assumption that the external express signer and its caller uses sticky sessions,
+     * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
+     */
+    signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
+  }): Promise<SignedTransaction>;
+};
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
@@ -199,7 +226,7 @@ export interface AddressDetails {
   addressType?: string;
 }
 
-export interface SignTransactionOptions<TNumber extends number | bigint = number> extends BaseSignTransactionOptions {
+type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = BaseSignTransactionOptions & {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
     /**
@@ -209,10 +236,8 @@ export interface SignTransactionOptions<TNumber extends number | bigint = number
      */
     walletId?: string;
     txHex: string;
-    txInfo: TransactionInfo<TNumber>;
+    txInfo?: TransactionInfo<TNumber>;
   };
-  /** xprv of user key or backup key. Not required only when signingStep=cosignerNonce */
-  prv?: string;
   /** xpubs triple for wallet (user, backup, bitgo). Required only when txPrebuild.txHex is not a PSBT */
   pubs?: Triple<string>;
   /** xpub for cosigner (defaults to bitgo) */
@@ -222,8 +247,11 @@ export interface SignTransactionOptions<TNumber extends number | bigint = number
    * When false, creates half-signed transaction with placeholder signatures.
    */
   isLastSignature?: boolean;
+};
+
+export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
   /**
-   * This flag becomes applicable under two conditions are met:
+   * The flag `signingStep` becomes applicable under two conditions:
    * 1) When the external express signer is activated
    * 2) When the PSBT includes at least one taprootKeyPathSpend input.
    *
@@ -240,8 +268,29 @@ export interface SignTransactionOptions<TNumber extends number | bigint = number
    * NOTE: We make a strong assumption that the external express signer and its caller uses sticky sessions,
    * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
    * */
-  signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
+  (| {
+        prv: string;
+        signingStep?: 'signerNonce' | 'signerSignature';
+      }
+    | {
+        signingStep: 'cosignerNonce';
+      }
+  );
+
+function f<TNumber extends number | bigint>(o: SignTransactionOptions<TNumber>) {
+  return o;
 }
+
+f({
+  txPrebuild: {
+    walletId: 'foo',
+    txHex: 'txhex',
+    txInfo: {},
+  },
+  // prv: '',
+  signingStep: 'cosignerNonce',
+  // foo: 'bar',
+});
 
 export interface MultiSigAddress {
   outputScript: Buffer;
@@ -1171,11 +1220,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (tx instanceof bitgo.UtxoPsbt) {
       signedTransaction = signAndVerifyPsbt(tx, signerKeychain, { isLastSignature });
     } else {
-      if (tx.ins.length !== txPrebuild.txInfo.unspents?.length) {
+      if (tx.ins.length !== txPrebuild.txInfo?.unspents?.length) {
         throw new Error('length of unspents array should equal to the number of transaction inputs');
       }
 
-      if (!params.pubs || params.pubs.length !== 3) {
+      if (!params.pubs || !isTriple(params.pubs)) {
         throw new Error(`must provide xpub array`);
       }
 
@@ -1184,6 +1233,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
       const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
+      assert(txPrebuild.txInfo?.unspents, 'unspents is required for signTransaction');
       signedTransaction = signAndVerifyWalletTransaction(tx, txPrebuild.txInfo.unspents, walletSigner, {
         isLastSignature,
       }) as bitgo.UtxoTransaction<bigint>;
@@ -1192,6 +1242,39 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return {
       txHex: signedTransaction.toBuffer().toString('hex'),
     };
+  }
+
+  async signWithCustomFunction<TNumber extends number | bigint>(
+    customSigningFunction: UtxoCustomSigningFunction<TNumber>,
+    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs?: string[] }
+  ): Promise<SignedTransaction> {
+    const getTxHex = (v: SignedTransaction): string => {
+      if ('txHex' in v) {
+        return v.txHex;
+      }
+      throw new Error('txHex not found in signTransaction result');
+    };
+
+    const signerNonceTx = await customSigningFunction({
+      ...signTransactionParams,
+      signingStep: 'signerNonce',
+    });
+
+    const { pubs } = signTransactionParams;
+    assert(pubs === undefined || isTriple(pubs));
+
+    const cosignerNonceTx = await this.signTransaction<TNumber>({
+      ...signTransactionParams,
+      pubs,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(signerNonceTx) },
+      signingStep: 'cosignerNonce',
+    });
+
+    return await customSigningFunction({
+      ...signTransactionParams,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(cosignerNonceTx) },
+      signingStep: 'signerSignature',
+    });
   }
 
   /**
