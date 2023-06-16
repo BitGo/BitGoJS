@@ -96,7 +96,7 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
      * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
      */
     signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
-  }): Promise<SignedTransaction>;
+  }): Promise<HalfSignedUtxoTransaction>;
 };
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
