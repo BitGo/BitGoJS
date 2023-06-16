@@ -171,6 +171,57 @@ describe('XLM:', function () {
     unsignedExplanation.changeAmount.should.equal('0');
   });
 
+  it('Should explain an XLM transaction', async function () {
+    const signedExplanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=',
+    });
+    signedExplanation.outputAmount.should.equal('5000000000');
+    signedExplanation.outputAmounts.should.have.property('txlm', '5000000000');
+    signedExplanation.outputs.length.should.equal(1);
+    signedExplanation.outputs[0].address.should.equal('GC4AJF4KPTR33PGN6XWZP4S5HLGHOQNSHXXGOMTOU4LXL6A5X6PDH445');
+    signedExplanation.outputs[0].amount.should.equal('5000000000');
+    signedExplanation.outputs[0].coin.should.equal('txlm');
+    signedExplanation.fee.fee.should.equal('500');
+    signedExplanation.memo.value.should.equal('TESTING');
+    signedExplanation.memo.type.should.equal('text');
+    signedExplanation.changeOutputs.length.should.equal(0);
+    signedExplanation.changeAmount.should.equal('0');
+    const unsignedExplanation = await basecoin.explainTransaction({
+      txBase64:
+        'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==',
+    });
+    unsignedExplanation.outputAmount.should.equal('10000000000');
+    unsignedExplanation.outputAmounts.should.have.property('txlm', '10000000000');
+    unsignedExplanation.outputs.length.should.equal(1);
+    unsignedExplanation.outputs[0].address.should.equal('GC4AJF4KPTR33PGN6XWZP4S5HLGHOQNSHXXGOMTOU4LXL6A5X6PDH445');
+    unsignedExplanation.outputs[0].amount.should.equal('10000000000');
+    unsignedExplanation.outputs[0].coin.should.equal('txlm');
+    unsignedExplanation.fee.fee.should.equal('100');
+    unsignedExplanation.memo.value.should.equal('1');
+    unsignedExplanation.memo.type.should.equal('id');
+    unsignedExplanation.changeOutputs.length.should.equal(0);
+    unsignedExplanation.changeAmount.should.equal('0');
+  });
+
+  it('Should explain an XLM transaction by passing in a hex format', async function () {
+    const signedExplanation = await basecoin.explainTransaction({
+      txHex:
+        '0000000200000000aa0c5c593ed36af12269dc4605dd34da32fdab5c676fa0644f28e598dd57512a0000afc800000000009896810000000100000000000000000000000000000000000000000000000100000000000000010000010000000000000000010a76d14eccfd0072c997b12189beb926473ff0f01c72957432db5678b8feb945000000000000000005f5e1000000000000000000',
+    });
+    signedExplanation.outputAmount.should.equal('100000000');
+    signedExplanation.outputAmounts.should.have.property('txlm', '100000000');
+    signedExplanation.outputs.length.should.equal(1);
+    signedExplanation.outputs[0].address.should.equal(
+      'MAFHNUKOZT6QA4WJS6YSDCN6XETEOP7Q6AOHFFLUGLNVM6FY724UKAAAAAAAAAAAAEJCO'
+    );
+    signedExplanation.outputs[0].amount.should.equal('100000000');
+    signedExplanation.outputs[0].coin.should.equal('txlm');
+    signedExplanation.fee.fee.should.equal('45000');
+    signedExplanation.changeOutputs.length.should.equal(0);
+    signedExplanation.changeAmount.should.equal('0');
+  });
+
   it('Should explain a trustline transaction', async function () {
     const explanation = await basecoin.explainTransaction({
       txBase64:
