@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { BIP32Interface } from 'bip32';
 import * as noble from '@noble/secp256k1';
 import * as utxolib from '..';
@@ -34,8 +35,9 @@ export function mockPrevTx(
 ): UtxoTransaction<bigint> {
   const psbtFromNetwork = createPsbtForNetwork({ network });
 
-  const privKey = noble.utils.randomPrivateKey();
-  const pubkey = Buffer.from(noble.getPublicKey(privKey, true));
+  const keypair = getKey('mock-prev-tx');
+  const pubkey = keypair.publicKey;
+  assert(keypair.privateKey);
   const payment = utxolib.payments.p2wpkh({ pubkey });
   const destOutput = payment.output;
   if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
@@ -55,7 +57,7 @@ export function mockPrevTx(
   psbtFromNetwork.signInput(0, {
     publicKey: pubkey,
     sign: (hash: Buffer, lowR?: boolean) =>
-      Buffer.from(noble.signSync(hash, privKey, { canonical: !lowR, der: false })),
+      Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
   });
   psbtFromNetwork.validateSignaturesOfAllInputs();
   psbtFromNetwork.finalizeAllInputs();
