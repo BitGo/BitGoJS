@@ -1,9 +1,15 @@
 /**
  * @prettier
  */
-import { CoinFactory } from '@bitgo/sdk-core';
+import { AdaToken } from '@bitgo/sdk-coin-ada';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+import { HbarToken } from '@bitgo/sdk-coin-hbar';
+import { Near, TNear } from '@bitgo/sdk-coin-near';
+import { SolToken } from '@bitgo/sdk-coin-sol';
+import { TrxToken } from '@bitgo/sdk-coin-trx';
+import { CoinFactory } from '@bitgo/sdk-core';
+import { tokens } from '../config';
 import {
   Ada,
   Algo,
@@ -35,6 +41,7 @@ import {
   FiatGBP,
   FiatUsd,
   Gteth,
+  Hash,
   Hbar,
   Ltc,
   Ofc,
@@ -48,11 +55,10 @@ import {
   Stx,
   Sui,
   Susd,
-  Tia,
-  Talgo,
-  TavaxC,
   Tada,
+  Talgo,
   Tatom,
+  TavaxC,
   TavaxP,
   Tbch,
   Tbld,
@@ -71,17 +77,19 @@ import {
   TfiatEur,
   TfiatGBP,
   TfiatUsd,
+  Thash,
   Thbar,
+  Tia,
   Tltc,
   Tosmo,
   Tpolygon,
   Trbtc,
   Trx,
-  Ttia,
   Tsol,
   Tstx,
   Tsui,
   Tsusd,
+  Ttia,
   Ttrx,
   Txlm,
   Txrp,
@@ -92,12 +100,6 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Near, TNear } from '@bitgo/sdk-coin-near';
-import { tokens } from '../config';
-import { SolToken } from '@bitgo/sdk-coin-sol';
-import { HbarToken } from '@bitgo/sdk-coin-hbar';
-import { TrxToken } from '@bitgo/sdk-coin-trx';
-import { AdaToken } from '@bitgo/sdk-coin-ada';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
@@ -126,6 +128,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('fiatgbp', FiatGBP.createInstance);
   globalCoinFactory.register('fiatusd', FiatUsd.createInstance);
   globalCoinFactory.register('gteth', Gteth.createInstance);
+  globalCoinFactory.register('hash', Hash.createInstance);
   globalCoinFactory.register('hbar', Hbar.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
   globalCoinFactory.register('near', Near.createInstance);
@@ -161,6 +164,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiateur', TfiatEur.createInstance);
   globalCoinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
+  globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('tltc', Tltc.createInstance);
   globalCoinFactory.register('tnear', TNear.createInstance);

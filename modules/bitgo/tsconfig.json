@@ -102,6 +102,9 @@
       "path": "../sdk-coin-ethw"
     },
     {
+      "path": "../sdk-coin-hash"
+    },
+    {
       "path": "../sdk-coin-hbar"
     },
     {
