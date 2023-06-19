@@ -50,6 +50,7 @@ import {
   Polygon,
   PolygonToken,
   Rbtc,
+  Sei,
   Sol,
   StellarToken,
   Stx,
@@ -85,6 +86,7 @@ import {
   Tpolygon,
   Trbtc,
   Trx,
+  Tsei,
   Tsol,
   Tstx,
   Tsui,
@@ -136,6 +138,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('osmo', Osmo.createInstance);
   globalCoinFactory.register('polygon', Polygon.createInstance);
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
+  globalCoinFactory.register('sei', Sei.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
@@ -172,6 +175,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
   globalCoinFactory.register('trx', Trx.createInstance);
+  globalCoinFactory.register('tsei', Tsei.createInstance);
   globalCoinFactory.register('tsol', Tsol.createInstance);
   globalCoinFactory.register('tstx', Tstx.createInstance);
   globalCoinFactory.register('tsui', Tsui.createInstance);

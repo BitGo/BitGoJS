@@ -64,6 +64,8 @@ import { Tia, Ttia } from '@bitgo/sdk-coin-tia';
 export { Tia, Ttia };
 import { Bld, Tbld } from '@bitgo/sdk-coin-bld';
 export { Bld, Tbld };
+import { Sei, Tsei } from '@bitgo/sdk-coin-sei';
+export { Sei, Tsei };
 import { Trx, Ttrx } from '@bitgo/sdk-coin-trx';
 export { Trx, Ttrx };
 import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';

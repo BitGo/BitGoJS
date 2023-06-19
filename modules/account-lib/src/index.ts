@@ -80,6 +80,9 @@ export { Bld };
 import * as Hash from '@bitgo/sdk-coin-hash';
 export { Hash };
 
+import * as Sei from '@bitgo/sdk-coin-sei';
+export { Sei };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -145,6 +148,8 @@ const coinBuilderMap = {
   tbld: Bld.TransactionBuilderFactory,
   hash: Hash.TransactionBuilderFactory,
   thash: Hash.TransactionBuilderFactory,
+  sei: Sei.TransactionBuilderFactory,
+  tsei: Sei.TransactionBuilderFactory,
 };
 
 /**

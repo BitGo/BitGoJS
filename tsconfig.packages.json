@@ -116,6 +116,9 @@
       "path": "./modules/sdk-coin-rbtc"
     },
     {
+      "path": "./modules/sdk-coin-sei"
+    },
+    {
       "path": "./modules/sdk-coin-sol"
     },
     {

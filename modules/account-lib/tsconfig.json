@@ -62,6 +62,9 @@
       "path": "../sdk-coin-rbtc"
     },
     {
+      "path": "../sdk-coin-sei"
+    },
+    {
       "path": "../sdk-coin-sol"
     },
     {
