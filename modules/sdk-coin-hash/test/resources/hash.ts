@@ -1,3 +1,5 @@
+// Get the test data by running the scripts for the particular coin from coin-sandbox repo.
+
 export const TEST_ACCOUNT = {
   pubAddress: 'tp1496r8u4a48k6khknrhzd6c8cm3c64ewxy5p2rj',
   compressedPublicKey: '02f2501af39680be0afea7d3e5dbb399e0fa018f7c6de12287282a315c88f72b70',
