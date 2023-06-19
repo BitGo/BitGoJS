@@ -12,6 +12,7 @@ import {
   AvaxCToken,
   AvaxP,
   Bch,
+  Bld,
   Bsc,
   BscToken,
   Bsv,
@@ -54,6 +55,7 @@ import {
   Tatom,
   TavaxP,
   Tbch,
+  Tbld,
   Tbsc,
   Tbsv,
   Tbtc,
@@ -105,6 +107,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
   globalCoinFactory.register('bch', Bch.createInstance);
   globalCoinFactory.register('bcha', Bcha.createInstance);
+  globalCoinFactory.register('bld', Bld.createInstance);
   globalCoinFactory.register('bsc', Bsc.createInstance);
   globalCoinFactory.register('bsv', Bsv.createInstance);
   globalCoinFactory.register('btc', Btc.createInstance);
@@ -142,6 +145,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);
   globalCoinFactory.register('tbch', Tbch.createInstance);
   globalCoinFactory.register('tbcha', Tbcha.createInstance);
+  globalCoinFactory.register('tbld', Tbld.createInstance);
   globalCoinFactory.register('tbsc', Tbsc.createInstance);
   globalCoinFactory.register('tbsv', Tbsv.createInstance);
   globalCoinFactory.register('tbtc', Tbtc.createInstance);

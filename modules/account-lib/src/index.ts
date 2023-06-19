@@ -74,6 +74,9 @@ export { AvaxP };
 import * as Tia from '@bitgo/sdk-coin-tia';
 export { Tia };
 
+import * as Bld from '@bitgo/sdk-coin-bld';
+export { Bld };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -135,6 +138,8 @@ const coinBuilderMap = {
   tatom: Atom.TransactionBuilderFactory,
   osmo: Osmo.TransactionBuilderFactory,
   tosmo: Osmo.TransactionBuilderFactory,
+  bld: Bld.TransactionBuilderFactory,
+  tbld: Bld.TransactionBuilderFactory,
 };
 
 /**
