@@ -28,3 +28,6 @@ sdk.register('hash', Hash.createInstance);
 Most of the coin implementations are derived from `@bitgo/sdk-core`, `@bitgo/statics`, and coin specific packages. These implementations are used to interact with the BitGo API and BitGo platform services.
 
 You will notice that the basic version of common class extensions have been provided to you and must be resolved before the package build will succeed. Upon initiation of a given SDK coin, you will need to verify that your coin has been included in the root `tsconfig.packages.json` and that the linting, formatting, and testing succeeds when run both within the coin and from the root of BitGoJS.
+
+Official Website link - https://provenance.io/
+Developer Portal link - https://developer.provenance.io/docs/
