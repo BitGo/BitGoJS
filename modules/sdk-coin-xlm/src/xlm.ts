@@ -100,7 +100,8 @@ interface SupplementGenerateWalletOptions {
 }
 
 interface ExplainTransactionOptions {
-  txBase64: string;
+  txHex?: string;
+  txBase64?: string;
 }
 
 interface TransactionMemo {
@@ -817,13 +818,25 @@ export class Xlm extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
-    const { txBase64 } = params;
-    let tx: stellar.Transaction;
+    const { txHex, txBase64 } = params;
+    let tx: stellar.Transaction | undefined = undefined;
+
+    if (!txHex && !txBase64) {
+      throw new Error('explainTransaction missing txHex or txBase64 parameter, must have at least one');
+    }
 
     try {
-      tx = new stellar.Transaction(txBase64, this.getStellarNetwork());
+      if (txHex) {
+        tx = new stellar.Transaction(Buffer.from(txHex, 'hex').toString('base64'), this.getStellarNetwork());
+      } else if (txBase64) {
+        tx = new stellar.Transaction(txBase64, this.getStellarNetwork());
+      }
     } catch (e) {
       throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+    }
+
+    if (!tx) {
+      throw new Error('tx needs to be defined in order to explain transaction');
     }
     const id = tx.hash().toString('hex');
 
