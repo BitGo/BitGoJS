@@ -173,6 +173,12 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       throw new Error('Invalid input shared object');
     }
 
+    // make sure we parsed the transaction correctly by rebuilding it and comparing the transaction blocks
+    assertEqualTransactionBlocks(
+      { inputs, transactions },
+      UnstakingBuilder.getTransactionBlockDataReserialized(inputStakedSui.Object.ImmOrOwned, amount)
+    );
+
     return {
       stakedObjectRef: inputStakedSui.Object.ImmOrOwned,
       amount,
