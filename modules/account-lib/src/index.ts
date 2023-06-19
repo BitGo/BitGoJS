@@ -77,6 +77,9 @@ export { Tia };
 import * as Bld from '@bitgo/sdk-coin-bld';
 export { Bld };
 
+import * as Hash from '@bitgo/sdk-coin-hash';
+export { Hash };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -140,6 +143,8 @@ const coinBuilderMap = {
   tosmo: Osmo.TransactionBuilderFactory,
   bld: Bld.TransactionBuilderFactory,
   tbld: Bld.TransactionBuilderFactory,
+  hash: Hash.TransactionBuilderFactory,
+  thash: Hash.TransactionBuilderFactory,
 };
 
 /**
