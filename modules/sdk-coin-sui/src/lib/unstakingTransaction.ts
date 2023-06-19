@@ -136,7 +136,7 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       outputs: [
         {
           address: this.suiTransaction.sender,
-          value: AMOUNT_UNKNOWN_TEXT,
+          value: amount === undefined ? AMOUNT_UNKNOWN_TEXT : amount.toString(),
           coin: this._coinConfig.name,
         },
       ],
