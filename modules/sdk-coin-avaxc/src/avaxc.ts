@@ -37,7 +37,7 @@ import {
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
-import { bufferToHex, pubToAddress } from 'ethereumjs-util';
+import { pubToAddress } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
   AvaxSignTransactionOptions,
@@ -628,13 +628,6 @@ export class AvaxC extends BaseCoin {
       gasLimit: gasLimit.toString(10),
     };
 
-    // calculate send data
-    const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const sendMethodName = 'sendMultiSig';
-    const methodSignature = optionalDeps.ethAbi.methodID(sendMethodName, _.map(sendMethodArgs, 'type'));
-    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
-    const sendData = Buffer.concat([methodSignature, encodedArgs]);
-
     const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.counter(backupKeyNonce);
     txBuilder.contract(params.walletContractAddress);
@@ -658,8 +651,7 @@ export class AvaxC extends BaseCoin {
       .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
-      .to(params.recoveryDestination)
-      .data(bufferToHex(sendData as Buffer));
+      .to(params.recoveryDestination);
 
     if (isUnsignedSweep) {
       const tx = await txBuilder.build();
