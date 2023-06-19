@@ -119,7 +119,7 @@ export class Doge extends AbstractUtxoCoin {
       ...params,
       txPrebuild: {
         ...params.txPrebuild,
-        txInfo: parseTransactionInfo(params.txPrebuild.txInfo),
+        txInfo: params.txPrebuild.txInfo === undefined ? undefined : parseTransactionInfo(params.txPrebuild.txInfo),
       },
     });
   }

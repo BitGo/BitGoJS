@@ -31,6 +31,7 @@ import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IRequestTracer,
+  isTriple,
   ITransactionExplanation as BaseTransactionExplanation,
   IWallet,
   Keychain,
@@ -71,6 +72,31 @@ import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
 import { explainPsbt, explainTx, getPsbtTxInputs, getTxInputs } from './transaction';
+
+type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
+  (params: {
+    coin: IBaseCoin;
+    txPrebuild: TransactionPrebuild<TNumber>;
+    pubs?: string[];
+    /**
+     * signingStep flag becomes applicable when both of the following conditions are met:
+     * 1) When the external express signer is activated
+     * 2) When the PSBT includes at least one taprootKeyPathSpend input.
+     *
+     * The signing process of a taprootKeyPathSpend input is a 4-step sequence:
+     * i) user nonce generation - signerNonce - this is the first call to external express signer signTransaction
+     * ii) bitgo nonce generation - cosignerNonce - this is the first and only call to local signTransaction
+     * iii) user signature - signerSignature - this is the second call to external express signer signTransaction
+     * iv) bitgo signature - not in signTransaction method’s scope
+     *
+     * In the absence of this flag, the aforementioned first three sequence is executed in a single signTransaction call.
+     *
+     * NOTE: We make a strong assumption that the external express signer and its caller uses sticky sessions,
+     * since PSBTs are cached in step 1 to be used in step 3 for MuSig2 user secure nonce access.
+     */
+    signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
+  }): Promise<SignedTransaction>;
+};
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
@@ -199,17 +225,20 @@ export interface AddressDetails {
   addressType?: string;
 }
 
-export interface SignTransactionOptions<TNumber extends number | bigint = number> extends BaseSignTransactionOptions {
+type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = BaseSignTransactionOptions & {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
+    /**
+     * walletId is required in following 2 scenarios.
+     * 1. External signer express mode is used.
+     * 2. bitgo MuSig2 nonce is requested
+     */
     walletId?: string;
     txHex: string;
-    txInfo: TransactionInfo<TNumber>;
+    txInfo?: TransactionInfo<TNumber>;
   };
-  /** xprv of user key or backup key */
-  prv: string;
-  /** xpubs triple for wallet (user, backup, bitgo) */
-  pubs: Triple<string>;
+  /** xpubs triple for wallet (user, backup, bitgo). Required only when txPrebuild.txHex is not a PSBT */
+  pubs?: Triple<string>;
   /** xpub for cosigner (defaults to bitgo) */
   cosignerPub?: string;
   /**
@@ -217,7 +246,18 @@ export interface SignTransactionOptions<TNumber extends number | bigint = number
    * When false, creates half-signed transaction with placeholder signatures.
    */
   isLastSignature?: boolean;
-}
+};
+
+export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
+  (
+    | {
+        prv: string;
+        signingStep?: 'signerNonce' | 'signerSignature';
+      }
+    | {
+        signingStep: 'cosignerNonce';
+      }
+  );
 
 export interface MultiSigAddress {
   outputScript: Buffer;
@@ -282,6 +322,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     this.amountType = amountType;
     this._network = network;
   }
+
+  /**
+   * Key Value: Unsigned tx id => PSBT
+   * It is used to cache PSBTs with taproot key path (MuSig2) inputs during external express signer is activated.
+   * Reason: MuSig2 signer secure nonce is cached in the UtxoPsbt object. It will be required during the signing step.
+   * For more info, check SignTransactionOptions.signingStep
+   *
+   * TODO BTC-276: This cache may need to be done with LRU like memory safe caching if memory issues comes up.
+   */
+  private static readonly PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
   get network() {
     return this._network;
@@ -1050,7 +1100,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     params: SignTransactionOptions<TNumber>
   ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
     const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
 
     if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
       if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
@@ -1059,26 +1108,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing txPrebuild parameter');
     }
 
-    let tx: bitgo.UtxoTransaction<TNumber> | bitgo.UtxoPsbt;
-    if (bitgo.isPsbt(txPrebuild.txHex)) {
-      tx = bitgo.createPsbtFromHex(txPrebuild.txHex, this.network);
-    } else {
-      tx = this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+    let tx = bitgo.isPsbt(txPrebuild.txHex)
+      ? bitgo.createPsbtFromHex(txPrebuild.txHex, this.network)
+      : this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
 
-      if (tx.ins.length !== txPrebuild.txInfo.unspents?.length) {
-        throw new Error('length of unspents array should equal to the number of transaction inputs');
-      }
-    }
-
-    const isTransactionWithKeyPathSpendInput =
-      tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
+    const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
     let isLastSignature = false;
     if (_.isBoolean(params.isLastSignature)) {
       // We can only be the first signature on a transaction with taproot key path spend inputs because
       // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
       // deserialized from a hex.
-      if (params.isLastSignature && isTransactionWithKeyPathSpendInput) {
+      if (params.isLastSignature && isTxWithKeyPathSpendInput) {
         throw new Error('Cannot be last signature on a transaction with key path spend inputs');
       }
 
@@ -1086,40 +1127,86 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       isLastSignature = params.isLastSignature;
     }
 
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+    const getSignerKeychain = (): utxolib.BIP32Interface => {
+      const userPrv = params.prv;
+      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+        if (!_.isUndefined(userPrv)) {
+          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
       }
-      throw new Error('missing prv parameter to sign transaction');
+      const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
+      if (signerKeychain.isNeutered()) {
+        throw new Error('expected user private key but received public key');
+      }
+      debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
+      return signerKeychain;
+    };
+
+    let signerKeychain: utxolib.BIP32Interface | undefined;
+
+    if (tx instanceof bitgo.UtxoPsbt && isTxWithKeyPathSpendInput) {
+      switch (params.signingStep) {
+        case 'signerNonce':
+          signerKeychain = getSignerKeychain();
+          tx.setAllInputsMusig2NonceHD(signerKeychain);
+          AbstractUtxoCoin.PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
+          return { txHex: tx.toHex() };
+        case 'cosignerNonce':
+          assert(txPrebuild.walletId, 'walletId is required for MuSig2 bitgo nonce');
+          return { txHex: (await this.signPsbt(tx.toHex(), txPrebuild.walletId)).psbt };
+        case 'signerSignature':
+          const txId = tx.getUnsignedTx().getId();
+          const psbt = AbstractUtxoCoin.PSBT_CACHE.get(txId);
+          assert(
+            psbt,
+            `Psbt is missing from txCache (cache size ${AbstractUtxoCoin.PSBT_CACHE.size}).
+            This may be due to the request being routed to a different BitGo-Express instance that for signing step 'signerNonce'.`
+          );
+          AbstractUtxoCoin.PSBT_CACHE.delete(txId);
+          tx = psbt.combine(tx);
+          break;
+        default:
+          // this instance is not an external signer
+          assert(txPrebuild.walletId, 'walletId is required for MuSig2 bitgo nonce');
+          signerKeychain = getSignerKeychain();
+          tx.setAllInputsMusig2NonceHD(signerKeychain);
+          const response = await this.signPsbt(tx.toHex(), txPrebuild.walletId);
+          tx.combine(bitgo.createPsbtFromHex(response.psbt, this.network));
+          break;
+      }
+    } else {
+      switch (params.signingStep) {
+        case 'signerNonce':
+        case 'cosignerNonce':
+          /**
+           * In certain cases, the caller of this method may not know whether the txHex contains a psbt with taproot key path spend input(s).
+           * Instead of throwing error, no-op and return the txHex. So that the caller can call this method in the same sequence.
+           */
+          return { txHex: tx.toHex() };
+      }
     }
 
-    if (!params.pubs || params.pubs.length !== 3) {
-      throw new Error(`must provide xpub array`);
-    }
-
-    const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
-    if (signerKeychain.isNeutered()) {
-      throw new Error('expected user private key but received public key');
-    }
-    debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
-
-    const cosignerPub = params.cosignerPub ?? params.pubs[2];
-    const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
-    const cosignerKeychain = bip32.fromBase58(cosignerPub);
-
-    if (tx instanceof bitgo.UtxoPsbt && isTransactionWithKeyPathSpendInput) {
-      assert(txPrebuild.walletId, 'walletId is required for MuSig2 nonce');
-      tx.setAllInputsMusig2NonceHD(signerKeychain);
-      const response = await this.signPsbt(tx.toHex(), txPrebuild.walletId);
-      const psbt = bitgo.createPsbtFromHex(response.psbt, this.network);
-      tx.combine(psbt);
+    if (signerKeychain === undefined) {
+      signerKeychain = getSignerKeychain();
     }
 
     let signedTransaction: bitgo.UtxoTransaction<bigint> | bitgo.UtxoPsbt;
     if (tx instanceof bitgo.UtxoPsbt) {
       signedTransaction = signAndVerifyPsbt(tx, signerKeychain, { isLastSignature });
     } else {
-      assert(txPrebuild.txInfo.unspents, 'unspents are required');
+      if (tx.ins.length !== txPrebuild.txInfo?.unspents?.length) {
+        throw new Error('length of unspents array should equal to the number of transaction inputs');
+      }
+
+      if (!params.pubs || !isTriple(params.pubs)) {
+        throw new Error(`must provide xpub array`);
+      }
+
+      const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
+      const cosignerPub = params.cosignerPub ?? params.pubs[2];
+      const cosignerKeychain = bip32.fromBase58(cosignerPub);
+
       const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
       signedTransaction = signAndVerifyWalletTransaction(tx, txPrebuild.txInfo.unspents, walletSigner, {
         isLastSignature,
@@ -1129,6 +1216,61 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return {
       txHex: signedTransaction.toBuffer().toString('hex'),
     };
+  }
+
+  /**
+   * Sign a transaction with a custom signing function. Example use case is express external signer
+   * @param customSigningFunction custom signing function that returns a single signed transaction
+   * @param signTransactionParams parameters for custom signing function. Includes txPrebuild and pubs (for legacy tx only).
+   *
+   * @returns signed transaction as hex string
+   */
+  async signWithCustomSigningFunction<TNumber extends number | bigint>(
+    customSigningFunction: UtxoCustomSigningFunction<TNumber>,
+    signTransactionParams: { txPrebuild: TransactionPrebuild<TNumber>; pubs?: string[] }
+  ): Promise<SignedTransaction> {
+    const txHex = signTransactionParams.txPrebuild.txHex;
+    assert(txHex, 'missing txHex parameter');
+
+    const tx = bitgo.isPsbt(txHex)
+      ? bitgo.createPsbtFromHex(txHex, this.network)
+      : this.createTransactionFromHex<TNumber>(txHex);
+
+    const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
+
+    if (!isTxWithKeyPathSpendInput) {
+      return await customSigningFunction({ ...signTransactionParams, coin: this });
+    }
+
+    const getTxHex = (v: SignedTransaction): string => {
+      if ('txHex' in v) {
+        return v.txHex;
+      }
+      throw new Error('txHex not found in signTransaction result');
+    };
+
+    const signerNonceTx = await customSigningFunction({
+      ...signTransactionParams,
+      signingStep: 'signerNonce',
+      coin: this,
+    });
+
+    const { pubs } = signTransactionParams;
+    assert(pubs === undefined || isTriple(pubs));
+
+    const cosignerNonceTx = await this.signTransaction<TNumber>({
+      ...signTransactionParams,
+      pubs,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(signerNonceTx) },
+      signingStep: 'cosignerNonce',
+    });
+
+    return await customSigningFunction({
+      ...signTransactionParams,
+      txPrebuild: { ...signTransactionParams.txPrebuild, txHex: getTxHex(cosignerNonceTx) },
+      signingStep: 'signerSignature',
+      coin: this,
+    });
   }
 
   /**

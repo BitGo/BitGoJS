@@ -1624,12 +1624,15 @@ export class Wallet implements IWallet {
 
     const signTransactionParams = {
       ...presign,
-      txPrebuild,
+      txPrebuild: { ...txPrebuild, walletId: this.id() },
       pubs,
       coin: this.baseCoin,
     };
 
     if (_.isFunction(params.customSigningFunction)) {
+      if (typeof this.baseCoin.signWithCustomSigningFunction === 'function') {
+        return this.baseCoin.signWithCustomSigningFunction(params.customSigningFunction, signTransactionParams);
+      }
       return params.customSigningFunction(signTransactionParams);
     }
     return this.baseCoin.signTransaction({

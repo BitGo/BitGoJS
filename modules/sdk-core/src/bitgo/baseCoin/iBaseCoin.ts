@@ -7,7 +7,7 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils from '../utils/tss/eddsa';
-import { IWallet, IWallets, Wallet, WalletData } from '../wallet';
+import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { BaseTokenConfig } from '@bitgo/statics';
@@ -451,6 +451,10 @@ export interface IBaseCoin {
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;
   presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions>;
+  signWithCustomSigningFunction?(
+    customSigningFunction: CustomSigningFunction,
+    signTransactionParams: { txPrebuild: TransactionPrebuild; pubs?: string[] }
+  ): Promise<SignedTransaction>;
   newWalletObject(walletParams: any): IWallet;
   feeEstimate(params: FeeEstimateOptions): Promise<any>;
   deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): { key: string; derivationPath: string };
