@@ -712,15 +712,13 @@ class XrpTestnet extends Testnet implements AccountNetwork {
 class Xtz extends Mainnet implements AccountNetwork {
   name = 'Xtz';
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://tezblock.io/transaction/';
-  accountExplorerUrl = 'https://tezblock.io/account/';
+  explorerUrl = 'https://tzstats.com/';
 }
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   name = 'XtzTestnet';
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://carthagenet.tezblock.io/transaction/';
-  accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
+  explorerUrl = 'https://mumbai.tzstats.com/';
 }
 
 class ZCash extends Mainnet implements UtxoNetwork {
