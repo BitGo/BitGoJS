@@ -42,6 +42,8 @@ import { Ethw } from '@bitgo/sdk-coin-ethw';
 export { Ethw };
 import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
 export { Etc, Tetc };
+import { Hash, Thash } from '@bitgo/sdk-coin-hash';
+export { Hash, Thash };
 import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
 export { Hbar, Thbar };
 import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';

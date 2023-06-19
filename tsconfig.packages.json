@@ -95,6 +95,9 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
+      "path": "./modules/sdk-coin-hash"
+    },
+    {
       "path": "./modules/sdk-coin-hbar"
     },
     {
