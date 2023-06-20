@@ -14,7 +14,7 @@ import * as testData from '../resources/inj';
 
 describe('Inj Transaction', () => {
   let tx: CosmosTransaction;
-  const config = coins.get('tinj');
+  const config = coins.get('tinjective');
 
   beforeEach(() => {
     tx = new CosmosTransaction(config, utils);
@@ -48,14 +48,14 @@ describe('Inj Transaction', () => {
         {
           address: testData.TEST_SEND_TX.sender,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
     });
@@ -81,14 +81,14 @@ describe('Inj Transaction', () => {
         {
           address: testData.TEST_SEND_TX.sender,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
     });
@@ -114,14 +114,14 @@ describe('Inj Transaction', () => {
         {
           address: testData.TEST_DELEGATE_TX.delegator,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_DELEGATE_TX.validator,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
     });
@@ -147,14 +147,14 @@ describe('Inj Transaction', () => {
         {
           address: testData.TEST_UNDELEGATE_TX.delegator,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_UNDELEGATE_TX.validator,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
     });
@@ -180,14 +180,14 @@ describe('Inj Transaction', () => {
         {
           address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
           value: 'UNAVAILABLE',
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
           value: 'UNAVAILABLE',
-          coin: 'tinj',
+          coin: 'tinjective',
         },
       ]);
     });

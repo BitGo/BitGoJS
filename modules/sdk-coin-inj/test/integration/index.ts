@@ -9,8 +9,8 @@ describe('INJ', function () {
   let bitgo: TestBitGoAPI;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('inj', Inj.createInstance);
-    bitgo.safeRegister('tinj', Tinj.createInstance);
+    bitgo.safeRegister('injective', Inj.createInstance);
+    bitgo.safeRegister('tinjective', Tinj.createInstance);
     bitgo.initializeTestVars();
   });
 });

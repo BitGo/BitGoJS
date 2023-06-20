@@ -14,10 +14,10 @@ describe('Inj Delegate txn Builder', () => {
   let testTx;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('inj', Inj.createInstance);
-    bitgo.safeRegister('tinj', Tinj.createInstance);
+    bitgo.safeRegister('injective', Inj.createInstance);
+    bitgo.safeRegister('tinjective', Tinj.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tinj');
+    basecoin = bitgo.coin('tinjective');
     factory = basecoin.getBuilder();
     testTx = testData.TEST_DELEGATE_TX;
   });
