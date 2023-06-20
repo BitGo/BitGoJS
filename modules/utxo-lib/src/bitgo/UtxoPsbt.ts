@@ -93,7 +93,7 @@ function toSignatureParams(network: Network, v?: Partial<SignatureParams> | numb
  * @param b
  * @returns true if the two public keys are equal ignoring the y coordinate.
  */
-function equalPublicKey(a: Buffer, b: Buffer): boolean {
+function equalPublicKeyIgnoreY(a: Buffer, b: Buffer): boolean {
   return toXOnlyPublicKey(a).equals(toXOnlyPublicKey(b));
 }
 
@@ -208,7 +208,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const [derivation] = matchingDerivations;
     const node = parent.derivePath(derivation.path);
 
-    if (!equalPublicKey(node.publicKey, derivation.pubkey)) {
+    if (!node.publicKey.equals(derivation.pubkey)) {
       throw new Error('pubkey did not match bip32Derivation');
     }
 
@@ -409,7 +409,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const witness: Buffer[] = [script, controlBlock];
     const [pubkey1, pubkey2] = parsePubScript2Of3(script, 'taprootScriptPathSpend').publicKeys;
     for (const pk of [pubkey1, pubkey2]) {
-      const sig = input.tapScriptSig?.find(({ pubkey }) => equalPublicKey(pk, pubkey));
+      const sig = input.tapScriptSig?.find(({ pubkey }) => equalPublicKeyIgnoreY(pk, pubkey));
       if (!sig) {
         throw new Error('Could not find signatures in Script Sig.');
       }
@@ -580,7 +580,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     let myPartialSigs = partialSigs;
     if (pubkey) {
-      myPartialSigs = partialSigs.filter((kv) => equalPublicKey(kv.participantPubKey, pubkey));
+      myPartialSigs = partialSigs.filter((kv) => equalPublicKeyIgnoreY(kv.participantPubKey, pubkey));
       if (myPartialSigs?.length < 1) {
         throw new Error('No signatures for this pubkey');
       }
@@ -590,7 +590,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const { participants, nonces, hash, sessionKey } = this.getMusig2SessionKey(inputIndex, sigHashType);
 
     const results = mySigs.map((mySig) => {
-      const myNonce = nonces.find((kv) => equalPublicKey(kv.participantPubKey, mySig.participantPubKey));
+      const myNonce = nonces.find((kv) => equalPublicKeyIgnoreY(kv.participantPubKey, mySig.participantPubKey));
       if (!myNonce) {
         throw new Error('Found no pub nonce for pubkey');
       }
@@ -619,7 +619,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     let mySigs;
     if (pubkey) {
-      mySigs = tapSigs.filter((sig) => equalPublicKey(sig.pubkey, pubkey));
+      mySigs = tapSigs.filter((sig) => equalPublicKeyIgnoreY(sig.pubkey, pubkey));
       if (mySigs.length < 1) {
         throw new Error('No signatures for this pubkey');
       }
@@ -753,7 +753,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     function getDerivedNode(bipDv: TapBip32Derivation): HDTaprootMusig2Signer | HDTaprootSigner {
       const node = hdKeyPair.derivePath(bipDv.path);
-      if (!equalPublicKey(bipDv.pubkey, node.publicKey)) {
+      if (!equalPublicKeyIgnoreY(bipDv.pubkey, node.publicKey)) {
         throw new Error('pubkey did not match tapBip32Derivation');
       }
       return node;
@@ -841,7 +841,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     // Retrieve and check that we have two participant nonces
     const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
     const { tapOutputKey, participantPubKeys } = participants;
-    const signerPubKey = participantPubKeys.find((pubKey) => equalPublicKey(pubKey, signer.publicKey));
+    const signerPubKey = participantPubKeys.find((pubKey) => equalPublicKeyIgnoreY(pubKey, signer.publicKey));
     if (!signerPubKey) {
       throw new Error('signer pub key should match one of participant pub keys');
     }
@@ -851,11 +851,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     let partialSig: Buffer;
     if (deterministic) {
-      if (!equalPublicKey(signerPubKey, participantPubKeys[1])) {
+      if (!equalPublicKeyIgnoreY(signerPubKey, participantPubKeys[1])) {
         throw new Error('can only add a deterministic signature on the cosigner');
       }
 
-      const firstSignerNonce = nonces.find((n) => equalPublicKey(n.participantPubKey, participantPubKeys[0]));
+      const firstSignerNonce = nonces.find((n) => equalPublicKeyIgnoreY(n.participantPubKey, participantPubKeys[0]));
       if (!firstSignerNonce) {
         throw new Error('could not find the user nonce');
       }
@@ -877,7 +877,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         tapTreeRoot: input.tapMerkleRoot,
       });
 
-      const signerNonce = nonces.find((kv) => equalPublicKey(kv.participantPubKey, signerPubKey));
+      const signerNonce = nonces.find((kv) => equalPublicKeyIgnoreY(kv.participantPubKey, signerPubKey));
       if (!signerNonce) {
         throw new Error('pubNonce is missing. retry signing process');
       }
@@ -1113,7 +1113,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     assertPsbtMusig2Participants(participants, input.tapInternalKey, input.tapMerkleRoot);
     const { tapOutputKey, participantPubKeys } = participants;
 
-    const participantPubKey = participantPubKeys.find((pubKey) => equalPublicKey(pubKey, derivedKeyPair.publicKey));
+    const participantPubKey = participantPubKeys.find((pubKey) =>
+      equalPublicKeyIgnoreY(pubKey, derivedKeyPair.publicKey)
+    );
     if (!Buffer.isBuffer(participantPubKey)) {
       throw new Error('participant plain pub key should match one bip32Derivation plain pub key');
     }
@@ -1126,7 +1128,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
         throw new Error('Cannot add extra entropy when generating a deterministic nonce');
       }
       // There must be only 2 participant pubKeys if it got to this point
-      if (!equalPublicKey(participantPubKey, participantPubKeys[1])) {
+      if (!equalPublicKeyIgnoreY(participantPubKey, participantPubKeys[1])) {
         throw new Error(`Only the cosigner's nonce can be set deterministically`);
       }
       const nonces = parsePsbtMusig2Nonces(input);
@@ -1136,7 +1138,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (nonces.length > 2) {
         throw new Error(`Cannot have more than 2 nonces`);
       }
-      const firstSignerNonce = nonces.find((kv) => equalPublicKey(kv.participantPubKey, participantPubKeys[0]));
+      const firstSignerNonce = nonces.find((kv) => equalPublicKeyIgnoreY(kv.participantPubKey, participantPubKeys[0]));
       if (!firstSignerNonce) {
         throw new Error('signer nonce must be set if cosigner nonce is to be derived deterministically');
       }
