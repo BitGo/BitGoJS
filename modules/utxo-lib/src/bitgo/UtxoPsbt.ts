@@ -1,6 +1,7 @@
 import { Psbt as PsbtBase } from 'bip174';
 import {
   Bip32Derivation,
+  PsbtInput,
   TapBip32Derivation,
   Transaction as ITransaction,
   TransactionFromBuffer,
@@ -220,6 +221,14 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
 
     return node;
+  }
+
+  static deriveKeyPairForInput(bip32: BIP32Interface, input: PsbtInput): Buffer | undefined {
+    return input.tapBip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { ignoreY: true })?.publicKey
+      : input.bip32Derivation?.length
+      ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { ignoreY: false })?.publicKey
+      : bip32?.publicKey;
   }
 
   get network(): Network {
@@ -510,11 +519,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    */
   validateSignaturesOfInputHD(inputIndex: number, hdKeyPair: BIP32Interface): boolean {
     const input = checkForInput(this.data.inputs, inputIndex);
-    const pubKey = input.tapBip32Derivation?.length
-      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.tapBip32Derivation, { ignoreY: true })?.publicKey
-      : input.bip32Derivation?.length
-      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.bip32Derivation, { ignoreY: false })?.publicKey
-      : undefined;
+    const pubKey = UtxoPsbt.deriveKeyPairForInput(hdKeyPair, input);
     if (!pubKey) {
       throw new Error('can not derive from HD key pair');
     }
@@ -682,11 +687,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
 
     return bip32s.map((bip32) => {
-      const pubKey = input.tapBip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { ignoreY: true })?.publicKey
-        : input.bip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { ignoreY: false })?.publicKey
-        : bip32?.publicKey;
+      const pubKey = UtxoPsbt.deriveKeyPairForInput(bip32, input);
       if (!pubKey) {
         return false;
       }
