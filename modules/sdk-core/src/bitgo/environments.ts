@@ -27,6 +27,7 @@ interface EnvironmentTemplate {
   atomNodeUrl: string;
   osmoNodeUrl: string;
   tiaNodeUrl: string;
+  seiNodeUrl: string;
   bldNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
@@ -104,6 +105,7 @@ const mainnetBase: EnvironmentTemplate = {
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
   osmoNodeUrl: 'https://lcd.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
+  seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
   bldNodeUrl: 'https://agoric-api.polkachu.com',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
@@ -138,6 +140,7 @@ const testnetBase: EnvironmentTemplate = {
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
   osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one',
+  seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
