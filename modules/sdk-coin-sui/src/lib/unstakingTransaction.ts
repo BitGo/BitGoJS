@@ -136,7 +136,7 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
       outputs: [
         {
           address: this.suiTransaction.sender,
-          value: AMOUNT_UNKNOWN_TEXT,
+          value: amount === undefined ? AMOUNT_UNKNOWN_TEXT : amount.toString(),
           coin: this._coinConfig.name,
         },
       ],
@@ -147,7 +147,7 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
    * @param inputs
    * @param transactions
    */
-  static getEntriesForTransactionPairReserialized(
+  static parseTransactionPairReserialized(
     inputs: [unknown, unknown, unknown],
     transactions: [unknown, unknown]
   ): {
@@ -172,6 +172,12 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     if (!isImmOrOwnedObj(inputStakedSui.Object)) {
       throw new Error('Invalid input shared object');
     }
+
+    // make sure we parsed the transaction correctly by rebuilding it and comparing the transaction blocks
+    assertEqualTransactionBlocks(
+      { inputs, transactions },
+      UnstakingBuilder.getTransactionBlockDataReserialized(inputStakedSui.Object.ImmOrOwned, amount)
+    );
 
     return {
       stakedObjectRef: inputStakedSui.Object.ImmOrOwned,
@@ -206,7 +212,7 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     ) {
       // for unclear reasons there seem to be two different serialization formats that we are dealing with
       // try the other one here
-      return this.getEntriesForTransactionPairReserialized(
+      return this.parseTransactionPairReserialized(
         // we have length checked these earlier
         inputs as [unknown, unknown, unknown],
         transactions as [unknown, unknown]
