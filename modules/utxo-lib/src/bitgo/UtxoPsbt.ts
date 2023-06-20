@@ -184,10 +184,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   /**
    * @param parent - Parent key. Matched with `bip32Derivations` using `fingerprint` property.
    * @param bip32Derivations - possible derivations for input or output
+   * @param ignoreY - when true, ignore the y coordinate when matching public keys
    * @return derived bip32 node if matching derivation is found, undefined if none is found
    * @throws Error if more than one match is found
    */
-  static deriveKeyPair(parent: BIP32Interface, bip32Derivations: Bip32Derivation[]): BIP32Interface | undefined {
+  static deriveKeyPair(
+    parent: BIP32Interface,
+    bip32Derivations: Bip32Derivation[],
+    { ignoreY }: { ignoreY: boolean }
+  ): BIP32Interface | undefined {
     const matchingDerivations = bip32Derivations.filter((bipDv) => {
       return bipDv.masterFingerprint.equals(parent.fingerprint);
     });
@@ -209,7 +214,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     const node = parent.derivePath(derivation.path);
 
     if (!node.publicKey.equals(derivation.pubkey)) {
-      throw new Error('pubkey did not match bip32Derivation');
+      if (!ignoreY || !equalPublicKeyIgnoreY(node.publicKey, derivation.pubkey)) {
+        throw new Error('pubkey did not match bip32Derivation');
+      }
     }
 
     return node;
@@ -504,9 +511,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   validateSignaturesOfInputHD(inputIndex: number, hdKeyPair: BIP32Interface): boolean {
     const input = checkForInput(this.data.inputs, inputIndex);
     const pubKey = input.tapBip32Derivation?.length
-      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.tapBip32Derivation)?.publicKey
+      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.tapBip32Derivation, { ignoreY: true })?.publicKey
       : input.bip32Derivation?.length
-      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.bip32Derivation)?.publicKey
+      ? UtxoPsbt.deriveKeyPair(hdKeyPair, input.bip32Derivation, { ignoreY: false })?.publicKey
       : undefined;
     if (!pubKey) {
       throw new Error('can not derive from HD key pair');
@@ -676,9 +683,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
 
     return bip32s.map((bip32) => {
       const pubKey = input.tapBip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation)?.publicKey
+        ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { ignoreY: true })?.publicKey
         : input.bip32Derivation?.length
-        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation)?.publicKey
+        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { ignoreY: false })?.publicKey
         : bip32?.publicKey;
       if (!pubKey) {
         return false;
@@ -1096,7 +1103,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!input.tapBip32Derivation?.length) {
         throw new Error('tapBip32Derivation is required to create nonce');
       }
-      const derived = UtxoPsbt.deriveKeyPair(keyPair, input.tapBip32Derivation);
+      const derived = UtxoPsbt.deriveKeyPair(keyPair, input.tapBip32Derivation, { ignoreY: true });
       if (!derived) {
         throw new Error('No bip32Derivation masterFingerprint matched the HD keyPair fingerprint');
       }
