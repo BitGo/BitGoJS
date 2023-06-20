@@ -2,6 +2,15 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
 import { coins, UtxoCoin } from '@bitgo/statics';
 import { HttpClient } from '@bitgo/blockapis';
+import { ParserTx } from './ParserTx';
+
+function getTxOutPoints(tx: ParserTx): utxolib.bitgo.TxOutPoint[] {
+  if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+    return tx.ins.map((i) => utxolib.bitgo.getOutputIdForInput(i));
+  } else {
+    return tx.txInputs.map((i) => utxolib.bitgo.getOutputIdForInput(i));
+  }
+}
 
 function getCoinName(network: utxolib.Network): string {
   const networkName = utxolib.getNetworkName(network);
@@ -54,26 +63,23 @@ export async function fetchTransactionStatus(
   return await getApi(httpClient, network).getTransactionStatus(txid);
 }
 
-export async function fetchPrevOutputs(
-  httpClient: HttpClient,
-  tx: utxolib.bitgo.UtxoTransaction
-): Promise<utxolib.TxOutput[]> {
-  return await blockapis.fetchInputs(tx.ins, getApi(httpClient, tx.network), tx.network);
+export async function fetchPrevOutputs(httpClient: HttpClient, tx: ParserTx): Promise<utxolib.TxOutput<bigint>[]> {
+  return (await blockapis.fetchInputs(getTxOutPoints(tx), getApi(httpClient, tx.network), tx.network)).map((v) => ({
+    ...v,
+    value: BigInt(v.value),
+  }));
 }
 
 export async function fetchPrevOutputSpends(
   httpClient: HttpClient,
-  tx: utxolib.bitgo.UtxoTransaction
+  tx: utxolib.bitgo.UtxoTransaction<bigint> | utxolib.bitgo.UtxoPsbt
 ): Promise<blockapis.OutputSpend[]> {
-  return await blockapis.fetchTransactionSpends(
-    tx.ins.map((i) => utxolib.bitgo.getOutputIdForInput(i)),
-    getApi(httpClient, tx.network)
-  );
+  return await blockapis.fetchTransactionSpends(getTxOutPoints(tx), getApi(httpClient, tx.network));
 }
 
 export async function fetchOutputSpends(
   httpClient: HttpClient,
-  tx: utxolib.bitgo.UtxoTransaction
+  tx: utxolib.bitgo.UtxoTransaction<bigint>
 ): Promise<blockapis.OutputSpend[]> {
   try {
     return await getApi(httpClient, tx.network).getTransactionSpends(tx.getId());

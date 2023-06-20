@@ -1,0 +1,15 @@
+transaction: 5cfca0c380bcba7843849fd13c5c0a356d831d4d46c3fd6ae8aa7e90fce6d6c2
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── hasWitnesses: false
+├── status: unknown
+├── vsize: 83vbytes (332wu)
+├─┬ inputs: 1
+│ └─┬ 0: a0ed24c0b95caf63af50c9772e9dfb5d8d1a17bc9dc0eb610982a4c2114c4778:0
+│   └─┬ sigScript: p2sh
+│     └── signatures
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: 2ND2ojarDFfd2DCg8pokS2uDCwmKcbx6dQq
+    └── value: 0.00009000
