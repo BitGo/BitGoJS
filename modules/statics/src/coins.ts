@@ -1000,6 +1000,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '2ea6a6d8-7d14-4bbf-a869-a99ba61bebda',
+    'hbar:bct',
+    'Mainnet Hedera Bitcarbon Beta Coin',
+    Networks.main.hedera,
+    2,
+    UnderlyingAsset.BCT,
+    '0.0.3',
+    '0.0.1958126',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
@@ -1591,6 +1602,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xcdc412f306e0c51e3249b88c65423cd16b322673',
     UnderlyingAsset.BCIO
+  ),
+  erc20(
+    '075d5970-9167-4d0a-9ce5-38abddc85b41',
+    'bct',
+    'Bitcarbon Coin',
+    0,
+    '0xb383f96d5869002136164edcad970f8dd10d4a51',
+    UnderlyingAsset.BCT
   ),
   erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
