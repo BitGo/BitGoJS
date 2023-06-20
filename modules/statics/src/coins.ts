@@ -189,7 +189,7 @@ const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeat
 const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const BLD_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 const SEI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const INJ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const INJECTIVE_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -868,21 +868,21 @@ export const coins = CoinMap.fromCoins([
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
     'injective',
     'Injective',
-    Networks.main.inj,
+    Networks.main.injective,
     18,
-    UnderlyingAsset.INJ,
-    BaseUnit.INJ,
-    INJ_FEATURES
+    UnderlyingAsset.INJECTIVE,
+    BaseUnit.INJECTIVE,
+    INJECTIVE_FEATURES
   ),
   account(
     '6ae81d6a-011c-499c-a3c8-15ac7dcac48a',
     'tinjective',
     'Testnet Injective',
-    Networks.test.inj,
+    Networks.test.injective,
     18,
-    UnderlyingAsset.INJ,
-    BaseUnit.INJ,
-    INJ_FEATURES
+    UnderlyingAsset.INJECTIVE,
+    BaseUnit.INJECTIVE,
+    INJECTIVE_FEATURES
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',

@@ -140,6 +140,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-eos /var/modules/sdk-coin-eos/
 RUN cd /var/modules/sdk-coin-eos && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 RUN cd /var/modules/sdk-coin-ethw && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
+RUN cd /var/modules/sdk-coin-injective && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 RUN cd /var/modules/sdk-coin-ltc && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
@@ -205,6 +207,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-doge && \
     yarn link @bitgo/sdk-coin-eos && \
     yarn link @bitgo/sdk-coin-ethw && \
+    yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-ltc && \
     yarn link @bitgo/sdk-coin-sei && \
     yarn link @bitgo/sdk-coin-xlm && \
@@ -213,9 +216,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 19 Jun 2023 12:36:24 GMT"
+LABEL created="Tue, 20 Jun 2023 07:48:10 GMT"
 LABEL version=9.27.0
-LABEL git_hash=f244290e9dbdc327d7c958a8855dcef0fbc36ba4
+LABEL git_hash=3ef27ebba622f79041e487c0ceb57a88d94911d2
 #LABEL_END
 
 USER node
