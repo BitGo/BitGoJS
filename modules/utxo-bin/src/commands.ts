@@ -29,6 +29,7 @@ type ArgsParseTransaction = {
   clipboard: boolean;
   path?: string;
   txid?: string;
+  hex?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;
@@ -113,6 +114,7 @@ export const cmdParseTx = {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
+      .option('hex', { type: 'string', description: 'transaction bytes (hex-encoded)' })
       .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
       .option('fetchAll', { type: 'boolean', default: false })
@@ -169,10 +171,18 @@ export const cmdParseTx = {
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
     }
 
+    if (argv.hex) {
+      if (data) {
+        throw new Error(`conflicting arguments`);
+      }
+      data = argv.hex;
+    }
+
+    // strip whitespace
+    data = data?.replace(/\s*/g, '');
     if (!data) {
       throw new Error(`no txdata`);
     }
-    data = data.replace(/\s*/g, '');
 
     const tx = utxolib.bitgo.createTransactionFromHex(data, network);
     const txid = tx.getId();

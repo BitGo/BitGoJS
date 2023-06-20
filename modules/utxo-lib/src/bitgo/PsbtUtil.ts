@@ -38,16 +38,11 @@ export interface ProprietaryKeySearch {
 }
 
 /**
- * alias for PsbtInput type to avoid direct bip174 library dependency by users of the util functions
- */
-export type PsbtInputType = PsbtInput;
-
-/**
  * Search any data from psbt proprietary key value against keydata.
  * Default identifierEncoding is utf-8 for identifier.
  */
 export function getPsbtInputProprietaryKeyVals(
-  input: PsbtInputType,
+  input: PsbtInput,
   keySearch?: ProprietaryKeySearch
 ): ProprietaryKeyValue[] {
   if (!input.unknownKeyVals?.length) {
@@ -73,7 +68,7 @@ export function getPsbtInputProprietaryKeyVals(
 /**
  * @return partialSig/tapScriptSig/MUSIG2_PARTIAL_SIG count iff input is not finalized
  */
-export function getPsbtInputSignatureCount(input: PsbtInputType): number {
+export function getPsbtInputSignatureCount(input: PsbtInput): number {
   if (isPsbtInputFinalized(input)) {
     throw new Error('Input is already finalized');
   }
@@ -90,7 +85,7 @@ export function getPsbtInputSignatureCount(input: PsbtInputType): number {
 /**
  * @return true iff PSBT input is finalized
  */
-export function isPsbtInputFinalized(input: PsbtInputType): boolean {
+export function isPsbtInputFinalized(input: PsbtInput): boolean {
   return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
 }
 

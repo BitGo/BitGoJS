@@ -435,6 +435,9 @@ export async function handleV2SignTSSWalletTx(req: express.Request) {
   }
 }
 
+/**
+ * This route is used to sign while external express signer is enabled
+ */
 export async function handleV2Sign(req: express.Request) {
   const walletId = req.body.txPrebuild?.walletId;
 

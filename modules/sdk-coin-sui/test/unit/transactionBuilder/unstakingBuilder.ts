@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
@@ -19,11 +20,25 @@ describe('Sui unstaking Builder', () => {
           JSON.stringify(tx.suiTransaction.tx)
         );
         const rawTx = tx.toBroadcastFormat();
-        should.equal(utils.isValidRawTransaction(rawTx), true);
-        should.equal(
+        assert.deepStrictEqual(utils.isValidRawTransaction(rawTx), true);
+        assert.deepStrictEqual(
           rawTx,
           amount === undefined ? testData.WITHDRAW_STAKED_SUI : testData.WITHDRAW_STAKED_SUI_WITH_AMOUNT
         );
+        assert.deepStrictEqual(tx.inputs, [
+          {
+            address: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+            value: amount === undefined ? 'AMOUNT_UNKNOWN' : amount.toString(),
+            coin: 'tsui',
+          },
+        ]);
+        assert.deepStrictEqual(tx.outputs, [
+          {
+            address: '0x9882188ba3e8070a9bb06ae9446cf607914ee8ee58ed8306a3e3afff5a1bbb71',
+            value: amount === undefined ? 'AMOUNT_UNKNOWN' : amount.toString(),
+            coin: 'tsui',
+          },
+        ]);
 
         if (rebuild) {
           const txBuilder = factory.getUnstakingBuilder();

@@ -28,11 +28,12 @@ enum CertType {
   StakeKeyRegistration,
   StakeKeyDelegation,
   StakeKeyDeregistration,
+  StakePoolRegistration,
 }
 
 export interface Cert {
   type: CertType;
-  stakeCredentialHash: string;
+  stakeCredentialHash?: string;
   poolKeyHash?: string;
 }
 
@@ -144,6 +145,13 @@ export class Transaction extends BaseTransaction {
             poolKeyHash: Buffer.from(stakeDelegation.pool_keyhash().to_bytes()).toString('hex'),
           });
         }
+        if (cert.as_pool_registration() !== undefined) {
+          const stakePoolRegistration = cert.as_pool_registration() as CardanoWasm.PoolRegistration;
+          result.certs.push({
+            type: CertType.StakePoolRegistration,
+            poolKeyHash: Buffer.from(stakePoolRegistration.pool_params().operator().to_bytes()).toString('hex'),
+          });
+        }
       }
     }
 
@@ -223,10 +231,7 @@ export class Transaction extends BaseTransaction {
           certs.push(cert);
         }
 
-        if (
-          certs.some((c) => c.as_stake_delegation() !== undefined) &&
-          certs.some((c) => c.as_pool_registration() !== undefined)
-        ) {
+        if (certs.some((c) => c.as_pool_registration() !== undefined)) {
           this._type = TransactionType.StakingPledge;
         } else if (certs.some((c) => c.as_stake_registration() !== undefined)) {
           this._type = TransactionType.StakingActivate;

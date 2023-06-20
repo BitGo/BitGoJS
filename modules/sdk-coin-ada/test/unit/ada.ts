@@ -280,7 +280,7 @@ describe('ADA', function () {
   describe('Parse Raw Transactions', () => {
     it('should parse staking pledge transaction', function () {
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(rawTx.unsignedPledgeTx);
+      tx.fromRawTransaction(rawTx.unsignedNewPledgeTx);
       should.equal(tx.type, TransactionType.StakingPledge);
     });
 

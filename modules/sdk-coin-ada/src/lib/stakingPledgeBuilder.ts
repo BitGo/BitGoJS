@@ -18,6 +18,17 @@ export class StakingPledgeBuilder extends TransactionBuilder {
     super.initBuilder(tx);
   }
 
+  /**
+   * Add node key witness to the transaction to the transaction's witnesses list.
+   *
+   * @param nodePublicKey Public node key provided by the user.
+   * @param nodeKeySignature Signature of the node key provided by the user.
+   */
+  addNodeKeyWitness(nodePublicKey: string, nodeKeySignature: string): this {
+    this.addSignature({ pub: nodePublicKey }, Buffer.from(nodeKeySignature, 'hex'));
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const tx = await super.buildImplementation();

@@ -1,3 +1,4 @@
+import { BCS } from '@mysten/bcs';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
@@ -182,6 +183,59 @@ export class UnstakingBuilder extends TransactionBuilder<UnstakingProgrammableTr
       });
     }
     return txb.blockData;
+  }
+
+  static getTransactionBlockDataReserialized(
+    objectRef: SuiObjectRef,
+    amount: bigint
+  ): { inputs: unknown[]; transactions: unknown[] } {
+    const inputs = [
+      { Object: { ImmOrOwned: objectRef } },
+      Inputs.Pure(amount, BCS.U64),
+      {
+        Object: {
+          Shared: {
+            objectId: '0000000000000000000000000000000000000000000000000000000000000005',
+            initialSharedVersion: '1',
+            mutable: true,
+          },
+        },
+      },
+    ];
+    const transactions = [
+      {
+        kind: 'MoveCall',
+        target: '0000000000000000000000000000000000000000000000000000000000000003::staking_pool::split',
+        arguments: [
+          {
+            kind: 'Input',
+            index: 0,
+          },
+          {
+            kind: 'Input',
+            index: 1,
+          },
+        ],
+        typeArguments: [],
+      },
+      {
+        kind: 'MoveCall',
+        target: '0000000000000000000000000000000000000000000000000000000000000003::sui_system::request_withdraw_stake',
+        arguments: [
+          {
+            kind: 'Input',
+            index: 2,
+          },
+          {
+            kind: 'NestedResult',
+            index: 0,
+            resultIndex: 0,
+          },
+        ],
+        typeArguments: [],
+      },
+    ];
+    return { inputs, transactions };
   }
 
   /**

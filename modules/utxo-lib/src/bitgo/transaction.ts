@@ -1,3 +1,4 @@
+/* eslint no-redeclare: 0 */
 import { TxOutput } from 'bitcoinjs-lib';
 
 import { networks, Network, getMainnet } from '../networks';
@@ -13,6 +14,16 @@ import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 import { LitecoinPsbt, LitecoinTransaction, LitecoinTransactionBuilder } from './litecoin';
 
+export function createTransactionFromBuffer(
+  buf: Buffer,
+  network: Network,
+  params: { version?: number; amountType: 'bigint' }
+): UtxoTransaction<bigint>;
+export function createTransactionFromBuffer<TNumber extends number | bigint>(
+  buf: Buffer,
+  network: Network,
+  params?: { version?: number; amountType?: 'number' | 'bigint' }
+): UtxoTransaction<TNumber>;
 export function createTransactionFromBuffer<TNumber extends number | bigint = number>(
   buf: Buffer,
   network: Network,
@@ -48,6 +59,32 @@ export function createTransactionFromBuffer<TNumber extends number | bigint = nu
 
   /* istanbul ignore next */
   throw new Error(`invalid network`);
+}
+
+/* istanbul ignore next */
+/** @deprecated - use createTransactionFromBuffer instead */
+export function createTransactionFromHex(
+  hex: string,
+  network: Network,
+  p: { amountType: 'bigint' }
+): UtxoTransaction<bigint>;
+/** @deprecated - use createTransactionFromBuffer instead */
+export function createTransactionFromHex(hex: string, network: Network, p: { amountType: 'number' }): UtxoTransaction;
+/** @deprecated - use createTransactionFromBuffer instead */
+export function createTransactionFromHex<TNumber extends number | bigint = number>(
+  hex: string,
+  network: Network,
+  p?: { amountType?: 'number' | 'bigint' } | 'number' | 'bigint'
+): UtxoTransaction<TNumber>;
+export function createTransactionFromHex<TNumber extends number | bigint = number>(
+  hex: string,
+  network: Network,
+  p?: { amountType?: 'number' | 'bigint' } | 'number' | 'bigint'
+): UtxoTransaction<TNumber> {
+  if (typeof p === 'string') {
+    p = { amountType: p };
+  }
+  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, p);
 }
 
 export function createPsbtFromBuffer(buf: Buffer, network: Network, bip32PathsAbsolute = false): UtxoPsbt {
@@ -94,15 +131,6 @@ export function createPsbtFromTransaction(tx: UtxoTransaction<bigint>, prevOuts:
 
   /* istanbul ignore next */
   throw new Error(`invalid network`);
-}
-
-/* istanbul ignore next */
-export function createTransactionFromHex<TNumber extends number | bigint = number>(
-  hex: string,
-  network: Network,
-  amountType: 'number' | 'bigint' = 'number'
-): UtxoTransaction<TNumber> {
-  return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, { amountType });
 }
 
 export function getDefaultTransactionVersion(network: Network): number {

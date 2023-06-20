@@ -23,9 +23,12 @@ interface EnvironmentTemplate {
   nearNodeUrls: string[];
   solNodeUrl: string;
   adaNodeUrl: string;
+  hashNodeUrl: string;
   atomNodeUrl: string;
   osmoNodeUrl: string;
   tiaNodeUrl: string;
+  seiNodeUrl: string;
+  bldNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -98,9 +101,12 @@ const mainnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
+  hashNodeUrl: 'https://api.provenance.io',
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
   osmoNodeUrl: 'https://lcd.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
+  seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
+  bldNodeUrl: 'https://agoric-api.polkachu.com',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -130,9 +136,12 @@ const testnetBase: EnvironmentTemplate = {
   nearNodeUrls: ['https://rpc.testnet.near.org'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
+  hashNodeUrl: 'https://api.test.provenance.io',
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
   osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one',
+  seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
+  bldNodeUrl: 'https://devnet.api.agoric.net',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',

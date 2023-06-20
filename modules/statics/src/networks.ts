@@ -120,7 +120,7 @@ class Ada extends Mainnet implements AdaNetwork {
   utxolibName = 'cardano';
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
-  explorerUrl = 'https://explorer.cardano.org/en';
+  explorerUrl = 'https://explorer.cardano.org/en/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -228,14 +228,14 @@ class Bitcoin extends Mainnet implements UtxoNetwork {
   name = 'Bitcoin';
   family = CoinFamily.BTC;
   utxolibName = 'bitcoin';
-  explorerUrl = 'https://blockstream.info/tx/';
+  explorerUrl = 'https://mempool.space/tx/';
 }
 
 class BitcoinTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinTestnet';
   family = CoinFamily.BTC;
   utxolibName = 'testnet';
-  explorerUrl = 'https://blockstream.info/testnet/tx/';
+  explorerUrl = 'https://mempool.space/testnet/tx/';
 }
 
 class BitcoinCash extends Mainnet implements UtxoNetwork {

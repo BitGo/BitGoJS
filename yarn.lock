@@ -6428,10 +6428,10 @@ bip174@^2.1.0:
   resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.0.0-rc.1.tgz#6ca32dc75513744a9ae914255f915494056541b4"
   integrity sha512-eGi5die7Q7O3yPtkcGF1gD7qLlJLiLnYI4DpFTF6tUhUo71gy3RoXAAeeJA2fLpnVoJofXnLdLfpcO6OEZAsvw==
 
-"bip174@npm:@bitgo-forks/bip174@3.1.0-master.3":
-  version "3.1.0-master.3"
-  resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.1.0-master.3.tgz#1bc23abf2a0e190770463196a714330f711b2b79"
-  integrity sha512-yhSm1JeFJGztAqnqrpWNQqBCfR6SMpdM/XKKlpy02Ks7O+x98KpXjrRmX+jfAJERp/XXVfkgqUs3efSWxR7xZA==
+"bip174@npm:@bitgo-forks/bip174@3.1.0-master.4":
+  version "3.1.0-master.4"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/bip174/-/bip174-3.1.0-master.4.tgz#0c8a750cc98097120169e753e7fccc23b1cb9eaa"
+  integrity sha512-WDRNzPSdJGDqQNqfN+L5KHNHFDmNOPYnUnT7NkEkfHWn5m1jSOfcf8Swaslt5P0xcSDiERdN2gZxFc6XtOqRYg==
 
 bip32@^3.0.1, bip32@^3.1.0:
   version "3.1.0"
@@ -6504,13 +6504,13 @@ bitcoinjs-lib@^6.0.0:
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
 
-"bitcoinjs-lib@npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.5":
-  version "7.1.0-master.5"
-  resolved "https://registry.yarnpkg.com/@bitgo-forks/bitcoinjs-lib/-/bitcoinjs-lib-7.1.0-master.5.tgz#20eb034b2e30f19f772f5b363983c55a8ab6b9be"
-  integrity sha512-slAMm562sRa0XH19nMsML/dvqLkIODhPK3TLfHvp3jVg7Z+I3Tx+maXh87fY3mUCDfVG9hrQjhPTpQLRFOmOSA==
+"bitcoinjs-lib@npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.6":
+  version "7.1.0-master.6"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/bitcoinjs-lib/-/bitcoinjs-lib-7.1.0-master.6.tgz#effac792ec752e928f63b6128d93781c2f110b68"
+  integrity sha512-Cvf0odjJKy4frbcmVfTuRpQmAhu5wIFNmYNhJg3qxrV8pdR5WDbRICfGvrorxofZgB8Cv4UDTmbeoOF/ggmXnA==
   dependencies:
     bech32 "^2.0.0"
-    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.3"
+    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.4"
     bs58check "^2.1.2"
     create-hash "^1.1.0"
     fastpriorityqueue "^0.7.1"

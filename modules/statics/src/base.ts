@@ -328,6 +328,7 @@ export enum UnderlyingAsset {
   BCHBULL = 'bchbull',
   BCHHEDGE = 'bchhedge',
   BCIO = 'bcio',
+  BCT = 'bct',
   BEAR = 'bear',
   BED = 'bed',
   BEPRO = 'bepro',

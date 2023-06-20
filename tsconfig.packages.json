@@ -50,6 +50,9 @@
       "path": "./modules/sdk-coin-bcha"
     },
     {
+      "path": "./modules/sdk-coin-bld"
+    },
+    {
       "path": "./modules/sdk-coin-bsc"
     },
     {
@@ -92,6 +95,9 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
+      "path": "./modules/sdk-coin-hash"
+    },
+    {
       "path": "./modules/sdk-coin-hbar"
     },
     {
@@ -108,6 +114,9 @@
     },
     {
       "path": "./modules/sdk-coin-rbtc"
+    },
+    {
+      "path": "./modules/sdk-coin-sei"
     },
     {
       "path": "./modules/sdk-coin-sol"

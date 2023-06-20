@@ -121,7 +121,7 @@ export function signAndVerifyPsbt(
 
   if (isLastSignature) {
     psbt.finalizeAllInputs();
-    return psbt.extractTransaction() as utxolib.bitgo.UtxoTransaction<bigint>;
+    return psbt.extractTransaction();
   }
 
   return psbt;

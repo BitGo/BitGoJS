@@ -32,7 +32,7 @@ import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { script as bscript, TxInput } from 'bitcoinjs-lib';
 import { opcodes } from '../../index';
-import { getPsbtInputSignatureCount, isPsbtInputFinalized, PsbtInputType } from '../PsbtUtil';
+import { getPsbtInputSignatureCount, isPsbtInputFinalized } from '../PsbtUtil';
 
 // only used for building `SignatureContainer`
 type BaseSignatureContainer<T> = {
@@ -224,7 +224,7 @@ export function signWalletPsbt(
 /**
  * @returns script type of the input
  */
-export function getPsbtInputScriptType(input: PsbtInputType): ParsedScriptType {
+export function getPsbtInputScriptType(input: PsbtInput): ParsedScriptType {
   const isP2pk = (script: Buffer) => {
     try {
       const chunks = bscript.decompile(script);
@@ -267,7 +267,7 @@ export function getPsbtInputScriptType(input: PsbtInputType): ParsedScriptType {
   throw new Error('could not parse input');
 }
 
-function parseTaprootKeyPathSignatures(input: PsbtInputType): TaprootKeyPathSignatureContainer {
+function parseTaprootKeyPathSignatures(input: PsbtInput): TaprootKeyPathSignatureContainer {
   const partialSigs = parsePsbtMusig2PartialSigs(input);
   if (!partialSigs) {
     return { signatures: undefined, participantPublicKeys: undefined };
@@ -291,7 +291,7 @@ function parsePartialOrTapScriptSignatures(sig: PartialSig[] | TapScriptSig[] | 
 }
 
 function parseSignatures(
-  input: PsbtInputType,
+  input: PsbtInput,
   scriptType: ParsedScriptType
 ): SignatureContainer | TaprootKeyPathSignatureContainer {
   return scriptType === 'taprootKeyPathSpend'
@@ -302,7 +302,7 @@ function parseSignatures(
 }
 
 function parseScript(
-  input: PsbtInputType,
+  input: PsbtInput,
   scriptType: ParsedScriptType
 ): ParsedPubScriptP2ms | ParsedPubScriptTaproot | ParsedPubScriptP2shP2pk {
   let pubScript: Buffer | undefined;
@@ -338,7 +338,7 @@ function parseScript(
  * P2TR MUSIG2 kep path => scriptType (taprootKeyPathSpend), pubScript (scriptPubKey), participant pub keys (signer),
  * public key (tapOutputkey), signatures (partial signer sigs).
  */
-export function parsePsbtInput(input: PsbtInputType): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk {
+export function parsePsbtInput(input: PsbtInput): ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk {
   if (isPsbtInputFinalized(input)) {
     throw new Error('Finalized PSBT parsing is not supported');
   }
@@ -396,7 +396,7 @@ export function parsePsbtInput(input: PsbtInputType): ParsedPsbtP2ms | ParsedPsb
  * @returns strictly parse the input and get signature count.
  * unsigned(0), half-signed(1) or fully-signed(2)
  */
-export function getStrictSignatureCount(input: TxInput | PsbtInputType): 0 | 1 | 2 {
+export function getStrictSignatureCount(input: TxInput | PsbtInput): 0 | 1 | 2 {
   const calculateSignatureCount = (
     signatures: [Buffer | 0, Buffer | 0, Buffer | 0] | [Buffer, Buffer] | [Buffer] | undefined
   ): 0 | 1 | 2 => {
@@ -423,7 +423,7 @@ export function getStrictSignatureCount(input: TxInput | PsbtInputType): 0 | 1 |
  * 0=unsigned, 1=half-signed or 2=fully-signed
  */
 export function getStrictSignatureCounts(
-  tx: UtxoPsbt | UtxoTransaction<number | bigint> | PsbtInputType[] | TxInput[]
+  tx: UtxoPsbt | UtxoTransaction<number | bigint> | PsbtInput[] | TxInput[]
 ): (0 | 1 | 2)[] {
   const inputs = tx instanceof UtxoPsbt ? tx.data.inputs : tx instanceof UtxoTransaction ? tx.ins : tx;
   return inputs.map((input, _) => getStrictSignatureCount(input));
@@ -432,14 +432,14 @@ export function getStrictSignatureCounts(
 /**
  * @return true iff inputs array is of PsbtInputType type
  * */
-export function isPsbtInputArray(inputs: PsbtInputType[] | TxInput[]): inputs is PsbtInputType[] {
+export function isPsbtInputArray(inputs: PsbtInput[] | TxInput[]): inputs is PsbtInput[] {
   return !isTxInputArray(inputs);
 }
 
 /**
  * @return true iff inputs array is of TxInput type
  * */
-export function isTxInputArray(inputs: PsbtInputType[] | TxInput[]): inputs is TxInput[] {
+export function isTxInputArray(inputs: PsbtInput[] | TxInput[]): inputs is TxInput[] {
   assert(!!inputs.length, 'empty inputs array');
   return 'hash' in inputs[0];
 }

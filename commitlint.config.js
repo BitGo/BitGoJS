@@ -50,6 +50,7 @@ module.exports = {
         "STLX-",
         "TRUST-",
         "VL-",
+        "WIN-",
         "WP-",
         '#', // Prefix used by GitHub issues
       ],

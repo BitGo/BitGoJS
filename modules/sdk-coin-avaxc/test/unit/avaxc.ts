@@ -11,6 +11,7 @@ import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C } from '../resources/avaxc';
 import { TavaxP } from '@bitgo/sdk-coin-avaxp';
+import { decodeTransaction, parseTransaction, walletSimpleABI } from './helpers';
 
 nock.enableNetConnect();
 
@@ -888,8 +889,14 @@ describe('Avalanche C-Chain', function () {
           recoveryDestination,
           gasPrice,
         });
+        const parsedTx = parseTransaction(recovery.txHex);
 
-        // id and tx will always be different because of expireTime
+        const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), parsedTx.data);
+
+        const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
+        const safeTransferFromDestination = decodedSendMultisigCallData.args[0];
+        safeTransferFromDestination.toLowerCase().should.equal(recoveryDestination);
+        safeTransferFromCallData.should.be.equal('0x');
         recovery.should.not.be.undefined();
         recovery.should.have.properties('txHex', 'userKey', 'backupKey');
         recovery.recipients.length.should.equal(1);
