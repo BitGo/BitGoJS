@@ -9,7 +9,6 @@ import {
   createPsbtForNetwork,
   createPsbtFromTransaction,
   createTransactionFromBuffer,
-  createTransactionFromHex,
   LitecoinPsbt,
   LitecoinTransaction,
   NonWitnessWalletUnspent,
@@ -23,8 +22,14 @@ async function getFixture<T>(name: string): Promise<T> {
   return JSON.parse(await fs.readFile(p, 'utf-8'));
 }
 
+async function getFixtureAsBuffer(name: string): Promise<Buffer> {
+  return Buffer.from(await getFixture<string>(name), 'hex');
+}
+
 async function getTransaction(mweb: boolean): Promise<LitecoinTransaction<bigint>> {
-  return createTransactionFromHex(await getFixture(`ltc-${mweb ? 'mweb-' : ''}transaction.json`), network, 'bigint');
+  return createTransactionFromBuffer(await getFixtureAsBuffer(`ltc-${mweb ? 'mweb-' : ''}transaction.json`), network, {
+    amountType: 'bigint',
+  });
 }
 
 describe('Litecoin Transaction', function () {
@@ -68,8 +73,8 @@ describe('Litecoin Psbt', function () {
   it('can add an input to a psbt whose prev transaction has a mweb serialization', async function () {
     const rootWalletKeys = getDefaultWalletKeys();
 
-    const hex: string = await getFixture(`ltc-mweb-transaction.json`);
-    const tx = await createTransactionFromHex(hex, network, 'bigint');
+    const buf = await getFixtureAsBuffer(`ltc-mweb-transaction.json`);
+    const tx = await createTransactionFromBuffer(buf, network, { amountType: 'bigint' });
 
     const psbt = createPsbtForNetwork({ network });
     assert(psbt instanceof LitecoinPsbt);
@@ -86,7 +91,7 @@ describe('Litecoin Psbt', function () {
       psbt,
       {
         ...u,
-        prevTx: Buffer.from(hex, 'hex'),
+        prevTx: buf,
       } as NonWitnessWalletUnspent<bigint>,
       rootWalletKeys,
       'user',

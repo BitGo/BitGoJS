@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import * as assert from 'assert';
 
 import { networks, Network, getNetworkName } from '../../src';
-import { createTransactionFromHex } from '../../src/bitgo';
+import { createTransactionFromBuffer } from '../../src/bitgo';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getDefaultCosigner } from '../../src/testutil';
 
@@ -35,10 +35,13 @@ function runTest<TNumber extends number | bigint>(scriptType: ScriptType2Of3, am
         );
 
         // Fixtures can only be constructed using utxolib < 1.10
-        const nonStandardHalfSigned = createTransactionFromHex<TNumber>(
-          await getFixture(network, `nonStandardHalfSigned-${scriptType}-${pubkeyIndex}.json`),
+        const nonStandardHalfSigned = createTransactionFromBuffer<TNumber>(
+          Buffer.from(
+            await getFixture<string>(network, `nonStandardHalfSigned-${scriptType}-${pubkeyIndex}.json`),
+            'hex'
+          ),
           network,
-          amountType
+          { amountType }
         );
 
         // The nonstandard transaction input is missing two `OP_0`

@@ -201,7 +201,7 @@ export function createPsbtSpendTransactionFromPrevTx(
   }
 
   psbt.finalizeAllInputs();
-  return psbt.extractTransaction() as UtxoTransaction<bigint>;
+  return psbt.extractTransaction();
 }
 
 export function createPsbtSpendTransaction<TNumber extends number | bigint = number>({
