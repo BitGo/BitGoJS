@@ -108,6 +108,9 @@
       "path": "../sdk-coin-hbar"
     },
     {
+      "path": "../sdk-coin-inj"
+    },
+    {
       "path": "../sdk-coin-ltc"
     },
     {
