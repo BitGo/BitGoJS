@@ -17,6 +17,7 @@ import { UNAVAILABLE_TEXT } from './constants';
 import {
   CosmosLikeTransaction,
   DelegateOrUndelegeteMessage,
+  ExecuteContractMessage,
   SendMessage,
   TransactionExplanation,
   TxData,
@@ -218,6 +219,18 @@ export class CosmosTransaction extends BaseTransaction {
             amount: UNAVAILABLE_TEXT,
           },
         ];
+        outputAmount = UNAVAILABLE_TEXT;
+        break;
+      case TransactionType.ContractCall:
+        explanationResult.type = TransactionType.ContractCall;
+        message = json.sendMessages[0].value as ExecuteContractMessage;
+        outputs = [
+          {
+            address: message.contract,
+            amount: UNAVAILABLE_TEXT,
+          },
+        ];
+        outputAmount = UNAVAILABLE_TEXT;
         break;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
@@ -283,6 +296,19 @@ export class CosmosTransaction extends BaseTransaction {
         });
         outputs.push({
           address: withdrawMessage.validatorAddress,
+          value: UNAVAILABLE_TEXT,
+          coin: this._coinConfig.name,
+        });
+        break;
+      case TransactionType.ContractCall:
+        const executeContractMessage = this.cosmosLikeTransaction.sendMessages[0].value as ExecuteContractMessage;
+        inputs.push({
+          address: executeContractMessage.sender,
+          value: UNAVAILABLE_TEXT,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: executeContractMessage.contract,
           value: UNAVAILABLE_TEXT,
           coin: this._coinConfig.name,
         });

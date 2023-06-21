@@ -7,7 +7,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Osmo, Tosmo } from '../../../src';
 
-describe('Osmo WithdrawRewards txn Builder', () => {
+describe('Osmo contract call txn Builder', () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
@@ -19,85 +19,85 @@ describe('Osmo WithdrawRewards txn Builder', () => {
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tosmo');
     factory = basecoin.getBuilder();
-    testTx = testData.TEST_WITHDRAW_REWARDS_TX;
+    testTx = testData.TEST_EXECUTE_CONTRACT_TRANSACTION;
   });
 
-  it('should build a WithdrawRewards tx with signature', async function () {
-    const txBuilder = factory.getStakingWithdrawRewardsBuilder();
+  it('should build a contractCall tx with signature', async function () {
+    const txBuilder = factory.getContractCallBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
-    txBuilder.messages([testTx.sendMessage.value]);
+    txBuilder.messages([testTx.message.value]);
     txBuilder.publicKey(toHex(fromBase64(testTx.pubKey)));
     txBuilder.addSignature({ pub: toHex(fromBase64(testTx.pubKey)) }, Buffer.from(testTx.signature, 'base64'));
 
     const tx = await txBuilder.build();
     const json = await (await txBuilder.build()).toJson();
-    should.equal(tx.type, TransactionType.StakingWithdraw);
+    should.equal(tx.type, TransactionType.ContractCall);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages, [testTx.message]);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
+        address: testTx.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
+        address: testTx.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
   });
 
-  it('should build a WithdrawRewards tx without signature', async function () {
-    const txBuilder = factory.getStakingWithdrawRewardsBuilder();
+  it('should build a contractCall tx without signature', async function () {
+    const txBuilder = factory.getContractCallBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
-    txBuilder.messages([testTx.sendMessage.value]);
+    txBuilder.messages([testTx.message.value]);
     txBuilder.publicKey(toHex(fromBase64(testTx.pubKey)));
     const tx = await txBuilder.build();
     const json = await (await txBuilder.build()).toJson();
-    should.equal(tx.type, TransactionType.StakingWithdraw);
+    should.equal(tx.type, TransactionType.ContractCall);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages, [testTx.message]);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     tx.toBroadcastFormat();
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
+        address: testTx.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
+        address: testTx.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
   });
 
-  it('should sign a WithdrawRewards tx', async function () {
-    const txBuilder = factory.getStakingWithdrawRewardsBuilder();
+  it('should sign a contract call tx', async function () {
+    const txBuilder = factory.getContractCallBuilder();
     txBuilder.sequence(testTx.sequence);
     txBuilder.gasBudget(testTx.gasBudget);
-    txBuilder.messages([testTx.sendMessage.value]);
+    txBuilder.messages([testTx.message.value]);
     txBuilder.accountNumber(testTx.accountNumber);
     txBuilder.chainId(testTx.chainId);
     txBuilder.sign({ key: toHex(fromBase64(testTx.privateKey)) });
     const tx = await txBuilder.build();
     const json = await (await txBuilder.build()).toJson();
-    should.equal(tx.type, TransactionType.StakingWithdraw);
+    should.equal(tx.type, TransactionType.ContractCall);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages, [testTx.message]);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
@@ -105,14 +105,14 @@ describe('Osmo WithdrawRewards txn Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
+        address: testTx.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
+        address: testTx.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
