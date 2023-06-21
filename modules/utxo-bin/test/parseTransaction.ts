@@ -1,47 +1,86 @@
+import * as mocha from 'mocha';
 import * as yargs from 'yargs';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import { getFixtureString, getTransactionWithSpendType, formatTreeNoColor } from './fixtures';
+import { getFixtureString, getTransactionWithSpendType, formatTreeNoColor, ParsedFixture } from './fixtures';
 import { ParserNode } from '../src/Parser';
 import { cmdParseTx, getTxParser } from '../src/commands';
+import { ParserTx } from '../src/ParserTx';
 
-function getScriptTypes2Of3() {
-  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
-  //  because the test suite is written with TransactionBuilder
-  return utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+type TestParams = {
+  scriptType: utxolib.bitgo.outputScripts.ScriptType2Of3;
+  spendType: 'keyPath' | 'scriptPath' | undefined;
+  fixtureType: 'psbtUnsigned' | 'psbtHalfSigned' | 'psbtFullSigned' | 'networkFullSigned';
+  showAll: boolean;
+};
+
+function getArgs({ showAll }: { showAll: boolean }): string[] {
+  return showAll ? ['--all'] : [];
 }
 
-getScriptTypes2Of3().forEach((t) => {
-  const params: [string, string[]][] = [
-    ['default', []],
-    ['all', ['--all']],
-  ];
+function getParams(): TestParams[] {
+  return (['psbtUnsigned', 'psbtHalfSigned', 'psbtFullSigned', 'networkFullSigned'] as const).flatMap((fixtureType) => {
+    return [false, true].flatMap((showAll) => {
+      return utxolib.bitgo.outputScripts.scriptTypes2Of3.flatMap((scriptType): TestParams[] => {
+        if (scriptType === 'p2trMusig2') {
+          return [
+            { scriptType, spendType: 'keyPath', showAll, fixtureType },
+            { scriptType, spendType: 'scriptPath', showAll, fixtureType },
+          ];
+        }
+        return [{ scriptType, spendType: undefined, showAll, fixtureType }];
+      });
+    });
+  });
+}
 
-  params.forEach(([name, args]) => {
-    describe(`parse ${t} spend with ${args.join(' ')}`, function () {
-      function parse(tx: utxolib.bitgo.UtxoTransaction, prevOutputs?: utxolib.TxOutput[]): ParserNode {
-        return getTxParser(yargs.command(cmdParseTx).parse(args) as any).parse(tx, { prevOutputs });
+getParams().forEach(({ scriptType, spendType, fixtureType, showAll }) => {
+  describe(`parse ${fixtureType} ${scriptType} ${spendType ? spendType : 'default'} spend [args=${getArgs({
+    showAll,
+  })}`, function () {
+    function parse(tx: ParserTx, prevOutputs?: utxolib.TxOutput<bigint>[]): ParserNode {
+      return getTxParser(yargs.command(cmdParseTx).parse([...getArgs({ showAll }), '--parseError=throw']) as any).parse(
+        tx,
+        {
+          prevOutputs,
+        }
+      );
+    }
+
+    let fixture: ParsedFixture;
+    before(async function () {
+      fixture = await getTransactionWithSpendType(utxolib.networks.testnet, {
+        scriptType,
+        spendType,
+        fixtureType,
+      });
+    });
+
+    it(`parses`, function () {
+      parse(fixture.transaction);
+      if (fixture.prevOutputs) {
+        parse(fixture.transaction, fixture.prevOutputs);
       }
+    });
 
-      let tx: utxolib.bitgo.UtxoTransaction;
-      let prevOut: utxolib.TxOutput[];
-      before(async function () {
-        [tx, prevOut] = await getTransactionWithSpendType(utxolib.networks.testnet, t);
-      });
-
-      it(`parses`, function () {
-        assert.doesNotThrow(() => parse(tx));
-        assert.doesNotThrow(() => parse(tx, prevOut));
-      });
-
-      [false, true].forEach((usePrevOuts) => {
-        it(`formats [usePrevOuts=${usePrevOuts}]`, async function () {
-          const formatted = formatTreeNoColor(parse(tx, usePrevOuts ? prevOut : undefined));
-          assert.strictEqual(
-            formatted,
-            await getFixtureString(`test/fixtures/format_${t}_${name}${usePrevOuts ? '_prevOuts' : ''}.txt`, formatted)
-          );
+    [false, true].forEach((usePrevOuts) => {
+      it(`formats [usePrevOuts=${usePrevOuts}]`, async function (this: mocha.Context) {
+        if (usePrevOuts && !fixture.prevOutputs) {
+          this.skip();
+        }
+        const formatted = formatTreeNoColor(parse(fixture.transaction, usePrevOuts ? fixture.prevOutputs : undefined), {
+          showAll,
         });
+        const fixtureName = spendType ? `${scriptType}_${spendType}` : scriptType;
+        assert.strictEqual(
+          formatted,
+          await getFixtureString(
+            `test/fixtures/format_${fixtureName}_${fixtureType}${showAll ? '_all' : ''}${
+              usePrevOuts ? '_prevOuts' : ''
+            }.txt`,
+            formatted
+          )
+        );
       });
     });
   });

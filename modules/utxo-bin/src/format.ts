@@ -4,8 +4,8 @@ import { ParserNode, ParserNodeValue } from './Parser';
 
 const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];
 
-export function formatSat(v: number): string {
-  return (v / 1e8).toFixed(8);
+export function formatSat(v: number | bigint): string {
+  return (Number(v) / 1e8).toFixed(8);
 }
 
 export function formatTree(
@@ -27,6 +27,7 @@ export function formatTree(
       case 'boolean':
       case 'number':
       case 'string':
+      case 'bigint':
         return String(v);
       case 'object':
         if (v === null) {
@@ -36,7 +37,7 @@ export function formatTree(
           return v.length === 0 ? '[]' : v.toString('hex');
         }
     }
-    throw new Error(`could not get label from value`);
+    throw new Error(`could not get label from value ${typeof v}`);
   }
 
   function toArchy(n: ParserNode): archy.Data {
