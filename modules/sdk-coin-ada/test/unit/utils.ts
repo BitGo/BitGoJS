@@ -2,7 +2,16 @@ import should from 'should';
 import { KeyPair, Utils } from '../../src';
 import { AddressFormat, toHex } from '@bitgo/sdk-core';
 import { Ed25519Signature } from '@emurgo/cardano-serialization-lib-nodejs';
-import { address, blockHash, enterpriseAccounts, privateKeys, publicKeys, signatures, txIds } from '../resources';
+import {
+  address,
+  blockHash,
+  enterpriseAccounts,
+  privateKeys,
+  publicKeys,
+  signatures,
+  txIds,
+  rawTx,
+} from '../resources';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {
@@ -117,5 +126,28 @@ describe('utils', () => {
     should.equal(Utils.default.isValidTransactionId(txIds.hash1.slice(3)), false);
     should.equal(Utils.default.isValidTransactionId(txIds.hash3 + '00'), false);
     should.equal(Utils.default.isValidTransactionId('dalij43ta0ga2dadda02'), false);
+  });
+
+  it('should get transaction body correctly', () => {
+    const {
+      unsignedTx,
+      unsignedTxBody,
+      unsignedStakingActiveTx,
+      unsignedStakingActiveTxBody,
+      unsignedStakingDeactiveTx,
+      unsignedStakingDeactiveTxBody,
+      unsignedStakingWithdrawTx,
+      unsignedStakingWithdrawTxBody,
+      unsignedUpdatePledgeTx,
+      unsignedUpdatePledgeTxBody,
+      unsignedNewPledgeTx,
+      unsignedNewPledgeTxBody,
+    } = rawTx;
+    should.equal(Utils.default.getTransactionBody(unsignedTx), unsignedTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedStakingActiveTx), unsignedStakingActiveTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedStakingDeactiveTx), unsignedStakingDeactiveTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedStakingWithdrawTx), unsignedStakingWithdrawTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedUpdatePledgeTx), unsignedUpdatePledgeTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedNewPledgeTx), unsignedNewPledgeTxBody);
   });
 });

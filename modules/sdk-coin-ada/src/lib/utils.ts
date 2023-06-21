@@ -6,6 +6,7 @@ import {
   NetworkInfo,
   StakeCredential,
   RewardAddress,
+  Transaction as CardanoTransaction,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
@@ -149,6 +150,19 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     return this.validateBlake2b(txId);
+  }
+
+  /**
+   * Get the transaction body from a serialized transaction
+   * @param {string} serializedTx - serialized transaction in hex or base64 format
+   * @returns {string} transaction body in hex format
+   */
+  getTransactionBody(serializedTx: string): string {
+    const HEX_REGEX = /^[0-9a-fA-F]+$/;
+    const bufferRawTransaction = HEX_REGEX.test(serializedTx)
+      ? Buffer.from(serializedTx, 'hex')
+      : Buffer.from(serializedTx, 'base64');
+    return Buffer.from(CardanoTransaction.from_bytes(bufferRawTransaction).body().to_bytes()).toString('hex');
   }
 }
 
