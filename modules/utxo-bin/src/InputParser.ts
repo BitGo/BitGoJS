@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Parser, ParserNode } from './Parser';
-import { getParserTxInputProperties, ParserTx, ParserTxInput } from './ParserTx';
+import { getParserTxInputProperties, getPrevOut, ParserTx, ParserTxInput } from './ParserTx';
 import { getHollowSpendMessage, HollowSegwitSpend, parseHollowSegwitSpend } from './hollowSegwitSpend';
 import { script, ScriptSignature } from 'bitcoinjs-lib';
 import { isHighS } from './ecdsa';
@@ -287,12 +287,19 @@ export class InputParser extends Parser {
   parsePrevOut(prevOutput: utxolib.TxOutput<bigint> | utxolib.bitgo.PsbtInput): ParserNode[] {
     let script: Buffer;
     let value: bigint;
-    if ('witnessUtxo' in prevOutput && prevOutput.witnessUtxo) {
-      ({ script, value } = prevOutput.witnessUtxo);
-    } else if ('script' in prevOutput && prevOutput.script) {
+    if ('script' in prevOutput && prevOutput.script) {
       ({ script, value } = prevOutput);
+    } else if ('witnessUtxo' in prevOutput || 'nonWitnessUtxo' in prevOutput) {
+      if (!(this.tx instanceof utxolib.bitgo.UtxoPsbt)) {
+        throw new Error('invalid state');
+      }
+      const result = getPrevOut(prevOutput, this.tx.txInputs[this.inputIndex], this.tx.network);
+      if (!result) {
+        return [this.node('script', 'unknown'), this.node('value', 'unknown')];
+      }
+      ({ script, value } = result);
     } else {
-      return [];
+      throw new Error('invalid prevOutput');
     }
 
     let address;

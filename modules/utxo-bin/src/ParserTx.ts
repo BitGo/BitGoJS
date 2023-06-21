@@ -6,6 +6,28 @@ export type ParserTxInput =
   | utxolib.PsbtTxInput /* this is basically equivalent to TxOutPoint only */;
 export type ParserTxOutput = utxolib.TxOutput<bigint> | utxolib.PsbtTxOutput;
 
+export function getPrevOut(
+  prevOutput: utxolib.bitgo.PsbtInput,
+  prevOutpoint: utxolib.PsbtTxInput | number,
+  network: utxolib.Network
+):
+  | {
+      value: bigint;
+      script: Buffer;
+    }
+  | undefined {
+  if (prevOutput.witnessUtxo) {
+    return prevOutput.witnessUtxo;
+  }
+  const outputIndex =
+    typeof prevOutpoint === 'number' ? prevOutpoint : utxolib.bitgo.getOutputIdForInput(prevOutpoint).vout;
+  if (prevOutput.nonWitnessUtxo) {
+    const tx = utxolib.bitgo.createTransactionFromBuffer(prevOutput.nonWitnessUtxo, network, { amountType: 'bigint' });
+    return tx.outs[outputIndex];
+  }
+  return undefined;
+}
+
 function getOutputSum(outputs: { value: bigint }[]): bigint {
   return outputs.reduce((sum, o) => sum + o.value, BigInt(0));
 }
@@ -67,11 +89,13 @@ export function getParserTxProperties(
       inputs: tx.txInputs,
       outputs: tx.txOutputs,
       outputSum: getOutputSum(tx.txOutputs),
-      inputSum: tx.data.inputs.reduce(
-        (sum: bigint | undefined, i) =>
-          sum === undefined || i.witnessUtxo === undefined ? undefined : sum + BigInt(i.witnessUtxo.value),
-        BigInt(0)
-      ),
+      inputSum: tx.data.inputs
+        .map((input, i) => getPrevOut(input, tx.txInputs[i], tx.network)?.value)
+        .reduce(
+          (sum: bigint | undefined, v: bigint | undefined) =>
+            sum === undefined || v === undefined ? undefined : sum + v,
+          BigInt(0)
+        ),
       hasWitnesses: tx.data.inputs.some((i) => i.witnessUtxo !== undefined),
     };
   }
