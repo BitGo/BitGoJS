@@ -106,6 +106,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-polygon /var/modules/sdk-coin-po
 RUN cd /var/modules/sdk-coin-polygon && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
 RUN cd /var/modules/sdk-coin-rbtc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
+RUN cd /var/modules/sdk-coin-sei && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sol /var/modules/sdk-coin-sol/
 RUN cd /var/modules/sdk-coin-sol && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-stx /var/modules/sdk-coin-stx/
@@ -142,8 +144,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 RUN cd /var/modules/sdk-coin-ethw && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 RUN cd /var/modules/sdk-coin-ltc && yarn link
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
-RUN cd /var/modules/sdk-coin-sei && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 RUN cd /var/modules/sdk-coin-xlm && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
@@ -188,6 +188,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-osmo && \
     yarn link @bitgo/sdk-coin-polygon && \
     yarn link @bitgo/sdk-coin-rbtc && \
+    yarn link @bitgo/sdk-coin-sei && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-sui && \
@@ -206,16 +207,15 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eos && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-ltc && \
-    yarn link @bitgo/sdk-coin-sei && \
     yarn link @bitgo/sdk-coin-xlm && \
-    yarn link @bitgo/sdk-coin-xrp && \ 
+    yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 19 Jun 2023 12:36:24 GMT"
-LABEL version=9.27.0
-LABEL git_hash=f244290e9dbdc327d7c958a8855dcef0fbc36ba4
+LABEL created="Wed, 21 Jun 2023 04:11:17 GMT"
+LABEL version=9.29.0
+LABEL git_hash=fced576cf32a20224ba25abd31efdfd4e8e04f94
 #LABEL_END
 
 USER node
