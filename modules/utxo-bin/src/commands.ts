@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
-import * as clipboardy from 'clipboardy';
+import clipboardy from 'clipboardy-cjs';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { ParserNode } from './Parser';
