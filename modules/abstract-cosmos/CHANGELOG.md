@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.2.1...@bitgo/abstract-cosmos@1.3.0) (2023-06-21)
+
+### Features
+
+- **bitgo:** update dockerfile ([987140b](https://github.com/BitGo/BitGoJS/commit/987140b2b40e9f2f2c2911eb750a33f2185d43b7))
+
 ## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.2.0...@bitgo/abstract-cosmos@1.2.1) (2023-06-14)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

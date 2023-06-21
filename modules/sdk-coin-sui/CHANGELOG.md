@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.2...@bitgo/sdk-coin-sui@3.2.0) (2023-06-21)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add output value for unstaking txs ([9430e60](https://github.com/BitGo/BitGoJS/commit/9430e60d8000bb8d76e3057501c04d403458c1e7))
+- **sdk-coin-sui:** fix method name for parsing reserialized tx pair ([a0e052b](https://github.com/BitGo/BitGoJS/commit/a0e052be7153f38de0d9fce57fd0776ef2f4a7d2))
+
+### Features
+
+- **sdk-coin-sui:** double-check reserialized transactions ([dc2d672](https://github.com/BitGo/BitGoJS/commit/dc2d6725ee23767533a05e06990169b990104f7e))
+
 ## [3.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.1...@bitgo/sdk-coin-sui@3.1.2) (2023-06-14)
 
 ### Bug Fixes

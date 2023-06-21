@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@17.0.0...@bitgo/statics@17.0.1) (2023-06-21)
+
+### Bug Fixes
+
+- **statics:** update BTC/TBTC block explorer ([17eeb8e](https://github.com/BitGo/BitGoJS/commit/17eeb8e2ec65b952b2bfb9611a1a86e66f57c71b))
+- **statics:** updated ADA block explorer url ([9e203db](https://github.com/BitGo/BitGoJS/commit/9e203db9e744fc06b1b5011d9a8fd6f3f1953a17))
+
 # [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.2.0...@bitgo/statics@17.0.0) (2023-06-13)
 
 ### chore

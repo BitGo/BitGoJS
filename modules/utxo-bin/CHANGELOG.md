@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.10.1...@bitgo/utxo-bin@2.11.0) (2023-06-21)
+
+### Features
+
+- **utxo-bin:** add option `--hex` ([8643355](https://github.com/BitGo/BitGoJS/commit/8643355b6b4d700f233de3040c1676233b0fa3d6))
+
 ## [2.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.10.0...@bitgo/utxo-bin@2.10.1) (2023-06-13)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

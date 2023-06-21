@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.8.1...@bitgo/account-lib@4.9.0) (2023-06-21)
+
+### Features
+
+- **sdk-coin-bld:** agoric sdk along with testcases ([ed60702](https://github.com/BitGo/BitGoJS/commit/ed607029abc9f85babbe05475248b2d2718cf667))
+- **sdk-coin-hash:** provenance sdk init along with testcases ([3862212](https://github.com/BitGo/BitGoJS/commit/38622127b29558aaefa6a135a284a727f94a057b))
+- **sdk-coin-sei:** sei sdk init along with testcases ([d7fac3f](https://github.com/BitGo/BitGoJS/commit/d7fac3f17ca99535a9d0aa81acd6d1d84bf5d54d))
+
 ## [4.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.8.0...@bitgo/account-lib@4.8.1) (2023-06-14)
 
 **Note:** Version bump only for package @bitgo/account-lib

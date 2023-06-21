@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.3.0...bitgo@19.4.0) (2023-06-21)
+
+
+### Bug Fixes
+
+* **sdk-core:** recreate tx for account coins ([16d1244](https://github.com/BitGo/BitGoJS/commit/16d1244ce79a72474ce21dee5ec79499c5cc2963))
+
+
+### Features
+
+* **abstract-utxo:** support express external signer for musig2 inputs ([4401367](https://github.com/BitGo/BitGoJS/commit/44013673d564c976ae7b55788369dc48acbec64f))
+* **sdk-coin-bld:** agoric sdk along with testcases ([ed60702](https://github.com/BitGo/BitGoJS/commit/ed607029abc9f85babbe05475248b2d2718cf667))
+* **sdk-coin-bld:** agoric sdk along with testcases ([3cba328](https://github.com/BitGo/BitGoJS/commit/3cba3289ea2d37122ff5274c8d373986c53b33d2))
+* **sdk-coin-hash:** provenance sdk init along with testcases ([7ab7cca](https://github.com/BitGo/BitGoJS/commit/7ab7ccad66e394298befdbb993abc182943ecf5c))
+* **sdk-coin-sei:** sei sdk init along with testcases ([d7fac3f](https://github.com/BitGo/BitGoJS/commit/d7fac3f17ca99535a9d0aa81acd6d1d84bf5d54d))
+
+
+
+
+
 # [19.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.2.0...bitgo@19.3.0) (2023-06-14)
 
 

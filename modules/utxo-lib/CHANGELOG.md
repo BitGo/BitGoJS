@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.1.1...@bitgo/utxo-lib@9.2.0) (2023-06-21)
+
+### Bug Fixes
+
+- **utxo-lib:** add parameter `ignoreY` to deriveKeyPair ([9bec630](https://github.com/BitGo/BitGoJS/commit/9bec6303a079c19644d626be3182ce6ecf5360fc))
+- **utxo-lib:** add sighashType to PSBT inputs ([4ca668b](https://github.com/BitGo/BitGoJS/commit/4ca668bc98e82a8bde1642ee92fffbc7daf41479))
+- **utxo-lib:** handle p2trMusig2 script type for default sighash ([888c083](https://github.com/BitGo/BitGoJS/commit/888c08318845b5729cd16cf79208c526f8b0bea6))
+- **utxo-lib:** use deterministic keys in testutil/mock.ts ([9de9ddd](https://github.com/BitGo/BitGoJS/commit/9de9dddefc5edb6104ebb5a200d447bc0ce8feb5))
+
+### Features
+
+- **utxo-lib:** add extractTransaction to UtxoPsbt ([0c41982](https://github.com/BitGo/BitGoJS/commit/0c41982de5b9397e69b314272c4e0f38bb6f69c3))
+- **utxo-lib:** add, use equalPublicKey in UtxoPsbt ([4bf8b78](https://github.com/BitGo/BitGoJS/commit/4bf8b78e2688e030c232d4c87e52254e3df7e093))
+- **utxo-lib:** export PsbtInput, PsbtOutput from index.ts ([14fe1af](https://github.com/BitGo/BitGoJS/commit/14fe1af73f56a73281fb3c1adbe2ffa588f74958))
+- **utxo-lib:** improve type signatures for `createTransactionFrom*` ([4ac347b](https://github.com/BitGo/BitGoJS/commit/4ac347b80242d738e289385b22d496f632be6aa7))
+
 ## [9.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.1.0...@bitgo/utxo-lib@9.1.1) (2023-06-13)
 
 ### Bug Fixes
