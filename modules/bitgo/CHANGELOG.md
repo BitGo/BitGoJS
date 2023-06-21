@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.3.0...bitgo@19.4.0) (2023-06-21)
+
+
+### Bug Fixes
+
+* **sdk-core:** recreate tx for account coins ([16d1244](https://github.com/BitGo/BitGoJS/commit/16d1244ce79a72474ce21dee5ec79499c5cc2963))
+
+
+### Features
+
+* **abstract-utxo:** support express external signer for musig2 inputs ([4401367](https://github.com/BitGo/BitGoJS/commit/44013673d564c976ae7b55788369dc48acbec64f))
+* **sdk-coin-bld:** agoric sdk along with testcases ([ed60702](https://github.com/BitGo/BitGoJS/commit/ed607029abc9f85babbe05475248b2d2718cf667))
+* **sdk-coin-bld:** agoric sdk along with testcases ([3cba328](https://github.com/BitGo/BitGoJS/commit/3cba3289ea2d37122ff5274c8d373986c53b33d2))
+* **sdk-coin-hash:** provenance sdk init along with testcases ([7ab7cca](https://github.com/BitGo/BitGoJS/commit/7ab7ccad66e394298befdbb993abc182943ecf5c))
+* **sdk-coin-sei:** sei sdk init along with testcases ([d7fac3f](https://github.com/BitGo/BitGoJS/commit/d7fac3f17ca99535a9d0aa81acd6d1d84bf5d54d))
+
+
+
+
+
+# [19.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.2.0...bitgo@19.3.0) (2023-06-14)
+
+
+### Features
+
+* **root:** use eddsa commitment for tss utils and signing ([b14b64f](https://github.com/BitGo/BitGoJS/commit/b14b64fbcb4cf65880154586b777992be0e49d37))
+* **sdk-core:** remove ecdsa tss feature flag ([1382684](https://github.com/BitGo/BitGoJS/commit/1382684250102d13ff829f84d724331f8c8dd073))
+
+
+
+
+
+# [19.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.1.0...bitgo@19.2.0) (2023-06-13)
+
+
+### Features
+
+* **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+* **sdk-core:** accelerateTransaction always uses txFormat=psbt ([41da856](https://github.com/BitGo/BitGoJS/commit/41da85613862753e301f57163f3e5c10ed7477de))
+* **sdk-core:** make paillier proofs mandatory ([4c62dd8](https://github.com/BitGo/BitGoJS/commit/4c62dd8bae41b0a66a4aa840c16f2cdf5abc9997))
+* **sdk-core:** manageUnspents overrides txFormat during bss ([1f53a9d](https://github.com/BitGo/BitGoJS/commit/1f53a9d91767c8e0c3deca74a66b881f92a2d2b6))
+* **sdk-core:** sendMany always builds with psbt format for non-tss ([8c894b2](https://github.com/BitGo/BitGoJS/commit/8c894b2adef167abb1e8eb57b5643e1eaf69cc77))
+* **sdk-core:** sweepWallet uses txFormat='psbt' ([bc80b3d](https://github.com/BitGo/BitGoJS/commit/bc80b3db5d917961bd5f8446bba8bef2f89f5c8e))
+
+
+
+
+
+# [19.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.0.0...bitgo@19.1.0) (2023-06-07)
+
+
+### Features
+
+* **abstract-utxo:** make walletId param optional for signtx ([f5aff50](https://github.com/BitGo/BitGoJS/commit/f5aff5087727fb1842dc7cda64756553ab364c2b))
+* **statics:** add Injective config ([750e817](https://github.com/BitGo/BitGoJS/commit/750e8178f50c6814e7dc92148b70beb287719b8a))
+
+
+
+
+
 # [19.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@18.5.0...bitgo@19.0.0) (2023-06-05)
 
 

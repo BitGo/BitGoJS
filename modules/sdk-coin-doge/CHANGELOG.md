@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.9.4...@bitgo/sdk-coin-doge@1.10.0) (2023-06-21)
+
+### Features
+
+- **abstract-utxo:** support express external signer for musig2 inputs ([4401367](https://github.com/BitGo/BitGoJS/commit/44013673d564c976ae7b55788369dc48acbec64f))
+
+## [1.9.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.9.3...@bitgo/sdk-coin-doge@1.9.4) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-doge
+
+## [1.9.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.9.2...@bitgo/sdk-coin-doge@1.9.3) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-doge
+
+## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.9.1...@bitgo/sdk-coin-doge@1.9.2) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-doge
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.9.0...@bitgo/sdk-coin-doge@1.9.1) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-doge

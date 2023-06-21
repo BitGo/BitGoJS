@@ -20,6 +20,9 @@
       "path": "../sdk-test"
     },
     {
+      "path": "../statics"
+    },
+    {
       "path": "../abstract-cosmos"
     }
   ]

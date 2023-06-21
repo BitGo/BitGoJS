@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.12...@bitgo/sdk-coin-xlm@2.1.0) (2023-06-21)
+
+### Features
+
+- **sdk-coin-xlm:** adding txHex to explainTransaction params for xlm ([1feb544](https://github.com/BitGo/BitGoJS/commit/1feb544eb38d1ff5842a5b8aad7780be00d71d0b))
+
+## [2.0.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.11...@bitgo/sdk-coin-xlm@2.0.12) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.10...@bitgo/sdk-coin-xlm@2.0.11) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
+## [2.0.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.9...@bitgo/sdk-coin-xlm@2.0.10) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
 ## [2.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.0.8...@bitgo/sdk-coin-xlm@2.0.9) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

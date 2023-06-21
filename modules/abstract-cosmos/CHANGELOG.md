@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.2.1...@bitgo/abstract-cosmos@1.3.0) (2023-06-21)
+
+### Features
+
+- **bitgo:** update dockerfile ([987140b](https://github.com/BitGo/BitGoJS/commit/987140b2b40e9f2f2c2911eb750a33f2185d43b7))
+
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.2.0...@bitgo/abstract-cosmos@1.2.1) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.1.1...@bitgo/abstract-cosmos@1.2.0) (2023-06-13)
+
+### Features
+
+- **abstract-cosmos:** sdk abstract-cosmos and sdk osmo refactored ([d1bb5f6](https://github.com/BitGo/BitGoJS/commit/d1bb5f614533b1cc119b434510539673061d2c2a))
+- **sdk-coin-tia:** celestia sdk along with testcases ([eb1431a](https://github.com/BitGo/BitGoJS/commit/eb1431a02de539b05f1fc2660c650563f3d7085a))
+- **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+
+## [1.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.1.0...@bitgo/abstract-cosmos@1.1.1) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
 # 1.1.0 (2023-06-05)
 
 ### Bug Fixes

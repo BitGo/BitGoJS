@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.5.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.17...@bitgo/sdk-coin-avaxp@3.5.18) (2023-06-21)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+## [3.5.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.16...@bitgo/sdk-coin-avaxp@3.5.17) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+## [3.5.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.15...@bitgo/sdk-coin-avaxp@3.5.16) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+## [3.5.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.14...@bitgo/sdk-coin-avaxp@3.5.15) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
 ## [3.5.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.13...@bitgo/sdk-coin-avaxp@3.5.14) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

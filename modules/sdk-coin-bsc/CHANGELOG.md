@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.6.3...@bitgo/sdk-coin-bsc@3.6.4) (2023-06-21)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+## [3.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.6.2...@bitgo/sdk-coin-bsc@3.6.3) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+## [3.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.6.1...@bitgo/sdk-coin-bsc@3.6.2) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+## [3.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.6.0...@bitgo/sdk-coin-bsc@3.6.1) (2023-06-07)
+
+### Bug Fixes
+
+- **sdk-coin-bsc:** remove unused dependency ([9b04c61](https://github.com/BitGo/BitGoJS/commit/9b04c61b5c86d221bde05fc4005e30e713989054))
+
 # [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.5.4...@bitgo/sdk-coin-bsc@3.6.0) (2023-06-05)
 
 ### Bug Fixes

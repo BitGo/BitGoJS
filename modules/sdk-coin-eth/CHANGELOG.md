@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.5.3...@bitgo/sdk-coin-eth@4.5.4) (2023-06-21)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
+## [4.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.5.2...@bitgo/sdk-coin-eth@4.5.3) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
+## [4.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.5.1...@bitgo/sdk-coin-eth@4.5.2) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
+## [4.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.5.0...@bitgo/sdk-coin-eth@4.5.1) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eth
+
 # [4.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.4.4...@bitgo/sdk-coin-eth@4.5.0) (2023-06-05)
 
 ### Bug Fixes

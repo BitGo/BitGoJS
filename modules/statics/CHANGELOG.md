@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@17.0.0...@bitgo/statics@17.0.1) (2023-06-21)
+
+### Bug Fixes
+
+- **statics:** update BTC/TBTC block explorer ([17eeb8e](https://github.com/BitGo/BitGoJS/commit/17eeb8e2ec65b952b2bfb9611a1a86e66f57c71b))
+- **statics:** updated ADA block explorer url ([9e203db](https://github.com/BitGo/BitGoJS/commit/9e203db9e744fc06b1b5011d9a8fd6f3f1953a17))
+
+# [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.2.0...@bitgo/statics@17.0.0) (2023-06-13)
+
+### chore
+
+- **statics:** refactor metadatarpc out ([f64607d](https://github.com/BitGo/BitGoJS/commit/f64607d35084fd783a82d9254447a9ea84bc2c6e))
+
+### Features
+
+- **bitgo:** add Frankfurt CoinFeature ([4a116ad](https://github.com/BitGo/BitGoJS/commit/4a116ad583126135b3d3f8fe1f8834ecd7ccabb6))
+- **bitgo:** coins Frankfurt Coinfeature ([7c3ccf9](https://github.com/BitGo/BitGoJS/commit/7c3ccf98e3fe0dff37e174e3ded36e2c78c26b4b))
+- **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+
+### BREAKING CHANGES
+
+- **statics:** metadatarpc no longer defined in statics
+
+# [16.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.1.0...@bitgo/statics@16.2.0) (2023-06-07)
+
+### Features
+
+- **statics:** add Injective config ([750e817](https://github.com/BitGo/BitGoJS/commit/750e8178f50c6814e7dc92148b70beb287719b8a))
+- **statics:** fix name ([090beb5](https://github.com/BitGo/BitGoJS/commit/090beb519e56505e3e8c900b91a43b4ba5d04f06))
+
 # [16.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@16.0.0...@bitgo/statics@16.1.0) (2023-06-05)
 
 ### Bug Fixes

@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.8.1...@bitgo/account-lib@4.9.0) (2023-06-21)
+
+### Features
+
+- **sdk-coin-bld:** agoric sdk along with testcases ([ed60702](https://github.com/BitGo/BitGoJS/commit/ed607029abc9f85babbe05475248b2d2718cf667))
+- **sdk-coin-hash:** provenance sdk init along with testcases ([3862212](https://github.com/BitGo/BitGoJS/commit/38622127b29558aaefa6a135a284a727f94a057b))
+- **sdk-coin-sei:** sei sdk init along with testcases ([d7fac3f](https://github.com/BitGo/BitGoJS/commit/d7fac3f17ca99535a9d0aa81acd6d1d84bf5d54d))
+
+## [4.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.8.0...@bitgo/account-lib@4.8.1) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+# [4.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.7.1...@bitgo/account-lib@4.8.0) (2023-06-13)
+
+### Features
+
+- **abstract-cosmos:** sdk abstract-cosmos and sdk osmo refactored ([d1bb5f6](https://github.com/BitGo/BitGoJS/commit/d1bb5f614533b1cc119b434510539673061d2c2a))
+- **account-lib:** add osmo ([4e4d69b](https://github.com/BitGo/BitGoJS/commit/4e4d69b77923aaae9f91e4c98d60c050259d9712))
+- **account-lib:** add osmo ([d8eeaa4](https://github.com/BitGo/BitGoJS/commit/d8eeaa43db3204f8b1591186e1978f853710af50))
+- **sdk-coin-tia:** celestia sdk along with testcases ([1d104e0](https://github.com/BitGo/BitGoJS/commit/1d104e0d0ac0c813d16cd6da759b1a904bab4641))
+- **sdk-core:** make paillier proofs mandatory ([4c62dd8](https://github.com/BitGo/BitGoJS/commit/4c62dd8bae41b0a66a4aa840c16f2cdf5abc9997))
+
+## [4.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.7.0...@bitgo/account-lib@4.7.1) (2023-06-07)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** os agnostic commands ([6a740f2](https://github.com/BitGo/BitGoJS/commit/6a740f22ac8e79bdadbe28ee14a8a62cb554bd65))
+
 # [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.6.0...@bitgo/account-lib@4.7.0) (2023-06-05)
 
 ### Bug Fixes

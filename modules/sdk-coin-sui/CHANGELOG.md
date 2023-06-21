@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.2...@bitgo/sdk-coin-sui@3.2.0) (2023-06-21)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add output value for unstaking txs ([9430e60](https://github.com/BitGo/BitGoJS/commit/9430e60d8000bb8d76e3057501c04d403458c1e7))
+- **sdk-coin-sui:** fix method name for parsing reserialized tx pair ([a0e052b](https://github.com/BitGo/BitGoJS/commit/a0e052be7153f38de0d9fce57fd0776ef2f4a7d2))
+
+### Features
+
+- **sdk-coin-sui:** double-check reserialized transactions ([dc2d672](https://github.com/BitGo/BitGoJS/commit/dc2d6725ee23767533a05e06990169b990104f7e))
+
+## [3.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.1...@bitgo/sdk-coin-sui@3.1.2) (2023-06-14)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix unstaking again ([ea0345f](https://github.com/BitGo/BitGoJS/commit/ea0345fec578dbb44c4230c9fde520dae1431151))
+
+## [3.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.0...@bitgo/sdk-coin-sui@3.1.1) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.7...@bitgo/sdk-coin-sui@3.1.0) (2023-06-07)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add method in RpcClient debug output ([e2541f2](https://github.com/BitGo/BitGoJS/commit/e2541f286ee04eeb96ddf4d9860014a26b47d592))
+- **sdk-coin-sui:** improve unstaking test ([9e63d54](https://github.com/BitGo/BitGoJS/commit/9e63d548036516b3bd71c6527e24a290d5fd6674))
+- **sdk-coin-sui:** remove `spec:` config in mocharc.yml ([4b53e1b](https://github.com/BitGo/BitGoJS/commit/4b53e1b3df47e6f33324a00c01e472f7215dc5ad))
+
+### Features
+
+- **sdk-coin-sui:** add support for partial unstaking ([20cdb77](https://github.com/BitGo/BitGoJS/commit/20cdb774159dac7335298f3d4d83f8a29018f3c3))
+
 ## [3.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.0.6...@bitgo/sdk-coin-sui@3.0.7) (2023-06-05)
 
 ### Bug Fixes

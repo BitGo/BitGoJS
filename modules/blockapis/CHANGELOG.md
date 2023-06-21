@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.6.10...@bitgo/blockapis@1.7.0) (2023-06-21)
+
+### Features
+
+- **blockapis:** support bitgo.TxOutPoint in fetchInputs ([82156b0](https://github.com/BitGo/BitGoJS/commit/82156b098eb58d7b416c1aa62d0c773bb2254646))
+
+## [1.6.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.6.9...@bitgo/blockapis@1.6.10) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/blockapis
+
+## [1.6.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.6.8...@bitgo/blockapis@1.6.9) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/blockapis
+
 ## [1.6.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.6.7...@bitgo/blockapis@1.6.8) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/blockapis

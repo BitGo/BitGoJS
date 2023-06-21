@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.21...@bitgo/sdk-coin-ada@2.3.22) (2023-06-21)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** refine ada pledge parsing logic ([16c27f8](https://github.com/BitGo/BitGoJS/commit/16c27f84b0d2bd5ae1582446b1a8d77e39d05982))
+
+## [2.3.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.20...@bitgo/sdk-coin-ada@2.3.21) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+## [2.3.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.19...@bitgo/sdk-coin-ada@2.3.20) (2023-06-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+## [2.3.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.18...@bitgo/sdk-coin-ada@2.3.19) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
 ## [2.3.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.17...@bitgo/sdk-coin-ada@2.3.18) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

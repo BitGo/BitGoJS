@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.4.0...@bitgo/sdk-lib-mpc@8.5.0) (2023-06-13)
+
+### Features
+
+- **sdk-core:** make paillier proofs mandatory ([4c62dd8](https://github.com/BitGo/BitGoJS/commit/4c62dd8bae41b0a66a4aa840c16f2cdf5abc9997))
+
 # [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.3.1...@bitgo/sdk-lib-mpc@8.4.0) (2023-06-05)
 
 ### Bug Fixes

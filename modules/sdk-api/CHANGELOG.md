@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.1...@bitgo/sdk-api@1.11.2) (2023-06-21)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.0...@bitgo/sdk-api@1.11.1) (2023-06-14)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.10.6...@bitgo/sdk-api@1.11.0) (2023-06-13)
+
+### Features
+
+- **sdk-api:** add snowtrace api token support in BitgoAPI ([3f9efd8](https://github.com/BitGo/BitGoJS/commit/3f9efd88638b1d72fd63becd7f6173166ede59a9))
+
+## [1.10.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.10.5...@bitgo/sdk-api@1.10.6) (2023-06-07)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
 ## [1.10.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.10.4...@bitgo/sdk-api@1.10.5) (2023-06-05)
 
 **Note:** Version bump only for package @bitgo/sdk-api
