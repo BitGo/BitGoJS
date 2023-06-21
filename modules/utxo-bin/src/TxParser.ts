@@ -22,6 +22,7 @@ export type TxParserArgs = {
     ecdsa: boolean;
     schnorr: boolean;
   };
+  parseAsUnknown: boolean;
   hide?: string[];
   maxOutputs?: number;
   vin?: number[];
@@ -44,6 +45,7 @@ export class TxParser extends Parser {
       ecdsa: true,
       schnorr: true,
     },
+    parseAsUnknown: false,
   };
 
   constructor(private params: TxParserArgs) {

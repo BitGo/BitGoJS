@@ -7,7 +7,7 @@ import { promisify } from 'util';
 import * as clipboardy from 'clipboardy';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { ParserNode } from './Parser';
+import { Parser, ParserNode } from './Parser';
 import { formatTree } from './format';
 import {
   fetchOutputSpends,
@@ -20,6 +20,7 @@ import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
 import { readStdin } from './readStdin';
+import { parseUnknown } from './parseUnknown';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -38,6 +39,7 @@ type ArgsParseTransaction = {
   fetchInputs: boolean;
   fetchSpends: boolean;
   parseSignatureData: boolean;
+  parseAsUnknown: boolean;
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
@@ -126,6 +128,11 @@ export const cmdParseTx = {
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
       .option('parseOutputScript', { type: 'boolean', default: false })
+      .option('parseAsUnknown', {
+        type: 'boolean',
+        default: false,
+        description: 'show plain Javascript object without any post-processing',
+      })
       .option('maxOutputs', { type: 'number' })
       .option('vin', { type: 'number' })
       .array('vin')
@@ -184,10 +191,22 @@ export const cmdParseTx = {
       throw new Error(`no txdata`);
     }
 
-    const tx = utxolib.bitgo.createTransactionFromHex(data, network);
+    const bytes = Buffer.from(data, 'hex');
+
+    // make sure hex was parsed
+    if (bytes.toString('hex') !== data) {
+      throw new Error(`invalid hex`);
+    }
+
+    const tx = utxolib.bitgo.createTransactionFromBuffer<number>(bytes, network);
     const txid = tx.getId();
     if (argv.txid && txid !== argv.txid) {
       throw new Error(`computed txid does not match txid argument`);
+    }
+
+    if (argv.parseAsUnknown) {
+      console.log(formatString(parseUnknown(new Parser(), 'tx', tx), argv));
+      return;
     }
 
     if (argv.fetchAll) {
