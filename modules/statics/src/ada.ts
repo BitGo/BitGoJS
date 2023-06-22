@@ -17,6 +17,7 @@ export class Ada extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.UNSPENT_MODEL,
     CoinFeature.TSS,
+    CoinFeature.TSS_COLD,
     CoinFeature.CUSTODY,
     CoinFeature.TRANSACTION_DATA,
     CoinFeature.REQUIRES_BIG_NUMBER,

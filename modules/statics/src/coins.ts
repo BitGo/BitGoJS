@@ -77,14 +77,21 @@ const ETC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
+  CoinFeature.MULTISIG_COLD,
 ];
 
 const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
-const CELO_FEATURES = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const CELO_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
+];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const LTC_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -92,23 +99,33 @@ const LTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
-const RBTC_FEATURES = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const RBTC_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+];
 const XLM_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
-const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
-  (feature) => feature !== CoinFeature.CUSTODY && feature !== CoinFeature.CUSTODY_BITGO_TRUST
-);
+const XTZ_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.ENTERPRISE_PAYS_FEES,
+].filter((feature) => feature !== CoinFeature.CUSTODY && feature !== CoinFeature.CUSTODY_BITGO_TRUST);
+
 const XRP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
 const CSPR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -116,6 +133,7 @@ const CSPR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
 const ALGO_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -123,10 +141,12 @@ const ALGO_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
 const DOT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.EXPIRING_TRANSACTIONS,
 ];
@@ -140,16 +160,20 @@ const EOS_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
 const HBAR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
 const POLYGON_FEATURES = [
   ...ETH_FEATURES_WITH_STAKING_AND_MMI,
   CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MULTISIG_COLD,
   CoinFeature.EVM_WALLET,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
@@ -158,6 +182,7 @@ const POLYGON_FEATURES = [
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
   CoinFeature.REQUIRES_RESERVE,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.STAKING,
@@ -168,28 +193,36 @@ const STX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const MATIC_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.STAKING,
+  CoinFeature.MULTISIG_COLD,
   CoinFeature.METAMASK_INSTITUTIONAL,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
-const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const TRX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MULTISIG_COLD,
 ];
-const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const BLD_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const SEI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
-const INJECTIVE_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.STAKING];
+const ATOM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const OSMO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const TIA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const HASH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const BLD_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const SEI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const INJECTIVE_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+];
 
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -286,7 +319,7 @@ export const coins = CoinMap.fromCoins([
     Networks.test.bitcoinGold,
     UnderlyingAsset.BTG,
     BaseUnit.BTC,
-    BTG_FEATURES
+    BTG_FEATURES.filter((f) => f !== CoinFeature.MULTISIG_COLD)
   ),
   utxo(
     '9c8097f1-5d2c-4a62-a94c-96c271c0e5e0',
@@ -453,6 +486,8 @@ export const coins = CoinMap.fromCoins([
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,
       CoinFeature.TSS,
+      CoinFeature.TSS_COLD,
+      CoinFeature.MULTISIG_COLD,
       CoinFeature.EVM_WALLET,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
@@ -481,6 +516,8 @@ export const coins = CoinMap.fromCoins([
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,
       CoinFeature.TSS,
+      CoinFeature.TSS_COLD,
+      CoinFeature.MULTISIG_COLD,
       CoinFeature.EVM_WALLET,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
@@ -496,7 +533,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETH2,
     BaseUnit.ETH,
-    [...ETH2_FEATURES, CoinFeature.TSS],
+    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
     KeyCurve.BLS
   ),
   account(
@@ -507,7 +544,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETHW,
     BaseUnit.ETH,
-    AccountCoin.DEFAULT_FEATURES
+    [...AccountCoin.DEFAULT_FEATURES]
   ),
   account(
     '37ee6253-04fb-4eec-bd88-310a480b1e43',
@@ -517,7 +554,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETH2,
     BaseUnit.ETH,
-    ETH2_FEATURES,
+    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
     KeyCurve.BLS
   ),
   account(
@@ -914,7 +951,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.EVM_WALLET]
+    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
@@ -924,7 +961,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.EVM_WALLET]
+    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
     'f0e226b6-6cd8-4384-b0a5-ba8e4148a049',
