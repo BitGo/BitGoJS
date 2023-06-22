@@ -866,21 +866,21 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
-    'injective',
+    'inj',
     'Injective',
     Networks.main.inj,
     18,
-    UnderlyingAsset.INJ,
+    UnderlyingAsset.INJECTIVE,
     BaseUnit.INJ,
     INJ_FEATURES
   ),
   account(
     '6ae81d6a-011c-499c-a3c8-15ac7dcac48a',
-    'tinjective',
+    'tinj',
     'Testnet Injective',
     Networks.test.inj,
     18,
-    UnderlyingAsset.INJ,
+    UnderlyingAsset.INJECTIVE,
     BaseUnit.INJ,
     INJ_FEATURES
   ),
@@ -3422,14 +3422,14 @@ export const coins = CoinMap.fromCoins([
     '0x00e150d741eda1d49d341189cae4c08a73a49c95',
     UnderlyingAsset.INF
   ),
-  erc20(
-    '13b88d2f-59ff-41f1-ad21-3899656865ed',
-    'inj',
-    'Inj',
-    18,
-    '0x84bffffd702d924c6d9b25f87151bf0fb1a8913e',
-    UnderlyingAsset.INJ
-  ),
+  // erc20(
+  //   '13b88d2f-59ff-41f1-ad21-3899656865ed',
+  //   'inj',
+  //   'Inj',
+  //   18,
+  //   '0x84bffffd702d924c6d9b25f87151bf0fb1a8913e',
+  //   UnderlyingAsset.INJ
+  // ),
   erc20(
     'fa128781-36cf-416f-bbf0-0ae247e66d51',
     'injv2',

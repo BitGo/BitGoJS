@@ -237,6 +237,7 @@ export enum UnderlyingAsset {
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
+  INJECTIVE = 'inj',
   LTC = 'ltc',
   NEAR = 'near',
   OSMO = 'osmo',

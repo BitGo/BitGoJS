@@ -153,8 +153,8 @@ const coinBuilderMap = {
   thash: Hash.TransactionBuilderFactory,
   sei: Sei.TransactionBuilderFactory,
   tsei: Sei.TransactionBuilderFactory,
-  injective: Inj.TransactionBuilderFactory,
-  tinjective: Inj.TransactionBuilderFactory,
+  inj: Inj.TransactionBuilderFactory,
+  tinj: Inj.TransactionBuilderFactory,
 };
 
 /**
