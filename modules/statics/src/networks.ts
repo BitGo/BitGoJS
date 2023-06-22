@@ -631,13 +631,13 @@ class SeiTestnet extends Testnet implements AccountNetwork {
 
 class Injective extends Mainnet implements AccountNetwork {
   name = 'Injective';
-  family = CoinFamily.INJ;
+  family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://explorer.injective.network/transaction/';
 }
 
 class InjectiveTestnet extends Testnet implements AccountNetwork {
   name = 'InjectiveTestnet';
-  family = CoinFamily.INJ;
+  family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
 }
 
@@ -804,7 +804,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
-    inj: Object.freeze(new Injective()),
+    injective: Object.freeze(new Injective()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
@@ -847,7 +847,7 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
-    inj: Object.freeze(new InjectiveTestnet()),
+    injective: Object.freeze(new InjectiveTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     litecoin: Object.freeze(new LitecoinTestnet()),

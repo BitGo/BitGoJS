@@ -50,6 +50,9 @@
       "path": "../sdk-coin-hbar"
     },
     {
+      "path": "../sdk-coin-injective"
+    },
+    {
       "path": "../sdk-coin-near"
     },
     {
