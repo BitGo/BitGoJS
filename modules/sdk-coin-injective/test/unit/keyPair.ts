@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../src';
-import { TEST_ACCOUNT } from '../resources/inj';
+import { TEST_ACCOUNT } from '../resources/injective';
 
-describe('INJ Key Pair', () => {
+describe('INJECTIVE Key Pair', () => {
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
       const keyPairObj = new KeyPair();

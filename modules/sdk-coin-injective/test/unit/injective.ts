@@ -2,7 +2,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { Inj, Tinj } from '../../src';
+import { Injective, Tinjective } from '../../src';
 import utils from '../../src/lib/utils';
 import {
   TEST_DELEGATE_TX,
@@ -11,16 +11,16 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   address,
-} from '../resources/inj';
+} from '../resources/injective';
 import should = require('should');
 
-describe('INJ', function () {
+describe('INJECTIVE', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('injective', Inj.createInstance);
-    bitgo.safeRegister('tinjective', Tinj.createInstance);
+    bitgo.safeRegister('injective', Injective.createInstance);
+    bitgo.safeRegister('tinjective', Tinjective.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tinjective');
   });
@@ -328,7 +328,7 @@ describe('INJ', function () {
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Inj.prototype, 'explainTransaction');
+      const stub = sinon.stub(Injective.prototype, 'explainTransaction');
       stub.resolves(undefined);
       await basecoin
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })

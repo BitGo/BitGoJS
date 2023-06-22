@@ -83,8 +83,8 @@ export { Hash };
 import * as Sei from '@bitgo/sdk-coin-sei';
 export { Sei };
 
-import * as Inj from '@bitgo/sdk-coin-inj';
-export { Inj };
+import * as Injective from '@bitgo/sdk-coin-injective';
+export { Injective };
 
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
@@ -153,8 +153,8 @@ const coinBuilderMap = {
   thash: Hash.TransactionBuilderFactory,
   sei: Sei.TransactionBuilderFactory,
   tsei: Sei.TransactionBuilderFactory,
-  inj: Inj.TransactionBuilderFactory,
-  tinj: Inj.TransactionBuilderFactory,
+  injective: Injective.TransactionBuilderFactory,
+  tinjective: Injective.TransactionBuilderFactory,
 };
 
 /**

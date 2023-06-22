@@ -5,7 +5,7 @@ import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 
-export class Inj extends CosmosCoin {
+export class Injective extends CosmosCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -18,7 +18,7 @@ export class Inj extends CosmosCoin {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Inj(bitgo, staticsCoin);
+    return new Injective(bitgo, staticsCoin);
   }
 
   /** @inheritDoc **/

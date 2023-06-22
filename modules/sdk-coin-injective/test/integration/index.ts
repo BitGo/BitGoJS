@@ -3,14 +3,14 @@ import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
-import { Inj, Tinj } from '../../src/index';
+import { Injective, Tinjective } from '../../src/index';
 
-describe('INJ', function () {
+describe('INJECTIVE', function () {
   let bitgo: TestBitGoAPI;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('injective', Inj.createInstance);
-    bitgo.safeRegister('tinjective', Tinj.createInstance);
+    bitgo.safeRegister('injective', Injective.createInstance);
+    bitgo.safeRegister('tinjective', Tinjective.createInstance);
     bitgo.initializeTestVars();
   });
 });

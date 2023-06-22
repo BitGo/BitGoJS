@@ -4,18 +4,18 @@ import should from 'should';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { Inj, Tinj } from '../../../src';
-import * as testData from '../../resources/inj';
+import { Injective, Tinjective } from '../../../src';
+import * as testData from '../../resources/injective';
 
-describe('Inj Undelegate txn Builder', () => {
+describe('Injective Undelegate txn Builder', () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
   let testTx;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('injective', Inj.createInstance);
-    bitgo.safeRegister('tinjective', Tinj.createInstance);
+    bitgo.safeRegister('injective', Injective.createInstance);
+    bitgo.safeRegister('tinjective', Tinjective.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tinjective');
     factory = basecoin.getBuilder();

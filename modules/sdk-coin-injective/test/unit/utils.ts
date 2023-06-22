@@ -1,8 +1,8 @@
 import should from 'should';
 
 import utils from '../../src/lib/utils';
-import * as testData from '../resources/inj';
-import { blockHash, txIds } from '../resources/inj';
+import * as testData from '../resources/injective';
+import { blockHash, txIds } from '../resources/injective';
 
 describe('utils', () => {
   it('should validate block hash correctly', () => {

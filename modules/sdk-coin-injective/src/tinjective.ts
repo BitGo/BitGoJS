@@ -5,9 +5,9 @@
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Inj } from './inj';
+import { Injective } from './injective';
 
-export class Tinj extends Inj {
+export class Tinjective extends Injective {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -20,6 +20,6 @@ export class Tinj extends Inj {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tinj(bitgo, staticsCoin);
+    return new Tinjective(bitgo, staticsCoin);
   }
 }

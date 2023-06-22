@@ -10,9 +10,9 @@ import {
   WithdrawDelegatorRewardsMessage,
 } from '@bitgo/abstract-cosmos';
 import utils from '../../src/lib/utils';
-import * as testData from '../resources/inj';
+import * as testData from '../resources/injective';
 
-describe('Inj Transaction', () => {
+describe('Injective Transaction', () => {
   let tx: CosmosTransaction;
   const config = coins.get('tinjective');
 

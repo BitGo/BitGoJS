@@ -23,7 +23,7 @@ import { Eth2, Teth2 } from '@bitgo/sdk-coin-eth2';
 import { Ethw } from '@bitgo/sdk-coin-ethw';
 import { Hash, Thash } from '@bitgo/sdk-coin-hash';
 import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
-import { Inj, Tinj } from '@bitgo/sdk-coin-inj';
+import { Injective, Tinjective } from '@bitgo/sdk-coin-injective';
 import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';
 import { Osmo, Tosmo } from '@bitgo/sdk-coin-osmo';
 import { Polygon, PolygonToken, Tpolygon } from '@bitgo/sdk-coin-polygon';
@@ -38,7 +38,7 @@ import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';
 import { Txrp, Xrp } from '@bitgo/sdk-coin-xrp';
 import { Txtz, Xtz } from '@bitgo/sdk-coin-xtz';
 import { Tzec, Zec } from '@bitgo/sdk-coin-zec';
-export { AbstractUtxoCoin, Ada, Algo, AlgoToken, Atom, AvaxC, AvaxCToken, AvaxP, Bch, Bcha, Bld, Bsc, BscToken, Bsv, Btc, Btg, Celo, CeloToken, Cspr, Dash, Doge, Dot, Eos, EosToken, Erc20Token, Etc, Eth, Eth2, Ethw, Gteth, Hash, Hbar, Inj, Ltc, Osmo, Polygon, PolygonToken, Rbtc, Sei, Sol, StellarToken, Stx, Sui, Tada, Talgo, Tatom, TavaxC, TavaxP, Tbch, Tbcha, Tbld, Tbsc, Tbsv, Tbtc, Tcelo, Tcspr, Tdash, Tdoge, Tdot, Teos, Tetc, Teth, Teth2, Thash, Thbar, Tia, Tinj, Tltc, Tosmo, Tpolygon, Trbtc, Trx, Tsei, Tsol, Tstx, Tsui, Ttia, Ttrx, Txlm, Txrp, Txtz, Tzec, Xlm, Xrp, Xtz, Zec };
+export { AbstractUtxoCoin, Ada, Algo, AlgoToken, Atom, AvaxC, AvaxCToken, AvaxP, Bch, Bcha, Bld, Bsc, BscToken, Bsv, Btc, Btg, Celo, CeloToken, Cspr, Dash, Doge, Dot, Eos, EosToken, Erc20Token, Etc, Eth, Eth2, Ethw, Gteth, Hash, Hbar, Injective, Ltc, Osmo, Polygon, PolygonToken, Rbtc, Sei, Sol, StellarToken, Stx, Sui, Tada, Talgo, Tatom, TavaxC, TavaxP, Tbch, Tbcha, Tbld, Tbsc, Tbsv, Tbtc, Tcelo, Tcspr, Tdash, Tdoge, Tdot, Teos, Tetc, Teth, Teth2, Thash, Thbar, Tia, Tinjective, Tltc, Tosmo, Tpolygon, Trbtc, Trx, Tsei, Tsol, Tstx, Tsui, Ttia, Ttrx, Txlm, Txrp, Txtz, Tzec, Xlm, Xrp, Xtz, Zec };
 
 import { coins } from '@bitgo/sdk-core';
 const { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP } = coins;

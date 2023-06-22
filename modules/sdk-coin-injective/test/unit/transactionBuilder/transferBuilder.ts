@@ -3,10 +3,10 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
-import { Inj, Tinj } from '../../../src';
-import * as testData from '../../resources/inj';
+import { Injective, Tinjective } from '../../../src';
+import * as testData from '../../resources/injective';
 
-describe('Inj Transfer Builder', () => {
+describe('Injective Transfer Builder', () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
@@ -14,8 +14,8 @@ describe('Inj Transfer Builder', () => {
   let testTxWithMemo;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('injective', Inj.createInstance);
-    bitgo.safeRegister('tinjective', Tinj.createInstance);
+    bitgo.safeRegister('injective', Injective.createInstance);
+    bitgo.safeRegister('tinjective', Tinjective.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tinjective');
     factory = basecoin.getBuilder();
