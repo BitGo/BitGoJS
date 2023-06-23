@@ -195,6 +195,14 @@ export enum CoinFeature {
    * This coin has transactions that expire after a certain amount of time.
    */
   EXPIRING_TRANSACTIONS = 'expiring-transactions',
+  /**
+   * This coin supports cold wallets that use a multisig signing protocol
+   */
+  MULTISIG_COLD = 'multisig-cold',
+  /**
+   * This coin supports cold wallets that use a TSS signing protocol
+   */
+  TSS_COLD = 'tss-cold',
 }
 
 /**

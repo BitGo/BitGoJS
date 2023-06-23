@@ -19,6 +19,7 @@ export class AVAXPCoin extends BaseCoin {
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.CUSTODY_BITGO_GERMANY,
     CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    CoinFeature.MULTISIG_COLD,
   ];
 
   /**
