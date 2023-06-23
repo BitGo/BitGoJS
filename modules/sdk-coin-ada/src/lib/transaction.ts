@@ -173,7 +173,7 @@ export class Transaction extends BaseTransaction {
       for (let i = 0; i < vkeys.len(); i++) {
         const vkey = (this._transaction.witness_set().vkeys() as CardanoWasm.Vkeywitnesses).get(i);
         result.witnesses.push({
-          publicKey: vkey?.vkey().public_key().to_bech32(),
+          publicKey: vkey?.vkey().public_key().to_hex(),
           signature: vkey?.signature().to_hex(),
         });
       }
@@ -245,6 +245,14 @@ export class Transaction extends BaseTransaction {
 
       this._fee = txn.body().fee().to_str();
       this.loadInputsAndOutputs();
+
+      if (this._transaction.witness_set().vkeys()) {
+        const vkeys = this._transaction.witness_set().vkeys()! as CardanoWasm.Vkeywitnesses;
+        for (let i = 0; i < vkeys.len(); i++) {
+          const vkey = vkeys.get(i);
+          this._signatures.push(vkey.signature().to_hex());
+        }
+      }
     } catch (e) {
       throw new InvalidTransactionError('unable to build transaction from raw');
     }

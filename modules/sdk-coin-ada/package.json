@@ -42,8 +42,8 @@
   "dependencies": {
     "@bitgo/sdk-core": "^8.10.0",
     "@bitgo/statics": "^17.0.1",
-    "@emurgo/cardano-serialization-lib-browser": "^10.2.0",
-    "@emurgo/cardano-serialization-lib-nodejs": "^10.2.0",
+    "@emurgo/cardano-serialization-lib-browser": "^11.4.0",
+    "@emurgo/cardano-serialization-lib-nodejs": "^11.4.0",
     "bech32": "^2.0.0",
     "bignumber.js": "^9.0.2",
     "lodash": "^4.17.21",

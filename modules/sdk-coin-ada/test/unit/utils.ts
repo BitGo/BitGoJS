@@ -142,6 +142,7 @@ describe('utils', () => {
       unsignedUpdatePledgeTxBody,
       unsignedNewPledgeTx,
       unsignedNewPledgeTxBody,
+      partiallySignedPledgeTx,
     } = rawTx;
     should.equal(Utils.default.getTransactionBody(unsignedTx), unsignedTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedStakingActiveTx), unsignedStakingActiveTxBody);
@@ -149,5 +150,6 @@ describe('utils', () => {
     should.equal(Utils.default.getTransactionBody(unsignedStakingWithdrawTx), unsignedStakingWithdrawTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedUpdatePledgeTx), unsignedUpdatePledgeTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedNewPledgeTx), unsignedNewPledgeTxBody);
+    should.equal(Utils.default.getTransactionBody(partiallySignedPledgeTx), unsignedNewPledgeTxBody);
   });
 });

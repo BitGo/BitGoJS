@@ -21,6 +21,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _signers: KeyPair[] = [];
   protected _transactionInputs: TransactionInput[] = [];
   protected _transactionOutputs: TransactionOutput[] = [];
+  protected _initSignatures: Signature[] = [];
   protected _signatures: Signature[] = [];
   protected _changeAddress: string;
   protected _senderBalance: string;
@@ -104,6 +105,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this._ttl = tx.transaction.body().ttl() as number;
     this._fee = tx.transaction.body().fee();
+
+    if (tx.transaction.witness_set().vkeys()) {
+      const vkeys = tx.transaction.witness_set().vkeys()! as CardanoWasm.Vkeywitnesses;
+      for (let i = 0; i < vkeys.len(); i++) {
+        const vkey = vkeys.get(i);
+        this._initSignatures.push({
+          publicKey: { pub: vkey.vkey().public_key().to_hex() },
+          signature: Buffer.from(vkey.signature().to_hex(), 'hex'),
+        });
+      }
+    }
   }
 
   /** @inheritdoc */
@@ -164,7 +176,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         );
         vkeyWitnesses.add(vkeyWitness);
       });
-      this._signatures.forEach((signature) => {
+      this.getAllSignatures().forEach((signature) => {
         const vkey = CardanoWasm.Vkey.new(
           CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex'))
         );
@@ -279,10 +291,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       );
       vkeyWitnesses.add(vkeyWitness);
     });
-    this._signatures.forEach((signature) => {
+    this.getAllSignatures().forEach((signature) => {
       const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
       const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
       vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+      this._transaction.signature.push(signature.signature.toString('hex'));
     });
     witnessSet.set_vkeys(vkeyWitnesses);
 
@@ -349,5 +362,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push({ publicKey, signature });
+  }
+
+  private getAllSignatures(): Signature[] {
+    return this._initSignatures.concat(this._signatures);
   }
 }
