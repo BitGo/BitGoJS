@@ -1,5 +1,5 @@
 /**
- * Testnet Tia
+ * Testnet Injective
  *
  * @format
  */
