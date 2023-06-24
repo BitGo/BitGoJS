@@ -78,11 +78,12 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     rebuiltTx.toBroadcastFormat().should.not.equal(rawTx.unsignedUpdatePledgeTx);
   });
 
-  it('should init partially signed txn hex and preserver the signature', async () => {
+  it('should init from partially signed txn hex and preserve the signature', async () => {
     const txnBuilderFactory = new TransactionBuilderFactory(coins.get('tada'));
     const txnBuilder = txnBuilderFactory.from(rawTx.partiallySignedPledgeTx);
     let tx = (await txnBuilder.build()) as Transaction;
     tx.type.should.equal(TransactionType.StakingPledge);
+    tx.signature.length.should.equal(1);
     let txData = tx.toJson();
     txData.witnesses.length.should.equal(1);
     txData.witnesses[0].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
@@ -97,5 +98,22 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.witnesses[0].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
     txData.witnesses[1].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
     txData.witnesses[1].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
+  });
+
+  it('should init from partially signed txn object and preserve the signature', async () => {
+    const prebuiltTx = new Transaction(coins.get('tada'));
+    prebuiltTx.fromRawTransaction(rawTx.partiallySignedPledgeTx);
+    prebuiltTx.toBroadcastFormat().should.equal(rawTx.partiallySignedPledgeTx);
+    prebuiltTx.signature.length.should.equal(1);
+    const txBuilder = factory.getStakingPledgeBuilder();
+    txBuilder.initBuilder(prebuiltTx);
+    const tx = (await txBuilder.build()) as Transaction;
+    tx.type.should.equal(TransactionType.StakingPledge);
+    tx.toBroadcastFormat().should.equal(rawTx.partiallySignedPledgeTx);
+    tx.signature.length.should.equal(1);
+    const txData = tx.toJson();
+    txData.witnesses.length.should.equal(1);
+    txData.witnesses[0].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
+    txData.witnesses[0].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
   });
 });

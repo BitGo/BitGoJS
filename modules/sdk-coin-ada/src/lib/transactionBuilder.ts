@@ -291,6 +291,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       );
       vkeyWitnesses.add(vkeyWitness);
     });
+
+    // Clear the cosmetic signature array in native txn wrapper to prevent duplicate when builder is inited from a partially witnessed txn
+    this._transaction.signature.length = 0;
     this.getAllSignatures().forEach((signature) => {
       const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
       const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
