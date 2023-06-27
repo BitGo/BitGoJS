@@ -42,7 +42,7 @@ describe('Osmo Transfer Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: testData.TEST_SEND_TX.from,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
@@ -110,7 +110,7 @@ describe('Osmo Transfer Builder', () => {
     tx.toBroadcastFormat();
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: testData.TEST_SEND_TX.from,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
@@ -144,7 +144,7 @@ describe('Osmo Transfer Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: testData.TEST_SEND_TX.from,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },

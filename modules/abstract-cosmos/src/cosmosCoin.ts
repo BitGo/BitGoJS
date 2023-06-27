@@ -128,8 +128,8 @@ export class CosmosCoin extends BaseCoin {
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
-      // WithdrawDelegatorRewards transaction doesn't have amount
-      if (transaction.type !== TransactionType.StakingWithdraw) {
+      // WithdrawDelegatorRewards and ContractCall transaction don't have amount
+      if (transaction.type !== TransactionType.StakingWithdraw && transaction.type !== TransactionType.ContractCall) {
         for (const recipients of txParams.recipients) {
           totalAmount = totalAmount.plus(recipients.amount);
         }

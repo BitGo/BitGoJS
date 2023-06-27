@@ -39,14 +39,14 @@ describe('Osmo Undelegate txn Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testTx.delegator,
+        address: testTx.from,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testTx.validator,
+        address: testTx.to,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },
@@ -69,14 +69,14 @@ describe('Osmo Undelegate txn Builder', () => {
     tx.toBroadcastFormat();
     should.deepEqual(tx.inputs, [
       {
-        address: testTx.delegator,
+        address: testTx.from,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testTx.validator,
+        address: testTx.to,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },
@@ -103,14 +103,14 @@ describe('Osmo Undelegate txn Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testTx.delegator,
+        address: testTx.from,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testTx.validator,
+        address: testTx.to,
         value: testTx.sendMessage.value.amount.amount,
         coin: basecoin.getChain(),
       },

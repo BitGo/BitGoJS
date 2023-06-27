@@ -10,6 +10,7 @@ import {
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
+  TEST_EXECUTE_CONTRACT_TRANSACTION,
   address,
 } from '../resources/osmo';
 import should = require('should');
@@ -107,7 +108,7 @@ describe('OSMO', function () {
       const txParams = {
         recipients: [
           {
-            address: TEST_SEND_TX.recipient,
+            address: TEST_SEND_TX.to,
             amount: TEST_SEND_TX.sendAmount,
           },
         ],
@@ -125,7 +126,7 @@ describe('OSMO', function () {
       const txParams = {
         recipients: [
           {
-            address: TEST_DELEGATE_TX.validator,
+            address: TEST_DELEGATE_TX.to,
             amount: TEST_DELEGATE_TX.sendAmount,
           },
         ],
@@ -143,7 +144,7 @@ describe('OSMO', function () {
       const txParams = {
         recipients: [
           {
-            address: TEST_UNDELEGATE_TX.validator,
+            address: TEST_UNDELEGATE_TX.to,
             amount: TEST_UNDELEGATE_TX.sendAmount,
           },
         ],
@@ -161,7 +162,25 @@ describe('OSMO', function () {
       const txParams = {
         recipients: [
           {
-            address: TEST_WITHDRAW_REWARDS_TX.validator,
+            address: TEST_WITHDRAW_REWARDS_TX.to,
+            amount: 'UNAVAILABLE',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify execute contract transaction', async function () {
+      const txPrebuild = {
+        txHex: TEST_EXECUTE_CONTRACT_TRANSACTION.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: TEST_EXECUTE_CONTRACT_TRANSACTION.to,
             amount: 'UNAVAILABLE',
           },
         ],
@@ -193,7 +212,7 @@ describe('OSMO', function () {
         id: TEST_SEND_TX.hash,
         outputs: [
           {
-            address: TEST_SEND_TX.recipient,
+            address: TEST_SEND_TX.to,
             amount: TEST_SEND_TX.sendAmount,
           },
         ],
@@ -214,7 +233,7 @@ describe('OSMO', function () {
         id: TEST_DELEGATE_TX.hash,
         outputs: [
           {
-            address: TEST_DELEGATE_TX.validator,
+            address: TEST_DELEGATE_TX.to,
             amount: TEST_DELEGATE_TX.sendAmount,
           },
         ],
@@ -235,7 +254,7 @@ describe('OSMO', function () {
         id: TEST_UNDELEGATE_TX.hash,
         outputs: [
           {
-            address: TEST_UNDELEGATE_TX.validator,
+            address: TEST_UNDELEGATE_TX.to,
             amount: TEST_UNDELEGATE_TX.sendAmount,
           },
         ],
@@ -256,15 +275,36 @@ describe('OSMO', function () {
         id: TEST_WITHDRAW_REWARDS_TX.hash,
         outputs: [
           {
-            address: TEST_WITHDRAW_REWARDS_TX.validator,
+            address: TEST_WITHDRAW_REWARDS_TX.to,
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: undefined,
+        outputAmount: 'UNAVAILABLE',
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },
         type: 15,
+      });
+    });
+
+    it('should explain a execute contract transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_EXECUTE_CONTRACT_TRANSACTION.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_EXECUTE_CONTRACT_TRANSACTION.hash,
+        outputs: [
+          {
+            address: TEST_EXECUTE_CONTRACT_TRANSACTION.to,
+            amount: 'UNAVAILABLE',
+          },
+        ],
+        outputAmount: 'UNAVAILABLE',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_EXECUTE_CONTRACT_TRANSACTION.gasBudget.amount[0].amount },
+        type: 16,
       });
     });
 
@@ -309,12 +349,12 @@ describe('OSMO', function () {
 
   describe('Parse Transactions: ', () => {
     const transferInputsResponse = {
-      address: TEST_SEND_TX.recipient,
+      address: TEST_SEND_TX.to,
       amount: new BigNumber(TEST_SEND_TX.sendAmount).plus(TEST_SEND_TX.gasBudget.amount[0].amount).toFixed(),
     };
 
     const transferOutputsResponse = {
-      address: TEST_SEND_TX.recipient,
+      address: TEST_SEND_TX.to,
       amount: TEST_SEND_TX.sendAmount,
     };
 

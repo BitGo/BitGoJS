@@ -260,7 +260,7 @@ describe('BLD', function () {
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: undefined,
+        outputAmount: 'UNAVAILABLE',
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },

@@ -6,8 +6,10 @@ import should from 'should';
 import {
   CosmosTransaction,
   DelegateOrUndelegeteMessage,
+  ExecuteContractMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
+  CosmosConstants,
 } from '@bitgo/abstract-cosmos';
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/osmo';
@@ -46,7 +48,7 @@ describe('Osmo Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_SEND_TX.sender,
+          address: testData.TEST_SEND_TX.from,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
           coin: 'tosmo',
         },
@@ -79,7 +81,7 @@ describe('Osmo Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_SEND_TX.sender,
+          address: testData.TEST_SEND_TX.from,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
           coin: 'tosmo',
         },
@@ -112,14 +114,14 @@ describe('Osmo Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_DELEGATE_TX.delegator,
+          address: testData.TEST_DELEGATE_TX.from,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
           coin: 'tosmo',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
-          address: testData.TEST_DELEGATE_TX.validator,
+          address: testData.TEST_DELEGATE_TX.to,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
           coin: 'tosmo',
         },
@@ -145,14 +147,14 @@ describe('Osmo Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_UNDELEGATE_TX.delegator,
+          address: testData.TEST_UNDELEGATE_TX.from,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
           coin: 'tosmo',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
-          address: testData.TEST_UNDELEGATE_TX.validator,
+          address: testData.TEST_UNDELEGATE_TX.to,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
           coin: 'tosmo',
         },
@@ -178,14 +180,50 @@ describe('Osmo Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
+          address: testData.TEST_WITHDRAW_REWARDS_TX.from,
           value: 'UNAVAILABLE',
           coin: 'tosmo',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
-          address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
+          address: testData.TEST_WITHDRAW_REWARDS_TX.to,
+          value: 'UNAVAILABLE',
+          coin: 'tosmo',
+        },
+      ]);
+    });
+
+    it('should build a execute contract from raw signed base64', function () {
+      tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_EXECUTE_CONTRACT_TRANSACTION.signedTxBase64);
+      const json = tx.toJson();
+      should.equal(json.sequence, testData.TEST_EXECUTE_CONTRACT_TRANSACTION.sequence);
+      should.deepEqual(json.gasBudget, testData.TEST_EXECUTE_CONTRACT_TRANSACTION.gasBudget);
+      should.equal(
+        Buffer.from(json.publicKey as any, 'hex').toString('base64'),
+        testData.TEST_EXECUTE_CONTRACT_TRANSACTION.pubKey
+      );
+      should.equal(
+        (json.sendMessages[0].value as ExecuteContractMessage).contract,
+        testData.TEST_EXECUTE_CONTRACT_TRANSACTION.message.value.contract
+      );
+      should.equal(
+        Buffer.from(json.signature as any).toString('base64'),
+        testData.TEST_EXECUTE_CONTRACT_TRANSACTION.signature
+      );
+      should.equal(tx.type, TransactionType.ContractCall);
+
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.from,
+          value: 'UNAVAILABLE',
+          coin: 'tosmo',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.to,
           value: 'UNAVAILABLE',
           coin: 'tosmo',
         },
@@ -213,7 +251,7 @@ describe('Osmo Transaction', () => {
         id: testData.TEST_SEND_TX.hash,
         outputs: [
           {
-            address: testData.TEST_SEND_TX.recipient,
+            address: testData.TEST_SEND_TX.to,
             amount: testData.TEST_SEND_TX.sendAmount,
           },
         ],
@@ -222,6 +260,26 @@ describe('Osmo Transaction', () => {
         changeAmount: '0',
         fee: { fee: testData.TEST_SEND_TX.feeAmount },
         type: 0,
+      });
+    });
+
+    it('should explain a execute contract transaction', function () {
+      tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_EXECUTE_CONTRACT_TRANSACTION.signedTxBase64);
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.hash,
+        outputs: [
+          {
+            address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.to,
+            amount: CosmosConstants.UNAVAILABLE_TEXT,
+          },
+        ],
+        outputAmount: CosmosConstants.UNAVAILABLE_TEXT,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.feeAmount },
+        type: 16,
       });
     });
 

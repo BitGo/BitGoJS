@@ -21,12 +21,14 @@ import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
+import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
 import * as crypto from 'crypto';
 import * as constants from './constants';
 import {
   CosmosLikeTransaction,
   DelegateOrUndelegeteMessage,
+  ExecuteContractMessage,
   FeeData,
   MessageData,
   SendMessage,
@@ -35,7 +37,12 @@ import {
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
 export class CosmosUtils implements BaseUtils {
-  private registry = new Registry([...defaultRegistryTypes]);
+  private registry;
+
+  constructor() {
+    this.registry = new Registry([...defaultRegistryTypes]);
+    this.registry.register(constants.executeContractMsgTypeUrl, MsgExecuteContract);
+  }
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
@@ -261,6 +268,26 @@ export class CosmosUtils implements BaseUtils {
   }
 
   /**
+   * Returns the array of MessageData[] from the decoded transaction
+   * @param {DecodedTxRaw} decodedTx
+   * @returns {MessageData[]} Execute contract transaction message data
+   */
+  getExecuteContractMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+    return decodedTx.body.messages.map((message) => {
+      const value = this.registry.decode(message);
+      return {
+        value: {
+          sender: value.sender,
+          contract: value.contract,
+          msg: value.msg,
+          funds: value.funds,
+        },
+        typeUrl: message.typeUrl,
+      };
+    });
+  }
+
+  /**
    * Determines bitgo transaction type based on cosmos proto type url
    * @param {string} typeUrl
    * @returns {TransactionType | undefined} TransactionType if url is supported else undefined
@@ -275,6 +302,8 @@ export class CosmosUtils implements BaseUtils {
         return TransactionType.StakingDeactivate;
       case constants.withdrawDelegatorRewardMsgTypeUrl:
         return TransactionType.StakingWithdraw;
+      case constants.executeContractMsgTypeUrl:
+        return TransactionType.ContractCall;
       default:
         return undefined;
     }
@@ -473,19 +502,23 @@ export class CosmosUtils implements BaseUtils {
     switch (type) {
       case TransactionType.Send: {
         const value = messageData.value as SendMessage;
-        this.isObjPropertyNull(value, ['toAddress', 'fromAddress']);
+        this.validateSendMessage(value);
         break;
       }
       case TransactionType.StakingActivate:
       case TransactionType.StakingDeactivate: {
         const value = messageData.value as DelegateOrUndelegeteMessage;
-        this.isObjPropertyNull(value, ['validatorAddress', 'delegatorAddress']);
-        this.validateAmount(value.amount);
+        this.validateDelegateOrUndelegateMessage(value);
         break;
       }
       case TransactionType.StakingWithdraw: {
         const value = messageData.value as WithdrawDelegatorRewardsMessage;
-        this.isObjPropertyNull(value, ['validatorAddress', 'delegatorAddress']);
+        this.validateWithdrawRewardsMessage(value);
+        break;
+      }
+      case TransactionType.ContractCall: {
+        const value = messageData.value as ExecuteContractMessage;
+        this.validateExecuteContractMessage(value);
         break;
       }
       default:
@@ -591,6 +624,8 @@ export class CosmosUtils implements BaseUtils {
       sendMessageData = this.getDelegateOrUndelegateMessageDataFromDecodedTx(decodedTx);
     } else if (type === TransactionType.StakingWithdraw) {
       sendMessageData = this.getWithdrawRewardsMessageDataFromDecodedTx(decodedTx);
+    } else if (type === TransactionType.ContractCall) {
+      sendMessageData = this.getExecuteContractMessageDataFromDecodedTx(decodedTx);
     } else {
       throw new Error('Transaction type not supported: ' + typeUrl);
     }
@@ -670,6 +705,35 @@ export class CosmosUtils implements BaseUtils {
    */
   isValidAddress(address: string): boolean {
     throw new NotImplementedError('isValidAddress not implemented');
+  }
+
+  /**
+   * Validates if the address matches with regex @see contractAddressRegex
+   * @param {string} address
+   * @returns {boolean} - the validation result
+   */
+  isValidContractAddress(address: string): boolean {
+    throw new NotImplementedError('isValidContractAddress not implemented');
+  }
+
+  /**
+   * Validates a execute contract message
+   * @param {ExecuteContractMessage} message - The execute contract message to validate
+   * @throws {InvalidTransactionError} Throws an error if the message is invalid
+   */
+  validateExecuteContractMessage(message: ExecuteContractMessage) {
+    if (!message.contract || !this.isValidContractAddress(message.contract)) {
+      throw new InvalidTransactionError(`Invalid ExecuteContractMessage contract address: ` + message.contract);
+    }
+    if (!message.sender || !this.isValidAddress(message.sender)) {
+      throw new InvalidTransactionError(`Invalid ExecuteContractMessage sender address: ` + message.sender);
+    }
+    if (!message.msg) {
+      throw new InvalidTransactionError(`Invalid ExecuteContractMessage msg: ` + message.msg);
+    }
+    if (message.funds) {
+      this.validateAmountData(message.funds);
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import {
   StakingActivateBuilder,
   StakingDeactivateBuilder,
   StakingWithdrawRewardsBuilder,
+  ContractCallBuilder,
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -29,6 +30,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawRewardsBuilder(tx);
+        case TransactionType.ContractCall:
+          return this.getContractCallBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -55,6 +58,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
     return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig, injUtils));
+  }
+
+  getContractCallBuilder(tx?: CosmosTransaction): ContractCallBuilder {
+    return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig, injUtils));
   }
 
   /** @inheritdoc */
