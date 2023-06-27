@@ -36,7 +36,7 @@ import { BackupProvider, IWallet } from '../../../wallet';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
-import { TxRequestChallengeResponse } from '../../../tss/types';
+import { ShareKeyPosition, TxRequestChallengeResponse } from '../../../tss/types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -649,7 +649,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       derivationPath
     );
 
-    const bitgoIndex = 3;
+    const bitgoIndex = ShareKeyPosition.BITGO;
     const userIndex = userSigningMaterial.pShare.i;
 
     const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, signingKey.xShare.n, 0);
