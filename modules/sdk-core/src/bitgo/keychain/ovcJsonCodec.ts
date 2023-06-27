@@ -45,28 +45,32 @@ export const OvcToBitGoJSON = t.strict(
 
 export type OvcToBitGoJSON = t.TypeOf<typeof OvcToBitGoJSON>;
 
-export const BitGoToOvcJSON = t.intersection(
-  [
-    OvcToBitGoJSON,
-    t.type({
-      platform: t.type({
-        commonKeychain: t.string,
-        walletHSMGPGPublicKeySigs: t.string,
-        ovc: t.type({
-          // BitGo to User (OVC-1)
-          1: t.type({
-            bitgoToOvcShare: OvcShare,
-          }),
-          // BitGo to Backup (OVC-2)
-          2: t.type({
-            bitgoToOvcShare: OvcShare,
+export const BitGoToOvcJSON = t.strict(
+  {
+    wallet: t.intersection([
+      OvcToBitGoJSON,
+      t.type({
+        platform: t.type({
+          commonKeychain: t.string,
+          walletGpgPubKeySigs: t.string,
+          ovc: t.type({
+            // BitGo to User (OVC-1)
+            1: t.type({
+              bitgoToOvcShare: OvcShare,
+            }),
+            // BitGo to Backup (OVC-2)
+            2: t.type({
+              bitgoToOvcShare: OvcShare,
+            }),
           }),
         }),
       }),
-    }),
-  ],
+    ]),
+  },
   'BitgoToOvcJson'
 );
+
+export type BitGoToOvcJSON = t.TypeOf<typeof BitGoToOvcJSON>;
 
 export const BitGoKeyFromOvcShares = t.strict(
   {
