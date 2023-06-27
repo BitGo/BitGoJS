@@ -402,28 +402,30 @@ describe('V2 Keychains', function () {
         },
       };
       const expectedBitGoOutput = {
-        ...ovcOutputJson,
-        state: 2,
-        platform: {
-          commonKeychain: bitGoKeyResult.commonKeychain,
-          walletHSMGPGPublicKeySigs: bitGoKeyResult.walletHSMGPGPublicKeySigs,
-          ovc: {
-            1: {
-              bitgoToOvcShare: {
-                i: 1,
-                j: 3,
-                publicShare: bitGoKeyResult.keyShares[0].publicShare,
-                privateShare: bitGoKeyResult.keyShares[0].privateShare,
-                vssProof: bitGoKeyResult.keyShares[0].vssProof,
+        wallet: {
+          ...ovcOutputJson,
+          state: 2,
+          platform: {
+            commonKeychain: bitGoKeyResult.commonKeychain,
+            walletGpgPubKeySigs: bitGoKeyResult.walletHSMGPGPublicKeySigs,
+            ovc: {
+              1: {
+                bitgoToOvcShare: {
+                  i: 1,
+                  j: 3,
+                  publicShare: bitGoKeyResult.keyShares[0].publicShare,
+                  privateShare: bitGoKeyResult.keyShares[0].privateShare,
+                  vssProof: bitGoKeyResult.keyShares[0].vssProof,
+                },
               },
-            },
-            2: {
-              bitgoToOvcShare: {
-                i: 2,
-                j: 3,
-                publicShare: bitGoKeyResult.keyShares[1].publicShare,
-                privateShare: bitGoKeyResult.keyShares[1].privateShare,
-                vssProof: bitGoKeyResult.keyShares[1].vssProof,
+              2: {
+                bitgoToOvcShare: {
+                  i: 2,
+                  j: 3,
+                  publicShare: bitGoKeyResult.keyShares[1].publicShare,
+                  privateShare: bitGoKeyResult.keyShares[1].privateShare,
+                  vssProof: bitGoKeyResult.keyShares[1].vssProof,
+                },
               },
             },
           },

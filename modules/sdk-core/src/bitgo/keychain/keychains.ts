@@ -21,7 +21,7 @@ import {
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
 import { decodeOrElse } from '../utils/decode';
-import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
+import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -373,30 +373,32 @@ export class Keychains implements IKeychains {
     assert(bitgoToBackupShare.vssProof);
 
     // Create JSON data with platform shares for OVC-1 and OVC-2
-    const bitgoToOvcOutput = {
-      ...decodedOvcOutput,
-      platform: {
-        commonKeychain: key.commonKeychain,
-        walletHSMGPGPublicKeySigs: key.walletHSMGPGPublicKeySigs,
-        ovc: {
-          // BitGo to User (OVC-1)
-          1: {
-            bitgoToOvcShare: {
-              i: 1,
-              j: 3,
-              publicShare: bitgoToUserShare.publicShare,
-              privateShare: bitgoToUserShare.privateShare,
-              vssProof: bitgoToUserShare.vssProof,
+    const bitgoToOvcOutput: BitGoToOvcJSON = {
+      wallet: {
+        ...decodedOvcOutput,
+        platform: {
+          commonKeychain: key.commonKeychain,
+          walletGpgPubKeySigs: key.walletHSMGPGPublicKeySigs,
+          ovc: {
+            // BitGo to User (OVC-1)
+            1: {
+              bitgoToOvcShare: {
+                i: 1,
+                j: 3,
+                publicShare: bitgoToUserShare.publicShare,
+                privateShare: bitgoToUserShare.privateShare,
+                vssProof: bitgoToUserShare.vssProof,
+              },
             },
-          },
-          // BitGo to Backup (OVC-2)
-          2: {
-            bitgoToOvcShare: {
-              i: 2,
-              j: 3,
-              publicShare: bitgoToBackupShare.publicShare,
-              privateShare: bitgoToBackupShare.privateShare,
-              vssProof: bitgoToBackupShare.vssProof,
+            // BitGo to Backup (OVC-2)
+            2: {
+              bitgoToOvcShare: {
+                i: 2,
+                j: 3,
+                publicShare: bitgoToBackupShare.publicShare,
+                privateShare: bitgoToBackupShare.privateShare,
+                vssProof: bitgoToBackupShare.vssProof,
+              },
             },
           },
         },
@@ -404,9 +406,9 @@ export class Keychains implements IKeychains {
     };
 
     // Mark it ready for next operation, should be 2
-    bitgoToOvcOutput.state += 1;
+    bitgoToOvcOutput.wallet.state += 1;
 
-    const output = {
+    const output: BitGoKeyFromOvcShares = {
       bitGoKeyId: key.id,
       bitGoOutputJsonForOvc: bitgoToOvcOutput,
     };
