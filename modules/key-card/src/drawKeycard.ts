@@ -118,7 +118,7 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
   y = moveDown(y, 35);
   const qrSize = 130;
 
-  const qrKeys = ['user', 'passcode', 'backup', 'bitgo'];
+  const qrKeys = ['user', 'passcode', 'backup', 'bitgo'].filter(key => !!qrData[key]);
   for (let index = 0; index < qrKeys.length; index++) {
     const name = qrKeys[index];
     if (index === 2) {
