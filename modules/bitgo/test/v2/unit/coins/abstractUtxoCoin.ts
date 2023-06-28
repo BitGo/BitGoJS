@@ -12,7 +12,6 @@ import {
   TransactionParams,
 } from '@bitgo/abstract-utxo';
 
-
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
     const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
@@ -38,13 +37,20 @@ describe('Abstract UTXO Coin:', () => {
 
     const outputAmount = (0.01 * 1e8).toString();
 
-    async function runClassifyOutputsTest(outputAddress, verification, expectExternal, txParams: TransactionParams = {}) {
+    async function runClassifyOutputsTest(
+      outputAddress,
+      verification,
+      expectExternal,
+      txParams: TransactionParams = {}
+    ) {
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [] as Output[],
-        changeOutputs: [{
-          address: outputAddress,
-          amount: outputAmount,
-        }],
+        changeOutputs: [
+          {
+            address: outputAddress,
+            amount: outputAmount,
+          },
+        ],
       } as TransactionExplanation);
 
       if (!txParams.changeAddress) {
@@ -65,7 +71,9 @@ describe('Abstract UTXO Coin:', () => {
         external: expectExternal,
       });
 
-      const isExplicit = txParams.recipients !== undefined && txParams.recipients.some(recipient => recipient.address === outputAddress);
+      const isExplicit =
+        txParams.recipients !== undefined &&
+        txParams.recipients.some((recipient) => recipient.address === outputAddress);
       should.equal(parsedTransaction.explicitExternalSpendAmount, isExplicit && expectExternal ? outputAmount : '0');
       should.equal(parsedTransaction.implicitExternalSpendAmount, !isExplicit && expectExternal ? outputAmount : '0');
 
@@ -80,10 +88,17 @@ describe('Abstract UTXO Coin:', () => {
       return runClassifyOutputsTest(wallet.migratedFrom(), verification, false);
     });
 
-    it('should classify outputs which spend change back to a v1 wallet base address as external ' +
-      'if considerMigratedFromAddressInternal is set and false', async function () {
-      return runClassifyOutputsTest(wallet.migratedFrom(), { ...verification, considerMigratedFromAddressInternal: false }, true);
-    });
+    it(
+      'should classify outputs which spend change back to a v1 wallet base address as external ' +
+        'if considerMigratedFromAddressInternal is set and false',
+      async function () {
+        return runClassifyOutputsTest(
+          wallet.migratedFrom(),
+          { ...verification, considerMigratedFromAddressInternal: false },
+          true
+        );
+      }
+    );
 
     it('should classify outputs which spend to addresses not on the wallet as external', async function () {
       return runClassifyOutputsTest('external_address', verification, true);
@@ -96,7 +111,9 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should classify outputs with external address in recipients as explicit', async function () {
       const externalAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
-      return runClassifyOutputsTest(externalAddress, verification, true, { recipients: [{ address: externalAddress, amount: outputAmount }] });
+      return runClassifyOutputsTest(externalAddress, verification, true, {
+        recipients: [{ address: externalAddress, amount: outputAmount }],
+      });
     });
   });
 
@@ -128,7 +145,11 @@ describe('Abstract UTXO Coin:', () => {
       index: 1,
       addressType: 'p2shP2wsh' as const,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      keychains: [{ pub: keys.change.user.key.pub! }, { pub: keys.change.backup.key.pub! }, { pub: keys.change.bitgo.key.pub! }],
+      keychains: [
+        { pub: keys.change.user.key.pub! },
+        { pub: keys.change.backup.key.pub! },
+        { pub: keys.change.bitgo.key.pub! },
+      ],
       threshold: 2,
     };
 
@@ -148,7 +169,8 @@ describe('Abstract UTXO Coin:', () => {
 
     before(async () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const sign = async ({ key }) => (await coin.signMessage({ prv: keys.send.user.key.prv }, key.pub!)).toString('hex');
+      const sign = async ({ key }) =>
+        (await coin.signMessage({ prv: keys.send.user.key.prv }, key.pub!)).toString('hex');
       customChangeKeySignatures.user = await sign(keys.change.user);
       customChangeKeySignatures.backup = await sign(keys.change.backup);
       customChangeKeySignatures.bitgo = await sign(keys.change.bitgo);
@@ -252,7 +274,10 @@ describe('Abstract UTXO Coin:', () => {
         badKey: {
           keychains: {
             // user public key swapped out
-            user: { pub: otherKeychain.pub, encryptedPrv: bitgo.encrypt({ input: userKeychain.prv, password: passphrase }) },
+            user: {
+              pub: otherKeychain.pub,
+              encryptedPrv: bitgo.encrypt({ input: userKeychain.prv, password: passphrase }),
+            },
           },
           needsCustomChangeKeySignatureVerification: true,
         },
@@ -271,7 +296,11 @@ describe('Abstract UTXO Coin:', () => {
           needsCustomChangeKeySignatureVerification: true,
           customChange: {
             keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
-            signatures: [await signOther(changeKeys.user), await signOther(changeKeys.backup), await signOther(changeKeys.bitgo)],
+            signatures: [
+              await signOther(changeKeys.user),
+              await signOther(changeKeys.backup),
+              await signOther(changeKeys.bitgo),
+            ],
           },
         }),
         goodSigs: async () => ({
@@ -279,27 +308,38 @@ describe('Abstract UTXO Coin:', () => {
           needsCustomChangeKeySignatureVerification: true,
           customChange: {
             keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
-            signatures: [await signUser(changeKeys.user), await signUser(changeKeys.backup), await signUser(changeKeys.bitgo)],
+            signatures: [
+              await signUser(changeKeys.user),
+              await signUser(changeKeys.backup),
+              await signUser(changeKeys.bitgo),
+            ],
           },
           missingOutputs: 1,
         }),
       },
     };
 
-    const unsignedSendingWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, stubData.unsignedSendingWallet as any);
+    const unsignedSendingWallet = sinon.createStubInstance(
+      AbstractUtxoCoinWallet,
+      stubData.unsignedSendingWallet as any
+    );
 
     it('should fail if the user private key cannot be verified to match the user public key', async () => {
       sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.badKey as any);
       const verifyWallet = sinon.createStubInstance(AbstractUtxoCoinWallet, {});
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: verifyWallet as any,
-        verification: {},
-      }).should.be.rejectedWith(/transaction requires verification of user public key, but it was unable to be verified/);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: verifyWallet as any,
+          verification: {},
+        })
+        .should.be.rejectedWith(
+          /transaction requires verification of user public key, but it was unable to be verified/
+        );
 
       (coin.parseTransaction as any).restore();
     });
@@ -307,14 +347,16 @@ describe('Abstract UTXO Coin:', () => {
     it('should fail if the custom change verification data is required but missing', async () => {
       sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.noCustomChange as any);
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.be.rejectedWith(/parsed transaction is missing required custom change verification data/);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.be.rejectedWith(/parsed transaction is missing required custom change verification data/);
 
       (coin.parseTransaction as any).restore();
     });
@@ -322,46 +364,54 @@ describe('Abstract UTXO Coin:', () => {
     it('should fail if the custom change keys or key signatures are missing', async () => {
       sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.emptyCustomChange as any);
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.be.rejectedWith(/customChange property is missing keys or signatures/);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.be.rejectedWith(/customChange property is missing keys or signatures/);
 
       (coin.parseTransaction as any).restore();
     });
 
     it('should fail if the custom change key signatures cannot be verified', async () => {
-      sinon.stub(coin, 'parseTransaction').resolves(await stubData.parseTransactionData.badSigs() as any);
+      sinon.stub(coin, 'parseTransaction').resolves((await stubData.parseTransactionData.badSigs()) as any);
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.be.rejectedWith(/transaction requires verification of custom change key signatures, but they were unable to be verified/);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.be.rejectedWith(
+          /transaction requires verification of custom change key signatures, but they were unable to be verified/
+        );
 
       (coin.parseTransaction as any).restore();
     });
 
     it('should successfully verify a custom change transaction when change keys and signatures are valid', async () => {
-      sinon.stub(coin, 'parseTransaction').resolves(await stubData.parseTransactionData.goodSigs() as any);
+      sinon.stub(coin, 'parseTransaction').resolves((await stubData.parseTransactionData.goodSigs()) as any);
 
       // if verify transaction gets rejected with the outputs missing error message,
       // then we know that the verification of the custom change key signatures was successful
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.be.rejectedWith(/expected outputs missing in transaction prebuild/);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.be.rejectedWith(/expected outputs missing in transaction prebuild/);
 
       (coin.parseTransaction as any).restore();
     });
@@ -380,13 +430,15 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {},
-        wallet: unsignedSendingWallet as any,
-      }).should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {},
+          wallet: unsignedSendingWallet as any,
+        })
+        .should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
 
       coinMock.restore();
     });
@@ -405,17 +457,21 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
+      const bitcoinMock = sinon
+        .stub(coin, 'createTransactionFromHex')
+        .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {
-          txHex: '00',
-        },
-        wallet: unsignedSendingWallet as any,
-      }).should.eventually.be.true();
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {
+            txHex: '00',
+          },
+          wallet: unsignedSendingWallet as any,
+        })
+        .should.eventually.be.true();
 
       coinMock.restore();
       bitcoinMock.restore();
@@ -423,8 +479,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should not allow any implicit external outputs if paygo outputs are disallowed', async () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
-        keychains: {
-        },
+        keychains: {},
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
@@ -436,18 +491,20 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {
-          txHex: '00',
-        },
-        wallet: unsignedSendingWallet as any,
-        verification: {
-          allowPaygoOutput: false,
-        },
-      }).should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {
+            txHex: '00',
+          },
+          wallet: unsignedSendingWallet as any,
+          verification: {
+            allowPaygoOutput: false,
+          },
+        })
+        .should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
 
       coinMock.restore();
     });
@@ -466,18 +523,22 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
+      const bitcoinMock = sinon
+        .stub(coin, 'createTransactionFromHex')
+        .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
-      await coin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {
-          txHex: '00',
-        },
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.eventually.be.true();
+      await coin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {
+            txHex: '00',
+          },
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.eventually.be.true();
 
       coinMock.restore();
       bitcoinMock.restore();
@@ -500,18 +561,22 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      const bitcoinMock = sinon.stub(bigintCoin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
+      const bitcoinMock = sinon
+        .stub(bigintCoin, 'createTransactionFromHex')
+        .returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
-      await bigintCoin.verifyTransaction({
-        txParams: {
-          walletPassphrase: passphrase,
-        },
-        txPrebuild: {
-          txHex: '00',
-        },
-        wallet: unsignedSendingWallet as any,
-        verification: {},
-      }).should.eventually.be.true();
+      await bigintCoin
+        .verifyTransaction({
+          txParams: {
+            walletPassphrase: passphrase,
+          },
+          txPrebuild: {
+            txHex: '00',
+          },
+          wallet: unsignedSendingWallet as any,
+          verification: {},
+        })
+        .should.eventually.be.true();
 
       coinMock.restore();
       bitcoinMock.restore();

@@ -47,11 +47,7 @@ describe('V2 Wallet:', function () {
   const walletData = {
     id: '5b34252f1bf349930e34020a00000000',
     coin: 'tbtc',
-    keys: [
-      '5b3424f91bf349930e34017500000000',
-      '5b3424f91bf349930e34017600000000',
-      '5b3424f91bf349930e34017700000000',
-    ],
+    keys: ['5b3424f91bf349930e34017500000000', '5b3424f91bf349930e34017600000000', '5b3424f91bf349930e34017700000000'],
     coinSpecific: {},
     multisigType: 'onchain',
   };
@@ -64,19 +60,18 @@ describe('V2 Wallet:', function () {
     it('should search in wallet for a transfer', async function () {
       const params = { limit: 1, searchLabel: 'test' };
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
-          .query(params)
-          .reply(200, {
-            coin: 'tbch',
-            transfers: [
-              {
-                wallet: wallet.id(),
-                comment: 'tests',
-              },
-            ],
-          });
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(params)
+        .reply(200, {
+          coin: 'tbch',
+          transfers: [
+            {
+              wallet: wallet.id(),
+              comment: 'tests',
+            },
+          ],
+        });
 
       try {
         await wallet.transfers(params);
@@ -103,13 +98,12 @@ describe('V2 Wallet:', function () {
       };
 
       // The actual api request will only send strings, but the SDK function expects numbers for some values
-      const apiParams = _.mapValues(params, param => Array.isArray(param) ? param : String(param));
+      const apiParams = _.mapValues(params, (param) => (Array.isArray(param) ? param : String(param)));
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
-          .query(_.matches(apiParams))
-          .reply(200);
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(_.matches(apiParams))
+        .reply(200);
 
       await wallet.transfers(params);
       scope.isDone().should.be.True();
@@ -126,11 +120,10 @@ describe('V2 Wallet:', function () {
         address: 'stringAddress',
       };
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
-          .query(_.matches(apiParams))
-          .reply(200);
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(_.matches(apiParams))
+        .reply(200);
 
       try {
         await wallet.transfers(params);
@@ -142,32 +135,46 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ address: 13375 }).should.be.rejectedWith('invalid address argument, expecting string or array');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ address: 13375 })
+        .should.be.rejectedWith('invalid address argument, expecting string or array');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ address: [null] }).should.be.rejectedWith('invalid address argument, expecting array of address strings');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ address: [null] })
+        .should.be.rejectedWith('invalid address argument, expecting array of address strings');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ dateGte: 20101904 }).should.be.rejectedWith('invalid dateGte argument, expecting string');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ dateGte: 20101904 })
+        .should.be.rejectedWith('invalid dateGte argument, expecting string');
 
       // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateLt: 20101904 }).should.be.rejectedWith('invalid dateLt argument, expecting string');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ valueGte: '10230005' }).should.be.rejectedWith('invalid valueGte argument, expecting number');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ valueGte: '10230005' })
+        .should.be.rejectedWith('invalid valueGte argument, expecting number');
 
       // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueLt: '-5e8' }).should.be.rejectedWith('invalid valueLt argument, expecting number');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ includeHex: '123' }).should.be.rejectedWith('invalid includeHex argument, expecting boolean');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ includeHex: '123' })
+        .should.be.rejectedWith('invalid includeHex argument, expecting boolean');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ state: 123 }).should.be.rejectedWith('invalid state argument, expecting string or array');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ state: 123 })
+        .should.be.rejectedWith('invalid state argument, expecting string or array');
 
-      // @ts-expect-error checking type mismatch
-      await wallet.transfers({ state: [123, 456] }).should.be.rejectedWith('invalid state argument, expecting array of state strings');
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .transfers({ state: [123, 456] })
+        .should.be.rejectedWith('invalid state argument, expecting array of state strings');
 
       // @ts-expect-error checking type mismatch
       await wallet.transfers({ type: 123 }).should.be.rejectedWith('invalid type argument, expecting string');
@@ -178,19 +185,18 @@ describe('V2 Wallet:', function () {
     it('should search in wallet addresses', async function () {
       const params = { limit: 1, labelContains: 'test' };
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
-          .query(params)
-          .reply(200, {
-            coin: 'tbch',
-            transfers: [
-              {
-                wallet: wallet.id(),
-                comment: 'tests',
-              },
-            ],
-          });
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
+        .query(params)
+        .reply(200, {
+          coin: 'tbch',
+          transfers: [
+            {
+              wallet: wallet.id(),
+              comment: 'tests',
+            },
+          ],
+        });
 
       try {
         await wallet.addresses(params);
@@ -219,13 +225,18 @@ describe('V2 Wallet:', function () {
     });
 
     it('search list addresses should return success', async function () {
-      const params = { includeBalances: true, includeTokens: true, returnBalancesForToken: 'gterc6dp', pendingDeployment: false, includeTotalAddressCount: true };
+      const params = {
+        includeBalances: true,
+        includeTokens: true,
+        returnBalancesForToken: 'gterc6dp',
+        pendingDeployment: false,
+        includeTotalAddressCount: true,
+      };
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
-          .query(params)
-          .reply(200);
+      const scope = nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
+        .query(params)
+        .reply(200);
       try {
         await wallet.addresses(params);
         throw '';
@@ -236,32 +247,42 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
-      await ethWallet.addresses({ includeBalances: true, returnBalancesForToken: 1 }).should.be.rejectedWith('invalid returnBalancesForToken argument, expecting string');
+      await ethWallet
+        .addresses({ includeBalances: true, returnBalancesForToken: 1 })
+        .should.be.rejectedWith('invalid returnBalancesForToken argument, expecting string');
 
-      await ethWallet.addresses({ pendingDeployment: 1 }).should.be.rejectedWith('invalid pendingDeployment argument, expecting boolean');
+      await ethWallet
+        .addresses({ pendingDeployment: 1 })
+        .should.be.rejectedWith('invalid pendingDeployment argument, expecting boolean');
 
-      await ethWallet.addresses({ includeBalances: 1 }).should.be.rejectedWith('invalid includeBalances argument, expecting boolean');
+      await ethWallet
+        .addresses({ includeBalances: 1 })
+        .should.be.rejectedWith('invalid includeBalances argument, expecting boolean');
 
-      await ethWallet.addresses({ includeTokens: 1 }).should.be.rejectedWith('invalid includeTokens argument, expecting boolean');
+      await ethWallet
+        .addresses({ includeTokens: 1 })
+        .should.be.rejectedWith('invalid includeTokens argument, expecting boolean');
 
-      await ethWallet.addresses({ includeTotalAddressCount: 1 }).should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
+      await ethWallet
+        .addresses({ includeTotalAddressCount: 1 })
+        .should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
     });
 
-    it('get forwarder balance', async function() {
-      const forwarders = [{
-        address: '0xbfbcc0fe2b865de877134246af09378e9bc3c91d',
-        balance: '200000',
-      },
-      {
-        address: '0xe59524ed8b47165f4cb0850c9428069a6002e5eb',
-        balance: '10000000000000000',
-      }];
+    it('get forwarder balance', async function () {
+      const forwarders = [
+        {
+          address: '0xbfbcc0fe2b865de877134246af09378e9bc3c91d',
+          balance: '200000',
+        },
+        {
+          address: '0xe59524ed8b47165f4cb0850c9428069a6002e5eb',
+          balance: '10000000000000000',
+        },
+      ];
 
-      nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/forwarders/balances`)
-        .reply(200, {
-          forwarders,
-        });
+      nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/forwarders/balances`).reply(200, {
+        forwarders,
+      });
 
       const forwarderBalance = await ethWallet.getForwarderBalance();
       forwarderBalance.forwarders[0].address.should.eql(forwarders[0].address);
@@ -272,8 +293,10 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Get User Prv', () => {
-    const prv = 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
-    const derivedPrv = 'xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx';
+    const prv =
+      'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
+    const derivedPrv =
+      'xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx';
     it('should use the cold derivation seed to derive the proper user private key', async () => {
       const userPrvOptions = {
         prv,
@@ -415,7 +438,7 @@ describe('V2 Wallet:', function () {
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
     });
 
-    afterEach(async function() {
+    afterEach(async function () {
       nock.cleanAll();
     });
 
@@ -436,11 +459,7 @@ describe('V2 Wallet:', function () {
     it('should search for pending transaction correctly', async function () {
       const params = { walletId: wallet.id() };
 
-      const scope =
-        nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/tx/pending/first`)
-          .query(params)
-          .reply(200);
+      const scope = nock(bgUrl).get(`/api/v2/${wallet.coin()}/tx/pending/first`).query(params).reply(200);
       try {
         await wallet.getFirstPendingTransaction();
         throw '';
@@ -453,10 +472,7 @@ describe('V2 Wallet:', function () {
     it('should try to change the fee correctly', async function () {
       const params = { txid: '0xffffffff', fee: '10000000' };
 
-      const scope =
-        nock(bgUrl)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params)
-          .reply(200);
+      const scope = nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params).reply(200);
 
       try {
         await wallet.changeFee({ txid: '0xffffffff', fee: '10000000' });
@@ -476,10 +492,7 @@ describe('V2 Wallet:', function () {
         },
       };
 
-      const scope =
-        nock(bgUrl)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params)
-          .reply(200);
+      const scope = nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params).reply(200);
 
       try {
         await wallet.changeFee(params);
@@ -493,21 +506,25 @@ describe('V2 Wallet:', function () {
     it('should pass data parameter and amount: 0 when using sendTransaction', async function () {
       const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
-      const recipients = [{
-        address: recipientAddress,
-        amount: 0,
-        data: '0x00110011',
-      }];
+      const recipients = [
+        {
+          address: recipientAddress,
+          amount: 0,
+          data: '0x00110011',
+        },
+      ];
       const response = nock(bgUrl)
         .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
-      const nockKeyChain = nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
-        .reply(200, {});
+      const nockKeyChain = nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`).reply(200, {});
 
       try {
-        await ethWallet.send({ address: recipients[0].address, data: recipients[0].data, amount: recipients[0].amount });
+        await ethWallet.send({
+          address: recipients[0].address,
+          data: recipients[0].data,
+          amount: recipients[0].amount,
+        });
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
@@ -518,18 +535,18 @@ describe('V2 Wallet:', function () {
     it('should pass data parameter and amount: 0 when using sendMany', async function () {
       const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
-      const recipients = [{
-        address: recipientAddress,
-        amount: 0,
-        data: '0x00110011',
-      }];
+      const recipients = [
+        {
+          address: recipientAddress,
+          amount: 0,
+          data: '0x00110011',
+        },
+      ];
       const response = nock(bgUrl)
         .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
-      const nockKeyChain = nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
-        .reply(200, {});
+      const nockKeyChain = nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`).reply(200, {});
 
       try {
         await ethWallet.sendMany({ recipients });
@@ -542,10 +559,12 @@ describe('V2 Wallet:', function () {
 
     it('should not pass recipients in sendMany when transaction type is fillNonce', async function () {
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
-      const recipients = [{
-        address: recipientAddress,
-        amount: 0,
-      }];
+      const recipients = [
+        {
+          address: recipientAddress,
+          amount: 0,
+        },
+      ];
       const sendManyParams = { recipients, type: 'fillNonce', isTss: true, nonce: '13' };
 
       try {
@@ -558,12 +577,20 @@ describe('V2 Wallet:', function () {
 
     it('should not pass receiveAddress in sendMany when TSS transaction type is transfer or transferToken', async function () {
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
-      const recipients = [{
-        address: recipientAddress,
-        amount: 0,
-      }];
+      const recipients = [
+        {
+          address: recipientAddress,
+          amount: 0,
+        },
+      ];
       const errorMessage = 'cannot use receive address for TSS transactions of type transfer';
-      const sendManyParamsReceiveAddressError = { receiveAddress: 'throw', recipients, type: 'transfer', isTss: true, nonce: '13' };
+      const sendManyParamsReceiveAddressError = {
+        receiveAddress: 'throw',
+        recipients,
+        type: 'transfer',
+        isTss: true,
+        nonce: '13',
+      };
       const sendManyParams = { recipients, type: 'transfer', isTss: true, nonce: '13' };
 
       try {
@@ -581,12 +608,20 @@ describe('V2 Wallet:', function () {
 
     it('should throw error early if password is wrong', async function () {
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
-      const recipients = [{
-        address: recipientAddress,
-        amount: 0,
-      }];
+      const recipients = [
+        {
+          address: recipientAddress,
+          amount: 0,
+        },
+      ];
       const errorMessage = `unable to decrypt keychain with the given wallet passphrase. Error: {"message":"password error - ccm: tag doesn't match"}`;
-      const sendManyParamsCorrectPassPhrase = { recipients, type: 'transfer', isTss: true, nonce: '13', walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE };
+      const sendManyParamsCorrectPassPhrase = {
+        recipients,
+        type: 'transfer',
+        isTss: true,
+        nonce: '13',
+        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE,
+      };
       const nockKeychain = nock(bgUrl)
         .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
         .times(2)
@@ -595,24 +630,31 @@ describe('V2 Wallet:', function () {
           pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
           ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
           source: 'user',
-          encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+          encryptedPrv:
+            '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
           coinSpecific: {},
         });
       try {
-        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase' } );
+        await ethWallet.sendMany({ ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase' });
       } catch (e) {
         e.code.should.equal('wallet_passphrase_incorrect');
         e.message.should.equal(errorMessage);
       }
       try {
-        const customSigningFunction = () => {return 'mock'; };
+        const customSigningFunction = () => {
+          return 'mock';
+        };
         // Should not validate passphrase if custom signing function is provided
-        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase', customSigningFunction } );
+        await ethWallet.sendMany({
+          ...sendManyParamsCorrectPassPhrase,
+          walletPassphrase: 'wrongPassphrase',
+          customSigningFunction,
+        });
       } catch (e) {
         e.message.should.not.equal(errorMessage);
       }
       try {
-        await ethWallet.sendMany( { ...sendManyParamsCorrectPassPhrase } );
+        await ethWallet.sendMany({ ...sendManyParamsCorrectPassPhrase });
       } catch (e) {
         e.message.should.not.equal(errorMessage);
       }
@@ -623,7 +665,7 @@ describe('V2 Wallet:', function () {
   describe('OFC Create Address', () => {
     let ofcWallet: Wallet;
     let nocks;
-    before(async function() {
+    before(async function () {
       const walletDataOfc = {
         id: '5b34252f1bf349930e3400b00000000',
         coin: 'ofc',
@@ -638,41 +680,36 @@ describe('V2 Wallet:', function () {
       ofcWallet = new Wallet(bitgo, bitgo.coin('ofc'), walletDataOfc);
     });
 
-    beforeEach((async function() {
+    beforeEach(async function () {
       nocks = [
-        nock(bgUrl)
-          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[0]}`)
-          .reply(200, {
-            id: ofcWallet.keyIds()[0],
-            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-            source: 'user',
-            encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/ofc/key/${ofcWallet.keyIds()[0]}`).reply(200, {
+          id: ofcWallet.keyIds()[0],
+          pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+          source: 'user',
+          encryptedPrv:
+            '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+          coinSpecific: {},
+        }),
 
-        nock(bgUrl)
-          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[1]}`)
-          .reply(200, {
-            id: ofcWallet.keyIds()[1],
-            pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
-            source: 'backup',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/ofc/key/${ofcWallet.keyIds()[1]}`).reply(200, {
+          id: ofcWallet.keyIds()[1],
+          pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+          source: 'backup',
+          coinSpecific: {},
+        }),
 
-        nock(bgUrl)
-          .get(`/api/v2/ofc/key/${ofcWallet.keyIds()[2]}`)
-          .reply(200, {
-            id: ofcWallet.keyIds()[2],
-            pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
-            source: 'bitgo',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/ofc/key/${ofcWallet.keyIds()[2]}`).reply(200, {
+          id: ofcWallet.keyIds()[2],
+          pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+          source: 'bitgo',
+          coinSpecific: {},
+        }),
       ];
-    }));
+    });
 
-    afterEach(async function() {
+    afterEach(async function () {
       nock.cleanAll();
-      nocks.forEach(scope => scope.isDone().should.be.true());
+      nocks.forEach((scope) => scope.isDone().should.be.true());
     });
 
     it('should correctly validate arguments to create address on OFC wallet', async function () {
@@ -682,7 +719,7 @@ describe('V2 Wallet:', function () {
       await ofcWallet.createAddress({ onToken: 42 }).should.be.rejectedWith('onToken has to be a string');
     });
 
-    it('address creation with valid onToken argument succeeds', async function() {
+    it('address creation with valid onToken argument succeeds', async function () {
       const scope = nock(bgUrl)
         .post(`/api/v2/ofc/wallet/${ofcWallet.id()}/address`, { onToken: 'ofctbtc' })
         .reply(200, {
@@ -697,7 +734,6 @@ describe('V2 Wallet:', function () {
       address.address.should.equal('generated address');
       scope.isDone().should.be.true();
     });
-
   });
 
   describe('TETH Create Address', () => {
@@ -715,45 +751,40 @@ describe('V2 Wallet:', function () {
       ],
     };
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
       nocks = [
-        nock(bgUrl)
-          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
-          .reply(200, {
-            id: '598f606cd8fc24710d2ebad89dce86c2',
-            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-            ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
-            source: 'user',
-            encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`).reply(200, {
+          id: '598f606cd8fc24710d2ebad89dce86c2',
+          pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+          ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+          source: 'user',
+          encryptedPrv:
+            '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+          coinSpecific: {},
+        }),
 
-        nock(bgUrl)
-          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[1]}`)
-          .reply(200, {
-            id: '598f606cc8e43aef09fcb785221d9dd2',
-            pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
-            ethAddress: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
-            source: 'backup',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[1]}`).reply(200, {
+          id: '598f606cc8e43aef09fcb785221d9dd2',
+          pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+          ethAddress: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+          source: 'backup',
+          coinSpecific: {},
+        }),
 
-        nock(bgUrl)
-          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[2]}`)
-          .reply(200, {
-            id: '5935d59cf660764331bafcade1855fd7',
-            pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
-            ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
-            source: 'bitgo',
-            coinSpecific: {},
-          }),
+        nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[2]}`).reply(200, {
+          id: '5935d59cf660764331bafcade1855fd7',
+          pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+          ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
+          source: 'bitgo',
+          coinSpecific: {},
+        }),
       ];
     });
 
-    afterEach(async function() {
+    afterEach(async function () {
       nock.cleanAll();
-      nocks.forEach(scope => scope.isDone().should.be.true());
+      nocks.forEach((scope) => scope.isDone().should.be.true());
     });
 
     it('should correctly validate arguments to create address', async function () {
@@ -858,7 +889,9 @@ describe('V2 Wallet:', function () {
             isTss: true,
           },
         });
-      await ethWallet.createAddress({ chain: 0, forwarderVersion: 3 }).should.be.rejectedWith(`invalid address: ${address}`);
+      await ethWallet
+        .createAddress({ chain: 0, forwarderVersion: 3 })
+        .should.be.rejectedWith(`invalid address: ${address}`);
     });
 
     it('address creation with forwarder version 2 succeeds', async function () {
@@ -912,7 +945,11 @@ describe('V2 Wallet:', function () {
             forwarderVersion: 1,
           },
         });
-      await ethWallet.createAddress({ chain: 0, forwarderVersion: 1 }).should.be.rejectedWith('address validation failure: expected 0x32a226cda14e352a47bf4b1658648d8037736f80 but got 0x8c13cd0bb198858f628d5631ba4b2293fc08df49');
+      await ethWallet
+        .createAddress({ chain: 0, forwarderVersion: 1 })
+        .should.be.rejectedWith(
+          'address validation failure: expected 0x32a226cda14e352a47bf4b1658648d8037736f80 but got 0x8c13cd0bb198858f628d5631ba4b2293fc08df49'
+        );
       scope.isDone().should.be.true();
     });
 
@@ -939,7 +976,9 @@ describe('V2 Wallet:', function () {
             forwarderVersion: 1,
           },
         });
-      await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, baseAddress: 'asgf' }).should.be.rejectedWith('invalid base address');
+      await ethWallet
+        .createAddress({ chain: 0, forwarderVersion: 1, baseAddress: 'asgf' })
+        .should.be.rejectedWith('invalid base address');
       scope.isDone().should.be.true();
     });
 
@@ -967,7 +1006,11 @@ describe('V2 Wallet:', function () {
           },
         });
       // incorrect address is generated while validating due to incorrect baseAddress
-      await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, baseAddress: '0x8c13cd0bb198858f628d5631ba4b2293fc08df49' }).should.be.rejectedWith('address validation failure: expected 0x36748926007790e7ee416c6485b32e00cfb177a3 but got 0x32a226cda14e352a47bf4b1658648d8037736f80');
+      await ethWallet
+        .createAddress({ chain: 0, forwarderVersion: 1, baseAddress: '0x8c13cd0bb198858f628d5631ba4b2293fc08df49' })
+        .should.be.rejectedWith(
+          'address validation failure: expected 0x36748926007790e7ee416c6485b32e00cfb177a3 but got 0x32a226cda14e352a47bf4b1658648d8037736f80'
+        );
       scope.isDone().should.be.true();
     });
 
@@ -994,7 +1037,9 @@ describe('V2 Wallet:', function () {
             forwarderVersion: 1,
           },
         });
-      await ethWallet.createAddress({ chain: 0, forwarderVersion: 0, allowSkipVerifyAddress: false }).should.be.rejectedWith('address verification skipped for count = 1');
+      await ethWallet
+        .createAddress({ chain: 0, forwarderVersion: 0, allowSkipVerifyAddress: false })
+        .should.be.rejectedWith('address verification skipped for count = 1');
       scope.isDone().should.be.true();
     });
 
@@ -1021,11 +1066,15 @@ describe('V2 Wallet:', function () {
             forwarderVersion: 0,
           },
         });
-      const newAddress = await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, allowSkipVerifyAddress: false });
+      const newAddress = await ethWallet.createAddress({
+        chain: 0,
+        forwarderVersion: 1,
+        allowSkipVerifyAddress: false,
+      });
       newAddress.index.should.equal(3179);
       scope.isDone().should.be.true();
     });
-  }) ;
+  });
 
   describe('Hedera tests', () => {
     let hbarWallet: Wallet;
@@ -1049,9 +1098,11 @@ describe('V2 Wallet:', function () {
 
     it('Should build token enablement transactions', async () => {
       const params = {
-        enableTokens: [{
-          name: 'thbar:usdc',
-        }],
+        enableTokens: [
+          {
+            name: 'thbar:usdc',
+          },
+        ],
       };
       const txRequestNock = nock(bgUrl)
         .post(`/api/v2/${hbarWallet.coin()}/wallet/${hbarWallet.id()}/tx/build`)
@@ -1096,38 +1147,32 @@ describe('V2 Wallet:', function () {
 
     before(async function () {
       solWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
-      nock(bgUrl)
-        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[0]}`)
-        .times(3)
-        .reply(200, {
-          id: '598f606cd8fc24710d2ebad89dce86c2',
-          pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
-          source: 'user',
-          encryptedPrv: '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
-          coinSpecific: {},
-        });
+      nock(bgUrl).get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[0]}`).times(3).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        source: 'user',
+        encryptedPrv:
+          '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
+        coinSpecific: {},
+      });
 
-      nock(bgUrl)
-        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[1]}`)
-        .times(2)
-        .reply(200, {
-          id: '598f606cc8e43aef09fcb785221d9dd2',
-          pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
-          encryptedPrv: '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
-          source: 'backup',
-          coinSpecific: {},
-        });
+      nock(bgUrl).get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[1]}`).times(2).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
+        encryptedPrv:
+          '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
+        source: 'backup',
+        coinSpecific: {},
+      });
 
-      nock(bgUrl)
-        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[2]}`)
-        .times(2)
-        .reply(200, {
-          id: '5935d59cf660764331bafcade1855fd7',
-          pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
-          encryptedPrv: '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
-          source: 'bitgo',
-          coinSpecific: {},
-        });
+      nock(bgUrl).get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[2]}`).times(2).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
+        encryptedPrv:
+          '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
+        source: 'bitgo',
+        coinSpecific: {},
+      });
     });
 
     after(async function () {
@@ -1140,7 +1185,8 @@ describe('V2 Wallet:', function () {
         const txParams = {
           prebuildTx: {
             walletId: walletData.id,
-            txHex: 'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE9MWWV2ct01mg5Gm4EqcJ9SAn2XuD+FuAHcHFTkc1Tgut3DgTsiSgTQ0dmzj5JJg6qYTpn8FxOYPFCFTMoZi46gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0Qc+q0Zg6OOpV8eCDVLfYziox7YBA7+QPLX4IRhDCSKwICAgABDAIAAACghgEAAAAAAAMAFVRlc3QgaW50ZWdyYXRpb24gbWVtbw==',
+            txHex:
+              'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE9MWWV2ct01mg5Gm4EqcJ9SAn2XuD+FuAHcHFTkc1Tgut3DgTsiSgTQ0dmzj5JJg6qYTpn8FxOYPFCFTMoZi46gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0Qc+q0Zg6OOpV8eCDVLfYziox7YBA7+QPLX4IRhDCSKwICAgABDAIAAACghgEAAAAAAAMAFVRlc3QgaW50ZWdyYXRpb24gbWVtbw==',
             txInfo: {
               feePayer: 'HUVE5NfJyGfU1djZsVLA6fxSTS1E2iRqcTRVNC9K2z7c',
               lamportsPerSignature: 5000,
@@ -1202,12 +1248,14 @@ describe('V2 Wallet:', function () {
           bodyParams.intent.enableTokens.should.deepEqual(params.enableTokens);
           return {
             apiVersion: 'full',
-            transactions: [{
-              unsignedTx: {
-                serializedTxHex: 'fake transaction',
-                feeInfo: 'fake fee info',
+            transactions: [
+              {
+                unsignedTx: {
+                  serializedTxHex: 'fake transaction',
+                  feeInfo: 'fake fee info',
+                },
               },
-            }],
+            ],
           };
         });
       await solWallet.buildTokenEnablements(params);
@@ -1217,52 +1265,54 @@ describe('V2 Wallet:', function () {
 
   describe('Accelerate Transaction', function () {
     it('fails if cpfpTxIds is not passed', async function () {
-      await wallet.accelerateTransaction({})
-        .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
+      await wallet.accelerateTransaction({}).should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     });
 
     it('fails if cpfpTxIds is not an array', async function () {
       // @ts-expect-error checking type mismatch
-      await wallet.accelerateTransaction({ cpfpTxIds: {} })
-        .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
+      await wallet.accelerateTransaction({ cpfpTxIds: {} }).should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     });
 
     it('fails if cpfpTxIds is not of length 1', async function () {
-      await wallet.accelerateTransaction({ cpfpTxIds: [] })
-        .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] })
+      await wallet.accelerateTransaction({ cpfpTxIds: [] }).should.be.rejectedWith({ code: 'cpfptxids_not_array' });
+      await wallet
+        .accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] })
         .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     });
 
     it('fails if cpfpFeeRate is not passed and neither is noCpfpFeeRate', async function () {
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'] })
-        .should.be.rejectedWith({ code: 'cpfpfeerate_not_set' });
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'] }).should.be.rejectedWith({ code: 'cpfpfeerate_not_set' });
     });
 
     it('fails if cpfpFeeRate is not an integer', async function () {
-      // @ts-expect-error checking type mismatch
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
         .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     });
 
     it('fails if cpfpFeeRate is negative', async function () {
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 })
+      await wallet
+        .accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 })
         .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     });
 
     it('fails if maxFee is not passed and neither is noMaxFee', async function () {
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
+      await wallet
+        .accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
         .should.be.rejectedWith({ code: 'maxfee_not_set' });
     });
 
     it('fails if maxFee is not an integer', async function () {
-      // @ts-expect-error checking type mismatch
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
+      await wallet
+        // @ts-expect-error checking type mismatch
+        .accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     });
 
     it('fails if maxFee is negative', async function () {
-      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
+      await wallet
+        .accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     });
 
@@ -1277,9 +1327,7 @@ describe('V2 Wallet:', function () {
       const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
 
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
-      nock(bgUrl)
-        .post(path, _.matches(prebuildReturn))
-        .reply(200);
+      nock(bgUrl).post(path, _.matches(prebuildReturn)).reply(200);
 
       await wallet.accelerateTransaction(params);
 
@@ -1300,13 +1348,10 @@ describe('V2 Wallet:', function () {
       const walletData = {
         id: '5b34252f1bf349930e34020a',
         coin: 'tbtc',
-        keys: [
-          '5b3424f91bf349930e340175',
-        ],
+        keys: ['5b3424f91bf349930e340175'],
       };
       wallet = new Wallet(bitgo, basecoin, walletData);
     });
-
 
     it('should pass maxNumInputsToUse parameter when calling fanout unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
@@ -1327,10 +1372,12 @@ describe('V2 Wallet:', function () {
 
   describe('maxFeeRate verification', function () {
     const address = '5b34252f1bf349930e34020a';
-    const recipients = [{
-      address,
-      amount: 0,
-    }];
+    const recipients = [
+      {
+        address,
+        amount: 0,
+      },
+    ];
     const maxFeeRate = 10000;
     let basecoin;
     let wallet;
@@ -1340,9 +1387,7 @@ describe('V2 Wallet:', function () {
       const walletData = {
         id: '5b34252f1bf349930e34020a',
         coin: 'tbtc',
-        keys: [
-          '5b3424f91bf349930e340175',
-        ],
+        keys: ['5b3424f91bf349930e340175'],
       };
       wallet = new Wallet(bitgo, basecoin, walletData);
     });
@@ -1369,9 +1414,7 @@ describe('V2 Wallet:', function () {
         .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
-      nock(bgUrl)
-        .get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
-        .reply(200);
+      nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200);
 
       try {
         await wallet.consolidateUnspents({ recipients, maxFeeRate });
@@ -1385,15 +1428,11 @@ describe('V2 Wallet:', function () {
 
     it('should only build tx (not sign/send) while consolidating unspents', async function () {
       const toBeUsedNock = nock(bgUrl);
-      toBeUsedNock.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
-        .reply(200);
+      toBeUsedNock.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`).reply(200);
 
       const unusedNocks = nock(bgUrl);
-      unusedNocks.get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
-        .reply(200);
-      unusedNocks
-        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`)
-        .reply(200);
+      unusedNocks.get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200);
+      unusedNocks.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`).reply(200);
 
       await wallet.consolidateUnspents({ recipients }, ManageUnspentsOptions.BUILD_ONLY);
 
@@ -1498,7 +1537,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: { },
+        buildParams: {},
       });
       scope.done();
       blockHeightStub.restore();
@@ -1507,10 +1546,7 @@ describe('V2 Wallet:', function () {
 
     it('should not pass the offlineVerification query param if passed a falsey value', async function () {
       const params = { offlineVerification: false };
-      nock(bgUrl)
-        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-        .query({})
-        .reply(200, {});
+      nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).query({}).reply(200, {});
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
@@ -1519,7 +1555,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: { },
+        buildParams: {},
       });
       blockHeightStub.restore();
       postProcessStub.restore();
@@ -1527,10 +1563,7 @@ describe('V2 Wallet:', function () {
 
     it('prebuild should call build and getLatestBlockHeight for utxo coins', async function () {
       const params = {};
-      nock(bgUrl)
-        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
-        .query(params)
-        .reply(200, {});
+      nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).query(params).reply(200, {});
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
@@ -1539,7 +1572,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: { },
+        buildParams: {},
       });
       blockHeightStub.restore();
       postProcessStub.restore();
@@ -1551,9 +1584,7 @@ describe('V2 Wallet:', function () {
         const walletData = {
           id: '5b34252f1bf349930e34021a',
           coin,
-          keys: [
-            '5b3424f91bf349930e340175',
-          ],
+          keys: ['5b3424f91bf349930e340175'],
         };
         const accountWallet = new Wallet(bitgo, accountcoin, walletData);
         const params = {};
@@ -1565,16 +1596,18 @@ describe('V2 Wallet:', function () {
         await accountWallet.prebuildTransaction(params);
         postProcessStub.should.have.been.calledOnceWith({
           wallet: accountWallet,
-          buildParams: { },
+          buildParams: {},
         });
         postProcessStub.restore();
       });
     });
 
     it('should have isBatch = true in the txPrebuild if txParams has more than one recipient', async function () {
-
       const txParams = {
-        recipients: [{ amount: '1000000000000000', address: address1 }, { amount: '1000000000000000', address: address2 }],
+        recipients: [
+          { amount: '1000000000000000', address: address1 },
+          { amount: '1000000000000000', address: address2 },
+        ],
         walletContractAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
         walletPassphrase: 'moon',
       };
@@ -1582,7 +1615,10 @@ describe('V2 Wallet:', function () {
       const totalAmount = '2000000000000000';
 
       nock(bgUrl)
-        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, _.matches({ recipients: txParams.recipients }))
+        .post(
+          `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`,
+          _.matches({ recipients: txParams.recipients })
+        )
         .reply(200, {
           recipients: [
             {
@@ -1600,12 +1636,13 @@ describe('V2 Wallet:', function () {
 
       const txPrebuild = await ethWallet.prebuildTransaction(txParams);
       txPrebuild.isBatch.should.equal(true);
-      txPrebuild.recipients[0].address.should.equal((bitgo.coin('teth') as any).staticsCoin.network.batcherContractAddress);
+      txPrebuild.recipients[0].address.should.equal(
+        (bitgo.coin('teth') as any).staticsCoin.network.batcherContractAddress
+      );
       txPrebuild.recipients[0].amount.should.equal(totalAmount);
     });
 
     it('should have isBatch = false and hopTransaction field should not be there in the txPrebuild  for normal eth tx', async function () {
-
       const txParams = {
         recipients: [{ amount: '1000000000000000', address: address1 }],
         walletContractAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
@@ -1613,7 +1650,10 @@ describe('V2 Wallet:', function () {
       };
 
       nock(bgUrl)
-        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, _.matches({ recipients: txParams.recipients }))
+        .post(
+          `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`,
+          _.matches({ recipients: txParams.recipients })
+        )
         .reply(200, {
           recipients: [
             {
@@ -1639,10 +1679,12 @@ describe('V2 Wallet:', function () {
       const reservation = {
         expireTime: '2029-08-12',
       };
-      const recipients = [{
-        address: 'aaa',
-        amount: '1000',
-      }];
+      const recipients = [
+        {
+          address: 'aaa',
+          amount: '1000',
+        },
+      ];
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
       const response = nock(bgUrl)
         .post(path, _.matches({ recipients, reservation })) // use _.matches to do a partial match on request body object instead of strict matching
@@ -1696,7 +1738,7 @@ describe('V2 Wallet:', function () {
       };
 
       // The actual api request will only send strings, but the SDK function expects numbers for some values
-      const apiParams = _.mapValues(optionalParams, param => String(param));
+      const apiParams = _.mapValues(optionalParams, (param) => String(param));
 
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
       const response = nock(bgUrl)
@@ -1723,9 +1765,7 @@ describe('V2 Wallet:', function () {
       const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
 
-      const getSharingKeyNock = nock(bgUrl)
-        .post('/api/v1/user/sharingkey', { email })
-        .reply(200, { userId });
+      const getSharingKeyNock = nock(bgUrl).post('/api/v1/user/sharingkey', { email }).reply(200, { userId });
 
       const getKeyNock = nock(bgUrl)
         .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
@@ -1770,15 +1810,13 @@ describe('V2 Wallet:', function () {
           coinSpecific: {},
         });
 
-      const stub = sinon.stub(wallet, 'createShare').callsFake(
-        async (options) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          options!.keychain!.pub!.should.not.be.undefined();
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          options!.keychain!.pub!.should.equal(pub);
-          return undefined;
-        }
-      );
+      const stub = sinon.stub(wallet, 'createShare').callsFake(async (options) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        options!.keychain!.pub!.should.not.be.undefined();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        options!.keychain!.pub!.should.equal(pub);
+        return undefined;
+      });
       await wallet.shareWallet({ email, permissions, walletPassphrase });
 
       stub.calledOnce.should.be.true();
@@ -1790,10 +1828,7 @@ describe('V2 Wallet:', function () {
   describe('Wallet Freezing', function () {
     it('should freeze wallet for specified duration in seconds', async function () {
       const params = { duration: 60 };
-      const scope =
-        nock(bgUrl)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/freeze`, params)
-          .reply(200, {});
+      const scope = nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/freeze`, params).reply(200, {});
       await wallet.freeze(params);
       scope.isDone().should.be.True();
     });
@@ -1883,20 +1918,22 @@ describe('V2 Wallet:', function () {
       version: 1,
       policiesChecked: false,
       walletType: 'hot',
-      transactions: [{
-        state: 'pendingSignature',
-        unsignedTx: {
-          serializedTxHex: 'ababcdcd',
-          signableHex: 'deadbeef',
-          feeInfo: {
-            fee: 5000,
-            feeString: '5000',
+      transactions: [
+        {
+          state: 'pendingSignature',
+          unsignedTx: {
+            serializedTxHex: 'ababcdcd',
+            signableHex: 'deadbeef',
+            feeInfo: {
+              fee: 5000,
+              feeString: '5000',
+            },
+            derivationPath: 'm/0',
           },
-          derivationPath: 'm/0',
+          signatureShares: [],
+          commitmentShares: [],
         },
-        signatureShares: [],
-        commitmentShares: [],
-      }],
+      ],
       unsignedTxs: [],
       apiVersion: 'full',
     };
@@ -1907,10 +1944,12 @@ describe('V2 Wallet:', function () {
 
     describe('Transaction prebuilds', function () {
       it('should build a single recipient transfer transaction', async function () {
-        const recipients = [{
-          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-          amount: '1000',
-        }];
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
@@ -1944,13 +1983,16 @@ describe('V2 Wallet:', function () {
       });
 
       it('should build a multiple recipient transfer transaction with memo', async function () {
-        const recipients = [{
-          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-          amount: '1000',
-        }, {
-          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-          amount: '2000',
-        }];
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '2000',
+          },
+        ];
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
@@ -2045,49 +2087,61 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail for non-transfer transaction types', async function () {
-        await tssWallet.prebuildTransaction({
-          reqId,
-          recipients: [{
-            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-            amount: '1000',
-          }],
-          type: 'stake',
-        }).should.be.rejectedWith('transaction type not supported: stake');
+        await tssWallet
+          .prebuildTransaction({
+            reqId,
+            recipients: [
+              {
+                address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                amount: '1000',
+              },
+            ],
+            type: 'stake',
+          })
+          .should.be.rejectedWith('transaction type not supported: stake');
       });
 
       it('should fail for full api version compatibility', async function () {
-        await custodialTssWallet.prebuildTransaction({
-          reqId,
-          apiVersion: 'lite',
-          recipients: [{
-            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-            amount: '1000',
-          }],
-          type: 'transfer',
-        }).should.be.rejectedWith(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
+        await custodialTssWallet
+          .prebuildTransaction({
+            reqId,
+            apiVersion: 'lite',
+            recipients: [
+              {
+                address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                amount: '1000',
+              },
+            ],
+            type: 'transfer',
+          })
+          .should.be.rejectedWith(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
       });
 
       it('should build a single recipient transfer transaction for full', async function () {
-        const recipients = [{
-          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-          amount: '1000',
-        }];
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFull);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
-        prebuildTxWithIntent.calledOnceWithExactly({
-          reqId,
-          recipients,
-          intentType: 'payment',
-        }, 'full');
+        prebuildTxWithIntent.calledOnceWithExactly(
+          {
+            reqId,
+            recipients,
+            intentType: 'payment',
+          },
+          'full'
+        );
 
         const txPrebuild = await custodialTssWallet.prebuildTransaction({
           reqId,
           recipients,
           type: 'transfer',
         });
-
 
         txPrebuild.should.deepEqual({
           walletId: tssWallet.id(),
@@ -2106,10 +2160,12 @@ describe('V2 Wallet:', function () {
       });
 
       it('should call prebuildTxWithIntent with the correct params for eth transfers', async function () {
-        const recipients = [{
-          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
-          amount: '1000',
-        }];
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+          },
+        ];
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2135,11 +2191,13 @@ describe('V2 Wallet:', function () {
       });
 
       it('should call prebuildTxWithIntent with the correct params for eth transfertokens', async function () {
-        const recipients = [{
-          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
-          amount: '1000',
-          tokenName: 'gterc18dp',
-        }];
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+            tokenName: 'gterc18dp',
+          },
+        ];
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2167,11 +2225,13 @@ describe('V2 Wallet:', function () {
       });
 
       it('should call prebuildTxWithIntent with the correct params for eth accelerations', async function () {
-        const recipients = [{
-          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
-          amount: '1000',
-          tokenName: 'gterc18dp',
-        }];
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+            tokenName: 'gterc18dp',
+          },
+        ];
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2201,11 +2261,13 @@ describe('V2 Wallet:', function () {
       });
 
       it('should call prebuildTxWithIntent with the correct params for eth accelerations for receive address', async function () {
-        const recipients = [{
-          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
-          amount: '1000',
-          tokenName: 'gterc18dp',
-        }];
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+            tokenName: 'gterc18dp',
+          },
+        ];
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2301,10 +2363,12 @@ describe('V2 Wallet:', function () {
       });
 
       it('should call prebuildTxWithIntent with the correct feeOptions when passing using the legacy format', async function () {
-        const recipients = [{
-          address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
-          amount: '1000',
-        }];
+        const recipients = [
+          {
+            address: '0xAB100912e133AA06cEB921459aaDdBd62381F5A3',
+            amount: '1000',
+          },
+        ];
 
         const expectedFeeOptions = {
           maxFeePerGas: 3000000000,
@@ -2448,18 +2512,23 @@ describe('V2 Wallet:', function () {
       });
 
       it('should build a single recipient transfer transaction providing apiVersion parameter as "full" ', async function () {
-        const recipients = [{
-          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
-          amount: '1000',
-        }];
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFull);
-        prebuildTxWithIntent.calledOnceWithExactly({
-          reqId,
-          recipients,
-          intentType: 'payment',
-        }, 'full');
+        prebuildTxWithIntent.calledOnceWithExactly(
+          {
+            reqId,
+            recipients,
+            intentType: 'payment',
+          },
+          'full'
+        );
 
         const txPrebuild = await custodialTssWallet.prebuildTransaction({
           reqId,
@@ -2509,18 +2578,19 @@ describe('V2 Wallet:', function () {
         });
       });
 
-
       it('should fail to sign transaction without txRequestId', async function () {
         const txPrebuild = {
           walletId: tssWallet.id(),
           wallet: tssWallet,
           txHex: 'ababcdcd',
         };
-        await tssWallet.signTransaction({
-          reqId,
-          txPrebuild,
-          prv: 'sercretKey',
-        }).should.be.rejectedWith('txRequestId required to sign transactions with TSS');
+        await tssWallet
+          .signTransaction({
+            reqId,
+            txPrebuild,
+            prv: 'sercretKey',
+          })
+          .should.be.rejectedWith('txRequestId required to sign transactions with TSS');
       });
     });
 
@@ -2542,12 +2612,14 @@ describe('V2 Wallet:', function () {
         walletId: 'walletId',
         unsignedTxs: [],
         unsignedMessages: [],
-        messages: [{
-          state: 'signed',
-          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
-          combineSigShare: '0:rrr:sss:3',
-          txHash,
-        }],
+        messages: [
+          {
+            state: 'signed',
+            signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+            combineSigShare: '0:rrr:sss:3',
+            txHash,
+          },
+        ],
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
@@ -2557,7 +2629,9 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForMessageSigning);
-        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+        sandbox
+          .stub(Keychains.prototype, 'getKeysForSigning')
+          .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
         sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 
@@ -2567,16 +2641,16 @@ describe('V2 Wallet:', function () {
       });
 
       it('should throw error for unsupported coins', async function () {
-
-        await tssWallet.signMessage({
-          reqId,
-          message: { messageRaw },
-          prv: 'secretKey',
-        }).should.be.rejectedWith('Message signing not supported for Testnet Solana');
+        await tssWallet
+          .signMessage({
+            reqId,
+            message: { messageRaw },
+            prv: 'secretKey',
+          })
+          .should.be.rejectedWith('Message signing not supported for Testnet Solana');
       });
 
       messageSigningCoins.map((coinName) => {
-
         const expectedWithCoinField = { ...expected, coin: 'teth' };
 
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
@@ -2585,7 +2659,11 @@ describe('V2 Wallet:', function () {
         it('should sign message', async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
           nock(bgUrl)
-            .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForMessageSigning.txRequestId}&latest=true`)
+            .get(
+              `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+                txRequestForMessageSigning.txRequestId
+              }&latest=true`
+            )
             .reply(200, { txRequests: [txRequestForMessageSigning] });
 
           const signMessage = await tssEthWallet.signMessage({
@@ -2595,14 +2673,14 @@ describe('V2 Wallet:', function () {
           });
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
+          actualArg.message.messageEncoded.should.equal(
+            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+          );
         });
 
         it('should sign message when custodianMessageId is provided', async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
-          nock(bgUrl)
-            .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
-            .reply(200, txRequestForMessageSigning);
+          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForMessageSigning);
 
           const signMessage = await tssEthWallet.signMessage({
             custodianMessageId: 'unittest',
@@ -2612,14 +2690,14 @@ describe('V2 Wallet:', function () {
           });
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
+          actualArg.message.messageEncoded.should.equal(
+            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+          );
         });
 
         it('should sign message when txRequestId not provided', async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
-          nock(bgUrl)
-            .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
-            .reply(200, txRequestForMessageSigning);
+          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForMessageSigning);
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
@@ -2628,22 +2706,26 @@ describe('V2 Wallet:', function () {
           });
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`);
+          actualArg.message.messageEncoded.should.equal(
+            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+          );
         });
 
         it('should fail to sign message with empty prv', async function () {
-          await tssEthWallet.signMessage({
-            reqId,
-            message: { messageRaw, txRequestId },
-            prv: '',
-          }).should.be.rejectedWith('keychain does not have property encryptedPrv');
+          await tssEthWallet
+            .signMessage({
+              reqId,
+              message: { messageRaw, txRequestId },
+              prv: '',
+            })
+            .should.be.rejectedWith('keychain does not have property encryptedPrv');
         });
       });
-
     });
 
     describe('Typed Data Signing', function () {
-      const txHash = '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
+      const txHash =
+        '1901493fbf2ae1c27c3ced26a89070c6ab5d3fbf37ed778de9378e7703b7d1f116b3883077a61826129b98b622e54fc68c5008d1b1c16552e1eda6916f870d719220';
       const txRequestForTypedDataSigning: TxRequest = {
         txRequestId: reqId.toString(),
         transactions: [],
@@ -2660,12 +2742,14 @@ describe('V2 Wallet:', function () {
         walletId: 'walletId',
         unsignedTxs: [],
         unsignedMessages: [],
-        messages: [{
-          state: 'signed',
-          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
-          combineSigShare: '0:rrr:sss:3',
-          txHash,
-        }],
+        messages: [
+          {
+            state: 'signed',
+            signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+            combineSigShare: '0:rrr:sss:3',
+            txHash,
+          },
+        ],
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
@@ -2686,18 +2770,22 @@ describe('V2 Wallet:', function () {
           {
             name: 'verifyingContract',
             type: 'address',
-          }],
-        Message: [{ name: 'data', type: 'string' }] };
+          },
+        ],
+        Message: [{ name: 'data', type: 'string' }],
+      };
       const typedMessage: TypedMessage<MessageTypes> = {
         domain: {
           name: 'bitgo',
           version: '1',
           chainId: 1,
           verifyingContract: '0x0000000000000000000000000000000000000000',
-        }, primaryType: 'Message', types,
+        },
+        primaryType: 'Message',
+        types,
         message: { data: 'bitgo says hello!' },
       };
-      const typedDataBase:TypedData = {
+      const typedDataBase: TypedData = {
         typedDataRaw: JSON.stringify(typedMessage),
         version: SignTypedDataVersion.V3,
       };
@@ -2705,7 +2793,9 @@ describe('V2 Wallet:', function () {
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
         signTxRequestForMessage.resolves(txRequestForTypedDataSigning);
-        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+        sandbox
+          .stub(Keychains.prototype, 'getKeysForSigning')
+          .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
         sinon.stub(Ecdsa.prototype, 'verify').resolves(true);
       });
 
@@ -2715,27 +2805,33 @@ describe('V2 Wallet:', function () {
       });
 
       it('should throw error for unsupported coins', async function () {
-
-        await tssWallet.signTypedData({
-          reqId,
-          typedData: typedDataBase,
-          prv: 'secretKey',
-        }).should.be.rejectedWith('Sign typed data not supported for Testnet Solana');
+        await tssWallet
+          .signTypedData({
+            reqId,
+            typedData: typedDataBase,
+            prv: 'secretKey',
+          })
+          .should.be.rejectedWith('Sign typed data not supported for Testnet Solana');
       });
 
       it('should throw error for sign typed data V1', async function () {
         const typedData = { ...typedDataBase };
         typedData.version = SignTypedDataVersion.V1;
         nock(bgUrl)
-          .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+          .get(
+            `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+              txRequestForTypedDataSigning.txRequestId
+            }&latest=true`
+          )
           .reply(200, { txRequests: [txRequestForTypedDataSigning] });
 
-        await tssEthWallet.signTypedData({
-          reqId,
-          typedData,
-          prv: 'secretKey',
-        }).should.be.rejectedWith('SignTypedData v1 is not supported due to security concerns');
-
+        await tssEthWallet
+          .signTypedData({
+            reqId,
+            typedData,
+            prv: 'secretKey',
+          })
+          .should.be.rejectedWith('SignTypedData v1 is not supported due to security concerns');
       });
       messageSigningCoins.map((coinName) => {
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
@@ -2743,14 +2839,18 @@ describe('V2 Wallet:', function () {
         typedDataBase.txRequestId = txRequestId;
         const expected: SignedMessage = { txRequestId, messageRaw: JSON.stringify(typedMessage), txHash, coin: 'teth' };
 
-        describe(`sign typed data V3 for ${coinName}`, async function() {
+        describe(`sign typed data V3 for ${coinName}`, async function () {
           const typedData = { ...typedDataBase };
           typedData.version = SignTypedDataVersion.V3;
 
           it('should sign typed data V3', async function () {
             const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
             nock(bgUrl)
-              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .get(
+                `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+                  txRequestForTypedDataSigning.txRequestId
+                }&latest=true`
+              )
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
 
             const signedTypedData = await tssEthWallet.signTypedData({
@@ -2767,7 +2867,11 @@ describe('V2 Wallet:', function () {
             typedData.txRequestId = txRequestId;
             const signTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
             nock(bgUrl)
-              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .get(
+                `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+                  txRequestForTypedDataSigning.txRequestId
+                }&latest=true`
+              )
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
 
             const signedTypedData = await tssEthWallet.signTypedData({
@@ -2782,19 +2886,19 @@ describe('V2 Wallet:', function () {
           });
 
           it('should fail to sign typed data V3 with empty prv', async function () {
-            await tssEthWallet.signTypedData({
-              reqId,
-              typedData: typedDataBase,
-              prv: '',
-            }).should.be.rejectedWith('keychain does not have property encryptedPrv');
+            await tssEthWallet
+              .signTypedData({
+                reqId,
+                typedData: typedDataBase,
+                prv: '',
+              })
+              .should.be.rejectedWith('keychain does not have property encryptedPrv');
           });
 
           it('should sign typed data V3 when txRequestId not provided ', async function () {
             delete typedData.txRequestId;
             const signedTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
-            nock(bgUrl)
-              .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
-              .reply(200, txRequestForTypedDataSigning);
+            nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForTypedDataSigning);
 
             const signedTypedData = await tssEthWallet.signTypedData({
               reqId,
@@ -2807,13 +2911,17 @@ describe('V2 Wallet:', function () {
           });
         });
 
-        describe(`sign typed data V4 for ${coinName}`, async function() {
+        describe(`sign typed data V4 for ${coinName}`, async function () {
           const typedData = { ...typedDataBase };
           typedData.version = SignTypedDataVersion.V4;
           it('should sign typed data V4', async function () {
             typedData.txRequestId = txRequestId;
             nock(bgUrl)
-              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .get(
+                `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+                  txRequestForTypedDataSigning.txRequestId
+                }&latest=true`
+              )
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
 
             const signedTypedData = await tssEthWallet.signTypedData({
@@ -2827,7 +2935,11 @@ describe('V2 Wallet:', function () {
           it('should sign typed data V4 when custodianMessageID is provided', async function () {
             typedData.txRequestId = txRequestId;
             nock(bgUrl)
-              .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${txRequestForTypedDataSigning.txRequestId}&latest=true`)
+              .get(
+                `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${
+                  txRequestForTypedDataSigning.txRequestId
+                }&latest=true`
+              )
               .reply(200, { txRequests: [txRequestForTypedDataSigning] });
 
             const signedTypedData = await tssEthWallet.signTypedData({
@@ -2840,19 +2952,19 @@ describe('V2 Wallet:', function () {
           });
 
           it('should fail to sign typed data V4 with empty prv', async function () {
-            await tssEthWallet.signTypedData({
-              reqId,
-              typedData: typedDataBase,
-              prv: '',
-            }).should.be.rejectedWith('keychain does not have property encryptedPrv');
+            await tssEthWallet
+              .signTypedData({
+                reqId,
+                typedData: typedDataBase,
+                prv: '',
+              })
+              .should.be.rejectedWith('keychain does not have property encryptedPrv');
           });
 
           it('should sign typed data V4 when txRequestId not provided ', async function () {
             delete typedData.txRequestId;
             const signedTypedDataTssSpy = sinon.spy(tssEthWallet, 'signTypedDataTss' as any);
-            nock(bgUrl)
-              .post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`)
-              .reply(200, txRequestForTypedDataSigning);
+            nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForTypedDataSigning);
 
             const signedTypedData = await tssEthWallet.signTypedData({
               reqId,
@@ -2870,10 +2982,12 @@ describe('V2 Wallet:', function () {
     describe('Send Many', function () {
       const sendManyInput = {
         type: 'transfer',
-        recipients: [{
-          address: 'address',
-          amount: '1000',
-        }],
+        recipients: [
+          {
+            address: 'address',
+            amount: '1000',
+          },
+        ],
       };
 
       it('should send many', async function () {
@@ -2949,28 +3063,34 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail when txRequestId and txHex are both provided', async function () {
-        await tssWallet.submitTransaction({
-          txRequestId: 'id',
-          txHex: 'beef',
-        }).should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
+        await tssWallet
+          .submitTransaction({
+            txRequestId: 'id',
+            txHex: 'beef',
+          })
+          .should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
       });
 
       it('should fail when txRequestId and halfSigned are both provided', async function () {
-        await tssWallet.submitTransaction({
-          txRequestId: 'id',
-          halfSigned: {
-            txHex: 'beef',
-          },
-        }).should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
+        await tssWallet
+          .submitTransaction({
+            txRequestId: 'id',
+            halfSigned: {
+              txHex: 'beef',
+            },
+          })
+          .should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
       });
 
       it('should fail when txHex and halfSigned are both provided', async function () {
-        await tssWallet.submitTransaction({
-          txHex: 'beef',
-          halfSigned: {
+        await tssWallet
+          .submitTransaction({
             txHex: 'beef',
-          },
-        }).should.be.rejectedWith('must supply either txHex or halfSigned, but not both');
+            halfSigned: {
+              txHex: 'beef',
+            },
+          })
+          .should.be.rejectedWith('must supply either txHex or halfSigned, but not both');
       });
     });
 
@@ -3000,12 +3120,15 @@ describe('V2 Wallet:', function () {
         const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequestFullTokenTransfer);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke prebuildTransaction
-        prebuildTxWithIntent.calledOnceWithExactly({
-          reqId,
-          recipients,
-          intentType: 'transferToken',
-          feeOptions,
-        }, 'full');
+        prebuildTxWithIntent.calledOnceWithExactly(
+          {
+            reqId,
+            recipients,
+            intentType: 'transferToken',
+            feeOptions,
+          },
+          'full'
+        );
 
         const txPrebuild = await tssPolygonWallet.prebuildTransaction({
           isTss: true,
@@ -3048,7 +3171,10 @@ describe('V2 Wallet:', function () {
         intent.recipients![0].tokenData!.should.have.property('tokenQuantity', recipients[0].tokenData.tokenQuantity);
         intent.recipients![0].tokenData!.should.have.property('tokenType', recipients[0].tokenData.tokenType);
         intent.recipients![0].tokenData!.should.have.property('tokenName', recipients[0].tokenData.tokenName);
-        intent.recipients![0].tokenData!.should.have.property('tokenContractAddress', recipients[0].tokenData.tokenContractAddress);
+        intent.recipients![0].tokenData!.should.have.property(
+          'tokenContractAddress',
+          recipients[0].tokenData.tokenContractAddress
+        );
         intent.recipients![0].tokenData!.should.have.property('tokenId', recipients[0].tokenData.tokenId);
         intent.recipients![0].tokenData!.should.have.property('decimalPlaces', recipients[0].tokenData.decimalPlaces);
       });
@@ -3103,7 +3229,9 @@ describe('V2 Wallet:', function () {
           });
           intent.should.equal(undefined);
         } catch (e: any) {
-          e.message.should.equal('token type and quantity is required to request a transaction with intent to transfer a token');
+          e.message.should.equal(
+            'token type and quantity is required to request a transaction with intent to transfer a token'
+          );
         }
       });
     });
@@ -3134,15 +3262,13 @@ describe('V2 Wallet:', function () {
             coinSpecific: {},
           });
 
-        const stub = sinon.stub(tssWallet, 'createShare').callsFake(
-          async (options) => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options!.keychain!.pub!.should.not.be.undefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options!.keychain!.pub!.should.equal(TssUtils.getPublicKeyFromCommonKeychain(commonKeychain));
-            return undefined;
-          }
-        );
+        const stub = sinon.stub(tssWallet, 'createShare').callsFake(async (options) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          options!.keychain!.pub!.should.not.be.undefined();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          options!.keychain!.pub!.should.equal(TssUtils.getPublicKeyFromCommonKeychain(commonKeychain));
+          return undefined;
+        });
         await tssWallet.shareWallet({ email, permissions, walletPassphrase });
 
         stub.calledOnce.should.be.true();
@@ -3152,13 +3278,13 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('AVAX tests', function() {
+  describe('AVAX tests', function () {
     let bgUrl;
     let basecoin;
     let walletData;
     let wallet;
 
-    before(async function() {
+    before(async function () {
       nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
       walletData = {
@@ -3179,24 +3305,27 @@ describe('V2 Wallet:', function () {
 
       const params = { sourceChain: 'C' };
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/crossChainUnspents`;
-      const scope =
-        nock(bgUrl)
-          .get(path)
-          .query(params)
-          .reply(200, {
-            unspent: {
-              outputID: 7,
-              amount: '10000000',
-              txid: 'V3UBZTQj364zNWqt8uMHD5NjxxX8T8qkbeZXURmjnVmLEqzab',
-              threshold: 2,
-              addresses: ['C-fuji199fluegrthqs4tvz40zajfrsx5m7dvy75ajfm6', 'C-fuji1gk3m444893ynl0gfvxahjgw3vftnn8sptyd9g5', 'C-fuji1ujfzjgwzfygl60qp2l8rmglg3lnm7w4059nca5'],
-              outputidx: '1111XiaYg',
-              locktime: '0',
-            },
-            fromWallet: '635092fd4ff3316142df6e6b7a078b92',
-            toWallet: '635092fd4ff3316142df6e891f6a7ee6',
-            toAddress: '0x125c4451c870f753265b0b1af3cf6ab88ffe4657',
-          });
+      const scope = nock(bgUrl)
+        .get(path)
+        .query(params)
+        .reply(200, {
+          unspent: {
+            outputID: 7,
+            amount: '10000000',
+            txid: 'V3UBZTQj364zNWqt8uMHD5NjxxX8T8qkbeZXURmjnVmLEqzab',
+            threshold: 2,
+            addresses: [
+              'C-fuji199fluegrthqs4tvz40zajfrsx5m7dvy75ajfm6',
+              'C-fuji1gk3m444893ynl0gfvxahjgw3vftnn8sptyd9g5',
+              'C-fuji1ujfzjgwzfygl60qp2l8rmglg3lnm7w4059nca5',
+            ],
+            outputidx: '1111XiaYg',
+            locktime: '0',
+          },
+          fromWallet: '635092fd4ff3316142df6e6b7a078b92',
+          toWallet: '635092fd4ff3316142df6e891f6a7ee6',
+          toAddress: '0x125c4451c870f753265b0b1af3cf6ab88ffe4657',
+        });
 
       try {
         await wallet.fetchCrossChainUTXOs(params);
@@ -3213,12 +3342,15 @@ describe('V2 Wallet:', function () {
       walletData.type = 'custodial';
       wallet = new Wallet(bitgo, basecoin, walletData);
 
-      const address = 'P-fuji1e56pc4966qsevzhwgkym5l0jfma9llkqnrr4gh~P-fuji1kq05zm9nmlq8p3ld55k79dl3qay6c0e3atj56v~P-fuji1rp46z30qg457xc3dpffyxcgzpflxc85mhkjme3';
+      const address =
+        'P-fuji1e56pc4966qsevzhwgkym5l0jfma9llkqnrr4gh~P-fuji1kq05zm9nmlq8p3ld55k79dl3qay6c0e3atj56v~P-fuji1rp46z30qg457xc3dpffyxcgzpflxc85mhkjme3';
       const initiateTxParams = {
-        recipients: [{
-          amount: '10000000000000000', // 0.01 AVAX
-          address,
-        }],
+        recipients: [
+          {
+            amount: '10000000000000000', // 0.01 AVAX
+            address,
+          },
+        ],
         hop: true,
         type: 'Export',
       };
@@ -3229,12 +3361,10 @@ describe('V2 Wallet:', function () {
         .reply(200);
 
       const feeEstimationPath = `/api/v2/${wallet.coin()}/tx/fee?hop=true&recipient=${address}&amount=10000000000000000&type=Export`;
-      nock(bgUrl)
-        .get(feeEstimationPath)
-        .reply(200, {
-          feeEstimate: '718750000000000',
-          gasLimitEstimate: 500000,
-        });
+      nock(bgUrl).get(feeEstimationPath).reply(200, {
+        feeEstimate: '718750000000000',
+        gasLimitEstimate: 500000,
+      });
 
       try {
         await wallet.sendMany(initiateTxParams);

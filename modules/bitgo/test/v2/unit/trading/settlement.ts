@@ -36,9 +36,7 @@ describe('Settlements', function () {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
       enterprise: enterprise.id,
-      keys: [
-        'keyid',
-      ],
+      keys: ['keyid'],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -69,7 +67,9 @@ describe('Settlements', function () {
 
   it('should get a single settlement', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`)
+      .get(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`
+      )
       .reply(200, fixtures.getSingleSettlement);
 
     const settlement = await tradingAccount.settlements().get({ id: fixtures.singleSettlementId });
@@ -81,13 +81,21 @@ describe('Settlements', function () {
 
   it('should create a new direct settlement', async function () {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createDirectSettlementPayloadRequest)
+      .post(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`,
+        fixtures.createDirectSettlementPayloadRequest
+      )
       .reply(200, fixtures.createDirectSettlementPayloadResponse)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createDirectSettlementRequest)
+      .post(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`,
+        fixtures.createDirectSettlementRequest
+      )
       .reply(200, fixtures.createDirectSettlementResponse);
 
-    const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
-    const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
+    const xprv =
+      'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
+    const xpub =
+      'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
     const platformScope = nock(bgUrl)
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
@@ -103,19 +111,21 @@ describe('Settlements', function () {
       requesterAccountId: tradingAccount.id,
       payload: payload,
       signature: signature,
-      trades: [{
-        baseAccountId: '5cf940a49449412d00f53b8f7392f7c0',
-        quoteAccountId: '5cf940969449412d00f53b4c55fc2139',
-        status: TradeStatus.EXECUTED,
-        timestamp: new Date('2019-06-06T16:36:20.810Z'),
-        baseAmount: '500',
-        baseCurrency: 'ofctbtc',
-        quoteAmount: '555',
-        quoteCurrency: 'ofctusd',
-        costBasis: '12345',
-        costBasisCurrency: 'USD',
-        externalId: 'a4o3ah601etw676okvkvsmizciorxc8v',
-      }],
+      trades: [
+        {
+          baseAccountId: '5cf940a49449412d00f53b8f7392f7c0',
+          quoteAccountId: '5cf940969449412d00f53b4c55fc2139',
+          status: TradeStatus.EXECUTED,
+          timestamp: new Date('2019-06-06T16:36:20.810Z'),
+          baseAmount: '500',
+          baseCurrency: 'ofctbtc',
+          quoteAmount: '555',
+          quoteCurrency: 'ofctusd',
+          costBasis: '12345',
+          costBasisCurrency: 'USD',
+          externalId: 'a4o3ah601etw676okvkvsmizciorxc8v',
+        },
+      ],
     });
 
     should.exist(settlement);
@@ -127,13 +137,21 @@ describe('Settlements', function () {
 
   it('should create a new agency settlement', async function () {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createAgencySettlementPayloadRequest)
+      .post(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`,
+        fixtures.createAgencySettlementPayloadRequest
+      )
       .reply(200, fixtures.createAgencySettlementPayloadResponse)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createAgencySettlementRequest)
+      .post(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`,
+        fixtures.createAgencySettlementRequest
+      )
       .reply(200, fixtures.createAgencySettlementResponse);
 
-    const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
-    const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
+    const xprv =
+      'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
+    const xpub =
+      'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
     const platformScope = nock(bgUrl)
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
@@ -167,7 +185,8 @@ describe('Settlements', function () {
           costBasis: '',
           costBasisCurrency: '',
           externalId: 'xff7vln0eh9hh3rp0derlbunlo1sw6k6',
-        }],
+        },
+      ],
     });
 
     should.exist(settlement);
@@ -191,8 +210,15 @@ describe('Settlements', function () {
     // furthermore, the one for this account should already be affirmed
     settlement.should.have.property('affirmations');
     settlement.affirmations.should.have.length(2);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED).should.have.length(1);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId !== tradingAccount.id).should.have.length(1);
+    settlement.affirmations
+      .filter(
+        (affirmation) =>
+          affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED
+      )
+      .should.have.length(1);
+    settlement.affirmations
+      .filter((affirmation) => affirmation.partyAccountId !== tradingAccount.id)
+      .should.have.length(1);
   }
 
   function validateAgencySettlement(settlement: Settlement): void {
@@ -209,7 +235,14 @@ describe('Settlements', function () {
     // furthermore, the one for this account should already be affirmed
     settlement.should.have.property('affirmations');
     settlement.affirmations.should.have.length(3);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED).should.have.length(1);
-    settlement.affirmations.filter(affirmation => affirmation.partyAccountId !== tradingAccount.id).should.have.length(2);
+    settlement.affirmations
+      .filter(
+        (affirmation) =>
+          affirmation.partyAccountId === tradingAccount.id && affirmation.status === AffirmationStatus.AFFIRMED
+      )
+      .should.have.length(1);
+    settlement.affirmations
+      .filter((affirmation) => affirmation.partyAccountId !== tradingAccount.id)
+      .should.have.length(2);
   }
 });

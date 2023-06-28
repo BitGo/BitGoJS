@@ -35,10 +35,7 @@ describe('BLS Utils:', async function () {
       },
     };
 
-    nock('https://bitgo.fakeurl')
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants });
+    nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     blsUtils = new BlsUtils(bitgo, eth2);
@@ -80,13 +77,15 @@ describe('BLS Utils:', async function () {
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      'passphrase');
+      'passphrase'
+    );
     const backupKeychain = await blsUtils.createBackupKeychain(
       backupGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      'passphrase');
+      'passphrase'
+    );
 
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
     userKeychain.should.deepEqual(nockedUserKeychain);
@@ -113,7 +112,6 @@ describe('BLS Utils:', async function () {
     const backupPrv = JSON.stringify(backupSigningMaterial);
     backupPrv.should.equal(backupKeychain.prv);
     should.exist(backupKeychain.encryptedPrv);
-
   });
 
   it('should generate BLS-DKG key chains with optional params', async function () {
@@ -149,20 +147,28 @@ describe('BLS Utils:', async function () {
     const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
     await nockBackupKeychain({ coin: coinName });
 
-    const bitgoKeychain = await blsUtils.createBitgoKeychain(userGpgKey, backupGpgKey, userKeyShare, backupKeyShare, enterprise);
+    const bitgoKeychain = await blsUtils.createBitgoKeychain(
+      userGpgKey,
+      backupGpgKey,
+      userKeyShare,
+      backupKeyShare,
+      enterprise
+    );
     const userKeychain = await blsUtils.createUserKeychain(
       userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
       'passphrase',
-      originalPasscodeEncryptionCode);
+      originalPasscodeEncryptionCode
+    );
     const backupKeychain = await blsUtils.createBackupKeychain(
       backupGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      'passphrase');
+      'passphrase'
+    );
 
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
     userKeychain.should.deepEqual(nockedUserKeychain);
@@ -189,7 +195,6 @@ describe('BLS Utils:', async function () {
     const backupPrv = JSON.stringify(backupSigningMaterial);
     backupPrv.should.equal(backupKeychain.prv);
     should.exist(backupKeychain.encryptedPrv);
-
   });
 
   it('should fail to generate BLS-DKG key chains', async function () {
@@ -222,66 +227,57 @@ describe('BLS Utils:', async function () {
     const bitgoKeychain = await blsUtils.createBitgoKeychain(userGpgKey, backupGpgKey, userKeyShare, backupKeyShare);
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
 
-    await blsUtils.createUserKeychain(
-      userGpgKey,
-      userKeyShare,
-      eth2.generateKeyPair(),
-      bitgoKeychain,
-      'passphrase')
+    await blsUtils
+      .createUserKeychain(userGpgKey, userKeyShare, eth2.generateKeyPair(), bitgoKeychain, 'passphrase')
       .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
-    await blsUtils.createUserKeychain(
-      userGpgKey,
-      eth2.generateKeyPair(),
-      backupKeyShare,
-      bitgoKeychain,
-      'passphrase')
+    await blsUtils
+      .createUserKeychain(userGpgKey, eth2.generateKeyPair(), backupKeyShare, bitgoKeychain, 'passphrase')
       .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
 
-    await blsUtils.createBackupKeychain(
-      backupGpgKey,
-      eth2.generateKeyPair(),
-      backupKeyShare,
-      bitgoKeychain,
-      'passphrase')
+    await blsUtils
+      .createBackupKeychain(backupGpgKey, eth2.generateKeyPair(), backupKeyShare, bitgoKeychain, 'passphrase')
       .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
-    await blsUtils.createBackupKeychain(
-      backupGpgKey,
-      userKeyShare,
-      eth2.generateKeyPair(),
-      bitgoKeychain,
-      'passphrase')
+    await blsUtils
+      .createBackupKeychain(backupGpgKey, userKeyShare, eth2.generateKeyPair(), bitgoKeychain, 'passphrase')
       .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
   });
 
   // Nock helpers
 
   async function nockBitgoKeychain(params: {
-    coin: string,
-    userKeyShare: IBlsKeyPair,
-    backupKeyShare: IBlsKeyPair
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    backupGpgKey: openpgp.SerializedKeyPair<string>,
+    coin: string;
+    userKeyShare: IBlsKeyPair;
+    backupKeyShare: IBlsKeyPair;
+    userGpgKey: openpgp.SerializedKeyPair<string>;
+    backupGpgKey: openpgp.SerializedKeyPair<string>;
   }): Promise<Keychain> {
-
     assert(params.userKeyShare.secretShares);
     assert(params.backupKeyShare.secretShares);
 
     const bitgoCombined = eth2.aggregateShares({
       pubShares: [bitgoKeyShare.pub, params.userKeyShare.pub, params.backupKeyShare.pub],
-      prvShares: [params.userKeyShare.secretShares[2], params.backupKeyShare.secretShares[2], bitgoKeyShare.secretShares[2]],
+      prvShares: [
+        params.userKeyShare.secretShares[2],
+        params.backupKeyShare.secretShares[2],
+        bitgoKeyShare.secretShares[2],
+      ],
       chaincodes: [bitgoKeyShare.chaincode, params.userKeyShare.chaincode, params.backupKeyShare.chaincode],
     });
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
     const backupGpgKeyActual = await openpgp.readKey({ armoredKey: params.backupGpgKey.publicKey });
 
-    const bitgoToUserMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[0] + bitgoKeyShare.chaincode });
+    const bitgoToUserMessage = await openpgp.createMessage({
+      text: bitgoKeyShare.secretShares[0] + bitgoKeyShare.chaincode,
+    });
     const encryptedBitgoToUserMessage = await openpgp.encrypt({
       message: bitgoToUserMessage,
       encryptionKeys: [userGpgKeyActual.toPublic()],
       format: 'armored',
     });
 
-    const bitgoToBackupMessage = await openpgp.createMessage({ text: bitgoKeyShare.secretShares[1] + bitgoKeyShare.chaincode });
+    const bitgoToBackupMessage = await openpgp.createMessage({
+      text: bitgoKeyShare.secretShares[1] + bitgoKeyShare.chaincode,
+    });
     const encryptedBitgoToBackupMessage = await openpgp.encrypt({
       message: bitgoToBackupMessage,
       encryptionKeys: [backupGpgKeyActual.toPublic()],
@@ -316,9 +312,7 @@ describe('BLS Utils:', async function () {
     return bitgoKeychain;
   }
 
-  async function nockUserKeychain(params: {
-    coin: string,
-  }): Promise<Keychain> {
+  async function nockUserKeychain(params: { coin: string }): Promise<Keychain> {
     const userKeychain: Keychain = {
       id: '1',
       pub: '',
@@ -332,9 +326,7 @@ describe('BLS Utils:', async function () {
     return userKeychain;
   }
 
-  async function nockBackupKeychain(params: {
-    coin: string,
-  }): Promise<Keychain> {
+  async function nockBackupKeychain(params: { coin: string }): Promise<Keychain> {
     const backupKeychain: Keychain = {
       id: '2',
       pub: '',

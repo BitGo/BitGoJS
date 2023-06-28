@@ -11,11 +11,7 @@ describe('Verify string type is used for value of unspent', function () {
   const walletData = {
     id: '5b34252f1bf349930e34020a00000000',
     coin: 'tdoge',
-    keys: [
-      '5b3424f91bf349930e34017500000000',
-      '5b3424f91bf349930e34017600000000',
-      '5b3424f91bf349930e34017700000000',
-    ],
+    keys: ['5b3424f91bf349930e34017500000000', '5b3424f91bf349930e34017600000000', '5b3424f91bf349930e34017700000000'],
     coinSpecific: {},
   };
   const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -31,28 +27,32 @@ describe('Verify string type is used for value of unspent', function () {
       nock.cleanAll();
     });
 
-    ['consolidate', 'fanout'].forEach( (manageUnspentType) => {
+    ['consolidate', 'fanout'].forEach((manageUnspentType) => {
       it(manageUnspentType + ' should handle string type minValue and maxValue', async function () {
         const params = { minValue: '1', maxValue: highPrecisionBigInt.toString() };
 
         const consolidateUnspentsScope = nock(bgUrl)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/${manageUnspentType}Unspents`, body => {
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/${manageUnspentType}Unspents`, (body) => {
             return matchMinMaxValue(body.minValue, body.maxValue);
           })
           .reply(200, {
             txInfo: {
-              unspents: [{
-                id: 123,
-                address: 'sfajlkjad',
-                value: 1242123,
-                valueString: '1242123',
-              }],
+              unspents: [
+                {
+                  id: 123,
+                  address: 'sfajlkjad',
+                  value: 1242123,
+                  valueString: '1242123',
+                },
+              ],
             },
           });
 
-        wallet.keyIds().forEach((keyId) => nock(bgUrl)
-          .get(`/api/v2/${wallet.coin()}/key/${keyId}`)
-          .reply(200, { id: keyId, pub: 'pub' }));
+        wallet
+          .keyIds()
+          .forEach((keyId) =>
+            nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${keyId}`).reply(200, { id: keyId, pub: 'pub' })
+          );
 
         sinon.stub(wallet, 'signTransaction').resolves({});
 
@@ -69,11 +69,15 @@ describe('Verify string type is used for value of unspent', function () {
     });
 
     it('maximumSpendable should handle string type minValue and maxValue', async function () {
-      const params = { minValue: '1', maxValue: highPrecisionBigInt.toString(), target: highPrecisionBigInt.toString() };
+      const params = {
+        minValue: '1',
+        maxValue: highPrecisionBigInt.toString(),
+        target: highPrecisionBigInt.toString(),
+      };
 
       const maximumSpendableScope = nock(bgUrl)
         .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`)
-        .query(queryParams => {
+        .query((queryParams) => {
           return matchMinMaxValue(queryParams.minValue, queryParams.maxValue);
         })
         .reply(200, {});
@@ -84,11 +88,15 @@ describe('Verify string type is used for value of unspent', function () {
     });
 
     it('get unspents should handle string type minValue and maxValue', async function () {
-      const params = { minValue: '1', maxValue: highPrecisionBigInt.toString(), target: highPrecisionBigInt.toString() };
+      const params = {
+        minValue: '1',
+        maxValue: highPrecisionBigInt.toString(),
+        target: highPrecisionBigInt.toString(),
+      };
 
       const unspentsScope = nock(bgUrl)
         .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents`)
-        .query(queryParams => {
+        .query((queryParams) => {
           return matchMinMaxValue(queryParams.minValue, queryParams.maxValue);
         })
         .reply(200, {});
@@ -108,7 +116,7 @@ describe('Verify string type is used for value of unspent', function () {
       const params = { minValue: '1', maxValue: highPrecisionBigInt.toString() };
 
       const sendScope = nock(bgUrl)
-        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, body => {
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, (body) => {
           return matchMinMaxValue(body.minValue, body.maxValue);
         })
         .reply(200, {});
@@ -128,12 +136,12 @@ describe('Verify string type is used for value of unspent', function () {
         .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, (body) => {
           return matchMinMaxValue(body.minValue, body.maxValue);
         })
-        .reply(200, { txHex: '010000000197c9d011880ce52e1730d7e18d4877db343b61c7369e3274b9c0f176349137840000000000ffffffff0132000000000000001976a9146ba5752fb24f37d99db121975d8d68f0c6204d9188ac00000000' });
+        .reply(200, {
+          txHex:
+            '010000000197c9d011880ce52e1730d7e18d4877db343b61c7369e3274b9c0f176349137840000000000ffffffff0132000000000000001976a9146ba5752fb24f37d99db121975d8d68f0c6204d9188ac00000000',
+        });
 
-      nock(bgUrl)
-        .get(`/api/v2/${wallet.coin()}/public/block/latest`)
-        .twice()
-        .reply(200, {});
+      nock(bgUrl).get(`/api/v2/${wallet.coin()}/public/block/latest`).twice().reply(200, {});
 
       await wallet.prebuildTransaction(params);
 

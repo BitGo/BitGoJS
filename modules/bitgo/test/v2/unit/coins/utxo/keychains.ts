@@ -13,4 +13,4 @@ function run(coin: AbstractUtxoCoin) {
   });
 }
 
-utxoCoins.forEach(c => run(c));
+utxoCoins.forEach((c) => run(c));

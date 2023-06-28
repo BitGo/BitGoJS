@@ -11,9 +11,9 @@ nock.enableNetConnect();
 describe('MMI:', function () {
   let bitgo;
   describe('MMI', async function () {
-
     before(function () {
-      const bitgoKeyXprv = 'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
+      const bitgoKeyXprv =
+        'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
       const bitgoKey = bip32.fromBase58(bitgoKeyXprv);
       if (!bitgoKey.privateKey) {
         throw new Error('no privateKey');
@@ -43,10 +43,12 @@ describe('MMI:', function () {
         txPrebuild: {
           eip1559: { maxPriorityFeePerGas: 10, maxFeePerGas: 10 },
           isBatch: false,
-          recipients: [{
-            amount: '0',
-            address: '0xc93b13642d93b4218bb85f67317d6b37286e8028',
-          }],
+          recipients: [
+            {
+              amount: '0',
+              address: '0xc93b13642d93b4218bb85f67317d6b37286e8028',
+            },
+          ],
           expireTime: 1627949214,
           contractSequenceId: 12,
           gasLimit: undefined,
@@ -88,12 +90,7 @@ describe('MMI:', function () {
       builder.counter(1);
       builder.type(TransactionType.Send);
       builder.contract(account_1.address);
-      builder
-        .transfer()
-        .amount('1')
-        .to(account_2.address)
-        .expirationTime(10000)
-        .contractSequenceId(1);
+      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
 
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();

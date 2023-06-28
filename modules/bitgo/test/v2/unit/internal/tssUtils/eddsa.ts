@@ -47,7 +47,7 @@ describe('TSS Utils:', async function () {
   let bitgoGpgKey;
   let wallet: Wallet;
   let bitgoKeyShare;
-  const reqId = new RequestTracer;
+  const reqId = new RequestTracer();
   const coinName = 'tsol';
   const validUserSigningMaterial = {
     uShare: {
@@ -85,15 +85,16 @@ describe('TSS Utils:', async function () {
       r: 'c8f64cc48926216c3f60e1d8ff1e24eba060d7c1ff020d0fc1d735d4564efd03',
       R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
     },
-    rShares: { 3: {
-      i: 3,
-      j: 1,
-      u: 'd675f9099fbef03aa9fcdca4009286f435e56369c374d0042f03cc60b49e690a',
-      v: '3c090e88ed42da0dd0bade35c8d6b88bc050284536b98e5b27d33ff45da9755b',
-      r: '7f16224dbf5b02adb6c21380fcb2a8ee00323daae62cac3575a4d328fd23a905',
-      R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
-      commitment: '445c8cb1dee0166b6bdd5ad1d0a53fbfe86c4d3a470f184745530a863eedff28',
-    },
+    rShares: {
+      3: {
+        i: 3,
+        j: 1,
+        u: 'd675f9099fbef03aa9fcdca4009286f435e56369c374d0042f03cc60b49e690a',
+        v: '3c090e88ed42da0dd0bade35c8d6b88bc050284536b98e5b27d33ff45da9755b',
+        r: '7f16224dbf5b02adb6c21380fcb2a8ee00323daae62cac3575a4d328fd23a905',
+        R: '9be2208ee28cd4b2577a9a66f6aab1ed8b08a300969eeb9b203a52aa54d2c23c',
+        commitment: '445c8cb1dee0166b6bdd5ad1d0a53fbfe86c4d3a470f184745530a863eedff28',
+      },
     },
   };
 
@@ -126,7 +127,8 @@ describe('TSS Utils:', async function () {
         from: 'bitgo',
         to: 'user',
         share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
-      }],
+      },
+    ],
   };
 
   beforeEach(function () {
@@ -137,7 +139,7 @@ describe('TSS Utils:', async function () {
     sandbox.restore();
   });
 
-  before('initializes mpc', async function() {
+  before('initializes mpc', async function () {
     const hdTree = await Ed25519BIP32.initialize();
     MPC = await Eddsa.initialize(hdTree);
   });
@@ -187,10 +189,7 @@ describe('TSS Utils:', async function () {
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    nock(bgUrl)
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants });
+    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
 
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',
@@ -210,7 +209,7 @@ describe('TSS Utils:', async function () {
     nock.cleanAll();
   });
 
-  describe('TSS key chains:', async function() {
+  describe('TSS key chains:', async function () {
     it('should generate TSS key chains', async function () {
       const userKeyShare = MPC.keyShare(1, 2, 3);
       const backupKeyShare = MPC.keyShare(2, 2, 3);
@@ -227,8 +226,12 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain(
-        { userGpgKey, backupGpgKey, userKeyShare, backupKeyShare });
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+      });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         backupGpgKey,
@@ -256,7 +259,6 @@ describe('TSS Utils:', async function () {
         userYShare: userKeyShare.yShares[2],
       }).should.equal(backupKeychain.prv);
       should.exist(backupKeychain.encryptedPrv);
-
     });
 
     it('should generate TSS key chains without passphrase', async function () {
@@ -276,7 +278,12 @@ describe('TSS Utils:', async function () {
       const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
       await nockBackupKeychain({ coin: coinName });
 
-      const bitgoKeychain = await tssUtils.createBitgoKeychain({ userGpgKey, backupGpgKey, userKeyShare, backupKeyShare });
+      const bitgoKeychain = await tssUtils.createBitgoKeychain({
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+      });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
         backupGpgKey,
@@ -301,9 +308,7 @@ describe('TSS Utils:', async function () {
         bitgoYShare: bitgoKeyShare.yShares[2],
         userYShare: userKeyShare.yShares[2],
       }).should.equal(backupKeychain.prv);
-
     });
-
 
     it('should generate TSS key chains with optional params', async function () {
       const enterprise = 'enterprise';
@@ -324,7 +329,11 @@ describe('TSS Utils:', async function () {
       await nockBackupKeychain({ coin: coinName });
 
       const bitgoKeychain = await tssUtils.createBitgoKeychain({
-        userGpgKey, backupGpgKey, userKeyShare, backupKeyShare, enterprise,
+        userGpgKey,
+        backupGpgKey,
+        userKeyShare,
+        backupKeyShare,
+        enterprise,
       });
       const userKeychain = await tssUtils.createUserKeychain({
         userGpgKey,
@@ -382,7 +391,9 @@ describe('TSS Utils:', async function () {
       // @ts-ignore
       bitgoKeychain.walletHSMGPGPublicKeySigs = openpgp.armor(openpgp.enums.armor.publicKey, finalKey.write());
 
-      await tssUtils.verifyWalletSignatures(userGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith('Invalid wallet signatures');
+      await tssUtils
+        .verifyWalletSignatures(userGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith('Invalid wallet signatures');
     });
 
     it('should fail to generate TSS keychains when wallet signature fingerprints do not match passed user/backup fingerprints', async function () {
@@ -401,11 +412,19 @@ describe('TSS Utils:', async function () {
 
       // using the backup gpg here instead of the user gpg key to simulate that the first signature has a different
       // fingerprint from the passed in first gpg key
-      await tssUtils.verifyWalletSignatures(backupGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`first wallet signature's fingerprint does not match passed user gpg key's fingerprint`);
+      await tssUtils
+        .verifyWalletSignatures(backupGpgKey.publicKey, backupGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith(
+          `first wallet signature's fingerprint does not match passed user gpg key's fingerprint`
+        );
 
       // using the user gpg here instead of the backup gpg key to simulate that the second signature has a different
       // fingerprint from the passed in second gpg key
-      await tssUtils.verifyWalletSignatures(userGpgKey.publicKey, userGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`);
+      await tssUtils
+        .verifyWalletSignatures(userGpgKey.publicKey, userGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith(
+          `second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`
+        );
     });
 
     it('should fail to generate TSS keychains when wallet signature is for different key share', async function () {
@@ -437,21 +456,25 @@ describe('TSS Utils:', async function () {
       bitgoKeychain1.commonKeychain = bitgoKeychain2.commonKeychain;
       bitgoKeychain1.walletHSMGPGPublicKeySigs = bitgoKeychain2.walletHSMGPGPublicKeySigs;
 
-      await tssUtils.createUserKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain: bitgoKeychain1,
-      }).should.be.rejectedWith('bitgo share mismatch');
+      await tssUtils
+        .createUserKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain: bitgoKeychain1,
+        })
+        .should.be.rejectedWith('bitgo share mismatch');
 
-      await tssUtils.createBackupKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare,
-        bitgoKeychain: bitgoKeychain1,
-      }).should.be.rejectedWith('bitgo share mismatch');
+      await tssUtils
+        .createBackupKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare,
+          bitgoKeychain: bitgoKeychain1,
+        })
+        .should.be.rejectedWith('bitgo share mismatch');
     });
 
     it('should fail to generate TSS key chains when common keychains do not match', async function () {
@@ -475,47 +498,51 @@ describe('TSS Utils:', async function () {
       });
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
 
-      await tssUtils.createUserKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare: MPC.keyShare(2, 2, 3),
-        bitgoKeychain,
-        passphrase: 'passphrase',
-      })
+      await tssUtils
+        .createUserKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare: MPC.keyShare(2, 2, 3),
+          bitgoKeychain,
+          passphrase: 'passphrase',
+        })
         .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
-      await tssUtils.createUserKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare: MPC.keyShare(1, 2, 3),
-        backupKeyShare,
-        bitgoKeychain,
-        passphrase: 'passphrase',
-      })
+      await tssUtils
+        .createUserKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare: MPC.keyShare(1, 2, 3),
+          backupKeyShare,
+          bitgoKeychain,
+          passphrase: 'passphrase',
+        })
         .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
 
-      await tssUtils.createBackupKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare: MPC.keyShare(1, 2, 3),
-        backupKeyShare,
-        bitgoKeychain,
-        passphrase: 'passphrase',
-      })
+      await tssUtils
+        .createBackupKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare: MPC.keyShare(1, 2, 3),
+          backupKeyShare,
+          bitgoKeychain,
+          passphrase: 'passphrase',
+        })
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
-      await tssUtils.createBackupKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare: MPC.keyShare(2, 2, 3),
-        bitgoKeychain,
-        passphrase: 'passphrase',
-      })
+      await tssUtils
+        .createBackupKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare: MPC.keyShare(2, 2, 3),
+          bitgoKeychain,
+          passphrase: 'passphrase',
+        })
         .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
     });
   });
 
-  describe('signTxRequest:', function() {
+  describe('signTxRequest:', function () {
     const txRequestId = 'randomid';
     const txRequest: TxRequest = {
       txRequestId,
@@ -570,8 +597,11 @@ describe('TSS Utils:', async function () {
         share: validBitgoToUserSignShare.rShares[1].commitment,
       };
       const exchangeCommitResponse: ExchangeCommitmentResponse = { commitmentShare: bitgoToUserCommitmentShare };
-      await nockExchangeCommitments( { walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: exchangeCommitResponse });
-
+      await nockExchangeCommitments({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        response: exchangeCommitResponse,
+      });
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
@@ -601,7 +631,7 @@ describe('TSS Utils:', async function () {
     });
   });
 
-  describe('signTxRequest With Commitment:', function() {
+  describe('signTxRequest With Commitment:', function () {
     const txRequestId = 'randomid';
     const txRequest: TxRequest = {
       txRequestId,
@@ -655,7 +685,11 @@ describe('TSS Utils:', async function () {
         share: validBitgoToUserSignShare.rShares[1].commitment,
       };
       const exchangeCommitResponse: ExchangeCommitmentResponse = { commitmentShare: bitgoToUserCommitmentShare };
-      await nockExchangeCommitments( { walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: exchangeCommitResponse });
+      await nockExchangeCommitments({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        response: exchangeCommitResponse,
+      });
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
@@ -685,7 +719,7 @@ describe('TSS Utils:', async function () {
     });
   });
 
-  describe('prebuildTxWithIntent:', async function() {
+  describe('prebuildTxWithIntent:', async function () {
     it('should build single recipient tx', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
@@ -693,15 +727,17 @@ describe('TSS Utils:', async function () {
           apiVersion: 'lite',
           intent: {
             intentType: 'payment',
-            recipients: [{
-              address: {
-                address: 'recipient',
+            recipients: [
+              {
+                address: {
+                  address: 'recipient',
+                },
+                amount: {
+                  value: '10000',
+                  symbol: 'tsol',
+                },
               },
-              amount: {
-                value: '10000',
-                symbol: 'tsol',
-              },
-            }],
+            ],
           },
         },
         // don't care about the actual response - just need to make sure request body matches
@@ -710,10 +746,12 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.prebuildTxWithIntent({
         reqId,
-        recipients: [{
-          address: 'recipient',
-          amount: '10000',
-        }],
+        recipients: [
+          {
+            address: 'recipient',
+            amount: '10000',
+          },
+        ],
         intentType: 'payment',
       });
 
@@ -727,23 +765,26 @@ describe('TSS Utils:', async function () {
           apiVersion: 'lite',
           intent: {
             intentType: 'payment',
-            recipients: [{
-              address: {
-                address: 'recipient1',
+            recipients: [
+              {
+                address: {
+                  address: 'recipient1',
+                },
+                amount: {
+                  value: '10000',
+                  symbol: 'tsol',
+                },
               },
-              amount: {
-                value: '10000',
-                symbol: 'tsol',
+              {
+                address: {
+                  address: 'recipient2',
+                },
+                amount: {
+                  value: '20000',
+                  symbol: 'tsol',
+                },
               },
-            }, {
-              address: {
-                address: 'recipient2',
-              },
-              amount: {
-                value: '20000',
-                symbol: 'tsol',
-              },
-            }],
+            ],
             memo: 'memo',
           },
         },
@@ -753,13 +794,16 @@ describe('TSS Utils:', async function () {
 
       await tssUtils.prebuildTxWithIntent({
         reqId,
-        recipients: [{
-          address: 'recipient1',
-          amount: '10000',
-        }, {
-          address: 'recipient2',
-          amount: '20000',
-        }],
+        recipients: [
+          {
+            address: 'recipient1',
+            amount: '10000',
+          },
+          {
+            address: 'recipient2',
+            amount: '20000',
+          },
+        ],
         memo: {
           value: 'memo',
           type: 'text',
@@ -771,10 +815,14 @@ describe('TSS Utils:', async function () {
     });
   });
 
-  describe('delete SignatureShare:', async function() {
-    it('should succeed to delete Signature Share', async function() {
+  describe('delete SignatureShare:', async function () {
+    it('should succeed to delete Signature Share', async function () {
       const signatureShare = { from: 'user', to: 'bitgo', share: '128bytestring' } as SignatureShareRecord;
-      const nock = await nockDeleteSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare });
+      const nock = await nockDeleteSignatureShare({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare,
+      });
       const response = await tssUtils.deleteSignatureShares(txRequest.txRequestId);
       response.should.deepEqual([signatureShare]);
       response.should.length(1);
@@ -782,17 +830,20 @@ describe('TSS Utils:', async function () {
     });
   });
 
-
-  describe('sendTxRequest:', async function() {
-    it('should succeed to send tx request', async function() {
-      const nock = await nockSendTxRequest({ coin: coinName, walletId: wallet.id(), txRequestId: txRequest.txRequestId });
+  describe('sendTxRequest:', async function () {
+    it('should succeed to send tx request', async function () {
+      const nock = await nockSendTxRequest({
+        coin: coinName,
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+      });
       await tssUtils.sendTxRequest(txRequest.txRequestId).should.be.fulfilled();
       nock.isDone().should.equal(true);
     });
   });
 
-  describe('createUserToBitgoCommitmentShare', function() {
-    it('should create a valid commitmentShare', async function() {
+  describe('createUserToBitgoCommitmentShare', function () {
+    it('should create a valid commitmentShare', async function () {
       const value = 'randomstring';
       const validUserToBitgoCommitmentShare = {
         from: SignatureShareType.USER,
@@ -802,12 +853,11 @@ describe('TSS Utils:', async function () {
       };
       const commitmentShare = tssUtils.createUserToBitgoCommitmentShare(value);
       commitmentShare.should.deepEqual(validUserToBitgoCommitmentShare);
-
     });
   });
 
-  describe('createUserToBitgoEncryptedSignerShare', function() {
-    it('should create a valid encryptedSignerShare', async function() {
+  describe('createUserToBitgoEncryptedSignerShare', function () {
+    it('should create a valid encryptedSignerShare', async function () {
       const value = 'randomstring';
       const validUserToBitgoEncryptedSignerShare = {
         from: SignatureShareType.USER,
@@ -820,25 +870,28 @@ describe('TSS Utils:', async function () {
     });
   });
 
-
   // #region Nock helpers
   async function generateBitgoKeychain(params: {
-    coin: string,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeyShare: KeyShare,
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    backupGpgKey: openpgp.SerializedKeyPair<string>,
-    bitgoGpgKey: openpgp.SerializedKeyPair<string>,
+    coin: string;
+    userKeyShare: KeyShare;
+    backupKeyShare: KeyShare;
+    bitgoKeyShare: KeyShare;
+    userGpgKey: openpgp.SerializedKeyPair<string>;
+    backupGpgKey: openpgp.SerializedKeyPair<string>;
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>;
   }): Promise<Keychain> {
-    const bitgoCombined = MPC.keyCombine(params.bitgoKeyShare.uShare, [params.userKeyShare.yShares[3], params.backupKeyShare.yShares[3]]);
+    const bitgoCombined = MPC.keyCombine(params.bitgoKeyShare.uShare, [
+      params.userKeyShare.yShares[3],
+      params.backupKeyShare.yShares[3],
+    ]);
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
     const backupGpgKeyActual = await openpgp.readKey({ armoredKey: params.backupGpgKey.publicKey });
 
-    const bitgoToUserMessage = await openpgp.createMessage({ text: Buffer.concat([
-      Buffer.from(params.bitgoKeyShare.yShares[1].u, 'hex'),
-      Buffer.from(params.bitgoKeyShare.yShares[1].chaincode, 'hex'),
-    ]).toString('hex'),
+    const bitgoToUserMessage = await openpgp.createMessage({
+      text: Buffer.concat([
+        Buffer.from(params.bitgoKeyShare.yShares[1].u, 'hex'),
+        Buffer.from(params.bitgoKeyShare.yShares[1].chaincode, 'hex'),
+      ]).toString('hex'),
     });
     const encryptedBitgoToUserMessage = await openpgp.encrypt({
       message: bitgoToUserMessage,
@@ -883,12 +936,14 @@ describe('TSS Utils:', async function () {
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
     const backupKeyId = backupGpgKeyActual.keyPacket.getFingerprint();
-    const bitgoToUserPublicShare = Buffer.from(
-      await sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(params.bitgoKeyShare.yShares[1].u, 'hex')),
-    ).toString('hex') + params.bitgoKeyShare.yShares[1].chaincode;
-    const bitgoToBackupPublicShare = Buffer.from(
-      await sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(params.bitgoKeyShare.yShares[2].u, 'hex')),
-    ).toString('hex') + params.bitgoKeyShare.yShares[2].chaincode;
+    const bitgoToUserPublicShare =
+      Buffer.from(
+        await sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(params.bitgoKeyShare.yShares[1].u, 'hex'))
+      ).toString('hex') + params.bitgoKeyShare.yShares[1].chaincode;
+    const bitgoToBackupPublicShare =
+      Buffer.from(
+        await sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(params.bitgoKeyShare.yShares[2].u, 'hex'))
+      ).toString('hex') + params.bitgoKeyShare.yShares[2].chaincode;
 
     bitgoKeychain.walletHSMGPGPublicKeySigs = await createWalletSignatures(
       params.bitgoGpgKey.privateKey,
@@ -907,13 +962,13 @@ describe('TSS Utils:', async function () {
   }
 
   async function nockBitgoKeychain(params: {
-    coin: string,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeyShare: KeyShare,
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    backupGpgKey: openpgp.SerializedKeyPair<string>,
-    bitgoGpgKey: openpgp.SerializedKeyPair<string>,
+    coin: string;
+    userKeyShare: KeyShare;
+    backupKeyShare: KeyShare;
+    bitgoKeyShare: KeyShare;
+    userGpgKey: openpgp.SerializedKeyPair<string>;
+    backupGpgKey: openpgp.SerializedKeyPair<string>;
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>;
   }): Promise<Keychain> {
     const bitgoKeychain = await generateBitgoKeychain(params);
 
@@ -924,9 +979,7 @@ describe('TSS Utils:', async function () {
     return bitgoKeychain;
   }
 
-  async function nockUserKeychain(params: {
-    coin: string,
-  }): Promise<Keychain> {
+  async function nockUserKeychain(params: { coin: string }): Promise<Keychain> {
     const userKeychain: Keychain = {
       id: '1',
       pub: '',
@@ -940,9 +993,7 @@ describe('TSS Utils:', async function () {
     return userKeychain;
   }
 
-  async function nockBackupKeychain(params: {
-    coin: string,
-  }): Promise<Keychain> {
+  async function nockBackupKeychain(params: { coin: string }): Promise<Keychain> {
     const backupKeychain: Keychain = {
       id: '2',
       pub: '',

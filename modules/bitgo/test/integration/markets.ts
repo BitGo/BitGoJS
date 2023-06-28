@@ -15,13 +15,21 @@ describe('Market', function () {
   });
 
   it('latest arguments', function () {
-    assert.throws(function () { bitgo.markets().latest('invalid'); });
-    assert.throws(function () { bitgo.markets().latest({}, 'invalid'); });
+    assert.throws(function () {
+      bitgo.markets().latest('invalid');
+    });
+    assert.throws(function () {
+      bitgo.markets().latest({}, 'invalid');
+    });
   });
 
   it('lastDays arguments', function () {
-    assert.throws(function () { bitgo.markets().lastDays({ currencyName: '' }); });
-    assert.throws(function () { bitgo.markets().lastDays({ currencyName: 'USD', days: -1 }); });
+    assert.throws(function () {
+      bitgo.markets().lastDays({ currencyName: '' });
+    });
+    assert.throws(function () {
+      bitgo.markets().lastDays({ currencyName: 'USD', days: -1 });
+    });
   });
 
   it('latest', function (done) {
@@ -54,7 +62,9 @@ describe('Market', function () {
   });
 
   it('lastDays 90 days', function () {
-    bitgo.markets().lastDays({ currencyName: 'USD', days: 90 })
+    bitgo
+      .markets()
+      .lastDays({ currencyName: 'USD', days: 90 })
       .then(function (marketData) {
         marketData.length.should.equal(90);
 
@@ -64,21 +74,27 @@ describe('Market', function () {
   });
 
   it('lastDays 0 days', function () {
-    bitgo.markets().lastDays({ currencyName: 'USD', days: 0 })
+    bitgo
+      .markets()
+      .lastDays({ currencyName: 'USD', days: 0 })
       .then(function (marketData) {
         marketData.length.should.equal(0);
       });
   });
 
   it('lastDays ZAR currency and 45 days', function () {
-    bitgo.markets().lastDays({ currencyName: 'ZAR', days: 45 })
+    bitgo
+      .markets()
+      .lastDays({ currencyName: 'ZAR', days: 45 })
       .then(function (marketData) {
         marketData.length.should.equal(45);
       });
   });
 
   it('lastDays over 90', function () {
-    bitgo.markets().lastDays({ currencyName: 'USD', days: 9001 })
+    bitgo
+      .markets()
+      .lastDays({ currencyName: 'USD', days: 9001 })
       .then(function (marketData) {
         marketData.length.should.equal(90);
       });

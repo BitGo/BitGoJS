@@ -8,10 +8,7 @@ import * as _ from 'lodash';
 
 import GlobalCoinFactory from './v2/coinFactory';
 import { BaseCoin, common } from '@bitgo/sdk-core';
-import {
-  BitGoAPI,
-  BitGoAPIOptions,
-} from '@bitgo/sdk-api';
+import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
 
 export type BitGoOptions = BitGoAPIOptions;
 
@@ -21,12 +18,28 @@ export class BitGo extends BitGoAPI {
    */
   constructor(params: BitGoAPIOptions = {}) {
     super(params);
-    if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub', 'stellarFederationServerUrl']) ||
-      (params.useProduction && !_.isBoolean(params.useProduction))) {
+    if (
+      !common.validateParams(
+        params,
+        [],
+        [
+          'clientId',
+          'clientSecret',
+          'refreshToken',
+          'accessToken',
+          'userAgent',
+          'customRootURI',
+          'customBitcoinNetwork',
+          'serverXpub',
+          'stellarFederationServerUrl',
+        ]
+      ) ||
+      (params.useProduction && !_.isBoolean(params.useProduction))
+    ) {
       throw new Error('invalid argument');
     }
 
-    if ((!params.clientId) !== (!params.clientSecret)) {
+    if (!params.clientId !== !params.clientSecret) {
       throw new Error('invalid argument - must provide both client id and secret');
     }
 

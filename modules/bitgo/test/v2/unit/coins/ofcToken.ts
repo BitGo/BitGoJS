@@ -39,7 +39,6 @@ describe('OFC:', function () {
     tgbp.getBaseFactor().should.equal(PRECISION_2);
   });
 
-
   it('test crypto coins for ofctbtc', function () {
     const tbtc = bitgo.coin('ofctbtc');
     tbtc.getChain().should.equal('ofctbtc');
@@ -50,7 +49,6 @@ describe('OFC:', function () {
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
-
 
   it('test crypto coins for ofcteth', function () {
     const teth = bitgo.coin('ofcteth');
@@ -295,8 +293,9 @@ describe('OFC:', function () {
     };
     const expectedResult = {
       halfSigned: {
-        payload: '{\"token\":\"otestusd\"}',
-        signature: '2049b94a22c69650ad9529767da993a23c078347fdf7d887409793dce8d07190e108a846869edf387d294cd75c6c770a12847615b2553b22a61de29be5d91770dd',
+        payload: '{"token":"otestusd"}',
+        signature:
+          '2049b94a22c69650ad9529767da993a23c078347fdf7d887409793dce8d07190e108a846869edf387d294cd75c6c770a12847615b2553b22a61de29be5d91770dd',
       },
     };
 

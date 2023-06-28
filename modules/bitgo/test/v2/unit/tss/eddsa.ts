@@ -39,9 +39,9 @@ describe('test tss helper functions', function () {
   let backupKey;
   let bitgoKey;
 
-  let userGpgKeypair: { publicKey: string, privateKey: string };
-  let backupGpgKeypair: { publicKey: string, privateKey: string };
-  let bitgoGpgKeypair: { publicKey: string, privateKey: string };
+  let userGpgKeypair: { publicKey: string; privateKey: string };
+  let backupGpgKeypair: { publicKey: string; privateKey: string };
+  let bitgoGpgKeypair: { publicKey: string; privateKey: string };
 
   let commonKeychain: string;
 
@@ -101,12 +101,18 @@ describe('test tss helper functions', function () {
           recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
         });
 
-        const decryptedMessage = await readSignedMessage(encryptedYShare.encryptedPrivateShare, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey);
+        const decryptedMessage = await readSignedMessage(
+          encryptedYShare.encryptedPrivateShare,
+          userGpgKeypair.publicKey,
+          bitgoGpgKeypair.privateKey
+        );
         decryptedMessage.should.equal(userKeyShare.yShares[i].u + userKeyShare.yShares[i].chaincode);
 
         encryptedYShare.i.should.equal(i);
         encryptedYShare.j.should.equal(1);
-        encryptedYShare.publicShare.should.equal(userKeyShare.uShare.y + userKeyShare.yShares[3].v + userKeyShare.uShare.chaincode);
+        encryptedYShare.publicShare.should.equal(
+          userKeyShare.uShare.y + userKeyShare.yShares[3].v + userKeyShare.uShare.chaincode
+        );
       }
     });
 
@@ -150,15 +156,18 @@ describe('test tss helper functions', function () {
       const combinedUserKey = await createCombinedKey({
         keyShare: userKeyShare,
         commonKeychain,
-        encryptedYShares: [{
-          yShare: bitgoToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          yShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-        }],
+        encryptedYShares: [
+          {
+            yShare: bitgoToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            yShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+          },
+        ],
       });
 
       combinedUserKey.commonKeychain.should.equal(commonKeychain);
@@ -185,15 +194,18 @@ describe('test tss helper functions', function () {
       const combinedBackupKey = await createCombinedKey({
         keyShare: backupKeyShare,
         commonKeychain,
-        encryptedYShares: [{
-          yShare: bitgoToBackupShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          yShare: userToBackupShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: userGpgKeypair.publicKey,
-        }],
+        encryptedYShares: [
+          {
+            yShare: bitgoToBackupShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            yShare: userToBackupShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: userGpgKeypair.publicKey,
+          },
+        ],
       });
 
       combinedBackupKey.commonKeychain.should.equal(commonKeychain);
@@ -220,15 +232,18 @@ describe('test tss helper functions', function () {
       await createCombinedKey({
         keyShare: userKeyShare,
         commonKeychain: 'nottherightkeychain',
-        encryptedYShares: [{
-          yShare: bitgoToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          yShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-        }],
+        encryptedYShares: [
+          {
+            yShare: bitgoToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            yShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+          },
+        ],
       }).should.be.rejectedWith('Common keychains do not match');
     });
 
@@ -249,20 +264,23 @@ describe('test tss helper functions', function () {
       await createCombinedKey({
         keyShare: userKeyShare,
         commonKeychain: 'nottherightkeychain',
-        encryptedYShares: [{
-          yShare: bitgoToUserShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          yShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-        }],
+        encryptedYShares: [
+          {
+            yShare: bitgoToUserShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            yShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+          },
+        ],
       }).should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
   });
 
-  describe('Eddsa tss signing helper function', async function() {
+  describe('Eddsa tss signing helper function', async function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
@@ -330,15 +348,16 @@ describe('test tss helper functions', function () {
         r: 'd0539375e6566f2fe540cba48c5e56bd1cdf68cfe1f0d527d2b730fe4e879809',
         R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
       },
-      rShares: { 1: {
-        i: 1,
-        j: 3,
-        u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
-        v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
-        r: '0375e8c5a5691a73c21df00d49d423e3f83fe08d7b5d5af33c5c6aa9cae59d0a',
-        R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
-        commitment: '62b21f98bf885841ad469145192d4df0697b3f42c581e3e926394eae0b101ecb',
-      },
+      rShares: {
+        1: {
+          i: 1,
+          j: 3,
+          u: '9ce3204a8c9757738967f3f81b463d87267bf6f2c0e5eaf2843167537b872b0b',
+          v: '01ea3f425b1adf8aec6cfe4fc8f9b94755c34657965f32397655dcd784f1b517',
+          r: '0375e8c5a5691a73c21df00d49d423e3f83fe08d7b5d5af33c5c6aa9cae59d0a',
+          R: 'c883fe2ae9b8da1764cc36a526cfa1a21f81d604320b209867f8de9223f1de32',
+          commitment: '62b21f98bf885841ad469145192d4df0697b3f42c581e3e926394eae0b101ecb',
+        },
       },
     };
 
@@ -350,7 +369,8 @@ describe('test tss helper functions', function () {
           from: 'bitgo',
           to: 'user',
           share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
-        }],
+        },
+      ],
     };
     const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex);
     const bitgoToUserCommitment: CommitmentShareRecord = {
@@ -403,59 +423,123 @@ describe('test tss helper functions', function () {
       });
 
       it('should fail if the Pshare doesnt belong to the User', async function () {
-        const invalidUserSigningMaterial = JSON.parse('{"uShare":{"i":2,"t":2,"n":3,"y":"e2b844934b56f278b4a8a3665d43d14de80732241622ec7a8bd6cffc0f74452a","seed":"5259ee23a364429919f969247323eee2f4af5786457b4af67d423f8944d3a691","chaincode":"7460de17d732969c3bc9bddbac1055aff168fad5668917b8ed3fd9628fc6e4f8"},"bitgoYShare":{"i":2,"j":3,"y":"141fd5cbb901d46b8c2c783f3d4ee968ae91c38f71aba05146b3ba8bd4309596","u":"581cfacb3de956cc434a35a3ac927f7d0a4daaef48a95c162cadb7878ef2270b","chaincode":"67d33063052606f341cae40877709de725abda41f2df7f4765e3f58ce5030e1a"},"backupYShare":{"i":2,"j":1,"y":"9e69e3e92978896e872d71ff7a9e63a963ab0f59583d4fcbe79f82cde9ea6bf9","u":"52a539f79df448a2f5108a5e410377cbd1574b7c3d9864bb310ebf7beb13460d","chaincode":"bda980c34aa06916f25c4c7934ea09a928bff7730a100902f4d53bb9236771a7"}}');
+        const invalidUserSigningMaterial = JSON.parse(
+          '{"uShare":{"i":2,"t":2,"n":3,"y":"e2b844934b56f278b4a8a3665d43d14de80732241622ec7a8bd6cffc0f74452a","seed":"5259ee23a364429919f969247323eee2f4af5786457b4af67d423f8944d3a691","chaincode":"7460de17d732969c3bc9bddbac1055aff168fad5668917b8ed3fd9628fc6e4f8"},"bitgoYShare":{"i":2,"j":3,"y":"141fd5cbb901d46b8c2c783f3d4ee968ae91c38f71aba05146b3ba8bd4309596","u":"581cfacb3de956cc434a35a3ac927f7d0a4daaef48a95c162cadb7878ef2270b","chaincode":"67d33063052606f341cae40877709de725abda41f2df7f4765e3f58ce5030e1a"},"backupYShare":{"i":2,"j":1,"y":"9e69e3e92978896e872d71ff7a9e63a963ab0f59583d4fcbe79f82cde9ea6bf9","u":"52a539f79df448a2f5108a5e410377cbd1574b7c3d9864bb310ebf7beb13460d","chaincode":"bda980c34aa06916f25c4c7934ea09a928bff7730a100902f4d53bb9236771a7"}}'
+        );
         const signingKey = MPC.keyDerive(
           invalidUserSigningMaterial.uShare,
           [invalidUserSigningMaterial.bitgoYShare, invalidUserSigningMaterial.backupYShare],
           path
         );
-        await createUserSignShare(signablePayload, signingKey.pShare).should.be.rejectedWith('Invalid PShare, PShare doesnt belong to the User');
+        await createUserSignShare(signablePayload, signingKey.pShare).should.be.rejectedWith(
+          'Invalid PShare, PShare doesnt belong to the User'
+        );
       });
     });
 
-    describe('sendSignatureShare:', async function() {
-      it('should succeed to send Signature Share', async function() {
+    describe('sendSignatureShare:', async function () {
+      it('should succeed to send Signature Share', async function () {
         const signatureShare = { from: 'user', to: 'bitgo', share: '128bytestring' } as SignatureShareRecord;
-        await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
-        const response = await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, signatureShare, RequestType.tx, 'signerShare');
+        await nockSendSignatureShare({
+          walletId: wallet.id(),
+          txRequestId: txRequest.txRequestId,
+          signatureShare,
+          signerShare: 'signerShare',
+        });
+        const response = await sendSignatureShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          signatureShare,
+          RequestType.tx,
+          'signerShare'
+        );
         response.should.deepEqual(signatureShare);
       });
 
-      it('should fail to send Signature Share', async function() {
+      it('should fail to send Signature Share', async function () {
         const invalidSignatureShare = { from: 'bitgo', to: 'user', share: '128bytestring' } as SignatureShareRecord;
-        const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: invalidSignatureShare, signerShare: 'signerShare' }, 400);
-        await sendSignatureShare(bitgo, wallet.id(), txRequest.txRequestId, invalidSignatureShare, RequestType.tx, 'signerShare').should.be.rejectedWith('some error');
+        const nock = await nockSendSignatureShare(
+          {
+            walletId: wallet.id(),
+            txRequestId: txRequest.txRequestId,
+            signatureShare: invalidSignatureShare,
+            signerShare: 'signerShare',
+          },
+          400
+        );
+        await sendSignatureShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          invalidSignatureShare,
+          RequestType.tx,
+          'signerShare'
+        ).should.be.rejectedWith('some error');
         nock.isDone().should.equal(true);
       });
     });
 
-    describe('offerUserToBitgoRShare:', async function() {
-      it('should succeed to send Signature Share', async function() {
-        const signatureShare = { from: 'user', to: 'bitgo', share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R } as SignatureShareRecord;
-        const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare, signerShare: 'signerShare' });
-        await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, validUserSignShare, 'signerShare').should.be.fulfilled();
+    describe('offerUserToBitgoRShare:', async function () {
+      it('should succeed to send Signature Share', async function () {
+        const signatureShare = {
+          from: 'user',
+          to: 'bitgo',
+          share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R,
+        } as SignatureShareRecord;
+        const nock = await nockSendSignatureShare({
+          walletId: wallet.id(),
+          txRequestId: txRequest.txRequestId,
+          signatureShare,
+          signerShare: 'signerShare',
+        });
+        await offerUserToBitgoRShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          validUserSignShare,
+          'signerShare'
+        ).should.be.fulfilled();
         nock.isDone().should.equal(true);
       });
 
-      it('should fail if no rShare is found', async function() {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any ;
+      it('should fail if no rShare is found', async function () {
+        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any;
         delete invalidUserSignShare.rShares[3];
-        await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare, 'signerShare').should.be.rejectedWith('userToBitgo RShare not found');
+        await offerUserToBitgoRShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          invalidUserSignShare,
+          'signerShare'
+        ).should.be.rejectedWith('userToBitgo RShare not found');
       });
 
-      it('should fail if the rShare found is invalid', async function() {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any ;
+      it('should fail if the rShare found is invalid', async function () {
+        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any;
         invalidUserSignShare.rShares[3].i = 1;
-        await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare, 'signerShare' ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
+        await offerUserToBitgoRShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          invalidUserSignShare,
+          'signerShare'
+        ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
 
-        const invalidUserSignShare2 = _.cloneDeep(validUserSignShare) as any ;
+        const invalidUserSignShare2 = _.cloneDeep(validUserSignShare) as any;
         invalidUserSignShare2.rShares[3].j = 3;
-        await offerUserToBitgoRShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserSignShare2, 'signerShare' ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
+        await offerUserToBitgoRShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          invalidUserSignShare2,
+          'signerShare'
+        ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
       });
     });
 
-    describe('getBitgoToUserRShare:', async function() {
-      it('should succeed to get the Bitgo to User RShare', async function() {
+    describe('getBitgoToUserRShare:', async function () {
+      it('should succeed to get the Bitgo to User RShare', async function () {
         const response = { txRequests: [txRequest] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
         const bitgoToUserRShare = await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId);
@@ -463,28 +547,32 @@ describe('test tss helper functions', function () {
         nock.isDone().should.equal(true);
       });
 
-      it('should fail if there is no bitgo to user RShare', async function() {
+      it('should fail if there is no bitgo to user RShare', async function () {
         const invalidTxRequest = _.cloneDeep(txRequest);
         invalidTxRequest.signatureShares[0].to = 'bitgo';
         invalidTxRequest.signatureShares[0].from = 'user';
         const response = { txRequests: [invalidTxRequest] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-        await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith('Bitgo to User RShare not found for id: ' + txRequest.txRequestId);
+        await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith(
+          'Bitgo to User RShare not found for id: ' + txRequest.txRequestId
+        );
         nock.isDone().should.equal(true);
       });
 
-      it('should fail if there is no signaturesShares', async function() {
+      it('should fail if there is no signaturesShares', async function () {
         const invalidTxRequest = _.cloneDeep(txRequest);
         invalidTxRequest.signatureShares = [];
         const response = { txRequests: [invalidTxRequest] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-        await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith('No signatures shares found for id: ' + txRequest.txRequestId);
+        await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith(
+          'No signatures shares found for id: ' + txRequest.txRequestId
+        );
         nock.isDone().should.equal(true);
       });
     });
 
-    describe('sendUserToBitgoGShare:', async function() {
-      it('should succeed to send User to Bitgo GShare', async function() {
+    describe('sendUserToBitgoGShare:', async function () {
+      it('should succeed to send User to Bitgo GShare', async function () {
         const signatureShare = {
           from: 'user',
           to: 'bitgo',
@@ -495,18 +583,28 @@ describe('test tss helper functions', function () {
           txRequestId: txRequest.txRequestId,
           signatureShare,
         });
-        await sendUserToBitgoGShare(bitgo, wallet.id(), txRequest.txRequestId, validUserToBitgoGShare).should.be.fulfilled();
+        await sendUserToBitgoGShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          validUserToBitgoGShare
+        ).should.be.fulfilled();
         nock.isDone().should.equal(true);
       });
 
-      it('should fail when the GShare is not from the User', async function() {
+      it('should fail when the GShare is not from the User', async function () {
         const invalidUserToBitgoGShare = _.cloneDeep(validUserToBitgoGShare);
         invalidUserToBitgoGShare.i = 3;
-        await sendUserToBitgoGShare(bitgo, wallet.id(), txRequest.txRequestId, invalidUserToBitgoGShare).should.be.rejectedWith('Invalid GShare, doesnt belong to the User');
+        await sendUserToBitgoGShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          invalidUserToBitgoGShare
+        ).should.be.rejectedWith('Invalid GShare, doesnt belong to the User');
       });
     });
 
-    describe('getTxRequest:', async function() {
+    describe('getTxRequest:', async function () {
       it('should succeed to get txRequest by id', async function () {
         const response = { txRequests: [txRequest] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
@@ -518,13 +616,15 @@ describe('test tss helper functions', function () {
       it('should fail if there are no txRequests', async function () {
         const response = { txRequests: [] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-        await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith('Unable to find TxRequest with id randomId');
+        await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith(
+          'Unable to find TxRequest with id randomId'
+        );
         nock.isDone().should.equal(true);
       });
     });
 
-    describe('createUserToBitGoGShare:', async function() {
-      it('should succeed to create a UserToBitGo GShare', async function() {
+    describe('createUserToBitGoGShare:', async function () {
+      it('should succeed to create a UserToBitGo GShare', async function () {
         const userToBitgoGShare = await createUserToBitGoGShare(
           validUserSignShare,
           txRequest.signatureShares[0] as SignatureShareRecord,
@@ -535,8 +635,8 @@ describe('test tss helper functions', function () {
         userToBitgoGShare.should.deepEqual(validUserToBitgoGShare);
       });
 
-      it('should fail when XShare doesnt belong to the user', async function() {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) ;
+      it('should fail when XShare doesnt belong to the user', async function () {
+        const invalidUserSignShare = _.cloneDeep(validUserSignShare);
         invalidUserSignShare.xShare.i = 3;
         await createUserToBitGoGShare(
           invalidUserSignShare,
@@ -547,7 +647,7 @@ describe('test tss helper functions', function () {
         ).should.be.rejectedWith('Invalid XShare, doesnt belong to the User');
       });
 
-      it('should fail when RShare doesnt belong to Bitgo', async function() {
+      it('should fail when RShare doesnt belong to Bitgo', async function () {
         const invalidBitgoRShare = _.cloneDeep(txRequest.signatureShares[0]);
         invalidBitgoRShare.from = 'user';
         await createUserToBitGoGShare(
@@ -570,22 +670,21 @@ describe('test tss helper functions', function () {
       });
     });
 
-    describe('createUserToBitGoGShare with commitment:', async function() {
-      it('should succeed to create a UserToBitGo GShare', async function() {
-
+    describe('createUserToBitGoGShare with commitment:', async function () {
+      it('should succeed to create a UserToBitGo GShare', async function () {
         const userToBitgoGShare = await createUserToBitGoGShare(
           validUserSignShare,
           txRequest.signatureShares[0] as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload,
-          bitgoToUserCommitment,
+          bitgoToUserCommitment
         );
         userToBitgoGShare.should.deepEqual(validUserToBitgoGShare);
       });
 
-      it('should fail when XShare doesnt belong to the user', async function() {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) ;
+      it('should fail when XShare doesnt belong to the user', async function () {
+        const invalidUserSignShare = _.cloneDeep(validUserSignShare);
         invalidUserSignShare.xShare.i = 3;
         await createUserToBitGoGShare(
           invalidUserSignShare,
@@ -593,12 +692,12 @@ describe('test tss helper functions', function () {
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload,
-          bitgoToUserCommitment,
+          bitgoToUserCommitment
         ).should.be.rejectedWith('Invalid XShare, doesnt belong to the User');
       });
 
-      it('should fail when commitment is invalid', async function() {
-        const invalidBitgoToUserCommitment = _.cloneDeep(bitgoToUserCommitment) ;
+      it('should fail when commitment is invalid', async function () {
+        const invalidBitgoToUserCommitment = _.cloneDeep(bitgoToUserCommitment);
         invalidBitgoToUserCommitment.share = 'deadbeef';
         await createUserToBitGoGShare(
           validUserSignShare,
@@ -606,11 +705,11 @@ describe('test tss helper functions', function () {
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload,
-          invalidBitgoToUserCommitment,
+          invalidBitgoToUserCommitment
         ).should.be.rejectedWith('Could not verify other player share');
       });
 
-      it('should fail when RShare doesnt belong to Bitgo', async function() {
+      it('should fail when RShare doesnt belong to Bitgo', async function () {
         const invalidBitgoRShare = _.cloneDeep(txRequest.signatureShares[0]);
         invalidBitgoRShare.from = 'user';
         await createUserToBitGoGShare(
@@ -619,7 +718,7 @@ describe('test tss helper functions', function () {
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload,
-          bitgoToUserCommitment,
+          bitgoToUserCommitment
         ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
 
         const invalidBitgoRShare2 = _.cloneDeep(txRequest.signatureShares[0]);
@@ -630,10 +729,9 @@ describe('test tss helper functions', function () {
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
           signablePayload,
-          bitgoToUserCommitment,
+          bitgoToUserCommitment
         ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
       });
     });
-
   });
 });

@@ -7,7 +7,6 @@ const co = Promise.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { bip32 } from '../../../../src/bip32util';
 
-
 const nock = require('nock');
 nock.enableNetConnect();
 
@@ -19,10 +18,9 @@ describe('XRP:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    return bitgo.authenticateTestUser(bitgo.testUserOTP())
-      .then(function () {
-        basecoin = bitgo.coin('txrp');
-      });
+    return bitgo.authenticateTestUser(bitgo.testUserOTP()).then(function () {
+      basecoin = bitgo.coin('txrp');
+    });
   });
 
   after(function () {
@@ -41,7 +39,9 @@ describe('XRP:', function () {
       rootPrivateKey: hdNode.privateKey.toString('hex'),
     };
 
-    return basecoin.wallets().generateWallet(params)
+    return basecoin
+      .wallets()
+      .generateWallet(params)
       .then(function (res) {
         res.should.have.property('wallet');
         res.should.have.property('userKeychain');
@@ -61,11 +61,14 @@ describe('XRP:', function () {
       });
   });
 
-  it('should create an XRP address', co(function *() {
-    const wallet = yield basecoin.wallets().get({ id: someWalletId });
-    const addrObj = yield wallet.createAddress();
-    addrObj.should.have.property('address');
-    addrObj.should.have.property('wallet');
-    addrObj.should.have.property('keychains');
-  }));
+  it(
+    'should create an XRP address',
+    co(function* () {
+      const wallet = yield basecoin.wallets().get({ id: someWalletId });
+      const addrObj = yield wallet.createAddress();
+      addrObj.should.have.property('address');
+      addrObj.should.have.property('wallet');
+      addrObj.should.have.property('keychains');
+    })
+  );
 });
