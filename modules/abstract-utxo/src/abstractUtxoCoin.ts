@@ -102,6 +102,7 @@ const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } =
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
+
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
   index: number;
@@ -677,7 +678,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param {VerifyKeySignaturesOptions} params
    * @return {{backup: boolean, bitgo: boolean}}
    */
-  protected verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
+  public verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
     // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
     const { userKeychain, keychainToVerify, keySignature } = params;
     if (!userKeychain) {
@@ -695,10 +696,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // verify the signature against the user public key
     assert(userKeychain.pub);
     const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
+    // Due to interface of `bitcoinMessage`, we need to convert the public key to an address.
+    // Note that this address has no relationship to on-chain transactions. We are
+    // only interested in the address as a representation of the public key.
     const signingAddress = utxolib.address.toBase58Check(
       utxolib.crypto.hash160(publicKey),
       utxolib.networks.bitcoin.pubKeyHash,
-      this.network
+      utxolib.networks.bitcoin
     );
 
     // BG-5703: use BTC mainnet prefix for all key signature operations

@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import { UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
+import { Keychain, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import {
@@ -261,7 +261,8 @@ describe('Abstract UTXO Coin:', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sign = async (key, keychain) => (await coin.signMessage(keychain, key.pub!)).toString('hex');
+    const sign = async (key, keychain, coinToSignFor = coin) =>
+      (await coinToSignFor.signMessage(keychain, key.pub!)).toString('hex');
     const signUser = (key) => sign(key, userKeychain);
     const signOther = (key) => sign(key, otherKeychain);
     const passphrase = 'test_passphrase';
@@ -580,6 +581,20 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
       bitcoinMock.restore();
+    });
+
+    it('should verify key signature of ZEC', async () => {
+      const zecCoin = bitgo.coin('tzec') as AbstractUtxoCoin;
+      const userKeychain = await zecCoin.keychains().create();
+      const otherKeychain = await zecCoin.keychains().create();
+
+      await zecCoin
+        .verifyKeySignature({
+          userKeychain: userKeychain as unknown as Keychain,
+          keychainToVerify: otherKeychain as unknown as Keychain,
+          keySignature: await sign(userKeychain, otherKeychain, zecCoin),
+        })
+        .should.be.true();
     });
   });
 });
