@@ -135,44 +135,44 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ address: 13375 })
         .should.be.rejectedWith('invalid address argument, expecting string or array');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ address: [null] })
         .should.be.rejectedWith('invalid address argument, expecting array of address strings');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ dateGte: 20101904 })
         .should.be.rejectedWith('invalid dateGte argument, expecting string');
 
       // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateLt: 20101904 }).should.be.rejectedWith('invalid dateLt argument, expecting string');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ valueGte: '10230005' })
         .should.be.rejectedWith('invalid valueGte argument, expecting number');
 
       // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueLt: '-5e8' }).should.be.rejectedWith('invalid valueLt argument, expecting number');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ includeHex: '123' })
         .should.be.rejectedWith('invalid includeHex argument, expecting boolean');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ state: 123 })
         .should.be.rejectedWith('invalid state argument, expecting string or array');
 
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .transfers({ state: [123, 456] })
         .should.be.rejectedWith('invalid state argument, expecting array of state strings');
 
@@ -1285,8 +1285,8 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if cpfpFeeRate is not an integer', async function () {
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
         .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     });
@@ -1304,8 +1304,8 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if maxFee is not an integer', async function () {
-      // @ts-expect-error checking type mismatch
       await wallet
+        // @ts-expect-error checking type mismatch
         .accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     });
