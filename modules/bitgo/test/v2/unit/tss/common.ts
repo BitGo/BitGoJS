@@ -16,15 +16,17 @@ describe('commonVerifyWalletSignature', function () {
   before(async function () {
     const keyPromises: Promise<openpgp.SerializedKeyPair<string>>[] = [];
     for (let i = 0; i < 3; i++) {
-      keyPromises.push(openpgp.generateKey({
-        userIDs: [
-          {
-            name: `test${i}`,
-            email: `test${i}@test.com`,
-          },
-        ],
-        curve: 'secp256k1',
-      }));
+      keyPromises.push(
+        openpgp.generateKey({
+          userIDs: [
+            {
+              name: `test${i}`,
+              email: `test${i}@test.com`,
+            },
+          ],
+          curve: 'secp256k1',
+        })
+      );
     }
     [gpgKey1, gpgKey2, gpgKey3] = await Promise.all(keyPromises);
     key1Actual = await openpgp.readKey({ armoredKey: gpgKey1.publicKey });
@@ -38,21 +40,25 @@ describe('commonVerifyWalletSignature', function () {
     const signatureString = await createSharedDataProof(gpgKey1.privateKey, gpgKey2.publicKey, []);
     const signature = await openpgp.readKey({ armoredKey: signatureString });
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key2Actual,
-      commonKeychain: '',
-      userKeyId: '',
-      backupKeyId: '',
-    }).should.be.rejectedWith('Invalid HSM GPG signature');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key2Actual,
+        commonKeychain: '',
+        userKeyId: '',
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('Invalid HSM GPG signature');
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key3Actual,
-      commonKeychain: '',
-      userKeyId: '',
-      backupKeyId: '',
-    }).should.be.rejectedWith('Invalid HSM GPG signature');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key3Actual,
+        commonKeychain: '',
+        userKeyId: '',
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('Invalid HSM GPG signature');
   });
 
   it('throws error when there are not exactly five raw notations in the signature', async function () {
@@ -61,13 +67,15 @@ describe('commonVerifyWalletSignature', function () {
     ]);
     const signature = await openpgp.readKey({ armoredKey: signatureString });
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key1Actual,
-      commonKeychain: '',
-      userKeyId: '',
-      backupKeyId: '',
-    }).should.be.rejectedWith('invalid wallet signatures');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '',
+        userKeyId: '',
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('invalid wallet signatures');
   });
 
   it('throws error when first raw notation does not match common keychain', async function () {
@@ -80,13 +88,15 @@ describe('commonVerifyWalletSignature', function () {
     ]);
     const signature = await openpgp.readKey({ armoredKey: signatureString });
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key1Actual,
-      commonKeychain: '5678',
-      userKeyId: '',
-      backupKeyId: '',
-    }).should.be.rejectedWith('wallet signature does not match common keychain');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '5678',
+        userKeyId: '',
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('wallet signature does not match common keychain');
   });
 
   it('throw error when second raw notation does not match userKeyId', async function () {
@@ -99,13 +109,15 @@ describe('commonVerifyWalletSignature', function () {
     ]);
     const signature = await openpgp.readKey({ armoredKey: signatureString });
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key1Actual,
-      commonKeychain: '1234',
-      userKeyId: gpgKey2Id,
-      backupKeyId: '',
-    }).should.be.rejectedWith('wallet signature does not match user key id');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '1234',
+        userKeyId: gpgKey2Id,
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('wallet signature does not match user key id');
   });
 
   it('throw error when third raw notation does not match backupKeyId', async function () {
@@ -118,13 +130,15 @@ describe('commonVerifyWalletSignature', function () {
     ]);
     const signature = await openpgp.readKey({ armoredKey: signatureString });
 
-    await commonTssMethods.commonVerifyWalletSignature({
-      walletSignature: signature,
-      bitgoPub: key1Actual,
-      commonKeychain: '1234',
-      userKeyId: gpgKey2Id,
-      backupKeyId: gpgKey1Id,
-    }).should.be.rejectedWith('wallet signature does not match backup key id');
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '1234',
+        userKeyId: gpgKey2Id,
+        backupKeyId: gpgKey1Id,
+      })
+      .should.be.rejectedWith('wallet signature does not match backup key id');
   });
 
   it('succeeds and returns the raw notations', async function () {

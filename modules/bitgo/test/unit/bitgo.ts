@@ -18,7 +18,6 @@ import { BitGo } from '../../src/bitgo';
 nock.disableNetConnect();
 
 describe('BitGo Prototype Methods', function () {
-
   describe('Version', () => {
     it('version', function () {
       const bitgo = TestBitGo.decorate(BitGo);
@@ -79,33 +78,39 @@ describe('BitGo Prototype Methods', function () {
 
   describe('HMAC request verification', () => {
     it('throws if HMAC request verification is disabled for non-prod environments', function () {
-      (() => TestBitGo.decorate(BitGo, { env: 'prod', hmacVerification: false }))
-        .should.throw(/Cannot disable request HMAC verification in environment/);
-      (() => TestBitGo.decorate(BitGo, { env: 'test', hmacVerification: false }))
-        .should.not.throw(/Cannot disable request HMAC verification in environment/);
-      (() => TestBitGo.decorate(BitGo, { env: 'adminProd', hmacVerification: false }))
-        .should.throw(/Cannot disable request HMAC verification in environment/);
-      (() => TestBitGo.decorate(BitGo, { env: 'adminTest', hmacVerification: false }))
-        .should.not.throw(/Cannot disable request HMAC verification in environment/);
-      (() => TestBitGo.decorate(BitGo, { env: 'dev', customRootURI: 'http://rooturi.example', hmacVerification: false }))
-        .should.not.throw(/Cannot disable request HMAC verification in environment/);
+      (() => TestBitGo.decorate(BitGo, { env: 'prod', hmacVerification: false })).should.throw(
+        /Cannot disable request HMAC verification in environment/
+      );
+      (() => TestBitGo.decorate(BitGo, { env: 'test', hmacVerification: false })).should.not.throw(
+        /Cannot disable request HMAC verification in environment/
+      );
+      (() => TestBitGo.decorate(BitGo, { env: 'adminProd', hmacVerification: false })).should.throw(
+        /Cannot disable request HMAC verification in environment/
+      );
+      (() => TestBitGo.decorate(BitGo, { env: 'adminTest', hmacVerification: false })).should.not.throw(
+        /Cannot disable request HMAC verification in environment/
+      );
+      (() =>
+        TestBitGo.decorate(BitGo, {
+          env: 'dev',
+          customRootURI: 'http://rooturi.example',
+          hmacVerification: false,
+        })).should.not.throw(/Cannot disable request HMAC verification in environment/);
     });
 
     it('allows disabling of HMAC request verification only for dev environments', function () {
-      (() => TestBitGo.decorate(BitGo, { env: 'dev', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'latest', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'adminDev', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'adminLatest', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'local', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'localNonSecure', hmacVerification: false }))
-        .should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'branch', customRootURI: 'http://rooturi.example', hmacVerification: false }))
-        .should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'dev', hmacVerification: false })).should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'latest', hmacVerification: false })).should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'adminDev', hmacVerification: false })).should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'adminLatest', hmacVerification: false })).should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'local', hmacVerification: false })).should.not.throw();
+      (() => TestBitGo.decorate(BitGo, { env: 'localNonSecure', hmacVerification: false })).should.not.throw();
+      (() =>
+        TestBitGo.decorate(BitGo, {
+          env: 'branch',
+          customRootURI: 'http://rooturi.example',
+          hmacVerification: false,
+        })).should.not.throw();
     });
   });
 
@@ -218,34 +223,38 @@ describe('BitGo Prototype Methods', function () {
   describe('Shamir Secret Sharing', () => {
     const bitgo = TestBitGo.decorate(BitGo);
     const seed = '8cc57dac9cdae42bf7848a2d12f2874d31eca1f9de8fe3f8fa13e7857b545d59';
-    const xpub = 'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
+    const xpub =
+      'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
     const passwords = ['mickey', 'mouse', 'donald', 'duck'];
 
     it('should fail to split secret with wrong m', () => {
-      (() => bitgo.splitSecret({
-        seed,
-        passwords: ['abc'],
-        m: 0,
-      })).should.throw('m must be a positive integer greater than or equal to 2');
+      (() =>
+        bitgo.splitSecret({
+          seed,
+          passwords: ['abc'],
+          m: 0,
+        })).should.throw('m must be a positive integer greater than or equal to 2');
     });
 
     it('should fail to split secret with bad password count', () => {
-      (() => bitgo.splitSecret({
-        seed,
-        passwords: ['abc'],
-        m: 2,
-      })).should.throw('passwords array length cannot be less than m');
+      (() =>
+        bitgo.splitSecret({
+          seed,
+          passwords: ['abc'],
+          m: 2,
+        })).should.throw('passwords array length cannot be less than m');
     });
 
     it('should split and fail to reconstitute secret with bad passwords', () => {
       const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
       const shards = _.at(splitSecret.seedShares, [0, 2]);
       const subsetPasswords = _.at(passwords, [0, 3]);
-      (() => bitgo.reconstituteSecret({
-        shards,
-        passwords: subsetPasswords,
-        xpub,
-      } as any)).should.throw(/ccm: tag doesn't match/);
+      (() =>
+        bitgo.reconstituteSecret({
+          shards,
+          passwords: subsetPasswords,
+          xpub,
+        } as any)).should.throw(/ccm: tag doesn't match/);
     });
 
     it('should split and reconstitute secret', () => {
@@ -254,8 +263,12 @@ describe('BitGo Prototype Methods', function () {
       const subsetPasswords = _.at(passwords, [0, 2]);
       const reconstitutedSeed = bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
       reconstitutedSeed.seed.should.equal(seed);
-      reconstitutedSeed.xpub.should.equal('xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN');
-      reconstitutedSeed.xprv.should.equal('xprv9s21ZrQH143K2Rnxdim5h3aws6o99QokXzP4o3CS6E5acSEtS9Zgfuw5ZWujhTHTWEAZDfmP3yxA1Ccn6myVkGEpRrT4xWgaEpoW7YiBAtC');
+      reconstitutedSeed.xpub.should.equal(
+        'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN'
+      );
+      reconstitutedSeed.xprv.should.equal(
+        'xprv9s21ZrQH143K2Rnxdim5h3aws6o99QokXzP4o3CS6E5acSEtS9Zgfuw5ZWujhTHTWEAZDfmP3yxA1Ccn6myVkGEpRrT4xWgaEpoW7YiBAtC'
+      );
     });
 
     it('should split and incorrectly verify secret', () => {
@@ -276,14 +289,13 @@ describe('BitGo Prototype Methods', function () {
       const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
       isValid.should.equal(true);
     });
-
   });
 
   describe('ECDH sharing secret', () => {
     function getKey(seed: string) {
-      return ECPair.fromPrivateKey(bip32.fromSeed(
-        crypto.createHash('sha256').update(seed).digest()
-      ).privateKey as Buffer);
+      return ECPair.fromPrivateKey(
+        bip32.fromSeed(crypto.createHash('sha256').update(seed).digest()).privateKey as Buffer
+      );
     }
 
     it('should calculate a new ECDH sharing secret correctly', () => {
@@ -334,28 +346,26 @@ describe('BitGo Prototype Methods', function () {
 
     describe('should fail to change the password', function changePWFail() {
       it('wrong arguments', async function () {
-        await bitgo.changePassword({ newPassword: '5678' })
+        await bitgo.changePassword({ newPassword: '5678' }).should.be.rejectedWith('expected string oldPassword');
+        await bitgo
+          .changePassword({ oldPassword: 1234, newPassword: '5678' })
           .should.be.rejectedWith('expected string oldPassword');
-        await bitgo.changePassword({ oldPassword: 1234, newPassword: '5678' })
-          .should.be.rejectedWith('expected string oldPassword');
-        await bitgo.changePassword({ oldPassword: '1234' })
-          .should.be.rejectedWith('expected string newPassword');
-        await bitgo.changePassword({ oldPassword: '1234', newPassword: 5678 })
+        await bitgo.changePassword({ oldPassword: '1234' }).should.be.rejectedWith('expected string newPassword');
+        await bitgo
+          .changePassword({ oldPassword: '1234', newPassword: 5678 })
           .should.be.rejectedWith('expected string newPassword');
       });
 
       it('incorrect old password', async function () {
-        nock(bgUrl)
-          .post('/api/v1/user/verifypassword')
-          .reply(200, { valid: false });
-        await bitgo.changePassword({ oldPassword, newPassword }).should.be.rejectedWith('the provided oldPassword is incorrect');
+        nock(bgUrl).post('/api/v1/user/verifypassword').reply(200, { valid: false });
+        await bitgo
+          .changePassword({ oldPassword, newPassword })
+          .should.be.rejectedWith('the provided oldPassword is incorrect');
       });
     });
 
     it('successful password change', async function () {
-      nock(bgUrl)
-        .post('/api/v1/user/verifypassword')
-        .reply(200, { valid: true });
+      nock(bgUrl).post('/api/v1/user/verifypassword').reply(200, { valid: true });
 
       nock(bgUrl)
         .post('/api/v1/user/encrypted')
@@ -385,9 +395,7 @@ describe('BitGo Prototype Methods', function () {
           ],
         });
 
-      nock(bgUrl)
-        .post('/api/v1/user/changepassword')
-        .reply(200, {});
+      nock(bgUrl).post('/api/v1/user/changepassword').reply(200, {});
 
       await bitgo.changePassword({ oldPassword, newPassword });
     });
@@ -420,17 +428,23 @@ describe('BitGo Prototype Methods', function () {
 
     it('should correctly handle authentication response', () => {
       const responseJson = {
-        encryptedToken: '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
+        encryptedToken:
+          '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
         derivationPath: 'm/999999/104490948/173846667',
-        encryptedECDHXprv: '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
+        encryptedECDHXprv:
+          '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
       };
       const parsedAuthenticationData = bitgo.handleTokenIssuance(responseJson, 'test@bitgo.com');
       parsedAuthenticationData.token.should.equal(token);
-      parsedAuthenticationData.ecdhXprv.should.equal('xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7');
+      parsedAuthenticationData.ecdhXprv.should.equal(
+        'xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7'
+      );
     });
 
     it('should correctly verify a response hmac', async function () {
-      const url = bitgo.coin('tltc').url('/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1');
+      const url = bitgo
+        .coin('tltc')
+        .url('/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1');
       const requestHeaderData = bitgo.calculateRequestHeaders({ url, token });
       const requestHeaders = {
         'BitGo-Auth-Version': '2.0',
@@ -439,7 +453,8 @@ describe('BitGo Prototype Methods', function () {
         Authorization: 'Bearer ' + requestHeaderData.tokenHash,
         HMAC: requestHeaderData.hmac,
       };
-      const responseBody = '{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}';
+      const responseBody =
+        '{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}';
 
       nock('https://bitgo.fakeurl', { reqheaders: requestHeaders })
         .get('/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1')
@@ -469,7 +484,9 @@ describe('BitGo Prototype Methods', function () {
           return bitgo.verifyResponse(verificationParams);
         },
       })) as any;
-      responseData.signatureSubject.should.equal('1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}');
+      responseData.signatureSubject.should.equal(
+        '1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}'
+      );
       responseData.expectedHmac.should.equal('30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec');
       responseData.isValid.should.equal(true);
     });
@@ -549,7 +566,6 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('Token Definitions at Startup', function () {
-
     it('Should return a non-empty list of tokens before the server responds', async function () {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       bitgo.initializeTestVars();
@@ -563,7 +579,6 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('superagent wrappers', function () {
-
     let bitgo;
     let bgUrl;
     before(function () {
@@ -572,9 +587,7 @@ describe('BitGo Prototype Methods', function () {
 
       bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-      nock(bgUrl)
-        .patch('/')
-        .reply(200);
+      nock(bgUrl).patch('/').reply(200);
     });
 
     it('PATCH requests', async function () {
@@ -590,10 +603,10 @@ describe('BitGo Prototype Methods', function () {
   describe('preprocessAuthenticationParams', () => {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     it('should fail if passed non-string username or password', function () {
-      (() => bitgo.preprocessAuthenticationParams({ username: 123 } as any))
-        .should.throw(/expected string username/);
-      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} } as any))
-        .should.throw(/expected string password/);
+      (() => bitgo.preprocessAuthenticationParams({ username: 123 } as any)).should.throw(/expected string username/);
+      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} } as any)).should.throw(
+        /expected string password/
+      );
     });
   });
 });

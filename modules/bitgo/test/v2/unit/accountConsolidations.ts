@@ -46,7 +46,9 @@ describe('Account Consolidations:', function () {
         it('should not allow a non-account consolidation coin build', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          await invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+          await invalidWallet.buildAccountConsolidations().should.be.rejectedWith({
+            message: `${unsupportedCoin.getFullName()} does not allow account consolidations.`,
+          });
         });
 
         it('should build with no params', async function () {
@@ -71,22 +73,32 @@ describe('Account Consolidations:', function () {
         it('should not allow a non-account consolidation coin send', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          await invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+          await invalidWallet.sendAccountConsolidation({}).should.be.rejectedWith({
+            message: `${unsupportedCoin.getFullName()} does not allow account consolidations.`,
+          });
         });
 
         it('should not allow a non-account consolidation coin send multiples', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          await invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+          await invalidWallet.sendAccountConsolidations({}).should.be.rejectedWith({
+            message: `${unsupportedCoin.getFullName()} does not allow account consolidations.`,
+          });
         });
 
         it('should not allow a bad pre-build to be passed', async function () {
-          await wallet.sendAccountConsolidation({ prebuildTx: 'some string' }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
-          await wallet.sendAccountConsolidation({ prebuildTx: undefined }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
+          await wallet
+            .sendAccountConsolidation({ prebuildTx: 'some string' })
+            .should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
+          await wallet
+            .sendAccountConsolidation({ prebuildTx: undefined })
+            .should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
         });
 
         it('should require a consolidation id to be passed', async function () {
-          await wallet.sendAccountConsolidation({ prebuildTx: {} }).should.be.rejectedWith({ message: 'Failed to find consolidation id on consolidation transaction.' });
+          await wallet
+            .sendAccountConsolidation({ prebuildTx: {} })
+            .should.be.rejectedWith({ message: 'Failed to find consolidation id on consolidation transaction.' });
         });
 
         it('should submit a consolidation transaction', async function () {
@@ -109,16 +121,25 @@ describe('Account Consolidations:', function () {
             .query({})
             .reply(200, fixtures.buildAccountConsolidation);
 
-          sinon.stub(wallet, 'prebuildAndSignTransaction')
-            .onCall(0).resolves(fixtures.signedAccountConsolidationBuilds[0])
-            .onCall(1).resolves(fixtures.signedAccountConsolidationBuilds[1]);
+          sinon
+            .stub(wallet, 'prebuildAndSignTransaction')
+            .onCall(0)
+            .resolves(fixtures.signedAccountConsolidationBuilds[0])
+            .onCall(1)
+            .resolves(fixtures.signedAccountConsolidationBuilds[1]);
 
           const scopeFirstSigned = nock(bgUrl)
-            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[0])
+            .post(
+              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+              fixtures.signedAccountConsolidationBuilds[0]
+            )
             .reply(200);
 
           const scopeTwoSigned = nock(bgUrl)
-            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[1])
+            .post(
+              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+              fixtures.signedAccountConsolidationBuilds[1]
+            )
             .reply(200);
 
           const consolidations = await wallet.sendAccountConsolidations();
@@ -137,16 +158,25 @@ describe('Account Consolidations:', function () {
             .query({})
             .reply(200, fixtures.buildAccountConsolidation);
 
-          sinon.stub(wallet, 'prebuildAndSignTransaction')
-            .onCall(0).resolves(fixtures.signedAccountConsolidationBuilds[0])
-            .onCall(1).resolves(fixtures.signedAccountConsolidationBuilds[1]);
+          sinon
+            .stub(wallet, 'prebuildAndSignTransaction')
+            .onCall(0)
+            .resolves(fixtures.signedAccountConsolidationBuilds[0])
+            .onCall(1)
+            .resolves(fixtures.signedAccountConsolidationBuilds[1]);
 
           const scopeWithSuccess = nock(bgUrl)
-            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[0])
+            .post(
+              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+              fixtures.signedAccountConsolidationBuilds[0]
+            )
             .reply(200);
 
           const scopeWithError = nock(bgUrl)
-            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[1])
+            .post(
+              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+              fixtures.signedAccountConsolidationBuilds[1]
+            )
             .reply(500);
 
           const consolidations = await wallet.sendAccountConsolidations();

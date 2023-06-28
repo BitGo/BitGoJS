@@ -7,6 +7,6 @@ describe('Error handling', () => {
     const { stack } = new BitGoJsError();
     assert.match(stack, /BitGoJsError/);
     assert.match(stack, /at Context\.namedFunc/);
-    (new NodeEnvironmentError()).stack!.should.match(/NodeEnvironmentError:/);
+    new NodeEnvironmentError().stack!.should.match(/NodeEnvironmentError:/);
   });
 });

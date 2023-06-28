@@ -7,7 +7,6 @@ import { Hbar, Algo } from '@bitgo/account-lib';
  * This classes intention is to guess/verify what seeds come from where.
  */
 export class SeedValidator {
-
   /**
    * Try to guess what kind of seed this could be
    * @param seed
@@ -66,5 +65,4 @@ export class SeedValidator {
     }
     return true;
   }
-
 }

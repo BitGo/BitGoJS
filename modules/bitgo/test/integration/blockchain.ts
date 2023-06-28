@@ -34,8 +34,12 @@ describe('Address', function () {
 
   describe('Get Address', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getAddress('invalid', function () {}); });
-      assert.throws(function () { blockchain.getAddress({}); });
+      assert.throws(function () {
+        blockchain.getAddress('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getAddress({});
+      });
       done();
     });
 
@@ -53,8 +57,12 @@ describe('Address', function () {
 
   describe('Get Address Transactions', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getAddressTransactions('invalid', function () {}); });
-      assert.throws(function () { blockchain.getAddressTransactions({}); });
+      assert.throws(function () {
+        blockchain.getAddressTransactions('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getAddressTransactions({});
+      });
       done();
     });
 
@@ -88,9 +96,15 @@ describe('Address', function () {
 
   describe('Get Address Unspents', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getAddressUnspents('invalid', function () {}); });
-      assert.throws(function () { blockchain.getAddressUnspents({ limit: 'a string!' }, function () {}); });
-      assert.throws(function () { blockchain.getAddressUnspents({}); });
+      assert.throws(function () {
+        blockchain.getAddressUnspents('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getAddressUnspents({ limit: 'a string!' }, function () {});
+      });
+      assert.throws(function () {
+        blockchain.getAddressUnspents({});
+      });
       done();
     });
 
@@ -106,9 +120,15 @@ describe('Address', function () {
 
   describe('Get Transaction', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getTransaction('invalid', function () {}); });
-      assert.throws(function () { blockchain.getTransaction({}); });
-      assert.throws(function () { blockchain.getTransaction({}, function () {}); });
+      assert.throws(function () {
+        blockchain.getTransaction('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getTransaction({});
+      });
+      assert.throws(function () {
+        blockchain.getTransaction({}, function () {});
+      });
       done();
     });
 
@@ -131,12 +151,30 @@ describe('Address', function () {
 
   describe('Get Transaction By Input', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getTransactionByInput('invalid', function () {}); });
-      assert.throws(function () { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2' }, function () {}); });
-      assert.throws(function () { blockchain.getTransactionByInput({ vout: 999 }, function () {}); });
-      assert.throws(function () { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2', vout: 'asdf' }, function () {}); });
-      assert.throws(function () { blockchain.getTransactionByInput({}); });
-      assert.throws(function () { blockchain.getTransactionByInput({}, function () {}); });
+      assert.throws(function () {
+        blockchain.getTransactionByInput('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getTransactionByInput(
+          { txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2' },
+          function () {}
+        );
+      });
+      assert.throws(function () {
+        blockchain.getTransactionByInput({ vout: 999 }, function () {});
+      });
+      assert.throws(function () {
+        blockchain.getTransactionByInput(
+          { txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2', vout: 'asdf' },
+          function () {}
+        );
+      });
+      assert.throws(function () {
+        blockchain.getTransactionByInput({});
+      });
+      assert.throws(function () {
+        blockchain.getTransactionByInput({}, function () {});
+      });
       done();
     });
 
@@ -162,9 +200,15 @@ describe('Address', function () {
 
   describe('Get Block', function () {
     it('arguments', function (done) {
-      assert.throws(function () { blockchain.getBlock('invalid', function () {}); });
-      assert.throws(function () { blockchain.getBlock({}); });
-      assert.throws(function () { blockchain.getBlock({}, function () {}); });
+      assert.throws(function () {
+        blockchain.getBlock('invalid', function () {});
+      });
+      assert.throws(function () {
+        blockchain.getBlock({});
+      });
+      assert.throws(function () {
+        blockchain.getBlock({}, function () {});
+      });
       done();
     });
 

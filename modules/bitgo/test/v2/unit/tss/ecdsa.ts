@@ -7,7 +7,8 @@ import {
   getTxRequest,
   ECDSAMethods,
   RequestType,
-  SignatureShareType, hexToBigInt,
+  SignatureShareType,
+  hexToBigInt,
 } from '@bitgo/sdk-core';
 import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
 import * as openpgp from 'openpgp';
@@ -38,8 +39,8 @@ type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;
 const createCombinedKey = ECDSAMethods.createCombinedKey;
 type GpgKeypair = {
-  publicKey: string,
-  privateKey: string
+  publicKey: string;
+  privateKey: string;
 };
 
 describe('Ecdsa tss helper functions tests', function () {
@@ -75,7 +76,7 @@ describe('Ecdsa tss helper functions tests', function () {
       { name: 'user', email: 'user@bitgo.com' },
       { name: 'backup', email: 'backup@bitgo.com' },
       { name: 'bitgo', email: 'bitgo@bitgo.com' },
-    ].map(async user => {
+    ].map(async (user) => {
       return openpgp.generateKey({
         userIDs: [
           {
@@ -91,7 +92,6 @@ describe('Ecdsa tss helper functions tests', function () {
     userGpgKeypair = gpgKeypairs[0];
     backupGpgKeypair = gpgKeypairs[1];
     bitgoGpgKeypair = gpgKeypairs[2];
-
   });
 
   after(function () {
@@ -105,8 +105,17 @@ describe('Ecdsa tss helper functions tests', function () {
 
     it('should encrypt n shares foreach user', async function () {
       for (let i = 2; i <= 3; i++) {
-        const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, bitgoGpgKeypair.publicKey, userGpgKeypair);
-        const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, senderPublicArmor: userGpgKeypair.publicKey, recipientPrivateArmor: bitgoGpgKeypair.privateKey });
+        const encryptedNShare = await ECDSAMethods.encryptNShare(
+          userKeyShare,
+          i,
+          bitgoGpgKeypair.publicKey,
+          userGpgKeypair
+        );
+        const decryptedNShare = await ECDSAMethods.decryptNShare({
+          nShare: encryptedNShare,
+          senderPublicArmor: userGpgKeypair.publicKey,
+          recipientPrivateArmor: bitgoGpgKeypair.privateKey,
+        });
         decryptedNShare.u.should.equal(userKeyShare.nShares[i].u);
         const publicKey = userKeyShare.pShare.y + userKeyShare.pShare.chaincode;
         encryptedNShare.i.should.equal(i);
@@ -117,14 +126,29 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should error for invalid recipient', async function () {
-      await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith(
+        'Invalid recipient'
+      );
+      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith(
+        'Invalid recipient'
+      );
+      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, userGpgKeypair).should.be.rejectedWith(
+        'Invalid recipient'
+      );
     });
 
-    it('should decrypt n share', async function() {
-      const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, 3, bitgoGpgKeypair.publicKey, userGpgKeypair);
-      const decryptedNShare = await ECDSAMethods.decryptNShare({ nShare: encryptedNShare, recipientPrivateArmor: bitgoGpgKeypair.privateKey, senderPublicArmor: userGpgKeypair.publicKey });
+    it('should decrypt n share', async function () {
+      const encryptedNShare = await ECDSAMethods.encryptNShare(
+        userKeyShare,
+        3,
+        bitgoGpgKeypair.publicKey,
+        userGpgKeypair
+      );
+      const decryptedNShare = await ECDSAMethods.decryptNShare({
+        nShare: encryptedNShare,
+        recipientPrivateArmor: bitgoGpgKeypair.privateKey,
+        senderPublicArmor: userGpgKeypair.publicKey,
+      });
       decryptedNShare.i.should.equal(userKeyShare.nShares[3].i);
       decryptedNShare.j.should.equal(userKeyShare.nShares[3].j);
       decryptedNShare.n.should.equal(userKeyShare.nShares[3].n);
@@ -139,22 +163,37 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should create combined user key', async function () {
-      const bitgoToUserShare = await ECDSAMethods.encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair, false);
-      const backupToUserShare = await ECDSAMethods.encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair, false);
+      const bitgoToUserShare = await ECDSAMethods.encryptNShare(
+        bitgoKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        userGpgKeypair,
+        false
+      );
+      const backupToUserShare = await ECDSAMethods.encryptNShare(
+        backupKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        userGpgKeypair,
+        false
+      );
       const combinedUserKey = await createCombinedKey(
         userKeyShare,
-        [{
-          nShare: bitgoToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-          isbs58Encoded: false,
-        }, {
-          nShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-          isbs58Encoded: false,
-        }],
-        commonKeychain,
+        [
+          {
+            nShare: bitgoToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+            isbs58Encoded: false,
+          },
+          {
+            nShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+            isbs58Encoded: false,
+          },
+        ],
+        commonKeychain
       );
 
       combinedUserKey.commonKeychain.should.equal(commonKeychain);
@@ -166,32 +205,25 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should create combined backup key', async function () {
-      const bitgoToBackupShare = await encryptNShare(
-        bitgoKeyShare,
-        2,
-        backupGpgKeypair.publicKey,
-        userGpgKeypair
-      );
+      const bitgoToBackupShare = await encryptNShare(bitgoKeyShare, 2, backupGpgKeypair.publicKey, userGpgKeypair);
 
-      const userToBackupShare = await encryptNShare(
-        userKeyShare,
-        2,
-        backupGpgKeypair.publicKey,
-        userGpgKeypair
-      );
+      const userToBackupShare = await encryptNShare(userKeyShare, 2, backupGpgKeypair.publicKey, userGpgKeypair);
 
       const combinedBackupKey = await createCombinedKey(
         backupKeyShare,
-        [{
-          nShare: bitgoToBackupShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          nShare: userToBackupShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: userGpgKeypair.publicKey,
-        }],
-        commonKeychain,
+        [
+          {
+            nShare: bitgoToBackupShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            nShare: userToBackupShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: userGpgKeypair.publicKey,
+          },
+        ],
+        commonKeychain
       );
 
       combinedBackupKey.commonKeychain.should.equal(commonKeychain);
@@ -203,61 +235,47 @@ describe('Ecdsa tss helper functions tests', function () {
     });
 
     it('should fail if common keychains do not match', async function () {
-      const bitgoToUserShare = await encryptNShare(
-        bitgoKeyShare,
-        1,
-        userGpgKeypair.publicKey,
-        userGpgKeypair
-      );
-      const backupToUserShare = await encryptNShare(
-        backupKeyShare,
-        1,
-        userGpgKeypair.publicKey,
-        userGpgKeypair
-      );
+      const bitgoToUserShare = await encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair);
+      const backupToUserShare = await encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair);
 
       // this should fail to combine the keys because we pass in invalid common key chain
       await createCombinedKey(
         userKeyShare,
-        [{
-          nShare: bitgoToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          nShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-        }],
-        'nottherightkeychain',
+        [
+          {
+            nShare: bitgoToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            nShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+          },
+        ],
+        'nottherightkeychain'
       ).should.be.rejectedWith('Common keychains do not match');
     });
 
     it('should fail if gpg keys are mismatched', async function () {
-      const bitgoToUserShare = await encryptNShare(
-        bitgoKeyShare,
-        1,
-        userGpgKeypair.publicKey,
-        userGpgKeypair
-      );
-      const backupToUserShare = await encryptNShare(
-        backupKeyShare,
-        1,
-        userGpgKeypair.publicKey,
-        userGpgKeypair
-      );
+      const bitgoToUserShare = await encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair);
+      const backupToUserShare = await encryptNShare(backupKeyShare, 1, userGpgKeypair.publicKey, userGpgKeypair);
 
       await createCombinedKey(
         userKeyShare,
-        [{
-          nShare: bitgoToUserShare,
-          recipientPrivateArmor: backupGpgKeypair.privateKey,
-          senderPublicArmor: bitgoGpgKeypair.publicKey,
-        }, {
-          nShare: backupToUserShare,
-          recipientPrivateArmor: userGpgKeypair.privateKey,
-          senderPublicArmor: backupGpgKeypair.publicKey,
-        }],
-        'nottherightkeychain',
+        [
+          {
+            nShare: bitgoToUserShare,
+            recipientPrivateArmor: backupGpgKeypair.privateKey,
+            senderPublicArmor: bitgoGpgKeypair.publicKey,
+          },
+          {
+            nShare: backupToUserShare,
+            recipientPrivateArmor: userGpgKeypair.privateKey,
+            senderPublicArmor: backupGpgKeypair.publicKey,
+          },
+        ],
+        'nottherightkeychain'
       ).should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
   });
@@ -275,12 +293,12 @@ describe('Ecdsa tss helper functions tests', function () {
           from: 'bitgo',
           to: 'user',
           share: '',
-        }],
+        },
+      ],
     };
     const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
 
     before('initializes', async function () {
-
       const baseCoin = bitgo.coin('gteth');
       const walletData = {
         id: '5b34252f1bf349930e34020a00000000',
@@ -309,8 +327,16 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should succeed to create User SignShare', async function () {
-        const xShare = mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs, userToBitGoPaillierChallenge);
-        const yShare = mpc.appendChallenge(userKey.yShares[3], { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 }, bitgoToUserPaillierChallenge);
+        const xShare = mpc.appendChallenge(
+          userKey.xShare,
+          mockSerializedChallengeWithProofs,
+          userToBitGoPaillierChallenge
+        );
+        const yShare = mpc.appendChallenge(
+          userKey.yShares[3],
+          { ntilde: xShare.ntilde, h1: xShare.h1, h2: xShare.h2 },
+          bitgoToUserPaillierChallenge
+        );
         const userSignShare = await ECDSAMethods.createUserSignShare(xShare, yShare);
         userSignShare.should.have.properties(['wShare', 'kShare']);
         const { wShare, kShare } = userSignShare;
@@ -336,20 +362,33 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should fail if the Xshare doesnt belong to the User', async function () {
-        let xShare = mpc.appendChallenge(userKey.xShare, mockSerializedChallengeWithProofs, userToBitGoPaillierChallenge);
+        let xShare = mpc.appendChallenge(
+          userKey.xShare,
+          mockSerializedChallengeWithProofs,
+          userToBitGoPaillierChallenge
+        );
         xShare = { ...xShare, i: 3 };
-        const yShare = mpc.appendChallenge(userKey.yShares[3], {
-          ntilde: xShare.ntilde,
-          h1: xShare.h1,
-          h2: xShare.h2,
-        }, bitgoToUserPaillierChallenge);
-        await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(`Invalid XShare, XShare doesn't belong to the User`);
+        const yShare = mpc.appendChallenge(
+          userKey.yShares[3],
+          {
+            ntilde: xShare.ntilde,
+            h1: xShare.h1,
+            h2: xShare.h2,
+          },
+          bitgoToUserPaillierChallenge
+        );
+        await ECDSAMethods.createUserSignShare(xShare, yShare).should.be.rejectedWith(
+          `Invalid XShare, XShare doesn't belong to the User`
+        );
       });
     });
 
     describe('createUserGammaAndMuShare:', async function () {
       it('should succeed to create User Gamma Share and MuShare', async function () {
-        const userShare = await ECDSAMethods.createUserGammaAndMuShare(gammaAndMuShareCreationParams.wShare, gammaAndMuShareCreationParams.aShare);
+        const userShare = await ECDSAMethods.createUserGammaAndMuShare(
+          gammaAndMuShareCreationParams.wShare,
+          gammaAndMuShareCreationParams.aShare
+        );
         userShare.should.have.properties(['muShare', 'gShare']);
         const { muShare, gShare } = userShare;
         muShare?.i?.should.equal(3);
@@ -363,14 +402,20 @@ describe('Ecdsa tss helper functions tests', function () {
       it('should fail if the Wshare / AShare doesnt belong to the User', async function () {
         const invalidWShare = { ...gammaAndMuShareCreationParams.wShare, i: 3 };
         const invalidAShare = { ...gammaAndMuShareCreationParams.aShare, i: 3 };
-        await ECDSAMethods.createUserGammaAndMuShare(invalidWShare, gammaAndMuShareCreationParams.aShare).should.be.rejectedWith(`Invalid WShare, doesn't belong to the User`);
-        await ECDSAMethods.createUserGammaAndMuShare(gammaAndMuShareCreationParams.wShare, invalidAShare).should.be.rejectedWith(`Invalid AShare, is not from Bitgo to User`);
+        await ECDSAMethods.createUserGammaAndMuShare(
+          invalidWShare,
+          gammaAndMuShareCreationParams.aShare
+        ).should.be.rejectedWith(`Invalid WShare, doesn't belong to the User`);
+        await ECDSAMethods.createUserGammaAndMuShare(
+          gammaAndMuShareCreationParams.wShare,
+          invalidAShare
+        ).should.be.rejectedWith(`Invalid AShare, is not from Bitgo to User`);
       });
     });
 
     describe('createUserOmicronAndDeltaShare:', async function () {
       it('should succeed to create User Omicron and Mu Shares', async function () {
-        const userShare = await ECDSAMethods.createUserOmicronAndDeltaShare( omicronAndDeltaShareCreationParams.gShare);
+        const userShare = await ECDSAMethods.createUserOmicronAndDeltaShare(omicronAndDeltaShareCreationParams.gShare);
         userShare.should.have.properties(['dShare', 'oShare']);
         const { dShare, oShare } = userShare;
         dShare?.i?.should.equal(3);
@@ -383,7 +428,9 @@ describe('Ecdsa tss helper functions tests', function () {
 
       it(`should fail if the gShare doesn't belong to the User`, async function () {
         const invalidGShare = { ...omicronAndDeltaShareCreationParams.gShare, i: 3 };
-        await ECDSAMethods.createUserOmicronAndDeltaShare(invalidGShare).should.be.rejectedWith(`Invalid GShare, doesn't belong to the User`);
+        await ECDSAMethods.createUserOmicronAndDeltaShare(invalidGShare).should.be.rejectedWith(
+          `Invalid GShare, doesn't belong to the User`
+        );
       });
     });
 
@@ -393,7 +440,11 @@ describe('Ecdsa tss helper functions tests', function () {
       });
 
       it('should succeed to create User Signature Share', async function () {
-        const userSignatureShare = await ECDSAMethods.createUserSignatureShare(createUserSignatureParams.oShare, createUserSignatureParams.dShare, signablePayload);
+        const userSignatureShare = await ECDSAMethods.createUserSignatureShare(
+          createUserSignatureParams.oShare,
+          createUserSignatureParams.dShare,
+          signablePayload
+        );
         const { R, s, y, i } = userSignatureShare;
         i.should.be.Number();
         R.should.be.a.String();
@@ -403,9 +454,17 @@ describe('Ecdsa tss helper functions tests', function () {
 
       it(`should fail if the OShare / dShare doesn't belong to the User`, async function () {
         const invalidOShare = { ...createUserSignatureParams.oShare, i: 3 };
-        await ECDSAMethods.createUserSignatureShare(invalidOShare, createUserSignatureParams.dShare, signablePayload).should.be.rejectedWith(`Invalid OShare, doesn't belong to the User`);
+        await ECDSAMethods.createUserSignatureShare(
+          invalidOShare,
+          createUserSignatureParams.dShare,
+          signablePayload
+        ).should.be.rejectedWith(`Invalid OShare, doesn't belong to the User`);
         const invalidDShare = { ...createUserSignatureParams.dShare, i: 3 };
-        await ECDSAMethods.createUserSignatureShare(createUserSignatureParams.oShare, invalidDShare, signablePayload).should.be.rejectedWith(`Invalid DShare, doesn't seem to be from BitGo`);
+        await ECDSAMethods.createUserSignatureShare(
+          createUserSignatureParams.oShare,
+          invalidDShare,
+          signablePayload
+        ).should.be.rejectedWith(`Invalid DShare, doesn't seem to be from BitGo`);
       });
     });
 
@@ -431,7 +490,9 @@ describe('Ecdsa tss helper functions tests', function () {
         {
           shareToSend: 'MUShare',
           mockShareToSend: { muShare: mockMuShare, dShare: mockDShareToBitgo, i: mockMuShare.i },
-          mockShareToSendString: `${ECDSAMethods.convertMuShare(mockMuShare).share}${ECDSAMethods.secondaryDelimeter}${ECDSAMethods.convertDShare(mockDShareToBitgo).share}`,
+          mockShareToSendString: `${ECDSAMethods.convertMuShare(mockMuShare).share}${ECDSAMethods.secondaryDelimeter}${
+            ECDSAMethods.convertDShare(mockDShareToBitgo).share
+          }`,
           sendType: ECDSAMethodTypes.SendShareType.MUShare,
           mockShareAsResponse: mockDShare,
           mockShareAsResponseString: mockDShareString,
@@ -443,24 +504,73 @@ describe('Ecdsa tss helper functions tests', function () {
       for (let index = 0; index < config.length; index++) {
         describe(`sendSignatureShare: ${config[index].shareToSend}`, async function () {
           it(`should succeed to send ${config[index].shareToSend}`, async function () {
-            const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
-            const shareRecord = { from: 'bitgo', to: 'user', share: config[index].mockShareAsResponseString } as SignatureShareRecord;
-            await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: shareRecord, tssType: 'ecdsa', signerShare: config[index].signerShare });
+            const mockSendReq = {
+              from: 'user',
+              to: 'bitgo',
+              share: config[index].mockShareToSendString,
+            } as SignatureShareRecord;
+            const shareRecord = {
+              from: 'bitgo',
+              to: 'user',
+              share: config[index].mockShareAsResponseString,
+            } as SignatureShareRecord;
+            await nockSendSignatureShare({
+              walletId: wallet.id(),
+              txRequestId: txRequest.txRequestId,
+              signatureShare: mockSendReq,
+              response: shareRecord,
+              tssType: 'ecdsa',
+              signerShare: config[index].signerShare,
+            });
             txRequest.signatureShares = [shareRecord];
             const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
-            const responseAShare = await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, RequestType.tx, config[index].sendType, config[index].mockShareToSend, config[index].signerShare);
+            const responseAShare = await ECDSAMethods.sendShareToBitgo(
+              bitgo,
+              wallet.id(),
+              txRequest.txRequestId,
+              RequestType.tx,
+              config[index].sendType,
+              config[index].mockShareToSend,
+              config[index].signerShare
+            );
             responseAShare.should.deepEqual(config[index].mockShareAsResponse);
           });
 
           it(`should fail if we get an invalid ${config[index].shareReceived} as response`, async function () {
-            const mockSendReq = { from: 'user', to: 'bitgo', share: config[index].mockShareToSendString } as SignatureShareRecord;
-            const invalidSignatureShare = { from: 'bitgo', to: 'user', share: JSON.stringify(config[index].incorrectReceivedShareString) } as SignatureShareRecord;
-            const nock = await nockSendSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare: mockSendReq, response: invalidSignatureShare, tssType: 'ecdsa', signerShare: config[index].signerShare }, 200);
+            const mockSendReq = {
+              from: 'user',
+              to: 'bitgo',
+              share: config[index].mockShareToSendString,
+            } as SignatureShareRecord;
+            const invalidSignatureShare = {
+              from: 'bitgo',
+              to: 'user',
+              share: JSON.stringify(config[index].incorrectReceivedShareString),
+            } as SignatureShareRecord;
+            const nock = await nockSendSignatureShare(
+              {
+                walletId: wallet.id(),
+                txRequestId: txRequest.txRequestId,
+                signatureShare: mockSendReq,
+                response: invalidSignatureShare,
+                tssType: 'ecdsa',
+                signerShare: config[index].signerShare,
+              },
+              200
+            );
             txRequest.signatureShares = [invalidSignatureShare];
             const response = { txRequests: [{ transactions: [{ ...txRequest }] }] };
             await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
-            await ECDSAMethods.sendShareToBitgo(bitgo, wallet.id(), txRequest.txRequestId, RequestType.tx, config[index].sendType, config[index].mockShareToSend, config[index].signerShare).should.be.rejectedWith(/Invalid .* share/g); // `Invalid ${shareName} share`
+            await ECDSAMethods.sendShareToBitgo(
+              bitgo,
+              wallet.id(),
+              txRequest.txRequestId,
+              RequestType.tx,
+              config[index].sendType,
+              config[index].mockShareToSend,
+              config[index].signerShare
+            ).should.be.rejectedWith(/Invalid .* share/g); // `Invalid ${shareName} share`
             nock.isDone().should.equal(true);
           });
         });
@@ -483,12 +593,14 @@ describe('Ecdsa tss helper functions tests', function () {
       it('should fail if there are no txRequests', async function () {
         const response = { txRequests: [] };
         const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-        await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith('Unable to find TxRequest with id randomId');
+        await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId).should.be.rejectedWith(
+          'Unable to find TxRequest with id randomId'
+        );
         nock.isDone().should.equal(true);
       });
     });
 
-    describe('signing share parsers and converters', function() {
+    describe('signing share parsers and converters', function () {
       afterEach(function () {
         nock.cleanAll();
       });
@@ -504,17 +616,24 @@ describe('Ecdsa tss helper functions tests', function () {
         kShare.should.deepEqual(bitgoKShare);
       });
 
-
       it('should successfully convert K share to signature share record', function () {
         const bitgoKShare = mockSignWithPaillierChallengeRT.kShare;
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${mockSignRT.kShare.k}${ECDSAMethods.delimeter}${mockSignRT.kShare.n}${ECDSAMethods.delimeter}${mockSignRT.kShare.ntilde}${ECDSAMethods.delimeter}${mockSignRT.kShare.h1}${ECDSAMethods.delimeter}${
-            mockSignRT.kShare.h2
-          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.z || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.u || ''}${ECDSAMethods.delimeter}${
-            mockSignRT.kShare.proof?.w || ''
-          }${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${bitgoKShare.p.join(ECDSAMethods.delimeter)}${ECDSAMethods.delimeter}${bitgoKShare.sigma.join(ECDSAMethods.delimeter)}`,
+          share: `${mockSignRT.kShare.k}${ECDSAMethods.delimeter}${mockSignRT.kShare.n}${ECDSAMethods.delimeter}${
+            mockSignRT.kShare.ntilde
+          }${ECDSAMethods.delimeter}${mockSignRT.kShare.h1}${ECDSAMethods.delimeter}${mockSignRT.kShare.h2}${
+            ECDSAMethods.delimeter
+          }${mockSignRT.kShare.proof?.z || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.u || ''}${
+            ECDSAMethods.delimeter
+          }${mockSignRT.kShare.proof?.w || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s || ''}${
+            ECDSAMethods.delimeter
+          }${mockSignRT.kShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockSignRT.kShare.proof?.s2 || ''}${
+            ECDSAMethods.delimeter
+          }${bitgoKShare.p.join(ECDSAMethods.delimeter)}${ECDSAMethods.delimeter}${bitgoKShare.sigma.join(
+            ECDSAMethods.delimeter
+          )}`,
         } as SignatureShareRecord;
 
         const kshare = ECDSAMethods.convertKShare(bitgoKShare);
@@ -523,7 +642,7 @@ describe('Ecdsa tss helper functions tests', function () {
         kshare.share.should.equal(share.share);
       });
 
-      it('should successfully parse A share without paillier challenge', function() {
+      it('should successfully parse A share without paillier challenge', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
@@ -534,7 +653,7 @@ describe('Ecdsa tss helper functions tests', function () {
         aShare.should.deepEqual(mockAShare);
       });
 
-      it('should successfully parse A share', function() {
+      it('should successfully parse A share', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
@@ -550,29 +669,39 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
-          share: `${mockShare.k}${ECDSAMethods.delimeter}${mockShare.alpha}${ECDSAMethods.delimeter}${mockShare.mu}${ECDSAMethods.delimeter}${mockShare.n}${ECDSAMethods.delimeter}${
-            mockShare.ntilde
-          }${ECDSAMethods.delimeter}${mockShare.h1}${ECDSAMethods.delimeter}${mockShare.h2}${ECDSAMethods.delimeter}${mockShare.proof?.z || ''}${ECDSAMethods.delimeter}${
+          share: `${mockShare.k}${ECDSAMethods.delimeter}${mockShare.alpha}${ECDSAMethods.delimeter}${mockShare.mu}${
+            ECDSAMethods.delimeter
+          }${mockShare.n}${ECDSAMethods.delimeter}${mockShare.ntilde}${ECDSAMethods.delimeter}${mockShare.h1}${
+            ECDSAMethods.delimeter
+          }${mockShare.h2}${ECDSAMethods.delimeter}${mockShare.proof?.z || ''}${ECDSAMethods.delimeter}${
             mockShare.proof?.u || ''
-          }${ECDSAMethods.delimeter}${mockShare.proof?.w || ''}${ECDSAMethods.delimeter}${mockShare.proof?.s || ''}${ECDSAMethods.delimeter}${
-            mockShare.proof?.s1 || ''
-          }${ECDSAMethods.delimeter}${mockShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.z || ''}${ECDSAMethods.delimeter}${
-            mockShare.gammaProof?.zprm || ''
-          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockShare.proof?.w || ''}${ECDSAMethods.delimeter}${mockShare.proof?.s || ''}${
+            ECDSAMethods.delimeter
+          }${mockShare.proof?.s1 || ''}${ECDSAMethods.delimeter}${mockShare.proof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.z || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.zprm || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.t || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
             mockShare.gammaProof?.w || ''
-          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${
-            mockShare.gammaProof?.s2 || ''
-          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.t1 || ''}${ECDSAMethods.delimeter}${mockShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.s1 || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockShare.gammaProof?.t1 || ''
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
             mockShare.gammaProof?.u || ''
-          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.z || ''}${ECDSAMethods.delimeter}${
-            mockShare.wProof?.zprm || ''
-          }${ECDSAMethods.delimeter}${mockShare.wProof?.t || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
-            mockShare.wProof?.w || ''
-          }${ECDSAMethods.delimeter}${mockShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.z || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.zprm || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.t || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.v || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.w || ''}${
+            ECDSAMethods.delimeter
+          }${mockShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
             mockShare.wProof?.s2 || ''
-          }${ECDSAMethods.delimeter}${mockShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
-            mockShare.wProof?.u || ''
-          }${ECDSAMethods.delimeter}${mockShare.wProof?.x || ''}${ECDSAMethods.delimeter}${mockShare.sigma!.join(ECDSAMethods.delimeter)}`,
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${
+            mockShare.wProof?.t2 || ''
+          }${ECDSAMethods.delimeter}${mockShare.wProof?.u || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.x || ''}${
+            ECDSAMethods.delimeter
+          }${mockShare.sigma!.join(ECDSAMethods.delimeter)}`,
         } as SignatureShareRecord;
 
         const aShare = ECDSAMethods.convertAShare(mockShare);
@@ -581,7 +710,7 @@ describe('Ecdsa tss helper functions tests', function () {
         aShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse Mu share', function() {
+      it('should successfully parse Mu share', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
@@ -598,21 +727,29 @@ describe('Ecdsa tss helper functions tests', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
-          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.z || ''}${ECDSAMethods.delimeter}${
-            mockMuShare.gammaProof?.zprm || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
+          share: `${mockMuShare.alpha}${ECDSAMethods.delimeter}${mockMuShare.mu}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.z || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.zprm || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.t || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.v || ''}${ECDSAMethods.delimeter}${
             mockMuShare.gammaProof?.w || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s1 || ''}${ECDSAMethods.delimeter}${
-            mockMuShare.gammaProof?.s2 || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.s1 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.gammaProof?.t1 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.t2 || ''}${ECDSAMethods.delimeter}${
             mockMuShare.gammaProof?.u || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.z || ''}${ECDSAMethods.delimeter}${
-            mockMuShare.wProof?.zprm || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockMuShare.gammaProof?.x || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.z || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.zprm || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.t || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.v || ''}${ECDSAMethods.delimeter}${
             mockMuShare.wProof?.w || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.s || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.s1 || ''}${ECDSAMethods.delimeter}${
-            mockMuShare.wProof?.s2 || ''
-          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t1 || ''}${ECDSAMethods.delimeter}${mockMuShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.s || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.s1 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.s2 || ''}${ECDSAMethods.delimeter}${
+            mockMuShare.wProof?.t1 || ''
+          }${ECDSAMethods.delimeter}${mockMuShare.wProof?.t2 || ''}${ECDSAMethods.delimeter}${
             mockMuShare.wProof?.u || ''
           }${ECDSAMethods.delimeter}${mockMuShare.wProof?.x || ''}`,
         } as SignatureShareRecord;
@@ -622,7 +759,7 @@ describe('Ecdsa tss helper functions tests', function () {
         muShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse D share', function() {
+      it('should successfully parse D share', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
@@ -647,7 +784,7 @@ describe('Ecdsa tss helper functions tests', function () {
         dShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse S and D share', function() {
+      it('should successfully parse S and D share', function () {
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.USER,
@@ -676,7 +813,7 @@ describe('Ecdsa tss helper functions tests', function () {
         sdShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse signature share', function() {
+      it('should successfully parse signature share', function () {
         const share = {
           to: SignatureShareType.USER,
           from: SignatureShareType.BITGO,
@@ -689,7 +826,7 @@ describe('Ecdsa tss helper functions tests', function () {
         signature.y.should.equal(mockSShareFromUser.y);
       });
 
-      it('should succuesfully parse combined signature', function() {
+      it('should succuesfully parse combined signature', function () {
         const mockCombinedSignature = mpc.constructSignature([mockSShareFromUser, mockSShare]);
         const share = {
           to: SignatureShareType.USER,
@@ -709,20 +846,30 @@ describe('Ecdsa tss helper functions tests', function () {
           from: SignatureShareType.USER,
           share: `${mockSShareFromUser.R}${ECDSAMethods.delimeter}${mockSShareFromUser.s}${ECDSAMethods.delimeter}${mockSShareFromUser.y}`,
         } as SignatureShareRecord;
-        const signatureShare = ECDSAMethods.convertSignatureShare(mockSShareFromUser, ECDSAMethods.getParticipantIndex('user'), ECDSAMethods.getParticipantIndex('bitgo'));
+        const signatureShare = ECDSAMethods.convertSignatureShare(
+          mockSShareFromUser,
+          ECDSAMethods.getParticipantIndex('user'),
+          ECDSAMethods.getParticipantIndex('bitgo')
+        );
         signatureShare.from.should.equal(share.from);
         signatureShare.to.should.equal(share.to);
         signatureShare.share.should.equal(share.share);
       });
 
-      it('should successfully convert B share to signature share record', function() {
+      it('should successfully convert B share to signature share record', function () {
         const bShare = mockedBitgoBShare.bShare;
         const share = {
           to: SignatureShareType.BITGO,
           from: SignatureShareType.BITGO,
-          share: `${bShare.beta}${ECDSAMethods.delimeter}${bShare.gamma}${ECDSAMethods.delimeter}${bShare.k}${ECDSAMethods.delimeter}${bShare.nu}${ECDSAMethods.delimeter}${bShare.w}${ECDSAMethods.delimeter}${bShare.y}${ECDSAMethods.delimeter}${bShare.l}${ECDSAMethods.delimeter}${bShare.m}${ECDSAMethods.delimeter}${bShare.n}${ECDSAMethods.delimeter}${bShare.ntilde}${ECDSAMethods.delimeter}${bShare.h1}${ECDSAMethods.delimeter}${bShare.h2}${ECDSAMethods.delimeter}${bShare.ck}${ECDSAMethods.delimeter}${bShare.p!.join(
+          share: `${bShare.beta}${ECDSAMethods.delimeter}${bShare.gamma}${ECDSAMethods.delimeter}${bShare.k}${
             ECDSAMethods.delimeter
-          )}`,
+          }${bShare.nu}${ECDSAMethods.delimeter}${bShare.w}${ECDSAMethods.delimeter}${bShare.y}${
+            ECDSAMethods.delimeter
+          }${bShare.l}${ECDSAMethods.delimeter}${bShare.m}${ECDSAMethods.delimeter}${bShare.n}${
+            ECDSAMethods.delimeter
+          }${bShare.ntilde}${ECDSAMethods.delimeter}${bShare.h1}${ECDSAMethods.delimeter}${bShare.h2}${
+            ECDSAMethods.delimeter
+          }${bShare.ck}${ECDSAMethods.delimeter}${bShare.p!.join(ECDSAMethods.delimeter)}`,
         } as SignatureShareRecord;
         const signatureShare = ECDSAMethods.convertBShare(bShare);
         signatureShare.from.should.equal(share.from);
@@ -730,7 +877,7 @@ describe('Ecdsa tss helper functions tests', function () {
         signatureShare.share.should.equal(share.share);
       });
 
-      it('should successfully parse B share', function() {
+      it('should successfully parse B share', function () {
         const bShare = mockedBitgoBShare.bShare;
         const share = {
           to: SignatureShareType.BITGO,
@@ -741,7 +888,7 @@ describe('Ecdsa tss helper functions tests', function () {
         parsedBShare.should.deepEqual(bShare);
       });
 
-      it('should successfully convert O share to signature share record', function() {
+      it('should successfully convert O share to signature share record', function () {
         const oShare = mockedBitgoOAndDShare.oShare;
         const delimeter = ECDSAMethods.delimeter;
         const share = {
@@ -755,7 +902,7 @@ describe('Ecdsa tss helper functions tests', function () {
         oShareSigRecord.share.should.equal(share.share);
       });
 
-      it('should successfully parse O share', function() {
+      it('should successfully parse O share', function () {
         const oShare = mockedBitgoOAndDShare.oShare;
         const delimeter = ECDSAMethods.delimeter;
         const share = {

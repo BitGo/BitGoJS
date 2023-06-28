@@ -4,7 +4,6 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { Util } from '@bitgo/sdk-core';
 
 describe('Internal:', () => {
-
   describe('Util', function () {
     it('has working xpubToEthAddress', function () {
       const xpub = bip32.fromSeed(Buffer.alloc(32)).neutered().toBase58();

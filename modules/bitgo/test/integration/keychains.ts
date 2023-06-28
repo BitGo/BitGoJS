@@ -30,21 +30,38 @@ describe('Keychains', function () {
 
   describe('Local', function () {
     it('isValid', function () {
-      assert.throws(function () { keychains.isValid(''); });
-      assert.throws(function () { keychains.isValid({}); });
+      assert.throws(function () {
+        keychains.isValid('');
+      });
+      assert.throws(function () {
+        keychains.isValid({});
+      });
       assert.equal(keychains.isValid({ key: 'hello world' }), false);
       assert.equal(keychains.isValid({ key: 'xpub123123' }), false);
       assert.equal(keychains.isValid({ key: 'xprv123123' }), false);
 
-      assert.equal(keychains.isValid({ key: 'xpub661MyMwAqRbcH5xFjpBfCe74cj5tks4nxE8hSMepNfsMVsBkx8eT1m9mnR1tAMGdbbdsE8yMDcuZ3NgVJbTzCYDiu8rcc3sqLF6vzi9yfTB' }), true);
-      assert.equal(keychains.isValid({ key: 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw' }), true);
+      assert.equal(
+        keychains.isValid({
+          key: 'xpub661MyMwAqRbcH5xFjpBfCe74cj5tks4nxE8hSMepNfsMVsBkx8eT1m9mnR1tAMGdbbdsE8yMDcuZ3NgVJbTzCYDiu8rcc3sqLF6vzi9yfTB',
+        }),
+        true
+      );
+      assert.equal(
+        keychains.isValid({
+          key: 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw',
+        }),
+        true
+      );
     });
 
     it('create', function () {
       // must use seed of at least 128 bits
       // standard test vector taken from bip32 spec
       const seed = Buffer.from('000102030405060708090a0b0c0d0e0f', 'hex');
-      assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
+      assert.equal(
+        keychains.create({ seed: seed }).xprv,
+        'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+      );
 
       // two keys created one after the other with no seed should have
       // non-equivalent xprivs, i.e. check that the RNG is actually working.
@@ -52,36 +69,59 @@ describe('Keychains', function () {
     });
 
     it('deriveLocal', function () {
-      assert.throws(function () { keychains.deriveLocal(''); });
-      assert.throws(function () { keychains.deriveLocal({}); });
-      assert.throws(function () { keychains.deriveLocal({ path: 'm/0/1' }); });
-      assert.throws(function () { keychains.deriveLocal({ path: 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }); });
-
-      const xprvDerivation = keychains.deriveLocal(
-        {
+      assert.throws(function () {
+        keychains.deriveLocal('');
+      });
+      assert.throws(function () {
+        keychains.deriveLocal({});
+      });
+      assert.throws(function () {
+        keychains.deriveLocal({ path: 'm/0/1' });
+      });
+      assert.throws(function () {
+        keychains.deriveLocal({
           path: 'm/0/1',
-          xprv: 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73',
-        }
-      );
-      assert.equal(xprvDerivation.xprv, 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P');
-      assert.equal(xprvDerivation.xpub, 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L');
-
-      const xpubDerivation = keychains.deriveLocal(
-        {
-          path: 'm/0/1',
+          xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P',
           xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L',
-        }
+        });
+      });
+
+      const xprvDerivation = keychains.deriveLocal({
+        path: 'm/0/1',
+        xprv: 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73',
+      });
+      assert.equal(
+        xprvDerivation.xprv,
+        'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P'
       );
-      assert.equal(xpubDerivation.xpub, 'xpub6Ee6yTYU8n4jBALmLc7jn88vQkuEUEN4xEyre8Y8f4UeTE9Wv4kQoVBc2EBkDN4bHSf5TrHFEUFM6ZWboxrDXuthejjm61ukBSnM3sEYtM9');
+      assert.equal(
+        xprvDerivation.xpub,
+        'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L'
+      );
+
+      const xpubDerivation = keychains.deriveLocal({
+        path: 'm/0/1',
+        xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L',
+      });
+      assert.equal(
+        xpubDerivation.xpub,
+        'xpub6Ee6yTYU8n4jBALmLc7jn88vQkuEUEN4xEyre8Y8f4UeTE9Wv4kQoVBc2EBkDN4bHSf5TrHFEUFM6ZWboxrDXuthejjm61ukBSnM3sEYtM9'
+      );
       assert.equal(xpubDerivation.xprv, undefined);
     });
   });
 
   describe('List', function () {
     it('arguments', function () {
-      assert.throws(function () { keychains.list({}, 'invalid'); });
-      assert.throws(function () { keychains.list('invalid'); });
-      assert.throws(function () { keychains.list('invalid', function () {}); });
+      assert.throws(function () {
+        keychains.list({}, 'invalid');
+      });
+      assert.throws(function () {
+        keychains.list('invalid');
+      });
+      assert.throws(function () {
+        keychains.list('invalid', function () {});
+      });
     });
 
     it('all', function (done) {
@@ -98,37 +138,46 @@ describe('Keychains', function () {
     let keychains;
     let correctPassword;
 
-    before(co(function *beforeUpdatePassword() {
-      bitgo = new TestBitGo({ env: 'test' });
-      bitgo.initializeTestVars();
-      keychains = bitgo.keychains();
-      const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
-      correctPassword = loginPasswords.password;
-      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-    }));
+    before(
+      co(function* beforeUpdatePassword() {
+        bitgo = new TestBitGo({ env: 'test' });
+        bitgo.initializeTestVars();
+        keychains = bitgo.keychains();
+        const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
+        correctPassword = loginPasswords.password;
+        yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+      })
+    );
 
-    it('successful update the password for all v1 keychains that are encrypted with the old password', co(function *itUpdatePassword() {
-      const newPassword = 'newPassword';
-      const result = yield keychains.updatePassword({ oldPassword: correctPassword, newPassword });
-      _.forOwn(result.keychains, function (encryptedXprv, xpub) {
-        xpub.should.startWith('xpub');
-        try {
-          const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
-          decryptedPrv.should.startWith('xprv');
-        } catch (e) {
-          // the decryption didn't work because of the wrong password, this is one of the keychains that wasn't
-          // encrypted with the old password
-          e.message.should.startWith('password error');
-        }
-      });
-      result.should.hasOwnProperty('version');
-    }));
+    it(
+      'successful update the password for all v1 keychains that are encrypted with the old password',
+      co(function* itUpdatePassword() {
+        const newPassword = 'newPassword';
+        const result = yield keychains.updatePassword({ oldPassword: correctPassword, newPassword });
+        _.forOwn(result.keychains, function (encryptedXprv, xpub) {
+          xpub.should.startWith('xpub');
+          try {
+            const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
+            decryptedPrv.should.startWith('xprv');
+          } catch (e) {
+            // the decryption didn't work because of the wrong password, this is one of the keychains that wasn't
+            // encrypted with the old password
+            e.message.should.startWith('password error');
+          }
+        });
+        result.should.hasOwnProperty('version');
+      })
+    );
   });
 
   describe('Get', function () {
     it('arguments', function () {
-      assert.throws(function () { keychains.get('invalid'); });
-      assert.throws(function () { keychains.get({}, function () {}); });
+      assert.throws(function () {
+        keychains.get('invalid');
+      });
+      assert.throws(function () {
+        keychains.get({}, function () {});
+      });
     });
 
     it('non existent keychain', function (done) {
@@ -145,10 +194,18 @@ describe('Keychains', function () {
 
   describe('Add', function () {
     it('arguments', function () {
-      assert.throws(function () { keychains.create('invalid'); });
-      assert.throws(function () { keychains.add(); });
-      assert.throws(function () { keychains.add('invalid'); });
-      assert.throws(function () { keychains.add({}, 0); });
+      assert.throws(function () {
+        keychains.create('invalid');
+      });
+      assert.throws(function () {
+        keychains.add();
+      });
+      assert.throws(function () {
+        keychains.add('invalid');
+      });
+      assert.throws(function () {
+        keychains.add({}, 0);
+      });
     });
 
     describe('public', function () {
@@ -245,24 +302,22 @@ describe('Keychains', function () {
         const options = {
           provider: 'bitgo',
         };
-        return keychains.createBackup(options)
-          .then(function (keychain) {
-            keychain.should.have.property('xpub');
-            keychain.should.have.property('path');
-            generatedXPub = keychain.xpub;
-          });
+        return keychains.createBackup(options).then(function (keychain) {
+          keychain.should.have.property('xpub');
+          keychain.should.have.property('path');
+          generatedXPub = keychain.xpub;
+        });
       });
 
       it('get', function () {
         const options = {
           xpub: generatedXPub,
         };
-        return keychains.get(options)
-          .then(function (keychain) {
-            keychain.should.have.property('xpub');
-            keychain.should.have.property('path');
-            keychain.xpub.should.eql(generatedXPub);
-          });
+        return keychains.get(options).then(function (keychain) {
+          keychain.should.have.property('xpub');
+          keychain.should.have.property('path');
+          keychain.xpub.should.eql(generatedXPub);
+        });
       });
     });
   });
@@ -275,8 +330,12 @@ describe('Keychains', function () {
     });
 
     it('arguments', function () {
-      assert.throws(function () { keychains.get('invalid'); });
-      assert.throws(function () { keychains.get({}, function () {}); });
+      assert.throws(function () {
+        keychains.get('invalid');
+      });
+      assert.throws(function () {
+        keychains.get({}, function () {});
+      });
     });
 
     it('non existent keychain', function (done) {
@@ -309,8 +368,5 @@ describe('Keychains', function () {
         });
       });
     });
-
   });
-
-
 });

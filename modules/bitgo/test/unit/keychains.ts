@@ -29,16 +29,16 @@ describe('Keychains', function v2keychains() {
     });
 
     it('should fail to update the password', async function () {
-      await keychains.updatePassword({ newPassword: '5678' })
-        .should.be.rejectedWith('Missing parameter: oldPassword');
+      await keychains.updatePassword({ newPassword: '5678' }).should.be.rejectedWith('Missing parameter: oldPassword');
 
-      await keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
+      await keychains
+        .updatePassword({ oldPassword: 1234, newPassword: '5678' })
         .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
 
-      await keychains.updatePassword({ oldPassword: '1234' })
-        .should.be.rejectedWith('Missing parameter: newPassword');
+      await keychains.updatePassword({ oldPassword: '1234' }).should.be.rejectedWith('Missing parameter: newPassword');
 
-      await keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
+      await keychains
+        .updatePassword({ oldPassword: '1234', newPassword: 5678 })
         .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
     });
 

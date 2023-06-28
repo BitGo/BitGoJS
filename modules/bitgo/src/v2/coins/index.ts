@@ -82,4 +82,3 @@ export { Tzec, Zec };
 import { coins } from '@bitgo/sdk-core';
 const { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP } = coins;
 export { FiatEur, FiatGBP, FiatUsd, Ofc, OfcToken, Susd, TfiatEur, TfiatGBP, TfiatUsd, Tsusd };
-

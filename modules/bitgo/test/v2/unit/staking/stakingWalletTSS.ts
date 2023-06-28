@@ -3,15 +3,7 @@ import * as _ from 'lodash';
 import * as nock from 'nock';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import {
-  Enterprise,
-  Environments,
-  Keychain,
-  Keychains,
-  StakingWallet,
-  TssUtils,
-  Wallet,
-} from '@bitgo/sdk-core';
+import { Enterprise, Environments, Keychain, Keychains, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 
@@ -38,7 +30,10 @@ describe('TSS Staking Wallet', function () {
     ethBaseCoin.keychains();
     atomBaseCoin = bitgo.coin('atom');
     atomBaseCoin.keychains();
-    enterprise = new Enterprise(bitgo, nearBaseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'TSS Test Enterprise' });
+    enterprise = new Enterprise(bitgo, nearBaseCoin, {
+      id: '5cf940949449412d00f53b3d92dbcaa3',
+      name: 'TSS Test Enterprise',
+    });
     const tssWalletData = {
       id: 'walletIdTss',
       coin: 'near',
@@ -72,10 +67,9 @@ describe('TSS Staking Wallet', function () {
     it('should throw error when txRequestId is not defined', async function () {
       const transaction = fixtures.transaction('READY');
       transaction.txRequestId = undefined;
-      await nearStakingWallet.buildSignAndSend(
-        { walletPassphrase: 'passphrase' },
-        transaction,
-      ).should.rejectedWith('txRequestId is required to sign and send');
+      await nearStakingWallet
+        .buildSignAndSend({ walletPassphrase: 'passphrase' }, transaction)
+        .should.rejectedWith('txRequestId is required to sign and send');
     });
 
     it('should build, sign and send transaction', async function () {
@@ -105,18 +99,20 @@ describe('TSS Staking Wallet', function () {
       });
 
       nock(microservicesUri)
-        .post(`/api/staking/v1/${nearStakingWallet.coin}/wallets/${nearStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
-          _.matches({ txRequestId: fixtures.txRequestId }))
+        .post(
+          `/api/staking/v1/${nearStakingWallet.coin}/wallets/${nearStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
+          _.matches({ txRequestId: fixtures.txRequestId })
+        )
         .reply(200, transaction);
 
       const stakingTransaction = await nearStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
-        transaction,
+        transaction
       );
 
       stakingTransaction.should.deepEqual(transaction);
     });
-    
+
     it('should build and sign but not send transaction for ETH TSS or ECDSA based TSS Coin', async function () {
       [ethStakingWallet, atomStakingWallet].forEach(async (ecdsaStakingWallet) => {
         const walletPassphrase = 'passphrase';
@@ -146,14 +142,11 @@ describe('TSS Staking Wallet', function () {
 
         const stakingTransaction = await ecdsaStakingWallet.buildSignAndSend(
           { walletPassphrase: walletPassphrase },
-          transaction,
+          transaction
         );
 
         stakingTransaction.should.deepEqual(transaction);
       });
-
     });
-
   });
-
 });

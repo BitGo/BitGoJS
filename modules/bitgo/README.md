@@ -9,6 +9,7 @@ Please email us at support@bitgo.com if you have questions or comments about thi
 
 [![Known Vulnerabilities](https://snyk.io/test/github/BitGo/BitGoJS/badge.svg)](https://snyk.io/test/github/BitGo/BitGoJS)
 [![BitGo SDK](https://github.com/BitGo/BitGoJS/actions/workflows/ci.yml/badge.svg)](https://github.com/BitGo/BitGoJS/actions/workflows/ci.yml)
+
 # Installation
 
 Please make sure you are running at least Node version 8 (the latest LTS release is recommended) and NPM version 6.
@@ -29,7 +30,9 @@ You can find the complete release notes (since version 4.44.0) [here](https://gi
 # Example Usage
 
 ## Initialize SDK
+
 Create an access token by logging into your bitgo account, going to the API access tab [in the settings area](https://www.bitgo.com/settings) and making a developer token.
+
 ```js
 const BitGo = require('bitgo');
 const bitgo = new BitGo.BitGo({ accessToken: ACCESS_TOKEN }); // defaults to testnet. add env: 'prod' if you want to go against mainnet
@@ -38,37 +41,42 @@ console.dir(result);
 ```
 
 ## Create Wallet
+
 ```js
 const params = {
-  "passphrase": "replaceme",
-  "label": "firstwallet"
+  passphrase: 'replaceme',
+  label: 'firstwallet',
 };
 const { wallet } = await bitgo.coin('tbtc').wallets().generateWallet(params);
 console.dir(wallet);
 ```
 
 ## Create new address
+
 ```js
 const address = await wallet.createAddress();
 console.dir(address);
 ```
 
 ## View wallet transfers
+
 ```js
 const transfers = await wallet.transfers();
 ```
 
 ## Send coins
+
 ```js
 const result = await wallet.sendCoins({
-  address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx",
+  address: '2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx',
   amount: 0.01 * 1e8,
-  walletPassphrase:  "replaceme"
+  walletPassphrase: 'replaceme',
 });
 console.dir(result);
 ```
 
 ## More examples
+
 Further demos and examples in both JavaScript and TypeScript can be found in the [example](example) directory.
 
 # Enabling additional debugging output
@@ -78,21 +86,23 @@ Further demos and examples in both JavaScript and TypeScript can be found in the
 When using the `bitgo` npm package, the easiest way to enable debug output is by setting the `DEBUG` environment variable to one or more of the debug namespaces in the table below. Multiple debug namespaces can be enabled by giving a comma-separated list or by using `*` as a wildcard. See the [debug package documentation](https://github.com/visionmedia/debug#readme) for more details.
 
 ## Available Debug Namespaces
-| Namespace | Description |
-| --- | --- |
-| `bitgo:index` | Core BitGo object. Currently only constant fetch failures and HMAC response failures will emit debug information for this namespace. |
-| `bitgo:v1:txb` | Version 1 (legacy) transaction builder |
-| `bitgo:v2:pendingapprovals` | Pending approval operations. Currently only wallet fetch errors will emit debug information for this namespace. |
-| `bitgo:v2:wallet` | Wallet operations including transaction prebuild, sendMany calls and consolidation transactions |
-| `bitgo:v2:utxo` | Low level operations for UTXO coins, including transaction parsing, verification, signing and explanations |
-| `bitgo:v2:eth` | Ethereum specific output. Currently only failures to require the optional Ethereum libraries are reported |
-| `bitgo:v2:util` | SDK utilities specific output. Currently only failures to require the optional Ethereum libraries are reported |
+
+| Namespace                   | Description                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `bitgo:index`               | Core BitGo object. Currently only constant fetch failures and HMAC response failures will emit debug information for this namespace. |
+| `bitgo:v1:txb`              | Version 1 (legacy) transaction builder                                                                                               |
+| `bitgo:v2:pendingapprovals` | Pending approval operations. Currently only wallet fetch errors will emit debug information for this namespace.                      |
+| `bitgo:v2:wallet`           | Wallet operations including transaction prebuild, sendMany calls and consolidation transactions                                      |
+| `bitgo:v2:utxo`             | Low level operations for UTXO coins, including transaction parsing, verification, signing and explanations                           |
+| `bitgo:v2:eth`              | Ethereum specific output. Currently only failures to require the optional Ethereum libraries are reported                            |
+| `bitgo:v2:util`             | SDK utilities specific output. Currently only failures to require the optional Ethereum libraries are reported                       |
 
 Another debug namespace which is not provided by BitGoJS but is helpful nonetheless is the `superagent` namespace, which will output all HTTP requests and responses (only the URL, not bodies).
 
 ## Example
 
 To run an SDK script with debug output enabled, export the DEBUG environment variable before running.
+
 ```shell script
 export DEBUG='bitgo:*' # enable all bitgo debug namespaces
 node myScript.js

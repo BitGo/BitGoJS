@@ -9,9 +9,9 @@ import { ecc as secp256k1 } from '@bitgo/utxo-lib';
 const sodium = require('libsodium-wrappers-sumo');
 
 describe('OpenGPG Utils Tests', function () {
-  let senderKey: { publicKey: string, privateKey: string };
-  let recipientKey: { publicKey: string, privateKey: string };
-  let otherKey: { publicKey: string, privateKey: string };
+  let senderKey: { publicKey: string; privateKey: string };
+  let recipientKey: { publicKey: string; privateKey: string };
+  let otherKey: { publicKey: string; privateKey: string };
 
   before(async function () {
     openpgp.config.rejectCurves = new Set();
@@ -58,7 +58,9 @@ describe('OpenGPG Utils Tests', function () {
       const proofSubkeys = decodedProof.getSubkeys()[1];
 
       const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams.Q.slice(1)).toString('hex');
-      const rawUValueProof = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))).toString('hex');
+      const rawUValueProof = Buffer.from(
+        sodium.crypto_scalarmult_ed25519_base_noclamp(Buffer.from(uValue, 'hex'))
+      ).toString('hex');
 
       decodedUValueProof.should.equal(rawUValueProof);
     });
@@ -163,9 +165,15 @@ describe('OpenGPG Utils Tests', function () {
     it('should be able to detect if proof value is corrupted or not', async function () {
       const sharedData1 = crypto.randomBytes(32).toString('hex');
       const sharedData2 = crypto.randomBytes(32).toString('hex');
-      const dataToProofArray = [{ name: 's1', value: sharedData1 },
-        { name: 's2', value: sharedData2 }];
-      const proof = await openpgpUtils.createSharedDataProof(senderKey.privateKey, otherKey.publicKey, dataToProofArray);
+      const dataToProofArray = [
+        { name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 },
+      ];
+      const proof = await openpgpUtils.createSharedDataProof(
+        senderKey.privateKey,
+        otherKey.publicKey,
+        dataToProofArray
+      );
       let isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
       isValid.should.be.true();
       // tamper with the data
@@ -175,12 +183,16 @@ describe('OpenGPG Utils Tests', function () {
     });
   });
 
-  describe('encrypt and decrypt with signing', function() {
+  describe('encrypt and decrypt with signing', function () {
     it('should successfully encrypt, sign, and decrypt', async function () {
       const text = 'original message';
 
       const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
-      const decryptedMessage = await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, recipientKey.privateKey);
+      const decryptedMessage = await openpgpUtils.readSignedMessage(
+        signedMessage,
+        senderKey.publicKey,
+        recipientKey.privateKey
+      );
 
       decryptedMessage.should.equal(text);
     });
@@ -189,7 +201,8 @@ describe('OpenGPG Utils Tests', function () {
       const text = 'original message';
 
       const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
-      await openpgpUtils.readSignedMessage(signedMessage, otherKey.publicKey, recipientKey.privateKey)
+      await openpgpUtils
+        .readSignedMessage(signedMessage, otherKey.publicKey, recipientKey.privateKey)
         .should.be.rejected();
     });
 
@@ -197,23 +210,28 @@ describe('OpenGPG Utils Tests', function () {
       const text = 'original message';
 
       const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
-      await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, otherKey.privateKey)
+      await openpgpUtils
+        .readSignedMessage(signedMessage, senderKey.publicKey, otherKey.privateKey)
         .should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
 
-    it('should encrypt, sign, and decrypt without previously clearing rejectedCurves', async function() {
+    it('should encrypt, sign, and decrypt without previously clearing rejectedCurves', async function () {
       openpgp.config.rejectCurves = new Set([openpgp.enums.curve.secp256k1]);
 
       const text = 'original message';
       const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
-      const decryptedMessage = await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, recipientKey.privateKey);
+      const decryptedMessage = await openpgpUtils.readSignedMessage(
+        signedMessage,
+        senderKey.publicKey,
+        recipientKey.privateKey
+      );
       decryptedMessage.should.equal(text);
 
       openpgp.config.rejectCurves = new Set();
     });
   });
 
-  describe('signatures and verification', function() {
+  describe('signatures and verification', function () {
     it('should verify signature', async function () {
       const text = 'some payload';
       const signature = await openpgpUtils.signText(text, senderKey.privateKey);
@@ -239,7 +257,7 @@ describe('OpenGPG Utils Tests', function () {
     });
   });
 
-  describe('GPG key generation', function() {
+  describe('GPG key generation', function () {
     it('should generate a a GPG key for secp256k1 with random name and email', async function () {
       const gpgKey = await openpgpUtils.generateGPGKeyPair('secp256k1');
 
@@ -275,16 +293,17 @@ describe('OpenGPG Utils Tests', function () {
     });
 
     it('should fail to generate a a GPG key for unknown curve', async function () {
-      await openpgpUtils.generateGPGKeyPair('unknownCurve' as openpgp.EllipticCurveName)
+      await openpgpUtils
+        .generateGPGKeyPair('unknownCurve' as openpgp.EllipticCurveName)
         .should.be.rejectedWith('Error generating keypair: Invalid curve');
     });
   });
 
-  function equal (buf1, buf2) {
+  function equal(buf1, buf2) {
     if (buf1.byteLength != buf2.byteLength) return false;
     const dv1 = new Int8Array(buf1);
     const dv2 = new Int8Array(buf2);
-    for (let i = 0 ; i != buf1.byteLength ; i++) {
+    for (let i = 0; i != buf1.byteLength; i++) {
       if (dv1[i] != dv2[i]) return false;
     }
     return true;

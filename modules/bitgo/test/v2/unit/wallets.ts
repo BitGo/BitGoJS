@@ -16,10 +16,7 @@ describe('V2 Wallets:', function () {
   let bgUrl;
 
   before(function () {
-    nock('https://bitgo.fakeurl')
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants: {} });
+    nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
 
     bitgo.initializeTestVars();
 
@@ -36,23 +33,28 @@ describe('V2 Wallets:', function () {
   describe('Add Wallet:', function () {
     it('throws on invalid arguments', async function () {
       // isCustodial flag is not a boolean
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
+      await wallets
+        .add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
         .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
 
       // type is not a string
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
+      await wallets
+        .add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
         .should.be.rejectedWith('Expecting parameter string: type but found number');
 
       // Address is an invalid address
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
+      await wallets
+        .add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
         .should.be.rejectedWith('invalid argument for address - valid address string expected');
 
       // gasPrice is a number
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
+      await wallets
+        .add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
         .should.be.rejectedWith('invalid argument for gasPrice - number expected');
 
       // walletVersion is a number
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, walletVersion: '1' })
+      await wallets
+        .add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, walletVersion: '1' })
         .should.be.rejectedWith('invalid argument for walletVersion - number expected');
     });
 
@@ -113,7 +115,12 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 } as any);
+      await ethWallets.add({
+        label: 'label',
+        enterprise: 'enterprise',
+        type: 'custodial',
+        gasPrice: 20000000000,
+      } as any);
     });
 
     it('creates a new wallet with walletVersion', async function () {
@@ -143,7 +150,15 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      await wallets.add({ label: 'label', enterprise: 'enterprise', type: 'hot', keys: [], m: 2, n: 3, userKey: 'test123' });
+      await wallets.add({
+        label: 'label',
+        enterprise: 'enterprise',
+        type: 'hot',
+        keys: [],
+        m: 2,
+        n: 3,
+        userKey: 'test123',
+      });
     });
   });
 
@@ -158,7 +173,9 @@ describe('V2 Wallets:', function () {
         backupXpubProvider: 'provider',
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
 
       params = {
         label: 'abc',
@@ -177,21 +194,27 @@ describe('V2 Wallets:', function () {
         disableTransactionNotifications: 'string',
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
 
       params = {
         label: 'abc',
         gasPrice: 'string',
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
 
       params = {
         label: 'abc',
         gasPrice: true,
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
 
       params = {
         label: 'abc',
@@ -212,7 +235,9 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid max fee argument, expecting number or number as string');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid max fee argument, expecting number or number as string');
 
       params = {
         label: 'abc',
@@ -222,14 +247,18 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid priority fee argument, expecting number or number as string');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid priority fee argument, expecting number or number as string');
 
       params = {
         label: 'abc',
         disableKRSEmail: 'string',
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
 
       params = {
         label: 'abc',
@@ -242,7 +271,11 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      await wallets.generateWallet(params).should.be.rejectedWith('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
+      await wallets
+        .generateWallet(params)
+        .should.be.rejectedWith(
+          'krsSpecific object contains illegal values. values must be strings, booleans, or numbers'
+        );
     });
 
     it('should correctly disable krs emails when creating backup keychains', async function () {
@@ -266,17 +299,18 @@ describe('V2 Wallets:', function () {
 
       // backup key
       nock(bgUrl)
-        .post('/api/v2/tbtc/key', _.matches({
-          source: 'backup',
-          provider: params.backupXpubProvider,
-          disableKRSEmail: true,
-        }))
+        .post(
+          '/api/v2/tbtc/key',
+          _.matches({
+            source: 'backup',
+            provider: params.backupXpubProvider,
+            disableKRSEmail: true,
+          })
+        )
         .reply(200);
 
       // wallet
-      nock(bgUrl)
-        .post('/api/v2/tbtc/wallet')
-        .reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
 
       await wallets.generateWallet(params);
     });
@@ -302,17 +336,18 @@ describe('V2 Wallets:', function () {
 
       // backup key
       nock(bgUrl)
-        .post('/api/v2/tbtc/key', _.matches({
-          source: 'backup',
-          provider: params.backupXpubProvider,
-          krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 },
-        }))
+        .post(
+          '/api/v2/tbtc/key',
+          _.matches({
+            source: 'backup',
+            provider: params.backupXpubProvider,
+            krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 },
+          })
+        )
         .reply(200);
 
       // wallet
-      nock(bgUrl)
-        .post('/api/v2/tbtc/wallet')
-        .reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
 
       await wallets.generateWallet(params);
     });
@@ -321,7 +356,8 @@ describe('V2 Wallets:', function () {
       const params = {
         label: 'my-cold-wallet',
         passphrase: 'test123',
-        userKey: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        userKey:
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
         coldDerivationSeed: '123',
       };
 
@@ -332,9 +368,12 @@ describe('V2 Wallets:', function () {
 
       // user key
       const userKeyNock = nock(bgUrl)
-        .post('/api/v2/tbtc/key', _.matches({
-          derivedFromParentWithSeed: params.coldDerivationSeed,
-        }))
+        .post(
+          '/api/v2/tbtc/key',
+          _.matches({
+            derivedFromParentWithSeed: params.coldDerivationSeed,
+          })
+        )
         .reply(200);
 
       // backup key
@@ -343,9 +382,7 @@ describe('V2 Wallets:', function () {
         .reply(200);
 
       // wallet
-      const walletNock = nock(bgUrl)
-        .post('/api/v2/tbtc/wallet')
-        .reply(200);
+      const walletNock = nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
 
       await wallets.generateWallet(params);
       for (const scope of [bitgoKeyNock, userKeyNock, backupKeyNock, walletNock]) {
@@ -354,7 +391,7 @@ describe('V2 Wallets:', function () {
     });
   });
 
-  describe('Generate TSS wallet:', function() {
+  describe('Generate TSS wallet:', function () {
     const tsol = bitgo.coin('tsol');
 
     it('should create a new TSS wallet', async function () {
@@ -378,9 +415,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl')
-        .post('/api/v2/tsol/wallet')
-        .reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet').reply(200);
 
       const wallets = new Wallets(bitgo, tsol);
 
@@ -418,9 +453,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl')
-        .post('/api/v2/tpolygon/wallet')
-        .reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tpolygon/wallet').reply(200);
 
       const wallets = new Wallets(bitgo, tpolygon);
 
@@ -443,7 +476,8 @@ describe('V2 Wallets:', function () {
       const params = {
         label: 'my-cold-wallet',
         passphrase: 'test123',
-        userKey: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        userKey:
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
         coldDerivationSeed: '123',
       };
       const wallets = new Wallets(bitgo, tbtc);
@@ -452,8 +486,12 @@ describe('V2 Wallets:', function () {
         .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
         .reply(200);
 
-      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({ derivedFromParentWithSeed: params.coldDerivationSeed })).reply(200);
-      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({ source: 'backup' })).reply(200);
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ derivedFromParentWithSeed: params.coldDerivationSeed }))
+        .reply(200);
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
+        .reply(200);
 
       nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
 
@@ -462,16 +500,18 @@ describe('V2 Wallets:', function () {
 
       const tsolWallets = new Wallets(bitgo, tsol);
 
-      await tsolWallets.generateWallet({
-        label: 'tss cold wallet',
-        passphrase: 'passphrase',
-        userKey: 'user key',
-        multisigType: 'tss',
-      }).should.be.rejectedWith('TSS cold wallets are not supported at this time');
+      await tsolWallets
+        .generateWallet({
+          label: 'tss cold wallet',
+          passphrase: 'passphrase',
+          userKey: 'user key',
+          multisigType: 'tss',
+        })
+        .should.be.rejectedWith('TSS cold wallets are not supported at this time');
     });
   });
 
-  describe('Generate BLS-DKG wallet:', function() {
+  describe('Generate BLS-DKG wallet:', function () {
     const eth2 = bitgo.coin('eth2');
 
     it('should create a new BLS-DKG wallet', async function () {
@@ -494,9 +534,7 @@ describe('V2 Wallets:', function () {
       };
       sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl')
-        .post('/api/v2/eth2/wallet')
-        .reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/eth2/wallet').reply(200);
 
       const wallets = new Wallets(bitgo, eth2);
 
@@ -514,22 +552,28 @@ describe('V2 Wallets:', function () {
       const tbtc = bitgo.coin('tbtc');
       const wallets = new Wallets(bitgo, tbtc);
 
-      await wallets.generateWallet({
-        label: 'blsdkg wallet',
-        passphrase: 'passphrase',
-        multisigType: 'blsdkg',
-      }).should.be.rejectedWith('coin btc does not support BLS-DKG at this time');
+      await wallets
+        .generateWallet({
+          label: 'blsdkg wallet',
+          passphrase: 'passphrase',
+          multisigType: 'blsdkg',
+        })
+        .should.be.rejectedWith('coin btc does not support BLS-DKG at this time');
 
       const eth2Wallets = new Wallets(bitgo, eth2);
-      await eth2Wallets.generateWallet({
-        label: 'blsdkg wallet',
-      }).should.be.rejectedWith('cannot generate BLS-DKG keys without passphrase');
+      await eth2Wallets
+        .generateWallet({
+          label: 'blsdkg wallet',
+        })
+        .should.be.rejectedWith('cannot generate BLS-DKG keys without passphrase');
 
-      await eth2Wallets.generateWallet({
-        label: 'blsdkg cold wallet',
-        passphrase: 'passphrase',
-        userKey: 'user key',
-      }).should.be.rejectedWith('BLS-DKG cold wallets are not supported at this time');
+      await eth2Wallets
+        .generateWallet({
+          label: 'blsdkg cold wallet',
+          passphrase: 'passphrase',
+          userKey: 'user key',
+        })
+        .should.be.rejectedWith('BLS-DKG cold wallets are not supported at this time');
     });
   });
 
@@ -537,9 +581,7 @@ describe('V2 Wallets:', function () {
     it('should share a wallet to viewer', async function () {
       const shareId = '123';
 
-      nock(bgUrl)
-        .get(`/api/v2/tbtc/walletshare/${shareId}`)
-        .reply(200, {});
+      nock(bgUrl).get(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, {});
       const acceptShareNock = nock(bgUrl)
         .post(`/api/v2/tbtc/walletshare/${shareId}`, { walletShareId: shareId, state: 'accepted' })
         .reply(200, {});
