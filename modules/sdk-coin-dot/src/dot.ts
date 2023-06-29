@@ -62,6 +62,7 @@ interface RecoveryOptions {
 interface DotTx {
   serializedTx: string;
   scanIndex: number;
+  coin?: string;
 }
 
 const dotUtils = Utils.default;
@@ -441,6 +442,8 @@ export class Dot extends BaseCoin {
         txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
         const signedTransaction = await txnBuilder.build();
         serializedTx = signedTransaction.toBroadcastFormat();
+      } else {
+        return { serializedTx: serializedTx, scanIndex: i, coin: this.getChain() };
       }
       return { serializedTx: serializedTx, scanIndex: i };
     }

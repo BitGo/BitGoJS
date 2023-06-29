@@ -104,6 +104,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
 interface SolTx {
   serializedTx: string;
   scanIndex: number;
+  coin?: string;
 }
 
 interface SolDurableNonceFromNode {
@@ -709,6 +710,13 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
+    if (isUnsignedSweep) {
+      return {
+        serializedTx: serializedTx,
+        scanIndex: scanIndex,
+        coin: this.getChain(),
+      };
+    }
     return {
       serializedTx: serializedTx,
       scanIndex: scanIndex,

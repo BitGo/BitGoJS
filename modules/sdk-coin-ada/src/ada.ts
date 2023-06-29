@@ -55,6 +55,7 @@ interface RecoveryOptions {
 interface AdaTx {
   serializedTx: string;
   scanIndex: number;
+  coin?: string;
 }
 
 export type AdaTransactionExplanation = TransactionExplanation;
@@ -381,6 +382,8 @@ export class Ada extends BaseCoin {
         txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signatureHex);
         const signedTransaction = await txBuilder.build();
         serializedTx = signedTransaction.toBroadcastFormat();
+      } else {
+        return { serializedTx: serializedTx, scanIndex: i, coin: this.getChain() };
       }
       return { serializedTx: serializedTx, scanIndex: i };
     }
