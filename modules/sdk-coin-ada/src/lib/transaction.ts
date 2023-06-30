@@ -41,6 +41,27 @@ export interface Withdrawal {
   stakeAddress: string;
   value: string;
 }
+
+export type StakeKeyRegistrationCert = Cert;
+
+export type StakeKeyDelegationCert = Cert;
+
+export interface StakePoolRegistrationCert extends Cert {
+  vrfKeyHash: string;
+  pledge: string;
+  cost: string;
+  marginNumerator: string;
+  marginDenominator: string;
+  rewardAccount: string;
+  poolOwners: string[];
+}
+
+export interface PledgeDetails {
+  stakeKeyRegsitration?: StakeKeyRegistrationCert;
+  stakeKeyDelegation?: StakeKeyDelegationCert;
+  stakePoolRegistration: StakePoolRegistrationCert;
+}
+
 /**
  * The transaction data returned from the toJson() function of a transaction
  */
@@ -52,11 +73,13 @@ export interface TxData {
   witnesses: Witness[];
   certs: Cert[];
   withdrawals: Withdrawal[];
+  pledgeDetails?: PledgeDetails;
 }
 
 export class Transaction extends BaseTransaction {
   private _transaction: CardanoWasm.Transaction;
   private _fee: string;
+  private _pledgeDetails?: PledgeDetails;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -155,6 +178,8 @@ export class Transaction extends BaseTransaction {
       }
     }
 
+    result.pledgeDetails = this._pledgeDetails;
+
     if (this._transaction.body().withdrawals()) {
       const withdrawals = this._transaction.body().withdrawals() as CardanoWasm.Withdrawals;
       const keys = withdrawals.keys();
@@ -233,6 +258,15 @@ export class Transaction extends BaseTransaction {
 
         if (certs.some((c) => c.as_pool_registration() !== undefined)) {
           this._type = TransactionType.StakingPledge;
+          const stakeKeyRegistration = certs.find((c) => c.as_stake_registration() !== undefined);
+          const stakeKeyDelegation = certs.find((c) => c.as_stake_delegation() !== undefined);
+          const stakePoolRegistration = certs.find((c) => c.as_pool_registration() !== undefined);
+
+          this._pledgeDetails = {
+            stakeKeyRegsitration: this.loadStakeKeyRegistration(stakeKeyRegistration),
+            stakeKeyDelegation: this.loadStakeKeyDelegation(stakeKeyDelegation),
+            stakePoolRegistration: this.loadStakePoolRegistration(stakePoolRegistration!),
+          };
         } else if (certs.some((c) => c.as_stake_registration() !== undefined)) {
           this._type = TransactionType.StakingActivate;
         } else if (certs.some((c) => c.as_stake_deregistration() !== undefined)) {
@@ -258,6 +292,62 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  private loadStakeKeyRegistration(
+    certificate: CardanoWasm.Certificate | undefined
+  ): StakeKeyRegistrationCert | undefined {
+    if (certificate === undefined) {
+      return undefined;
+    }
+    const stakeRegistration = certificate.as_stake_registration();
+    if (stakeRegistration !== undefined && stakeRegistration!.stake_credential().to_keyhash() !== undefined) {
+      return {
+        type: CertType.StakeKeyRegistration,
+        stakeCredentialHash: stakeRegistration!.stake_credential().to_keyhash()!.to_hex(),
+      };
+    } else {
+      return undefined;
+    }
+  }
+
+  private loadStakeKeyDelegation(certificate: CardanoWasm.Certificate | undefined): StakeKeyDelegationCert | undefined {
+    if (certificate === undefined) {
+      return undefined;
+    }
+    const stakeDelegation = certificate.as_stake_delegation();
+    if (stakeDelegation !== undefined && stakeDelegation!.stake_credential().to_keyhash() !== undefined) {
+      return {
+        type: CertType.StakeKeyDelegation,
+        stakeCredentialHash: stakeDelegation!.stake_credential().to_keyhash()!.to_hex(),
+        poolKeyHash: stakeDelegation!.pool_keyhash().to_hex(),
+      };
+    } else {
+      return undefined;
+    }
+  }
+
+  private loadStakePoolRegistration(certificate: CardanoWasm.Certificate): StakePoolRegistrationCert {
+    const poolRegistration = certificate.as_pool_registration();
+    const rewardAccount = poolRegistration!.pool_params().reward_account();
+    const networkId = rewardAccount.to_address().network_id();
+    const owners: string[] = [];
+    for (let i = 0; i < poolRegistration!.pool_params().pool_owners().len(); i++) {
+      const poolOwner = poolRegistration!.pool_params().pool_owners().get(i);
+      const ownerStakeKey = CardanoWasm.StakeCredential.from_keyhash(poolOwner);
+      owners.push(CardanoWasm.RewardAddress.new(networkId, ownerStakeKey).to_address().to_bech32());
+    }
+    return {
+      type: CertType.StakePoolRegistration,
+      poolKeyHash: poolRegistration!.pool_params().operator().to_hex(),
+      vrfKeyHash: poolRegistration!.pool_params().vrf_keyhash().to_hex(),
+      pledge: poolRegistration!.pool_params().pledge().to_str(),
+      cost: poolRegistration!.pool_params().cost().to_str(),
+      marginNumerator: poolRegistration!.pool_params().margin().numerator().to_str(),
+      marginDenominator: poolRegistration!.pool_params().margin().denominator().to_str(),
+      rewardAccount: rewardAccount.to_address().to_bech32(),
+      poolOwners: owners,
+    };
+  }
+
   /**
    * Set the transaction type.
    *
@@ -279,6 +369,7 @@ export class Transaction extends BaseTransaction {
     changeAmount: string;
     type: string;
     withdrawals: Withdrawal[];
+    pledgeDetails?: PledgeDetails;
   } {
     const txJson = this.toJson();
     const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
@@ -307,7 +398,12 @@ export class Transaction extends BaseTransaction {
       type,
       certificates: txJson.certs,
       withdrawals: txJson.withdrawals,
+      pledgeDetails: this._pledgeDetails,
     };
+  }
+
+  getPledgeDetails(): PledgeDetails | undefined {
+    return this._pledgeDetails;
   }
 
   /**

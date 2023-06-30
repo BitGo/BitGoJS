@@ -24,6 +24,21 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.certs[0].poolKeyHash!.should.equal('10324dc34187735de46f6260d94620cdcc819f7ed1f93e3fc58d06a0');
     txData.withdrawals.length.should.equal(0);
     txData.witnesses.length.should.equal(0);
+    should.exist(txData.pledgeDetails);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.exist(txData.pledgeDetails!.stakeKeyDelegation);
+    should.exist(txData.pledgeDetails!.stakePoolRegistration);
+    should.equal(
+      txData.pledgeDetails!.stakeKeyDelegation!.poolKeyHash,
+      txData.pledgeDetails!.stakePoolRegistration!.poolKeyHash
+    );
+    txData.pledgeDetails!.stakePoolRegistration!.pledge.should.equal('100000000');
+    txData.pledgeDetails!.stakePoolRegistration!.cost.should.equal('500000000');
+    txData.pledgeDetails!.stakePoolRegistration!.marginNumerator.should.equal('3');
+    txData.pledgeDetails!.stakePoolRegistration!.marginDenominator.should.equal('20');
+    txData.pledgeDetails!.stakePoolRegistration!.rewardAccount.should.equal(
+      txData.pledgeDetails!.stakePoolRegistration!.poolOwners[0]
+    );
 
     const fee = tx.getFee;
     fee.should.equal('1000000');
@@ -50,6 +65,17 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.certs[0].poolKeyHash!.should.equal('10324dc34187735de46f6260d94620cdcc819f7ed1f93e3fc58d06a0');
     txData.withdrawals.length.should.equal(0);
     txData.witnesses.length.should.equal(0);
+    should.exist(txData.pledgeDetails);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.not.exist(txData.pledgeDetails!.stakeKeyDelegation);
+    should.exist(txData.pledgeDetails!.stakePoolRegistration);
+    txData.pledgeDetails!.stakePoolRegistration!.pledge.should.equal('100000000');
+    txData.pledgeDetails!.stakePoolRegistration!.cost.should.equal('500000000');
+    txData.pledgeDetails!.stakePoolRegistration!.marginNumerator.should.equal('3');
+    txData.pledgeDetails!.stakePoolRegistration!.marginDenominator.should.equal('20');
+    txData.pledgeDetails!.stakePoolRegistration!.rewardAccount.should.equal(
+      txData.pledgeDetails!.stakePoolRegistration!.poolOwners[0]
+    );
 
     const fee = tx.getFee;
     fee.should.equal('1000000');
@@ -70,6 +96,17 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     tx.signature.length.should.equal(1);
     const txData = tx.toJson();
     txData.witnesses.length.should.equal(1);
+    should.exist(txData.pledgeDetails);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.not.exist(txData.pledgeDetails!.stakeKeyDelegation);
+    should.exist(txData.pledgeDetails!.stakePoolRegistration);
+    txData.pledgeDetails!.stakePoolRegistration!.pledge.should.equal('100000000');
+    txData.pledgeDetails!.stakePoolRegistration!.cost.should.equal('500000000');
+    txData.pledgeDetails!.stakePoolRegistration!.marginNumerator.should.equal('3');
+    txData.pledgeDetails!.stakePoolRegistration!.marginDenominator.should.equal('20');
+    txData.pledgeDetails!.stakePoolRegistration!.rewardAccount.should.equal(
+      txData.pledgeDetails!.stakePoolRegistration!.poolOwners[0]
+    );
 
     const rebuiltTx = new Transaction(coins.get('tada'));
     rebuiltTx.fromRawTransaction(tx.toBroadcastFormat());
