@@ -281,9 +281,9 @@ export interface RecoverFromWrongChainOptions {
 }
 
 export interface VerifyKeySignaturesOptions {
-  userKeychain?: Keychain;
-  keychainToVerify?: Keychain;
-  keySignature?: string;
+  userKeychain: { pub?: string };
+  keychainToVerify: { pub?: string };
+  keySignature: string;
 }
 
 export interface VerifyUserPublicKeyOptions {
@@ -702,6 +702,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const signingAddress = utxolib.address.toBase58Check(
       utxolib.crypto.hash160(publicKey),
       utxolib.networks.bitcoin.pubKeyHash,
+      // we do not pass `this.network` here because it would fail for zcash
+      // the bitcoinMessage library decodes the address and throws away the first byte
+      // because zcash has a two-byte prefix, verify() decodes zcash addresses to an invalid pubkey hash
       utxolib.networks.bitcoin
     );
 
@@ -744,7 +747,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (!keySignature) {
         throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain signature`);
       }
-      if (!this.verifyKeySignature({ userKeychain, keychainToVerify, keySignature })) {
+      if (
+        !this.verifyKeySignature({
+          userKeychain: userKeychain as { pub: string },
+          keychainToVerify: keychainToVerify as { pub: string },
+          keySignature,
+        })
+      ) {
         debug('failed to verify custom change %s key signature!', KeyIndices[keyIndex].toLowerCase());
         return false;
       }
@@ -814,8 +823,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // let's verify these keychains
     const keySignatures = parsedTransaction.keySignatures;
     if (!_.isEmpty(keySignatures)) {
-      const verify = (key, pub) =>
-        this.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: key, keySignature: pub });
+      const verify = (key, pub) => {
+        if (!keychains.user || !keychains.user.pub) {
+          throw new Error('missing user keychain');
+        }
+        return this.verifyKeySignature({
+          userKeychain: keychains.user as { pub: string },
+          keychainToVerify: key,
+          keySignature: pub,
+        });
+      };
       const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
       const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
       if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
