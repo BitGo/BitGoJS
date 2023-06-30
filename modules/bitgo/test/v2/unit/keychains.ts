@@ -299,7 +299,7 @@ describe('V2 Keychains', function () {
         });
       });
 
-      ['tbsc'].forEach((coin) => {
+      ['tbnb'].forEach((coin) => {
         it('should create ECDSA TSS Keychains', async function () {
           sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
           const keychains = await bitgo.coin(coin).keychains().createMpc({

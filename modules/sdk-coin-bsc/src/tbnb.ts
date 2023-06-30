@@ -4,15 +4,15 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
-import { Bsc } from './bsc';
+import { Bnb } from './bnb';
 
-export class Tbsc extends Bsc {
+export class Tbnb extends Bnb {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tbsc(bitgo, staticsCoin);
+    return new Tbnb(bitgo, staticsCoin);
   }
 
   /** @inheritDoc */

@@ -8,7 +8,7 @@ import {
   SolCoin,
   HederaToken,
   PolygonERC20Token,
-  BscCoin,
+  BnbCoin,
   AdaCoin,
   Erc721Coin,
   Erc1155Coin,
@@ -95,7 +95,7 @@ export interface Tokens {
     polygon: {
       tokens: EthLikeTokenConfig[];
     };
-    bsc: {
+    bnb: {
       tokens: EthLikeTokenConfig[];
     };
     sol: {
@@ -130,7 +130,7 @@ export interface Tokens {
     celo: {
       tokens: CeloTokenConfig[];
     };
-    bsc: {
+    bnb: {
       tokens: EthLikeTokenConfig[];
     };
     eos: {
@@ -242,11 +242,11 @@ const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
   return acc;
 }, []);
 
-const formattedBscTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof BscCoin) {
+const formattedBnbTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof BnbCoin) {
     acc.push({
       type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
+      coin: coin.network.type === NetworkType.MAINNET ? 'bnb' : 'tbnb',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
@@ -405,8 +405,8 @@ export const tokens: Tokens = {
     celo: {
       tokens: formattedCeloTokens.filter((token) => token.network === 'Mainnet'),
     },
-    bsc: {
-      tokens: formattedBscTokens.filter((token) => token.network === 'Mainnet'),
+    bnb: {
+      tokens: formattedBnbTokens.filter((token) => token.network === 'Mainnet'),
     },
     eos: {
       tokens: formattedEosTokens.filter((token) => token.network === 'Mainnet'),
@@ -450,8 +450,8 @@ export const tokens: Tokens = {
     celo: {
       tokens: formattedCeloTokens.filter((token) => token.network === 'Testnet'),
     },
-    bsc: {
-      tokens: formattedBscTokens.filter((token) => token.network === 'Testnet'),
+    bnb: {
+      tokens: formattedBnbTokens.filter((token) => token.network === 'Testnet'),
     },
     eos: {
       tokens: formattedEosTokens.filter((token) => token.network === 'Testnet'),

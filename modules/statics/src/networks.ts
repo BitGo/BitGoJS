@@ -208,17 +208,17 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   minDelegationFee = '2';
 }
 
-class BinanceSmartChain extends Mainnet implements EthereumNetwork {
-  name = 'BinanceSmartChain';
-  family = CoinFamily.BSC;
+class BnbSmartChain extends Mainnet implements EthereumNetwork {
+  name = 'BnbSmartChain';
+  family = CoinFamily.BNB;
   explorerUrl = 'https://www.bscscan.com/tx/';
   accountExplorerUrl = 'https://www.bscscan.com/address/';
   chainId = 56;
 }
 
-class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
-  name = 'BinanceSmartChainTestnet';
-  family = CoinFamily.BSC;
+class BNBSmartChainTestnet extends Testnet implements EthereumNetwork {
+  name = 'BNBSmartChainTestnet';
+  family = CoinFamily.BNB;
   explorerUrl = 'https://testnet.bscscan.com/tx/';
   accountExplorerUrl = 'https://testnet.bscscan.com/address/';
   chainId = 97;
@@ -789,7 +789,7 @@ export const Networks = {
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
     bld: Object.freeze(new Bld()),
-    bsc: Object.freeze(new BinanceSmartChain()),
+    bnb: Object.freeze(new BnbSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
@@ -834,7 +834,7 @@ export const Networks = {
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     bld: Object.freeze(new BldTestnet()),
-    bsc: Object.freeze(new BinanceSmartChainTestnet()),
+    bnb: Object.freeze(new BNBSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),

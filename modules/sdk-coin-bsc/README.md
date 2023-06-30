@@ -16,11 +16,11 @@ Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-
 
 ```javascript
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Bsc } from '@bitgo/sdk-coin-bsc';
+import { Bnb } from '@bitgo/sdk-coin-bsc';
 
 const sdk = new BitGoAPI();
 
-sdk.register('bsc', Bsc.createInstance);
+sdk.register('bnb', Bnb.createInstance);
 ```
 
 ## Development

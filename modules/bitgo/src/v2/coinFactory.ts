@@ -19,8 +19,8 @@ import {
   AvaxP,
   Bch,
   Bld,
-  Bsc,
-  BscToken,
+  Bnb,
+  BnbToken,
   Bsv,
   Btc,
   Btg,
@@ -64,7 +64,7 @@ import {
   TavaxP,
   Tbch,
   Tbld,
-  Tbsc,
+  Tbnb,
   Tbsv,
   Tbtc,
   Tcelo,
@@ -114,7 +114,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('bch', Bch.createInstance);
   globalCoinFactory.register('bcha', Bcha.createInstance);
   globalCoinFactory.register('bld', Bld.createInstance);
-  globalCoinFactory.register('bsc', Bsc.createInstance);
+  globalCoinFactory.register('bnb', Bnb.createInstance);
   globalCoinFactory.register('bsv', Bsv.createInstance);
   globalCoinFactory.register('btc', Btc.createInstance);
   globalCoinFactory.register('btg', Btg.createInstance);
@@ -155,7 +155,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tbch', Tbch.createInstance);
   globalCoinFactory.register('tbcha', Tbcha.createInstance);
   globalCoinFactory.register('tbld', Tbld.createInstance);
-  globalCoinFactory.register('tbsc', Tbsc.createInstance);
+  globalCoinFactory.register('tbnb', Tbnb.createInstance);
   globalCoinFactory.register('tbsv', Tbsv.createInstance);
   globalCoinFactory.register('tbtc', Tbtc.createInstance);
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
@@ -212,7 +212,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  BscToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+  BnbToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 

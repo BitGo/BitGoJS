@@ -198,9 +198,9 @@ export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {
 export class CeloCoin extends ContractAddressDefinedToken {}
 
 /**
- * The BSC blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
+ * The BNB blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
  */
-export class BscCoin extends ContractAddressDefinedToken {}
+export class BnbCoin extends ContractAddressDefinedToken {}
 
 /**
  * The Stellar network supports tokens (non-native assets)
@@ -851,11 +851,11 @@ export function tceloToken(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to BSC main network.
+ * @param network? Optional token network. Defaults to BNB main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
-export function bscToken(
+export function bnbToken(
   id: string,
   name: string,
   fullName: string,
@@ -865,11 +865,11 @@ export function bscToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.main.bsc,
+  network: EthereumNetwork = Networks.main.bnb,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
-    new BscCoin({
+    new BnbCoin({
       id,
       name,
       fullName,
@@ -882,13 +882,13 @@ export function bscToken(
       asset,
       isToken: true,
       primaryKeyCurve,
-      baseUnit: BaseUnit.BSC,
+      baseUnit: BaseUnit.BNB,
     })
   );
 }
 
 /**
- * Factory function for testnet bsc token instances.
+ * Factory function for testnet bnb token instances.
  *
  * @param id uuid v4
  * @param name unique identifier of the token
@@ -898,10 +898,10 @@ export function bscToken(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the testnet BSC network.
+ * @param network? Optional token network. Defaults to the testnet BNB network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
-export function tbscToken(
+export function tbnbToken(
   id: string,
   name: string,
   fullName: string,
@@ -911,9 +911,9 @@ export function tbscToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.test.bsc
+  network: EthereumNetwork = Networks.test.bnb
 ) {
-  return bscToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return bnbToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

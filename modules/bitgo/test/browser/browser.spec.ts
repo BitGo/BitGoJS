@@ -20,7 +20,7 @@ describe('Coins', () => {
       AlgoToken: 1,
       AvaxCToken: 1,
       PolygonToken: 1,
-      BscToken: 1,
+      BnbToken: 1,
     };
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])

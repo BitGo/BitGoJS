@@ -5,8 +5,8 @@ export const testnetCommon = EthereumCommon.forCustomChain(
   'mainnet',
   {
     name: 'testnet',
-    networkId: (coins.get('tbsc').network as EthereumNetwork).chainId,
-    chainId: (coins.get('tbsc').network as EthereumNetwork).chainId,
+    networkId: (coins.get('tbnb').network as EthereumNetwork).chainId,
+    chainId: (coins.get('tbnb').network as EthereumNetwork).chainId,
   },
   'petersburg'
 );
@@ -15,8 +15,8 @@ export const mainnetCommon = EthereumCommon.forCustomChain(
   'mainnet',
   {
     name: 'mainnet',
-    networkId: (coins.get('bsc').network as EthereumNetwork).chainId,
-    chainId: (coins.get('bsc').network as EthereumNetwork).chainId,
+    networkId: (coins.get('bnb').network as EthereumNetwork).chainId,
+    chainId: (coins.get('bnb').network as EthereumNetwork).chainId,
   },
   'petersburg'
 );

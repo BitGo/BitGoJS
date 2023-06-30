@@ -8,25 +8,25 @@ import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
 
 export { EthLikeTokenConfig };
 
-export class BscToken extends EthLikeToken {
+export class BnbToken extends EthLikeToken {
   public readonly tokenConfig: EthLikeTokenConfig;
   static coinNames: CoinNames = {
-    Mainnet: 'bsc',
-    Testnet: 'tbsc',
+    Mainnet: 'bnb',
+    Testnet: 'tbnb',
   };
   constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig) {
-    super(bitgo, tokenConfig, BscToken.coinNames);
+    super(bitgo, tokenConfig, BnbToken.coinNames);
   }
   static createTokenConstructor(config: EthLikeTokenConfig): CoinConstructor {
-    return super.createTokenConstructor(config, BscToken.coinNames);
+    return super.createTokenConstructor(config, BnbToken.coinNames);
   }
 
   static createTokenConstructors(): NamedCoinConstructor[] {
-    return super.createTokenConstructors(BscToken.coinNames);
+    return super.createTokenConstructors(BnbToken.coinNames);
   }
 
   getFullName(): string {
-    return 'Bsc Token';
+    return 'Bnb Token';
   }
 
   supportsTss(): boolean {
