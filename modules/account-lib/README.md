@@ -13,7 +13,7 @@ Below is the list of coins supported by this library -- as well as those that
 are on the roadmap.
 
 | Coin             | Mainnet Ticker | Testnet Ticker | Supported In Library |
-|:-----------------|:---------------|:---------------|:---------------------|
+| :--------------- | :------------- | :------------- | :------------------- |
 | Alogrand         | algo           | talgo          | Yes                  |
 | CELO             | celo           | tcelo          | Yes                  |
 | Ethereum         | eth            | teth           | Yes                  |

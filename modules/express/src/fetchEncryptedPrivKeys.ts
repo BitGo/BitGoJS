@@ -12,18 +12,18 @@ import { BitGo, EnvironmentName } from 'bitgo';
 import 'dotenv/config';
 
 type Output = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 
 type Credentials = {
-  walletId: string, // Id of the BitGo wallet.
-  walletPassword: string, // Password used for the wallet.
-  secret: string, // xprv of user key or backup key.
-}
+  walletId: string; // Id of the BitGo wallet.
+  walletPassword: string; // Password used for the wallet.
+  secret: string; // xprv of user key or backup key.
+};
 
 type WalletIds = {
-  [key: string]: (string | Credentials)[]
-}
+  [key: string]: (string | Credentials)[];
+};
 
 const esAccessToken = process.env.BITGO_EXTERNAL_SIGNER_ACCESS_TOKEN;
 const esWalletIDs = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS; // example: {"tbtc":[{"walletId":"xxx","walletPassword":"xxx","secret":"xxx"}]}

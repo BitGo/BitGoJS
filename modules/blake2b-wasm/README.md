@@ -10,24 +10,24 @@ Works in browsers that support WASM and Node.js 8+.
 
 ## Usage
 
-``` js
-var blake2b = require('@bitgo/blake2b-wasm')
+```js
+var blake2b = require('@bitgo/blake2b-wasm');
 
 if (!blake2b.SUPPORTED) {
-  console.log('WebAssembly not supported by your runtime')
+  console.log('WebAssembly not supported by your runtime');
 }
 
 blake2b.ready(function (err) {
-  if (err) throw err
+  if (err) throw err;
 
   var hash = blake2b()
     .update(Buffer.from('hello')) // pass in a buffer or uint8array
     .update(Buffer.from(' '))
     .update(Buffer.from('world'))
-    .digest('hex')
+    .digest('hex');
 
-  console.log('Blake2b hash of "hello world" is %s', hash)
-})
+  console.log('Blake2b hash of "hello world" is %s', hash);
+});
 ```
 
 ## API

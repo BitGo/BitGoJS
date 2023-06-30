@@ -19,17 +19,10 @@ import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
 nock.disableNetConnect();
 
-import {
-  app as expressApp,
-  startup,
-  createServer,
-  createBaseUri,
-  prepareIpc,
-} from '../../src/expressApp';
+import { app as expressApp, startup, createServer, createBaseUri, prepareIpc } from '../../src/expressApp';
 import * as clientRoutes from '../../src/clientRoutes';
 
 describe('Bitgo Express', function () {
-
   describe('server initialization', function () {
     const validPrvJSON =
       '{"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
@@ -38,16 +31,18 @@ describe('Bitgo Express', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
 
       try {
-        (() => expressApp({
-          env: 'prod',
-          bind: 'localhost',
-        } as any)).should.not.throw();
+        (() =>
+          expressApp({
+            env: 'prod',
+            bind: 'localhost',
+          } as any)).should.not.throw();
 
         process.env.NODE_ENV = 'dev';
-        (() => expressApp({
-          env: 'prod',
-          bind: 'localhost',
-        } as any)).should.throw(NodeEnvironmentError);
+        (() =>
+          expressApp({
+            env: 'prod',
+            bind: 'localhost',
+          } as any)).should.throw(NodeEnvironmentError);
       } finally {
         envStub.restore();
       }
@@ -57,11 +52,12 @@ describe('Bitgo Express', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'dev' });
 
       try {
-        (() => expressApp({
-          env: 'prod',
-          bind: 'localhost',
-          disableEnvCheck: true,
-        } as any)).should.not.throw();
+        (() =>
+          expressApp({
+            env: 'prod',
+            bind: 'localhost',
+            disableEnvCheck: true,
+          } as any)).should.not.throw();
       } finally {
         envStub.restore();
       }
@@ -115,41 +111,50 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.throw(TlsConfigurationError);
     });
 
-    it('should create an http server when not using TLS', co(function *() {
-      const createServerStub = sinon.stub(http, 'createServer');
+    it(
+      'should create an http server when not using TLS',
+      co(function* () {
+        const createServerStub = sinon.stub(http, 'createServer');
 
-      const args: any = {
-        env: 'prod',
-        bind: 'localhost',
-      };
+        const args: any = {
+          env: 'prod',
+          bind: 'localhost',
+        };
 
-      createServer(args, null as any);
+        createServer(args, null as any);
 
-      createServerStub.should.be.calledOnce();
-      createServerStub.restore();
-    }));
+        createServerStub.should.be.calledOnce();
+        createServerStub.restore();
+      })
+    );
 
-    it('should create an https server when using TLS', co(function *() {
-      const createServerStub = sinon.stub(https, 'createServer');
-      const readFileAsyncStub = sinon.stub(fs.promises, 'readFile' as any)
-        .onFirstCall().resolves('key')
-        .onSecondCall().resolves('cert');
+    it(
+      'should create an https server when using TLS',
+      co(function* () {
+        const createServerStub = sinon.stub(https, 'createServer');
+        const readFileAsyncStub = sinon
+          .stub(fs.promises, 'readFile' as any)
+          .onFirstCall()
+          .resolves('key')
+          .onSecondCall()
+          .resolves('cert');
 
-      const args: any = {
-        env: 'prod',
-        bind: '1.2.3.4',
-        crtPath: '/tmp/crt.pem',
-        keyPath: '/tmp/key.pem',
-      };
+        const args: any = {
+          env: 'prod',
+          bind: '1.2.3.4',
+          crtPath: '/tmp/crt.pem',
+          keyPath: '/tmp/key.pem',
+        };
 
-      yield createServer(args, null as any);
+        yield createServer(args, null as any);
 
-      https.createServer.should.be.calledOnce();
-      https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
+        https.createServer.should.be.calledOnce();
+        https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
 
-      createServerStub.restore();
-      readFileAsyncStub.restore();
-    }));
+        createServerStub.restore();
+        readFileAsyncStub.restore();
+      })
+    );
 
     it('should output basic information upon server startup', () => {
       const logStub = sinon.stub(console, 'log');
@@ -325,7 +330,7 @@ describe('Bitgo Express', function () {
       platformStub.restore();
     });
 
-    it('should not remove the IPC socket if it doesn\'t exist', async () => {
+    it("should not remove the IPC socket if it doesn't exist", async () => {
       const statStub = sinon.stub(fs, 'statSync').throws({ code: 'ENOENT' });
       const unlinkStub = sinon.stub(fs, 'unlinkSync');
       await prepareIpc('testipc').should.be.resolved();
@@ -335,9 +340,7 @@ describe('Bitgo Express', function () {
     });
 
     it('should remove the socket before binding if IPC socket exists and is a socket', async () => {
-      const statStub = sinon.stub(fs, 'statSync').returns(
-        { isSocket: () => true } as unknown as fs.Stats,
-      );
+      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => true } as unknown as fs.Stats);
       const unlinkStub = sinon.stub(fs, 'unlinkSync');
       await prepareIpc('testipc').should.be.resolved();
       unlinkStub.calledWithExactly('testipc').should.be.true();
@@ -347,9 +350,7 @@ describe('Bitgo Express', function () {
     });
 
     it('should fail if IPC socket is not actually a socket', async () => {
-      const statStub = sinon.stub(fs, 'statSync').returns(
-        { isSocket: () => false } as unknown as fs.Stats,
-      );
+      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => false } as unknown as fs.Stats);
       const unlinkStub = sinon.stub(fs, 'unlinkSync');
       await prepareIpc('testipc').should.be.rejectedWith(/IPC socket is not actually a socket/);
       unlinkStub.notCalled.should.be.true();

@@ -11,7 +11,9 @@ function readEnvVar(name, ...deprecatedAliases): string | undefined {
 
   for (const deprecatedAlias of deprecatedAliases) {
     if (process.env[deprecatedAlias] !== undefined) {
-      console.warn(`warning: using deprecated environment variable '${deprecatedAlias}'. Please use the '${name}' environment variable instead.`);
+      console.warn(
+        `warning: using deprecated environment variable '${deprecatedAlias}'. Please use the '${name}' environment variable instead.`
+      );
       return process.env[deprecatedAlias];
     }
   }
@@ -63,18 +65,17 @@ export const EnvConfig = (): Partial<Config> => ({
   port: Number(readEnvVar('BITGO_PORT')),
   bind: readEnvVar('BITGO_BIND'),
   ipc: readEnvVar('BITGO_IPC'),
-  env: (readEnvVar('BITGO_ENV') as EnvironmentName),
+  env: readEnvVar('BITGO_ENV') as EnvironmentName,
   debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
   keyPath: readEnvVar('BITGO_KEYPATH'),
   crtPath: readEnvVar('BITGO_CRTPATH'),
   logFile: readEnvVar('BITGO_LOGFILE'),
-  disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ?
-    true : undefined,
+  disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
   disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
   disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
   timeout: Number(readEnvVar('BITGO_TIMEOUT')),
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
-  customBitcoinNetwork: (readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network),
+  customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
   authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
@@ -123,8 +124,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
   // from each of the config sources in a type safe manner.
   function get<T extends keyof Config>(k: T): Config[T] {
     return configs.reduce(
-      (entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry,
-      DefaultConfig[k],
+      (entry: Config[T], config) => (!isNilOrNaN(config[k]) ? (config[k] as Config[T]) : entry),
+      DefaultConfig[k]
     );
   }
 

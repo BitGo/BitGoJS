@@ -11,16 +11,11 @@ process.chdir(__dirname);
 rimraf.sync('.nyc_output');
 makeDir.sync('.nyc_output');
 // Merge coverage data from each package so we can generate a complete report
-glob.sync('modules/*/.nyc_output').forEach(nycOutput => {
+glob.sync('modules/*/.nyc_output').forEach((nycOutput) => {
   const cwd = path.dirname(nycOutput);
   const { status, stderr } = spawnSync(
     'yarn',
-    [
-      'nyc',
-      'merge',
-      '.nyc_output',
-      path.join(__dirname, '.nyc_output', path.basename(cwd) + '.json'),
-    ],
+    ['nyc', 'merge', '.nyc_output', path.join(__dirname, '.nyc_output', path.basename(cwd) + '.json')],
     {
       encoding: 'utf8',
       shell: true,

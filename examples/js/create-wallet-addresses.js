@@ -14,15 +14,14 @@ const accessToken = null;
 // TODO: set your passphrase here
 const walletPassphrase = null;
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
-  const wallet = yield basecoin.wallets()
-    .generateWallet({
-      label: `Test Wallet Example`,
-      passphrase: walletPassphrase,
-      backupXpubProvider: 'keyternal',
-    });
+  const wallet = yield basecoin.wallets().generateWallet({
+    label: `Test Wallet Example`,
+    passphrase: walletPassphrase,
+    backupXpubProvider: 'keyternal',
+  });
   const walletInstance = wallet.wallet;
 
   const newReceiveAddress = yield walletInstance.createAddress();

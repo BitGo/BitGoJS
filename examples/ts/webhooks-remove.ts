@@ -1,6 +1,6 @@
 /**
  * Remove a webhook from a BitGo account wallet
- * 
+ *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGoAPI } from '@bitgo/sdk-api';

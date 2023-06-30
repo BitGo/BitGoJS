@@ -5,14 +5,10 @@ export interface FAQ {
 }
 
 export function generateFaq(coinName: string): FAQ[] {
-  const sectionACoinSpecific =
-    `The KeyCard contains important information which can be used to recover the ${coinName} `;
-  const sectionBCoinSpecific =
-    `If you have lost or damaged all copies of your KeyCard, your ${coinName} is still safe, but this `;
-  const sectionCCoinSpecific =
-    `source tools at https://github.com/bitgo to recover your ${coinName}. Note: You should never enter `;
-  const sectionDCoinSpecific =
-    `your KeyCard will be able to steal your ${coinName}. We recommend keeping your wallet password `;
+  const sectionACoinSpecific = `The KeyCard contains important information which can be used to recover the ${coinName} `;
+  const sectionBCoinSpecific = `If you have lost or damaged all copies of your KeyCard, your ${coinName} is still safe, but this `;
+  const sectionCCoinSpecific = `source tools at https://github.com/bitgo to recover your ${coinName}. Note: You should never enter `;
+  const sectionDCoinSpecific = `your KeyCard will be able to steal your ${coinName}. We recommend keeping your wallet password `;
 
   return [
     {

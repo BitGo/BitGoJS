@@ -12,7 +12,7 @@ Please email us at support@bitgo.com if you have questions or comments about thi
 The BitGo SDK repository is a monorepo composed of separate modules, each of which implement some subset of the features of the SDK.
 
 | Package Name        | Module         | Description                                                                                                                       |                                                                           |
-|---------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| ------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | bitgo               | `bitgo`        | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo)        |
 | @bitgo/account-lib  | `account-lib`  | Build and sign transactions for account-based coins.                                                                              | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/account-lib)  |
 | @bitgo/blake2b      | `blake2b`      | Blake2b (64-bit version) in pure JavaScript.                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b)      |
@@ -35,9 +35,9 @@ The release notes for the `bitgo` module are [here](https://github.com/BitGo/Bit
 
 The BitGoJS SDK use a number of branches to control the development of various packages throughout the deployment lifecycle. Provided below is an overview to how branches relate to one another.
 
-| Branch       | Status   | NPM      | Description                                                                                                                                                |
-|--------------|----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `master`     | Unstable | N/A      | Ongoing development of SDK packages                                                                                                                        |
+| Branch       | Status   | NPM      | Description                                                                                                                                             |
+| ------------ | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `master`     | Unstable | N/A      | Ongoing development of SDK packages                                                                                                                     |
 | `rel/latest` | Stable   | `latest` | Deployed packages from `master` to `rel/latest`. This includes Express and is recommended to use `rel/latest` when not using Docker images for Express. |
 
 Other tags may be released to npm (e.g. `hotfix`, `dev`, etc...), but are not considered critical to the common path for consumers usage of SDK packages unless otherwise stated.
@@ -49,6 +49,7 @@ Examples can be found in each of the modules specific to the module use cases. S
 # NodeJS Version Support Policy
 
 BitGoJS currently provides support for the following Node versions per package.json engines policy:
+
 ```
 "engines": {
   "node": ">=14.18.0 <17",
@@ -60,12 +61,13 @@ We specifically limit our support to these versions of Node, not because this pa
 
 As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test suite on the latest release of the following versions of node:
 
-* `>=14.18.0`
-* `16`
+- `>=14.18.0`
+- `16`
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.
 
-> **_NOTE:_**  Users that would like to use ecdsa tss coins with node v14 must enable `--experimental-wasm-bigint` to initialize wallets
+> **_NOTE:_** Users that would like to use ecdsa tss coins with node v14 must enable `--experimental-wasm-bigint` to initialize wallets
+
 # Notes for Developers
 
 See [DEVELOPERS.md](https://github.com/BitGo/BitGoJS/blob/master/DEVELOPERS.md)

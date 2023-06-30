@@ -5,19 +5,19 @@ on:
     branches:
       - master
     paths:
-      - "*/**/package.json"
-      - "!*/**/node_modules/package.json"
-      - "package.json"
-      - "!node_modules/package.json"
+      - '*/**/package.json'
+      - '!*/**/node_modules/package.json'
+      - 'package.json'
+      - '!node_modules/package.json'
   pull_request:
     branches:
       - master
       - rel/**
     paths:
-      - "*/**/package.json"
-      - "!*/**/node_modules/package.json"
-      - "package.json"
-      - "!node_modules/package.json"
+      - '*/**/package.json'
+      - '!*/**/node_modules/package.json'
+      - 'package.json'
+      - '!node_modules/package.json'
 
 jobs:
   unit-test-all:

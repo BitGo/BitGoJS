@@ -41,7 +41,6 @@ async function main() {
   };
   const transaction = wallet.prebuildTransaction(buildTxParams);
   console.dir(transaction);
-
 }
 
 main().catch((e) => console.log(e));

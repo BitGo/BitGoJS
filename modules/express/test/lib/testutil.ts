@@ -4,7 +4,8 @@
 
 // helper function to unlock a token for a specified time
 export function unlockToken(agent, accessToken, seconds) {
-  return agent.post('/api/v1/user/unlock')
+  return agent
+    .post('/api/v1/user/unlock')
     .set('Authorization', 'Bearer ' + accessToken)
     .send({ otp: '0000000', duration: seconds })
     .then(function (res) {

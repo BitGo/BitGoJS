@@ -15,7 +15,7 @@ const walletId = '';
 // You can get this from User Settings > Developer Options > Add Access Token
 const accessToken = '';
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().getWallet({ id: walletId });

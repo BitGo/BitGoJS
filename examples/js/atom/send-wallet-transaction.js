@@ -53,10 +53,10 @@ async function main() {
     preview: false,
   };
 
-  const unsignedTx = (await bitgo
+  const unsignedTx = await bitgo
     .post(bitgo.url('/wallet/' + id + '/txrequests', 2))
     .send(whitelistedParams)
-    .result());
+    .result();
 
   // sign tx
   const keychains = await bitgo.coin(coin).keychains().getKeysForSigning({ wallet: wallet });
@@ -69,8 +69,6 @@ async function main() {
   });
 
   console.log('signedTransaction:', JSON.stringify(signedTransaction, null, 4));
-
 }
 
 main().catch((e) => console.error(e));
-

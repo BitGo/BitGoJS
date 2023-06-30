@@ -46,7 +46,7 @@ parser.addArgument(['-c', '--crtpath'], {
   help: 'Path to the SSL Crt file (required if running production)',
 });
 
-parser.addArgument( ['-u', '--customrooturi'], {
+parser.addArgument(['-u', '--customrooturi'], {
   help: 'Force custom root BitGo URI (e.g. https://test.bitgo.com)',
 });
 

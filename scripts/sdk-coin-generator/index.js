@@ -1,24 +1,11 @@
 const Generator = require('yeoman-generator');
 const fs = require('fs');
 
-const UTXO_DEPENDENCIES = [
-  'abstract-utxo',
-  'sdk-core',
-  'utxo-lib',
-];
-const ACCOUNT_DEPENDENCIES = [
-  'abstract-eth',
-  'sdk-core',
-  'statics',
-];
-const SIMPLE_DEPENDENCIES = [
-  'sdk-core',
-];
+const UTXO_DEPENDENCIES = ['abstract-utxo', 'sdk-core', 'utxo-lib'];
+const ACCOUNT_DEPENDENCIES = ['abstract-eth', 'sdk-core', 'statics'];
+const SIMPLE_DEPENDENCIES = ['sdk-core'];
 
-const DEV_DEPENDENCIES = [
-  'sdk-api',
-  'sdk-test',
-];
+const DEV_DEPENDENCIES = ['sdk-api', 'sdk-test'];
 
 require('yeoman-generator/lib/actions/install');
 
@@ -34,7 +21,7 @@ module.exports = class extends Generator {
         type: 'input',
         name: 'coin',
         message: 'What is the name of your coin? (e.g. Bitcoin) - Sentence Case',
-        validate: function(input) {
+        validate: function (input) {
           const done = this.async();
           if (!input) {
             done('Please provide the name of the coin.');
@@ -46,7 +33,7 @@ module.exports = class extends Generator {
         type: 'input',
         name: 'symbol',
         message: 'What is the symbol of your coin? (e.g. btc) - Lowercase',
-        validate: function(input) {
+        validate: function (input) {
           const done = this.async();
           if (!input) {
             done('Please provide a symbol.');
@@ -63,14 +50,14 @@ module.exports = class extends Generator {
         type: 'input',
         name: 'testnetSymbol',
         message: 'What is the testnet symbol of your coin? (e.g. tbtc) - Lowercase',
-        validate: function(input) {
+        validate: function (input) {
           const done = this.async();
           if (!input) {
             done('Please provide a testnet symbol.');
           }
           done(null, true);
         },
-        when: function(answers) {
+        when: function (answers) {
           if (answers.testnetConfirm) {
             return true;
           }
@@ -80,7 +67,7 @@ module.exports = class extends Generator {
         type: 'input',
         name: 'baseFactor',
         message: 'What is the base factor? (e.g. 1e6)',
-        validate: function(input) {
+        validate: function (input) {
           const done = this.async();
           if (!input) {
             done('Please provide a base factor.');
@@ -116,7 +103,7 @@ module.exports = class extends Generator {
     }
     this.answers = { ...answers };
   }
-  
+
   paths() {
     const destinationPath = `${this.contextRoot}/modules/sdk-coin-${this.answers.symbol}`;
     const templatePath = `${this.contextRoot}/scripts/sdk-coin-generator/template`;
@@ -124,37 +111,15 @@ module.exports = class extends Generator {
     this.destinationRoot(destinationPath);
     this.sourceRoot(templatePath);
   }
-  
+
   async writing() {
-    this.fs.copyTpl(
-      this.templatePath('./base'),
-      this.destinationPath(),
-      { ...this.answers }
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.eslintignore'),
-      this.destinationPath('.eslintignore')
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.gitignore'),
-      this.destinationPath('.gitignore')
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.mocharc.yml'),
-      this.destinationPath('.mocharc.yml')
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.npmignore'),
-      this.destinationPath('.npmignore')
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.prettierignore'),
-      this.destinationPath('.prettierignore')
-    );
-    this.fs.copyTpl(
-      this.templatePath('./base/.prettierrc.yml'),
-      this.destinationPath('.prettierrc.yml')
-    );
+    this.fs.copyTpl(this.templatePath('./base'), this.destinationPath(), { ...this.answers });
+    this.fs.copyTpl(this.templatePath('./base/.eslintignore'), this.destinationPath('.eslintignore'));
+    this.fs.copyTpl(this.templatePath('./base/.gitignore'), this.destinationPath('.gitignore'));
+    this.fs.copyTpl(this.templatePath('./base/.mocharc.yml'), this.destinationPath('.mocharc.yml'));
+    this.fs.copyTpl(this.templatePath('./base/.npmignore'), this.destinationPath('.npmignore'));
+    this.fs.copyTpl(this.templatePath('./base/.prettierignore'), this.destinationPath('.prettierignore'));
+    this.fs.copyTpl(this.templatePath('./base/.prettierrc.yml'), this.destinationPath('.prettierrc.yml'));
 
     let templatePath = './boilerplates/simple';
 
@@ -170,23 +135,17 @@ module.exports = class extends Generator {
         break;
     }
 
-    this.fs.copyTpl(
-      this.templatePath(templatePath),
-      this.destinationPath('./src'),
-      { ...this.answers }
-    );
+    this.fs.copyTpl(this.templatePath(templatePath), this.destinationPath('./src'), { ...this.answers });
 
     this.fs.copyTpl(
       this.templatePath(`${templatePath}/.mainnet.ts`),
       this.destinationPath(`./src/${this.answers.symbol}.ts`),
       { ...this.answers }
     );
-    
-    this.fs.copyTpl(
-      this.templatePath(`${templatePath}/.tsconfig.json`),
-      this.destinationPath(`./tsconfig.json`),
-      { ...this.answers }
-    );
+
+    this.fs.copyTpl(this.templatePath(`${templatePath}/.tsconfig.json`), this.destinationPath(`./tsconfig.json`), {
+      ...this.answers,
+    });
 
     if (this.answers.testnetSymbol) {
       this.fs.copyTpl(
@@ -225,7 +184,7 @@ module.exports = class extends Generator {
 
 function getDependencies(contextRoot, depArr) {
   const dependencies = {};
-  depArr.forEach(dependency => {
+  depArr.forEach((dependency) => {
     const file = `${contextRoot}/modules/${dependency}/package.json`;
     const rawData = fs.readFileSync(file);
     const data = JSON.parse(rawData);
@@ -239,11 +198,12 @@ function addNewCoinToTsConfig(contextRoot, answers) {
 
   const rawData = fs.readFileSync(file);
   const data = JSON.parse(rawData);
-  
+
   data.references.push({ path: `./modules/sdk-coin-${answers.symbol}` });
-  data.references = data.references.filter((value, index, self) =>
-    index === self.findIndex((t) => (t.path === value.path)));
-  data.references.sort((a, b) => a.path > b.path ? 1 : -1);
+  data.references = data.references.filter(
+    (value, index, self) => index === self.findIndex((t) => t.path === value.path)
+  );
+  data.references.sort((a, b) => (a.path > b.path ? 1 : -1));
 
   fs.writeFileSync(file, JSON.stringify(data, null, 2).concat('\n'));
 }
@@ -256,7 +216,7 @@ function addNewCoinToBitgo(contextRoot, answers) {
 
   data.dependencies[`@bitgo/sdk-coin-${answers.symbol}`] = '^1.0.0';
 
-  const depArr = Object.entries(data.dependencies).sort((a, b) => a[0] > b[0] ? 1 : -1);
+  const depArr = Object.entries(data.dependencies).sort((a, b) => (a[0] > b[0] ? 1 : -1));
   data.dependencies = depArr.reduce((acc, cur) => {
     acc[cur[0]] = cur[1];
     return acc;
@@ -272,14 +232,17 @@ function addNewCoinToBitgoTsConfig(contextRoot, answers) {
   const data = JSON.parse(rawData);
 
   data.references.push({ path: `../sdk-coin-${answers.symbol}` });
-  data.references = data.references.filter((value, index, self) =>
-    index === self.findIndex((t) => (t.path === value.path)));
-  data.references.sort((a, b) => a.path > b.path ? 1 : -1);
+  data.references = data.references.filter(
+    (value, index, self) => index === self.findIndex((t) => t.path === value.path)
+  );
+  data.references.sort((a, b) => (a.path > b.path ? 1 : -1));
 
   fs.writeFileSync(file, JSON.stringify(data, null, 2).concat('\n'));
 }
 
 function toSentenceCase(theString) {
-  const newString = theString.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, function(c) {return c.toUpperCase();});
+  const newString = theString.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, function (c) {
+    return c.toUpperCase();
+  });
   return newString;
 }

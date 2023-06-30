@@ -1,6 +1,6 @@
 /**
  * Fetch a list of block notifications triggered by a webhook for a given coin type
- * 
+ *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
