@@ -69,6 +69,7 @@ describe('ADA', function () {
     type: 'Transfer',
     certificates: [],
     withdrawals: [],
+    pledgeDetails: undefined,
   };
 
   before(function () {
