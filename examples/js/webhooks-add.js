@@ -1,6 +1,6 @@
 /**
  * Add a new webhook for a coin type for a user defined notification url
- * 
+ *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 

@@ -25,10 +25,7 @@ describe('Enable tokens', () => {
         id: '23423423423423',
       },
       body: {
-        enableTokens: [
-          { name: 'tsol:usdc' },
-          { name: 'tsol:usdt' },
-        ],
+        enableTokens: [{ name: 'tsol:usdc' }, { name: 'tsol:usdt' }],
       },
     } as unknown as express.Request;
 

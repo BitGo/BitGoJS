@@ -5,13 +5,13 @@ import * as assert from 'assert';
 
 export interface GenerateQrDataParams {
   // The backup keychain as it is returned from the BitGo API upon creation
-  backupKeychain: Keychain,
+  backupKeychain: Keychain;
   // The name of the 3rd party provider of the backup key if neither the user nor BitGo stores it
   backupKeyProvider?: string;
   // The key id of the backup key, only used for cold keys
   backupMasterKey?: string;
   // The BitGo keychain as it is returned from the BitGo API upon creation
-  bitgoKeychain: Keychain,
+  bitgoKeychain: Keychain;
   // The coin of the wallet that was/ is about to be created
   coin: Readonly<BaseCoin>;
   // A code that can be used to encrypt the wallet password to.
@@ -73,13 +73,17 @@ function generateUserQrData(userKeychain: Keychain, userMasterKey?: string): QrD
   };
 }
 
-function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain, {
-  backupKeyProvider,
-  backupMasterKey,
-}: {
-  backupKeyProvider?: string;
-  backupMasterKey?: string;
-} = {}): QrDataEntry {
+function generateBackupQrData(
+  coin: Readonly<BaseCoin>,
+  backupKeychain: Keychain,
+  {
+    backupKeyProvider,
+    backupMasterKey,
+  }: {
+    backupKeyProvider?: string;
+    backupMasterKey?: string;
+  } = {}
+): QrDataEntry {
   const title = 'B: Backup Key';
   if (backupKeychain.encryptedPrv) {
     return {
@@ -94,7 +98,8 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
     assert(keyShares?.length === 2);
     return {
       title: 'B: Backup Key Shares',
-      description: `These are the key shares for ${backupKeyProvider}. If BitGo Inc. goes out of business,\r\n` +
+      description:
+        `These are the key shares for ${backupKeyProvider}. If BitGo Inc. goes out of business,\r\n` +
         `contact ${backupKeyProvider} and they will help you recover your funds.`,
       data: JSON.stringify(keyShares),
     };
@@ -106,7 +111,8 @@ function generateBackupQrData(coin: Readonly<BaseCoin>, backupKeychain: Keychain
   if (backupKeyProvider) {
     return {
       title: 'B: Backup Key',
-      description: `This is the public key held at ${backupKeyProvider}, an ${coin.name} recovery service. ` +
+      description:
+        `This is the public key held at ${backupKeyProvider}, an ${coin.name} recovery service. ` +
         `If you lose\r\nyour key, ${backupKeyProvider} will be able to sign transactions to recover funds.`,
       data: pub,
     };
@@ -127,8 +133,7 @@ function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
   return {
     title: 'C: BitGo Public Key',
     description:
-      'This is the public part of the key that BitGo will use to ' +
-      'co-sign transactions\r\nwith you on your wallet.',
+      'This is the public part of the key that BitGo will use to ' + 'co-sign transactions\r\nwith you on your wallet.',
     data: bitgoData,
   };
 }

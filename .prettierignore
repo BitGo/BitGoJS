@@ -1,0 +1,7 @@
+.nyc_output/
+dist/
+scripts/sdk-coin-generator/template/
+protobuf/
+*.json
+*.min.js
+CHANGELOG.md

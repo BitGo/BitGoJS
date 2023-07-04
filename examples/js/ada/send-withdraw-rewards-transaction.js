@@ -59,7 +59,6 @@ async function main() {
     .result();
 
   console.log('New Transaction:', JSON.stringify(submittedTx, null, 4));
-
 }
 
 main().catch((e) => console.error(e));

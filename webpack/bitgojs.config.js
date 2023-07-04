@@ -11,9 +11,7 @@ module.exports = {
   resolve: {
     alias: {
       // this is only required if using bitgo instead of just the sdk-api
-      '@hashgraph/sdk': path.resolve(
-        '../../node_modules/@hashgraph/sdk/src/browser.js',
-      ),
+      '@hashgraph/sdk': path.resolve('../../node_modules/@hashgraph/sdk/src/browser.js'),
       'superagent-proxy': false,
       // use the default version here since we're webpacking ourselves
       '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
@@ -45,7 +43,10 @@ module.exports = {
       process: 'process/browser',
     }),
 
-    new webpack.NormalModuleReplacementPlugin(/\@emurgo\/cardano-serialization-lib-nodejs/, '@emurgo/cardano-serialization-lib-browser'),
+    new webpack.NormalModuleReplacementPlugin(
+      /\@emurgo\/cardano-serialization-lib-nodejs/,
+      '@emurgo/cardano-serialization-lib-browser'
+    ),
 
     new webpack.ContextReplacementPlugin(/cardano-serialization-lib-browser/),
   ],

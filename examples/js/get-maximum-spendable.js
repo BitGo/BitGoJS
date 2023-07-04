@@ -25,8 +25,7 @@ const id = null;
 const coin = 'tbtc';
 const basecoin = bitgo.coin(coin);
 
-Promise.coroutine(function *() {
-
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletInstance = yield basecoin.wallets().get({ id: id });
@@ -65,6 +64,4 @@ Promise.coroutine(function *() {
   console.log('Wallet ID:', id);
   console.log('Coin:', response.coin);
   console.log('Maximum Spendable:', response.maximumSpendable);
-
 })();
-

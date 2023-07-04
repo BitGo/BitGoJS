@@ -14,9 +14,13 @@ import { BaseCoin, Wallets, WalletWithKeychains } from '@bitgo/sdk-core';
 
 describe('Generate Wallet', () => {
   it('should return the internal wallet object by default', async () => {
-    const walletStub = sinon.stub<[], Bluebird<WalletWithKeychains>>().resolves(({ wallet: { toJSON: () => 'walletdata' } }) as any);
+    const walletStub = sinon
+      .stub<[], Bluebird<WalletWithKeychains>>()
+      .resolves({ wallet: { toJSON: () => 'walletdata' } } as any);
     const walletsStub = sinon.createStubInstance(Wallets, { generateWallet: walletStub });
-    const coinStub = sinon.createStubInstance(BaseCoin, { wallets: sinon.stub<[], Wallets>().returns(walletsStub as any) });
+    const coinStub = sinon.createStubInstance(BaseCoin, {
+      wallets: sinon.stub<[], Wallets>().returns(walletsStub as any),
+    });
     const stubBitgo = sinon.createStubInstance(BitGo, { coin: sinon.stub<[string]>().returns(coinStub) });
     const walletGenerateBody = {};
     const coin = 'tbtc';
@@ -29,13 +33,16 @@ describe('Generate Wallet', () => {
       body: walletGenerateBody,
     } as unknown as express.Request;
 
-    await handleV2GenerateWallet(req)
-      .should.be.resolvedWith('walletdata');
+    await handleV2GenerateWallet(req).should.be.resolvedWith('walletdata');
   });
 
   it('should return the coin specific result directly if includeKeychains query param is true', async () => {
-    const walletsStub = sinon.createStubInstance(Wallets, { generateWallet: ({ wallet: { toJSON: () => 'walletdata with keychains' } }) as any });
-    const coinStub = sinon.createStubInstance(BaseCoin, { wallets: sinon.stub<[], Wallets>().returns(walletsStub as any) });
+    const walletsStub = sinon.createStubInstance(Wallets, {
+      generateWallet: { wallet: { toJSON: () => 'walletdata with keychains' } } as any,
+    });
+    const coinStub = sinon.createStubInstance(BaseCoin, {
+      wallets: sinon.stub<[], Wallets>().returns(walletsStub as any),
+    });
     const stubBitgo = sinon.createStubInstance(BitGo, { coin: sinon.stub<[string]>().returns(coinStub) });
     const walletGenerateBody = {};
     const coin = 'tbtc';
@@ -50,7 +57,6 @@ describe('Generate Wallet', () => {
       body: walletGenerateBody,
     } as unknown as express.Request;
 
-    await handleV2GenerateWallet(req)
-      .should.be.resolvedWith({ wallet: 'walletdata with keychains' });
+    await handleV2GenerateWallet(req).should.be.resolvedWith({ wallet: 'walletdata with keychains' });
   });
 });

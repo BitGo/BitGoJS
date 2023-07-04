@@ -38,8 +38,6 @@ describe('Create Address', () => {
       },
     } as unknown as express.Request;
 
-    await handleV2CreateAddress(req)
-      .should.be.resolvedWith(res);
+    await handleV2CreateAddress(req).should.be.resolvedWith(res);
   });
-  
 });

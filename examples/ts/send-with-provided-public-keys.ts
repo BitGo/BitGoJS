@@ -39,9 +39,15 @@ const recipients = [
 
 // TODO: these are example public keys, please substitute them with the correct keys for your wallet
 const keychains = {
-  user: { pub: 'xpub661MyMwAqRbcG9jW7yGH5q3gniFXRiVm6eNodEXmGrUnE5k1gnFCfivEzL8PEkiYyMLiHx3mGdJk8ABZ4Aw1pthkEQbfnJjehxdZpaHb4AE' },
-  backup: { pub: 'xpub661MyMwAqRbcF47eVHSVcpnPwjvf4xnfH2PpnS9sPsjUwMBxYxqDbyJEYZ2Xpi5cyEirTpYc32GBXG8DRkU8DkAYUi6vCYTy5krvve5ZwVY' },
-  bitgo: { pub: 'xpub661MyMwAqRbcGt7gRtUMbV3K5f9wJjputbhCY4BM4BDEPpRyixAtiWCqNFsLeBdbStcKTGMgeX3pjvazz58r4WVFH1dXrUq7DfVmQSijgGL' },
+  user: {
+    pub: 'xpub661MyMwAqRbcG9jW7yGH5q3gniFXRiVm6eNodEXmGrUnE5k1gnFCfivEzL8PEkiYyMLiHx3mGdJk8ABZ4Aw1pthkEQbfnJjehxdZpaHb4AE',
+  },
+  backup: {
+    pub: 'xpub661MyMwAqRbcF47eVHSVcpnPwjvf4xnfH2PpnS9sPsjUwMBxYxqDbyJEYZ2Xpi5cyEirTpYc32GBXG8DRkU8DkAYUi6vCYTy5krvve5ZwVY',
+  },
+  bitgo: {
+    pub: 'xpub661MyMwAqRbcGt7gRtUMbV3K5f9wJjputbhCY4BM4BDEPpRyixAtiWCqNFsLeBdbStcKTGMgeX3pjvazz58r4WVFH1dXrUq7DfVmQSijgGL',
+  },
 };
 
 async function main() {

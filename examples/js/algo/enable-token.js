@@ -1,6 +1,6 @@
 /**
- * Currently, assets on algorand network need to be enabled and disabled in order to be used or not. 
- * Please note that enable/disable transactions have a fee associated, and increase the minimum balance wallet must have by 0.1 Algos for each enable token as well. In example : 
+ * Currently, assets on algorand network need to be enabled and disabled in order to be used or not.
+ * Please note that enable/disable transactions have a fee associated, and increase the minimum balance wallet must have by 0.1 Algos for each enable token as well. In example :
  * Wallet without tokens enabled has minimum balance of 0.1 Algos
  * Wallet with 1 token enabled has minimum balance of 0.2 Algos
  * Wallet with 2 token enabled has minimum balance of 0.3 Algos
@@ -9,23 +9,23 @@
 
 const BitGoJS = require('bitgo');
 const Promise = require('bluebird');
- 
+
 // change this to env: 'production' when you are ready for production
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
- 
+
 // change this to 'algo:16026733' when you are ready for production
 const coin = 'talgo:KAL-16026733';
- 
+
 // this can be found on test.bitgo.com in the URL after clicking on a wallet
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
 const walletId = 'your wallet id';
- 
+
 // this is your wallet passphrase, which could be different than your login credentials
 const walletPassphrase = 'set your wallet passphrase here';
- 
+
 // this will need to be a real OTP code on production
 const otp = '000000';
- 
+
 // this can be retrieved by logging into app.bitgo-test.com (app.bitgo.com for production)
 // and going to: User > User Settings > Access Tokens > (+ icon)
 // the token will need Spender permission for ALGO
@@ -33,8 +33,7 @@ const accessToken = 'insert access token string here';
 
 const address = 'your root address or address of same wallet';
 
-
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
@@ -74,5 +73,4 @@ Promise.coroutine(function *() {
   } catch (e) {
     console.error(e);
   }
-})().catch(e => console.error(e));
-
+})().catch((e) => console.error(e));

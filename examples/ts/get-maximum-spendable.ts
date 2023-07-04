@@ -27,7 +27,6 @@ const walletId = '';
 const basecoin = bitgo.coin(coin);
 
 async function main() {
-
   const wallet = await basecoin.wallets().get({ id: walletId });
 
   // You may include any, all, or none of these optional parameters

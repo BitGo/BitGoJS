@@ -27,7 +27,7 @@ const otp = '000000';
 // the token will need Spender permission for ALGO
 const accessToken = 'insert access token string here';
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
@@ -62,4 +62,4 @@ Promise.coroutine(function *() {
   } catch (e) {
     console.error(e);
   }
-})().catch(e => console.error(e));
+})().catch((e) => console.error(e));

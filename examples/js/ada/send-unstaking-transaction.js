@@ -16,7 +16,7 @@ const walletId = '631b73c2bf01c90007f9154194486da3';
 // TODO: set your passphrase here
 const walletPassphrase = null;
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   // generating address w/ same staking key and same payment key
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
   yield bitgo.unlock({ otp: '000000', duration: 3600 });
@@ -31,10 +31,10 @@ Promise.coroutine(function *() {
     preview: undefined,
   };
   // build tx
-  const unsignedTx = (yield bitgo
+  const unsignedTx = yield bitgo
     .post(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
     .send(whitelistedParams)
-    .result());
+    .result();
 
   // sign tx
   const keychains = yield basecoin.keychains().getKeysForSigning({ wallet: walletInstance });
@@ -53,5 +53,4 @@ Promise.coroutine(function *() {
     .result();
 
   console.log('New Transaction:', JSON.stringify(submittedTx, null, 4));
-
 })();

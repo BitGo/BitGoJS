@@ -27,7 +27,7 @@ const passphrase = 'test_wallet_passphrase';
 const coin = 'tltc';
 
 // Create the wallet
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions = {

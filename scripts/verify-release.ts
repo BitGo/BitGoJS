@@ -12,11 +12,7 @@ let lernaModuleLocations: string[] = [];
  */
 function getLernaRunner(lernaPath: string) {
   return async (command: string, args: string[] = [], options = {}) => {
-    const { stdout } = await execa(
-      lernaPath,
-      [command, ...args],
-      options,
-    );
+    const { stdout } = await execa(lernaPath, [command, ...args], options);
     return stdout;
   };
 }
@@ -25,13 +21,15 @@ const getLernaModules = async (): Promise<void> => {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
 
   const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{name: string, location: string}> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all', '--toposort']));
-  
-  lernaModuleLocations = modules.map(({ location }) => location );
+  const modules: Array<{ name: string; location: string }> = JSON.parse(
+    await lerna('list', ['--loglevel', 'silent', '--json', '--all', '--toposort'])
+  );
+
+  lernaModuleLocations = modules.map(({ location }) => location);
 };
 
 /**
- * Makes an HTTP request to fetch all the dist tags for a given package. 
+ * Makes an HTTP request to fetch all the dist tags for a given package.
  */
 const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
   return new Promise((resolve) => {
@@ -47,7 +45,6 @@ const getDistTags = async (packageName: string): Promise<Record<string, string>>
     });
   });
 };
-
 
 const verifyPackage = async (dir: string, preid: string = 'beta'): Promise<boolean> => {
   const cwd = dir;
@@ -71,7 +68,7 @@ const verify = async (preid?: string) => {
   await getLernaModules();
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     const dir = lernaModuleLocations[i];
-    if (!await verifyPackage(dir, preid)) {
+    if (!(await verifyPackage(dir, preid))) {
       console.error('Failed to verify outstanding packages.');
       return;
     }

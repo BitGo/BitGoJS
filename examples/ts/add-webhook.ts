@@ -35,4 +35,4 @@ async function main() {
   console.log(`Wallet Webhooks:  ${webhooks}`);
 }
 
-main().catch(e => console.log(e));
+main().catch((e) => console.log(e));

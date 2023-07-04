@@ -5,6 +5,10 @@ import { BigNumber } from 'bignumber.js';
 
 declare module 'bignumber.js' {
   export declare class BigNumber implements BigNumber.Instance {
-    toFormat(decimalPlaces: number | null, roundingMode: BigNumber.RoundingMode | null, format?: BigNumber.Format): string;
+    toFormat(
+      decimalPlaces: number | null,
+      roundingMode: BigNumber.RoundingMode | null,
+      format?: BigNumber.Format
+    ): string;
   }
 }

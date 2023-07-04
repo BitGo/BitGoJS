@@ -16,7 +16,7 @@ const coin = 'tatom';
 const accessToken = '';
 
 // TODO: set a label for your new wallet here
-const label = 'Test ' + coin + ' V2 Wallet - ' + (new Date()).getTime();
+const label = 'Test ' + coin + ' V2 Wallet - ' + new Date().getTime();
 
 // TODO: set your passphrase for your new wallet here
 const passphrase = '';
@@ -33,7 +33,7 @@ async function createWallet() {
     passphrase,
     passcodeEncryptionCode: passphrase,
     multisigType: 'tss',
-    enterprise
+    enterprise,
   };
 
   const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
@@ -73,8 +73,6 @@ async function createWallet() {
   console.log('-----------------------------------------');
   const bitgoKeychain = wallet.bitgoKeychain;
   console.log(`Bitgo commonKeychain xPrv: ${bitgoKeychain.commonKeychain}`);
-
 }
-
 
 createWallet().catch((e) => console.error(e));

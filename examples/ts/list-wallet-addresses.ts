@@ -18,7 +18,6 @@ bitgo.register(coin, Tbtc.createInstance);
 const walletId = '';
 
 async function main() {
-
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
   const addresses = await wallet.addresses();
 

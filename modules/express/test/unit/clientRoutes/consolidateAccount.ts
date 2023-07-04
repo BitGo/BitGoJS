@@ -26,8 +26,9 @@ describe('Consolidate account', () => {
       },
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.rejectedWith('invalid coin selected');
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.rejectedWith(
+      'invalid coin selected'
+    );
   });
 
   it('should pass if coin allows consolidation', async () => {
@@ -45,8 +46,9 @@ describe('Consolidate account', () => {
       },
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.resolvedWith(result);
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
     consolidationStub.should.be.calledOnceWith(mockRequest.body);
   });
 
@@ -64,8 +66,9 @@ describe('Consolidate account', () => {
       },
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.rejectedWith('consolidate address must be an array of addresses');
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.rejectedWith(
+      'consolidate address must be an array of addresses'
+    );
   });
 
   function createConsolidateMocks(res, allowsAccountConsolidations = false, supportsTss = false) {
@@ -94,8 +97,10 @@ describe('Consolidate account', () => {
       body,
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.rejectedWith({ status: 400, result });
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.rejectedWith({
+      status: 400,
+      result,
+    });
     consolidationStub.should.be.calledOnceWith(body);
   });
 
@@ -111,8 +116,10 @@ describe('Consolidate account', () => {
       body,
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.rejectedWith({ status: 202, result });
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.rejectedWith({
+      status: 202,
+      result,
+    });
     consolidationStub.should.be.calledOnceWith(body);
   });
 
@@ -128,8 +135,9 @@ describe('Consolidate account', () => {
       body,
     };
 
-    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
-      .should.be.resolvedWith(result);
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
     consolidationStub.should.be.calledOnceWith(body);
   });
 });

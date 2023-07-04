@@ -19,8 +19,7 @@ const bitgo = new BitGoJS.BitGo({ env: 'prod' });
 const coin = 'btc';
 
 // Create the wallet
-Promise.coroutine(function *() {
-
+Promise.coroutine(function* () {
   // this function takes one parameter - seed - if you want to create from your own entropy (recommended)
   const backupKey = bitgo.coin(coin).keychains().create();
 
