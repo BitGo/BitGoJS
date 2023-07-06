@@ -17,6 +17,7 @@ import {
   SuiTransactionType,
   TransferProgrammableTransaction,
   StakingProgrammableTransaction,
+  RequestAddStake,
 } from './iface';
 import { Buffer } from 'buffer';
 import {
@@ -28,7 +29,9 @@ import {
 } from './mystenlab/types';
 import {
   builder,
+  MoveCallTransaction,
   ObjectCallArg,
+  SplitCoinsTransaction,
   TransactionBlockInput,
   TransactionType as TransactionCommandType,
 } from './mystenlab/builder';
@@ -233,6 +236,35 @@ export class Utils implements BaseUtils {
         address: address,
         amount: Number(amounts[index]).toString(),
       } as Recipient;
+    });
+  }
+
+  /**
+   * Get add staking requests
+   *
+   * @param {StakingProgrammableTransaction} tx: staking transaction object
+   * @return {RequestAddStake[]}  add staking requests
+   */
+  getStakeRequests(tx: StakingProgrammableTransaction): RequestAddStake[] {
+    const amounts: number[] = [];
+    const addresses: string[] = [];
+    tx.transactions.forEach((transaction, i) => {
+      if (transaction.kind === 'SplitCoins') {
+        const amountInputIdx = ((transaction as SplitCoinsTransaction).amounts[0] as TransactionBlockInput).index;
+        amounts.push(utils.getAmount(tx.inputs[amountInputIdx] as TransactionBlockInput));
+      }
+      if (transaction.kind === 'MoveCall') {
+        const validatorAddressInputIdx = ((transaction as MoveCallTransaction).arguments[2] as TransactionBlockInput)
+          .index;
+        const validatorAddress = utils.getAddress(tx.inputs[validatorAddressInputIdx] as TransactionBlockInput);
+        addresses.push(validatorAddress);
+      }
+    });
+    return addresses.map((address, index) => {
+      return {
+        validatorAddress: address,
+        amount: amounts[index],
+      } as RequestAddStake;
     });
   }
 
