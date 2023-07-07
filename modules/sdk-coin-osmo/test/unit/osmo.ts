@@ -97,6 +97,24 @@ describe('OSMO', function () {
       should.equal(utils.isValidValidatorAddress(undefined as unknown as string), false);
       should.equal(utils.isValidValidatorAddress(''), false);
     });
+
+    it('should validate contract addresses correctly', () => {
+      should.equal(utils.isValidContractAddress(address.contractAddress1), true);
+      should.equal(utils.isValidContractAddress(address.contractAddress2), false);
+      should.equal(utils.isValidContractAddress('dfjk35y'), false);
+      should.equal(utils.isValidContractAddress(undefined as unknown as string), false);
+      should.equal(utils.isValidContractAddress(''), false);
+    });
+
+    it('should validate all three kind of addresses for coin', () => {
+      const tomso = bitgo.coin('tosmo');
+      should.equal(tomso.isValidAddress(address.address1), true);
+      should.equal(tomso.isValidAddress(address.validatorAddress1), true);
+      should.equal(tomso.isValidAddress(address.contractAddress1), true);
+      should.equal(tomso.isValidAddress('dfjk35y'), false);
+      // @ts-expect-error - testing invalid address
+      should.equal(tomso.isValidAddress(undefined), false);
+    });
   });
 
   describe('Verify transaction: ', () => {

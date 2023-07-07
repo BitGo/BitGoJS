@@ -28,7 +28,9 @@ export class Osmo extends CosmosCoin {
 
   /** @inheritDoc **/
   isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
+    return (
+      utils.isValidAddress(address) || utils.isValidValidatorAddress(address) || utils.isValidContractAddress(address)
+    );
   }
 
   /** @inheritDoc **/

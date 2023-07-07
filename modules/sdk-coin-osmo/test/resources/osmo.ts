@@ -236,6 +236,8 @@ export const address = {
   validMemoIdAddress: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus?memoId=2',
   invalidMemoIdAddress: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus?memoId=xyz',
   multipleMemoIdAddress: 'osmo15al6vq6yfyqwru5adaxd9ju5e46qpvxx345cyg?memoId=3&memoId=12',
+  contractAddress1: 'osmo1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
+  contractAddress2: 'sfa1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
 };
 
 export const blockHash = {
