@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import * as Long from 'long';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import {
   BaseAddress,
   BaseFee,

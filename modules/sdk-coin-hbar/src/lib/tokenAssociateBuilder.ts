@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import { BaseKey, BuildTransactionError, SigningError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import {

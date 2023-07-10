@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';

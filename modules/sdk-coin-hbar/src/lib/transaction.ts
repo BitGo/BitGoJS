@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import * as Long from 'long';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import { TxData, Recipient } from './iface';
 import { stringifyAccountId, stringifyTxTime, stringifyTokenId, getHederaTokenNameFromId } from './utils';
 import { KeyPair } from './';
