@@ -2624,7 +2624,12 @@ describe('V2 Wallet:', function () {
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
       const messageRaw = 'test';
-      const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw, coin: 'teth' };
+      const expected: SignedMessage = {
+        txRequestId: reqId.toString(),
+        txHash,
+        messageRaw: `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`,
+        coin: 'teth',
+      };
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');

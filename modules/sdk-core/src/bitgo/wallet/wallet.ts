@@ -1700,6 +1700,8 @@ export class Wallet implements IWallet {
     }
     if (_.isFunction((this.baseCoin as any).encodeMessage)) {
       params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
+      // workaround for HSM C JSON lib parsing issues
+      params.message.messageRaw = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
     }
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
     const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
