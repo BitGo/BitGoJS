@@ -284,7 +284,7 @@ export class Sol extends BaseCoin {
       throw new Error('Tx fee payer is not the wallet root address');
     }
 
-    if (!_.isEqual(explainedTx.durableNonce, durableNonce)) {
+    if (durableNonce && !_.isEqual(explainedTx.durableNonce, durableNonce)) {
       throw new Error('Tx durableNonce does not match with param durableNonce');
     }
 
