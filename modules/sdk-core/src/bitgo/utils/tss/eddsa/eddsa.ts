@@ -493,6 +493,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId = txRequest.txRequestId;
     }
 
+    const { apiVersion } = txRequestResolved;
+
     const { userToBitgoCommitment, encryptedSignerShare, encryptedUserToBitgoRShare } =
       await externalSignerCommitmentGenerator({ txRequest: txRequestResolved });
 
@@ -502,7 +504,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId,
       userToBitgoCommitment,
       encryptedSignerShare,
-      'full'
+      apiVersion
     );
 
     const { rShare } = await externalSignerRShareGenerator({
@@ -510,7 +512,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       encryptedUserToBitgoRShare,
     });
 
-    await offerUserToBitgoRShare(this.bitgo, this.wallet.id(), txRequestId, rShare, encryptedSignerShare.share, 'full');
+    await offerUserToBitgoRShare(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      rShare,
+      encryptedSignerShare.share,
+      apiVersion
+    );
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
     const gSignShareTransactionParams = {
       txRequest: txRequestResolved,
@@ -519,7 +528,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserCommitment,
     };
     const gShare = await externalSignerGShareGenerator(gSignShareTransactionParams);
-    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, gShare, 'full');
+    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, gShare, apiVersion);
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
   }
 
