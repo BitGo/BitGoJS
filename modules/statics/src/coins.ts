@@ -4,6 +4,7 @@ import {
   algoToken,
   avaxErc20,
   bscToken,
+  bnbToken,
   celoToken,
   eosToken,
   erc1155,
@@ -20,6 +21,7 @@ import {
   talgoToken,
   tavaxErc20,
   tbscToken,
+  tbnbToken,
   tceloToken,
   teosToken,
   terc1155,
@@ -954,6 +956,16 @@ export const coins = CoinMap.fromCoins([
     [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
+    '0c6eb16f-31dc-4383-86c4-e6af69c9cf99',
+    'bnb',
+    'BNB Smart Chain',
+    Networks.main.bnb,
+    18,
+    UnderlyingAsset.BNB,
+    BaseUnit.BNB,
+    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
+  ),
+  account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
     'tbsc',
     'Testnet Binance Smart Chain',
@@ -961,6 +973,16 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
+    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
+  ),
+  account(
+    '355fcaac-e6f4-4446-8d14-eaad0084f0eb',
+    'tbnb',
+    'Testnet BNB Smart Chain',
+    Networks.test.bnb,
+    18,
+    UnderlyingAsset.BNB,
+    BaseUnit.BNB,
     [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
@@ -1714,7 +1736,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '462e1878-68eb-4c2b-9346-cee992195cdc',
-    'bnb',
+    'bnberc20',
     'BNB Token',
     18,
     '0xb8c77482e45f1f44de1745f52c74426c631bdd52',
@@ -1851,7 +1873,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'e9ba7fec-7824-40ad-9d51-2b973585325c',
     'busd',
-    'Binance USD',
+    'BNB USD',
     18,
     '0x4fabb145d64652a948d72533023f6e7a623c7c53',
     UnderlyingAsset.BUSD
@@ -6964,6 +6986,36 @@ export const coins = CoinMap.fromCoins([
     Networks.main.bsc,
     KeyCurve.Secp256k1
   ),
+  bnbToken(
+    'd1560a2f-80a7-4504-a9c3-9bbeeed74f4d',
+    'bnb:busd',
+    'BNB USD Token',
+    18,
+    '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+    UnderlyingAsset['bnb:busd']
+  ),
+  erc721(
+    '60914343-d147-46e7-8958-ab809302472e',
+    'erc721:bnbtoken',
+    'Generic BNB ERC721',
+    '0xerc721:bnbtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.bnb,
+    KeyCurve.Secp256k1
+  ),
+  erc1155(
+    '0cb642a8-bad9-4b5b-9f2b-1d1c724f29fe',
+    'erc1155:bnbtoken',
+    'Generic BNB ERC1155',
+    '0xerc1155:bnbtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.bnb,
+    KeyCurve.Secp256k1
+  ),
   ofcerc20('8304c497-523d-4f3f-8744-65e2e5ebd5a5', 'ofc1inch', '1Inch Token', 18, UnderlyingAsset['1INCH']),
   ofcerc20('28024a59-6fbb-4156-96e4-2ba7747e8581', 'ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
   ofcerc20('f790e63d-9785-4e98-b323-897fdc489613', 'ofcaave', 'Aave', 18, UnderlyingAsset.AAVE),
@@ -8066,6 +8118,36 @@ export const coins = CoinMap.fromCoins([
     '',
     '',
     Networks.test.bsc,
+    KeyCurve.Secp256k1
+  ),
+  tbnbToken(
+    'a9b37869-13d4-4a42-9a17-18a6f185e31c',
+    'tbnb:busd',
+    'Test BNB USD Token',
+    18,
+    '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee',
+    UnderlyingAsset['tbnb:busd']
+  ),
+  terc721(
+    '86ca7ef9-9134-48ac-8965-fcd06034b74c',
+    'terc721:bnbtoken',
+    'Generic BNB ERC721',
+    '0xterc721:bnbtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.bnb,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'a444cbce-18ab-4c0e-b172-eab866d86c85',
+    'terc1155:bnbtoken',
+    'Generic BNB ERC1155',
+    '0xterc1155:bnbctoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.bnb,
     KeyCurve.Secp256k1
   ),
   erc721(

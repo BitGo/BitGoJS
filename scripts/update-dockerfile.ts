@@ -55,7 +55,12 @@ async function updateDockerFile(lerna) {
   setDeps.forEach((module) => {
     const modPath = module.location.substring(module.location.indexOf('/modules/'));
     copyContent += `COPY --from=builder /tmp/bitgo${modPath} /var${modPath}/\n`;
-    copyContent += `RUN cd /var${modPath} && yarn link\n`;
+  });
+
+  copyContent += '\nRUN cd /var/bitgo-express && \\\n';
+  setDeps.forEach((module) => {
+    const modPath = module.location.substring(module.location.indexOf('/modules/'));
+    copyContent += `    cd /var${modPath} && yarn link && \\\n`;
   });
 
   const linkers = Array.from(setDeps)

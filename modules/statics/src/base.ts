@@ -29,6 +29,7 @@ export enum CoinFamily {
   BCHA = 'bcha',
   BLD = 'bld', // Agoric
   BSC = 'bsc',
+  BNB = 'bnb',
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
@@ -1224,6 +1225,17 @@ export enum UnderlyingAsset {
   'terc721:bsctoken' = 'terc721:bsctoken',
   'terc1155:bsctoken' = 'terc1155:bsctoken',
 
+  // BNB Token BEP-20
+  'bnb:busd' = 'bnb:busd',
+  'tbnb:busd' = 'tbnb:busd',
+  // BNB NFTs
+  // generic NFTs
+  'erc721:bnbtoken' = 'erc721:bnbtoken',
+  'erc1155:bnbtoken' = 'erc1155:bnbtoken',
+  // Test BNB NFTs
+  'terc721:bnbtoken' = 'terc721:bnbtoken',
+  'terc1155:bnbtoken' = 'terc1155:bnbtoken',
+
   // Polygon testnet tokens
   'tpolygon:derc20' = 'tpolygon:derc20',
   'tpolygon:link' = 'tpolygon:link',
@@ -1260,6 +1272,7 @@ export enum BaseUnit {
   ETH = 'wei',
   BTC = 'satoshi',
   BSC = 'jager',
+  BNB = 'jager',
   XLM = 'stroop',
   TRX = 'sun',
   HBAR = 'tinybar',
