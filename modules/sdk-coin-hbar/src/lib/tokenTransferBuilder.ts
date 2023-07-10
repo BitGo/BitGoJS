@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Recipient } from './iface';
 import { TransferBuilder } from './transferBuilder';
