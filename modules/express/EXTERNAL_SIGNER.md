@@ -30,17 +30,25 @@ The file is located at `src/fetchEncryptedPrivKeys.ts`. Before using this tool, 
 1. Fill in the `TODOs` by providing a valid `accessToken` as well as the list of `walletIds`, grouped by the cryptocurrency.
 2. Using the same information as #1, update the .env file with the `accessToken` and `walletIds` information.
 
-| Name                               | Value  | Description                                    |
-| ---------------------------------- | ------ | ---------------------------------------------- |
-| BITGO_EXTERNAL_SIGNER_ENV          | string | test                                           |
-| BITGO_EXTERNAL_SIGNER_ACCESS_TOKEN | string | Access token used for access BitGo Wallets     |
-| BITGO_EXTERNAL_SIGNER_WALLET_IDS   | string | JSON formatted string of wallets and their ids |
+| Name                                      | Value  | Description                                    |
+| ----------------------------------------- | ------ | ---------------------------------------------- |
+| BITGO_EXTERNAL_SIGNER_ENV                 | string | test                                           |
+| BITGO_EXTERNAL_SIGNER_ACCESS_TOKEN        | string | Access token used for access BitGo Wallets     |
+| BITGO_EXTERNAL_SIGNER_WALLET_IDS          | string | JSON formatted string of wallets and their ids |
+| BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV | string | JSON formatted string of wallets ids and       |
+|                                           |        | their encrypted private keys                   |
 
 BITGO_EXTERNAL_SIGNER_WALLET_IDS examples:
 
 ```
 BITGO_EXTERNAL_SIGNER_WALLET_IDS={"tbtc":["xxx", "xxx"], "gteth": ["xxx"]}
 BITGO_EXTERNAL_SIGNER_WALLET_IDS={"tbtc":[{"walletId":"xxx","walletPassword":"xxx","secret":"xxx"}]}
+```
+
+BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV examples:
+
+```
+BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV=[{"walletId":"xxx","encryptedPrv":"xxx"}]
 ```
 
 Option #2 may make be more convenient for configuration instead of reconfiguring the file every time a new version is released both locally and to Docker.
