@@ -63,6 +63,9 @@
       "path": "../sdk-coin-bsc"
     },
     {
+      "path": "../sdk-coin-bnb"
+    },
+    {
       "path": "../sdk-coin-bsv"
     },
     {

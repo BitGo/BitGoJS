@@ -202,6 +202,8 @@ export class CeloCoin extends ContractAddressDefinedToken {}
  */
 export class BscCoin extends ContractAddressDefinedToken {}
 
+export class BnbCoin extends ContractAddressDefinedToken {}
+
 /**
  * The Stellar network supports tokens (non-native assets)
  * XLM is also known as the native asset.
@@ -841,7 +843,7 @@ export function tceloToken(
 }
 
 /**
- * Factory function for celo token instances.
+ * Factory function for bsc token instances.
  *
  * @param id uuid v4
  * @param name unique identifier of the token
@@ -887,6 +889,38 @@ export function bscToken(
   );
 }
 
+export function bnbToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.bnb,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new BnbCoin({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.BNB,
+    })
+  );
+}
+
 /**
  * Factory function for testnet bsc token instances.
  *
@@ -914,6 +948,21 @@ export function tbscToken(
   network: EthereumNetwork = Networks.test.bsc
 ) {
   return bscToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+export function tbnbToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.test.bnb
+) {
+  return bnbToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

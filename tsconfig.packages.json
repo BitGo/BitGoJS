@@ -53,6 +53,9 @@
       "path": "./modules/sdk-coin-bld"
     },
     {
+      "path": "./modules/sdk-coin-bnb"
+    },
+    {
       "path": "./modules/sdk-coin-bsc"
     },
     {
