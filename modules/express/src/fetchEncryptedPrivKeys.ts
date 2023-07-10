@@ -25,8 +25,14 @@ type WalletIds = {
   [key: string]: (string | Credentials)[];
 };
 
+type WalletWithPrv = Array<{
+  walletId: string;
+  encryptedPrv: string;
+}>;
+
 const esAccessToken = process.env.BITGO_EXTERNAL_SIGNER_ACCESS_TOKEN;
 const esWalletIDs = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS; // example: {"tbtc":[{"walletId":"xxx","walletPassword":"xxx","secret":"xxx"}]}
+const esWalletWithPrv = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV; // example: [{"walletId":"xxx","encryptedPrv":"xxx"}]
 
 // TODO: set env to 'test' or 'prod'
 const bg = new BitGo({ env: (process.env.BITGO_EXTERNAL_SIGNER_ENV as EnvironmentName) ?? 'test' });
@@ -45,6 +51,15 @@ const walletIds: WalletIds = esWalletIDs ? JSON.parse(esWalletIDs) : {};
 // }],
 // gteth: ['61fb21819c54dd000755f8de3a18e333'],
 // };
+
+// TODO: set walletId and encryptedPrv here e.g.
+const walletWithPrv: WalletWithPrv = esWalletWithPrv ? JSON.parse(esWalletWithPrv) : [];
+// [
+//   {
+//     walletId: '<WALLET_ID>',
+//     encryptedPrv: '<ENCRYPTED_PRV>',
+//   },
+// ];
 
 export async function fetchKeys(ids: WalletIds, token: string, accessToken?: string): Promise<Record<string, string>> {
   bg.authenticateWithAccessToken({ accessToken: token });
@@ -71,6 +86,10 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
         output[id] = keychain.encryptedPrv;
       }
     }
+  }
+
+  for (const { walletId, encryptedPrv } of walletWithPrv) {
+    output[walletId] = encryptedPrv;
   }
 
   const data = JSON.stringify(output, null, '\t');
