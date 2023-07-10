@@ -43,6 +43,11 @@ export interface SwitchValidatorOptions {
   validator: string;
 }
 
+export interface ClaimRewardsOptions {
+  amount: string;
+  clientId?: string;
+}
+
 export interface DelegationOptions {
   delegationStatus?: DelegationStatus;
   delegationIds?: Set<string>;
@@ -119,6 +124,7 @@ export interface IStakingWallet {
   stake(options: StakeOptions): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
+  claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;
   build(transaction: StakingTransaction): Promise<StakingPrebuildTransactionResult>;

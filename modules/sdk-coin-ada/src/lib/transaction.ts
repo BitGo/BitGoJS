@@ -57,7 +57,7 @@ export interface StakePoolRegistrationCert extends Cert {
 }
 
 export interface PledgeDetails {
-  stakeKeyRegsitration?: StakeKeyRegistrationCert;
+  stakeKeyRegistration?: StakeKeyRegistrationCert;
   stakeKeyDelegation?: StakeKeyDelegationCert;
   stakePoolRegistration: StakePoolRegistrationCert;
 }
@@ -263,7 +263,7 @@ export class Transaction extends BaseTransaction {
           const stakePoolRegistration = certs.find((c) => c.as_pool_registration() !== undefined);
 
           this._pledgeDetails = {
-            stakeKeyRegsitration: this.loadStakeKeyRegistration(stakeKeyRegistration),
+            stakeKeyRegistration: this.loadStakeKeyRegistration(stakeKeyRegistration),
             stakeKeyDelegation: this.loadStakeKeyDelegation(stakeKeyDelegation),
             stakePoolRegistration: this.loadStakePoolRegistration(stakePoolRegistration!),
           };

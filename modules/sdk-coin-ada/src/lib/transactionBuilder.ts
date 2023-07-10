@@ -245,7 +245,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         change = change.checked_sub(adjustment);
       } else if (this._type === TransactionType.StakingDeactivate) {
         change = change.checked_add(adjustment);
-      } else if (this._type == TransactionType.StakingWithdraw) {
+      } else if (this._type === TransactionType.StakingWithdraw || this._type === TransactionType.StakingClaim) {
         this._withdrawals.forEach((withdrawal: Withdrawal) => {
           change = change.checked_add(CardanoWasm.BigNum.from_str(withdrawal.value));
         });

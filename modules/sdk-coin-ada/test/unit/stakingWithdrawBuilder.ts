@@ -5,7 +5,7 @@ import { KeyPair, TransactionBuilderFactory, Utils } from '../../src';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../src/lib/transaction';
 
-describe('ADA Staking Withdraw rewards Transaction Builder', async () => {
+describe('ADA Staking Withdraw Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
 
   it('start and build an unsigned staking withdraw tx', async () => {

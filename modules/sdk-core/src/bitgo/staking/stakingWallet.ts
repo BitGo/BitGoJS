@@ -15,6 +15,7 @@ import {
   TransactionsReadyToSign,
   UnstakeOptions,
   EthUnstakeOptions,
+  ClaimRewardsOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet } from '../wallet';
@@ -69,6 +70,15 @@ export class StakingWallet implements IStakingWallet {
    */
   async switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'SWITCH_VALIDATOR');
+  }
+
+  /**
+   * Submit a request to claim rewards for a specific delegation
+   * @param options - claim rewards options
+   * @return StakingRequest
+   */
+  async claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest> {
+    return await this.createStakingRequest(options, 'CLAIM_REWARDS');
   }
 
   /**
@@ -226,7 +236,7 @@ export class StakingWallet implements IStakingWallet {
   }
 
   private async createStakingRequest(
-    options: StakeOptions | UnstakeOptions | EthUnstakeOptions | SwitchValidatorOptions,
+    options: StakeOptions | UnstakeOptions | EthUnstakeOptions | SwitchValidatorOptions | ClaimRewardsOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo

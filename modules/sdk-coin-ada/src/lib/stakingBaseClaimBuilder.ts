@@ -1,22 +1,12 @@
-import { BaseKey, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { BaseKey } from '@bitgo/sdk-core';
 import { Utils } from '../';
 
-export class StakingWithdrawRewardsBuilder extends TransactionBuilder {
-  constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig);
-    this._type = TransactionType.StakingWithdraw;
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    const tx = await super.buildImplementation();
-    tx.setTransactionType(TransactionType.StakingWithdraw);
-    return tx;
-  }
-
+/**
+ * Common functionalities for claiming rewards and withdrawing unstaked builders.
+ */
+export abstract class StakingBaseClaimBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     return super.fromImplementation(rawTransaction);
