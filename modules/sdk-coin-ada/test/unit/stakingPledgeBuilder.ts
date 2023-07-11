@@ -25,7 +25,7 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.withdrawals.length.should.equal(0);
     txData.witnesses.length.should.equal(0);
     should.exist(txData.pledgeDetails);
-    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegistration);
     should.exist(txData.pledgeDetails!.stakeKeyDelegation);
     should.exist(txData.pledgeDetails!.stakePoolRegistration);
     should.equal(
@@ -66,7 +66,7 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.withdrawals.length.should.equal(0);
     txData.witnesses.length.should.equal(0);
     should.exist(txData.pledgeDetails);
-    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegistration);
     should.not.exist(txData.pledgeDetails!.stakeKeyDelegation);
     should.exist(txData.pledgeDetails!.stakePoolRegistration);
     txData.pledgeDetails!.stakePoolRegistration!.pledge.should.equal('100000000');
@@ -97,7 +97,7 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     const txData = tx.toJson();
     txData.witnesses.length.should.equal(1);
     should.exist(txData.pledgeDetails);
-    should.not.exist(txData.pledgeDetails!.stakeKeyRegsitration);
+    should.not.exist(txData.pledgeDetails!.stakeKeyRegistration);
     should.not.exist(txData.pledgeDetails!.stakeKeyDelegation);
     should.exist(txData.pledgeDetails!.stakePoolRegistration);
     txData.pledgeDetails!.stakePoolRegistration!.pledge.should.equal('100000000');

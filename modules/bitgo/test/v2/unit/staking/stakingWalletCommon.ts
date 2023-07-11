@@ -160,6 +160,29 @@ describe('Staking Wallet Common', function () {
     });
   });
 
+  describe('claim rewards', function () {
+    it('should call staking-service to claim rewards', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          clientId: 'clientId',
+          type: 'CLAIM_REWARDS',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await stakingWallet.claimRewards({
+        amount: '1',
+        clientId: 'clientId',
+      });
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
   describe('cancelStakingRequest', function () {
     it('should call staking-service to cancel staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
