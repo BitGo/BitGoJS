@@ -8143,7 +8143,7 @@ export const coins = CoinMap.fromCoins([
     'a444cbce-18ab-4c0e-b172-eab866d86c85',
     'terc1155:bnbtoken',
     'Generic BNB ERC1155',
-    '0xterc1155:bnbctoken',
+    '0xterc1155:bnbtoken',
     GENERIC_TOKEN_FEATURES,
     '',
     '',
