@@ -18,11 +18,17 @@ export interface StakingRequest {
   transactions: StakingTransaction[];
 }
 
+export interface DelegationRequest {
+  amount: string;
+  validator: string;
+}
+
 export interface StakeOptions {
   amount: string;
   clientId?: string;
   validator?: string;
   durationSeconds?: string;
+  delegationRequests?: DelegationRequest[];
 }
 
 export interface UnstakeOptions {

@@ -76,6 +76,38 @@ describe('Staking Wallet Common', function () {
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
+
+    it('should call staking-service to stake with optional stakeMany parameters', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          clientId: 'clientId',
+          type: 'STAKE',
+          delegationRequests: [
+            { amount: '1', validator: '123' },
+            { amount: '2', validator: '456' },
+          ],
+          durationSeconds: '60',
+        })
+        .reply(201, expected);
+
+      const options = {
+        amount: '1',
+        clientId: 'clientId',
+        delegationRequests: [
+          { amount: '1', validator: '123' },
+          { amount: '2', validator: '456' },
+        ],
+        durationSeconds: '60',
+      };
+      const stakingRequest = await stakingWallet.stake(options);
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
   });
 
   describe('unstake', function () {
