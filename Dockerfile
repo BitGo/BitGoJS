@@ -59,9 +59,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avax
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-bnb /var/modules/sdk-coin-bnb/
-COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
+COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
@@ -118,9 +117,8 @@ cd /var/modules/sdk-coin-avaxp && yarn link && \
 cd /var/modules/sdk-coin-eth && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
-cd /var/modules/sdk-coin-bnb && yarn link && \
-cd /var/modules/abstract-eth && yarn link && \
 cd /var/modules/sdk-coin-bsc && yarn link && \
+cd /var/modules/abstract-eth && yarn link && \
 cd /var/modules/sdk-coin-celo && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
 cd /var/modules/sdk-coin-dot && yarn link && \
@@ -180,9 +178,8 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/abstract-cosmos && \
-    yarn link @bitgo/sdk-coin-bnb && \
-    yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-bsc && \
+    yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-celo && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
@@ -220,9 +217,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 10 Jul 2023 17:14:30 GMT"
+LABEL created="Thu, 13 Jul 2023 00:56:22 GMT"
 LABEL version=9.29.0
-LABEL git_hash=04775252dab1b84296f5daeaf8390486bfc92650
+LABEL git_hash=8b129c3df223bcea9b3861b3c93e4342b0531803
 #LABEL_END
 
 USER node
