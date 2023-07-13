@@ -7,18 +7,17 @@
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGoAPI } from "../BitGoJS/modules/sdk-api";
-import { Gteth } from "../BitGoJS/modules/sdk-coin-eth";
-// import { Tbtc } from '@bitgo/sdk-coin-btc';
-// require('dotenv').config({ path: '../../.env' });
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
+require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
   env: 'test',
 });
 
-const coin = 'gteth';
-bitgo.register(coin, Gteth.createInstance);
+const coin = 'tbtc';
+bitgo.register(coin, Tbtc.createInstance);
 
 async function main() {
   const wallets = await bitgo.coin(coin).wallets().list({});

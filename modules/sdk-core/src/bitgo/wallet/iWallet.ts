@@ -627,6 +627,8 @@ export interface IWallet {
   confirmedBalanceString(): string;
   spendableBalanceString(): string;
   coin(): string;
+  type(): WalletType | undefined;
+  multisigType(): 'onchain' | 'tss';
   label(): string;
   keyIds(): string[];
   receiveAddress(): string;

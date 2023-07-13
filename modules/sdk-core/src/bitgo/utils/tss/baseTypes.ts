@@ -442,4 +442,5 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
+  supportedTxRequestVersions(): TxRequestVersion[];
 }
