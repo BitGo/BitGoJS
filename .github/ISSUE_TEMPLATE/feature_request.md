@@ -7,7 +7,7 @@ labels: 'feature'
 <!---
 Provide a general summary of the issue in the Title above.
 
-Upon completing your report, copy the link to this issue, and submit the information to: https://bitgo.freshdesk.com/.
+Upon completing your report, copy the link to this issue, and submit the information to: https://bitgo.my.site.com/ResourceCenter/s/login.
 
 This will help us review, prioritize, and assign the issue to internal teams. Doing this helps us stay accountable to your submission in a timely manner. Thank you!
 -->
