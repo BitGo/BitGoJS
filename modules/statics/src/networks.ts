@@ -224,22 +224,6 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   chainId = 97;
 }
 
-class BNBSmartChain extends Mainnet implements EthereumNetwork {
-  name = 'BNBSmartChain';
-  family = CoinFamily.BNB;
-  explorerUrl = 'https://www.bscscan.com/tx/';
-  accountExplorerUrl = 'https://www.bscscan.com/address/';
-  chainId = 56;
-}
-
-class BNBSmartChainTestnet extends Testnet implements EthereumNetwork {
-  name = 'BBNSmartChainTestnet';
-  family = CoinFamily.BNB;
-  explorerUrl = 'https://testnet.bscscan.com/tx/';
-  accountExplorerUrl = 'https://testnet.bscscan.com/address/';
-  chainId = 97;
-}
-
 class Bitcoin extends Mainnet implements UtxoNetwork {
   name = 'Bitcoin';
   family = CoinFamily.BTC;
@@ -806,7 +790,6 @@ export const Networks = {
     bitcoinSV: Object.freeze(new BitcoinSV()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
-    bnb: Object.freeze(new BNBSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
@@ -852,7 +835,6 @@ export const Networks = {
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
-    bnb: Object.freeze(new BNBSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),

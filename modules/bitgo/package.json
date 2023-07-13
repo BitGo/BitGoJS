@@ -56,7 +56,6 @@
     "@bitgo/sdk-coin-bch": "^1.3.27",
     "@bitgo/sdk-coin-bcha": "^1.5.22",
     "@bitgo/sdk-coin-bld": "^1.1.0",
-    "@bitgo/sdk-coin-bnb": "^1.0.0",
     "@bitgo/sdk-coin-bsc": "^3.6.4",
     "@bitgo/sdk-coin-bsv": "^1.3.27",
     "@bitgo/sdk-coin-btc": "^1.5.7",
