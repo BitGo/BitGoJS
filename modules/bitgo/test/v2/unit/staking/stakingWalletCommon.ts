@@ -81,7 +81,6 @@ describe('Staking Wallet Common', function () {
       const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
-          amount: '1',
           clientId: 'clientId',
           type: 'STAKE',
           delegationRequests: [
@@ -93,7 +92,6 @@ describe('Staking Wallet Common', function () {
         .reply(201, expected);
 
       const options = {
-        amount: '1',
         clientId: 'clientId',
         delegationRequests: [
           { amount: '1', validator: '123' },

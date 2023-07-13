@@ -24,7 +24,7 @@ export interface DelegationRequest {
 }
 
 export interface StakeOptions {
-  amount: string;
+  amount?: string;
   clientId?: string;
   validator?: string;
   durationSeconds?: string;
