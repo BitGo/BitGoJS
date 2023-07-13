@@ -1829,8 +1829,25 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    let txPrebuildQuery;
+    if (
+      // verify if wallet is tssFull and has prebuiltTx that can be used to send the actual transaction
+      this._wallet.multisigType === 'tss' &&
+      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa') &&
+      params.prebuildTx &&
+      !(typeof params.prebuildTx === 'string' || params.prebuildTx instanceof String) &&
+      'preview' in params.prebuildTx.buildParams &&
+      params.prebuildTx.buildParams.preview
+    ) {
+      txPrebuildQuery = this.prebuildTransaction({
+        ...params,
+        ...{ ...params.prebuildTx.buildParams, preview: false },
+      });
+    } else {
+      txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
+    }
+
     // the prebuild can be overridden by providing an explicit tx
-    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
