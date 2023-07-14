@@ -199,7 +199,7 @@ describe('OSMO', function () {
         recipients: [
           {
             address: TEST_EXECUTE_CONTRACT_TRANSACTION.to,
-            amount: 'UNAVAILABLE',
+            amount: '0',
           },
         ],
       };
@@ -315,10 +315,10 @@ describe('OSMO', function () {
         outputs: [
           {
             address: TEST_EXECUTE_CONTRACT_TRANSACTION.to,
-            amount: 'UNAVAILABLE',
+            amount: '0',
           },
         ],
-        outputAmount: 'UNAVAILABLE',
+        outputAmount: '0',
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_EXECUTE_CONTRACT_TRANSACTION.gasBudget.amount[0].amount },
