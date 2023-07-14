@@ -98,9 +98,6 @@ export { Near };
 import * as Bsc from '@bitgo/sdk-coin-bsc';
 export { Bsc };
 
-import * as Bnb from '@bitgo/sdk-coin-bnb';
-export { Bnb };
-
 import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
@@ -125,8 +122,6 @@ const coinBuilderMap = {
   tavaxc: AvaxC.TransactionBuilder,
   bsc: Bsc.TransactionBuilder,
   tbsc: Bsc.TransactionBuilder,
-  bnb: Bnb.TransactionBuilder,
-  tbnb: Bnb.TransactionBuilder,
   avaxp: AvaxP.TransactionBuilderFactory,
   tavaxp: AvaxP.TransactionBuilderFactory,
   hbar: Hbar.TransactionBuilderFactory,
