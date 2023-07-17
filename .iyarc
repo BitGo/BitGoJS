@@ -1,6 +1,18 @@
-# list GH advisories here we don't care about
-
 # false positive
-# https://github.com/github/advisory-database/pull/1693
+
 GHSA-8x6c-cv3v-vp6g
 
+## https://github.com/github/advisory-database/pull/1693
+
+# Pending author update
+
+GHSA-g644-9gfx-q4q4
+GHSA-cchq-frgv-rjh5
+
+## https://github.com/advisories/GHSA-cchq-frgv-rjh5
+
+## https://github.com/advisories/GHSA-g644-9gfx-q4q4
+
+## https://github.com/TooTallNate/proxy-agents/issues/218
+
+## https://github.com/TooTallNate/proxy-agents/blob/main/packages/degenerator/package.json#L30
