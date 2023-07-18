@@ -24,6 +24,7 @@ import {
   updateReplayProtectionUnspentToPsbt,
   Unspent,
   isWalletUnspent,
+  updateWalletOutputForPsbt,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -355,19 +356,28 @@ describe('isPsbt', function () {
 });
 
 describe('Update incomplete psbt', function () {
-  function removeFromPsbt(psbtHex: string, network: Network, inputIndex: number, fieldToRemove: string): UtxoPsbt {
+  function removeFromPsbt(
+    psbtHex: string,
+    network: Network,
+    remove: { input?: { index: number; fieldToRemove: string }; output?: { index: number; fieldToRemove: string } }
+  ): UtxoPsbt {
     const utxoPsbt = createPsbtFromHex(psbtHex, network);
     const psbt = createPsbtForNetwork({ network: utxoPsbt.network });
+    const txInputs = utxoPsbt.txInputs;
     utxoPsbt.data.inputs.map((input, ii) => {
-      const txInput = utxoPsbt.txInputs[ii];
-      const { hash, index } = txInput;
-      if (ii === inputIndex) {
-        delete input[fieldToRemove];
+      const { hash, index } = txInputs[ii];
+      if (remove.input && ii === remove.input.index) {
+        delete input[remove.input.fieldToRemove];
       }
       psbt.addInput({ ...input, hash, index });
     });
-    utxoPsbt.txOutputs.forEach((o) => {
-      psbt.addOutput(o);
+
+    const txOutputs = utxoPsbt.txOutputs;
+    utxoPsbt.data.outputs.map((output, ii) => {
+      if (remove.output && remove.output.index === ii) {
+        delete output[remove.output.fieldToRemove];
+      }
+      psbt.addOutput({ ...output, script: txOutputs[ii].script, value: txOutputs[ii].value });
     });
     return psbt;
   }
@@ -400,10 +410,18 @@ describe('Update incomplete psbt', function () {
   let unspents: Unspent<bigint>[];
   const signer = 'user';
   const cosigner = 'bitgo';
-  const inputScriptTypes = [...scriptTypes2Of3, 'p2shP2pk'] as (ScriptType2Of3 | ScriptTypeP2shP2pk)[];
+  const scriptTypes = [...scriptTypes2Of3, 'p2shP2pk'] as (ScriptType2Of3 | ScriptTypeP2shP2pk)[];
+  const outputValue = BigInt((2e8 * scriptTypes.length - 100) / 5);
+  const outputs = [
+    { chain: getExternalChainCode('p2sh'), index: 88, value: outputValue },
+    { chain: getExternalChainCode('p2shP2wsh'), index: 89, value: outputValue },
+    { chain: getExternalChainCode('p2wsh'), index: 90, value: outputValue },
+    { chain: getExternalChainCode('p2tr'), index: 91, value: outputValue },
+    { chain: getExternalChainCode('p2trMusig2'), index: 92, value: outputValue },
+  ];
   before(function () {
-    unspents = mockUnspents(rootWalletKeys, inputScriptTypes, BigInt(2e8), network);
-    const psbt = constructPsbt(unspents, rootWalletKeys, signer, cosigner, 'p2sh');
+    unspents = mockUnspents(rootWalletKeys, scriptTypes, BigInt(2e8), network);
+    const psbt = constructPsbt(unspents, rootWalletKeys, signer, cosigner, outputs);
     psbtHex = psbt.toHex();
   });
 
@@ -429,7 +447,7 @@ describe('Update incomplete psbt', function () {
     signAllInputs(psbt);
   });
 
-  const componentsOnEachScriptType = {
+  const componentsOnEachInputScriptType = {
     p2sh: ['nonWitnessUtxo', 'redeemScript', 'bip32Derivation'],
     p2shP2wsh: ['witnessUtxo', 'bip32Derivation', 'redeemScript', 'witnessScript'],
     p2wsh: ['witnessUtxo', 'witnessScript', 'bip32Derivation'],
@@ -437,10 +455,20 @@ describe('Update incomplete psbt', function () {
     p2trMusig2: ['witnessUtxo', 'tapBip32Derivation', 'tapInternalKey', 'tapMerkleRoot', 'unknownKeyVals'],
     p2shP2pk: ['redeemScript', 'nonWitnessUtxo'],
   };
-  inputScriptTypes.forEach((scriptType, i) => {
-    componentsOnEachScriptType[scriptType].forEach((inputComponent) => {
-      it(`[${scriptType}] missing ${inputComponent} should succeed in fully signing unsigned psbt after update`, function () {
-        const psbt = removeFromPsbt(psbtHex, network, i, inputComponent);
+
+  const p2trComponents = ['tapTree', 'tapInternalKey', 'tapBip32Derivation'];
+  const componentsOnEachOutputScriptType = {
+    p2sh: ['bip32Derivation', 'redeemScript'],
+    p2shP2wsh: ['bip32Derivation', 'witnessScript', 'redeemScript'],
+    p2wsh: ['bip32Derivation', 'witnessScript'],
+    p2tr: p2trComponents,
+    p2trMusig2: p2trComponents,
+    p2shP2pk: [],
+  };
+  scriptTypes.forEach((scriptType, i) => {
+    componentsOnEachInputScriptType[scriptType].forEach((inputComponent) => {
+      it(`[${scriptType}] missing ${inputComponent} on input should succeed in fully signing unsigned psbt after update`, function () {
+        const psbt = removeFromPsbt(psbtHex, network, { input: { index: i, fieldToRemove: inputComponent } });
         const unspent = unspents[i];
         if (isWalletUnspent(unspent)) {
           updateWalletUnspentForPsbt(psbt, i, unspent, rootWalletKeys, signer, cosigner);
@@ -450,6 +478,14 @@ describe('Update incomplete psbt', function () {
           updateReplayProtectionUnspentToPsbt(psbt, i, unspent, redeemScript);
         }
         signAllInputs(psbt);
+      });
+    });
+
+    componentsOnEachOutputScriptType[scriptType].forEach((outputComponent) => {
+      it(`[${scriptType}] missing ${outputComponent} on output should produce same hex as fully hydrated after update`, function () {
+        const psbt = removeFromPsbt(psbtHex, network, { output: { index: i, fieldToRemove: outputComponent } });
+        updateWalletOutputForPsbt(psbt, rootWalletKeys, i, outputs[i].chain, outputs[i].index);
+        assert.strictEqual(psbt.toHex(), psbtHex);
       });
     });
   });

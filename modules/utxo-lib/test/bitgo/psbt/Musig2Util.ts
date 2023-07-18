@@ -22,6 +22,7 @@ import {
   UtxoPsbt,
   UtxoTransaction,
   WalletUnspent,
+  ChainCode,
 } from '../../../src/bitgo';
 import {
   createKeyPathP2trMusig2,
@@ -65,11 +66,16 @@ export function constructPsbt(
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
   cosigner: KeyName,
-  outputType: outputScripts.ScriptType2Of3
+  outputs: { chain: ChainCode; index: number; value: bigint }[] | outputScripts.ScriptType2Of3
 ): UtxoPsbt {
   const psbt = createPsbtForNetwork({ network });
-  const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
-  addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode(outputType), CHANGE_INDEX, total - FEE);
+
+  if (Array.isArray(outputs)) {
+    outputs.forEach((output) => addWalletOutputToPsbt(psbt, rootWalletKeys, output.chain, output.index, output.value));
+  } else {
+    const total = BigInt(unspentSum<bigint>(unspents, 'bigint'));
+    addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode(outputs), CHANGE_INDEX, total - FEE);
+  }
   unspents.forEach((u) => {
     if (isWalletUnspent(u)) {
       addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signer, cosigner);

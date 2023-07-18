@@ -239,6 +239,17 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this.toBuffer().toString('hex');
   }
 
+  /**
+   * It is expensive to attempt to compute every output address using psbt.txOutputs[outputIndex]
+   * to then just get the script. Here, we are doing the same thing as what txOutputs() does in
+   * bitcoinjs-lib, but without iterating over each output.
+   * @param outputIndex
+   * @returns output script at the given index
+   */
+  getOutputScript(outputIndex: number): Buffer {
+    return (this as any).__CACHE.__TX.outs[outputIndex].script as Buffer;
+  }
+
   getNonWitnessPreviousTxids(): string[] {
     const txInputs = this.txInputs; // These are somewhat costly to extract
     const txidSet = new Set<string>();
