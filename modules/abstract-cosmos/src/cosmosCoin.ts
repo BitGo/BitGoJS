@@ -68,7 +68,7 @@ export class CosmosCoin extends BaseCoin {
 
   /** @inheritDoc **/
   getBaseFactor(): string | number {
-    return 1e6;
+    throw new Error('Method not implemented');
   }
 
   /** @inheritDoc **/

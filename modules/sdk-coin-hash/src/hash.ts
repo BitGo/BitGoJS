@@ -27,6 +27,11 @@ export class Hash extends CosmosCoin {
   }
 
   /** @inheritDoc **/
+  getBaseFactor(): string | number {
+    return 1e9;
+  }
+
+  /** @inheritDoc **/
   isValidAddress(address: string): boolean {
     return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
   }

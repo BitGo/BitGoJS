@@ -27,6 +27,11 @@ export class Injective extends CosmosCoin {
   }
 
   /** @inheritDoc **/
+  getBaseFactor(): string | number {
+    return 1e18;
+  }
+
+  /** @inheritDoc **/
   isValidAddress(address: string): boolean {
     return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
   }

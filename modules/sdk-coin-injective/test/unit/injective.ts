@@ -32,12 +32,12 @@ describe('INJ', function () {
     injective.getChain().should.equal('injective');
     injective.getFamily().should.equal('injective');
     injective.getFullName().should.equal('Injective');
-    injective.getBaseFactor().should.equal(1e6);
+    injective.getBaseFactor().should.equal(1e18);
 
     tinjective.getChain().should.equal('tinjective');
     tinjective.getFamily().should.equal('injective');
     tinjective.getFullName().should.equal('Testnet Injective');
-    tinjective.getBaseFactor().should.equal(1e6);
+    tinjective.getBaseFactor().should.equal(1e18);
   });
 
   describe('Address Validation', () => {
