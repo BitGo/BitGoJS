@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.10.0...@bitgo/sdk-core@8.11.0) (2023-07-18)
+
+### Bug Fixes
+
+- **sdk-core:** do not treat sol as a utxo-coin for approval ([a1cc144](https://github.com/BitGo/BitGoJS/commit/a1cc14489b7d8998f4a5fc53d95d30b3cc6c48a5))
+- **sdk-core:** fix createTssBitGoKeyFromOvcShares method ([70e3e13](https://github.com/BitGo/BitGoJS/commit/70e3e136b3a6217d2c543a101d4e6068371d82a1))
+- **sdk-core:** fix prebuildTransactionTss method ([d65487a](https://github.com/BitGo/BitGoJS/commit/d65487a42227faa290737b978fd9f94e51bf1da3))
+- **sdk-core:** make amount optional in stake options ([19039a5](https://github.com/BitGo/BitGoJS/commit/19039a58987c2bfadd7466af6cb9c2397e56188f))
+
+### Features
+
+- **abstract-utxo:** move keysSignatures test to separate file ([b9fa5c5](https://github.com/BitGo/BitGoJS/commit/b9fa5c57ae6207974612c96c4cf0941665703a4e))
+- **express:** implement EdDSA commitments for external signer ([52ccfe7](https://github.com/BitGo/BitGoJS/commit/52ccfe7ee79ee78e32448eedb91a955fe56cb8b2))
+- **sdk-coin-ada:** split claim rewards and claim unstaked ([271ccca](https://github.com/BitGo/BitGoJS/commit/271ccca2be0d562cb8f204002f229c11f1f80094))
+- **sdk-coin-injective:** injective sdk init along with testcases ([3cf36cc](https://github.com/BitGo/BitGoJS/commit/3cf36cc94eee7439109516e344c6d278443ff019))
+- **sdk-core:** add stakeMany to stake options ([0a8772a](https://github.com/BitGo/BitGoJS/commit/0a8772a4980a97b32c2117ae7a191ebd1933be83))
+
+### Reverts
+
+- Revert "chore(sdk-coin-bnb): create new bnb module" ([e998a04](https://github.com/BitGo/BitGoJS/commit/e998a04de3df1069a7cc59a7f6d9fc7ca7f515d0))
+
 # [8.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.9.0...@bitgo/sdk-core@8.10.0) (2023-06-21)
 
 ### Bug Fixes

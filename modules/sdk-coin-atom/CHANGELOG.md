@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@3.3.4...@bitgo/sdk-coin-atom@3.4.0) (2023-07-18)
+
+### Features
+
+- **abstract-cosmos:** add support for contract call transaction ([9b7dd54](https://github.com/BitGo/BitGoJS/commit/9b7dd54c6a3a9e5cf2b47b4a94ef225f111a8baf))
+
 ## [3.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@3.3.3...@bitgo/sdk-coin-atom@3.3.4) (2023-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom

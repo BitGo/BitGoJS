@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.2.0...@bitgo/utxo-lib@9.3.0) (2023-07-18)
+
+### Features
+
+- **utxo-lib:** add updateWalletOutputForPsbt ([72996f7](https://github.com/BitGo/BitGoJS/commit/72996f70e42e2c1be9d3e0eae821cd1c5a7525ce))
+- **utxo-lib:** efficiently get output script at index ([2a2d76c](https://github.com/BitGo/BitGoJS/commit/2a2d76c9b9336d7c5a76d149ecf4d9eaf3d762d6))
+
 # [9.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.1.1...@bitgo/utxo-lib@9.2.0) (2023-06-21)
 
 ### Bug Fixes

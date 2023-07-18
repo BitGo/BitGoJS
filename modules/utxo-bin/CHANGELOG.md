@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.11.0...@bitgo/utxo-bin@2.12.0) (2023-07-18)
+
+### Bug Fixes
+
+- **utxo-bin:** fix parsing of nonWitnessUtxo inputs ([9d31a11](https://github.com/BitGo/BitGoJS/commit/9d31a117d563d7e463b9dac5aa23ddb0e8ff8c0f))
+- **utxo-bin:** use clipboard-cjs ([8a3cdbb](https://github.com/BitGo/BitGoJS/commit/8a3cdbbdc47f86c55e6da22693b24a4796dfbbf0))
+
+### Features
+
+- **utxo-bin:** add parameter `--parseAsUnknown` ([ea6767e](https://github.com/BitGo/BitGoJS/commit/ea6767e7bbb8573e210992dd6d3a79e32fae239e))
+- **utxo-bin:** add support for PSBT ([6aea25f](https://github.com/BitGo/BitGoJS/commit/6aea25f00c6130c17b9d051b4422aca7d35f6c69))
+
 # [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.10.1...@bitgo/utxo-bin@2.11.0) (2023-06-21)
 
 ### Features

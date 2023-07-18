@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.2.0...@bitgo/sdk-coin-sui@4.0.0) (2023-07-18)
+
+### Features
+
+- **sdk-coin-sui:** support stakeMany ([a908565](https://github.com/BitGo/BitGoJS/commit/a908565bf1e1b6d28503836f85ba83fc7472b1cf))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sui:** change addStake interface to support stake multiple
+  validator
+
 # [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@3.1.2...@bitgo/sdk-coin-sui@3.2.0) (2023-06-21)
 
 ### Bug Fixes

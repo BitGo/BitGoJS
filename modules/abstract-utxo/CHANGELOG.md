@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.2.0...@bitgo/abstract-utxo@3.3.0) (2023-07-18)
+
+### Features
+
+- **abstract-utxo:** always use bitcoin network for validating secondary key signatures ([d9b7022](https://github.com/BitGo/BitGoJS/commit/d9b7022832ed38d8661b842add34caa97f340d31))
+- **abstract-utxo:** move keysSignatures test to separate file ([b9fa5c5](https://github.com/BitGo/BitGoJS/commit/b9fa5c57ae6207974612c96c4cf0941665703a4e))
+
 # [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.1.2...@bitgo/abstract-utxo@3.2.0) (2023-06-21)
 
 ### Features

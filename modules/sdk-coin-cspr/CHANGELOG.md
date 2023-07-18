@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.27...@bitgo/sdk-coin-cspr@1.2.28) (2023-07-18)
+
+### Bug Fixes
+
+- **sdk-coin-cspr:** update transaction ttl ([c4e8bd8](https://github.com/BitGo/BitGoJS/commit/c4e8bd84fda26ed09f385b77f46f06bb18dd3aa1))
+
 ## [1.2.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.2.26...@bitgo/sdk-coin-cspr@1.2.27) (2023-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cspr
