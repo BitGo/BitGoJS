@@ -102,6 +102,7 @@ const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } =
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
+
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
   index: number;
@@ -280,9 +281,9 @@ export interface RecoverFromWrongChainOptions {
 }
 
 export interface VerifyKeySignaturesOptions {
-  userKeychain?: Keychain;
-  keychainToVerify?: Keychain;
-  keySignature?: string;
+  userKeychain: { pub?: string };
+  keychainToVerify: { pub?: string };
+  keySignature: string;
 }
 
 export interface VerifyUserPublicKeyOptions {
@@ -677,7 +678,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param {VerifyKeySignaturesOptions} params
    * @return {{backup: boolean, bitgo: boolean}}
    */
-  protected verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
+  public verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
     // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
     const { userKeychain, keychainToVerify, keySignature } = params;
     if (!userKeychain) {
@@ -695,10 +696,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // verify the signature against the user public key
     assert(userKeychain.pub);
     const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
+    // Due to interface of `bitcoinMessage`, we need to convert the public key to an address.
+    // Note that this address has no relationship to on-chain transactions. We are
+    // only interested in the address as a representation of the public key.
     const signingAddress = utxolib.address.toBase58Check(
       utxolib.crypto.hash160(publicKey),
       utxolib.networks.bitcoin.pubKeyHash,
-      this.network
+      // we do not pass `this.network` here because it would fail for zcash
+      // the bitcoinMessage library decodes the address and throws away the first byte
+      // because zcash has a two-byte prefix, verify() decodes zcash addresses to an invalid pubkey hash
+      utxolib.networks.bitcoin
     );
 
     // BG-5703: use BTC mainnet prefix for all key signature operations
@@ -740,7 +747,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (!keySignature) {
         throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain signature`);
       }
-      if (!this.verifyKeySignature({ userKeychain, keychainToVerify, keySignature })) {
+      if (
+        !this.verifyKeySignature({
+          userKeychain: userKeychain as { pub: string },
+          keychainToVerify: keychainToVerify as { pub: string },
+          keySignature,
+        })
+      ) {
         debug('failed to verify custom change %s key signature!', KeyIndices[keyIndex].toLowerCase());
         return false;
       }
@@ -810,8 +823,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // let's verify these keychains
     const keySignatures = parsedTransaction.keySignatures;
     if (!_.isEmpty(keySignatures)) {
-      const verify = (key, pub) =>
-        this.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: key, keySignature: pub });
+      const verify = (key, pub) => {
+        if (!keychains.user || !keychains.user.pub) {
+          throw new Error('missing user keychain');
+        }
+        return this.verifyKeySignature({
+          userKeychain: keychains.user as { pub: string },
+          keychainToVerify: key,
+          keySignature: pub,
+        });
+      };
       const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
       const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
       if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {

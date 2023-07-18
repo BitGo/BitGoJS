@@ -24,7 +24,6 @@ describe('V2 Base Coin:', function () {
   let basecoinErc20TokenWithContractHash;
   let baseCoinStellarToken;
 
-
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
@@ -77,13 +76,11 @@ describe('V2 Base Coin:', function () {
     });
 
     it('should convert amounts to NEAR', function () {
-
       basecoinNear.baseUnitsToBigUnits('5348162392287187499999010').should.equal('5.34816239228718749999901');
 
       basecoinNear.baseUnitsToBigUnits('5555555555555555555555550').should.equal('5.55555555555555555555555');
 
       basecoinNear.baseUnitsToBigUnits('197895229538867437499999802').should.equal('197.895229538867437499999802');
-
     });
 
     it('should convert amounts to EOS', function () {
@@ -100,7 +97,6 @@ describe('V2 Base Coin:', function () {
 
       basecoinEosChex.baseUnitsToBigUnits('123456788').should.equal('1.23456788');
     });
-
   });
 
   describe('supportsBlockTarget', function () {
@@ -147,7 +143,6 @@ describe('V2 Base Coin:', function () {
   });
 
   describe('Missing output detection', function () {
-
     it('should recognize count mismatch dupes', function () {
       const expectedOutputs = [
         {
@@ -241,6 +236,5 @@ describe('V2 Base Coin:', function () {
       missingOutputs[0].amount.should.equal('300000');
       missingOutputs[1].amount.should.equal('300000');
     });
-
   });
 });

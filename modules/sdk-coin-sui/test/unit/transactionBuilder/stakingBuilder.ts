@@ -14,7 +14,7 @@ describe('Sui Staking Builder', () => {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.sender.address);
-      txBuilder.stake(testData.requestAddStake);
+      txBuilder.stake([testData.requestAddStake]);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.StakingAdd);

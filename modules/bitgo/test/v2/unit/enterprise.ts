@@ -26,29 +26,27 @@ describe('Enterprise:', function () {
   describe('Transaction data', function () {
     it('should search for pending transaction correctly', async function () {
       const params = { enterpriseId: enterprise.id };
-      const scope =
-        nock(bgUrl)
-          .get('/api/v2/tbtc/tx/pending/first')
-          .query(params)
-          .reply(200);
+      const scope = nock(bgUrl).get('/api/v2/tbtc/tx/pending/first').query(params).reply(200);
       await enterprise.getFirstPendingTransaction().should.be.resolved();
       scope.isDone().should.be.True();
     });
   });
 
-  it('should fetch the tss config correctly', async function() {
-    const scope = nock(bgUrl).get(`/api/v2/enterprise/${enterprise.id}/tssconfig`).reply(200, {
-      ecdsa: {
-        challenge: {
-          enterprise: {
-            ...mockChallengeA,
-            verifiers: {
-              adminSignature: 'hex sig',
+  it('should fetch the tss config correctly', async function () {
+    const scope = nock(bgUrl)
+      .get(`/api/v2/enterprise/${enterprise.id}/tssconfig`)
+      .reply(200, {
+        ecdsa: {
+          challenge: {
+            enterprise: {
+              ...mockChallengeA,
+              verifiers: {
+                adminSignature: 'hex sig',
+              },
             },
           },
         },
-      },
-    });
+      });
     await enterprise.getExistingTssEcdsaChallenge().should.be.resolved();
     scope.isDone().should.be.True();
   });

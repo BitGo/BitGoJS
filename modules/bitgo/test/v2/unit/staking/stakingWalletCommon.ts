@@ -2,13 +2,7 @@ import * as should from 'should';
 import * as nock from 'nock';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import {
-  Enterprise,
-  Environments,
-  StakingRequest,
-  StakingWallet,
-  Wallet,
-} from '@bitgo/sdk-core';
+import { Enterprise, Environments, StakingRequest, StakingWallet, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 
@@ -37,11 +31,7 @@ describe('Staking Wallet Common', function () {
 
   describe('stake', function () {
     it('should call staking-service to stake', async function () {
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]
-      );
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
           amount: '1',
@@ -62,11 +52,7 @@ describe('Staking Wallet Common', function () {
     });
 
     it('should call staking-service to stake with optional parameters', async function () {
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]
-      );
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
           amount: '1',
@@ -90,14 +76,41 @@ describe('Staking Wallet Common', function () {
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
+
+    it('should call staking-service to stake with optional stakeMany parameters', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          clientId: 'clientId',
+          type: 'STAKE',
+          delegationRequests: [
+            { amount: '1', validator: '123' },
+            { amount: '2', validator: '456' },
+          ],
+          durationSeconds: '60',
+        })
+        .reply(201, expected);
+
+      const options = {
+        clientId: 'clientId',
+        delegationRequests: [
+          { amount: '1', validator: '123' },
+          { amount: '2', validator: '456' },
+        ],
+        durationSeconds: '60',
+      };
+      const stakingRequest = await stakingWallet.stake(options);
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
   });
 
   describe('unstake', function () {
     it('should call staking-service to unstake', async function () {
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]);
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
           amount: '1',
@@ -116,15 +129,11 @@ describe('Staking Wallet Common', function () {
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
-
   });
 
   describe('switch validator', function () {
     it('should call staking-service to switch validator', async function () {
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]);
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
           amount: '1',
@@ -147,16 +156,36 @@ describe('Staking Wallet Common', function () {
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
+  });
 
+  describe('claim rewards', function () {
+    it('should call staking-service to claim rewards', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          clientId: 'clientId',
+          type: 'CLAIM_REWARDS',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await stakingWallet.claimRewards({
+        amount: '1',
+        clientId: 'clientId',
+      });
+
+      should.exist(stakingRequest);
+
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
   });
 
   describe('cancelStakingRequest', function () {
     it('should call staking-service to cancel staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
       const expected = {
-        ...fixtures.stakingRequest([
-          fixtures.transaction('REJECTED'),
-        ]),
+        ...fixtures.stakingRequest([fixtures.transaction('REJECTED')]),
         status: 'REJECTED',
       };
       const msScope = nock(microservicesUri)
@@ -175,10 +204,7 @@ describe('Staking Wallet Common', function () {
   describe('getStakingRequest', function () {
     it('should call staking-service to get staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]);
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
         .get(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${stakingRequestId}`)
         .reply(200, expected);
@@ -201,8 +227,7 @@ describe('Staking Wallet Common', function () {
 
     it('should return allSigningComplete false when no transactions exist', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
-      const expected = fixtures.stakingRequest(
-        []);
+      const expected = fixtures.stakingRequest([]);
       const msScope = mockGetStakingRequest(stakingRequestId, expected);
 
       const transactionsReadyToSign = await stakingWallet.getTransactionsReadyToSign(stakingRequestId);
@@ -216,10 +241,7 @@ describe('Staking Wallet Common', function () {
 
     it('should return allSigningComplete true and 0 transactions when only a CONFIRMED transaction exists', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
-      const expected = fixtures.stakingRequest(
-        [
-          fixtures.transaction('CONFIRMED'),
-        ]);
+      const expected = fixtures.stakingRequest([fixtures.transaction('CONFIRMED')]);
       const msScope = mockGetStakingRequest(stakingRequestId, expected);
 
       const transactionsReadyToSign = await stakingWallet.getTransactionsReadyToSign(stakingRequestId);
@@ -233,10 +255,7 @@ describe('Staking Wallet Common', function () {
 
     it('should return allSigningComplete false and 0 transactions when only a NEW transaction exists', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
-      const expectedStakingRequest = fixtures.stakingRequest(
-        [
-          fixtures.transaction('NEW'),
-        ]);
+      const expectedStakingRequest = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = mockGetStakingRequest(stakingRequestId, expectedStakingRequest);
 
       const transactionsReadyToSign = await stakingWallet.getTransactionsReadyToSign(stakingRequestId);
@@ -251,10 +270,7 @@ describe('Staking Wallet Common', function () {
     it('should return allSigningComplete false and 1 transactions when only a READY transaction exists', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
       const expectedTransaction = fixtures.transaction('READY');
-      const expectedStakingRequest = fixtures.stakingRequest(
-        [
-          expectedTransaction,
-        ]);
+      const expectedStakingRequest = fixtures.stakingRequest([expectedTransaction]);
       const msScope = mockGetStakingRequest(stakingRequestId, expectedStakingRequest);
 
       const transactionsReadyToSign = await stakingWallet.getTransactionsReadyToSign(stakingRequestId);
@@ -269,11 +285,7 @@ describe('Staking Wallet Common', function () {
     it('should return allSigningComplete false and 1 transaction when NEW and READY transaction exists', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
       const expectedTransaction = fixtures.transaction('READY');
-      const expectedStakingRequest = fixtures.stakingRequest(
-        [
-          expectedTransaction,
-          fixtures.transaction('NEW'),
-        ]);
+      const expectedStakingRequest = fixtures.stakingRequest([expectedTransaction, fixtures.transaction('NEW')]);
       const msScope = mockGetStakingRequest(stakingRequestId, expectedStakingRequest);
 
       const transactionsReadyToSign = await stakingWallet.getTransactionsReadyToSign(stakingRequestId);
@@ -285,6 +297,4 @@ describe('Staking Wallet Common', function () {
       msScope.isDone().should.be.True();
     });
   });
-
-
 });

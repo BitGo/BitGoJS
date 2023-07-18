@@ -270,7 +270,7 @@ describe('SOL:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       await basecoin
-        .verifyTransaction({ txParams, txPrebuild, memo, errorDurableNonce, wallet: walletObj } as any)
+        .verifyTransaction({ txParams, txPrebuild, memo, durableNonce: errorDurableNonce, wallet: walletObj } as any)
         .should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
     });
 

@@ -14,11 +14,7 @@ const path = require('path');
  */
 function getLernaRunner(lernaPath) {
   return async (command, args = [], options = {}) => {
-    const { stdout } = await execa(
-      lernaPath,
-      [command, ...args],
-      options,
-    );
+    const { stdout } = await execa(lernaPath, [command, ...args], options);
     return stdout;
   };
 }
@@ -91,7 +87,9 @@ async function main() {
     for (const dep of mod.deps) {
       const depVersion = getDependencyVersion(mod.path, dep);
       if (depVersion && depVersion !== expectedVersions[dep]) {
-        console.log(`error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersion} instead`);
+        console.log(
+          `error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersion} instead`
+        );
         exitCode = 1;
       }
     }
@@ -100,4 +98,6 @@ async function main() {
   return exitCode;
 }
 
-main().then(process.exit).catch((e) => console.error(e));
+main()
+  .then(process.exit)
+  .catch((e) => console.error(e));

@@ -15,7 +15,6 @@ import { TransferTransaction } from './transferTransaction';
 import { StakingTransaction } from './stakingTransaction';
 import {
   TransactionBlock as ProgrammingTransactionBlockBuilder,
-  TransactionBlockInput,
   MoveCallTransaction,
   Inputs,
 } from './mystenlab/builder';
@@ -29,7 +28,7 @@ import {
 import { BCS } from '@mysten/bcs';
 
 export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransaction> {
-  protected _addStakeTx: RequestAddStake;
+  protected _addStakeTx: RequestAddStake[];
   protected _withdrawDelegation: RequestWithdrawStakedSui;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -81,15 +80,17 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
   /**
    * Create a new transaction for staking coins ready to be signed and executed.
    *
-   * @param {RequestAddStake} request
+   * @param {RequestAddStake[]} request: a list of staking request
    */
-  stake(request: RequestAddStake): this {
-    utils.validateAddress(request.validatorAddress, 'validatorAddress');
-    assert(utils.isValidAmount(request.amount), 'Invalid recipient amount');
+  stake(request: RequestAddStake[]): this {
+    request.forEach((req) => {
+      utils.validateAddress(req.validatorAddress, 'validatorAddress');
+      assert(utils.isValidAmount(req.amount), 'Invalid recipient amount');
 
-    if (this._sender === request.validatorAddress) {
-      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
-    }
+      if (this._sender === req.validatorAddress) {
+        throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
+      }
+    });
 
     this._addStakeTx = request;
     return this;
@@ -149,19 +150,8 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     this.sender(txData.sender);
     this.gasData(txData.gasData);
 
-    const amountInputIdx = (
-      (txData.kind.ProgrammableTransaction.transactions[1] as MoveCallTransaction).arguments[1] as TransactionBlockInput
-    ).index;
-    const amount = utils.getAmount(txData.kind.ProgrammableTransaction.inputs[amountInputIdx] as TransactionBlockInput);
-
-    const validatorAddressInputIdx = (
-      (txData.kind.ProgrammableTransaction.transactions[1] as MoveCallTransaction).arguments[2] as TransactionBlockInput
-    ).index;
-    const validatorAddress = utils.getAddress(
-      txData.kind.ProgrammableTransaction.inputs[validatorAddressInputIdx] as TransactionBlockInput
-    );
-
-    this.stake({ amount, validatorAddress });
+    const requests = utils.getStakeRequests(tx.suiTransaction.tx);
+    this.stake(requests);
   }
 
   /**
@@ -170,11 +160,10 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
   private validateTransactionFields(): void {
     assert(this._type, new BuildTransactionError('type is required before building'));
     assert(this._sender, new BuildTransactionError('sender is required before building'));
-    assert(
-      this._addStakeTx.validatorAddress,
-      new BuildTransactionError('validator address is required before building')
-    );
-    assert(this._addStakeTx.amount, new BuildTransactionError('staking amount is required before building'));
+    this._addStakeTx.forEach((req) => {
+      assert(req.validatorAddress, new BuildTransactionError('validator address is required before building'));
+      assert(req.amount, new BuildTransactionError('staking amount is required before building'));
+    });
     assert(this._gasData, new BuildTransactionError('gasData is required before building'));
     this.validateGasData(this._gasData);
   }
@@ -192,18 +181,20 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     switch (this._type) {
       case SuiTransactionType.AddStake:
         // Create a new coin with staking balance, based on the coins used as gas payment.
-        const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
-          programmableTxBuilder.pure(this._addStakeTx.amount),
-        ]);
-        // Stake the split coin to a specific validator address.
-        programmableTxBuilder.moveCall({
-          target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${ADD_STAKE_FUN_NAME}`,
-          arguments: [
-            programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
-            coin,
-            programmableTxBuilder.pure(Inputs.Pure(this._addStakeTx.validatorAddress, BCS.ADDRESS)),
-          ],
-        } as MoveCallTransaction);
+        this._addStakeTx.forEach((req) => {
+          const coin = programmableTxBuilder.splitCoins(programmableTxBuilder.gas, [
+            programmableTxBuilder.pure(req.amount),
+          ]);
+          // Stake the split coin to a specific validator address.
+          programmableTxBuilder.moveCall({
+            target: `${SUI_SYSTEM_ADDRESS}::${SUI_SYSTEM_MODULE_NAME}::${ADD_STAKE_FUN_NAME}`,
+            arguments: [
+              programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
+              coin,
+              programmableTxBuilder.pure(Inputs.Pure(req.validatorAddress, BCS.ADDRESS)),
+            ],
+          } as MoveCallTransaction);
+        });
         break;
       case SuiTransactionType.WithdrawStake:
         // Unstake staked object.

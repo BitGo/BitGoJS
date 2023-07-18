@@ -17,7 +17,7 @@ const accessToken = '';
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
 const walletId = '';
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
@@ -27,4 +27,4 @@ Promise.coroutine(function *() {
   console.log('Wallet ID:', wallet.id());
   console.log('First Receive Address:', wallet.receiveAddress());
   console.log('Second Receive Address:', newReceiveAddress);
-})().catch(e => console.error(e));
+})().catch((e) => console.error(e));

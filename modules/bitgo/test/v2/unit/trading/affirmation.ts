@@ -30,9 +30,7 @@ describe('Affirmations', function () {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
       enterprise: enterprise.id,
-      keys: [
-        'keyid',
-      ],
+      keys: ['keyid'],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -69,7 +67,9 @@ describe('Affirmations', function () {
 
   it('should get a single affirmation', async function () {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
+      .get(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`
+      )
       .reply(200, fixtures.singleAffirmation);
 
     affirmation = await tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
@@ -80,13 +80,21 @@ describe('Affirmations', function () {
 
   it('should affirm an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.affirmAffirmationPayloadRequest)
+      .post(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`,
+        fixtures.affirmAffirmationPayloadRequest
+      )
       .reply(200, fixtures.affirmAffirmationPayloadResponse)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.AFFIRMED)
+      .put(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`,
+        (body) => body.status === AffirmationStatus.AFFIRMED
+      )
       .reply(200, fixtures.updateAffirmation('affirmed'));
 
-    const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
-    const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
+    const xprv =
+      'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
+    const xpub =
+      'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
     const platformScope = nock(bgUrl)
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
@@ -105,7 +113,10 @@ describe('Affirmations', function () {
 
   it('should reject an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
+      .put(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`,
+        (body) => body.status === AffirmationStatus.REJECTED
+      )
       .reply(200, fixtures.updateAffirmation('rejected'));
 
     await affirmation.reject();
@@ -115,7 +126,10 @@ describe('Affirmations', function () {
 
   it('should cancel an affirmation', async function () {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
+      .put(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`,
+        (body) => body.status === AffirmationStatus.CANCELED
+      )
       .reply(200, fixtures.updateAffirmation('canceled'));
 
     await affirmation.cancel();

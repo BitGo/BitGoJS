@@ -45,7 +45,7 @@ export enum CoinFamily {
   FIAT = 'fiat',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
-  INJ = 'injective',
+  INJECTIVE = 'injective',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
@@ -195,6 +195,14 @@ export enum CoinFeature {
    * This coin has transactions that expire after a certain amount of time.
    */
   EXPIRING_TRANSACTIONS = 'expiring-transactions',
+  /**
+   * This coin supports cold wallets that use a multisig signing protocol
+   */
+  MULTISIG_COLD = 'multisig-cold',
+  /**
+   * This coin supports cold wallets that use a TSS signing protocol
+   */
+  TSS_COLD = 'tss-cold',
 }
 
 /**
@@ -237,6 +245,7 @@ export enum UnderlyingAsset {
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
+  INJECTIVE = 'injective',
   LTC = 'ltc',
   NEAR = 'near',
   OSMO = 'osmo',
@@ -1276,7 +1285,7 @@ export enum BaseUnit {
   HASH = 'nhash',
   BLD = 'ubld',
   SEI = 'usei',
-  INJ = 'inj',
+  INJECTIVE = 'inj',
 }
 
 export interface BaseCoinConstructorOptions {

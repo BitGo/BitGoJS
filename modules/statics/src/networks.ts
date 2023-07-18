@@ -120,7 +120,7 @@ class Ada extends Mainnet implements AdaNetwork {
   utxolibName = 'cardano';
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
-  explorerUrl = 'https://explorer.cardano.org/en/';
+  explorerUrl = 'https://explorer.cardano.org/en/transaction?id=';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -631,13 +631,13 @@ class SeiTestnet extends Testnet implements AccountNetwork {
 
 class Injective extends Mainnet implements AccountNetwork {
   name = 'Injective';
-  family = CoinFamily.INJ;
+  family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://explorer.injective.network/transaction/';
 }
 
 class InjectiveTestnet extends Testnet implements AccountNetwork {
   name = 'InjectiveTestnet';
-  family = CoinFamily.INJ;
+  family = CoinFamily.INJECTIVE;
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
 }
 
@@ -712,15 +712,13 @@ class XrpTestnet extends Testnet implements AccountNetwork {
 class Xtz extends Mainnet implements AccountNetwork {
   name = 'Xtz';
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://tezblock.io/transaction/';
-  accountExplorerUrl = 'https://tezblock.io/account/';
+  explorerUrl = 'https://tzstats.com/';
 }
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   name = 'XtzTestnet';
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://carthagenet.tezblock.io/transaction/';
-  accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
+  explorerUrl = 'https://mumbai.tzstats.com/';
 }
 
 class ZCash extends Mainnet implements UtxoNetwork {
@@ -806,7 +804,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
-    inj: Object.freeze(new Injective()),
+    injective: Object.freeze(new Injective()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
@@ -849,7 +847,7 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
-    inj: Object.freeze(new InjectiveTestnet()),
+    injective: Object.freeze(new InjectiveTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     litecoin: Object.freeze(new LitecoinTestnet()),

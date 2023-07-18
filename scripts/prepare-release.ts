@@ -16,11 +16,7 @@ let filesChanged = 0;
  */
 function getLernaRunner(lernaPath: string) {
   return async (command: string, args: string[] = [], options = {}) => {
-    const { stdout } = await execa(
-      lernaPath,
-      [command, ...args],
-      options,
-    );
+    const { stdout } = await execa(lernaPath, [command, ...args], options);
     return stdout;
   };
 }
@@ -29,7 +25,9 @@ const getLernaModules = async (): Promise<void> => {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
 
   const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{ name: string, location: string }> = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
+  const modules: Array<{ name: string; location: string }> = JSON.parse(
+    await lerna('list', ['--loglevel', 'silent', '--json', '--all'])
+  );
   lernaModules = modules.map(({ name }) => name);
   lernaModuleLocations = modules.map(({ location }) => location);
 };
@@ -43,10 +41,7 @@ const walk = (dir: string): string[] => {
     const stat = statSync(file);
     if (stat && stat.isDirectory()) {
       if (!ignoredFolders.some((folder) => folder.test(file))) {
-        results = [
-          ...results,
-          ...walk(file),
-        ];
+        results = [...results, ...walk(file)];
       }
     } else if (['.ts', '.tsx', '.js', '.json'].includes(path.extname(file))) {
       // Is a file
@@ -70,16 +65,13 @@ const changeScopeInFile = (filePath: string): void => {
 };
 
 const replacePackageScopes = () => {
-  // replace all @bitgo packages & source code with alternate SCOPE 
-  const filePaths = [
-    ...walk(path.join(__dirname, '../', 'modules')),
-    ...walk(path.join(__dirname, '../', 'webpack')),
-  ];
+  // replace all @bitgo packages & source code with alternate SCOPE
+  const filePaths = [...walk(path.join(__dirname, '../', 'modules')), ...walk(path.join(__dirname, '../', 'webpack'))];
   filePaths.forEach((file) => changeScopeInFile(file));
 };
 
 /**
- * Makes an HTTP request to fetch all the dist tags for a given package. 
+ * Makes an HTTP request to fetch all the dist tags for a given package.
  */
 const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
   return new Promise((resolve) => {
@@ -102,24 +94,27 @@ const replaceBitGoPackageScope = () => {
   const cwd = path.join(__dirname, '../', 'modules', 'bitgo');
   const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
   json.name = `${TARGET_SCOPE}/bitgo`;
-  writeFileSync(
-    path.join(cwd, 'package.json'),
-    JSON.stringify(json, null, 2) + '\n'
-  );
+  writeFileSync(path.join(cwd, 'package.json'), JSON.stringify(json, null, 2) + '\n');
 };
 
 /** Small version checkers in place of an npm dependency installation */
 function compareversion(version1, version2) {
-
   let result = false;
 
-  if (typeof version1 !== 'object') { version1 = version1.toString().split('.'); }
-  if (typeof version2 !== 'object') { version2 = version2.toString().split('.'); }
+  if (typeof version1 !== 'object') {
+    version1 = version1.toString().split('.');
+  }
+  if (typeof version2 !== 'object') {
+    version2 = version2.toString().split('.');
+  }
 
-  for (let i = 0;i < (Math.max(version1.length, version2.length));i++) {
-
-    if (version1[i] === undefined) { version1[i] = 0; }
-    if (version2[i] === undefined) { version2[i] = 0; }
+  for (let i = 0; i < Math.max(version1.length, version2.length); i++) {
+    if (version1[i] === undefined) {
+      version1[i] = 0;
+    }
+    if (version2[i] === undefined) {
+      version2[i] = 0;
+    }
 
     if (Number(version1[i]) < Number(version2[i])) {
       result = true;
@@ -129,12 +124,12 @@ function compareversion(version1, version2) {
       break;
     }
   }
-  return (result);
+  return result;
 }
 
 /**
  * increment the version based on the preid. default to `beta`
- * 
+ *
  * @param {String | undefined} preid
  */
 const incrementVersions = async (preid = 'beta') => {
@@ -160,10 +155,7 @@ const incrementVersions = async (preid = 'beta') => {
         const next = inc(prevTag, 'prerelease', undefined, preid);
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
-        writeFileSync(
-          path.join(modulePath, 'package.json'),
-          JSON.stringify(json, null, 2) + '\n'
-        );
+        writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
         // since we're manually setting new versions, we must also reconcile all other lerna packages to now use the 'next' version for this module
         lernaModuleLocations.forEach((otherModulePath) => {
           // skip it for the current version
@@ -179,10 +171,7 @@ const incrementVersions = async (preid = 'beta') => {
             if (otherJson.devDependencies && otherJson.devDependencies[json.name]) {
               otherJson.devDependencies[json.name] = next;
             }
-            writeFileSync(
-              path.join(otherModulePath, 'package.json'),
-              JSON.stringify(otherJson, null, 2) + '\n'
-            );
+            writeFileSync(path.join(otherModulePath, 'package.json'), JSON.stringify(otherJson, null, 2) + '\n');
           }
         });
       }

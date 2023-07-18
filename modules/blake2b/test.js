@@ -10,7 +10,7 @@ test('wait for ready', function (assert) {
 });
 setup();
 
-function setup () {
+function setup() {
   test('vectors', function (assert) {
     for (let i = 0; i < vectors.length; i++) {
       const v = vectors[i];
@@ -69,7 +69,11 @@ function setup () {
     const out = Buffer.alloc(blake2b.BYTES);
     instance.digest(out);
 
-    t.same(out.toString('hex'), '405f14acbeeb30396b8030f78e6a84bab0acf08cb1376aa200a500f669f675dc', 'streaming keyed hash');
+    t.same(
+      out.toString('hex'),
+      '405f14acbeeb30396b8030f78e6a84bab0acf08cb1376aa200a500f669f675dc',
+      'streaming keyed hash'
+    );
     t.end();
   });
 
@@ -103,7 +107,7 @@ function setup () {
   });
 }
 
-function hexWrite (buf, string) {
+function hexWrite(buf, string) {
   // must be an even number of digits
   const strLen = string.length;
   if (strLen % 2 !== 0) throw new TypeError('Invalid hex string');

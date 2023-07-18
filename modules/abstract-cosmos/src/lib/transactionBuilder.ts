@@ -1,10 +1,10 @@
 import {
   BaseAddress,
   BaseKey,
-  PublicKey as BasePublicKey,
   BaseTransactionBuilder,
   BuildTransactionError,
   InvalidTransactionError,
+  PublicKey as BasePublicKey,
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
@@ -12,14 +12,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Secp256k1, sha256 } from '@cosmjs/crypto';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import BigNumber from 'bignumber.js';
-
-import {
-  DelegateOrUndelegeteMessage,
-  FeeData,
-  MessageData,
-  SendMessage,
-  WithdrawDelegatorRewardsMessage,
-} from './iface';
+import { CosmosTransactionMessage, FeeData, MessageData } from './iface';
 import { CosmosKeyPair as KeyPair } from './keyPair';
 import { CosmosTransaction } from './transaction';
 import { CosmosUtils } from './utils';
@@ -81,10 +74,11 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
    * - For @see TransactionType.StakingDeactivate required type is @see DelegateOrUndelegeteMessage
    * - For @see TransactionType.Send required type is @see SendMessage
    * - For @see TransactionType.StakingWithdraw required type is @see WithdrawDelegatorRewardsMessage
-   * @param {(SendMessage | DelegateOrUndelegeteMessage | WithdrawDelegatorRewardsMessage)[]} messages
+   * - For @see TransactionType.ContractCall required type is @see ExecuteContractMessage
+   * @param {CosmosTransactionMessage[]} messages
    * @returns {TransactionBuilder} This transaction builder
    */
-  abstract messages(messages: (SendMessage | DelegateOrUndelegeteMessage | WithdrawDelegatorRewardsMessage)[]): this;
+  abstract messages(messages: CosmosTransactionMessage[]): this;
 
   publicKey(publicKey: string | undefined): this {
     this._publicKey = publicKey;

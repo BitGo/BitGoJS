@@ -13,4 +13,3 @@ declare module 'should' {
     static add: (name: string, handler: (args: any[]) => void) => void;
   }
 }
-

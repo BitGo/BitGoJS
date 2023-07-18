@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { AccountId, PrivateKey, PublicKey, TokenId, TransactionId } from '@hashgraph/sdk';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { AddressDetails } from './iface';

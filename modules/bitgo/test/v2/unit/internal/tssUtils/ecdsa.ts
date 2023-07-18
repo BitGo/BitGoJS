@@ -32,7 +32,8 @@ import {
   createWalletSignatures,
   nockGetChallenge,
   nockGetChallenges,
-  nockGetEnterprise, nockGetSigningKey,
+  nockGetEnterprise,
+  nockGetSigningKey,
   nockGetTxRequest,
 } from '../../tss/helpers';
 import { bip32, ecc } from '@bitgo/utxo-lib';
@@ -47,7 +48,7 @@ type KeyShare = ECDSA.KeyShare;
 describe('TSS Ecdsa Utils:', async function () {
   const isThirdPartyBackup = false;
   const coinName = 'gteth';
-  const reqId = new RequestTracer;
+  const reqId = new RequestTracer();
   const walletId = '5b34252f1bf349930e34020a00000000';
   const enterpriseId = '6449153a6f6bc20006d66771cdbe15d3';
   const enterpriseData = { id: enterpriseId, name: 'Test Enterprise' };
@@ -93,43 +94,47 @@ describe('TSS Ecdsa Utils:', async function () {
     backupKeyShare = keyShares.backupKeyShare;
     bitgoKeyShare = keyShares.bitgoKeyShare;
 
-    const gpgKeyPromises = [openpgp.generateKey({
-      userIDs: [
-        {
-          name: 'test',
-          email: 'test@test.com',
-        },
-      ],
-      curve: 'secp256k1',
-    }),
-    openpgp.generateKey({
-      userIDs: [
-        {
-          name: 'backup',
-          email: 'backup@test.com',
-        },
-      ],
-      curve: 'secp256k1',
-    }),
-    openpgp.generateKey({
-      userIDs: [
-        {
-          name: 'thirdPartyBackup',
-          email: 'thirdPartybackup@test.com',
-        },
-      ],
-      curve: 'secp256k1',
-    }),
-    openpgp.generateKey({
-      userIDs: [
-        {
-          name: 'bitgo',
-          email: 'bitgo@test.com',
-        },
-      ],
-      curve: 'secp256k1',
-    })];
-    [userGpgKey, userLocalBackupGpgKey, thirdPartyBackupGpgKeyPair, bitGoGPGKeyPair] = await Promise.all(gpgKeyPromises);
+    const gpgKeyPromises = [
+      openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'test',
+            email: 'test@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      }),
+      openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'backup',
+            email: 'backup@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      }),
+      openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'thirdPartyBackup',
+            email: 'thirdPartybackup@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      }),
+      openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'bitgo',
+            email: 'bitgo@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      }),
+    ];
+    [userGpgKey, userLocalBackupGpgKey, thirdPartyBackupGpgKeyPair, bitGoGPGKeyPair] = await Promise.all(
+      gpgKeyPromises
+    );
     thirdPartyBackupPublicGpgKey = await openpgp.readKey({ armoredKey: thirdPartyBackupGpgKeyPair.publicKey });
     bitgoPublicKey = await openpgp.readKey({ armoredKey: bitGoGPGKeyPair.publicKey });
     const constants = {
@@ -145,10 +150,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    nock(bgUrl)
-      .persist()
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants });
+    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
 
     const nockPromises = [
       nockBitgoKeychain({
@@ -179,34 +181,71 @@ describe('TSS Ecdsa Utils:', async function () {
     nock.cleanAll();
   });
 
-  describe('TSS key chains', async function() {
+  describe('TSS key chains', async function () {
     it('should create backup key share held by BitGo', async function () {
       const enterpriseId = 'enterprise id';
-      const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(coinName, enterpriseId, userGpgKey, backupKeyShare, bitGoGPGKeyPair);
+      const expectedKeyShare = await nockCreateBitgoHeldBackupKeyShare(
+        coinName,
+        enterpriseId,
+        userGpgKey,
+        backupKeyShare,
+        bitGoGPGKeyPair
+      );
       const result = await tssUtils.createBitgoHeldBackupKeyShare(userGpgKey, enterpriseId);
       result.should.eql(expectedKeyShare);
     });
 
     it('should finalize backup key share held by BitGo', async function () {
       const commonKeychain = '4428';
-      const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
-      const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(coinName, originalKeyShare, commonKeychain, userKeyShare, bitGoGPGKeyPair, nockedBitGoKeychain);
+      const originalKeyShare = await createIncompleteBitgoHeldBackupKeyShare(
+        userGpgKey,
+        backupKeyShare,
+        bitGoGPGKeyPair
+      );
+      const expectedFinalKeyShare = await nockFinalizeBitgoHeldBackupKeyShare(
+        coinName,
+        originalKeyShare,
+        commonKeychain,
+        userKeyShare,
+        bitGoGPGKeyPair,
+        nockedBitGoKeychain
+      );
 
-      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(originalKeyShare.id, commonKeychain, userKeyShare, nockedBitGoKeychain, userGpgKey, bitgoPublicKey);
+      const result = await tssUtils.finalizeBitgoHeldBackupKeyShare(
+        originalKeyShare.id,
+        commonKeychain,
+        userKeyShare,
+        nockedBitGoKeychain,
+        userGpgKey,
+        bitgoPublicKey
+      );
       result.should.eql(expectedFinalKeyShare);
     });
 
-    it('should create a user keychain from third party backup provider', async function() {
-      const backupKeyShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
+    it('should create a user keychain from third party backup provider', async function () {
+      const backupKeyShares = await createIncompleteBitgoHeldBackupKeyShare(
+        userGpgKey,
+        backupKeyShare,
+        bitGoGPGKeyPair
+      );
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: backupKeyShares,
       };
       assert(backupShareHolder.bitGoHeldKeyShares);
-      const userKeychain = await tssUtils.createUserKeychainFromThirdPartyBackup(userGpgKey, bitgoPublicKey, thirdPartyBackupPublicGpgKey, userKeyShare, backupShareHolder.bitGoHeldKeyShares?.keyShares, nockedBitGoKeychain, 'password', '1234');
+      const userKeychain = await tssUtils.createUserKeychainFromThirdPartyBackup(
+        userGpgKey,
+        bitgoPublicKey,
+        thirdPartyBackupPublicGpgKey,
+        userKeyShare,
+        backupShareHolder.bitGoHeldKeyShares?.keyShares,
+        nockedBitGoKeychain,
+        'password',
+        '1234'
+      );
       userKeychain.should.deepEqual(nockedUserKeychain);
     });
 
-    it('should get the respective backup key shares based on provider', async function() {
+    it('should get the respective backup key shares based on provider', async function () {
       const enterpriseId = 'enterprise id';
       await nockCreateBitgoHeldBackupKeyShare(coinName, enterpriseId, userGpgKey, backupKeyShare, bitGoGPGKeyPair);
       let backupKeyShares = await tssUtils.createBackupKeyShares(true, userGpgKey, enterpriseId);
@@ -219,7 +258,7 @@ describe('TSS Ecdsa Utils:', async function () {
       should.not.exist(backupKeyShares.bitGoHeldKeyShares);
     });
 
-    it('should get the correct bitgo gpg key based on coin and feature flags', async function() {
+    it('should get the correct bitgo gpg key based on coin and feature flags', async function () {
       const nitroGPGKeypair = await openpgp.generateKey({
         userIDs: [
           {
@@ -233,9 +272,13 @@ describe('TSS Ecdsa Utils:', async function () {
       should.equal(nockGPGKey.publicKey, bitgoGpgPublicKey.armor());
     });
 
-    it('getBackupEncryptedNShare should get valid encrypted n shares based on provider', async function() {
+    it('getBackupEncryptedNShare should get valid encrypted n shares based on provider', async function () {
       // Backup key held by third party
-      const bitgoHeldBackupKeyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitGoGPGKeyPair);
+      const bitgoHeldBackupKeyShare = await createIncompleteBitgoHeldBackupKeyShare(
+        userGpgKey,
+        backupKeyShare,
+        bitGoGPGKeyPair
+      );
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupKeyShare,
       };
@@ -243,7 +286,13 @@ describe('TSS Ecdsa Utils:', async function () {
         (keyShare) => keyShare.from === 'backup' && keyShare.to === 'bitgo'
       );
       const bitgoGpgKeyPubKey = await tssUtils.getBitgoPublicGpgKey();
-      let backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolder, 3, bitgoGpgKeyPubKey.armor(), userGpgKey, true);
+      let backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(
+        backupShareHolder,
+        3,
+        bitgoGpgKeyPubKey.armor(),
+        userGpgKey,
+        true
+      );
       should.exist(backupToBitgoEncryptedNShare);
       should.equal(backupToBitgoEncryptedNShare.encryptedPrivateShare, backupToBitgoShare?.privateShare);
 
@@ -251,7 +300,13 @@ describe('TSS Ecdsa Utils:', async function () {
       const backupShareHolderNew: BackupKeyShare = {
         userHeldKeyShare: backupKeyShare,
       };
-      backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(backupShareHolderNew, 3, bitgoGpgKeyPubKey.armor(), userGpgKey, false);
+      backupToBitgoEncryptedNShare = await tssUtils.getBackupEncryptedNShare(
+        backupShareHolderNew,
+        3,
+        bitgoGpgKeyPubKey.armor(),
+        userGpgKey,
+        false
+      );
       const encryptedNShare = await encryptNShare(backupKeyShare, 3, bitgoGpgKeyPubKey.armor(), userGpgKey);
       // cant verify the encrypted shares, since they will be encrypted with diff. values
       should.equal(backupToBitgoEncryptedNShare.publicShare, encryptedNShare.publicShare);
@@ -321,7 +376,11 @@ describe('TSS Ecdsa Utils:', async function () {
       const bitgoGpgPublicKey = await tssUtils.getBitgoGpgPubkeyBasedOnFeatureFlags('enterprise_id');
 
       const isThirdPartyBackup = tssUtils.isValidThirdPartyBackupProvider('BitGoTrustAsKrs');
-      const bitgoHeldBackupShares = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, nitroGPGKeypair);
+      const bitgoHeldBackupShares = await createIncompleteBitgoHeldBackupKeyShare(
+        userGpgKey,
+        backupKeyShare,
+        nitroGPGKeypair
+      );
       const backupShareHolder: BackupKeyShare = {
         bitGoHeldKeyShares: bitgoHeldBackupShares,
       };
@@ -338,28 +397,38 @@ describe('TSS Ecdsa Utils:', async function () {
       });
       assert(bitgoKeychain.commonKeychain);
 
-      await nockFinalizeBitgoHeldBackupKeyShare(coinName, bitgoHeldBackupShares, bitgoKeychain.commonKeychain, userKeyShare, nitroGPGKeypair, bitgoKeychain);
+      await nockFinalizeBitgoHeldBackupKeyShare(
+        coinName,
+        bitgoHeldBackupShares,
+        bitgoKeychain.commonKeychain,
+        userKeyShare,
+        nitroGPGKeypair,
+        bitgoKeychain
+      );
 
-      const userBackupKeyChainPromises = [tssUtils.createUserKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare: backupShareHolder,
-        bitgoKeychain,
-        passphrase: 'passphrase',
-        enterprise: undefined,
-        isThirdPartyBackup,
-        bitgoPublicGpgKey: bitgoGpgPublicKey,
-      }), tssUtils.createBackupKeychain({
-        userGpgKey,
-        backupGpgKey,
-        userKeyShare,
-        backupKeyShare: backupShareHolder,
-        bitgoKeychain,
-        enterprise: undefined,
-        bitgoPublicGpgKey: bitgoGpgPublicKey,
-        backupProvider,
-      })];
+      const userBackupKeyChainPromises = [
+        tssUtils.createUserKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare: backupShareHolder,
+          bitgoKeychain,
+          passphrase: 'passphrase',
+          enterprise: undefined,
+          isThirdPartyBackup,
+          bitgoPublicGpgKey: bitgoGpgPublicKey,
+        }),
+        tssUtils.createBackupKeychain({
+          userGpgKey,
+          backupGpgKey,
+          userKeyShare,
+          backupKeyShare: backupShareHolder,
+          bitgoKeychain,
+          enterprise: undefined,
+          bitgoPublicGpgKey: bitgoGpgPublicKey,
+          backupProvider,
+        }),
+      ];
       const [userKeychain, backupKeychain] = await Promise.all(userBackupKeyChainPromises);
 
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
@@ -373,16 +442,22 @@ describe('TSS Ecdsa Utils:', async function () {
       for (const keyShare of bitgoHeldBackupShares.keyShares) {
         backupKeychain.keyShares.should.matchAny(keyShare);
       }
-      const bitgoToBackupShare = bitgoKeychain.keyShares?.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+      const bitgoToBackupShare = bitgoKeychain.keyShares?.find(
+        (keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup'
+      );
       assert(bitgoToBackupShare);
       backupKeychain.keyShares.should.matchAny(bitgoToBackupShare);
 
-      const userToBackupShare = backupKeychain.keyShares.find((keyShare) => keyShare.from === 'user' && keyShare.to === 'backup');
+      const userToBackupShare = backupKeychain.keyShares.find(
+        (keyShare) => keyShare.from === 'user' && keyShare.to === 'backup'
+      );
       assert(userToBackupShare);
-      userToBackupShare.publicShare.should.equal(Buffer.concat([
-        Buffer.from(userKeyShare.nShares[2].y, 'hex'),
-        Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
-      ]).toString('hex'));
+      userToBackupShare.publicShare.should.equal(
+        Buffer.concat([
+          Buffer.from(userKeyShare.nShares[2].y, 'hex'),
+          Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
+        ]).toString('hex')
+      );
     });
 
     it('should generate TSS key chains with optional params', async function () {
@@ -419,7 +494,8 @@ describe('TSS Ecdsa Utils:', async function () {
           userKeyShare,
           backupKeyShare,
           bitgoKeychain,
-          'passphrase'),
+          'passphrase'
+        ),
       ];
 
       const [userKeychain, backupKeychain] = await Promise.all(usersKeyChainPromises);
@@ -449,44 +525,54 @@ describe('TSS Ecdsa Utils:', async function () {
       bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
       const testKeyShares = otherKeyShares;
       const testCasesPromises = [
-        tssUtils.createParticipantKeychain(
-          userGpgKey,
-          userLocalBackupGpgKey,
-          bitgoPublicKey,
-          1,
-          userKeyShare,
-          testKeyShares[0],
-          bitgoKeychain,
-          'passphrase').should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
-          userGpgKey,
-          userLocalBackupGpgKey,
-          bitgoPublicKey,
-          1,
-          testKeyShares[1],
-          backupKeyShare,
-          bitgoKeychain,
-          'passphrase')
+        tssUtils
+          .createParticipantKeychain(
+            userGpgKey,
+            userLocalBackupGpgKey,
+            bitgoPublicKey,
+            1,
+            userKeyShare,
+            testKeyShares[0],
+            bitgoKeychain,
+            'passphrase'
+          )
           .should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
-          userGpgKey,
-          userLocalBackupGpgKey,
-          bitgoPublicKey,
-          2,
-          testKeyShares[2],
-          backupKeyShare,
-          bitgoKeychain,
-          'passphrase')
+        tssUtils
+          .createParticipantKeychain(
+            userGpgKey,
+            userLocalBackupGpgKey,
+            bitgoPublicKey,
+            1,
+            testKeyShares[1],
+            backupKeyShare,
+            bitgoKeychain,
+            'passphrase'
+          )
           .should.be.rejectedWith('Common keychains do not match'),
-        tssUtils.createParticipantKeychain(
-          userGpgKey,
-          userLocalBackupGpgKey,
-          bitgoPublicKey,
-          2,
-          userKeyShare,
-          testKeyShares[3],
-          bitgoKeychain,
-          'passphrase').should.be.rejectedWith('Common keychains do not match'),
+        tssUtils
+          .createParticipantKeychain(
+            userGpgKey,
+            userLocalBackupGpgKey,
+            bitgoPublicKey,
+            2,
+            testKeyShares[2],
+            backupKeyShare,
+            bitgoKeychain,
+            'passphrase'
+          )
+          .should.be.rejectedWith('Common keychains do not match'),
+        tssUtils
+          .createParticipantKeychain(
+            userGpgKey,
+            userLocalBackupGpgKey,
+            bitgoPublicKey,
+            2,
+            userKeyShare,
+            testKeyShares[3],
+            bitgoKeychain,
+            'passphrase'
+          )
+          .should.be.rejectedWith('Common keychains do not match'),
       ];
       await Promise.all(testCasesPromises);
     });
@@ -511,7 +597,9 @@ describe('TSS Ecdsa Utils:', async function () {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       bitgoKeychain.walletHSMGPGPublicKeySigs = openpgp.armor(openpgp.enums.armor.publicKey, finalKey.write());
-      await tssUtils.verifyWalletSignatures(userLocalBackupGpgKey.publicKey, userLocalBackupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`Invalid wallet signatures`);
+      await tssUtils
+        .verifyWalletSignatures(userLocalBackupGpgKey.publicKey, userLocalBackupGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith(`Invalid wallet signatures`);
     });
 
     it('should fail to generate TSS keychains when wallet signature fingerprints do not match passed user/backup fingerprints', async function () {
@@ -532,11 +620,19 @@ describe('TSS Ecdsa Utils:', async function () {
 
       // using the backup gpg here instead of the user gpg key to simulate that the first signature has a different
       // fingerprint from the passed in first gpg key
-      await tssUtils.verifyWalletSignatures(userLocalBackupGpgKey.publicKey, userLocalBackupGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`first wallet signature's fingerprint does not match passed user gpg key's fingerprint`);
+      await tssUtils
+        .verifyWalletSignatures(userLocalBackupGpgKey.publicKey, userLocalBackupGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith(
+          `first wallet signature's fingerprint does not match passed user gpg key's fingerprint`
+        );
 
       // using the user gpg here instead of the backup gpg key to simulate that the second signature has a different
       // fingerprint from the passed in second gpg key
-      await tssUtils.verifyWalletSignatures(userGpgKey.publicKey, userGpgKey.publicKey, bitgoKeychain, '', 1).should.be.rejectedWith(`second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`);
+      await tssUtils
+        .verifyWalletSignatures(userGpgKey.publicKey, userGpgKey.publicKey, bitgoKeychain, '', 1)
+        .should.be.rejectedWith(
+          `second wallet signature's fingerprint does not match passed backup gpg key's fingerprint`
+        );
     });
   });
 
@@ -544,15 +640,17 @@ describe('TSS Ecdsa Utils:', async function () {
     const txRequestId = 'randomidEcdsa';
     const txRequest: TxRequest = {
       txRequestId,
-      transactions: [{
-        unsignedTx: {
-          serializedTxHex: 'TOO MANY SECRETS',
-          signableHex: 'TOO MANY SECRETS',
-          derivationPath: '', // Needs this when key derivation is supported
+      transactions: [
+        {
+          unsignedTx: {
+            serializedTxHex: 'TOO MANY SECRETS',
+            signableHex: 'TOO MANY SECRETS',
+            derivationPath: '', // Needs this when key derivation is supported
+          },
+          state: 'pendingSignature',
+          signatureShares: [],
         },
-        state: 'pendingSignature',
-        signatureShares: [],
-      }],
+      ],
       unsignedTxs: [
         {
           serializedTxHex: 'TOO MANY SECRETS',
@@ -575,13 +673,11 @@ describe('TSS Ecdsa Utils:', async function () {
     let aShare, dShare, userSignShare;
 
     beforeEach(async () => {
-
       // Initializing user and bitgo for creating shares for nocks
-      const userSigningKey = MPC.keyCombine(userKeyShare.pShare, [
-        bitgoKeyShare.nShares[1], backupKeyShare.nShares[1],
-      ]);
+      const userSigningKey = MPC.keyCombine(userKeyShare.pShare, [bitgoKeyShare.nShares[1], backupKeyShare.nShares[1]]);
       const bitgoSigningKey = MPC.keyCombine(bitgoKeyShare.pShare, [
-        userKeyShare.nShares[3], backupKeyShare.nShares[3],
+        userKeyShare.nShares[3],
+        backupKeyShare.nShares[3],
       ]);
 
       const serializedEntChallenge = mockChallengeA;
@@ -611,10 +707,22 @@ describe('TSS Ecdsa Utils:', async function () {
       });
 
       const [userXShare, bitgoXShare] = [
-        MPC.appendChallenge(userSigningKey.xShare, serializedEntChallenge, EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge })),
-        MPC.appendChallenge(bitgoSigningKey.xShare, serializedBitgoChallenge, EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })),
+        MPC.appendChallenge(
+          userSigningKey.xShare,
+          serializedEntChallenge,
+          EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge })
+        ),
+        MPC.appendChallenge(
+          bitgoSigningKey.xShare,
+          serializedBitgoChallenge,
+          EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })
+        ),
       ];
-      const bitgoYShare = MPC.appendChallenge(userSigningKey.yShares[3], serializedBitgoChallenge, EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }));
+      const bitgoYShare = MPC.appendChallenge(
+        userSigningKey.yShares[3],
+        serializedBitgoChallenge,
+        EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })
+      );
       /**
        * START STEP ONE
        * 1) User creates signShare, saves wShare and sends kShare to bitgo
@@ -669,15 +777,13 @@ describe('TSS Ecdsa Utils:', async function () {
         muShare: userGammaAndMuShares.muShare,
       });
 
-      const getBitgoOShareAndDShares = MPC.signCombine(
-        {
-          gShare: getBitGoGShareAndSignerIndexes.gShare as ECDSA.GShare,
-          signIndex: {
-            i: 1,
-            j: 3,
-          },
-        }
-      );
+      const getBitgoOShareAndDShares = MPC.signCombine({
+        gShare: getBitGoGShareAndSignerIndexes.gShare as ECDSA.GShare,
+        signIndex: {
+          i: 1,
+          j: 3,
+        },
+      });
       const bitgoDshare = getBitgoOShareAndDShares.dShare as ECDSA.DShare;
       dShare = bitgoDshare;
       const dShareBitgoResponse = (bitgoDshare.delta as string) + (bitgoDshare.Gamma as string);
@@ -695,7 +801,6 @@ describe('TSS Ecdsa Utils:', async function () {
       });
       /**  END STEP TWO */
 
-
       /**
        * START STEP THREE
        * 1) User creates its oShare and  dShare using the  private gShare
@@ -707,17 +812,34 @@ describe('TSS Ecdsa Utils:', async function () {
        * its signature share. Using the Signature Share received from user from the above
        * step, bitgo constructs the final signature and is returned to the user
        */
-      const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(userGammaAndMuShares.gShare as ECDSA.GShare);
+      const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
+        userGammaAndMuShares.gShare as ECDSA.GShare
+      );
       const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
-      const userSShare = await ECDSAMethods.createUserSignatureShare(userOmicronAndDeltaShare.oShare, bitgoDshare, signablePayload);
+      const userSShare = await ECDSAMethods.createUserSignatureShare(
+        userOmicronAndDeltaShare.oShare,
+        bitgoDshare,
+        signablePayload
+      );
       const signatureShareThreeFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
-        share: userSShare.R + userSShare.s + userSShare.y + userOmicronAndDeltaShare.dShare.delta + userOmicronAndDeltaShare.dShare.Gamma,
+        share:
+          userSShare.R +
+          userSShare.s +
+          userSShare.y +
+          userOmicronAndDeltaShare.dShare.delta +
+          userOmicronAndDeltaShare.dShare.Gamma,
       };
-      const getBitGoSShare = MPC.sign(signablePayload, getBitgoOShareAndDShares.oShare, userOmicronAndDeltaShare.dShare, createKeccakHash('keccak256') as Hash);
+      const getBitGoSShare = MPC.sign(
+        signablePayload,
+        getBitgoOShareAndDShares.oShare,
+        userOmicronAndDeltaShare.dShare,
+        createKeccakHash('keccak256') as Hash
+      );
       const getBitGoFinalSignature = MPC.constructSignature([getBitGoSShare, userSShare]);
-      const finalSigantureBitgoResponse = getBitGoFinalSignature.r + getBitGoFinalSignature.s + getBitGoFinalSignature.y;
+      const finalSigantureBitgoResponse =
+        getBitGoFinalSignature.r + getBitGoFinalSignature.s + getBitGoFinalSignature.y;
       const signatureShareThreeFromBitgo: SignatureShareRecord = {
         from: SignatureShareType.BITGO,
         to: SignatureShareType.USER,
@@ -739,20 +861,24 @@ describe('TSS Ecdsa Utils:', async function () {
       sinon.restore();
     });
 
-    it('signTxRequest should fail if wallet is in pendingEcdsaTssInitialization', async function() {
+    it('signTxRequest should fail if wallet is in pendingEcdsaTssInitialization', async function () {
       sandbox.stub(wallet, 'coinSpecific').returns({
         customChangeWalletId: '',
         pendingEcdsaTssInitialization: true,
       });
-      await tssUtils.signTxRequest({
-        txRequest,
-        prv: JSON.stringify({
-          pShare: userKeyShare.pShare,
-          bitgoNShare: bitgoKeyShare.nShares[1],
-          backupNShare: backupKeyShare.nShares[1],
-        }),
-        reqId,
-      }).should.be.rejectedWith('Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.');
+      await tssUtils
+        .signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        })
+        .should.be.rejectedWith(
+          'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
+        );
     });
 
     it('signTxRequest should succeed with txRequest object as input', async function () {
@@ -791,56 +917,114 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('signTxRequest should fail with invalid user prv', async function () {
       const invalidUserKey = { ...userKeyShare, pShare: { ...userKeyShare.pShare, i: 2 } };
-      await tssUtils.signTxRequest({
-        txRequest: txRequestId,
-        prv: JSON.stringify({
-          pShare: invalidUserKey.pShare,
-          bitgoNShare: bitgoKeyShare.nShares[1],
-          backupNShare: backupKeyShare.nShares[1],
-        }),
-        reqId,
-      }).should.be.rejectedWith('Invalid user key');
+      await tssUtils
+        .signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: invalidUserKey.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        })
+        .should.be.rejectedWith('Invalid user key');
     });
 
     it('signTxRequest should fail with no backupNShares', async function () {
       const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
       getTxRequest.resolves(txRequest);
       getTxRequest.calledWith(txRequestId);
-      setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData );
-      await tssUtils.signTxRequest({
-        txRequest: txRequestId,
-        prv: JSON.stringify({
-          pShare: userKeyShare.pShare,
-          bitgoNShare: bitgoKeyShare.nShares[1],
-        }),
-        reqId,
-      }).should.be.rejectedWith('Invalid user key - missing backupNShare');
+      setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      await tssUtils
+        .signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+          }),
+          reqId,
+        })
+        .should.be.rejectedWith('Invalid user key - missing backupNShare');
     });
 
-    async function setupSignTxRequestNocks(isTxRequest = true, userSignShare: ECDSA.SignShareRT, aShare: ECDSA.AShare, dShare: ECDSA.DShare, enterpriseData?: EnterpriseData) {
+    async function setupSignTxRequestNocks(
+      isTxRequest = true,
+      userSignShare: ECDSA.SignShareRT,
+      aShare: ECDSA.AShare,
+      dShare: ECDSA.DShare,
+      enterpriseData?: EnterpriseData
+    ) {
       if (enterpriseData) {
         await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: enterpriseData, times: 1 });
       }
       const derivationPath = '';
       sinon.stub(ECDSAMethods, 'createUserSignShare').resolves(userSignShare);
-      let response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
+      let response = {
+        txRequests: [
+          {
+            ...txRequest,
+            transactions: [
+              {
+                ...txRequest,
+                unsignedTx: {
+                  signableHex: txRequest.unsignedTxs[0].signableHex,
+                  serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex,
+                  derivationPath,
+                },
+              },
+            ],
+          },
+        ],
+      };
       if (isTxRequest) {
         await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       }
       const aRecord = ECDSAMethods.convertAShare(aShare);
       const signatureShares = [aRecord];
       txRequest.signatureShares = signatureShares;
-      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
+      response = {
+        txRequests: [
+          {
+            ...txRequest,
+            transactions: [
+              {
+                ...txRequest,
+                unsignedTx: {
+                  signableHex: txRequest.unsignedTxs[0].signableHex,
+                  serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex,
+                  derivationPath,
+                },
+              },
+            ],
+          },
+        ],
+      };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       const dRecord = ECDSAMethods.convertDShare(dShare);
       signatureShares.push(dRecord);
-      response = { txRequests: [{ ...txRequest, transactions: [{ ...txRequest, unsignedTx: { signableHex: txRequest.unsignedTxs[0].signableHex, serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex, derivationPath } }] }] };
+      response = {
+        txRequests: [
+          {
+            ...txRequest,
+            transactions: [
+              {
+                ...txRequest,
+                unsignedTx: {
+                  signableHex: txRequest.unsignedTxs[0].signableHex,
+                  serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex,
+                  derivationPath,
+                },
+              },
+            ],
+          },
+        ],
+      };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
     }
   });
 
-  describe('getEcdsaSigningChallenges', function() {
+  describe('getEcdsaSigningChallenges', function () {
     const mockWalletPaillierKey = {
       n: 'f47be4c2d8bc1e28f88c6c4da634da97d92a1c279a7b0fe7b87c337c36a27b32ce0ff0c45f16e4e15bbd20e4e640de12047eff9b1a2b98144f9a268d406bd000d192a35b6847a17e40fb85f55b314d001ff87393481cafe391807d0eb83eff9e38614b38e5f25fc4449cb01caed805584d026b5d866c723f3d4d4f1e462662f2113b1561eb2bf755b4b91d0308d8eacc439167da8b7d6e108524f226960360af00215d9614457414ebdbe8834999689e2e903208c8713ff5d9901f9eaba3aa81d705323cbbba61ba7fa9f3228f30853fb55da1b3d3ed7db1dfc6545bc96aa8d2eb848931c1b807fdfe8f65af72f68638a82fe9e22ac1f0f032e621066806a1f144b5719a5f091986867b384be6c34146c8241cbfbd781966ebbcd19e6caa27fab040e62e5a162888aa8624d046c8fe3b72244f04a7264c4a36b6366dbe7da98afb201d34be2c0d6dd11982af35bf7535582b263914725aaec280d52290527382d3ab297d746c41aacd8de98c09fcfb85a95e02de1b34d4933e51045e2f1ce8af',
       lambda:
@@ -854,7 +1038,7 @@ describe('TSS Ecdsa Utils:', async function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const txRequestId = 'fakeTxRequestId';
     const rawEntChallengeWithProofs: EcdsaTypes.SerializedNtildeWithProofs = mockSerializedChallengeWithProofs;
-    let rawBitgoChallenge: EcdsaTypes.SerializedEcdsaChallenges & { n: string};
+    let rawBitgoChallenge: EcdsaTypes.SerializedEcdsaChallenges & { n: string };
     const adminEcdhKey = bitgo.keychains().create();
     const fakeAdminEcdhKey = bitgo.keychains().create();
     const derivationPath = 'm/0/0';
@@ -875,16 +1059,24 @@ describe('TSS Ecdsa Utils:', async function () {
       };
     });
 
-    afterEach(function() {
+    afterEach(function () {
       sinon.restore();
       nock.cleanAll();
     });
 
-    it('should fetch static ent and bitgo challenges with the ent feature flag and verify them', async function() {
+    it('should fetch static ent and bitgo challenges with the ent feature flag and verify them', async function () {
       await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
-      const adminSignatureEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, adminEcdhKey.xprv, derivationPath);
-      const adminSignatureBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, adminEcdhKey.xprv, derivationPath);
+      const adminSignatureEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawEntChallengeWithProofs,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
+      const adminSignatureBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawBitgoChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -922,17 +1114,28 @@ describe('TSS Ecdsa Utils:', async function () {
       });
     });
 
-
-    it('Fails if the enterprise challenge signature is different from the admin ecdh key', async function() {
+    it('Fails if the enterprise challenge signature is different from the admin ecdh key', async function () {
       await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
-      await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
-        ...enterpriseData,
-        featureFlags: ['useEnterpriseEcdsaTssChallenge'],
-      }, times: 1 });
+      await nockGetEnterprise({
+        enterpriseId: enterpriseData.id,
+        response: {
+          ...enterpriseData,
+          featureFlags: ['useEnterpriseEcdsaTssChallenge'],
+        },
+        times: 1,
+      });
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
       // Bad sign
-      const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, fakeAdminEcdhKey.xprv, derivationPath);
-      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, adminEcdhKey.xprv, derivationPath);
+      const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawEntChallengeWithProofs,
+        fakeAdminEcdhKey.xprv,
+        derivationPath
+      );
+      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawBitgoChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -949,19 +1152,35 @@ describe('TSS Ecdsa Utils:', async function () {
         createdBy: 'id',
       };
       await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
-      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n).should.be.rejectedWith('Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.');
+      await tssUtils
+        .getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n)
+        .should.be.rejectedWith(
+          'Admin signature for enterprise challenge is not valid. Please contact your enterprise admin.'
+        );
     });
 
-    it('Fails if the bitgo challenge signature is different from the admin ecdh key', async function() {
+    it('Fails if the bitgo challenge signature is different from the admin ecdh key', async function () {
       await nockGetChallenge({ walletId, txRequestId, addendum: '/transactions/0', response: rawBitgoChallenge });
-      await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: {
-        ...enterpriseData,
-        featureFlags: ['useEnterpriseEcdsaTssChallenge'],
-      }, times: 1 });
+      await nockGetEnterprise({
+        enterpriseId: enterpriseData.id,
+        response: {
+          ...enterpriseData,
+          featureFlags: ['useEnterpriseEcdsaTssChallenge'],
+        },
+        times: 1,
+      });
       await nockGetSigningKey({ enterpriseId, userId: mockedSigningKey.userId, response: mockedSigningKey, times: 1 });
-      const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawEntChallengeWithProofs, adminEcdhKey.xprv, derivationPath);
+      const adminSignedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawEntChallengeWithProofs,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
       // Bad sign
-      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(rawBitgoChallenge, fakeAdminEcdhKey.xprv, derivationPath);
+      const adminSignedBitGoChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        rawBitgoChallenge,
+        fakeAdminEcdhKey.xprv,
+        derivationPath
+      );
       const mockChallengesResponse = {
         enterpriseChallenge: {
           ...rawEntChallengeWithProofs,
@@ -978,11 +1197,15 @@ describe('TSS Ecdsa Utils:', async function () {
         createdBy: 'id',
       };
       await nockGetChallenges({ walletId: walletId, response: mockChallengesResponse });
-      await tssUtils.getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n).should.be.rejectedWith('Admin signature for BitGo\'s challenge is not valid. Please contact your enterprise admin.');
+      await tssUtils
+        .getEcdsaSigningChallenges(txRequestId, 0, mockWalletPaillierKey.n)
+        .should.be.rejectedWith(
+          "Admin signature for BitGo's challenge is not valid. Please contact your enterprise admin."
+        );
     });
   });
 
-  describe('getVerifyAndSignBitGoChallenges', function() {
+  describe('getVerifyAndSignBitGoChallenges', function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const adminEcdhKey = bitgo.keychains().create();
     const derivationPath = 'm/0/0';
@@ -994,7 +1217,7 @@ describe('TSS Ecdsa Utils:', async function () {
       input: adminEcdhKey.xprv,
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
         userId: 'id',
         userEmail: 'user@bitgo.com',
@@ -1007,29 +1230,30 @@ describe('TSS Ecdsa Utils:', async function () {
       });
     });
 
-    afterEach(async function() {
+    afterEach(async function () {
       sinon.restore();
       nock.cleanAll();
     });
 
     function nockGetBitgoChallenges(response: unknown): nock.Scope {
-      return nock(bgUrl)
-        .get(`/api/v2/tss/ecdsa/challenges`)
-        .times(1)
-        .reply(200, response);
+      return nock(bgUrl).get(`/api/v2/tss/ecdsa/challenges`).times(1).reply(200, response);
     }
 
-    it('succeeds for valid bitgo proofs', async function() {
+    it('succeeds for valid bitgo proofs', async function () {
       const nockGetBitgoChallengesApi = nockGetBitgoChallenges({
         bitgoNitroHsm: bitgoNitroChallenge,
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
 
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.not.be.rejected();
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(
+        bitgo,
+        'ent_id',
+        userPassword
+      ).should.not.be.rejected();
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails if bitgo challenge proofs are not present', async function() {
+    it('Fails if bitgo challenge proofs are not present', async function () {
       const nockGetBitgoChallengesApi = nockGetBitgoChallenges({
         bitgoNitroHsm: {
           ...bitgoNitroChallenge,
@@ -1037,20 +1261,24 @@ describe('TSS Ecdsa Utils:', async function () {
         },
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Expected BitGo challenge proof to be present. Contact support@bitgo.com.');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith(
+        'Expected BitGo challenge proof to be present. Contact support@bitgo.com.'
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails if the user password to decrypt the ecdhkeychain is wrong', async function() {
+    it('Fails if the user password to decrypt the ecdhkeychain is wrong', async function () {
       const nockGetBitgoChallengesApi = nockGetBitgoChallenges({
         bitgoNitroHsm: bitgoNitroChallenge,
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', 'bro').should.be.rejectedWith('Incorrect password. Please try again.');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', 'bro').should.be.rejectedWith(
+        'Incorrect password. Please try again.'
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails bitgo challenge proofs for faulty nitro h2WrtH1 proof', async function() {
+    it('Fails bitgo challenge proofs for faulty nitro h2WrtH1 proof', async function () {
       const nockGetBitgoChallengesApi = nockGetBitgoChallenges({
         bitgoNitroHsm: {
           ...bitgoNitroChallenge,
@@ -1061,11 +1289,13 @@ describe('TSS Ecdsa Utils:', async function () {
         },
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith(
+        "Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com"
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails bitgo challenge proofs for faulty nitro h1WrtH2 proof', async function() {
+    it('Fails bitgo challenge proofs for faulty nitro h1WrtH2 proof', async function () {
       const nockGetBitgoChallengesApi = nockGetBitgoChallenges({
         bitgoNitroHsm: {
           ...bitgoNitroChallenge,
@@ -1076,11 +1306,13 @@ describe('TSS Ecdsa Utils:', async function () {
         },
         bitgoInstitutionalHsm: bitgoInstChallenge,
       });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith(
+        "Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com"
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails bitgo challenge proofs for faulty inst h2WrtH1 proof', async function() {
+    it('Fails bitgo challenge proofs for faulty inst h2WrtH1 proof', async function () {
       const nockGetBitgoChallengesApi = nock(bgUrl)
         .get(`/api/v2/tss/ecdsa/challenges`)
         .times(1)
@@ -1094,11 +1326,13 @@ describe('TSS Ecdsa Utils:', async function () {
             },
           },
         });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith(
+        "Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com"
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
 
-    it('Fails bitgo challenge proofs for faulty inst h1WrtH2 proof', async function() {
+    it('Fails bitgo challenge proofs for faulty inst h1WrtH2 proof', async function () {
       const nockGetBitgoChallengesApi = nock(bgUrl)
         .get(`/api/v2/tss/ecdsa/challenges`)
         .times(1)
@@ -1112,12 +1346,14 @@ describe('TSS Ecdsa Utils:', async function () {
             },
           },
         });
-      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith('Failed to verify BitGo\'s challenge needed to enable ECDSA signing. Please contact support@bitgo.com');
+      await ECDSAUtils.EcdsaUtils.getVerifyAndSignBitGoChallenges(bitgo, 'ent_id', userPassword).should.be.rejectedWith(
+        "Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com"
+      );
       nockGetBitgoChallengesApi.isDone().should.be.true();
     });
   });
 
-  describe('initiateChallengesForEnterprise', function() {
+  describe('initiateChallengesForEnterprise', function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const adminEcdhKey = bitgo.keychains().create();
     const derivationPath = 'm/0/0';
@@ -1130,7 +1366,7 @@ describe('TSS Ecdsa Utils:', async function () {
       input: adminEcdhKey.xprv,
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
         userId: 'id',
         userEmail: 'user@bitgo.com',
@@ -1144,51 +1380,88 @@ describe('TSS Ecdsa Utils:', async function () {
       });
     });
 
-    afterEach(async function() {
+    afterEach(async function () {
       sinon.restore();
     });
 
-    it('should upload challenge without generating if passed in', async function() {
+    it('should upload challenge without generating if passed in', async function () {
       const stubUploadChallenge = sinon.stub(ECDSAUtils.EcdsaUtils, 'uploadChallengesToEnterprise');
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
 
-      const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
-      const signedInstChallenge = ECDSAUtils.EcdsaUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
-      const signedNitroChallenge = ECDSAUtils.EcdsaUtils.signChallenge(bitgoNitroChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        serializedEntChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
+      const signedInstChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        bitgoInstChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
+      const signedNitroChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        bitgoNitroChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
 
-      await ECDSAUtils.EcdsaUtils.initiateChallengesForEnterprise(bitgo, 'ent_id', userPassword, signedInstChallenge, signedNitroChallenge, deserializedEntChallenge).should.not.be.rejected();
+      await ECDSAUtils.EcdsaUtils.initiateChallengesForEnterprise(
+        bitgo,
+        'ent_id',
+        userPassword,
+        signedInstChallenge,
+        signedNitroChallenge,
+        deserializedEntChallenge
+      ).should.not.be.rejected();
       stubUploadChallenge.should.be.calledWith(
         bitgo,
         'ent_id',
         serializedEntChallenge,
         signedEntChallenge.toString('hex'),
         signedInstChallenge.toString('hex'),
-        signedNitroChallenge.toString('hex'),
+        signedNitroChallenge.toString('hex')
       );
     });
 
-    it('should generate a challenge and if one is not provided', async function() {
+    it('should generate a challenge and if one is not provided', async function () {
       const stubUploadChallenge = sinon.stub(ECDSAUtils.EcdsaUtils, 'uploadChallengesToEnterprise');
       const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(serializedEntChallenge);
       sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
 
-      const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(serializedEntChallenge, adminEcdhKey.xprv, derivationPath);
-      const signedInstChallenge = ECDSAUtils.EcdsaUtils.signChallenge(bitgoInstChallenge, adminEcdhKey.xprv, derivationPath);
-      const signedNitroChallenge = ECDSAUtils.EcdsaUtils.signChallenge(bitgoNitroChallenge, adminEcdhKey.xprv, derivationPath);
+      const signedEntChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        serializedEntChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
+      const signedInstChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        bitgoInstChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
+      const signedNitroChallenge = ECDSAUtils.EcdsaUtils.signChallenge(
+        bitgoNitroChallenge,
+        adminEcdhKey.xprv,
+        derivationPath
+      );
 
-      await ECDSAUtils.EcdsaUtils.initiateChallengesForEnterprise(bitgo, 'ent_id', userPassword, signedInstChallenge, signedNitroChallenge).should.not.be.rejected();
+      await ECDSAUtils.EcdsaUtils.initiateChallengesForEnterprise(
+        bitgo,
+        'ent_id',
+        userPassword,
+        signedInstChallenge,
+        signedNitroChallenge
+      ).should.not.be.rejected();
       stubUploadChallenge.should.be.calledWith(
         bitgo,
         'ent_id',
         serializedEntChallenge,
         signedEntChallenge.toString('hex'),
         signedInstChallenge.toString('hex'),
-        signedNitroChallenge.toString('hex'),
+        signedNitroChallenge.toString('hex')
       );
     });
   });
 
-  it('getMessageToSignFromChallenge concatenates the challenge values only', function() {
+  it('getMessageToSignFromChallenge concatenates the challenge values only', function () {
     const challenge = mockChallengeA;
     const expectedMessageToSign = challenge.ntilde.concat(challenge.h1).concat(challenge.h2);
     const message = ECDSAUtils.EcdsaUtils.getMessageToSignFromChallenge(challenge);
@@ -1196,20 +1469,15 @@ describe('TSS Ecdsa Utils:', async function () {
   });
 
   // #region Nock helpers
-  async function createIncompleteBitgoHeldBackupKeyShare(userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
-    const nSharePromises = [encryptNShare(
-      backupKeyShare,
-      1,
-      userGpgKey.publicKey,
-      userGpgKey,
-      false,
-    ), encryptNShare(
-      backupKeyShare,
-      3,
-      bitgoGpgKey.publicKey,
-      userGpgKey,
-      false,
-    )];
+  async function createIncompleteBitgoHeldBackupKeyShare(
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    backupKeyShare: KeyShare,
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>
+  ): Promise<BitgoHeldBackupKeyShare> {
+    const nSharePromises = [
+      encryptNShare(backupKeyShare, 1, userGpgKey.publicKey, userGpgKey, false),
+      encryptNShare(backupKeyShare, 3, bitgoGpgKey.publicKey, userGpgKey, false),
+    ];
 
     const backupToUserPublicShare = Buffer.concat([
       Buffer.from(backupKeyShare.nShares[1].y, 'hex'),
@@ -1223,55 +1491,77 @@ describe('TSS Ecdsa Utils:', async function () {
 
     return {
       id: '4711',
-      keyShares: [{
-        from: 'backup',
-        to: 'user',
-        publicShare: backupToUserPublicShare,
-        privateShare: (await nSharePromises[0]).encryptedPrivateShare,
-      }, {
-        from: 'backup',
-        to: 'bitgo',
-        publicShare: backupToBitgoPublicShare,
-        privateShare: (await nSharePromises[1]).encryptedPrivateShare,
-      }],
+      keyShares: [
+        {
+          from: 'backup',
+          to: 'user',
+          publicShare: backupToUserPublicShare,
+          privateShare: (await nSharePromises[0]).encryptedPrivateShare,
+        },
+        {
+          from: 'backup',
+          to: 'bitgo',
+          publicShare: backupToBitgoPublicShare,
+          privateShare: (await nSharePromises[1]).encryptedPrivateShare,
+        },
+      ],
     };
   }
 
-  async function nockGetBitgoPublicKeyBasedOnFeatureFlags(coin: string, enterpriseId: string, bitgoGpgKeyPair: openpgp.SerializedKeyPair<string>): Promise<BitgoGPGPublicKey> {
+  async function nockGetBitgoPublicKeyBasedOnFeatureFlags(
+    coin: string,
+    enterpriseId: string,
+    bitgoGpgKeyPair: openpgp.SerializedKeyPair<string>
+  ): Promise<BitgoGPGPublicKey> {
     const bitgoGPGPublicKeyResponse: BitgoGPGPublicKey = {
       name: 'irrelevant',
       publicKey: bitgoGpgKeyPair.publicKey,
       enterpriseId,
     };
-    nock(bgUrl)
-      .get(`/api/v2/${coin}/tss/pubkey`)
-      .query({ enterpriseId })
-      .reply(200, bitgoGPGPublicKeyResponse);
+    nock(bgUrl).get(`/api/v2/${coin}/tss/pubkey`).query({ enterpriseId }).reply(200, bitgoGPGPublicKeyResponse);
 
     return bitgoGPGPublicKeyResponse;
   }
 
-  async function nockCreateBitgoHeldBackupKeyShare(coin: string, enterpriseId: string, userGpgKey: openpgp.SerializedKeyPair<string>, backupKeyShare: KeyShare, bitgoGpgKey: openpgp.SerializedKeyPair<string>): Promise<BitgoHeldBackupKeyShare> {
+  async function nockCreateBitgoHeldBackupKeyShare(
+    coin: string,
+    enterpriseId: string,
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    backupKeyShare: KeyShare,
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>
+  ): Promise<BitgoHeldBackupKeyShare> {
     const keyShare = await createIncompleteBitgoHeldBackupKeyShare(userGpgKey, backupKeyShare, bitgoGpgKey);
 
     nock(bgUrl)
-      .post(`/api/v2/${coin}/krs/backupkeys`, _.matches({ enterprise: enterpriseId, userGPGPublicKey: userGpgKey.publicKey }))
+      .post(
+        `/api/v2/${coin}/krs/backupkeys`,
+        _.matches({ enterprise: enterpriseId, userGPGPublicKey: userGpgKey.publicKey })
+      )
       .reply(201, keyShare);
 
     return keyShare;
   }
 
-  async function nockFinalizeBitgoHeldBackupKeyShare(coin: string, originalKeyShare: BitgoHeldBackupKeyShare, commonKeychain: string, userKeyShare: KeyShare, userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>, bitgoKeychain: Keychain): Promise<BitgoHeldBackupKeyShare> {
+  async function nockFinalizeBitgoHeldBackupKeyShare(
+    coin: string,
+    originalKeyShare: BitgoHeldBackupKeyShare,
+    commonKeychain: string,
+    userKeyShare: KeyShare,
+    userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>,
+    bitgoKeychain: Keychain
+  ): Promise<BitgoHeldBackupKeyShare> {
     const encryptedUserToBackupKeyShare = await encryptNShare(
       userKeyShare,
       2,
       userLocalBackupGpgKey.publicKey,
       userGpgKey,
-      false,
+      false
     );
 
     assert(bitgoKeychain.keyShares);
-    const bitgoToBackupKeyShare = bitgoKeychain.keyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+    const bitgoToBackupKeyShare = bitgoKeychain.keyShares.find(
+      (keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup'
+    );
     assert(bitgoToBackupKeyShare);
 
     const userPublicShare = Buffer.concat([
@@ -1279,13 +1569,16 @@ describe('TSS Ecdsa Utils:', async function () {
       Buffer.from(userKeyShare.nShares[2].chaincode, 'hex'),
     ]).toString('hex');
 
-    const expectedKeyShares = [{
-      from: 'user',
-      to: 'backup',
-      publicShare: userPublicShare,
-      // Omitting the private share, the actual encryption happens inside the function where we make the matching call
-      // to this nock. We cannot recreate the same encrypted value here because gpg encryption is not deterministic
-    }, bitgoToBackupKeyShare];
+    const expectedKeyShares = [
+      {
+        from: 'user',
+        to: 'backup',
+        publicShare: userPublicShare,
+        // Omitting the private share, the actual encryption happens inside the function where we make the matching call
+        // to this nock. We cannot recreate the same encrypted value here because gpg encryption is not deterministic
+      },
+      bitgoToBackupKeyShare,
+    ];
 
     const updatedKeyShare: BitgoHeldBackupKeyShare = {
       id: originalKeyShare.id,
@@ -1303,7 +1596,10 @@ describe('TSS Ecdsa Utils:', async function () {
     };
 
     nock(bgUrl)
-      .put(`/api/v2/${coin}/krs/backupkeys/${originalKeyShare.id}`, _.matches({ commonKeychain, keyShares: expectedKeyShares }))
+      .put(
+        `/api/v2/${coin}/krs/backupkeys/${originalKeyShare.id}`,
+        _.matches({ commonKeychain, keyShares: expectedKeyShares })
+      )
       .reply(200, updatedKeyShare);
 
     return updatedKeyShare;
@@ -1315,32 +1611,29 @@ describe('TSS Ecdsa Utils:', async function () {
    * @param params
    */
   async function generateBitgoKeychain(params: {
-    coin: string,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeyShare: KeyShare,
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>,
-    bitgoGpgKey: openpgp.SerializedKeyPair<string>,
+    coin: string;
+    userKeyShare: KeyShare;
+    backupKeyShare: KeyShare;
+    bitgoKeyShare: KeyShare;
+    userGpgKey: openpgp.SerializedKeyPair<string>;
+    userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>;
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>;
   }): Promise<Keychain> {
-    const bitgoCombined = MPC.keyCombine(params.bitgoKeyShare.pShare, [params.userKeyShare.nShares[3], params.backupKeyShare.nShares[3]]);
+    const bitgoCombined = MPC.keyCombine(params.bitgoKeyShare.pShare, [
+      params.userKeyShare.nShares[3],
+      params.backupKeyShare.nShares[3],
+    ]);
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
     const backupGpgKeyActual = await openpgp.readKey({ armoredKey: params.userLocalBackupGpgKey.publicKey });
 
     const nSharePromises = [
-      encryptNShare(
-        params.bitgoKeyShare,
-        1,
-        params.userGpgKey.publicKey,
-        params.userGpgKey,
-        false,
-      ),
+      encryptNShare(params.bitgoKeyShare, 1, params.userGpgKey.publicKey, params.userGpgKey, false),
       encryptNShare(
         params.bitgoKeyShare,
         2,
         params.userLocalBackupGpgKey.publicKey,
         params.userLocalBackupGpgKey,
-        false,
+        false
       ),
     ];
     const [userToBitgoShare, backupToBitgoShare] = await Promise.all(nSharePromises);
@@ -1373,10 +1666,14 @@ describe('TSS Ecdsa Utils:', async function () {
 
     const userKeyId = userGpgKeyActual.keyPacket.getFingerprint();
     const backupKeyId = backupGpgKeyActual.keyPacket.getFingerprint();
-    const bitgoToUserPublicU = Buffer.from((ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[1].u, 'hex'), true) as Uint8Array)).toString('hex')
-      + params.bitgoKeyShare.nShares[1].chaincode;
-    const bitgoToBackupPublicU = Buffer.from((ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[2].u, 'hex'), true) as Uint8Array)).toString('hex')
-      + params.bitgoKeyShare.nShares[2].chaincode;
+    const bitgoToUserPublicU =
+      Buffer.from(
+        ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[1].u, 'hex'), true) as Uint8Array
+      ).toString('hex') + params.bitgoKeyShare.nShares[1].chaincode;
+    const bitgoToBackupPublicU =
+      Buffer.from(
+        ecc.pointFromScalar(Buffer.from(params.bitgoKeyShare.nShares[2].u, 'hex'), true) as Uint8Array
+      ).toString('hex') + params.bitgoKeyShare.nShares[2].chaincode;
 
     bitgoKeychain.walletHSMGPGPublicKeySigs = await createWalletSignatures(
       params.bitgoGpgKey.privateKey,
@@ -1395,13 +1692,13 @@ describe('TSS Ecdsa Utils:', async function () {
   }
 
   async function nockBitgoKeychain(params: {
-    coin: string,
-    userKeyShare: KeyShare,
-    backupKeyShare: KeyShare,
-    bitgoKeyShare: KeyShare,
-    userGpgKey: openpgp.SerializedKeyPair<string>,
-    userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>,
-    bitgoGpgKey: openpgp.SerializedKeyPair<string>
+    coin: string;
+    userKeyShare: KeyShare;
+    backupKeyShare: KeyShare;
+    bitgoKeyShare: KeyShare;
+    userGpgKey: openpgp.SerializedKeyPair<string>;
+    userLocalBackupGpgKey: openpgp.SerializedKeyPair<string>;
+    bitgoGpgKey: openpgp.SerializedKeyPair<string>;
   }): Promise<Keychain> {
     const bitgoKeychain = await generateBitgoKeychain(params);
 
@@ -1414,11 +1711,10 @@ describe('TSS Ecdsa Utils:', async function () {
   }
 
   async function nockKeychain(params: {
-    coin: string,
-    keyChain: Keychain,
-    source: 'user' | 'backup'
+    coin: string;
+    keyChain: Keychain;
+    source: 'user' | 'backup';
   }): Promise<Keychain> {
-
     nock('https://bitgo.fakeurl')
       .persist()
       .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'tss', source: params.source }))

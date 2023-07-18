@@ -31,20 +31,21 @@ describe('Auth', () => {
       const url = 'https://bitgo.invalid';
       const bitgo = new BitGo({ authVersion: 3, accessToken: `v2x${'0'.repeat(64)}` });
 
-      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse')
-        .returns({
-          isValid: true,
-          isInResponseValidityWindow: false,
-          expectedHmac: '',
-          signatureSubject: '',
-          verificationTime: 0,
-        });
+      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse').returns({
+        isValid: true,
+        isInResponseValidityWindow: false,
+        expectedHmac: '',
+        signatureSubject: '',
+        verificationTime: 0,
+      });
 
-      const scope = nock(url)
-        .get('/')
-        .reply(200);
+      const scope = nock(url).get('/').reply(200);
 
-      await bitgo.get(url).should.be.rejectedWith('server response outside response validity time window, possible man-in-the-middle-attack');
+      await bitgo
+        .get(url)
+        .should.be.rejectedWith(
+          'server response outside response validity time window, possible man-in-the-middle-attack'
+        );
       verifyResponseStub.restore();
       scope.done();
     });
@@ -53,18 +54,15 @@ describe('Auth', () => {
       const url = 'https://bitgo.invalid';
       const bitgo = new BitGo({ authVersion: 3, accessToken: `v2x${'0'.repeat(64)}` });
 
-      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse')
-        .returns({
-          isValid: true,
-          isInResponseValidityWindow: true,
-          expectedHmac: '',
-          signatureSubject: '',
-          verificationTime: 0,
-        });
+      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse').returns({
+        isValid: true,
+        isInResponseValidityWindow: true,
+        expectedHmac: '',
+        signatureSubject: '',
+        verificationTime: 0,
+      });
 
-      const scope = nock(url)
-        .get('/')
-        .reply(200);
+      const scope = nock(url).get('/').reply(200);
 
       await bitgo.get(url).should.eventually.have.property('status', 200);
       verifyResponseStub.restore();
@@ -77,24 +75,18 @@ describe('Auth', () => {
       const bitgo = new BitGo({ authVersion: 3, accessToken });
 
       const calculateHMACSpy = sinon.spy(bitgo, 'calculateHMAC');
-      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse')
-        .returns({
-          isValid: true,
-          isInResponseValidityWindow: true,
-          expectedHmac: '',
-          signatureSubject: '',
-          verificationTime: 0,
-        });
+      const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse').returns({
+        isValid: true,
+        isInResponseValidityWindow: true,
+        expectedHmac: '',
+        signatureSubject: '',
+        verificationTime: 0,
+      });
 
-      const scope = nock(url)
-        .get('/')
-        .reply(200);
+      const scope = nock(url).get('/').reply(200);
 
       await bitgo.get(url).should.eventually.have.property('status', 200);
-      calculateHMACSpy
-        .firstCall
-        .calledWith(accessToken, sinon.match('3.0'))
-        .should.be.true();
+      calculateHMACSpy.firstCall.calledWith(accessToken, sinon.match('3.0')).should.be.true();
       calculateHMACSpy.restore();
       verifyResponseStub.restore();
       scope.done();

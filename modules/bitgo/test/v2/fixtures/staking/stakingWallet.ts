@@ -1,12 +1,8 @@
-import {
-  PrebuildTransactionOptions,
-  StakingRequest,
-  StakingTransaction,
-} from '@bitgo/sdk-core';
+import { PrebuildTransactionOptions, StakingRequest, StakingTransaction } from '@bitgo/sdk-core';
 
 export default {
   txRequestId: '55ba0198-0b1f-44f6-94fe-8d782d633dde',
-  stakingRequest: function(transactions: StakingTransaction[]) : StakingRequest {
+  stakingRequest: function (transactions: StakingTransaction[]): StakingRequest {
     return {
       id: '8638284a-dab2-46b9-b07f-21109a6e7220',
       amount: '1234',
@@ -24,7 +20,7 @@ export default {
       transactions: transactions,
     };
   },
-  transaction: function(status: string, buildParams?: PrebuildTransactionOptions): StakingTransaction {
+  transaction: function (status: string, buildParams?: PrebuildTransactionOptions): StakingTransaction {
     const transaction: StakingTransaction = {
       id: '00566722-daef-40eb-b0ac-fa5402bbfe72',
       stakingRequestId: '8638284a-dab2-46b9-b07f-21109a6e7220',
@@ -44,11 +40,13 @@ export default {
     return transaction;
   },
   buildParams: {
-    recipients: [{
-      amount: '1234',
-      address: 'address',
-      data: 'data',
-    }],
+    recipients: [
+      {
+        amount: '1234',
+        address: 'address',
+        data: 'data',
+      },
+    ],
     stakingParams: {
       requestId: '8638284a-dab2-46b9-b07f-21109a6e7220',
       amount: '1234',
@@ -57,4 +55,3 @@ export default {
     },
   },
 };
-

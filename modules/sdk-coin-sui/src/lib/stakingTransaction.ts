@@ -127,30 +127,19 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     if (!this.suiTransaction) {
       return;
     }
-
-    const amountInputIdx = (
-      (this.suiTransaction.tx.transactions[0] as SplitCoinsTransaction).amounts[0] as TransactionBlockInput
-    ).index;
-    const amount = utils.getAmount(this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput);
-
-    const validatorAddressInputIdx = (
-      (this.suiTransaction.tx.transactions[1] as MoveCallTransaction).arguments[2] as TransactionBlockInput
-    ).index;
-    const validatorAddress = utils.getAddress(
-      this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput
-    );
-
-    this._outputs = [
-      {
-        address: validatorAddress,
-        value: Number(amount).toString(),
+    const requests = utils.getStakeRequests(this.suiTransaction.tx);
+    this._outputs = requests.map((request) => {
+      return {
+        address: request.validatorAddress,
+        value: request.amount.toString(),
         coin: this._coinConfig.name,
-      },
-    ];
+      };
+    });
+
     this._inputs = [
       {
         address: this.suiTransaction.sender,
-        value: Number(amount).toString(),
+        value: this._outputs.reduce((acc, output) => acc + Number(output.value), 0).toString(),
         coin: this._coinConfig.name,
       },
     ];

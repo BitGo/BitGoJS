@@ -16,7 +16,6 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 describe('BitGo', function () {
-
   describe('Logged Out', function () {
     describe('Authenticate', function () {
       let bitgo;
@@ -25,13 +24,16 @@ describe('BitGo', function () {
         bitgo.initializeTestVars();
       });
 
-      it('arguments', co(function* () {
-        yield bitgo.authenticate().should.be.rejected();
-        yield bitgo.authenticate(123).should.be.rejected();
-        yield bitgo.authenticate('foo', 123).should.be.rejected();
-        yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01 }).should.be.rejected();
-        yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz' }, 123).should.be.rejected();
-      }));
+      it(
+        'arguments',
+        co(function* () {
+          yield bitgo.authenticate().should.be.rejected();
+          yield bitgo.authenticate(123).should.be.rejected();
+          yield bitgo.authenticate('foo', 123).should.be.rejected();
+          yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01 }).should.be.rejected();
+          yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz' }, 123).should.be.rejected();
+        })
+      );
 
       it('fails without OTP', function (done) {
         bitgo.authenticateTestUser('0', function (err, response) {
@@ -124,23 +126,21 @@ describe('BitGo', function () {
     });
 
     it('get default', function () {
-      return bitgo.estimateFee()
-        .then(function (res) {
-          res.should.have.property('feePerKb');
-          res.should.have.property('numBlocks');
-          res.numBlocks.should.eql(2);
-          res.feePerKb.should.be.within(1e3, 1e7);
-        });
+      return bitgo.estimateFee().then(function (res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(2);
+        res.feePerKb.should.be.within(1e3, 1e7);
+      });
     });
 
     it('get fee for target of 3 blocks', function () {
-      return bitgo.estimateFee({ numBlocks: 3 })
-        .then(function (res) {
-          res.should.have.property('feePerKb');
-          res.should.have.property('numBlocks');
-          res.numBlocks.should.eql(3);
-          res.feePerKb.should.be.within(1e3, 1e7);
-        });
+      return bitgo.estimateFee({ numBlocks: 3 }).then(function (res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(3);
+        res.feePerKb.should.be.within(1e3, 1e7);
+      });
     });
   });
 
@@ -153,7 +153,6 @@ describe('BitGo', function () {
     });
 
     it('environment', function (done) {
-
       BitGoJS.setNetwork('testnet');
       bitgo.ping({}, function (err, res) {
         if (err) {
@@ -205,7 +204,9 @@ describe('BitGo', function () {
       after(function () {
         // delete all extensible tokens, because if they're left around then the test/accessToken.js tests will
         // fail because there are more than 10 long lived tokens, and then we can't add any more long lived tokens
-        const filterFunc = function (tok) { return tok.isExtensible; };
+        const filterFunc = function (tok) {
+          return tok.isExtensible;
+        };
         return TestUtil.deleteTestTokens(extensibleTokenBitGo, filterFunc);
       });
 
@@ -246,11 +247,10 @@ describe('BitGo', function () {
       it('extending token after juggling session data', function () {
         const sessionData = extensibleTokenBitGo.toJSON();
         extensibleTokenBitGo.fromJSON(sessionData);
-        return extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 })
-          .then(function (response) {
-            response.isExtensible.should.equal(true);
-            response.extensionAddress.should.be.type('string');
-          });
+        return extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 }).then(function (response) {
+          response.isExtensible.should.equal(true);
+          response.extensionAddress.should.be.type('string');
+        });
       });
     });
 
@@ -272,7 +272,9 @@ describe('BitGo', function () {
     describe('getUser', function () {
       it('success', function (done) {
         bitgo.getUser({ id: TestBitGo.TEST_SHARED_KEY_USERID }, function (err, user) {
-          if (err) { throw err; }
+          if (err) {
+            throw err;
+          }
           user.should.have.property('id');
           user.should.have.property('email');
           user.email.email.should.equal(TestBitGo.TEST_SHARED_KEY_USER);
@@ -285,7 +287,9 @@ describe('BitGo', function () {
     xdescribe('labels', function () {
       // ensure that we have at least one label created on two of this user's wallets
       before(function () {
-        return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET1_ADDRESS })
+        return bitgo
+          .wallets()
+          .get({ id: TestBitGo.TEST_WALLET1_ADDRESS })
           .then(function (wallet) {
             return wallet.setLabel({ label: 'testLabel', address: TestBitGo.TEST_WALLET1_ADDRESS2 });
           })
@@ -338,7 +342,8 @@ describe('BitGo', function () {
 
     describe('getWalletAddress', function () {
       it('address not found', function () {
-        return bitgo.getWalletAddress({ address: 'mk6ZqJBctDBbVuy6FHK9ddS7CVtRJnN15a' }) // not a bitgo address
+        return bitgo
+          .getWalletAddress({ address: 'mk6ZqJBctDBbVuy6FHK9ddS7CVtRJnN15a' }) // not a bitgo address
           .then(function (result) {
             throw new Error('unexpected success on non bitgo address');
           })
@@ -348,31 +353,32 @@ describe('BitGo', function () {
       });
 
       it('get', function () {
-        return bitgo.getWalletAddress({ address: TestBitGo.TEST_WALLET1_ADDRESS2 })
-          .then(function (result) {
-            result.should.have.property('address');
-            result.should.have.property('wallet');
-            result.should.have.property('path');
-            result.should.have.property('chain');
-            result.should.have.property('index');
-            result.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
-            result.wallet.should.eql(TestBitGo.TEST_WALLET1_ADDRESS);
-          });
+        return bitgo.getWalletAddress({ address: TestBitGo.TEST_WALLET1_ADDRESS2 }).then(function (result) {
+          result.should.have.property('address');
+          result.should.have.property('wallet');
+          result.should.have.property('path');
+          result.should.have.property('chain');
+          result.should.have.property('index');
+          result.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
+          result.wallet.should.eql(TestBitGo.TEST_WALLET1_ADDRESS);
+        });
       });
     });
 
     describe('instant', function () {
       it('get guarantee', function () {
-        return bitgo.instantGuarantee({ id: '56562ee923ab7f3a28d638085ba6955a' })
-          .then(function (result) {
-            result.normalizedHash.should.eql('074d7bd485253bd050d669aa0d34217c6566b6518ac2bc628f9bdc29ba00a785');
-            result.amount.should.eql(600000);
-            result.guarantee.should.containEql('BitGo Inc. guarantees the transaction');
-            result.signature.should.eql('1c4146bd7f54b6ac7cd18e27fd7e4369a312f5be727a6d7a3519cdee2aee2e05255d76ce320effe6777d87c03cc1ff1c2dfadfc0fcb74aaf1b58d0d3425980699a');
-          });
+        return bitgo.instantGuarantee({ id: '56562ee923ab7f3a28d638085ba6955a' }).then(function (result) {
+          result.normalizedHash.should.eql('074d7bd485253bd050d669aa0d34217c6566b6518ac2bc628f9bdc29ba00a785');
+          result.amount.should.eql(600000);
+          result.guarantee.should.containEql('BitGo Inc. guarantees the transaction');
+          result.signature.should.eql(
+            '1c4146bd7f54b6ac7cd18e27fd7e4369a312f5be727a6d7a3519cdee2aee2e05255d76ce320effe6777d87c03cc1ff1c2dfadfc0fcb74aaf1b58d0d3425980699a'
+          );
+        });
       });
       it('detect a bad gaurantee', function () {
-        return bitgo.instantGuarantee({ id: '5656359623ab7f3a28d64266ba8c11db' })
+        return bitgo
+          .instantGuarantee({ id: '5656359623ab7f3a28d64266ba8c11db' })
           .then(function () {
             throw new Error('should not be here!!');
           })
@@ -392,7 +398,6 @@ describe('BitGo', function () {
         });
       });
     });
-
   });
 
   describe('Change Password', function () {
@@ -401,27 +406,35 @@ describe('BitGo', function () {
     let newPassword;
     const incorrectPassword = 'incorrectPassword';
 
-    before(co(function *beforeLoggedInUpdatePW() {
-      bitgo = new TestBitGo({ env: 'test' });
-      bitgo.initializeTestVars();
-      const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
-      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-      oldPassword = loginPasswords.password;
-      newPassword = loginPasswords.alternatePassword;
-    }));
+    before(
+      co(function* beforeLoggedInUpdatePW() {
+        bitgo = new TestBitGo({ env: 'test' });
+        bitgo.initializeTestVars();
+        const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
+        yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+        oldPassword = loginPasswords.password;
+        newPassword = loginPasswords.alternatePassword;
+      })
+    );
 
-    it('wrong password', co(function *coWrongPassword() {
-      try {
-        yield bitgo.changePassword({ oldPassword: incorrectPassword, newPassword });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('the provided oldPassword is incorrect');
-      }
-    }));
+    it(
+      'wrong password',
+      co(function* coWrongPassword() {
+        try {
+          yield bitgo.changePassword({ oldPassword: incorrectPassword, newPassword });
+          throw new Error();
+        } catch (e) {
+          e.message.should.equal('the provided oldPassword is incorrect');
+        }
+      })
+    );
 
-    it('successful password change', co(function *coSuccessfulPasswordChange() {
-      yield bitgo.changePassword({ oldPassword, newPassword });
-    }));
+    it(
+      'successful password change',
+      co(function* coSuccessfulPasswordChange() {
+        yield bitgo.changePassword({ oldPassword, newPassword });
+      })
+    );
   });
 
   describe('ECDH sharing keychain', function () {
@@ -439,7 +452,8 @@ describe('BitGo', function () {
     });
 
     it('Get user ECDH sharing keychain', function () {
-      return bitgo.unlock({ otp: '0000000' })
+      return bitgo
+        .unlock({ otp: '0000000' })
         .then(function () {
           return bitgo.getECDHSharingKeychain();
         })
@@ -463,13 +477,18 @@ describe('BitGo', function () {
     });
 
     describe('Authenticate with auth code', function () {
-      it('arguments', co(function*() {
-        yield bitgo.authenticateWithAuthCode().should.be.rejected();
-        yield bitgo.authenticateWithAuthCode({ authCode: 123 }).should.be.rejected();
-        bitgo.authenticateWithAuthCode({ authCode: 'foo' }, 123).should.be.rejected();
-        const bitgoNoClientId = new BitGoJS.BitGo();
-        bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function () {}).should.be.rejected();
-      }));
+      it(
+        'arguments',
+        co(function* () {
+          yield bitgo.authenticateWithAuthCode().should.be.rejected();
+          yield bitgo.authenticateWithAuthCode({ authCode: 123 }).should.be.rejected();
+          bitgo.authenticateWithAuthCode({ authCode: 'foo' }, 123).should.be.rejected();
+          const bitgoNoClientId = new BitGoJS.BitGo();
+          bitgoNoClientId
+            .authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function () {})
+            .should.be.rejected();
+        })
+      );
 
       it('bad code', function (done) {
         bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function (err, response) {
@@ -492,7 +511,6 @@ describe('BitGo', function () {
           refreshToken = response.refresh_token;
 
           bitgo.me({}, function (err, me_result) {
-
             me_result.should.have.property('username');
             me_result.should.have.property('email');
             me_result.should.have.property('phone');
@@ -503,9 +521,12 @@ describe('BitGo', function () {
     });
 
     describe('Initialize with access token', function () {
-      it('arguments', co(function*() {
-        yield bitgo.authenticateWithAuthCode({}, 123).should.be.rejected();
-      }));
+      it(
+        'arguments',
+        co(function* () {
+          yield bitgo.authenticateWithAuthCode({}, 123).should.be.rejected();
+        })
+      );
 
       it('use bad access token', function (done) {
         const bitgoAT = new BitGoJS.BitGo({
@@ -539,13 +560,16 @@ describe('BitGo', function () {
     });
 
     describe('Use refresh token', function () {
-      it('arguments', co(function*() {
-        yield bitgo.refreshToken(123).should.be.rejected();
-        yield bitgo.refreshToken('foo', 123).should.be.rejected();
-        yield bitgo.refreshToken(TestBitGo.TEST_REFRESHTOKEN, 123).should.be.rejected();
-        const bitgoNoClientId = new BitGoJS.BitGo();
-        yield bitgoNoClientId.refreshToken(TestBitGo.TEST_AUTHCODE, function () {}).should.be.rejected();
-      }));
+      it(
+        'arguments',
+        co(function* () {
+          yield bitgo.refreshToken(123).should.be.rejected();
+          yield bitgo.refreshToken('foo', 123).should.be.rejected();
+          yield bitgo.refreshToken(TestBitGo.TEST_REFRESHTOKEN, 123).should.be.rejected();
+          const bitgoNoClientId = new BitGoJS.BitGo();
+          yield bitgoNoClientId.refreshToken(TestBitGo.TEST_AUTHCODE, function () {}).should.be.rejected();
+        })
+      );
 
       it('bad token', function (done) {
         bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function (err, response) {
@@ -573,7 +597,6 @@ describe('BitGo', function () {
           });
 
           bitgoWithNewToken.me({}, function (err, me_result) {
-
             me_result.should.have.property('username');
             me_result.should.have.property('email');
             me_result.should.have.property('phone');
@@ -583,7 +606,6 @@ describe('BitGo', function () {
       });
 
       it('login with auth code then refresh with no args', function (done) {
-
         bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
         bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function (err, response) {
           // Expect no error
@@ -608,7 +630,6 @@ describe('BitGo', function () {
             });
 
             bitgoWithNewToken.me({}, function (err, me_result) {
-
               me_result.should.have.property('username');
               me_result.should.have.property('email');
               me_result.should.have.property('phone');
@@ -623,16 +644,21 @@ describe('BitGo', function () {
   describe('Change user', function () {
     let bitgo;
 
-    before(co(function *() {
-      bitgo = new TestBitGo();
-      bitgo.initializeTestVars();
-      return bitgo.authenticateTestUser(bitgo.testUserOTP());
-    }));
+    before(
+      co(function* () {
+        bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
+        return bitgo.authenticateTestUser(bitgo.testUserOTP());
+      })
+    );
 
-    it('allows logout and login as a different user', co(function *() {
-      yield bitgo.logout();
-      // reuse known balance test user only for login purposes
-      return bitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
-    }));
+    it(
+      'allows logout and login as a different user',
+      co(function* () {
+        yield bitgo.logout();
+        // reuse known balance test user only for login purposes
+        return bitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
+      })
+    );
   });
 });

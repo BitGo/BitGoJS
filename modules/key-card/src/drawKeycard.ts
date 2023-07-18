@@ -33,7 +33,13 @@ function moveDown(y: number, ydelta: number): number {
   return y + ydelta;
 }
 
-function drawOnePageOfQrCodes(qrImages: HTMLCanvasElement[], doc: jsPDF, y: number, qrSize: number, startIndex): number {
+function drawOnePageOfQrCodes(
+  qrImages: HTMLCanvasElement[],
+  doc: jsPDF,
+  y: number,
+  qrSize: number,
+  startIndex
+): number {
   doc.setFont('helvetica');
   let qrIndex: number = startIndex;
   for (; qrIndex < qrImages.length; qrIndex++) {
@@ -57,7 +63,13 @@ function drawOnePageOfQrCodes(qrImages: HTMLCanvasElement[], doc: jsPDF, y: numb
   return qrIndex + 1;
 }
 
-export async function drawKeycard({ activationCode, questions, keyCardImage, qrData, walletLabel }: {
+export async function drawKeycard({
+  activationCode,
+  questions,
+  keyCardImage,
+  qrData,
+  walletLabel,
+}: {
   activationCode?: string;
   keyCardImage?: HTMLImageElement;
   qrData: QrData;
@@ -118,7 +130,7 @@ export async function drawKeycard({ activationCode, questions, keyCardImage, qrD
   y = moveDown(y, 35);
   const qrSize = 130;
 
-  const qrKeys = ['user', 'passcode', 'backup', 'bitgo'];
+  const qrKeys = ['user', 'passcode', 'backup', 'bitgo'].filter((key) => !!qrData[key]);
   for (let index = 0; index < qrKeys.length; index++) {
     const name = qrKeys[index];
     if (index === 2) {

@@ -5,7 +5,14 @@ import fixtures from '../../fixtures/trading/tradingPartner';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
-import { Enterprise, Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide, Wallet } from '@bitgo/sdk-core';
+import {
+  Enterprise,
+  Environments,
+  TradingPartnerStatus,
+  TradingPartnerType,
+  TradingReferralRequesterSide,
+  Wallet,
+} from '@bitgo/sdk-core';
 
 describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -26,9 +33,7 @@ describe('Trading Partners', function () {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
       enterprise: enterprise.id,
-      keys: [
-        'keyid',
-      ],
+      keys: ['keyid'],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -86,7 +91,9 @@ describe('Trading Partners', function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.listTradingPartners)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners/${fixtures.listTradingPartners.tradingPartners[0].secondaryAccountId}/balance`)
+      .get(
+        `/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners/${fixtures.listTradingPartners.tradingPartners[0].secondaryAccountId}/balance`
+      )
       .query(fixtures.balanceCheckTrueRequest)
       .reply(200, { check: true });
 

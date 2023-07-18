@@ -3,6 +3,7 @@ This is in contrast to the [BitGo Express module](https://github.com/BitGo/BitGo
 Please take the time to review your use case as you choose between these options.
 
 ## Setup + Usage
+
 - Acquire a test environment account, enterprise and access token
 - Fill in the `TODO` sections with the relevant credentials
 - `npm install`

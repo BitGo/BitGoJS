@@ -41,14 +41,14 @@ describe('Osmo WithdrawRewards txn Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
@@ -71,14 +71,14 @@ describe('Osmo WithdrawRewards txn Builder', () => {
     tx.toBroadcastFormat();
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
@@ -105,14 +105,14 @@ describe('Osmo WithdrawRewards txn Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.from,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
+        address: testData.TEST_WITHDRAW_REWARDS_TX.to,
         value: 'UNAVAILABLE',
         coin: basecoin.getChain(),
       },

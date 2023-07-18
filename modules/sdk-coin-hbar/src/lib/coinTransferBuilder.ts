@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
-import * as proto from '@hashgraph/proto';
+import { proto } from '@hashgraph/proto';
 import { DuplicateMethodError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Recipient } from './iface';
 import { TransferBuilder } from './transferBuilder';
@@ -26,7 +26,7 @@ export class CoinTransferBuilder extends TransferBuilder {
 
   private buildTransferData(): proto.ITransferList {
     let totalSend = new BigNumber(0);
-    const accountAmounts: proto.AccountAmount[] = [
+    const accountAmounts: proto.IAccountAmount[] = [
       {
         accountID: buildHederaAccountID(this._source.address),
         amount: Long.fromInt(0),

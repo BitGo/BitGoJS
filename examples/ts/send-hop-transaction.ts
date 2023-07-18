@@ -23,10 +23,12 @@ async function sendTxWithHop() {
   const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
 
   const res = await wallet.sendMany({
-    recipients: [{
-      amount: '',
-      address: '',
-    }],
+    recipients: [
+      {
+        amount: '',
+        address: '',
+      },
+    ],
     walletPassphrase: walletPassphrase,
     hop: true,
   });

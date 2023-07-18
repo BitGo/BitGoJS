@@ -36,7 +36,9 @@ TestUtil.promiseWhile = function (condition, body) {
   function loop() {
     // When the result of calling `condition` is no longer true, we are
     // done.
-    if (!condition()) {return done.resolve();}
+    if (!condition()) {
+      return done.resolve();
+    }
     // Use `when`, in case `body` does not return a promise.
     // When it completes loop again otherwise, if it fails, reject the
     // done promise
@@ -59,11 +61,14 @@ TestUtil.deleteTestTokens = function (bitgoObj, filterFunc) {
   let tokenList;
   let index = 0;
 
-  const condition = function () { return index < tokenList.length; }; // don't delete last token, which is the login token for this test
+  const condition = function () {
+    return index < tokenList.length;
+  }; // don't delete last token, which is the login token for this test
   const body = function () {
     const token = tokenList[index];
 
-    return bitgoObj.removeAccessToken({ id: token.id })
+    return bitgoObj
+      .removeAccessToken({ id: token.id })
       .then(function (tok) {
         if (tok) {
           tok.id.should.equal(tokenList[index].id);
@@ -77,18 +82,18 @@ TestUtil.deleteTestTokens = function (bitgoObj, filterFunc) {
       });
   };
 
-  return bitgoObj.listAccessTokens()
-    .then(function (tokens) {
+  return bitgoObj.listAccessTokens().then(function (tokens) {
     // clear up access tokens which return true from the filter function
-      tokenList = _.filter(tokens, filterFunc);
+    tokenList = _.filter(tokens, filterFunc);
 
-      return TestUtil.promiseWhile(condition, body);
-    });
+    return TestUtil.promiseWhile(condition, body);
+  });
 };
 
 // helper function to unlock a token for a specified time
 TestUtil.unlockToken = function (agent, accessToken, seconds) {
-  return agent.post('/api/v1/user/unlock')
+  return agent
+    .post('/api/v1/user/unlock')
     .set('Authorization', 'Bearer ' + accessToken)
     .send({ otp: '0000000', duration: seconds })
     .then(function (res) {

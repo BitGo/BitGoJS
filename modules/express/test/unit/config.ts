@@ -39,7 +39,9 @@ describe('Config:', () => {
 
   it('should transform urls to secure urls when disableSSL is undefined', () => {
     const argStub = sinon.stub(args, 'args').returns({ disableSSL: undefined, customrooturi: 'test.com' });
-    const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: undefined, BITGO_CUSTOM_ROOT_URI: 'test.com' });
+    const envStub = sinon
+      .stub(process, 'env')
+      .value({ BITGO_DISABLE_SSL: undefined, BITGO_CUSTOM_ROOT_URI: 'test.com' });
     config().disableSSL.should.equal(false);
     config().should.have.property('customRootUri', 'https://test.com');
     argStub.restore();

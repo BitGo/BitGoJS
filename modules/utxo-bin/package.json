@@ -36,7 +36,7 @@
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
     "chalk": "4",
-    "clipboardy": "^2.3.0",
+    "clipboardy-cjs": "^3.0.0",
     "elliptic": "^6.5.2",
     "yargs": "^17.3.1"
   },

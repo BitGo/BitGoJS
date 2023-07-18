@@ -4,10 +4,7 @@ const S3 = require('aws-sdk/clients/s3');
 const { version } = require('../package.json');
 const { promisify } = require('util');
 
-const {
-  reports_s3_akid,
-  reports_s3_sak,
-} = process.env;
+const { reports_s3_akid, reports_s3_sak } = process.env;
 
 const s3 = new S3({
   accessKeyId: reports_s3_akid,
@@ -92,6 +89,5 @@ async function uploadDocs(root, key) {
 if (!fs.existsSync(DOCS_ROOT) || !fs.statSync(DOCS_ROOT).isDirectory()) {
   console.warn(`Docs directory '${DOCS_ROOT}' not found. Skipping docs upload...`);
 } else {
-  uploadDocs(DOCS_ROOT, OBJECT_ROOT)
-    .catch((e) => console.error('fatal', e, e.stack));
+  uploadDocs(DOCS_ROOT, OBJECT_ROOT).catch((e) => console.error('fatal', e, e.stack));
 }

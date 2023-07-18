@@ -228,6 +228,28 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Create signatures for the backup and bitgo keys using the user key.
+   * We can verify the signatures when fetching the keys from wallet-platform later.
+   * Currently only `AbstractUtxoCoin` implements and uses the complementary `verifyKeySignature` method.
+   * @param prv - the user private key
+   * @param backupKeychain - contains the backup public key
+   * @param bitgoKeychain - contains the bitgo public key
+   */
+  public async createKeySignatures(
+    prv: string,
+    backupKeychain: { pub: string },
+    bitgoKeychain: { pub: string }
+  ): Promise<{
+    backup: string;
+    bitgo: string;
+  }> {
+    return {
+      backup: (await this.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
+      bitgo: (await this.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
+    };
+  }
+
+  /**
    * Decompose a raw transaction into useful information.
    * @param options - coin-specific
    */

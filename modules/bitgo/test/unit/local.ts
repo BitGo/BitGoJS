@@ -43,7 +43,6 @@ describe('Constructor', function () {
     bitgo.should.have.property('decrypt');
     bitgo.should.have.property('_validate');
   });
-
 });
 
 describe('BitGo environment', function () {

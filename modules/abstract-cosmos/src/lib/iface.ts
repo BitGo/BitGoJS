@@ -5,11 +5,6 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
 }
 
-export interface MessageData {
-  typeUrl: string;
-  value: SendMessage | DelegateOrUndelegeteMessage | WithdrawDelegatorRewardsMessage;
-}
-
 export interface SendMessage {
   fromAddress: string;
   toAddress: string;
@@ -25,6 +20,24 @@ export interface DelegateOrUndelegeteMessage {
 export interface WithdrawDelegatorRewardsMessage {
   delegatorAddress: string;
   validatorAddress: string;
+}
+
+export interface ExecuteContractMessage {
+  sender: string;
+  contract: string;
+  msg: Uint8Array;
+  funds?: Coin[];
+}
+
+export type CosmosTransactionMessage =
+  | SendMessage
+  | DelegateOrUndelegeteMessage
+  | WithdrawDelegatorRewardsMessage
+  | ExecuteContractMessage;
+
+export interface MessageData {
+  typeUrl: string;
+  value: CosmosTransactionMessage;
 }
 
 export interface FeeData {

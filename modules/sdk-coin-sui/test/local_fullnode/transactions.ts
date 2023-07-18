@@ -194,7 +194,7 @@ describe('Sui Transaction Types', function () {
     const txb = builder
       .type(SuiTransactionType.AddStake)
       .sender(keyPair.getAddress())
-      .stake({ amount, validatorAddress: validator })
+      .stake([{ amount, validatorAddress: validator }])
       .gasData(await getDefaultGasData(keyPair));
 
     await signAndSubmit(conn, keyPair, txb);

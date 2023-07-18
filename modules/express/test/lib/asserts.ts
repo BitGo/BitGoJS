@@ -13,4 +13,3 @@ Assertion.add('calledOnceWith', function (...args) {
   // @ts-expect-error - no implicit this
   this.obj.should.have.been.calledWith(...args);
 });
-

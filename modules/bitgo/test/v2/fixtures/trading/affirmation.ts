@@ -16,8 +16,10 @@ export default {
           currency: 'ofctbtc',
           createdAt: '2019-06-06T22:45:09.988Z',
         },
-        payload: '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"43144","nonceHold":"AVGynQTfZb8V4WlK7RRqaQ==","nonceSettle":"QlOA+ob2U5JFsV27pNVYDg==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
-        signature: '203075f08e6295853cf2c40974f0d813b19abd1eff65a4c77950dea50f2dbaf5904baacd1e97b42f4f4d4621cc1034198a34ee903e4e00c6ae5899a51f3a1f7a33',
+        payload:
+          '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"43144","nonceHold":"AVGynQTfZb8V4WlK7RRqaQ==","nonceSettle":"QlOA+ob2U5JFsV27pNVYDg==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
+        signature:
+          '203075f08e6295853cf2c40974f0d813b19abd1eff65a4c77950dea50f2dbaf5904baacd1e97b42f4f4d4621cc1034198a34ee903e4e00c6ae5899a51f3a1f7a33',
         createdAt: '2019-06-06T22:45:10.114Z',
         expireAt: '2019-06-07T22:45:10.105Z',
       },
@@ -34,7 +36,8 @@ export default {
           currency: 'ofctbtc',
           createdAt: '2019-06-06T22:45:20.352Z',
         },
-        payload: '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"62369","nonceHold":"7D5LPdn2/dW6hVXCtQKjiw==","nonceSettle":"DZX72/xWxjloNmGjies4tw==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
+        payload:
+          '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"62369","nonceHold":"7D5LPdn2/dW6hVXCtQKjiw==","nonceSettle":"DZX72/xWxjloNmGjies4tw==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
         createdAt: '2019-06-06T22:45:20.433Z',
         expireAt: '2019-06-07T22:45:20.426Z',
       },
@@ -51,8 +54,10 @@ export default {
           currency: 'ofctusd',
           createdAt: '2019-06-06T22:45:28.794Z',
         },
-        payload: '{"walletId":"5cf9976f6280263a00fe911648fc2d6d","currency":"ofctusd","amount":"94386","nonceHold":"Y/MzgFBTR5jw3qIKj9kpHw==","nonceSettle":"L6U3HmJQhvdHeyheramwiw==","otherParties":["5cf940969449412d00f53b4c55fc2139"]}',
-        signature: '1f6489c0443bf28094b960f20ab44cfcd8b30df3211c9b958cd0a6c9ddd9eb2e9d7b32d3c12f13a9ea51f277db9f9fd5d719fd219e09c5de34fc4d5de098948ae9',
+        payload:
+          '{"walletId":"5cf9976f6280263a00fe911648fc2d6d","currency":"ofctusd","amount":"94386","nonceHold":"Y/MzgFBTR5jw3qIKj9kpHw==","nonceSettle":"L6U3HmJQhvdHeyheramwiw==","otherParties":["5cf940969449412d00f53b4c55fc2139"]}',
+        signature:
+          '1f6489c0443bf28094b960f20ab44cfcd8b30df3211c9b958cd0a6c9ddd9eb2e9d7b32d3c12f13a9ea51f277db9f9fd5d719fd219e09c5de34fc4d5de098948ae9',
         createdAt: '2019-06-06T22:45:28.864Z',
         expireAt: '2019-06-07T22:45:28.860Z',
       },
@@ -73,7 +78,8 @@ export default {
           currency: 'ofctbtc',
           createdAt: '2019-06-06T22:45:20.352Z',
         },
-        payload: '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"62369","nonceHold":"7D5LPdn2/dW6hVXCtQKjiw==","nonceSettle":"DZX72/xWxjloNmGjies4tw==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
+        payload:
+          '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"62369","nonceHold":"7D5LPdn2/dW6hVXCtQKjiw==","nonceSettle":"DZX72/xWxjloNmGjies4tw==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
         createdAt: '2019-06-06T22:45:20.433Z',
         expireAt: '2019-06-07T22:45:20.426Z',
       },
@@ -92,8 +98,10 @@ export default {
       currency: 'ofctbtc',
       createdAt: '2019-06-06T22:45:09.988Z',
     },
-    payload: '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"43144","nonceHold":"AVGynQTfZb8V4WlK7RRqaQ==","nonceSettle":"QlOA+ob2U5JFsV27pNVYDg==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
-    signature: '203075f08e6295853cf2c40974f0d813b19abd1eff65a4c77950dea50f2dbaf5904baacd1e97b42f4f4d4621cc1034198a34ee903e4e00c6ae5899a51f3a1f7a33',
+    payload:
+      '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctbtc","amount":"43144","nonceHold":"AVGynQTfZb8V4WlK7RRqaQ==","nonceSettle":"QlOA+ob2U5JFsV27pNVYDg==","otherParties":["5cf9976f6280263a00fe911648fc2d6d"]}',
+    signature:
+      '203075f08e6295853cf2c40974f0d813b19abd1eff65a4c77950dea50f2dbaf5904baacd1e97b42f4f4d4621cc1034198a34ee903e4e00c6ae5899a51f3a1f7a33',
     createdAt: '2019-06-06T22:45:10.114Z',
     expireAt: '2019-06-07T22:45:10.105Z',
   },
@@ -106,7 +114,6 @@ export default {
         sendCurrency: 'ofctbtc',
         receiveAmount: '555',
         receiveCurrency: 'ofctusd',
-
       },
       {
         accountId: '5cf940969449412d00f53b4c55fc2139',
@@ -118,7 +125,8 @@ export default {
     ],
   },
   affirmAffirmationPayloadResponse: {
-    payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendSubtotal":"500","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendSubtotal":"555","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}',
+    payload:
+      '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendSubtotal":"500","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendSubtotal":"555","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}',
   },
   updateAffirmation: function (status) {
     // @ts-expect-error - 'status' is specified more than once, so this usage will be overwritten.
@@ -132,4 +140,3 @@ export default {
     return affirmation;
   },
 };
-

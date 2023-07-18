@@ -77,7 +77,10 @@ async function main() {
 
   // this is one example of how you might send only the first consolidation from this group
   const unsignedConsolidation = consolidationTxes[0];
-  const sendConsolidations = await wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
+  const sendConsolidations = await wallet.sendAccountConsolidation({
+    walletPassphrase,
+    prebuildTx: unsignedConsolidation,
+  });
   console.dir(sendConsolidations, { depth: 6 });
 }
 

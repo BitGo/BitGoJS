@@ -10,10 +10,10 @@ var sigma = [
   [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5],
   [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0],
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-  [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3]
-]
+  [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3],
+];
 
-function G (r, i, a, b, c, d) {
+function G(r, i, a, b, c, d) {
   return `
     ;; G(${r}, ${i})
 
@@ -39,10 +39,10 @@ function G (r, i, a, b, c, d) {
     (set_local ${c} (i64.add (get_local ${c}) (get_local ${d})))
 
     ;; ${b} = rotr64(${b} ^ ${c}, 63)
-    (set_local ${b} (i64.rotr (i64.xor (get_local ${b}) (get_local ${c})) (i64.const 63)))`
+    (set_local ${b} (i64.rotr (i64.xor (get_local ${b}) (get_local ${c})) (i64.const 63)))`;
 }
 
-function ROUND (r) {
+function ROUND(r) {
   return `
     ;; ROUND(${r})
     ${G(r, 0, '$v0', '$v4', '$v8', '$v12')}
@@ -53,7 +53,7 @@ function ROUND (r) {
     ${G(r, 5, '$v1', '$v6', '$v11', '$v12')}
     ${G(r, 6, '$v2', '$v7', '$v8', '$v13')}
     ${G(r, 7, '$v3', '$v4', '$v9', '$v14')}
-  `
+  `;
 }
 
 console.log(
@@ -69,4 +69,4 @@ console.log(
   ROUND(9),
   ROUND(10),
   ROUND(11)
-)
+);

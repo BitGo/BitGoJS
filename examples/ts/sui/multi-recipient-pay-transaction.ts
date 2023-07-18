@@ -5,11 +5,11 @@
  *
  * Copyright 2023 BitGo, Inc.  All Rights Reserved.
  */
-const util = require('util')
+const util = require('util');
 import { BitGo } from 'bitgo';
 
 // 'prod' for prod environment
-const env = 'test'
+const env = 'test';
 const bitgo = new BitGo({ env });
 
 // 'sui' for production environment
@@ -25,26 +25,27 @@ const walletId = '';
 const passphrase = '';
 
 // TODO: set the recipients here, each recipient is an object with address and amount.
-const recipients = [{
-  address: 'sui-address-1',
-  amount: '10000',
-},
-{
-  address: 'sui-address-2',
-  amount: '20000',
-}];
+const recipients = [
+  {
+    address: 'sui-address-1',
+    amount: '10000',
+  },
+  {
+    address: 'sui-address-2',
+    amount: '20000',
+  },
+];
 
 // build pay transaction
 async function buildPayTx() {
   bitgo.authenticateWithAccessToken({ accessToken });
-  bitgo.unlock({otp: '000000'})
+  bitgo.unlock({ otp: '000000' });
   const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
-
 
   const response = await wallet.sendMany({
     recipients,
     passphrase,
-    type: 'transfer'
+    type: 'transfer',
   });
   console.log(util.inspect(response, { showHidden: false, depth: 5, colors: true }));
 }

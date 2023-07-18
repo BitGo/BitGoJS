@@ -104,6 +104,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
 interface SolTx {
   serializedTx: string;
   scanIndex: number;
+  coin?: string;
 }
 
 interface SolDurableNonceFromNode {
@@ -283,7 +284,7 @@ export class Sol extends BaseCoin {
       throw new Error('Tx fee payer is not the wallet root address');
     }
 
-    if (!_.isEqual(explainedTx.durableNonce, durableNonce)) {
+    if (durableNonce && !_.isEqual(explainedTx.durableNonce, durableNonce)) {
       throw new Error('Tx durableNonce does not match with param durableNonce');
     }
 
@@ -709,6 +710,13 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
+    if (isUnsignedSweep) {
+      return {
+        serializedTx: serializedTx,
+        scanIndex: scanIndex,
+        coin: this.getChain(),
+      };
+    }
     return {
       serializedTx: serializedTx,
       scanIndex: scanIndex,

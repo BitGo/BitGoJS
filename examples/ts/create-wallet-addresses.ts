@@ -18,12 +18,11 @@ bitgo.register(coin, Tbtc.createInstance);
 const walletPassphrase = '';
 
 async function main() {
-  const { wallet } = await bitgo.coin(coin).wallets()
-    .generateWallet({
-      label: `Test Wallet Example`,
-      passphrase: walletPassphrase,
-      backupXpubProvider: 'keyternal',
-    });
+  const { wallet } = await bitgo.coin(coin).wallets().generateWallet({
+    label: `Test Wallet Example`,
+    passphrase: walletPassphrase,
+    backupXpubProvider: 'keyternal',
+  });
 
   const newReceiveAddress = await wallet.createAddress();
 

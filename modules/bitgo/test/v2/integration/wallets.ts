@@ -26,9 +26,8 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Per-coin tests', function () {
-
     function testWalletGeneration(coin) {
-      return co(function *() {
+      return co(function* () {
         const basecoin = bitgo.coin(coin);
         const wallets = basecoin.wallets();
         const params: any = {
@@ -49,51 +48,76 @@ describe('V2 Wallets:', function () {
     }
 
     // TODO enable add txlm when it's supported by the platform and IMS in test
-    it(`should generate a tbtc wallet`, co(function *() {
-      yield testWalletGeneration('tbtc');
-    }));
+    it(
+      `should generate a tbtc wallet`,
+      co(function* () {
+        yield testWalletGeneration('tbtc');
+      })
+    );
 
-    it(`should generate a tbch wallet`, co(function *() {
-      yield testWalletGeneration('tbch');
-    }));
+    it(
+      `should generate a tbch wallet`,
+      co(function* () {
+        yield testWalletGeneration('tbch');
+      })
+    );
 
-    it(`should generate a txrp wallet`, co(function *() {
-      yield testWalletGeneration('txrp');
-    }));
+    it(
+      `should generate a txrp wallet`,
+      co(function* () {
+        yield testWalletGeneration('txrp');
+      })
+    );
 
-    it(`should generate a teth wallet`, co(function *() {
-      yield testWalletGeneration('teth');
-    }));
+    it(
+      `should generate a teth wallet`,
+      co(function* () {
+        yield testWalletGeneration('teth');
+      })
+    );
 
-    it(`should generate a tltc wallet`, co(function *() {
-      yield testWalletGeneration('tltc');
-    }));
+    it(
+      `should generate a tltc wallet`,
+      co(function* () {
+        yield testWalletGeneration('tltc');
+      })
+    );
 
-    it(`should generate a talgo wallet`, co(function *() {
-      yield testWalletGeneration('talgo');
-    }));
+    it(
+      `should generate a talgo wallet`,
+      co(function* () {
+        yield testWalletGeneration('talgo');
+      })
+    );
   });
 
   describe('Generate Wallet', function () {
     const passphrase = 'yoplait';
     const label = 'v2 wallet';
 
-    it('arguments', co(function *() {
-      yield wallets.generateWallet().should.be.rejected();
-      yield wallets.generateWallet('invalid').should.be.rejected();
-      yield wallets.generateWallet({}, 0).should.be.rejected();
-      yield wallets.generateWallet({
-        passphrase: passphrase,
-        label: label,
-        backupXpub: 'xpub',
-        backupXpubProvider: 'krs',
-      }).should.be.rejected();
-      yield wallets.generateWallet({
-        passphrase: passphrase,
-        label: label,
-        disableTransactionNotifications: 'blah',
-      }).should.be.rejected();
-    }));
+    it(
+      'arguments',
+      co(function* () {
+        yield wallets.generateWallet().should.be.rejected();
+        yield wallets.generateWallet('invalid').should.be.rejected();
+        yield wallets.generateWallet({}, 0).should.be.rejected();
+        yield wallets
+          .generateWallet({
+            passphrase: passphrase,
+            label: label,
+            backupXpub: 'xpub',
+            backupXpubProvider: 'krs',
+          })
+          .should.be.rejected();
+        yield wallets
+          .generateWallet({
+            passphrase: passphrase,
+            label: label,
+            disableTransactionNotifications: 'blah',
+          })
+          .should.be.rejected();
+      })
+    );
 
     it('should make wallet with client-generated user and backup key', function () {
       const params = {
@@ -102,7 +126,8 @@ describe('V2 Wallets:', function () {
         disableTransactionNotifications: true,
       };
 
-      return wallets.generateWallet(params)
+      return wallets
+        .generateWallet(params)
         .then(function (res) {
           res.should.have.property('wallet');
           res.should.have.property('userKeychain');
@@ -134,14 +159,14 @@ describe('V2 Wallets:', function () {
     });
 
     it('should make wallet with client-generated user and krs backupkey', function () {
-
       const xpub = keychains.create().pub; // random xpub
       const params = {
         passphrase: passphrase,
         label: label,
         backupXpub: xpub,
       };
-      return wallets.generateWallet(params)
+      return wallets
+        .generateWallet(params)
         .then(function (res) {
           res.should.have.property('wallet');
           res.should.have.property('userKeychain');
@@ -166,7 +191,8 @@ describe('V2 Wallets:', function () {
         userKey: userXpub,
       };
 
-      return wallets.generateWallet(params)
+      return wallets
+        .generateWallet(params)
         .then(function (res) {
           res.should.have.property('wallet');
           res.should.have.property('userKeychain');
@@ -192,7 +218,8 @@ describe('V2 Wallets:', function () {
         passphrase: passphrase,
       };
 
-      return wallets.generateWallet(params)
+      return wallets
+        .generateWallet(params)
         .then(function (res) {
           res.should.have.property('wallet');
           res.should.have.property('userKeychain');
@@ -220,7 +247,8 @@ describe('V2 Wallets:', function () {
         userKey: userXpub,
       };
 
-      return bitgo.unlock({ otp: '0000000' })
+      return bitgo
+        .unlock({ otp: '0000000' })
         .then(function (res) {
           return wallets.generateWallet(params);
         })
@@ -235,45 +263,66 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Add Wallet', function () {
-
     let userKeychainId;
     let backupKeychainId;
     let bitgoKeychainId;
 
-    it('arguments', co(function *() {
-      yield wallets.add().should.be.rejected();
-      yield wallets.add('invalid').should.be.rejected();
-      yield wallets.add({}, 0).should.be.rejected();
-      yield wallets.add({
-        keys: [],
-        m: 'bad',
-        n: 3,
-      }, 0).should.be.rejected();
+    it(
+      'arguments',
+      co(function* () {
+        yield wallets.add().should.be.rejected();
+        yield wallets.add('invalid').should.be.rejected();
+        yield wallets.add({}, 0).should.be.rejected();
+        yield wallets
+          .add(
+            {
+              keys: [],
+              m: 'bad',
+              n: 3,
+            },
+            0
+          )
+          .should.be.rejected();
 
-      yield wallets.add({
-        keys: [],
-        m: 1,
-        n: 3,
-      }, 0).should.be.rejected();
+        yield wallets
+          .add(
+            {
+              keys: [],
+              m: 1,
+              n: 3,
+            },
+            0
+          )
+          .should.be.rejected();
 
-      yield wallets.add({
-        keys: [],
-        m: 2,
-        n: 3,
-        tags: 'bad arg',
-      }, 0).should.be.rejected();
+        yield wallets
+          .add(
+            {
+              keys: [],
+              m: 2,
+              n: 3,
+              tags: 'bad arg',
+            },
+            0
+          )
+          .should.be.rejected();
 
-      yield wallets.add({
-        keys: [],
-        m: 2,
-        n: 3,
-        tags: [],
-        clientFlags: 'bad arg',
-      }, 0).should.be.rejected();
-    }));
+        yield wallets
+          .add(
+            {
+              keys: [],
+              m: 2,
+              n: 3,
+              tags: [],
+              clientFlags: 'bad arg',
+            },
+            0
+          )
+          .should.be.rejected();
+      })
+    );
 
     it('should add a wallet with pre generated keys', function () {
-
       let userKeychain;
 
       // Add the user keychain
@@ -286,15 +335,13 @@ describe('V2 Wallets:', function () {
 
       const backupKeychainPromise = Q.fcall(function () {
         return keychains.createBackup();
-      })
-        .then(function (newBackupKeychain) {
-          backupKeychainId = newBackupKeychain.id;
-        });
+      }).then(function (newBackupKeychain) {
+        backupKeychainId = newBackupKeychain.id;
+      });
 
-      const bitgoKeychainPromise = keychains.createBitGo()
-        .then(function (keychain) {
-          bitgoKeychainId = keychain.id;
-        });
+      const bitgoKeychainPromise = keychains.createBitGo().then(function (keychain) {
+        bitgoKeychainId = keychain.id;
+      });
 
       // Add the user keychain
       return Q.all([userKeychainPromise, backupKeychainPromise, bitgoKeychainPromise])
@@ -307,7 +354,8 @@ describe('V2 Wallets:', function () {
             isCold: true,
           };
           return wallets.add(params);
-        }).then(function (res) {
+        })
+        .then(function (res) {
           res.should.have.property('wallet');
           res.wallet.should.have.property('_wallet');
           res.wallet._wallet.should.have.property('keys');
@@ -331,48 +379,47 @@ describe('V2 Wallets:', function () {
     });
 
     it('should get wallet', function () {
-      return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
-        .then(function (wallet) {
-          should.exist(wallet);
-          wallet.should.have.property('baseCoin');
-          wallet.should.have.property('bitgo');
-          wallet.should.have.property('_wallet');
-          wallet = wallet._wallet;
-          wallet.label.should.equal('Test Wallet');
-          wallet.balance.should.be.greaterThan(0);
-          wallet.confirmedBalance.should.be.greaterThan(0);
-          wallet.coin.should.equal('tbtc');
-          wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
-          wallet.approvalsRequired.should.equal(1);
-          wallet.m.should.equal(2);
-          wallet.n.should.equal(3);
-        });
+      return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID }).then(function (wallet) {
+        should.exist(wallet);
+        wallet.should.have.property('baseCoin');
+        wallet.should.have.property('bitgo');
+        wallet.should.have.property('_wallet');
+        wallet = wallet._wallet;
+        wallet.label.should.equal('Test Wallet');
+        wallet.balance.should.be.greaterThan(0);
+        wallet.confirmedBalance.should.be.greaterThan(0);
+        wallet.coin.should.equal('tbtc');
+        wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
+        wallet.approvalsRequired.should.equal(1);
+        wallet.m.should.equal(2);
+        wallet.n.should.equal(3);
+      });
     });
 
     it('should get wallet by address', function () {
-      return wallets.getWalletByAddress({ address: TestBitGo.V2.TEST_WALLET1_ADDRESS })
-        .then(function (wallet) {
-          should.exist(wallet);
-          wallet.should.have.property('baseCoin');
-          wallet.should.have.property('bitgo');
-          wallet.should.have.property('_wallet');
-          wallet = wallet._wallet;
-          wallet.label.should.equal('Test Wallet');
-          wallet.balance.should.be.greaterThan(0);
-          wallet.confirmedBalance.should.be.greaterThan(0);
-          wallet.coin.should.equal('tbtc');
-          wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
-          wallet.approvalsRequired.should.equal(1);
-          wallet.m.should.equal(2);
-          wallet.n.should.equal(3);
-        });
+      return wallets.getWalletByAddress({ address: TestBitGo.V2.TEST_WALLET1_ADDRESS }).then(function (wallet) {
+        should.exist(wallet);
+        wallet.should.have.property('baseCoin');
+        wallet.should.have.property('bitgo');
+        wallet.should.have.property('_wallet');
+        wallet = wallet._wallet;
+        wallet.label.should.equal('Test Wallet');
+        wallet.balance.should.be.greaterThan(0);
+        wallet.confirmedBalance.should.be.greaterThan(0);
+        wallet.coin.should.equal('tbtc');
+        wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
+        wallet.approvalsRequired.should.equal(1);
+        wallet.m.should.equal(2);
+        wallet.n.should.equal(3);
+      });
     });
 
     it('should add webhook to wallet, simulate it, and then remove it', function () {
       let wallet;
       let count;
       let webhookId;
-      return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
+      return wallets
+        .getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
         .then(function (currentWallet) {
           wallet = currentWallet;
           return wallet.listWebhooks();
@@ -401,7 +448,8 @@ describe('V2 Wallets:', function () {
             webhookId: webhookId,
             transferId: TestBitGo.V2.TEST_WEBHOOK_TRANSFER_SIMULATION_ID,
           });
-        }).then(function (simulation) {
+        })
+        .then(function (simulation) {
           simulation.should.have.property('webhookNotifications');
           const notification = simulation.webhookNotifications[0];
           notification.url.should.equal(webhookUrl);
@@ -429,41 +477,46 @@ describe('V2 Wallets:', function () {
     let knownBalanceBasecoin;
     let knownBalanceWallets;
 
-    before(co(function *() {
-      knownBalanceBitgo = new TestBitGo({ env: 'test' });
-      knownBalanceBitgo.initializeTestVars();
-      knownBalanceBasecoin = knownBalanceBitgo.coin('tltc');
-      knownBalanceWallets = knownBalanceBasecoin.wallets();
-      return knownBalanceBitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
-    }));
+    before(
+      co(function* () {
+        knownBalanceBitgo = new TestBitGo({ env: 'test' });
+        knownBalanceBitgo.initializeTestVars();
+        knownBalanceBasecoin = knownBalanceBitgo.coin('tltc');
+        knownBalanceWallets = knownBalanceBasecoin.wallets();
+        return knownBalanceBitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
+      })
+    );
 
-    it('should get total balance across all wallets', co(function *() {
-      const result = yield knownBalanceWallets.getTotalBalances({});
+    it(
+      'should get total balance across all wallets',
+      co(function* () {
+        const result = yield knownBalanceWallets.getTotalBalances({});
 
-      // make sure result looks structurally correct
-      should.exist(result);
-      result.should.have.property('balance');
-      result.should.have.property('confirmedBalance');
-      result.should.have.property('spendableBalance');
-      result.should.have.property('balanceString');
-      result.should.have.property('confirmedBalanceString');
-      result.should.have.property('spendableBalanceString');
+        // make sure result looks structurally correct
+        should.exist(result);
+        result.should.have.property('balance');
+        result.should.have.property('confirmedBalance');
+        result.should.have.property('spendableBalance');
+        result.should.have.property('balanceString');
+        result.should.have.property('confirmedBalanceString');
+        result.should.have.property('spendableBalanceString');
 
-      // verify property types
-      result.balance.should.be.a.Number();
-      result.confirmedBalance.should.be.a.Number();
-      result.spendableBalance.should.be.a.Number();
-      result.balanceString.should.be.a.String();
-      result.confirmedBalanceString.should.be.a.String();
-      result.spendableBalanceString.should.be.a.String();
+        // verify property types
+        result.balance.should.be.a.Number();
+        result.confirmedBalance.should.be.a.Number();
+        result.spendableBalance.should.be.a.Number();
+        result.balanceString.should.be.a.String();
+        result.confirmedBalanceString.should.be.a.String();
+        result.spendableBalanceString.should.be.a.String();
 
-      // make sure balances match up with the known balance
-      result.balance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
-      result.confirmedBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
-      result.spendableBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
-      result.balanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
-      result.confirmedBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
-      result.spendableBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
-    }));
+        // make sure balances match up with the known balance
+        result.balance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+        result.confirmedBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+        result.spendableBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+        result.balanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
+        result.confirmedBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
+        result.spendableBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
+      })
+    );
   });
 });

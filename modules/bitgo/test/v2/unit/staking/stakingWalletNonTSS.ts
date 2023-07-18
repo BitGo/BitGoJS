@@ -3,14 +3,7 @@ import * as _ from 'lodash';
 import * as nock from 'nock';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import {
-  Enterprise,
-  Environments,
-  Keychain,
-  Keychains,
-  StakingWallet,
-  Wallet,
-} from '@bitgo/sdk-core';
+import { Enterprise, Environments, Keychain, Keychains, StakingWallet, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import * as sinon from 'sinon';
@@ -33,7 +26,10 @@ describe('non-TSS Staking Wallet', function () {
     maticBaseCoin = bitgo.coin('matic');
     maticBaseCoin.keychains();
 
-    enterprise = new Enterprise(bitgo, ethBaseCoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
+    enterprise = new Enterprise(bitgo, ethBaseCoin, {
+      id: '5cf940949449412d00f53b3d92dbcaa3',
+      name: 'Test Enterprise',
+    });
     ethWalletData = {
       id: 'walletId',
       coin: 'eth',
@@ -60,14 +56,15 @@ describe('non-TSS Staking Wallet', function () {
   });
 
   describe('buildSignAndSend', function () {
-
     it('should build, sign and send transaction', async function () {
       const walletPassphrase = 'passphrase';
       const transaction = fixtures.transaction('READY', fixtures.buildParams);
 
       // BUILD
       nock(microservicesUri)
-        .get(`/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`)
+        .get(
+          `/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
         .query({ expandBuildParams: true })
         .reply(200, transaction);
 
@@ -107,13 +104,15 @@ describe('non-TSS Staking Wallet', function () {
 
       // SEND
       nock(microservicesUri)
-        .post(`/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
-          _.matches(signed))
+        .post(
+          `/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
+          _.matches(signed)
+        )
         .reply(200, transaction);
 
       const stakingTransaction = await ethStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
-        transaction,
+        transaction
       );
 
       stakingTransaction.should.deepEqual(transaction);
@@ -125,14 +124,15 @@ describe('non-TSS Staking Wallet', function () {
 
       // BUILD
       nock(microservicesUri)
-        .get(`/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`)
+        .get(
+          `/api/staking/v1/${ethStakingWallet.coin}/wallets/${ethStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
         .query({ expandBuildParams: true })
         .reply(200, transaction);
 
-      await ethStakingWallet.buildSignAndSend(
-        { walletPassphrase: walletPassphrase },
-        transaction,
-      ).should.rejectedWith(`Staking transaction ${transaction.id} build params not expanded`);
+      await ethStakingWallet
+        .buildSignAndSend({ walletPassphrase: walletPassphrase }, transaction)
+        .should.rejectedWith(`Staking transaction ${transaction.id} build params not expanded`);
     });
   });
 
@@ -147,7 +147,9 @@ describe('non-TSS Staking Wallet', function () {
 
       // BUILD
       nock(microservicesUri)
-        .get(`/api/staking/v1/${maticStakingWallet.coin}/wallets/${maticStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`)
+        .get(
+          `/api/staking/v1/${maticStakingWallet.coin}/wallets/${maticStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
         .query({ expandBuildParams: true })
         .reply(200, transaction);
 
@@ -188,18 +190,18 @@ describe('non-TSS Staking Wallet', function () {
       const type = maticStakingWallet.wallet.baseCoin.tokenConfig?.type;
       const coin = maticStakingWallet.wallet.baseCoin.tokenConfig?.coin;
       // get wallet for building and signing
-      nock(microservicesUri)
-        .get(`/api/v2/${coin}/wallet/${maticStakingWallet.walletId}`)
-        .reply(200, ethWalletData);
+      nock(microservicesUri).get(`/api/v2/${coin}/wallet/${maticStakingWallet.walletId}`).reply(200, ethWalletData);
       // SEND
       nock(microservicesUri)
-        .post(`/api/staking/v1/${type}/wallets/${maticStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
-          _.matches(signed))
+        .post(
+          `/api/staking/v1/${type}/wallets/${maticStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`,
+          _.matches(signed)
+        )
         .reply(200, transaction);
 
       const stakingTransaction = await maticStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
-        transaction,
+        transaction
       );
 
       stakingTransaction.should.deepEqual(transaction);

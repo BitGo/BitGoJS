@@ -23,7 +23,7 @@ const coin = 'tdoge';
 const amount = '';
 const toAddress = '';
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id });
@@ -38,9 +38,11 @@ Promise.coroutine(function *() {
       },
     ],
   };
-  wallet.prebuildTransaction(buildTxParams).then(function (transaction) {
-    // print transaction details
-    console.dir(transaction);
-  }).catch(err => console.log('Error: ', err));
-
+  wallet
+    .prebuildTransaction(buildTxParams)
+    .then(function (transaction) {
+      // print transaction details
+      console.dir(transaction);
+    })
+    .catch((err) => console.log('Error: ', err));
 })();

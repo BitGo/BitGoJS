@@ -3,7 +3,7 @@ import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
-import { EDDSA, GShare, SignShare, YShare } from '../../../account-lib/mpc/tss';
+import { EDDSA, GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 import { Hash } from 'crypto';
 
@@ -33,8 +33,18 @@ export interface TokenEnablement {
   address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
 }
 
+export interface CustomCommitmentGeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<{
+    userToBitgoCommitment: CommitmentShareRecord;
+    encryptedSignerShare: EncryptedSignerShareRecord;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }>;
+}
+
 export interface CustomRShareGeneratingFunction {
-  (params: { txRequest: TxRequest }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }>;
+  (params: { txRequest: TxRequest; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }): Promise<{
+    rShare: SignShare;
+  }>;
 }
 
 export interface CustomGShareGeneratingFunction {
@@ -42,6 +52,7 @@ export interface CustomGShareGeneratingFunction {
     txRequest: TxRequest;
     userToBitgoRShare: SignShare;
     bitgoToUserRShare: SignatureShareRecord;
+    bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
 }
 export enum TokenType {
@@ -270,6 +281,7 @@ export interface ExchangeCommitmentResponse {
 
 export enum EncryptedSignerShareType {
   ENCRYPTED_SIGNER_SHARE = 'encryptedSignerShare',
+  ENCRYPTED_R_SHARE = 'encryptedRShare',
 }
 export interface EncryptedSignerShareRecord extends ShareBaseRecord {
   type: EncryptedSignerShareType;
@@ -338,18 +350,26 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;
   signUsingExternalSigner(
     txRequest: string | TxRequest,
+    externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction
   ): Promise<TxRequest>;
+  createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
+    userToBitgoCommitment: CommitmentShareRecord;
+    encryptedSignerShare: EncryptedSignerShareRecord;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }>;
   createRShareFromTxRequest(params: {
     txRequest: TxRequest;
-    prv: string;
-  }): Promise<{ rShare: SignShare; signingKeyYShare: YShare }>;
+    walletPassphrase: string;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+  }): Promise<{ rShare: SignShare }>;
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
     bitgoToUserRShare: SignatureShareRecord;
     userToBitgoRShare: SignShare;
+    bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
   prebuildTxWithIntent(
     params: PrebuildTransactionWithIntentOptions,

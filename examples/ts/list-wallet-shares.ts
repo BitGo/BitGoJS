@@ -20,7 +20,6 @@ const coin = 'tltc';
 bitgo.register(coin, Tltc.createInstance);
 
 async function main() {
-
   const shares = await bitgo.coin(coin).wallets().listShares({});
 
   console.dir(shares);

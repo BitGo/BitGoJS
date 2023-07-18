@@ -270,12 +270,26 @@ describe('Sui Transaction Builder', async () => {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.sender.address);
-      txBuilder.stake(testData.requestAddStake);
+      txBuilder.stake([testData.requestAddStake]);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.StakingAdd);
       const rawTx = tx.toBroadcastFormat();
       should.equal(rawTx, testData.ADD_STAKE);
+      const reserialized = await factory.from(rawTx).build();
+      reserialized.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should build an stakeMany transaction and serialize it and deserialize it', async function () {
+      const txBuilder = factory.getStakingBuilder();
+      txBuilder.type(SuiTransactionType.AddStake);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.stake(testData.requestAddStakeMany);
+      txBuilder.gasData(testData.gasData);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.StakingAdd);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(rawTx, testData.STAKE_MANY);
       const reserialized = await factory.from(rawTx).build();
       // reserialized.should.be.deepEqual(tx);
       reserialized.toBroadcastFormat().should.equal(rawTx);
@@ -285,7 +299,7 @@ describe('Sui Transaction Builder', async () => {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.type(SuiTransactionType.AddStake);
       txBuilder.sender(testData.sender.address);
-      txBuilder.stake(testData.requestAddStake);
+      txBuilder.stake([testData.requestAddStake]);
       txBuilder.gasData(testData.gasData);
       const tx = await txBuilder.build();
       should.equal(tx.id, 'bP78boZ48sDdJsg2V1tJahpGyBwaC9GSTL2rvyADnsh');
@@ -312,9 +326,9 @@ describe('Sui Transaction Builder', async () => {
       const keyPairSender = new KeyPair({ prv: testData.privateKeys.prvKey1 });
       const senderAddress = keyPairSender.getAddress();
       const expectedStakingTxSig =
-        'AIyRgcm//edb10JKGtf0LdgR6AlFesXycRAGhMZHm1cisZSAijp/5n3yxuJ/GHOWj9TbamznigxLfPMVPZh9pQ2lzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw==';
+        'AD8755e+kA3/Iy+3oRxBbQiK0Iz4qmD4sZcpoQN0UMPxIXv7Qx4twvuAiZf9H2nHYa/Ae0asM4Rkz1SCP0dhXgqlzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw==';
       const expectedStakingTxHex =
-        'AAADAAgALTEBAAAAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAEAIESxsxniNJWZX8g32v0o/Gr4tkXt3f8PwUZ/GtYxNiwjAgIAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwpzdWlfc3lzdGVtEXJlcXVlc3RfYWRkX3N0YWtlAAMBAQACAAABAgCQB0K7kj6pBqVvMloXWXdS7NOsMCa7qW4O3/Rd6NszqwJ3AbiIwWM5ms1bgEYzwdDlMrwxQ8/vNMo2C+YHxo3N72YEAAAAAAAAIDrMcEOTidjOdp7a1J/jjJ9tOjb6P2WTyBSwQqAHiA1/yfVla+cYIwE9k34GVOs+3LJhla/SMAm+mrlufz8twgNmBAAAAAAAACAhXnkXobS2E/RZ/cLDQ/n3BH/TxAjKv5VxsbLEZCUxu5AHQruSPqkGpW8yWhdZd1Ls06wwJrupbg7f9F3o2zOr6AMAAAAAAAAALTEBAAAAAAA=';
+        'AAAJAAgALTEBAAAAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUBAAAAAAAAAAEAIESxsxniNJWZX8g32v0o/Gr4tkXt3f8PwUZ/GtYxNiwjAAgArCP8BgAAAAAgRLGzGeI0lZlfyDfa/Sj8avi2Re3d/w/BRn8a1jE2LCYACAAtMQEAAAAAACBEsbMZ4jSVmV/IN9r9KPxq+LZF7d3/D8FGfxrWMTYsJgAIAKwj/AYAAAAAIESxsxniNJWZX8g32v0o/Gr4tkXt3f8PwUZ/GtYxNiwjCAIAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwpzdWlfc3lzdGVtEXJlcXVlc3RfYWRkX3N0YWtlAAMBAQACAAABAgACAAEBAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMKc3VpX3N5c3RlbRFyZXF1ZXN0X2FkZF9zdGFrZQADAQEAAgIAAQQAAgABAQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADCnN1aV9zeXN0ZW0RcmVxdWVzdF9hZGRfc3Rha2UAAwEBAAIEAAEGAAIAAQEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwpzdWlfc3lzdGVtEXJlcXVlc3RfYWRkX3N0YWtlAAMBAQACBgABCACQB0K7kj6pBqVvMloXWXdS7NOsMCa7qW4O3/Rd6NszqwJ3AbiIwWM5ms1bgEYzwdDlMrwxQ8/vNMo2C+YHxo3N72YEAAAAAAAAIDrMcEOTidjOdp7a1J/jjJ9tOjb6P2WTyBSwQqAHiA1/yfVla+cYIwE9k34GVOs+3LJhla/SMAm+mrlufz8twgNmBAAAAAAAACAhXnkXobS2E/RZ/cLDQ/n3BH/TxAjKv5VxsbLEZCUxu5AHQruSPqkGpW8yWhdZd1Ls06wwJrupbg7f9F3o2zOr6AMAAAAAAAAALTEBAAAAAAA=';
 
       const coins = [
         {
@@ -331,7 +345,7 @@ describe('Sui Transaction Builder', async () => {
       const txBuilder_1 = factory.getStakingBuilder();
       txBuilder_1.type(SuiTransactionType.AddStake);
       txBuilder_1.sender(senderAddress);
-      txBuilder_1.stake(testData.requestAddStake);
+      txBuilder_1.stake(testData.requestAddStakeMany);
       const gasData: GasData = {
         payment: coins,
         owner: senderAddress,
@@ -368,7 +382,7 @@ describe('Sui Transaction Builder', async () => {
     it('should fail to build if missing type', async function () {
       for (const txBuilder of builders) {
         txBuilder.sender(testData.sender.address);
-        txBuilder.stake(testData.requestAddStake);
+        txBuilder.stake([testData.requestAddStake]);
         txBuilder.gasData(testData.gasData);
         await txBuilder.build().should.rejectedWith('type is required before building');
       }
@@ -377,7 +391,7 @@ describe('Sui Transaction Builder', async () => {
     it('should fail to build if missing sender', async function () {
       for (const txBuilder of builders) {
         txBuilder.type(SuiTransactionType.AddStake);
-        txBuilder.stake(testData.requestAddStake);
+        txBuilder.stake([testData.requestAddStake]);
         txBuilder.gasData(testData.gasData);
         await txBuilder.build().should.rejectedWith('sender is required before building');
       }
@@ -387,7 +401,7 @@ describe('Sui Transaction Builder', async () => {
       for (const txBuilder of builders) {
         txBuilder.sender(testData.sender.address);
         txBuilder.type(SuiTransactionType.AddStake);
-        txBuilder.stake(testData.requestAddStake);
+        txBuilder.stake([testData.requestAddStake]);
         await txBuilder.build().should.rejectedWith('gasData is required before building');
       }
     });
@@ -396,7 +410,7 @@ describe('Sui Transaction Builder', async () => {
       for (const txBuilder of builders) {
         txBuilder.sender(testData.sender.address);
         txBuilder.type(SuiTransactionType.AddStake);
-        txBuilder.stake(testData.requestAddStake);
+        txBuilder.stake([testData.requestAddStake]);
         should(() => txBuilder.gasData(testData.gasDataWithoutGasPayment)).throwError(
           `gas payment is required before building`
         );

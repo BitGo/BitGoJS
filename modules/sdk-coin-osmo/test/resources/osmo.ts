@@ -18,8 +18,8 @@ export const TEST_SEND_TX = {
   privateKey: 'Z3oU9gNXXcifekIRlVe1fmoYIAbn0luis55Xw/Zbmko=',
   signedTxBase64:
     'Co4BCosBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmsKK29zbW8xbWVtdHNtbHo5NWdmOTM4YWdmNXE2cWZoaGh0NHBwZThtZWpjdXMSK29zbW8xamo2NWR3MnF1bjRyZHg2d3V2dGM0dTh3YWRoaHp3bXU3enZsdzMaDwoFdW9zbW8SBjEwMDAwMBJkCk4KRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiEC+YLTNgkMbmpyrpsQVcZ4ySyXp9hjApsl6vd8cqPV4ZQSBAoCCAESEgoMCgV1b3NtbxIDNTAwEMCaDBpAQSYBjVIIMa1ILAong0RZ7NFiLbJiXMmyTso6bP+qt+05jsRMX1rPVGPy5izbqP9DF7NNNkUHt+Th05szBCVIwA==',
-  sender: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
-  recipient: 'osmo1jj65dw2qun4rdx6wuvtc4u8wadhhzwmu7zvlw3',
+  from: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
+  to: 'osmo1jj65dw2qun4rdx6wuvtc4u8wadhhzwmu7zvlw3',
   chainId: 'osmo-test-5',
   accountNumber: 1346,
   sequence: 0,
@@ -51,8 +51,8 @@ export const TEST_DELEGATE_TX = {
   privateKey: 'Z3oU9gNXXcifekIRlVe1fmoYIAbn0luis55Xw/Zbmko=',
   signedTxBase64:
     'CpsBCpgBCiMvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dEZWxlZ2F0ZRJxCitvc21vMW1lbXRzbWx6OTVnZjkzOGFnZjVxNnFmaGhodDRwcGU4bWVqY3VzEjJvc21vdmFsb3BlcjFoaDBnNXhmMjNlNXpla2c0NWNtZXJjOTdoczRuMjAwNGR5MnQyNhoOCgV1b3NtbxIFMTAwMDASZgpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAvmC0zYJDG5qcq6bEFXGeMksl6fYYwKbJer3fHKj1eGUEgQKAggBGAESEgoMCgV1b3NtbxIDNTAwEMCaDBpAZJh1FygiLSB1W55WQkknTjy/V57mkUK/3ibM5ed4LX1llCXcoNaCbqlIRXgGbatmGjn03UeH3nZsN5zE74s65w==',
-  delegator: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
-  validator: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
+  from: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
+  to: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
   chainId: 'osmo-test-5',
   accountNumber: 1346,
   sequence: 1,
@@ -87,8 +87,8 @@ export const TEST_UNDELEGATE_TX = {
   privateKey: 'Z3oU9gNXXcifekIRlVe1fmoYIAbn0luis55Xw/Zbmko=',
   signedTxBase64:
     'Cp0BCpoBCiUvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dVbmRlbGVnYXRlEnEKK29zbW8xbWVtdHNtbHo5NWdmOTM4YWdmNXE2cWZoaGh0NHBwZThtZWpjdXMSMm9zbW92YWxvcGVyMWhoMGc1eGYyM2U1emVrZzQ1Y21lcmM5N2hzNG4yMDA0ZHkydDI2Gg4KBXVvc21vEgUxMDAwMBJmClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiEC+YLTNgkMbmpyrpsQVcZ4ySyXp9hjApsl6vd8cqPV4ZQSBAoCCAEYAhISCgwKBXVvc21vEgM1MDAQwJoMGkDxePYvJZHYu2h9vT01JwEt4YGVNdgJ/zFb8vC9KuCwM1+GCtYDe8xaWF6Tq56d0YxaTIBY5w7Ya2OEqJkqx1zJ',
-  delegator: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
-  validator: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
+  from: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
+  to: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
   chainId: 'osmo-test-5',
   accountNumber: 1346,
   sequence: 2,
@@ -123,8 +123,8 @@ export const TEST_WITHDRAW_REWARDS_TX = {
   privateKey: 'Z3oU9gNXXcifekIRlVe1fmoYIAbn0luis55Xw/Zbmko=',
   signedTxBase64:
     'Cp8BCpwBCjcvY29zbW9zLmRpc3RyaWJ1dGlvbi52MWJldGExLk1zZ1dpdGhkcmF3RGVsZWdhdG9yUmV3YXJkEmEKK29zbW8xbWVtdHNtbHo5NWdmOTM4YWdmNXE2cWZoaGh0NHBwZThtZWpjdXMSMm9zbW92YWxvcGVyMWhoMGc1eGYyM2U1emVrZzQ1Y21lcmM5N2hzNG4yMDA0ZHkydDI2EmYKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQL5gtM2CQxuanKumxBVxnjJLJen2GMCmyXq93xyo9XhlBIECgIIARgDEhIKDAoFdW9zbW8SAzUwMBDAmgwaQMXVzLnOx/zwDe2FNgDLlaZF+XN1SlznSXCu7iBnBi7KIgp6B1bIJ8RygtJkL59LTutu3lIFWnC5lQmZNvOa/ho=',
-  delegator: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
-  validator: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
+  from: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
+  to: 'osmovaloper1hh0g5xf23e5zekg45cmerc97hs4n2004dy2t26',
   chainId: 'osmo-test-5',
   accountNumber: 1346,
   sequence: 3,
@@ -191,6 +191,38 @@ export const TEST_TX_WITH_MEMO = {
   },
 };
 
+export const TEST_EXECUTE_CONTRACT_TRANSACTION = {
+  hash: '62CA27678BFEFADBE064FFFDA425C9601E6BAD3044F1D2320663BF8594F70719',
+  signature: 'KexKNBgM2+Uynfdw2IezPrs8J8y1G+J/JHIbPAKQLKANZtCcopig1H5DmlTxAoYeVZ9/b+2WLYJ/FIwvvA993g==',
+  pubKey: 'ApWuvZlBAfy4KcVaOYNn4T9b6269swAx2QwuEJixkz+W',
+  privateKey: 'UmzzQXbAKVSR6FTAbmq4xeOvwVXQ/oo60TOju8TFOB0=',
+  signedTxBase64:
+    'CqwBCqkBCiQvY29zbXdhc20ud2FzbS52MS5Nc2dFeGVjdXRlQ29udHJhY3QSgAEKK29zbW8xM2swd3JudnpkOW5qYWhqc3lydGZzODhlbjBqNWR6MDc1azhyNmgSP29zbW8xeGo0dnJhOHFzbThxa2h0dHRnMmEyeW44eW1obDh3eWdtbmRhYXE1c2xweG5nc2ZkaHZ1cXo5cmYwMBoQeyJpbmNyZW1lbnQiOnt9fRJnClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiECla69mUEB/LgpxVo5g2fhP1vrbr2zADHZDC4QmLGTP5YSBAoCCAEYCxITCg0KBXVvc21vEgQ1MDAwEICJehpAKexKNBgM2+Uynfdw2IezPrs8J8y1G+J/JHIbPAKQLKANZtCcopig1H5DmlTxAoYeVZ9/b+2WLYJ/FIwvvA993g==',
+  from: 'osmo13k0wrnvzd9njahjsyrtfs88en0j5dz075k8r6h',
+  to: 'osmo1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
+  chainId: 'osmo-test-5',
+  accountNumber: 2392,
+  sequence: 11,
+  feeAmount: '5000',
+  message: {
+    typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+    value: {
+      sender: 'osmo13k0wrnvzd9njahjsyrtfs88en0j5dz075k8r6h',
+      contract: 'osmo1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
+      msg: new Uint8Array(Buffer.from('7b22696e6372656d656e74223a7b7d7d', 'hex')),
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'uosmo',
+        amount: '5000',
+      },
+    ],
+    gasLimit: 2000000,
+  },
+};
+
 export const address = {
   address1: 'osmo1jj65dw2qun4rdx6wuvtc4u8wadhhzwmu7zvlw3',
   address2: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus',
@@ -204,6 +236,8 @@ export const address = {
   validMemoIdAddress: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus?memoId=2',
   invalidMemoIdAddress: 'osmo1memtsmlz95gf938agf5q6qfhhht4ppe8mejcus?memoId=xyz',
   multipleMemoIdAddress: 'osmo15al6vq6yfyqwru5adaxd9ju5e46qpvxx345cyg?memoId=3&memoId=12',
+  contractAddress1: 'osmo1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
+  contractAddress2: 'sfa1xj4vra8qsm8qkhtttg2a2yn8ymhl8wygmndaaq5slpxngsfdhvuqz9rf00',
 };
 
 export const blockHash = {

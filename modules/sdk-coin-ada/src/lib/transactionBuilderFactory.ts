@@ -6,8 +6,9 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
-import { StakingWithdrawRewardsBuilder } from './stakingWithdrawRewardsBuilder';
+import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { StakingPledgeBuilder } from './stakingPledgeBuilder';
+import { StakingClaimRewardsBuilder } from './stakingClaimRewardsBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -27,6 +28,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder(tx);
         case TransactionType.StakingActivate:
           return this.getStakingActivateBuilder(tx);
+        case TransactionType.StakingClaim:
+          return this.getStakingClaimRewardsBuilder(tx);
         case TransactionType.StakingDeactivate:
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
@@ -57,12 +60,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
   }
 
+  getStakingClaimRewardsBuilder(tx?: Transaction) {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingClaimRewardsBuilder(this._coinConfig));
+  }
+
   getStakingDeactivateBuilder(tx?: Transaction) {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
   }
 
   getStakingWithdrawBuilder(tx?: Transaction) {
-    return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig));
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
   }
 
   getStakingPledgeBuilder(tx?: Transaction) {

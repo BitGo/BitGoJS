@@ -3,6 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as common from '../../common';
+import * as utxolib from '@bitgo/utxo-lib';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import {
@@ -183,9 +184,9 @@ export class PendingApproval implements IPendingApproval {
     const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
     const type = this.info()?.transactionRequest?.buildParams?.type;
 
-    // We only want to not recreate transactions with no recipients if it is an UTXO coin.
-    // There is no easy way to do this in sdk-core, but `network` is only set on UTXO coins.
-    if ('network' in this.baseCoin && recipients.length === 0 && type !== 'consolidate') {
+    // We only want to not recreate transactions with no recipients if it is a UTXO coin.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (utxolib.isValidNetwork((this.baseCoin as any).network) && recipients.length === 0 && type !== 'consolidate') {
       canRecreateTransaction = false;
     }
 

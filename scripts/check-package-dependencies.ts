@@ -2,16 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const depcheck = require('depcheck');
 
-const { promises: { readdir } } = fs;
+const {
+  promises: { readdir },
+} = fs;
 
 const options = {
   ignoreBinPackage: false,
   skipMissing: false,
-  ignorePatterns: [
-    'dist',
-    'example',
-    'examples',
-  ],
+  ignorePatterns: ['dist', 'example', 'examples'],
   ignoreMatches: [
     '@components/**',
     '@types/**',
@@ -62,8 +60,8 @@ const options = {
 
 async function getPackages(source) {
   return (await readdir(source, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 }
 
 async function main() {
@@ -89,8 +87,8 @@ async function main() {
     let showDepWarnings = false;
     const depWarningModules: string[] = [];
     if (pkg.data.dependencies.length) {
-      pkg.data.dependencies.forEach(module => {
-        const index = rootDependencies.findIndex(x => x === module);
+      pkg.data.dependencies.forEach((module) => {
+        const index = rootDependencies.findIndex((x) => x === module);
         if (index === -1) {
           showDepWarnings = true;
           depWarningModules.push(`\x1b[34m - ${module} \x1b[0m`);
@@ -101,15 +99,14 @@ async function main() {
     if (showDepWarnings && depWarningModules.length) {
       exitCode = 1;
       console.warn(`\x1b[31m Warning: dependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
-      depWarningModules.forEach(x => console.log(x));
+      depWarningModules.forEach((x) => console.log(x));
     }
-
 
     let showDevDepWarnings = false;
     const devDepWarningModules: string[] = [];
     if (pkg.data.devDependencies.length) {
-      pkg.data.devDependencies.forEach(module => {
-        const index = rootDevDependencies.findIndex(x => x === module);
+      pkg.data.devDependencies.forEach((module) => {
+        const index = rootDevDependencies.findIndex((x) => x === module);
         if (index === -1) {
           showDevDepWarnings = true;
           devDepWarningModules.push(`\x1b[34m - ${module} \x1b[0m`);
@@ -120,16 +117,16 @@ async function main() {
     if (showDevDepWarnings && devDepWarningModules.length) {
       exitCode = 1;
       console.warn(`\x1b[31m Warning: devDependencies declared but not detected in code - ${pkg.name} \x1b[0m`);
-      devDepWarningModules.forEach(x => console.log(x));
+      devDepWarningModules.forEach((x) => console.log(x));
     }
 
     const pkgWarningModules: string[] = [];
     const missing = Object.keys(pkg.data.missing);
 
     if (missing.length) {
-      missing.forEach(module => {
-        const indexDep = rootDependencies.findIndex(x => x === module);
-        const indexDevDep = rootDevDependencies.findIndex(x => x === module);
+      missing.forEach((module) => {
+        const indexDep = rootDependencies.findIndex((x) => x === module);
+        const indexDevDep = rootDevDependencies.findIndex((x) => x === module);
         if (indexDep === -1 && indexDevDep === -1) {
           exitCode = 1;
           pkgWarningModules.push(`\x1b[34m - ${module} \x1b[0m`);
@@ -139,15 +136,16 @@ async function main() {
 
     if (exitCode && pkgWarningModules.length) {
       console.error(`\x1b[31m Error: packages used but missing in package.json of ${pkg.name} \x1b[0m:`);
-      pkgWarningModules.forEach(x => console.log(x));
+      pkgWarningModules.forEach((x) => console.log(x));
     }
-
   });
 
   return exitCode;
 }
 
-main().then(process.exit).catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .then(process.exit)
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

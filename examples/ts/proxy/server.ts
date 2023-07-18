@@ -8,7 +8,7 @@ const bitgoApi = 'https://app.bitgo-test.com';
 // TODO: replace with your access token
 const secretAccessToken = 'yourAccessToken';
 
-app.all('*', function(req: Request, res: Response, next: NextFunction) {
+app.all('*', function (req: Request, res: Response, next: NextFunction) {
   console.log(`received: ${req.method} ${req.url} ${JSON.stringify(req.body)}`);
   console.log(`headers: ${JSON.stringify(req.headers)}`);
   req.headers.authorization = `Bearer ${secretAccessToken}`;
@@ -27,4 +27,3 @@ const port = 3000;
 app.listen(port, function () {
   console.log(`Proxy POC listening at http://localhost:${port}`);
 });
-

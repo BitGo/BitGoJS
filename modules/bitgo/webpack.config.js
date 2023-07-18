@@ -22,10 +22,13 @@ function replaceUnsafeEval(file) {
   let replacements = 0;
 
   // eslint-disable-next-line no-sync
-  const bundle = fs.readFileSync(file).toString('utf8').replace(replacementRegex, () => {
-    replacements++;
-    return replaceWith;
-  });
+  const bundle = fs
+    .readFileSync(file)
+    .toString('utf8')
+    .replace(replacementRegex, () => {
+      replacements++;
+      return replaceWith;
+    });
 
   // eslint-disable-next-line no-sync
   fs.writeFileSync(file, bundle);

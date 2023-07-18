@@ -17,6 +17,11 @@ export class TiaUtils extends CosmosUtils {
   }
 
   /** @inheritdoc */
+  isValidContractAddress(address: string): boolean {
+    return constants.contractAddressRegex.test(address);
+  }
+
+  /** @inheritdoc */
   validateAmount(amount: Coin): void {
     const amountBig = BigNumber(amount.amount);
     if (amountBig.isLessThanOrEqualTo(0)) {

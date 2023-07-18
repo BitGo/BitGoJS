@@ -4,10 +4,10 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
-import * as clipboardy from 'clipboardy';
+import clipboardy from 'clipboardy-cjs';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { ParserNode } from './Parser';
+import { Parser, ParserNode } from './Parser';
 import { formatTree } from './format';
 import {
   fetchOutputSpends,
@@ -20,6 +20,8 @@ import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
 import { readStdin } from './readStdin';
+import { parseUnknown } from './parseUnknown';
+import { getParserTxProperties } from './ParserTx';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -37,7 +39,10 @@ type ArgsParseTransaction = {
   fetchStatus: boolean;
   fetchInputs: boolean;
   fetchSpends: boolean;
+  finalize: boolean;
   parseSignatureData: boolean;
+  parseAsUnknown: boolean;
+  parseError: 'throw' | 'continue';
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
@@ -70,7 +75,13 @@ function getNetwork(argv: yargs.Arguments<{ network: string }>): utxolib.Network
   return getNetworkForName(argv.network);
 }
 
-function formatString(parsed: ParserNode, argv: yargs.Arguments<{ format: OutputFormat; all: boolean }>): string {
+function formatString(
+  parsed: ParserNode,
+  argv: yargs.Arguments<{
+    format: OutputFormat;
+    all: boolean;
+  }>
+): string {
   switch (argv.format) {
     case 'json':
       return JSON.stringify(parsed, null, 2);
@@ -80,7 +91,11 @@ function formatString(parsed: ParserNode, argv: yargs.Arguments<{ format: Output
   throw new Error(`invalid format ${argv.format}`);
 }
 
-function resolveNetwork<T extends { network?: string }>(args: T): T & { network?: utxolib.Network } {
+function resolveNetwork<T extends { network?: string }>(
+  args: T
+): T & {
+  network?: utxolib.Network;
+} {
   if (args.network) {
     return { ...args, network: getNetworkForName(args.network) };
   }
@@ -89,7 +104,7 @@ function resolveNetwork<T extends { network?: string }>(args: T): T & { network?
 
 export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxParser {
   if (argv.all) {
-    return new TxParser(TxParser.PARSE_ALL);
+    return new TxParser({ ...argv, ...TxParser.PARSE_ALL });
   }
   return new TxParser({
     ...argv,
@@ -108,7 +123,11 @@ export function getAddressParser(argv: ArgsParseAddress): AddressParser {
 export const cmdParseTx = {
   command: 'parseTx [path]',
   aliases: ['parse', 'tx'],
-  describe: 'display transaction components in human-readable form',
+  describe:
+    'Display transaction components in human-readable form. ' +
+    'Supported formats are Partially Signed Bitcoin Transaction (PSBT), ' +
+    'bitcoinjs-lib encoding (Legacy) or fully signed transaction. ' +
+    'Bytes must be encoded in hex format.',
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
@@ -126,12 +145,27 @@ export const cmdParseTx = {
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
       .option('parseOutputScript', { type: 'boolean', default: false })
+      .option('parseAsUnknown', {
+        type: 'boolean',
+        default: false,
+        description: 'show plain Javascript object without any post-processing',
+      })
       .option('maxOutputs', { type: 'number' })
       .option('vin', { type: 'number' })
       .array('vin')
+      .option('finalize', {
+        type: 'boolean',
+        default: false,
+        description: 'finalize PSBT and parse result instead of PSBT',
+      })
       .option('all', { type: 'boolean', default: false })
-      .option('cache', { type: 'boolean', default: false, description: 'use local cache for http responses' })
-      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const);
+      .option('cache', {
+        type: 'boolean',
+        default: false,
+        description: 'use local cache for http responses',
+      })
+      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('parseError', { choices: ['continue', 'throw'], default: 'continue' } as const);
   },
 
   async handler(argv: yargs.Arguments<ArgsParseTransaction>): Promise<void> {
@@ -184,10 +218,30 @@ export const cmdParseTx = {
       throw new Error(`no txdata`);
     }
 
-    const tx = utxolib.bitgo.createTransactionFromHex(data, network);
-    const txid = tx.getId();
-    if (argv.txid && txid !== argv.txid) {
-      throw new Error(`computed txid does not match txid argument`);
+    const bytes = Buffer.from(data, 'hex');
+
+    // make sure hex was parsed
+    if (bytes.toString('hex') !== data) {
+      throw new Error(`invalid hex`);
+    }
+
+    let tx = utxolib.bitgo.isPsbt(bytes)
+      ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
+      : utxolib.bitgo.createTransactionFromBuffer(bytes, network, { amountType: 'bigint' });
+
+    const { id: txid } = getParserTxProperties(tx, undefined);
+    if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+      if (argv.txid && txid !== argv.txid) {
+        throw new Error(`computed txid does not match txid argument`);
+      }
+    } else if (argv.finalize) {
+      tx.finalizeAllInputs();
+      tx = tx.extractTransaction();
+    }
+
+    if (argv.parseAsUnknown) {
+      console.log(formatString(parseUnknown(new Parser(), 'tx', tx), argv));
+      return;
     }
 
     if (argv.fetchAll) {
@@ -197,10 +251,13 @@ export const cmdParseTx = {
     }
 
     const parsed = getTxParser(argv).parse(tx, {
-      status: argv.fetchStatus ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
+      status: argv.fetchStatus && txid ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
       prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : undefined,
       prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(httpClient, tx) : undefined,
-      outputSpends: argv.fetchSpends ? await fetchOutputSpends(httpClient, tx) : undefined,
+      outputSpends:
+        argv.fetchSpends && tx instanceof utxolib.bitgo.UtxoTransaction
+          ? await fetchOutputSpends(httpClient, tx)
+          : undefined,
     });
 
     console.log(formatString(parsed, argv));

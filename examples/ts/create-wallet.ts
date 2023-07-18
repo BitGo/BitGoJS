@@ -53,5 +53,4 @@ async function main() {
   console.log(`Backup keychain xPrv: ${response.backupKeychain.prv}`);
 }
 
-main().catch(e => console.log(e));
-
+main().catch((e) => console.log(e));

@@ -29,7 +29,7 @@ async function sendTx() {
 
   const bitgo = new BitGo({
     env: env,
-    accessToken
+    accessToken,
   });
 
   const basecoin = bitgo.coin(coin);
@@ -43,7 +43,7 @@ async function sendTx() {
       {
         amount: atomAmount,
         address: receiveAddress,
-      }
+      },
     ],
     walletPassphrase,
     type: 'transfer',
@@ -52,4 +52,4 @@ async function sendTx() {
   console.log(`${JSON.stringify(sendDetail)}`);
 }
 
-sendTx().catch(e => console.error(e));
+sendTx().catch((e) => console.error(e));

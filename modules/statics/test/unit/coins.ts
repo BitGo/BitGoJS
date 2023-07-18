@@ -14,6 +14,7 @@ import {
   UtxoCoin,
 } from '../../src';
 import { utxo } from '../../src/utxo';
+import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
 
 interface DuplicateCoinObject {
   name: string;
@@ -327,5 +328,56 @@ describe('ERC20 Coins', () => {
         acc[address] = { name: token.name, network: token.network };
         return acc;
       }, {});
+  });
+});
+
+describe('Cold Wallet Features', () => {
+  it('Coins that support both multisig & tss cold should have expected flags', () => {
+    const both = coins
+      .filter(
+        (coin) =>
+          !coin.isToken &&
+          coin.features.includes(CoinFeature.MULTISIG_COLD) &&
+          coin.features.includes(CoinFeature.TSS_COLD)
+      )
+      .map((coin) => coin.name)
+      .sort();
+    both.should.deepEqual(expectedColdFeatures.both.sort());
+  });
+  it('Coins that support just multisig cold should have expected flags', () => {
+    const justMultiSig = coins
+      .filter(
+        (coin) =>
+          !coin.isToken &&
+          coin.features.includes(CoinFeature.MULTISIG_COLD) &&
+          !coin.features.includes(CoinFeature.TSS_COLD)
+      )
+      .map((coin) => coin.name)
+      .sort();
+    justMultiSig.should.deepEqual(expectedColdFeatures.justMultiSig.sort());
+  });
+  it('Coins that support just tss cold should have expected flags', () => {
+    const justTSS = coins
+      .filter(
+        (coin) =>
+          !coin.isToken &&
+          !coin.features.includes(CoinFeature.MULTISIG_COLD) &&
+          coin.features.includes(CoinFeature.TSS_COLD)
+      )
+      .map((coin) => coin.name)
+      .sort();
+    justTSS.should.deepEqual(expectedColdFeatures.justTSS.sort());
+  });
+  it('Coins that dont support cold wallets at all should not have either flag', () => {
+    const neither = coins
+      .filter(
+        (coin) =>
+          !coin.isToken &&
+          !coin.features.includes(CoinFeature.MULTISIG_COLD) &&
+          !coin.features.includes(CoinFeature.TSS_COLD)
+      )
+      .map((coin) => coin.name)
+      .sort();
+    neither.should.deepEqual(expectedColdFeatures.neither.sort());
   });
 });

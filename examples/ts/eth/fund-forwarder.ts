@@ -30,12 +30,11 @@ async function fundForwarder() {
 
   const fundForwarderOptions = {
     forwarderAddress: forwarderAddress,
-    amount: amount
+    amount: amount,
   };
 
   const response = await wallet.fundForwarder(fundForwarderOptions);
   console.log('Response', response);
-
 }
 
 fundForwarder().catch((e) => console.error(e));

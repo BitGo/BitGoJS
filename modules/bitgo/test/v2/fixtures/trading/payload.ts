@@ -13,10 +13,12 @@ export default {
           sendAmount: '100500000',
           receiveCurrency: 'ofctusd',
           receiveAmount: '90000',
-          fees: [{
-            feeType: 'SETTLEMENT_FEE',
-            feeAmount: '500000',
-          }],
+          fees: [
+            {
+              feeType: 'SETTLEMENT_FEE',
+              feeAmount: '500000',
+            },
+          ],
         },
         {
           accountId: 'counterparty_account_id',
@@ -40,14 +42,15 @@ export default {
           accountId: 'walletId',
           sendCurrency: 'ofctbtc',
           sendSubtotal: '100000010',
-          fees: [{
-            feeType: 'SETTLEMENT_FEE',
-            feeAmount: '500000',
-          }],
+          fees: [
+            {
+              feeType: 'SETTLEMENT_FEE',
+              feeAmount: '500000',
+            },
+          ],
           sendAmount: '100000000',
           receiveCurrency: 'ofctusd',
           receiveAmount: '90000',
-
         },
         {
           accountId: 'counterparty_account_id',

@@ -1594,7 +1594,11 @@ export class Wallet implements IWallet {
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
     const { txPrebuild, apiVersion } = params;
 
-    if (_.isFunction(params.customGShareGeneratingFunction) && _.isFunction(params.customRShareGeneratingFunction)) {
+    if (
+      _.isFunction(params.customCommitmentGeneratingFunction) &&
+      _.isFunction(params.customGShareGeneratingFunction) &&
+      _.isFunction(params.customRShareGeneratingFunction)
+    ) {
       // invoke external signer TSS for EdDSA workflow
       return this.signTransactionTssExternalSignerEdDSA(params, this.baseCoin);
     }
@@ -2627,17 +2631,19 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+
     if (
       params.apiVersion === 'lite' &&
-      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa')
+      (this._wallet.type === 'custodial' || this._wallet.type === 'cold' || this.baseCoin.getMPCAlgorithm() === 'ecdsa')
     ) {
       throw new Error(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
     }
 
     const apiVersion =
       params.apiVersion ||
-      (this._wallet.type === 'custodial' || this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? 'full' : 'lite');
-
+      (this._wallet.type === 'custodial' || this._wallet.type === 'cold' || this.baseCoin.getMPCAlgorithm() === 'ecdsa'
+        ? 'full'
+        : 'lite');
     // Two options different implementations of fees seems to now be supported, for now we will support both to be backwards compatible
     // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
     let feeOptions;
@@ -2780,6 +2786,10 @@ export class Wallet implements IWallet {
       throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
     }
 
+    if (!params.customCommitmentGeneratingFunction) {
+      throw new Error('Generator function for commitment required to sign transactions with External Signer.');
+    }
+
     if (!params.customRShareGeneratingFunction) {
       throw new Error('Generator function for R share required to sign transactions with External Signer.');
     }
@@ -2791,6 +2801,7 @@ export class Wallet implements IWallet {
     try {
       const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
         txRequestId,
+        params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
       );
@@ -2979,7 +2990,7 @@ export class Wallet implements IWallet {
     }
 
     // ECDSA TSS uses TxRequestFull
-    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full') {
+    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full' || this._wallet.type === 'cold') {
       return getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
     }
 

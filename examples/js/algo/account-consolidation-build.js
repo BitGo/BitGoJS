@@ -30,7 +30,7 @@ const otp = '000000';
 // the token will need Spender permission for ALGO
 const accessToken = 'insert access token string here';
 
-Promise.coroutine(function *() {
+Promise.coroutine(function* () {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
@@ -71,9 +71,12 @@ Promise.coroutine(function *() {
   try {
     // this is one example of how you might send only the first consolidation from this group
     const unsignedConsolidation = consolidationTxes[0];
-    const sendConsolidations = yield wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
+    const sendConsolidations = yield wallet.sendAccountConsolidation({
+      walletPassphrase,
+      prebuildTx: unsignedConsolidation,
+    });
     console.dir(sendConsolidations, { depth: 6 });
   } catch (e) {
     console.error(e);
   }
-})().catch(e => console.error(e));
+})().catch((e) => console.error(e));
