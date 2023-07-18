@@ -279,6 +279,7 @@ export enum UnderlyingAsset {
   AGLD = 'agld',
   AGWD = 'agwd',
   AION = 'aion',
+  AJNA = 'ajna',
   AKRO = 'akro',
   ALCX = 'alcx',
   ALDRIN = 'aldrin',
@@ -483,6 +484,7 @@ export enum UnderlyingAsset {
   EASY = 'easy',
   EBTCQ = 'ebtcq',
   ECHT = 'echt',
+  ECOX = 'ecox',
   EDEN = 'eden',
   EDISON = 'edison',
   EMB = 'emb',
@@ -1077,6 +1079,7 @@ export enum UnderlyingAsset {
   WPX = 'wpx',
   WTC = 'wtc',
   // USD Coin (Wormhole)
+  WUSDC = 'wusdc',
   WUSDCV2 = 'wusdvcv2',
   // Tether USD (Wormhole)
   WUSDTV2 = 'wusdtv2',
