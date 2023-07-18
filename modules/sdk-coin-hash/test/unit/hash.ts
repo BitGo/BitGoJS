@@ -32,12 +32,12 @@ describe('HASH', function () {
     hash.getChain().should.equal('hash');
     hash.getFamily().should.equal('hash');
     hash.getFullName().should.equal('Provenance');
-    hash.getBaseFactor().should.equal(1e6);
+    hash.getBaseFactor().should.equal(1e9);
 
     thash.getChain().should.equal('thash');
     thash.getFamily().should.equal('hash');
     thash.getFullName().should.equal('Testnet Provenance');
-    thash.getBaseFactor().should.equal(1e6);
+    thash.getBaseFactor().should.equal(1e9);
   });
 
   describe('Address Validation', () => {

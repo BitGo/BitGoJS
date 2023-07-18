@@ -27,6 +27,11 @@ export class Osmo extends CosmosCoin {
   }
 
   /** @inheritDoc **/
+  getBaseFactor(): string | number {
+    return 1e6;
+  }
+
+  /** @inheritDoc **/
   isValidAddress(address: string): boolean {
     return (
       utils.isValidAddress(address) || utils.isValidValidatorAddress(address) || utils.isValidContractAddress(address)
