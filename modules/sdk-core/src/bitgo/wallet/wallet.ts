@@ -29,6 +29,7 @@ import {
   EddsaUnsignedTransaction,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
+  RequestType,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
@@ -1603,6 +1604,16 @@ export class Wallet implements IWallet {
       return this.signTransactionTssExternalSignerEdDSA(params, this.baseCoin);
     }
 
+    if (
+      _.isFunction(params.customPaillierModulusGeneratingFunction) &&
+      _.isFunction(params.customKShareGeneratingFunction) &&
+      _.isFunction(params.customMuDeltaShareGeneratingFunction) &&
+      _.isFunction(params.customSShareGeneratingFunction)
+    ) {
+      // invoke external signer TSS for ECDSA workflow
+      return this.signTransactionTssExternalSignerECDSA(this.baseCoin, params);
+    }
+
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
     }
@@ -2769,7 +2780,7 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Signs a transaction from a TSS wallet using external signer.
+   * Signs a transaction from a TSS EdDSA wallet using external signer.
    *
    * @param params signing options
    */
@@ -2799,11 +2810,66 @@ export class Wallet implements IWallet {
     }
 
     try {
-      const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a transaction from a TSS ECDSA wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerECDSA(
+    coin: IBaseCoin,
+    params: WalletSignTransactionOptions = {}
+  ): Promise<TxRequest> {
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
+    }
+
+    if (!params.customPaillierModulusGeneratingFunction) {
+      throw new Error('Generator function for paillier modulus required to sign transactions with External Signer.');
+    }
+
+    if (!params.customKShareGeneratingFunction) {
+      throw new Error('Generator function for K share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customMuDeltaShareGeneratingFunction) {
+      throw new Error('Generator function for MuDelta share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customSShareGeneratingFunction) {
+      throw new Error('Generator function for S share required to sign transactions with External Signer.');
+    }
+
+    try {
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEcdsaTssUsingExternalSigner(
+        {
+          txRequest: txRequestId,
+          prv: '',
+          reqId: new RequestTracer(),
+        },
+        RequestType.tx,
+        params.customPaillierModulusGeneratingFunction,
+        params.customKShareGeneratingFunction,
+        params.customMuDeltaShareGeneratingFunction,
+        params.customSShareGeneratingFunction
       );
       return signedTxRequest;
     } catch (e) {

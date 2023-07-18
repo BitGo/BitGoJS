@@ -52,6 +52,9 @@
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^1.2.27",
+    "@bitgo/sdk-lib-mpc": "^8.5.0",
+    "@types/keccak": "^3.0.1",
+    "keccak": "^3.0.2",
     "@types/argparse": "^1.0.36",
     "@types/bluebird": "^3.5.25",
     "@types/body-parser": "^1.17.0",

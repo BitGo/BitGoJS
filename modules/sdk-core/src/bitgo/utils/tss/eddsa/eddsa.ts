@@ -477,7 +477,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     return userToBitGoGShare;
   }
 
-  async signUsingExternalSigner(
+  async signEddsaTssUsingExternalSigner(
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,

@@ -6,6 +6,9 @@ import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 import { Hash } from 'crypto';
+import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
+import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -31,6 +34,56 @@ export interface FeeOption {
 export interface TokenEnablement {
   name: string;
   address?: string; // Some chains like Solana require tokens to be enabled for specific address. If absent, we will enable it for the wallet's root address
+}
+
+export enum ShareType {
+  R = 'R',
+  Commitment = 'commitment',
+  G = 'G',
+  S = 'S',
+  K = 'K',
+  MuDelta = 'MuDelta',
+  PaillierModulus = 'PaillierModulus',
+}
+
+export enum MPCType {
+  EDDSA = 'eddsa',
+  ECDSA = 'ecdsa',
+}
+
+export interface CustomPaillierModulusGetterFunction {
+  (params: { txRequest: TxRequest }): Promise<{
+    userPaillierModulus: string;
+  }>;
+}
+
+export interface CustomKShareGeneratingFunction {
+  (params: {
+    tssParams: TSSParams | TSSParamsForMessage;
+    challenges: {
+      enterpriseChallenge: EcdsaTypes.SerializedEcdsaChallenges;
+      bitgoChallenge: TxRequestChallengeResponse;
+    };
+    requestType: RequestType;
+  }): Promise<TssEcdsaStep1ReturnMessage>;
+}
+
+export interface CustomMuDeltaShareGeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    aShareFromBitgo: Omit<AShare, 'ntilde' | 'h1' | 'h2'>;
+    bitgoChallenge: TxRequestChallengeResponse;
+    encryptedWShare: string;
+  }): Promise<TssEcdsaStep2ReturnMessage>;
+}
+
+export interface CustomSShareGeneratingFunction {
+  (params: {
+    tssParams: TSSParams | TSSParamsForMessage;
+    dShareFromBitgo: DShare;
+    requestType: RequestType;
+    encryptedOShare: string;
+  }): Promise<SShare>;
 }
 
 export interface CustomCommitmentGeneratingFunction {
@@ -348,11 +401,19 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
   signTxRequestForMessage(params: TSSParams): Promise<TxRequest>;
-  signUsingExternalSigner(
+  signEddsaTssUsingExternalSigner(
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction
+  ): Promise<TxRequest>;
+  signEcdsaTssUsingExternalSigner(
+    params: TSSParams | TSSParamsForMessage,
+    requestType: RequestType,
+    externalSignerPaillierModulusGetter: CustomPaillierModulusGetterFunction,
+    externalSignerKShareGenerator: CustomKShareGeneratingFunction,
+    externalSignerMuDeltaShareGenerator: CustomMuDeltaShareGeneratingFunction,
+    externalSignerSShareGenerator: CustomSShareGeneratingFunction
   ): Promise<TxRequest>;
   createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
