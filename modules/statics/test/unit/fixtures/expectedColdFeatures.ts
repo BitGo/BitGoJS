@@ -60,6 +60,7 @@ export const expectedColdFeatures = {
     'sei',
     'sol',
     'sui',
+    'zeta',
     'tada',
     'tatom',
     'tbld',
@@ -74,6 +75,7 @@ export const expectedColdFeatures = {
     'tsol',
     'tsui',
     'ttia',
+    'tzeta',
   ],
   neither: [
     'ethw',

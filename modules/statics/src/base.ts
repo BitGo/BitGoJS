@@ -63,6 +63,7 @@ export enum CoinFamily {
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
+  ZETA = 'zeta',
 }
 
 /**
@@ -262,6 +263,7 @@ export enum UnderlyingAsset {
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
+  ZETA = 'zeta',
 
   // ERC 20 tokens
   '1INCH' = '1inch',
@@ -1286,6 +1288,7 @@ export enum BaseUnit {
   BLD = 'ubld',
   SEI = 'usei',
   INJECTIVE = 'inj',
+  ZETA = 'azeta',
 }
 
 export interface BaseCoinConstructorOptions {
