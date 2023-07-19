@@ -9,7 +9,6 @@ import {
   ExecuteContractMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
-  CosmosConstants,
 } from '@bitgo/abstract-cosmos';
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/osmo';
@@ -217,14 +216,14 @@ describe('Osmo Transaction', () => {
       should.deepEqual(tx.inputs, [
         {
           address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.from,
-          value: 'UNAVAILABLE',
+          value: '0',
           coin: 'tosmo',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.to,
-          value: 'UNAVAILABLE',
+          value: '0',
           coin: 'tosmo',
         },
       ]);
@@ -272,10 +271,10 @@ describe('Osmo Transaction', () => {
         outputs: [
           {
             address: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.to,
-            amount: CosmosConstants.UNAVAILABLE_TEXT,
+            amount: '0',
           },
         ],
-        outputAmount: CosmosConstants.UNAVAILABLE_TEXT,
+        outputAmount: '0',
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.TEST_EXECUTE_CONTRACT_TRANSACTION.feeAmount },
