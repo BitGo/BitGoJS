@@ -1473,6 +1473,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARCX
   ),
   erc20(
+    '67af7aee-a78a-4c3a-a24c-b3ef21ea9f3c',
+    'arteq',
+    'arteQ NFT Investment Fund',
+    0,
+    '0x805c2077f3ab224d889f9c3992b41b2f4722c787',
+    UnderlyingAsset.ARTEQ
+  ),
+  erc20(
     '908540ad-6793-4bb5-8712-041a4c258d26',
     'ast',
     'AirSwap',
@@ -4731,6 +4739,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xea26c4ac16d4a5a106820bc8aee85fd0b7b2b664',
     UnderlyingAsset.QKC
+  ),
+  erc20(
+    'b184f862-4334-4027-b7cd-a0debe84eeb8',
+    'qlindo',
+    'Qlindo Realestate Investment Token',
+    0,
+    '0xc18c07a18198a6340cf4d94855fe5eb6dd33b46e',
+    UnderlyingAsset.QLINDO
   ),
   erc20(
     'ced49948-7b64-4696-a1c0-2eca3a63392f',
