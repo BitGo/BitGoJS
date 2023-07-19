@@ -24,6 +24,7 @@ export enum ValidInstructionTypesEnum {
   Allocate = 'Allocate',
   Assign = 'Assign',
   Split = 'Split',
+  Authorize = 'Authorize',
 }
 
 // Internal instructions types
@@ -37,6 +38,7 @@ export enum InstructionBuilderTypes {
   NonceAdvance = 'NonceAdvance',
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
   TokenTransfer = 'TokenTransfer',
+  StakingAuthorize = 'Authorize',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -54,6 +56,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Allocate,
   ValidInstructionTypesEnum.Assign,
   ValidInstructionTypesEnum.Split,
+  ValidInstructionTypesEnum.Authorize,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */
@@ -69,6 +72,11 @@ export const stakingActivateInstructionsIndexes = {
   Initialize: 1,
   Delegate: 2,
   Memo: 3,
+} as const;
+
+/** Const to check the order of the Staking Authorize instructions when decode */
+export const stakingAuthorizeInstructionsIndexes = {
+  Authorize: 0,
 } as const;
 
 /** Const to check the order of the Staking Deactivate instructions when decode */

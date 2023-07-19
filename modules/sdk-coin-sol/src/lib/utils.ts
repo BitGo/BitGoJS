@@ -19,6 +19,7 @@ import {
   stakingDeactivateInstructionsIndexes,
   stakingPartialDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
+  stakingAuthorizeInstructionsIndexes,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
@@ -265,6 +266,8 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.WalletInitialization;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
     return TransactionType.StakingActivate;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingAuthorizeInstructionsIndexes)) {
+    return TransactionType.StakingAuthorize;
   } else if (
     matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingPartialDeactivateInstructionsIndexes)
