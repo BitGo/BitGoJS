@@ -629,6 +629,19 @@ class SeiTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://sei.explorers.guru/transaction/';
 }
 
+class Zeta extends Mainnet implements AccountNetwork {
+  name = 'Zeta';
+  family = CoinFamily.ZETA;
+  //  TODO(WIN-142): Zeta is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://explorer.zetachain.com/cc/tx/';
+}
+
+class ZetaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Zeta';
+  family = CoinFamily.ZETA;
+  explorerUrl = 'https://athens3.explorer.zetachain.com/cc/tx/';
+}
+
 class Injective extends Mainnet implements AccountNetwork {
   name = 'Injective';
   family = CoinFamily.INJECTIVE;
@@ -822,6 +835,7 @@ export const Networks = {
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
+    zeta: Object.freeze(new Zeta()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -867,5 +881,6 @@ export const Networks = {
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
+    zeta: Object.freeze(new ZetaTestnet()),
   },
 };

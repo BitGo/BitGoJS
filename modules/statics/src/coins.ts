@@ -223,7 +223,7 @@ const INJECTIVE_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
 ];
-
+const ZETA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -900,6 +900,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
     SEI_FEATURES
+  ),
+  account(
+    '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
+    'zeta',
+    'Zeta',
+    Networks.main.zeta,
+    6,
+    UnderlyingAsset.ZETA,
+    BaseUnit.ZETA,
+    ZETA_FEATURES
+  ),
+  account(
+    '1aeb7754-1518-4aac-8cc0-e4bb07713a31',
+    'tzeta',
+    'Testnet Zeta',
+    Networks.test.zeta,
+    6,
+    UnderlyingAsset.ZETA,
+    BaseUnit.ZETA,
+    ZETA_FEATURES
   ),
   account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
