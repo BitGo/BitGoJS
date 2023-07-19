@@ -11,6 +11,19 @@ export interface SendMessage {
   amount: Coin[];
 }
 
+export interface RecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C
+  recoveryDestination: string;
+  krsProvider?: string;
+  walletPassphrase?: string;
+}
+
+export interface CosmosLikeCoinRecoveryOutput {
+  serializedTx: string;
+}
+
 export interface DelegateOrUndelegeteMessage {
   delegatorAddress: string;
   validatorAddress: string;
@@ -42,6 +55,11 @@ export interface MessageData {
 
 export interface FeeData {
   amount: Coin[];
+  gasLimit: number;
+}
+
+export interface GasAmountDetails {
+  gasAmount: string;
   gasLimit: number;
 }
 

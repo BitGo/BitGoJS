@@ -2,7 +2,11 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  ECDSA,
+  Ecdsa,
+  ECDSAMethodTypes,
   ExplanationResult,
+  hexToBigInt,
   InvalidAddressError,
   InvalidMemoIdError,
   KeyPair,
@@ -25,8 +29,20 @@ import * as _ from 'lodash';
 import * as querystring from 'querystring';
 import * as request from 'superagent';
 import * as url from 'url';
-import { CosmosKeyPair } from './lib';
+import {
+  CosmosKeyPair,
+  CosmosTransaction,
+  GasAmountDetails,
+  RecoveryOptions,
+  CosmosLikeCoinRecoveryOutput,
+  SendMessage,
+  FeeData,
+} from './lib';
 import utils from './lib/utils';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { Buffer } from 'buffer';
+import { Coin } from '@cosmjs/stargate';
+import { ROOT_PATH } from './lib/constants';
 
 /**
  * Cosmos accounts support memo Id based addresses
@@ -108,6 +124,269 @@ export class CosmosCoin extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param {RecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {CosmosLikeCoinRecoveryOutput} the serialized transaction hex string and index
+   * of the address being swept
+   */
+  async recover(params: RecoveryOptions): Promise<CosmosLikeCoinRecoveryOutput> {
+    // Step 1: Check if params contains the required parameters
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    // Step 2: Fetch the bitgo key from params
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    // Step 3: Instantiate the ECDSA signer and fetch the address details
+    const MPC = new Ecdsa();
+    const chainId = await this.getChainId();
+    const publicKey = MPC.deriveUnhardened(bitgoKey, ROOT_PATH).slice(0, 66);
+    const senderAddress = this.getAddressFromPublicKey(publicKey);
+
+    // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
+    const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
+    const balance = new BigNumber(await this.getAccountBalance(senderAddress));
+    const gasBudget: FeeData = {
+      amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
+      gasLimit: this.getGasAmountDetails().gasLimit,
+    };
+    const gasAmount = new BigNumber(gasBudget.amount[0].amount);
+    const actualBalance = balance.minus(gasAmount);
+
+    if (actualBalance.isLessThanOrEqualTo(0)) {
+      throw new Error('Did not have enough funds to recover');
+    }
+
+    // Step 5: Once sufficient funds are present, construct the recover tx messsage
+    const amount: Coin[] = [
+      {
+        denom: this.getDenomination(),
+        amount: actualBalance.toFixed(),
+      },
+    ];
+    const sendMessage: SendMessage[] = [
+      {
+        fromAddress: senderAddress,
+        toAddress: params.recoveryDestination,
+        amount: amount,
+      },
+    ];
+
+    // Step 6: Build the unsigned tx using the constructed message
+    const txnBuilder = this.getBuilder().getTransferBuilder();
+    txnBuilder
+      .messages(sendMessage)
+      .gasBudget(gasBudget)
+      .publicKey(publicKey)
+      .sequence(Number(sequenceNo))
+      .accountNumber(Number(accountNumber))
+      .chainId(chainId);
+    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    const signableHex = unsignedTransaction.signablePayload.toString('hex');
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const [userKeyCombined, backupKeyCombined] = ((): [
+      ECDSAMethodTypes.KeyCombined | undefined,
+      ECDSAMethodTypes.KeyCombined | undefined
+    ] => {
+      const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+        userKey,
+        backupKey,
+        params.walletPassphrase
+      );
+      return [userKeyCombined, backupKeyCombined];
+    })();
+
+    if (!userKeyCombined || !backupKeyCombined) {
+      throw new Error('Missing combined key shares for user or backup');
+    }
+
+    // Step 7: Sign the tx
+    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const signableBuffer = Buffer.from(signableHex, 'hex');
+    MPC.verify(signableBuffer, signature, createHash('sha256'));
+    const cosmosKeyPair = this.getKeyPair(publicKey);
+    txnBuilder.addSignature({ pub: cosmosKeyPair.getKeys().pub }, Buffer.from(signature.r + signature.s, 'hex'));
+    const signedTransaction = await txnBuilder.build();
+    serializedTx = signedTransaction.toBroadcastFormat();
+
+    return { serializedTx: serializedTx };
+  }
+
+  private getKeyCombinedFromTssKeyShares(
+    userPublicOrPrivateKeyShare: string,
+    backupPrivateOrPublicKeyShare: string,
+    walletPassphrase?: string
+  ): [ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined] {
+    let backupPrv;
+    let userPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupPrivateOrPublicKeyShare,
+        password: walletPassphrase,
+      });
+      userPrv = this.bitgo.decrypt({
+        input: userPublicOrPrivateKeyShare,
+        password: walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+
+    const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
+    const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
+
+    if (!userSigningMaterial.backupNShare) {
+      throw new Error('Invalid user key - missing backupNShare');
+    }
+
+    if (!backupSigningMaterial.userNShare) {
+      throw new Error('Invalid backup key - missing userNShare');
+    }
+
+    const MPC = new Ecdsa();
+
+    const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
+
+    const userSigningKeyDerived = MPC.keyDerive(
+      userSigningMaterial.pShare,
+      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
+      'm/0'
+    );
+
+    const userKeyDerivedCombined = {
+      xShare: userSigningKeyDerived.xShare,
+      yShares: userKeyCombined.yShares,
+    };
+
+    const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
+      userSigningKeyDerived.nShares[2],
+      backupSigningMaterial.bitgoNShare,
+    ]);
+
+    if (
+      userKeyDerivedCombined.xShare.y !== backupKeyCombined.xShare.y ||
+      userKeyDerivedCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
+    ) {
+      throw new Error('Common keychains do not match');
+    }
+
+    return [userKeyDerivedCombined, backupKeyCombined];
+  }
+
+  private async signRecoveryTSS(
+    userKeyCombined: ECDSA.KeyCombined,
+    backupKeyCombined: ECDSA.KeyCombined,
+    txHex: string,
+    {
+      rangeProofChallenge,
+    }: {
+      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
+    } = {}
+  ): Promise<ECDSAMethodTypes.Signature> {
+    const MPC = new Ecdsa();
+    const signerOneIndex = userKeyCombined.xShare.i;
+    const signerTwoIndex = backupKeyCombined.xShare.i;
+
+    // Since this is a user <> backup signing, we will reuse the same range proof challenge
+    rangeProofChallenge =
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+
+    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
+    );
+    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
+      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
+    );
+
+    const userXShare = MPC.appendChallenge(
+      userKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
+    const userYShare = MPC.appendChallenge(
+      userKeyCombined.yShares[signerTwoIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupXShare = MPC.appendChallenge(
+      backupKeyCombined.xShare,
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
+    );
+    const backupYShare = MPC.appendChallenge(
+      backupKeyCombined.yShares[signerOneIndex],
+      rangeProofChallenge,
+      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
+    );
+
+    const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
+
+    const signConvertS21 = await MPC.signConvertStep1({
+      xShare: backupXShare,
+      yShare: backupYShare, // YShare corresponding to the other participant signerOne
+      kShare: signShares.kShare,
+    });
+    const signConvertS12 = await MPC.signConvertStep2({
+      aShare: signConvertS21.aShare,
+      wShare: signShares.wShare,
+    });
+    const signConvertS21_2 = await MPC.signConvertStep3({
+      muShare: signConvertS12.muShare,
+      bShare: signConvertS21.bShare,
+    });
+
+    const [signCombineOne, signCombineTwo] = [
+      MPC.signCombine({
+        gShare: signConvertS12.gShare,
+        signIndex: {
+          i: signConvertS12.muShare.i,
+          j: signConvertS12.muShare.j,
+        },
+      }),
+      MPC.signCombine({
+        gShare: signConvertS21_2.gShare,
+        signIndex: {
+          i: signConvertS21_2.signIndex.i,
+          j: signConvertS21_2.signIndex.j,
+        },
+      }),
+    ];
+
+    const MESSAGE = Buffer.from(txHex, 'hex');
+
+    const [signA, signB] = [
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, createHash('sha256')),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, createHash('sha256')),
+    ];
+
+    return MPC.constructSignature([signA, signB]);
   }
 
   /** @inheritDoc **/
@@ -228,7 +507,7 @@ export class CosmosCoin extends BaseCoin {
    */
   protected async getAccountFromNode(senderAddress: string): Promise<request.Response> {
     const nodeUrl = this.getPublicNodeUrl();
-    const getAccountPath = 'cosmos/auth/v1beta1/accounts/';
+    const getAccountPath = '/cosmos/auth/v1beta1/accounts/';
     const fullEndpoint = nodeUrl + getAccountPath + senderAddress;
     try {
       return await request.get(fullEndpoint).send();
@@ -243,7 +522,7 @@ export class CosmosCoin extends BaseCoin {
    */
   protected async getBalanceFromNode(senderAddress: string): Promise<request.Response> {
     const nodeUrl = this.getPublicNodeUrl();
-    const getBalancePath = 'cosmos/bank/v1beta1/balances/';
+    const getBalancePath = '/cosmos/bank/v1beta1/balances/';
     const fullEndpoint = nodeUrl + getBalancePath + senderAddress;
     try {
       return await request.get(fullEndpoint).send();
@@ -258,7 +537,7 @@ export class CosmosCoin extends BaseCoin {
    */
   protected async getChainIdFromNode(): Promise<request.Response> {
     const nodeUrl = this.getPublicNodeUrl();
-    const getLatestBlockPath = 'cosmos/base/tendermint/v1beta1/blocks/latest';
+    const getLatestBlockPath = '/cosmos/base/tendermint/v1beta1/blocks/latest';
     const fullEndpoint = nodeUrl + getLatestBlockPath;
     try {
       return await request.get(fullEndpoint).send();
@@ -322,7 +601,7 @@ export class CosmosCoin extends BaseCoin {
    * @returns {string} The corresponding address.
    */
   getAddressFromPublicKey(pubKey: string): string {
-    return new CosmosKeyPair({ pub: pubKey }).getAddress();
+    throw new Error('Method not implemented');
   }
 
   /** @inheritDoc **/
@@ -411,5 +690,27 @@ export class CosmosCoin extends BaseCoin {
       return false;
     }
     return memoIdNumber.gte(0);
+  }
+
+  /**
+   * Helper method to return the respective coin's base unit
+   */
+  getDenomination(): string {
+    throw new Error('Method not implemented');
+  }
+
+  /**
+   * Helper method to fetch gas amount details for respective coin
+   */
+  getGasAmountDetails(): GasAmountDetails {
+    throw new Error('Method not implemented');
+  }
+
+  /**
+   * Helper method to get key pair for individual coin
+   * @param publicKey
+   */
+  getKeyPair(publicKey: string): CosmosKeyPair {
+    throw new Error('Method not implemented');
   }
 }
