@@ -220,7 +220,7 @@ function matchScript(script: DecompiledScript, pattern: ScriptPatternElement[]):
       case 'OP_CHECKSIGVERIFY':
         return e === opcodes[p];
       case ':pubkey':
-        return Buffer.isBuffer(e) && e.length === 33;
+        return Buffer.isBuffer(e) && (e.length === 33 || e.length === 65);
       case ':pubkey-xonly':
         return Buffer.isBuffer(e) && e.length === 32;
       case ':signature':
