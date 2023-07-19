@@ -1281,6 +1281,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AION
   ),
   erc20(
+    'ec5b7fdf-83ce-4a26-8c1d-e54064061b43',
+    'ajna',
+    'AjnaToken',
+    18,
+    '0x9a96ec9b57fb64fbc60b423d1f4da7691bd35079',
+    UnderlyingAsset.AJNA
+  ),
+  erc20(
     'f34129eb-6ba1-44ad-a0a4-a55bbe375b5f',
     'ali',
     'Artificial Liquid Intelligence Token',
@@ -1463,6 +1471,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1321f1f1aa541a56c31682c57b80ecfccd9bb288',
     UnderlyingAsset.ARCX
+  ),
+  erc20(
+    '67af7aee-a78a-4c3a-a24c-b3ef21ea9f3c',
+    'arteq',
+    'arteQ NFT Investment Fund',
+    0,
+    '0x805c2077f3ab224d889f9c3992b41b2f4722c787',
+    UnderlyingAsset.ARTEQ
   ),
   erc20(
     '908540ad-6793-4bb5-8712-041a4c258d26',
@@ -2594,6 +2610,14 @@ export const coins = CoinMap.fromCoins([
     0,
     '0x1aadead0d2e0b6d888ae1d73b11db65a8447634a',
     UnderlyingAsset.ECHT
+  ),
+  erc20(
+    '93c2803d-7c7e-49b3-aa89-754f1506d415',
+    'ecox',
+    'ECOx',
+    18,
+    '0xcccd1ba9f7acd6117834e0d28f25645decb1736a',
+    UnderlyingAsset.ECOX
   ),
   erc20(
     'e4aa6af6-d658-4588-ad72-9fa4ca687469',
@@ -4715,6 +4739,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xea26c4ac16d4a5a106820bc8aee85fd0b7b2b664',
     UnderlyingAsset.QKC
+  ),
+  erc20(
+    'b184f862-4334-4027-b7cd-a0debe84eeb8',
+    'qlindo',
+    'Qlindo Realestate Investment Token',
+    0,
+    '0xc18c07a18198a6340cf4d94855fe5eb6dd33b46e',
+    UnderlyingAsset.QLINDO
   ),
   erc20(
     'ced49948-7b64-4696-a1c0-2eca3a63392f',
@@ -9592,6 +9624,24 @@ export const coins = CoinMap.fromCoins([
     6,
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     UnderlyingAsset.FTT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'f194cd14-d0c2-443a-b717-e826143c7e33',
+    'sol:srm-wormhole',
+    'Serum (Wormhole)',
+    6,
+    'xnorPhAzWXUczCP3KjU5yDxmKKZi5cSbxytQ1LgE3kG',
+    UnderlyingAsset.SRM,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'cd7d9622-1467-405d-af1f-09edd1d431d6',
+    'sol:usdc-wormhole',
+    'USD Coin (PoS) (Wormhole)',
+    6,
+    'E2VmbootbVCBkMNNxKQgCLMS1X3NoGMaYAsufaAsf7M',
+    UnderlyingAsset.WUSDC,
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(
