@@ -6,6 +6,7 @@ import {
   SystemProgram,
   TransactionInstruction,
   Transaction,
+  StakeAuthorizationLayout,
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
@@ -16,6 +17,7 @@ import {
   Memo,
   Nonce,
   StakingActivate,
+  StakingAuthorize,
   StakingDeactivate,
   StakingWithdraw,
   TokenTransfer,
@@ -51,6 +53,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingWithdrawInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateAssociatedTokenAccount:
       return createATAInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingAuthorize:
+      return stakingAuthorizeInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -305,4 +309,41 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
     new PublicKey(mintAddress)
   );
   return [associatedTokenAccountInstruction];
+}
+
+/**
+ * Construct Staking Account Authorize Solana instructions
+ *
+ * @param {StakingAuthorize} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Staking Account Authorize instructions
+ */
+function stakingAuthorizeInstruction(data: StakingAuthorize): TransactionInstruction[] {
+  const {
+    params: { stakingAddress, oldAuthorizeAddress, newAuthorizeAddress, newWithdrawAddress },
+  } = data;
+  assert(stakingAddress, 'Missing stakingAddress param');
+  assert(oldAuthorizeAddress, 'Missing oldAuthorizeAddress param');
+  assert(newAuthorizeAddress, 'Missing newAuthorizeAddress param');
+  assert(newWithdrawAddress, 'Missing newWithdrawAddress param');
+
+  const tx = new Transaction();
+
+  const authorizeStaking = StakeProgram.authorize({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(oldAuthorizeAddress),
+    newAuthorizedPubkey: new PublicKey(newAuthorizeAddress),
+    stakeAuthorizationType: StakeAuthorizationLayout.Staker,
+  });
+
+  const authorizeWithdraw = StakeProgram.authorize({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(oldAuthorizeAddress),
+    newAuthorizedPubkey: new PublicKey(newAuthorizeAddress),
+    stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
+    custodianPubkey: new PublicKey(newWithdrawAddress),
+  });
+  tx.add(authorizeStaking);
+  tx.add(authorizeWithdraw);
+
+  return tx.instructions;
 }

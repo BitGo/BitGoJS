@@ -11,6 +11,7 @@ import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TransferBuilderV2 } from './transferBuilderV2';
+import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -46,6 +47,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingWithdrawBuilder(tx);
         case TransactionType.AssociatedTokenAccountInitialization:
           return this.getAtaInitializationBuilder(tx);
+        case TransactionType.StakingAuthorize:
+          return this.getStakingAuthorizeBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -114,6 +117,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return this.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to authorized staking account.
+   *
+   * @param {Transaction} tx - the transaction to be used to intialize the builder
+   * @returns {StakingWithdrawBuilder} - the initialized staking authorize builder
+   */
+  getStakingAuthorizeBuilder(tx?: Transaction): StakingAuthorizeBuilder {
+    return this.initializeBuilder(tx, new StakingAuthorizeBuilder(this._coinConfig));
   }
 
   /**

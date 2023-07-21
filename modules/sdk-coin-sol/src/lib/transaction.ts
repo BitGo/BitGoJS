@@ -191,6 +191,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.AssociatedTokenAccountInitialization:
           this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
           break;
+        case TransactionType.StakingAuthorize:
+          this.setTransactionType(TransactionType.StakingAuthorize);
+          break;
       }
       this.loadInputsAndOutputs();
     } catch (e) {
@@ -322,6 +325,8 @@ export class Transaction extends BaseTransaction {
           });
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          break;
+        case InstructionBuilderTypes.StakingAuthorize:
           break;
       }
     }
