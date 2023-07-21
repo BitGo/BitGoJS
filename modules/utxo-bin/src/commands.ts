@@ -22,6 +22,7 @@ import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis'
 import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
+import { ScriptParser } from './ScriptParser';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -53,6 +54,22 @@ type ArgsParseAddress = {
   address: string;
 };
 
+type ArgsParseScript = {
+  network?: string;
+  format: OutputFormat;
+  all: boolean;
+  script: string;
+};
+
+function parseHex(hex: string): Buffer {
+  hex = hex.replace(/\s*/g, '').toLowerCase();
+  const data = Buffer.from(hex, 'hex');
+  if (data.toString('hex') !== hex) {
+    throw new Error(`invalid hex`);
+  }
+  return data;
+}
+
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
   if (cache) {
     const mkdir = promisify(fs.mkdir);
@@ -66,7 +83,7 @@ async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
 function getNetworkForName(name: string) {
   const network = utxolib.networks[name as utxolib.NetworkName];
   if (!network) {
-    throw new Error(`invalid network ${network}`);
+    throw new Error(`invalid network ${name}`);
   }
   return network;
 }
@@ -118,6 +135,10 @@ export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxPars
 
 export function getAddressParser(argv: ArgsParseAddress): AddressParser {
   return new AddressParser(resolveNetwork(argv));
+}
+
+export function getScriptParser(argv: ArgsParseScript): ScriptParser {
+  return new ScriptParser(resolveNetwork(argv));
 }
 
 export const cmdParseTx = {
@@ -213,17 +234,11 @@ export const cmdParseTx = {
     }
 
     // strip whitespace
-    data = data?.replace(/\s*/g, '');
     if (!data) {
       throw new Error(`no txdata`);
     }
 
-    const bytes = Buffer.from(data, 'hex');
-
-    // make sure hex was parsed
-    if (bytes.toString('hex') !== data) {
-      throw new Error(`invalid hex`);
-    }
+    const bytes = parseHex(data);
 
     let tx = utxolib.bitgo.isPsbt(bytes)
       ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
@@ -282,3 +297,20 @@ export const cmdParseAddress = {
     console.log(formatString(parsed, argv));
   },
 } as const;
+
+export const cmdParseScript = {
+  command: 'parseScript [script]',
+  describe: 'parse script',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseScript> {
+    return b
+      .option('network', { alias: 'n', type: 'string' })
+      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('all', { type: 'boolean', default: false })
+      .positional('script', { type: 'string', demandOption: true });
+  },
+  handler(argv: yargs.Arguments<ArgsParseScript>): void {
+    const script = parseHex(argv.script);
+    const parsed = getScriptParser(argv).parse(script);
+    console.log(formatString(parsed, { ...argv, all: true }));
+  },
+};

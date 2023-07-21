@@ -77,8 +77,14 @@ export async function getTransactionWithSpendType(
     return await getPsbt(network, params);
   }
 
-  if (params.scriptType === 'p2trMusig2' && !params.spendType) {
-    throw new Error('p2trMusig2 requires params');
+  if (params.scriptType === 'p2trMusig2') {
+    if (!params.spendType) {
+      throw new Error('p2trMusig2 requires params');
+    }
+  } else {
+    if (params.spendType) {
+      throw new Error('only p2trMusig2 requires spendType');
+    }
   }
 
   const filename = `spend_${params.scriptType}${params.spendType ? `${params.spendType}` : ''}.json`;
