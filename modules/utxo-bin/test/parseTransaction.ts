@@ -2,7 +2,7 @@ import * as mocha from 'mocha';
 import * as yargs from 'yargs';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import { getFixtureString, getTransactionWithSpendType, formatTreeNoColor, ParsedFixture } from './fixtures';
+import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
 import { ParserNode } from '../src/Parser';
 import { cmdParseTx, getTxParser } from '../src/commands';
 import { ParserTx } from '../src/ParserTx';
@@ -72,14 +72,12 @@ getParams().forEach(({ scriptType, spendType, fixtureType, showAll }) => {
           showAll,
         });
         const fixtureName = spendType ? `${scriptType}_${spendType}` : scriptType;
+        const filename = [fixtureName, fixtureType, showAll ? 'all' : '', usePrevOuts ? 'prevOuts' : '']
+          .filter((v) => v !== '')
+          .join('_');
         assert.strictEqual(
           formatted,
-          await getFixtureString(
-            `test/fixtures/format_${fixtureName}_${fixtureType}${showAll ? '_all' : ''}${
-              usePrevOuts ? '_prevOuts' : ''
-            }.txt`,
-            formatted
-          )
+          await getFixtureString(`test/fixtures/formatTransaction/${filename}.txt`, formatted)
         );
       });
     });
