@@ -983,7 +983,7 @@ export class Eth extends BaseCoin {
     return userGasLimit;
   }
 
-  validateRecoveryParams(params: RecoverOptions): void {
+  validateRecoveryParams(params: RecoverOptions, isTss = false): void {
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -995,9 +995,10 @@ export class Eth extends BaseCoin {
     if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub') && !params.isTss) {
       throw new Error('missing wallet passphrase');
     }
-
-    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
-      throw new Error('invalid walletContractAddress');
+    if (!isTss) {
+      if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+        throw new Error('invalid walletContractAddress');
+      }
     }
 
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
@@ -1198,7 +1199,7 @@ export class Eth extends BaseCoin {
    * same expected arguments as recover method, but with TSS key shares
    */
   protected async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
-    this.validateRecoveryParams(params);
+    this.validateRecoveryParams(params, true);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
     // Clean up whitespace from entered values
