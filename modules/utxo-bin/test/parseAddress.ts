@@ -5,7 +5,7 @@ import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { cmdParseAddress, getAddressParser } from '../src/commands';
-import { getFixtureString, formatTreeNoColor } from './fixtures';
+import { formatTreeNoColor, getFixtureString } from './fixtures';
 
 type Triple<T> = [T, T, T];
 
@@ -61,14 +61,15 @@ function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, network: ut
   }
 }
 
-function getAddresses(n: utxolib.Network): [format: string, address: string][] {
+function getAddresses(n: utxolib.Network): [type: string, format: string, address: string][] {
   const keys = getKeyTriple('parseAddress');
   return scriptTypes
     .filter((t) => isSupportedDepositType(n, t))
     .flatMap((t) =>
       utxolib.addressFormat.addressFormats
         .filter((format) => utxolib.addressFormat.isSupportedAddressFormat(format, n))
-        .map((format): [string, string] => [
+        .map((format): [string, string, string] => [
+          t,
           format,
           utxolib.addressFormat.fromOutputScriptWithFormat(createScriptPubKey(keys, t, n), format, n),
         ])
@@ -81,6 +82,7 @@ function parse(address: string, args: string[]) {
 
 function testParseAddress(
   network: utxolib.Network,
+  type: string,
   addressFormat: string,
   address: string,
   args: string[],
@@ -90,22 +92,17 @@ function testParseAddress(
     it(`formats address`, async function () {
       const formatted = formatTreeNoColor(parse(address, args), { showAll: true });
       const addrNoColon = address.replace(':', '_');
-      assert.strictEqual(
-        await getFixtureString(
-          `test/fixtures/formatAddress_${utxolib.getNetworkName(network)}_${addressFormat}_${addrNoColon}${suffix}`,
-          formatted
-        ),
-        formatted
-      );
+      const filename = [utxolib.getNetworkName(network), type, addressFormat, addrNoColon + suffix].join('_');
+      assert.strictEqual(await getFixtureString(`test/fixtures/formatAddress/${filename}.txt`, formatted), formatted);
     });
   });
 }
 
 utxolib.getNetworkList().forEach((n) => {
-  getAddresses(n).forEach(([addressFormat, address], i) => {
-    testParseAddress(n, addressFormat, address, [], '.txt');
+  getAddresses(n).forEach(([type, addressFormat, address], i) => {
+    testParseAddress(n, type, addressFormat, address, [], '');
     if ([utxolib.networks.bitcoin, utxolib.networks.bitcoincash, utxolib.networks.ecash].includes(n) && i === 0) {
-      testParseAddress(n, addressFormat, address, ['--all'], '.all.txt');
+      testParseAddress(n, type, addressFormat, address, ['--all'], '.all');
     }
   });
 });
