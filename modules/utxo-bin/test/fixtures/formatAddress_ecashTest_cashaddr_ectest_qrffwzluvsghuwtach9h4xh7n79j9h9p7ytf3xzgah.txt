@@ -2,9 +2,9 @@ address: ectest:qrffwzluvsghuwtach9h4xh7n79j9h9p7ytf3xzgah
 ├─┬ cashaddr
 │ ├── prefix: ectest
 │ ├── version: pubkeyhash
-│ └── hash: d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
+│ └── hash: d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (20 bytes)
 ├── format: cashaddr
-├─┬ outputScript: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac
+├─┬ outputScript: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac (25 bytes)
 │ └─┬ scriptPubKey: [25byte]
 │   ├── type: pubkeyhash
 │   ├── hex: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac

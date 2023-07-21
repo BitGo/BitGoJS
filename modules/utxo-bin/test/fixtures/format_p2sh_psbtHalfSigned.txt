@@ -14,7 +14,7 @@ transaction: 5cfca0c380bcba7843849fd13c5c0a356d831d4d46c3fd6ae8aa7e90fce6d6c2
 │   │ └─┬ signatures: [71byte]
 │   │   └── signed by: [0]
 │   ├── value: 0.0001
-│   └─┬ pubScript: a914567cd7b44f9f3a07c3138f37bf984b60fbbaf24387
+│   └─┬ pubScript: a914567cd7b44f9f3a07c3138f37bf984b60fbbaf24387 (23 bytes)
 │     └── address: 2N18XezmyKhojprqNyFwPQCZLgwSjnDjMjg
 └─┬ outputs: 1 sum=0.00009000
   └─┬ 0: 2ND2ojarDFfd2DCg8pokS2uDCwmKcbx6dQq

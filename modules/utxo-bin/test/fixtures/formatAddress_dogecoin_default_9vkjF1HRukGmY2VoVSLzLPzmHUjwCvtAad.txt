@@ -1,10 +1,10 @@
 address: 9vkjF1HRukGmY2VoVSLzLPzmHUjwCvtAad
 ├─┬ base58
-│ ├── payload: 162f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+│ ├── payload: 162f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (21 bytes)
 │ ├── version: 16
-│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (20 bytes)
 ├── format: default
-├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
+├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87 (23 bytes)
 │ └─┬ scriptPubKey: [23byte]
 │   ├── type: scripthash
 │   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
