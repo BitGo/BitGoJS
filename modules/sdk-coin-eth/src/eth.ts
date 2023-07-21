@@ -1177,6 +1177,56 @@ export class Eth extends BaseCoin {
     return finalTx;
   }
 
+  async getTssRecoveryCommonParams(
+    params: Pick<RecoverOptions, 'userKey' | 'backupKey' | 'walletPassphrase' | 'gasLimit' | 'eip1559' | 'gasPrice'>
+  ) {
+    // Clean up whitespace from entered values
+    const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
+    const backupPrivateOrPublicKeyShare = params.backupKey.replace(/\s/g, '');
+
+    // Set new eth tx fees (using default config values from platform)
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+
+    const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+      userPublicOrPrivateKeyShare,
+      backupPrivateOrPublicKeyShare,
+      params.walletPassphrase
+    );
+    const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
+    const backupKeyAddress = backupKeyPair.getAddress();
+    console.log('backupKeyAddress', backupKeyAddress);
+
+    // get balance of backupKey to ensure funds are available to pay fees
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    console.log('backupKeyBalance', backupKeyBalance);
+
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
+      );
+    }
+    console.log('totalGasNeeded', totalGasNeeded);
+
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    console.log('backupKeyNonce', backupKeyNonce);
+
+    return {
+      userKeyCombined,
+      backupKeyCombined,
+      backupKeyAddress,
+      gasLimit,
+      gasPrice,
+      backupKeyNonce,
+    };
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
@@ -1187,18 +1237,115 @@ export class Eth extends BaseCoin {
    * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param params.recoveryDestination {String} target address to send recovered funds to
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  async recover(
+    params: RecoverOptions,
+    shouldSignAndBroadcast = false
+  ): Promise<RecoveryInfo | OfflineVaultTxInfo | EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction> {
     if (params.isTss) {
-      return this.recoverTSS(params);
+      return this.recoverTSS(params, shouldSignAndBroadcast);
     }
     return this.recoverEthLike(params);
+  }
+
+  /**
+   * Recover an unsupported token from a BitGo multisig wallet
+   * This builds a half-signed transaction, for which there will be an admin route to co-sign and broadcast. Optionally
+   * the user can set params.broadcast = true and the half-signed tx will be sent to BitGo for cosigning and broadcasting
+   * @param params
+   * @param params.wallet the wallet to recover the token from
+   * @param params.tokenContractAddress the contract address of the unsupported token
+   * @param params.recipient the destination address recovered tokens should be sent to
+   * @param params.walletPassphrase the wallet passphrase
+   * @param params.prv the xprv
+   * @param params.broadcast if true, we will automatically submit the half-signed tx to BitGo for cosigning and broadcasting
+   */
+  async recoverTokenTss(
+    params: Omit<RecoverOptions, 'walletContractAddress'> & Pick<RecoverTokenOptions, 'tokenContractAddress'>,
+    shouldSignAndBroadcast = false
+  ): Promise<RecoveryInfo | EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction | undefined> {
+    if (!params.tokenContractAddress) {
+      throw new Error(
+        `tokenContractAddress must be a string, got ${
+          params.tokenContractAddress
+        } (type ${typeof params.tokenContractAddress})`
+      );
+    }
+
+    if (!this.isValidAddress(params.tokenContractAddress)) {
+      throw new Error('tokenContractAddress not a valid address');
+    }
+
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('recipient not a valid address');
+    }
+
+    if (!optionalDeps.ethUtil.bufferToHex || !optionalDeps.ethAbi.soliditySHA3) {
+      throw new Error('ethereum not fully supported in this environment');
+    }
+
+    const { userKeyCombined, backupKeyCombined, backupKeyAddress, gasLimit, gasPrice, backupKeyNonce } =
+      await this.getTssRecoveryCommonParams(params);
+
+    const recoveryAmount = await this.queryAddressTokenBalance(params.tokenContractAddress, backupKeyAddress);
+    if (recoveryAmount.isZero()) {
+      return undefined;
+    }
+    // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
+    // tokenContractAddress and encode the unsupported-token-send data in the data field
+    // #tricksy
+    const sendMethodArgs = [
+      {
+        name: '_to',
+        type: 'address',
+        value: params.recoveryDestination,
+      },
+      {
+        name: '_value',
+        type: 'uint256',
+        value: recoveryAmount.toString(10),
+      },
+    ];
+    const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    const txParams = {
+      to: params.tokenContractAddress,
+      nonce: backupKeyNonce,
+      value: 0,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: sendData,
+      eip1559: params.eip1559,
+      replayProtectionOptions: params.replayProtectionOptions,
+    };
+
+    let tx = Eth.buildTransaction(txParams);
+    console.log(tx.toJSON());
+    if (!shouldSignAndBroadcast) {
+      return tx;
+    }
+
+    const signableHex = tx.getMessageToSign(false).toString('hex');
+
+    const signature = this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const ethCommmon = Eth.getEthCommon(params.eip1559, params.replayProtectionOptions);
+    tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
+
+    return {
+      id: addHexPrefix(tx.hash().toString('hex')),
+      tx: addHexPrefix(tx.serialize().toString('hex')),
+    };
   }
 
   /**
    * Recovers a tx with TSS key shares
    * same expected arguments as recover method, but with TSS key shares
    */
-  protected async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  protected async recoverTSS(
+    params: RecoverOptions,
+    shouldSignAndBroadcast = false
+  ): Promise<RecoveryInfo | OfflineVaultTxInfo | EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction> {
     this.validateRecoveryParams(params, true);
     const isUnsignedSweep = getIsUnsignedSweep(params);
 
@@ -1277,6 +1424,10 @@ export class Eth extends BaseCoin {
     };
 
     let tx = Eth.buildTransaction(txParams);
+    console.log(tx.toJSON());
+    if (!shouldSignAndBroadcast) {
+      return tx;
+    }
 
     if (isUnsignedSweep) {
       return this.formatForOfflineVaultTSS(
