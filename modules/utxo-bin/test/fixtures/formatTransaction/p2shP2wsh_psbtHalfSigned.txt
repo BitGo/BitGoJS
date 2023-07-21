@@ -1,0 +1,21 @@
+transaction: 4225a6fe7cdef78e6f427b0421c105fca82a334f93ebc43693101b55e74fabca
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 83vbytes (332wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 12.05
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: 1417cfe6f9a811fcb2276e521a6475b287e03c12c60fab2b0f93d87cafcf2ade:0
+│   ├─┬ sigScript: p2shP2wsh
+│   │ └─┬ signatures: [71byte]
+│   │   └── signed by: [0]
+│   ├── value: 0.0001
+│   └─┬ pubScript: a914ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe87 (23 bytes)
+│     └── address: 2N8tW6SxJirYPBCf9HBjnE7HZ19SoPmav1f
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: 2MyQztMjtbD6teVach9XJFFZ5BsE9mHst1L
+    └── value: 0.00009000

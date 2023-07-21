@@ -1,0 +1,53 @@
+transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 94vbytes (376wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 10.64
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: 378f08e26fc05c84b138264ca2e717b68b9d267550bae85acf6f8ad1465ad4b3:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig: undefined
+│   ├── witness: []
+│   ├─┬ sigScript: taprootKeyPathSpend
+│   │ ├─┬ pubkeys: 1
+│   │ │ └── 0: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
+│   │ └─┬ signatures: [32byte]
+│   │   ├── signed by: []
+│   │   └─┬ 0
+│   │     └── bytes: 259341cdc66bbb6420c044355c8d11d24ebec6acdabd9bdaea8186082c171fc9 (32 bytes)
+│   ├── value: 0.0001
+│   ├─┬ pubScript: 5120e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (34 bytes)
+│   │ └── address: tb1pu8m9yjn8vyvafcu6frcud8yzrdzfx3407lrtna23dxvpkqxx8qqqufaasa
+│   ├─┬ musig2Participants
+│   │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
+│   │ ├── tapInternalKey: 6fe0af247e4f1126495c7a8e0460c95530aa6add2b1395e99c0173d1a18e88c7 (32 bytes)
+│   │ └─┬ participantPubKeys: length: 2
+│   │   ├── 0: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
+│   │   └── 1: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
+│   ├─┬ musig2Nonces: length: 2
+│   │ ├─┬ 0
+│   │ │ ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
+│   │ │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
+│   │ │ └── pubNonce: 026108eb2486b891366790e937ef2aa8267f92c54e33160446d3a0b285abf57b8303801d5f116ecf8bc59b2e26a3686af112ba6edd61161e6cc6558addd69ffcefa9 (66 bytes)
+│   │ └─┬ 1
+│   │   ├── participantPubKey: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
+│   │   ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
+│   │   └── pubNonce: 02ea2780df69fb69ce9bcfb4d5e990b3f6e37f2a9c30afbc1be79e5aefb4e84dbe0395b2731172810748e4e0687cbafda8c63240b0c00902a4e027d5aedf55e1f24b (66 bytes)
+│   └─┬ musig2PartialSignatures: length: 1
+│     └─┬ 0
+│       ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
+│       ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
+│       └── partialSig: 259341cdc66bbb6420c044355c8d11d24ebec6acdabd9bdaea8186082c171fc9 (32 bytes)
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: tb1pzqezqx02rhqf5mspjppjjkwnyuylacdyxcgaz8jg3wnfvaf7hpfspx744m
+    ├── value: 0.00009000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: taproot
+      ├── hex: 512010322019ea1dc09a6e0190432959d32709fee1a43611d11e488ba696753eb853
+      └── asm: OP_1 10322019ea1dc09a6e0190432959d32709fee1a43611d11e488ba696753eb853

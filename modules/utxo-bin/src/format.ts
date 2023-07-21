@@ -12,9 +12,17 @@ export function formatTree(
   n: ParserNode,
   { hide = hideDefault, chalk = new Instance() }: { hide?: string[]; chalk?: Chalk } = {}
 ): string {
-  function getLabel(label: string | number, v?: unknown): string {
+  function getLabel(
+    label: string | number,
+    v?: unknown,
+    { showUndefined }: { showUndefined: boolean } = { showUndefined: false }
+  ): string {
     const arr = [chalk.bold(label)];
-    if (v !== undefined) {
+    if (v === undefined) {
+      if (showUndefined) {
+        arr.push(chalk.dim('undefined'));
+      }
+    } else {
       arr.push(String(v));
     }
     return arr.join(': ');
@@ -34,7 +42,7 @@ export function formatTree(
           return String(v);
         }
         if (Buffer.isBuffer(v)) {
-          return v.length === 0 ? '[]' : v.toString('hex');
+          return `${v.toString('hex')} ${chalk.dim(`(${v.length} bytes)`)}`;
         }
     }
     throw new Error(`could not get label from value ${typeof v}`);
@@ -42,7 +50,7 @@ export function formatTree(
 
   function toArchy(n: ParserNode): archy.Data {
     return {
-      label: getLabel(n.label, getLabelFromValue(n.value)),
+      label: getLabel(n.label, getLabelFromValue(n.value), { showUndefined: !Boolean(n.nodes?.length) }),
       nodes: n.nodes ? n.nodes.flatMap((e) => (hide.includes(e.label) ? [] : [toArchy(e)])) : undefined,
     };
   }

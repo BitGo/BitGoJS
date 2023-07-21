@@ -1,0 +1,32 @@
+inputScripts
+└─┬ redeemScript
+  └─┬ script: length 105 bytes
+    ├─┬ classification
+    │ ├── input: nonstandard
+    │ ├── output: multisig
+    │ └── witness: undefined
+    ├── asm: 
+    │   OP_2
+    │   03f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f
+    │   035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf2
+    │   03e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b
+    │   OP_3
+    │   OP_CHECKMULTISIG
+    ├─┬ decompiled
+    │ ├── 0: 82
+    │ ├── 1: 03f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f (33 bytes)
+    │ ├── 2: 035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf2 (33 bytes)
+    │ ├── 3: 03e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b (33 bytes)
+    │ ├── 4: 83
+    │ └── 5: 174
+    └─┬ payment: p2ms(2 of 3)
+      ├── output: 522103f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f21035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf22103e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b53ae (105 bytes)
+      ├── m: 2
+      ├── n: 3
+      ├─┬ pubkeys: length: 3
+      │ ├── 0: 03f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f (33 bytes)
+      │ ├── 1: 035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf2 (33 bytes)
+      │ └── 2: 03e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b (33 bytes)
+      ├── signatures: undefined
+      ├── input: undefined
+      └── witness: undefined

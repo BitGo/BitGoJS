@@ -7,6 +7,7 @@ import { isHighS } from './ecdsa';
 import { ChainInfo } from './TxParser';
 import { OutputParser } from './OutputParser';
 import { parseUnknown } from './parseUnknown';
+import { ScriptParser } from './ScriptParser';
 
 type ParsedSignatureScript =
   | utxolib.bitgo.ParsedSignatureScriptP2ms
@@ -71,17 +72,7 @@ export class InputParser extends Parser {
       (type === 'taproot' && i === n - 2) ||
       ((type === 'scripthash' || type === 'witnessscripthash') && i === n - 1)
     ) {
-      let parsed;
-
-      try {
-        parsed = utxolib.script.toASM(part);
-      } catch (e) {
-        return 'error';
-      }
-
-      if (parsed) {
-        return ['', ...parsed.split(' ')].join('\n');
-      }
+      return ScriptParser.toASM(part);
     }
   }
 

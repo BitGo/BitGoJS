@@ -1,0 +1,12 @@
+address: tb1qeu6xmet5wqslj2w0wac0hx5gj6dupmp869cajrkt3kw6ud3kkecs62l3du
+├─┬ bech32
+│ ├── prefix: tb
+│ ├── words: 00191c1a061b190b140e00101f120a0e0f0e1d180f17061408121a0d1c011b01071a05181d1203160b11160e1a1c0d111616191810 (53 bytes)
+│ └── bytes: 0679a36f2ba3810fc94e7bbb87dcd444b4de07613e8b8ec8765c6ced71b1b5b388 (33 bytes)
+├── format: default
+├─┬ outputScript: 0020cf346de5747021f929cf7770fb9a88969bc0ec27d171d90ecb8d9dae3636b671 (34 bytes)
+│ └─┬ scriptPubKey: [34byte]
+│   ├── type: witnessscripthash
+│   ├── hex: 0020cf346de5747021f929cf7770fb9a88969bc0ec27d171d90ecb8d9dae3636b671
+│   └── asm: OP_0 cf346de5747021f929cf7770fb9a88969bc0ec27d171d90ecb8d9dae3636b671
+└── network: testnet

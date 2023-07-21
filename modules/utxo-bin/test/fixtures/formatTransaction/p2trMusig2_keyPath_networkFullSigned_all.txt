@@ -1,0 +1,35 @@
+transaction: 5fcf914e7d3d6dd90078fc12cd8efa60cf17c35b89fbc006a13a69690bdf24b2
+├── format: network
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 169vbytes (674wu)
+├─┬ inputs: 2
+│ ├─┬ 0: b6ade064f811645d3801707b81bb780f42b04d5a9a60ab82f5ec83e4e086cbad:1
+│ │ ├── sequence: ffffffff (4 bytes)
+│ │ ├── scriptSig:  (0 bytes)
+│ │ ├─┬ witness: taproot
+│ │ │ └── 0: 3c79e8cf8e534dc41de7d1658df2ea64e0db634868d3cd51ca2c54a97983400ce24756da406d3f7281bd423863cbe59fe676fa16ac6be70e2da2c37e3edc4449 (64 bytes)
+│ │ └─┬ sigScript: taprootKeyPathSpend
+│ │   ├── pubkeys: []
+│ │   └─┬ signatures
+│ │     └── 0: 3c79e8cf8e534dc41de7d1658df2ea64e0db634868d3cd51ca2c54a97983400ce24756da406d3f7281bd423863cbe59fe676fa16ac6be70e2da2c37e3edc4449 (64 bytes)
+│ └─┬ 1: 8c5804c712420d80c7322315acb883987fb6dd9025009080cee7c9af56af3fc4:1
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig:  (0 bytes)
+│   ├─┬ witness: taproot
+│   │ └── 0: 4c1b3e2fd3ffba892444537c9a815bb96783ef78a2dfe3cc75c947fe44e3975f1916cb8cd31ce8b2a6f16a52487027f75962d0d91b5e164d34cab97958e92d6b (64 bytes)
+│   └─┬ sigScript: taprootKeyPathSpend
+│     ├── pubkeys: []
+│     └─┬ signatures
+│       └── 0: 4c1b3e2fd3ffba892444537c9a815bb96783ef78a2dfe3cc75c947fe44e3975f1916cb8cd31ce8b2a6f16a52487027f75962d0d91b5e164d34cab97958e92d6b (64 bytes)
+└─┬ outputs: 1 sum=1.99999000
+  └─┬ 0: tb1p89vgerqhqzn7mc00a9l2m6gwl5dxx5grt7t43fzvpl5sqzmrm0rq45upvt
+    ├── value: 1.99999000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: taproot
+      ├── hex: 512039588c8c1700a7ede1efe97eade90efd1a6351035f9758a44c0fe9000b63dbc6
+      └── asm: OP_1 39588c8c1700a7ede1efe97eade90efd1a6351035f9758a44c0fe9000b63dbc6

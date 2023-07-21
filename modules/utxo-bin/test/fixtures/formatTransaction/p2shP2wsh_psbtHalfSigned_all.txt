@@ -1,0 +1,43 @@
+transaction: 4225a6fe7cdef78e6f427b0421c105fca82a334f93ebc43693101b55e74fabca
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 83vbytes (332wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 12.05
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: 1417cfe6f9a811fcb2276e521a6475b287e03c12c60fab2b0f93d87cafcf2ade:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├─┬ scriptSig: nonstandard
+│   │ ├── 0: 0
+│   │ └── 1: e8400eafa6da42eead5045da37c9735f3831efcd1a15cf7cf9794a0b3409c881 (32 bytes)
+│   ├─┬ witness: nonstandard
+│   │ └── 0: 522103393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e2102089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c7102805072103c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b53ae (105 bytes)
+│   ├─┬ sigScript: p2shP2wsh
+│   │ ├─┬ pubkeys: 3
+│   │ │ ├── 0: 03393e3c784cf42a09c32b33b3ee2879ab092fd381c2187deafe6b69e0dc5bee4e (33 bytes)
+│   │ │ ├── 1: 02089e4bad05bf0f0a67f5055c6518d5ae05de86db8081e9d5d2e654c710280507 (33 bytes)
+│   │ │ └── 2: 03c154061b8a77902eeebf5c39429515b572161af576610f66f0d4269940f0f81b (33 bytes)
+│   │ └─┬ signatures: [71byte]
+│   │   ├── signed by: [0]
+│   │   └─┬ 0
+│   │     ├── bytes: 3044022018962d97a86413e343bd7bab25a58950149299efbf18984f453d13b1c3321d7d02207f18a12092572532bb9b6062adc145fb2d7c0800344892727927536115f1ddd301 (71 bytes)
+│   │     ├── isCanonical: true
+│   │     ├── hashType: 1
+│   │     ├── r: 18962d97a86413e343bd7bab25a58950149299efbf18984f453d13b1c3321d7d (32 bytes)
+│   │     ├── s: 7f18a12092572532bb9b6062adc145fb2d7c0800344892727927536115f1ddd3 (32 bytes)
+│   │     └── highS: false
+│   ├── value: 0.0001
+│   └─┬ pubScript: a914ab96b8e16da18fa7ff6a4b33a34bf1a0332ca7fe87 (23 bytes)
+│     └── address: 2N8tW6SxJirYPBCf9HBjnE7HZ19SoPmav1f
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: 2MyQztMjtbD6teVach9XJFFZ5BsE9mHst1L
+    ├── value: 0.00009000
+    └─┬ scriptPubKey: [23byte]
+      ├── type: scripthash
+      ├── hex: a91443a9fa28bded8330ae2109361807984bb5caa24b87
+      └── asm: OP_HASH160 43a9fa28bded8330ae2109361807984bb5caa24b OP_EQUAL
