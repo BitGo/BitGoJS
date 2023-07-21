@@ -1086,9 +1086,24 @@ export class Eth extends BaseCoin {
     } catch (e) {
       throw new Error(`Error decrypting backup keychain: ${e.message}`);
     }
+    const MPC = new Ecdsa();
 
     const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
+
     const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
+
+    const backupKeyDerive = MPC.keyDerive(
+      backupSigningMaterial.pShare,
+      [backupSigningMaterial.userNShare!, backupSigningMaterial.bitgoNShare],
+      'm/0/0/0'
+    );
+    const backupKeyCombined: ECDSA.KeyCombined = {
+      ...backupKeyDerive,
+      yShares: MPC.keyCombine(backupSigningMaterial.pShare, [
+        backupSigningMaterial.bitgoNShare,
+        backupSigningMaterial.userNShare!,
+      ]).yShares,
+    };
 
     if (!userSigningMaterial.backupNShare) {
       throw new Error('Invalid user key - missing backupNShare');
@@ -1098,15 +1113,10 @@ export class Eth extends BaseCoin {
       throw new Error('Invalid backup key - missing userNShare');
     }
 
-    const MPC = new Ecdsa();
-
     const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
       userSigningMaterial.bitgoNShare,
-      userSigningMaterial.backupNShare,
-    ]);
-    const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
-      backupSigningMaterial.bitgoNShare,
-      backupSigningMaterial.userNShare,
+      // Get user nShare
+      backupKeyDerive.nShares[1],
     ]);
 
     if (
@@ -1217,11 +1227,14 @@ export class Eth extends BaseCoin {
       const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
       backupKeyAddress = backupKeyPair.getAddress();
     }
+    console.log('backupKeyAddress', backupKeyAddress);
 
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    console.log('backupKeyNonce', backupKeyNonce);
 
     // get balance of backupKey to ensure funds are available to pay fees
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    console.log('backupKeyBalance', backupKeyBalance);
 
     const totalGasNeeded = gasPrice.mul(gasLimit);
     const weiToGwei = 10 ** 9;
@@ -1232,6 +1245,7 @@ export class Eth extends BaseCoin {
           ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
       );
     }
+    console.log('totalGasNeeded', totalGasNeeded);
 
     // get balance of wallet and deduct fees to get transaction amount, wallet contract address acts as base address for tss?
     const txAmount = backupKeyBalance.sub(totalGasNeeded);
