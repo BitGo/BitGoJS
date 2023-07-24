@@ -30,8 +30,8 @@ import {
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
 import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
-import { script as bscript, TxInput } from 'bitcoinjs-lib';
-import { opcodes } from '../../index';
+import { opcodes as ops, script as bscript, TxInput } from 'bitcoinjs-lib';
+import { opcodes, payments } from '../../index';
 import { getPsbtInputSignatureCount, isPsbtInputFinalized } from '../PsbtUtil';
 
 // only used for building `SignatureContainer`
@@ -498,4 +498,51 @@ export function getSignatureValidationArrayPsbt(psbt: UtxoPsbt, rootWalletKeys: 
         : psbt.getSignatureValidationArray(i, { rootNodes: rootWalletKeys.triple });
     return [i, sigValArrayForInput];
   });
+}
+
+/**
+ * Extracts the half signed transaction from the psbt for p2ms based script types - p2sh, p2wsh, and p2shP2wsh.
+ * The purpose is to provide backward compatibility to keyternal (KRS) that only supports network transaction and p2ms script types.
+ */
+export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<bigint> {
+  assert(!!(psbt.data.inputs.length && psbt.data.outputs.length), 'empty inputs or outputs');
+  const tx = psbt.getUnsignedTx();
+
+  function isP2msParsedPsbtInput(
+    parsed: ParsedPsbtP2ms | ParsedPsbtTaproot | ParsedPsbtP2shP2pk
+  ): parsed is ParsedPsbtP2ms {
+    return ['p2sh', 'p2shP2wsh', 'p2wsh'].includes(parsed.scriptType);
+  }
+
+  psbt.data.inputs.forEach((input, i) => {
+    const parsed = parsePsbtInput(input);
+    assert(isP2msParsedPsbtInput(parsed), `unsupported script type ${parsed.scriptType}`);
+    assert(input.partialSig?.length === 1, `unexpected signature count ${input.partialSig?.length}`);
+    const [partialSig] = input.partialSig;
+    assert(
+      input.sighashType !== undefined && input.sighashType === bscript.signature.decode(partialSig.signature).hashType,
+      'signature sighash does not match input sighash type'
+    );
+
+    // type casting is to address the invalid type checking in payments.p2ms
+    const signatures = parsed.publicKeys.map((pk) =>
+      partialSig.pubkey.equals(pk) ? partialSig.signature : (ops.OP_0 as unknown as Buffer)
+    );
+
+    const isP2SH = !!parsed.redeemScript;
+    const isP2WSH = !!parsed.witnessScript;
+
+    const payment = payments.p2ms({ output: parsed.pubScript, signatures }, { validate: false, allowIncomplete: true });
+    const p2wsh = isP2WSH ? payments.p2wsh({ redeem: payment }) : undefined;
+    const p2sh = isP2SH ? payments.p2sh({ redeem: p2wsh || payment }) : undefined;
+
+    if (p2sh?.input) {
+      tx.setInputScript(i, p2sh.input);
+    }
+    if (p2wsh?.witness) {
+      tx.setWitness(i, p2wsh.witness);
+    }
+  });
+
+  return tx;
 }

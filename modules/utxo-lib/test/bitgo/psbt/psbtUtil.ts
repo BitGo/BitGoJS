@@ -154,6 +154,31 @@ export function validatePsbtParsing(
   });
 }
 
+export function assertEqualTransactions<TNumber extends number | bigint>(
+  txOne: UtxoTransaction<TNumber>,
+  txTwo: UtxoTransaction<TNumber>
+): void {
+  assert.ok(txOne.network === txTwo.network);
+  assert.ok(txOne.getId() === txTwo.getId());
+  assert.ok(txOne.toHex() === txTwo.toHex());
+  assert.ok(txOne.virtualSize() === txTwo.virtualSize());
+  assert.ok(txOne.locktime === txTwo.locktime);
+  assert.ok(txOne.version === txTwo.version);
+  assert.ok(txOne.weight() === txTwo.weight());
+
+  assert.ok(txOne.ins.length === txTwo.ins.length);
+  assert.ok(txOne.outs.length === txTwo.outs.length);
+  txOne.ins.forEach((_, i) => {
+    const parsedInputOne = parseSignatureScript2Of3(txOne.ins[i]);
+    const parsedInputTwo = parseSignatureScript2Of3(txTwo.ins[i]);
+    assert.deepStrictEqual(parsedInputOne, parsedInputTwo);
+  });
+  txOne.outs.forEach((_, i) => {
+    assert.deepStrictEqual(txOne.outs[i], txTwo.outs[i]);
+  });
+  assert.ok(txOne.toBuffer().equals(txTwo.toBuffer()));
+}
+
 export function toBigInt<TNumber extends number | bigint>(unspents: Unspent<TNumber>[]): WalletUnspent<bigint>[] {
   return unspents.map((u) => {
     if (isWalletUnspent(u)) {

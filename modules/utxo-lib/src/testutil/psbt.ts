@@ -113,9 +113,10 @@ export function signPsbtInput(
   input: Input,
   inputIndex: number,
   rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned'
+  sign: 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): void {
-  const { signerName, cosignerName } = getSigners(input.scriptType);
+  const { signerName, cosignerName } = signers ? signers : getSigners(input.scriptType);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
       psbt.signInput(inputIndex, rootWalletKeys[signerName]);
@@ -136,10 +137,11 @@ export function signAllPsbtInputs(
   psbt: UtxoPsbt,
   inputs: Input[],
   rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned'
+  sign: 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): void {
   inputs.forEach((input, index) => {
-    signPsbtInput(psbt, input, index, rootWalletKeys, sign);
+    signPsbtInput(psbt, input, index, rootWalletKeys, sign, signers);
   });
 }
 
@@ -151,7 +153,8 @@ export function constructPsbt(
   outputs: Output[],
   network: Network,
   rootWalletKeys: RootWalletKeys,
-  sign: 'unsigned' | 'halfsigned' | 'fullsigned'
+  sign: 'unsigned' | 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): UtxoPsbt {
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
@@ -165,7 +168,7 @@ export function constructPsbt(
   const unspents = inputs.map((input, i) => toUnspent(input, i, network, rootWalletKeys));
 
   unspents.forEach((u, i) => {
-    const { signerName, cosignerName } = getSigners(inputs[i].scriptType);
+    const { signerName, cosignerName } = signers ? signers : getSigners(inputs[i].scriptType);
     if (isWalletUnspent(u) && cosignerName) {
       addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signerName, cosignerName);
     } else {
@@ -200,7 +203,7 @@ export function constructPsbt(
   signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned');
 
   if (sign === 'fullsigned') {
-    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign);
+    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, signers);
   }
 
   return psbt;

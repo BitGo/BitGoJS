@@ -166,7 +166,7 @@ function runTx<TNumber extends number | bigint>(
 
 signs.forEach((sign) => {
   getNetworkList()
-    .filter((v) => isMainnet(v) && v !== networks.bitcoincash)
+    .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
     .forEach((network) => {
       const supportedPsbtInputs = psbtInputs.filter((input) =>
         isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
