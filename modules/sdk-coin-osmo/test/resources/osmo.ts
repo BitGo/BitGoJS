@@ -257,4 +257,5 @@ export const coinAmounts = {
   amount3: { amount: '100000000000', denom: 'nosmo' },
   amount4: { amount: '-1', denom: 'uosmo' },
   amount5: { amount: '1000', denom: 'hosmo' },
+  amount6: { amount: '0', denom: 'uosmo' },
 };

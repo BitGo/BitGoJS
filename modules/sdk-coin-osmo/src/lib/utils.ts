@@ -1,7 +1,6 @@
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
-
 import { CosmosUtils } from '@bitgo/abstract-cosmos';
 import * as constants from './constants';
 
@@ -22,9 +21,9 @@ export class OsmoUtils extends CosmosUtils {
   }
 
   /** @inheritdoc */
-  validateAmount(amount: Coin): void {
+  validateAmount(amount: Coin, transactionType?: TransactionType): void {
     const amountBig = BigNumber(amount.amount);
-    if (amountBig.isLessThanOrEqualTo(0)) {
+    if (amountBig.isLessThanOrEqualTo(0) && transactionType !== TransactionType.ContractCall) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
     }
     if (!constants.validDenoms.find((denom) => denom === amount.denom)) {
