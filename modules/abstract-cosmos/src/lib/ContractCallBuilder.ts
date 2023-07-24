@@ -21,7 +21,7 @@ export class ContractCallBuilder extends CosmosTransactionBuilder {
   /** @inheritdoc */
   messages(messages: ExecuteContractMessage[]): this {
     this._messages = messages.map((executeContractMessage) => {
-      this._utils.validateExecuteContractMessage(executeContractMessage);
+      this._utils.validateExecuteContractMessage(executeContractMessage, this.transactionType);
       return {
         typeUrl: constants.executeContractMsgTypeUrl,
         value: executeContractMessage,
