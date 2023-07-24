@@ -366,11 +366,13 @@ export class Keychains implements IKeychains {
     );
     assert(bitgoToUserShare);
     assert(bitgoToUserShare.vssProof);
+    assert(bitgoToUserShare.paillierPublicKey);
     const bitgoToBackupShare = key.keyShares.find(
       (value: { from: string; to: string }) => value.from === 'bitgo' && value.to === 'backup'
     );
     assert(bitgoToBackupShare);
     assert(bitgoToBackupShare.vssProof);
+    assert(bitgoToBackupShare.paillierPublicKey);
 
     // Create JSON data with platform shares for OVC-1 and OVC-2
     const bitgoToOvcOutput: BitGoToOvcJSON = {
@@ -387,6 +389,7 @@ export class Keychains implements IKeychains {
                 j: 3,
                 publicShare: bitgoToUserShare.publicShare,
                 privateShare: bitgoToUserShare.privateShare,
+                paillierPublicKey: bitgoToUserShare.paillierPublicKey,
                 vssProof: bitgoToUserShare.vssProof,
               },
             },
@@ -397,6 +400,7 @@ export class Keychains implements IKeychains {
                 j: 3,
                 publicShare: bitgoToBackupShare.publicShare,
                 privateShare: bitgoToBackupShare.privateShare,
+                paillierPublicKey: bitgoToBackupShare.paillierPublicKey,
                 vssProof: bitgoToBackupShare.vssProof,
               },
             },

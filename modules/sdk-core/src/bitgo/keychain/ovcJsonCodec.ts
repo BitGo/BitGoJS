@@ -6,6 +6,7 @@ export const OvcShare = t.type(
     publicShare: t.string,
     privateShare: t.string,
     vssProof: t.string,
+    paillierPublicKey: t.string,
     i: t.number,
     j: t.number,
   },
