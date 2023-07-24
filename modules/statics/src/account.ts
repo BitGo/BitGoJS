@@ -965,36 +965,6 @@ export function stellarToken(
 }
 
 /**
- * Factory function for testnet Stellar token instances.
- *
- * @param id uuid v4
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param domain Domain of the token issuer (used to access token information from the issuer's stellar.toml file)
- * See https://www.stellar.org/developers/guides/concepts/stellar-toml.html
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Stellar testnet.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
- */
-export function tstellarToken(
-  id: string,
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  asset: UnderlyingAsset,
-  domain = '',
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.stellar
-) {
-  return stellarToken(id, name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
-}
-
-/**
  * Factory function for tron token instances.
  *
  * @param id uuid v4

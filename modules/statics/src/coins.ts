@@ -28,7 +28,6 @@ import {
   tpolygonErc20,
   tronToken,
   tsolToken,
-  tstellarToken,
   ttronToken,
   txrpToken,
 } from './account';
@@ -47,7 +46,6 @@ import {
   tofcAlgoToken,
   tofcerc20,
   tofcHederaToken,
-  tofcStellarToken,
 } from './ofc';
 import { utxo, UtxoCoin } from './utxo';
 
@@ -669,17 +667,6 @@ export const coins = CoinMap.fromCoins([
     KeyCurve.Ed25519
   ),
   account(
-    'dea5261e-dbe1-4870-b1db-5db9ed0ce63d',
-    'txlm',
-    'Testnet Stellar',
-    Networks.test.stellar,
-    7,
-    UnderlyingAsset.XLM,
-    BaseUnit.XLM,
-    XLM_FEATURES,
-    KeyCurve.Ed25519
-  ),
-  account(
     'a789797d-b740-43ad-a347-f19b17353651',
     'xtz',
     'Tezos',
@@ -1161,7 +1148,6 @@ export const coins = CoinMap.fromCoins([
   tofc('d76b04d1-baef-4bd7-ac49-b5900f8f0b67', 'ofctdash', 'Test Dash', 8, UnderlyingAsset.DASH, CoinKind.CRYPTO),
   tofc('446a1812-d02c-47d5-b3d5-830e420fa274', 'ofctzec', 'Test ZCash', 8, UnderlyingAsset.ZEC, CoinKind.CRYPTO),
   tofc('adfc43d8-e702-465d-af01-f1583fa00a5e', 'ofctxrp', 'Test Ripple', 6, UnderlyingAsset.XRP, CoinKind.CRYPTO),
-  tofc('3fb98e15-4e7d-4ab4-88cc-4a55746e6ffe', 'ofctxlm', 'Test Stellar', 7, UnderlyingAsset.XLM, CoinKind.CRYPTO),
   tofc('7c42feed-31e2-4a77-a211-ab3f24c9af90', 'ofctbch', 'Test Bitcoin Cash', 8, UnderlyingAsset.BCH, CoinKind.CRYPTO),
   tofc('4580a066-4a4b-4b6b-975f-b229170d72ba', 'ofctalgo', 'Test Algorand', 6, UnderlyingAsset.ALGO, CoinKind.CRYPTO),
   tofc('2095d445-a298-4d64-a2fb-49765a648159', 'ofctbtg', 'Test Bitcoin Gold', 8, UnderlyingAsset.BTG, CoinKind.CRYPTO),
@@ -7201,14 +7187,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN']
   ),
 
-  tofcStellarToken(
-    '4883a062-c38c-43d9-92c6-7cec9aaef995',
-    'ofctxlm:tst',
-    'Test Stellar BitGo Test Token',
-    7,
-    UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L']
-  ),
-
   stellarToken(
     '21549d80-c335-4d00-9ef2-86c3da3fcd46',
     'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
@@ -8226,28 +8204,6 @@ export const coins = CoinMap.fromCoins([
     undefined,
     undefined,
     'gteth'
-  ),
-  tstellarToken(
-    '47887cb5-98bb-4942-bd25-3ccca0847f36',
-    'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-    'BitGo Shield Token',
-    7,
-    UnderlyingAsset['txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
-    'bitgo.com',
-    AccountCoin.DEFAULT_FEATURES,
-    '',
-    'BST'
-  ),
-  tstellarToken(
-    '9e1d4f1a-661b-4a51-b647-71f8c1330201',
-    'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-    'BitGo Test Token',
-    7,
-    UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
-    'bitgo.com',
-    AccountCoin.DEFAULT_FEATURES,
-    '',
-    'TST'
   ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',

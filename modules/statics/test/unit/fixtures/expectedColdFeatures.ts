@@ -38,7 +38,6 @@ export const expectedColdFeatures = {
     'trx',
     'tstx',
     'ttrx',
-    'txlm',
     'txrp',
     'txtz',
     'tzec',
