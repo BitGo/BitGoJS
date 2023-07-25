@@ -1,8 +1,14 @@
+/**
+ * V1 Safe Wallets are the oldest type of wallets that BitGo supports. They were
+ * created back in 2013-14 and don't use HD chains. Instead, they have only one
+ * P2SH address per wallet whose redeem script uses uncompressed public keys.
+ * */
+
 import * as assert from 'assert';
-import { ecc as eccLib /* , bip32 */ } from '../../noble_ecc';
-// import { BIP32Interface } from 'bip32';
-// import { ECPairInterface } from 'ecpair';
-// import { networks } from 'bitcoinjs-lib';
+import { ecc as eccLib } from '../../noble_ecc';
+import { isBitcoin, Network } from '../../networks';
+import { isTriple } from '../types';
+import * as bitcoinjs from 'bitcoinjs-lib';
 
 function getPublicKeyBuffer(publicKey: Buffer, { compressed = true } = {}): Buffer {
   const res = eccLib.pointCompress(publicKey, compressed);
@@ -15,10 +21,47 @@ function getPublicKeyBuffer(publicKey: Buffer, { compressed = true } = {}): Buff
   return buffer;
 }
 
-export function convertToUncompressedPub(compressedPub: Buffer): Buffer {
-  return getPublicKeyBuffer(compressedPub, { compressed: false });
+export function toUncompressedPub(pubkey: Buffer): Buffer {
+  return getPublicKeyBuffer(pubkey, { compressed: false });
 }
 
-export function convertToCompressedPub(compressedPub: Buffer): Buffer {
-  return getPublicKeyBuffer(compressedPub, { compressed: true });
+export function toCompressedPub(pubkey: Buffer): Buffer {
+  return getPublicKeyBuffer(pubkey, { compressed: true });
+}
+
+/** create p2sh scripts with uncompressed pubkeys */
+export function createLegacySafeOutputScript2of3(
+  pubkeys: Buffer[],
+  network?: Network
+): {
+  scriptPubKey: Buffer;
+  redeemScript: Buffer;
+} {
+  if (network) {
+    if (!isBitcoin(network)) {
+      throw new Error(`unsupported network for legacy safe output script: ${network.coin}`);
+    }
+  }
+
+  if (!isTriple(pubkeys)) {
+    throw new Error(`must provide pubkey triple`);
+  }
+
+  pubkeys.forEach((key) => {
+    if (key.length !== 65) {
+      throw new Error(`Unexpected key length ${key.length}. Must use uncompressed keys.`);
+    }
+  });
+
+  const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
+  assert(script2of3.output);
+
+  const scriptPubKey = bitcoinjs.payments.p2sh({ redeem: script2of3 });
+  assert(scriptPubKey);
+  assert(scriptPubKey.output);
+
+  return {
+    scriptPubKey: scriptPubKey.output,
+    redeemScript: script2of3.output,
+  };
 }
