@@ -150,7 +150,8 @@ describe('TSS Ecdsa Utils:', async function () {
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    // TODO(WP-346): sdk-test mocks conflict so we can't use persist
+    nock(bgUrl).get('/api/v1/client/constants').times(15).reply(200, { ttl: 3600, constants });
 
     const nockPromises = [
       nockBitgoKeychain({
@@ -1236,7 +1237,10 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     function nockGetBitgoChallenges(response: unknown): nock.Scope {
-      return nock(bgUrl).get(`/api/v2/tss/ecdsa/challenges`).times(1).reply(200, response);
+      return nock(bgUrl)
+        .get(`/api/v2/tss/ecdsa/challenges`)
+        .times(1)
+        .reply(() => [200, response]);
     }
 
     it('succeeds for valid bitgo proofs', async function () {

@@ -56,7 +56,7 @@ describe('External signer', () => {
       },
     };
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    nock(bgUrl).get('/api/v1/client/constants').times(3).reply(200, { ttl: 3600, constants });
   });
 
   after(() => {

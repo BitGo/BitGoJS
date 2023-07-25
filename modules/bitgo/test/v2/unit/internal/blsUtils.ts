@@ -3,13 +3,13 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src';
 import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {
-  const bitgo: any = TestBitGo.decorate(BitGo, { env: 'mock' });
+  const bitgo: TestableBG & BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
   bitgo.initializeTestVars();
   const eth2 = bitgo.coin('eth2');
   let bgUrl: string;
@@ -35,7 +35,8 @@ describe('BLS Utils:', async function () {
       },
     };
 
-    nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    // TODO(WP-346): sdk-test mocks conflict so we can't use persist
+    nock(bitgo.microservicesUrl('')).get('/api/v1/client/constants').times(3).reply(200, { ttl: 3600, constants });
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     blsUtils = new BlsUtils(bitgo, eth2);
