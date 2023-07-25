@@ -13,4 +13,5 @@ export { AtaInitializationBuilder } from './ataInitializationBuilder';
 export { StakingActivateBuilder } from './stakingActivateBuilder';
 export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+export { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 export { Utils, Interface };
