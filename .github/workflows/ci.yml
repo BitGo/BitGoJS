@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x]
+        node-version: [16.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -59,28 +59,28 @@ jobs:
         run: yarn run postinstall
 
       - name: Lint Commit Messages
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: |
           GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
 
       - name: Check In-Repo Package Versions
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run check-versions
 
       - name: Dependency Audit
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run improved-yarn-audit --min-severity high
 
       - name: Lint Source Code
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run lint
 
       - name: Check Source Code Formatting
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run check-fmt
 
       - name: Check Package Dependencies
-        if: ${{ startsWith(matrix.node-version, '14') }}
+        if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run check-deps
 
       - name: Unit Test
