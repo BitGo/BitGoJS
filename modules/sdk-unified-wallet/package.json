@@ -10,7 +10,10 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
   },
   "dependencies": {
     "@bitgo/sdk-core": "^8.10.0",
