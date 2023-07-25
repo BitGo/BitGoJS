@@ -45,7 +45,6 @@
     "@bitgo/utxo-lib": "^9.2.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.11.2",
-    "@bitgo/sdk-test": "^1.2.27"
+    "@bitgo/sdk-api": "^1.11.2"
   }
 }

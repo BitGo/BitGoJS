@@ -1,19 +1,16 @@
+import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Zec, Tzec } from '../../src';
 
 describe('Zec', function () {
   const coinName = 'tzec';
-  let bitgo: TestBitGoAPI;
+  let bitgo: BitGoAPI;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGoAPI, {
-      env: 'mock',
-    });
-    bitgo.initializeTestVars();
-    bitgo.safeRegister('zec', Zec.createInstance);
-    bitgo.safeRegister('tzec', Tzec.createInstance);
+    bitgo = new BitGoAPI({ env: 'mock' });
+    bitgo.register('zec', Zec.createInstance);
+    bitgo.register('tzec', Tzec.createInstance);
     basecoin = bitgo.coin(coinName);
   });
 
