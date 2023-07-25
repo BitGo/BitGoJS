@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { ScriptType, ScriptType2Of3, scriptTypeP2shP2pk } from '../bitgo/outputScripts';
+import { ScriptType, ScriptType2Of3, scriptTypeP2shP2pk, scriptTypes2Of3 } from '../bitgo/outputScripts';
 import {
   getExternalChainCode,
   isWalletUnspent,
@@ -23,7 +23,7 @@ import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
  * input script type and value.
  */
 export type TxnInputScriptType = Exclude<ScriptType, 'p2trMusig2'>;
-export type TxnOutputScriptType = Exclude<ScriptType2Of3, 'p2trMusig2'>;
+export type TxnOutputScriptType = ScriptType2Of3;
 
 /**
  * output script type and value
@@ -52,7 +52,7 @@ export const txnInputScriptTypes = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', script
 /**
  * array of supported output script types.
  */
-export const txnOutputScriptTypes = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
+export const txnOutputScriptTypes = scriptTypes2Of3;
 
 /**
  * create unspent object from input script type, index, network and root wallet key.
@@ -96,9 +96,10 @@ export function signTxnInput<TNumber extends number | bigint>(
   input: TxnInput<TNumber>,
   inputIndex: number,
   rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned'
+  sign: 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): void {
-  const { signerName, cosignerName } = getTxnSigners(input.scriptType);
+  const { signerName, cosignerName } = signers ? signers : getTxnSigners(input.scriptType);
   const unspent = toTxnUnspent(input, inputIndex, txb.network, rootWalletKeys);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
@@ -130,10 +131,11 @@ export function signAllTxnInputs<TNumber extends number | bigint>(
   txb: UtxoTransactionBuilder<TNumber>,
   inputs: TxnInput<TNumber>[],
   rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned'
+  sign: 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): void {
   inputs.forEach((input, index) => {
-    signTxnInput(txb, input, index, rootWalletKeys, sign);
+    signTxnInput(txb, input, index, rootWalletKeys, sign, signers);
   });
 }
 
@@ -145,7 +147,8 @@ export function constructTxnBuilder<TNumber extends number | bigint>(
   outputs: TxnOutput<TNumber>[],
   network: Network,
   rootWalletKeys: RootWalletKeys,
-  sign: 'unsigned' | 'halfsigned' | 'fullsigned'
+  sign: 'unsigned' | 'halfsigned' | 'fullsigned',
+  signers?: { signerName: KeyName; cosignerName?: KeyName }
 ): UtxoTransactionBuilder<TNumber> {
   const totalInputAmount = inputs.reduce((sum, input) => sum + BigInt(input.value), BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + BigInt(output.value), BigInt(0));
@@ -182,10 +185,10 @@ export function constructTxnBuilder<TNumber extends number | bigint>(
     return txb;
   }
 
-  signAllTxnInputs(txb, inputs, rootWalletKeys, 'halfsigned');
+  signAllTxnInputs(txb, inputs, rootWalletKeys, 'halfsigned', signers);
 
   if (sign === 'fullsigned') {
-    signAllTxnInputs(txb, inputs, rootWalletKeys, sign);
+    signAllTxnInputs(txb, inputs, rootWalletKeys, sign, signers);
   }
 
   return txb;
