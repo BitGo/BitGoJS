@@ -79,6 +79,7 @@ export interface ApiKeyShare {
   publicShare: string;
   privateShare: string;
   privateShareProof?: string;
+  paillierPublicKey?: string;
   n?: string;
   vssProof?: string;
 }
