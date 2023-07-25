@@ -1075,6 +1075,7 @@ export enum UnderlyingAsset {
   WHT = 'wht',
   WILD = 'wild',
   WNXM = 'wnxm',
+  WLD = 'wld',
   WLUNA = 'wluna',
   WLXT = 'wlxt',
   // Wrapped SOL

@@ -6073,6 +6073,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.WNXM
   ),
   erc20(
+    '90575654-b796-4ba5-8acf-dd381f7b3e9b',
+    'wld',
+    'Worldcoin',
+    18,
+    '0x163f8c2467924be0ae7b5347228cabf260318753',
+    UnderlyingAsset.WLD
+  ),
+  erc20(
     '9a5fada5-5f91-494b-bab5-8781d831fcd0',
     'wluna',
     'Wrapped Luna',
