@@ -1468,6 +1468,14 @@ describe('TSS Ecdsa Utils:', async function () {
     message.should.equal(expectedMessageToSign);
   });
 
+  it('publicKeyFromCommonKeychain returns correct public key', function () {
+    const commonKeychain =
+      '03f40c70545b519bb7bbc7195fd4b7d5bbfc873bfd38b18596e4b47a05b6a88d552e2e8319cb31e279b99dbe54115a983d35e86679af96d81b7478d1df368f76a8';
+    const expectedPubKeyResult = `f40c70545b519bb7bbc7195fd4b7d5bbfc873bfd38b18596e4b47a05b6a88d556a10d6ab8055dc0b3a9af9dc4e42f4f9773c590afcc298d017c1b1ce29a88041`;
+    const actualPubKey = ECDSAUtils.EcdsaUtils.publicKeyFromCommonKeychain(commonKeychain);
+    actualPubKey.should.equal(expectedPubKeyResult);
+  });
+
   // #region Nock helpers
   async function createIncompleteBitgoHeldBackupKeyShare(
     userGpgKey: openpgp.SerializedKeyPair<string>,

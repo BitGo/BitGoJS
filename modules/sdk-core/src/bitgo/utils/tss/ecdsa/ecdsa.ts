@@ -2,6 +2,7 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Key, SerializedKeyPair } from 'openpgp';
 import * as openpgp from 'openpgp';
+import { ec } from 'elliptic';
 
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
@@ -1180,5 +1181,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       .put(bitgo.url(`/enterprise/${entId}/tssconfig/ecdsa/challenge`, 2))
       .send(body)
       .result();
+  }
+
+  static publicKeyFromCommonKeychain(commonKeychain: string) {
+    const pub = EcdsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
+    const secp256k1 = new ec('secp256k1');
+    const key = secp256k1.keyFromPublic(pub, 'hex');
+    return key.getPublic().encode('hex', false).slice(2);
   }
 }
