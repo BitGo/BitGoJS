@@ -2,13 +2,14 @@
  * @prettier
  */
 import 'should';
+import * as mocha from 'mocha';
 import * as sinon from 'sinon';
 import * as nock from 'nock';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
 import * as utxolib from '@bitgo/utxo-lib';
 const { toOutput, outputScripts } = utxolib.bitgo;
-type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -29,7 +30,6 @@ import {
   getWalletAddress,
   getWalletKeys,
   keychains,
-  mockUnspent,
   shouldEqualJSON,
   toKeychainBase58,
   utxoCoins,
@@ -92,9 +92,7 @@ function getKeysForFullSignedRecovery(
 }
 
 function getScriptTypes2Of3() {
-  // FIXME(BG-66941): p2trMusig2 signing does not work in this test suite yet
-  //  because the test suite is written with TransactionBuilder
-  return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
+  return outputScripts.scriptTypes2Of3;
 }
 
 function run(
@@ -115,30 +113,25 @@ function run(
     return;
   }
 
-  describe(`Backup Key Recovery [${[coin.getChain(), ...tags].join(',')}]`, function () {
+  describe(`Backup Key Recovery [${[coin.getChain(), ...tags, params.krsProvider].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
 
     let keyRecoveryServiceAddress: string;
     let recovery: (BackupKeyRecoveryTransansaction | FormattedOfflineVaultTxInfo) & { txid?: string };
-    let recoveryTx: utxolib.bitgo.UtxoTransaction;
+    let recoveryTx: utxolib.bitgo.UtxoTransaction<number | bigint> | utxolib.bitgo.UtxoPsbt;
 
+    // 1e8 * 9e7 < 9.007e15 but 2e8 * 9e7 > 9.007e15 to test both code paths in queryBlockchainUnspentsPath
+    const valueMul = coin.amountType === 'bigint' ? BigInt(9e7) : BigInt(1);
     const allUnspents = [
-      mockUnspent(coin.network, walletKeys, scriptType, 0, 1e8),
-      mockUnspent(coin.network, walletKeys, scriptType, 2, 2e8),
-      mockUnspent(coin.network, walletKeys, scriptType, 3, 3e8),
+      utxolib.testutil.toUnspent({ scriptType, value: BigInt(1e8) * valueMul }, 0, coin.network, walletKeys),
+      utxolib.testutil.toUnspent({ scriptType, value: BigInt(2e8) * valueMul }, 2, coin.network, walletKeys),
+      utxolib.testutil.toUnspent({ scriptType, value: BigInt(3e8) * valueMul }, 3, coin.network, walletKeys),
       // this unspent will not be picked up due to the index gap
-      mockUnspent(coin.network, walletKeys, scriptType, 23, 23e8),
+      utxolib.testutil.toUnspent({ scriptType, value: BigInt(23e8) }, 23, coin.network, walletKeys),
     ];
 
     const recoverUnspents = allUnspents.slice(0, -1);
-
-    if (coin.amountType === 'bigint') {
-      recoverUnspents.forEach((u) => {
-        // 1e8 * 9e7 < 9.007e15 but 2e8 * 9e7 > 9.007e15 to test both code paths in queryBlockchainUnspentsPath
-        u.value *= 9e7;
-      });
-    }
 
     before('mock', function () {
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
@@ -146,8 +139,9 @@ function run(
 
     configOverride(function (config: Config) {
       const configKrsProviders = { ...config.krsProviders };
-      keyRecoveryServiceAddress = getWalletAddress(coin.network, externalWallet, 0, 100);
+      configKrsProviders.dai.supportedCoins = [coin.getFamily()];
       configKrsProviders.keyternal.supportedCoins = [coin.getFamily()];
+      keyRecoveryServiceAddress = getWalletAddress(coin.network, externalWallet, 0, 100);
       configKrsProviders.keyternal.feeAddresses = { [coin.getChain()]: keyRecoveryServiceAddress };
       config.krsProviders = configKrsProviders;
     });
@@ -169,28 +163,69 @@ function run(
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
-      recoveryTx = utxolib.bitgo.createTransactionFromHex(txHex as string, coin.network, coin.amountType);
-      recovery.txid = recoveryTx.getId();
+      const isPsbt = utxolib.bitgo.isPsbt(txHex);
+      recoveryTx = isPsbt
+        ? utxolib.bitgo.createPsbtFromHex(txHex, coin.network)
+        : utxolib.bitgo.createTransactionFromHex(txHex as string, coin.network, coin.amountType);
+      recovery.txid =
+        recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.getUnsignedTx().getId() : recoveryTx.getId();
     });
 
     it('matches fixture', async function () {
-      shouldEqualJSON(recovery, await getFixture(coin, `recovery/backupKeyRecovery-${tags.join('-')}`, recovery));
+      shouldEqualJSON(
+        recovery,
+        await getFixture(
+          coin,
+          `recovery/backupKeyRecovery-${(params.krsProvider ? tags.concat([params.krsProvider]) : tags).join('-')}`,
+          recovery
+        )
+      );
     });
 
     it('has expected input count', function () {
-      recoveryTx.ins.length.should.eql(recoverUnspents.length);
+      (recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.data.inputs : recoveryTx.ins).length.should.eql(
+        recoverUnspents.length
+      );
     });
 
-    function checkInputsSignedBy(tx: utxolib.bitgo.UtxoTransaction, rootKey: BIP32Interface, expectCount: number) {
-      const prevOutputs = recoverUnspents.map((u) => toOutput(u, coin.network));
-      tx.ins.forEach((input, inputIndex) => {
-        const unspent = recoverUnspents[inputIndex] as WalletUnspent;
-        const { publicKey } = rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index));
-        const signatures = utxolib.bitgo
-          .getSignatureVerifications(tx, inputIndex, unspent.value, { publicKey }, prevOutputs)
-          .filter((s) => s.signedBy !== undefined);
-        signatures.length.should.eql(expectCount);
-      });
+    function checkInputsSignedBy(
+      tx: utxolib.bitgo.UtxoTransaction<number | bigint> | utxolib.bitgo.UtxoPsbt,
+      rootKey: BIP32Interface,
+      expectCount: number
+    ) {
+      if (tx instanceof utxolib.bitgo.UtxoPsbt) {
+        function validate(tx: utxolib.bitgo.UtxoPsbt, inputIndex: number) {
+          try {
+            return tx.validateSignaturesOfInputHD(inputIndex, rootKey);
+          } catch (e) {
+            if (e.message === 'No signatures to validate') {
+              return false;
+            }
+            throw e;
+          }
+        }
+        tx.data.inputs.forEach((input, inputIndex) => {
+          validate(tx, inputIndex).should.eql(!!expectCount);
+        });
+      } else {
+        const prevOutputs = recoverUnspents
+          .map((u) => toOutput(u, coin.network))
+          .map((v) => ({ ...v, value: utxolib.bitgo.toTNumber(v.value, coin.amountType) }));
+        tx.ins.forEach((input, inputIndex) => {
+          const unspent = recoverUnspents[inputIndex] as WalletUnspent;
+          const { publicKey } = rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index));
+          const signatures = utxolib.bitgo
+            .getSignatureVerifications(
+              tx,
+              inputIndex,
+              utxolib.bitgo.toTNumber(unspent.value, coin.amountType),
+              { publicKey },
+              prevOutputs
+            )
+            .filter((s) => s.signedBy !== undefined);
+          signatures.length.should.eql(expectCount);
+        });
+      }
     }
 
     it((params.hasUserSignature ? 'has' : 'has no') + ' user signature', function () {
@@ -202,33 +237,38 @@ function run(
     });
 
     if (params.hasUserSignature && params.hasBackupSignature) {
-      it('has no placeholder signatures', function () {
-        recoveryTx.ins.forEach((input) => {
-          const parsed = utxolib.bitgo.parseSignatureScript(input);
-          switch (parsed.scriptType) {
-            case 'p2sh':
-            case 'p2shP2wsh':
-            case 'p2wsh':
-            case 'taprootScriptPathSpend':
-              parsed.signatures.forEach((signature, i) => {
-                if (utxolib.bitgo.isPlaceholderSignature(signature)) {
-                  throw new Error(`placeholder signature at index ${i}`);
-                }
-              });
-              break;
-            default:
-              throw new Error(`unexpected scriptType ${scriptType}`);
-          }
-        });
+      it('has no placeholder signatures', function (this: mocha.Context) {
+        if (recoveryTx instanceof utxolib.bitgo.UtxoTransaction) {
+          recoveryTx.ins.forEach((input) => {
+            const parsed = utxolib.bitgo.parseSignatureScript(input);
+            switch (parsed.scriptType) {
+              case 'p2sh':
+              case 'p2shP2wsh':
+              case 'p2wsh':
+              case 'taprootScriptPathSpend':
+                parsed.signatures.forEach((signature, i) => {
+                  if (utxolib.bitgo.isPlaceholderSignature(signature)) {
+                    throw new Error(`placeholder signature at index ${i}`);
+                  }
+                });
+                break;
+              default:
+                throw new Error(`unexpected scriptType ${scriptType}`);
+            }
+          });
+        } else {
+          this.skip();
+        }
       });
     }
 
     it((params.hasKrsOutput ? 'has' : 'has no') + ' key recovery service output', function () {
-      recoveryTx.outs.length.should.eql(params.hasKrsOutput ? 2 : 1);
-      const outputAddresses = recoveryTx.outs.map((o) =>
-        utxolib.address.fromOutputScript(o.script, recoveryTx.network)
-      );
-      outputAddresses.includes(keyRecoveryServiceAddress).should.eql(!!params.hasKrsOutput);
+      const outs = recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.getUnsignedTx().outs : recoveryTx.outs;
+      outs.length.should.eql(params.hasKrsOutput && params.krsProvider === 'keyternal' ? 2 : 1);
+      const outputAddresses = outs.map((o) => utxolib.address.fromOutputScript(o.script, recoveryTx.network));
+      outputAddresses
+        .includes(keyRecoveryServiceAddress)
+        .should.eql(!!params.hasKrsOutput && params.krsProvider === 'keyternal');
       outputAddresses.includes(recoveryDestination).should.eql(true);
     });
   });
@@ -250,19 +290,24 @@ utxoCoins.forEach((coin) => {
       [scriptType, 'unsignedRecovery']
     );
 
-    run(
-      coin,
-      scriptType,
-      walletKeys,
-      {
-        keys: getKeysForKeyRecoveryService(walletKeys.triple, walletPassphrase),
-        krsProvider: 'keyternal',
-        hasUserSignature: true,
-        hasBackupSignature: false,
-        hasKrsOutput: true,
-      },
-      [scriptType, 'keyRecoveryService']
-    );
+    ['dai', 'keyternal'].forEach((krsProvider) => {
+      if (krsProvider === 'keyternal' && !['p2sh', 'p2wsh', 'p2shP2wsh'].includes(scriptType)) {
+        return;
+      }
+      run(
+        coin,
+        scriptType,
+        walletKeys,
+        {
+          keys: getKeysForKeyRecoveryService(walletKeys.triple, walletPassphrase),
+          krsProvider: krsProvider,
+          hasUserSignature: true,
+          hasBackupSignature: false,
+          hasKrsOutput: true,
+        },
+        [scriptType, 'keyRecoveryService']
+      );
+    });
 
     run(
       coin,

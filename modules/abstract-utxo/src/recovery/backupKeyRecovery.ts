@@ -2,20 +2,14 @@
  * @prettier
  */
 
+import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-const {
-  getInternalChainCode,
-  parseOutputId,
-  scriptTypeForChain,
-  WalletUnspentSigner,
-  outputScripts,
-  getExternalChainCode,
-} = utxolib.bitgo;
+const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
 type ChainCode = utxolib.bitgo.ChainCode;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
+type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
 type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
   valueString: string;
 };
@@ -36,14 +30,13 @@ import {
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
-import { ApiNotImplementedError, ApiRequestError } from './baseApi';
-import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { signAndVerifyWalletTransaction } from '../sign';
+import { signAndVerifyPsbt } from '../sign';
+import { getMainnet, networks } from '@bitgo/utxo-lib';
 
-export interface OfflineVaultTxInfo<TNumber extends number | bigint = number> {
-  inputs: WalletUnspent<TNumber>[];
+export interface OfflineVaultTxInfo {
+  inputs: WalletUnspent<number>[];
 }
 
 export interface FormattedOfflineVaultTxInfo {
@@ -62,16 +55,17 @@ export interface FormattedOfflineVaultTxInfo {
  * @param txHex
  * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
  */
-function formatForOfflineVault<TNumber extends number | bigint = number>(
+function formatForOfflineVault(
   coinName: string,
-  txInfo: OfflineVaultTxInfo<TNumber>,
+  txInfo: OfflineVaultTxInfo,
   txHex: string
 ): FormattedOfflineVaultTxInfo {
   return {
     txHex,
     txInfo: {
       unspents: txInfo.inputs.map((input) => {
-        return { ...input, value: Number(input.value), valueString: input.value.toString() };
+        assert(input.valueString);
+        return { ...input, valueString: input.valueString };
       }),
     },
     feeInfo: {},
@@ -133,19 +127,32 @@ export interface RecoverParams {
   recoveryProvider?: RecoveryProvider;
 }
 
-async function queryBlockchainUnspentsPath<TNumber extends number | bigint = number>(
+async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
   walletKeys: RootWalletKeys,
   chain: ChainCode
-): Promise<WalletUnspent<TNumber>[]> {
+): Promise<WalletUnspent<bigint>[]> {
+  const scriptType = scriptTypeForChain(chain);
+  const fetchPrevTx =
+    !utxolib.bitgo.outputScripts.hasWitnessData(scriptType) && getMainnet(coin.network) !== networks.zcash;
   const recoveryProvider = params.recoveryProvider ?? forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
+  const prevTxCache = new Map<string, string>();
+
+  async function getPrevTx(txid: string): Promise<string> {
+    let prevTxHex = prevTxCache.get(txid);
+    if (!prevTxHex) {
+      prevTxHex = await recoveryProvider.getTransactionHex(txid);
+      prevTxCache.set(txid, prevTxHex);
+    }
+    return prevTxHex;
+  }
 
   async function gatherUnspents(addrIndex: number) {
     const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
-    const address = coin.createMultiSigAddress(scriptTypeForChain(chain), 2, walletKeysForUnspent.publicKeys);
+    const address = coin.createMultiSigAddress(scriptType, 2, walletKeysForUnspent.publicKeys);
 
     const addrInfo = await recoveryProvider.getAddressInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
@@ -157,32 +164,26 @@ async function queryBlockchainUnspentsPath<TNumber extends number | bigint = num
       if (addrInfo.balance > 0) {
         console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
         const addressUnspents = await recoveryProvider.getUnspentsForAddresses([address.address]);
-
         const processedUnspents = await Promise.all(
-          addressUnspents.map(async (u): Promise<WalletUnspent<TNumber>> => {
+          addressUnspents.map(async (u): Promise<WalletUnspent<bigint>> => {
+            const { txid, vout } = utxolib.bitgo.parseOutputId(u.id);
+            let val = BigInt(u.value);
             if (coin.amountType === 'bigint') {
               // blockchair returns the number with the correct precision, but in number format
               // json parse won't parse it correctly, so we requery the txid for the tx hex to decode here
-              let val = BigInt(u.value) as TNumber;
               if (!Number.isSafeInteger(u.value)) {
-                const { txid, vout } = utxolib.bitgo.parseOutputId(u.id);
-                const txHex = await recoveryProvider.getTransactionHex(txid);
-                const tx = coin.createTransactionFromHex<TNumber>(txHex);
+                const txHex = await getPrevTx(txid);
+                const tx = coin.createTransactionFromHex<bigint>(txHex);
                 val = tx.outs[vout].value;
               }
-              return {
-                ...u,
-                value: val,
-                chain: chain,
-                index: addrIndex,
-              } as WalletUnspent<TNumber>;
-            } else {
-              return {
-                ...u,
-                chain: chain,
-                index: addrIndex,
-              } as WalletUnspent<TNumber>;
             }
+            return {
+              ...u,
+              value: val,
+              chain: chain,
+              index: addrIndex,
+              prevTx: fetchPrevTx ? Buffer.from(await getPrevTx(txid), 'hex') : undefined,
+            } as WalletUnspent<bigint>;
           })
         );
 
@@ -201,7 +202,7 @@ async function queryBlockchainUnspentsPath<TNumber extends number | bigint = num
 
   // get unspents for these addresses
 
-  const walletUnspents: WalletUnspent<TNumber>[] = [];
+  const walletUnspents: WalletUnspent<bigint>[] = [];
   // This will populate walletAddresses
   await gatherUnspents(0);
 
@@ -225,18 +226,24 @@ async function getRecoveryFeePerBytes(
   }
 }
 
-export type BackupKeyRecoveryTransansaction<TNumber extends number | bigint = number> = {
-  inputs: WalletUnspent<TNumber>[];
+export type BackupKeyRecoveryTransansaction = {
+  inputs?: WalletUnspent<number>[];
   transactionHex: string;
   coin: string;
   backupKey: string;
-  recoveryAmount: TNumber;
-  // smartbit api response
-  tx?: unknown;
+  recoveryAmount: number;
+  recoveryAmountString: string;
 };
 
 /**
- * Builds a funds recovery transaction without BitGo
+ * Builds a funds recovery transaction without BitGo.
+ *
+ * Returns transaction hex in legacy format for unsigned sweep transaction, half signed backup recovery transaction with KRS provider (only keyternal),
+ * fully signed backup recovery transaction without a KRS provider.
+ *
+ * Returns PSBT hex for half signed backup recovery transaction with KRS provider (excluding keyternal)
+ * For PSBT hex cases, Unspents are not required in response.
+ *
  * @param coin
  * @param bitgo
  * @param params
@@ -250,11 +257,11 @@ export type BackupKeyRecoveryTransansaction<TNumber extends number | bigint = nu
  * - ignoreAddressTypes: (optional) scripts to ignore
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
-export async function backupKeyRecovery<TNumber extends number | bigint = number>(
+export async function backupKeyRecovery(
   coin: AbstractUtxoCoin,
   bitgo: BitGoBase,
   params: RecoverParams
-): Promise<BackupKeyRecoveryTransansaction<TNumber> | FormattedOfflineVaultTxInfo> {
+): Promise<BackupKeyRecoveryTransansaction | FormattedOfflineVaultTxInfo> {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }
@@ -276,6 +283,7 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
 
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
+  const responseTxFormat = isUnsignedSweep || !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
 
   const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
@@ -290,7 +298,7 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
     utxolib.bitgo.RootWalletKeys.defaultPrefix,
   ]);
 
-  const unspents: WalletUnspent<TNumber>[] = (
+  const unspents: WalletUnspent<bigint>[] = (
     await Promise.all(
       outputScripts.scriptTypes2Of3
         .filter(
@@ -299,23 +307,25 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
         .reduce(
           (queries, addressType) => [
             ...queries,
-            queryBlockchainUnspentsPath<TNumber>(coin, params, walletKeys, getExternalChainCode(addressType)),
-            queryBlockchainUnspentsPath<TNumber>(coin, params, walletKeys, getInternalChainCode(addressType)),
+            queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
+            queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
           ],
-          [] as Promise<WalletUnspent<TNumber>[]>[]
+          [] as Promise<WalletUnspent<bigint>[]>[]
         )
     )
   ).flat();
 
   // Execute the queries and gather the unspents
-  const totalInputAmount = utxolib.bitgo.unspentSum<TNumber>(unspents, coin.amountType);
-  if (totalInputAmount <= 0) {
+  const totalInputAmount = utxolib.bitgo.unspentSum(unspents, 'bigint');
+  if (totalInputAmount <= BigInt(0)) {
     throw new ErrorNoInputToRecover();
   }
 
-  // Build the transaction
-  const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork<TNumber>(coin.network);
-  const txInfo = {} as BackupKeyRecoveryTransansaction<TNumber>;
+  // Build the psbt
+  const psbt = utxolib.bitgo.createPsbtForNetwork({ network: coin.network });
+  // xpubs can become handy for many things.
+  utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
+  const txInfo = {} as BackupKeyRecoveryTransansaction;
 
   const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
 
@@ -324,50 +334,40 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
   // segwit overhead size and p2sh inputs for the same reason.
   const outputSize = (isKrsRecovery ? 2 : 1) * VirtualSizes.txP2wshOutputSize;
   const approximateSize = VirtualSizes.txSegOverheadVSize + outputSize + VirtualSizes.txP2shInputSize * unspents.length;
-  const approximateFee: TNumber = utxolib.bitgo.toTNumber<TNumber>(approximateSize * feePerByte, coin.amountType);
+  const approximateFee = BigInt(approximateSize * feePerByte);
 
-  // Construct a transaction
-  txInfo.inputs = unspents;
+  txInfo.inputs =
+    responseTxFormat === 'legacy'
+      ? unspents.map((u) => ({ ...u, value: Number(u.value), valueString: u.value.toString(), prevTx: undefined }))
+      : undefined;
 
   unspents.forEach((unspent) => {
-    const { txid, vout } = parseOutputId(unspent.id);
-    transactionBuilder.addInput(
-      txid,
-      vout,
-      0xffffffff,
-      utxolib.address.toOutputScript(unspent.address, coin.network),
-      unspent.value
-    );
+    utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, walletKeys, 'user', 'backup', coin.network);
   });
 
-  let krsFee: TNumber = utxolib.bitgo.toTNumber<TNumber>(0, coin.amountType);
+  let krsFee = BigInt(0);
   if (isKrsRecovery && params.krsProvider) {
     try {
-      krsFee = utxolib.bitgo.toTNumber<TNumber>(
-        await calculateFeeAmount(coin, { provider: params.krsProvider }),
-        coin.amountType
-      );
+      krsFee = BigInt(await calculateFeeAmount(coin, { provider: params.krsProvider }));
     } catch (err) {
       // Don't let this error block the recovery -
       console.dir(err);
     }
   }
 
-  const recoveryAmount = utxolib.bitgo.toTNumber<TNumber>(
-    BigInt(totalInputAmount) - BigInt(approximateFee) - BigInt(krsFee),
-    coin.amountType
-  );
+  const recoveryAmount = totalInputAmount - approximateFee - krsFee;
 
-  if (recoveryAmount < 0) {
+  if (recoveryAmount < BigInt(0)) {
     throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider. 
           Existing balance on wallet: ${totalInputAmount.toString()}. Estimated network fee for the recovery transaction
           : ${approximateFee.toString()}, KRS fee to pay: ${krsFee.toString()}. After deducting fees, your total 
           recoverable balance is ${recoveryAmount.toString()}`);
   }
 
-  transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
+  const recoveryOutputScript = utxolib.address.toOutputScript(params.recoveryDestination, coin.network);
+  psbt.addOutput({ script: recoveryOutputScript, value: recoveryAmount });
 
-  if (krsProvider && krsFee > 0) {
+  if (krsProvider && krsFee > BigInt(0)) {
     if (!krsProvider.feeAddresses) {
       throw new Error(`keyProvider must define feeAddresses`);
     }
@@ -378,65 +378,36 @@ export async function backupKeyRecovery<TNumber extends number | bigint = number
       throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
     }
 
-    transactionBuilder.addOutput(krsFeeAddress, krsFee);
+    const krsFeeOutputScript = utxolib.address.toOutputScript(krsFeeAddress, coin.network);
+    psbt.addOutput({ script: krsFeeOutputScript, value: krsFee });
   }
 
   if (isUnsignedSweep) {
-    const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-    return formatForOfflineVault(coin.getChain(), txInfo as OfflineVaultTxInfo<TNumber>, txHex);
+    // TODO BTC-317 - When ready to PSBTify OVC, send psbt hex and skip unspents in response.
+    const txHex = psbt.getUnsignedTx().toBuffer().toString('hex');
+    return formatForOfflineVault(coin.getChain(), txInfo as OfflineVaultTxInfo, txHex);
   } else {
-    let transaction = signAndVerifyWalletTransaction(
-      transactionBuilder,
-      unspents,
-      new WalletUnspentSigner<RootWalletKeys>(walletKeys, walletKeys.user, walletKeys.backup),
-      { isLastSignature: false }
-    );
-    if (!isKrsRecovery) {
-      transaction = signAndVerifyWalletTransaction(
-        transaction,
-        unspents,
-        new WalletUnspentSigner<RootWalletKeys>(walletKeys, walletKeys.backup, walletKeys.user),
-        { isLastSignature: true }
-      );
-    }
-
-    txInfo.transactionHex = transaction.toBuffer().toString('hex');
-
-    let transactionDetails;
-    try {
-      transactionDetails = await SmartbitApi.forCoin(coin.getChain()).getTransactionDetails(transaction);
-    } catch (e) {
-      // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
-      // could be unavailable due to service outage, so we continue without verification for those coins, but we will
-      // let users know that they should verify their own
-      // this message should be piped to WRW and displayed on the UI
-      if (e instanceof ApiNotImplementedError || e instanceof ApiRequestError) {
-        console.log('Please verify your transaction by decoding the tx hex using a third-party api of your choice');
-      } else {
-        throw e;
-      }
-    }
-
-    if (transactionDetails) {
-      /**
-       * Verify that the txhex user signs correspond to the correct tx they intended
-       * by 1) getting back the decoded transaction based on the txhex
-       * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
-       * to the txid (hash) of the transaction (including unspent info) we constructed
-       */
-      if (transactionDetails.TxId !== transaction.getId()) {
-        console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
-        console.log('txhash/txid of the transaction bitgo constructed', transaction.getId());
-        throw new Error('inconsistent recovery transaction id');
-      }
-      txInfo.tx = transactionDetails;
+    signAndVerifyPsbt(psbt, walletKeys.user, { isLastSignature: false });
+    if (isKrsRecovery) {
+      // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
+      // It currently uses an outdated BitGoJS SDK, which relies on a legacy transaction builder for cosigning.
+      // Unfortunately, upgrading the keyternal code presents challenges,
+      // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
+      txInfo.transactionHex =
+        params.krsProvider === 'keyternal'
+          ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(psbt).toBuffer().toString('hex')
+          : psbt.toHex();
+    } else {
+      const tx = signAndVerifyPsbt(psbt, walletKeys.backup, { isLastSignature: true });
+      txInfo.transactionHex = tx.toBuffer().toString('hex');
     }
   }
 
   if (isKrsRecovery) {
     txInfo.coin = coin.getChain();
     txInfo.backupKey = params.backupKey;
-    txInfo.recoveryAmount = recoveryAmount;
+    txInfo.recoveryAmount = Number(recoveryAmount);
+    txInfo.recoveryAmountString = recoveryAmount.toString();
   }
 
   return txInfo;

@@ -4,4 +4,3 @@ export * from './baseApi';
 export * from './coingeckoApi';
 export * from './crossChainRecovery';
 export * from './mempoolApi';
-export * from './smartbitApi';
