@@ -91,12 +91,14 @@ describe('External signer', () => {
 
     await handleV2Sign(req);
 
-    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
-    signTransactionStub.should.be.calledOnceWith(
-      sinon.match({
-        prv: secret,
-      })
-    );
+    readFileStub.calledOnceWith('signerFileSystemPath').should.be.true();
+    signTransactionStub
+      .calledOnceWith(
+        sinon.match({
+          prv: secret,
+        })
+      )
+      .should.be.true();
     readFileStub.restore();
     signTransactionStub.restore();
     envStub.restore();

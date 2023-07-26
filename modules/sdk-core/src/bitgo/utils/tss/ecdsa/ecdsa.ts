@@ -1183,7 +1183,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       .result();
   }
 
-  static publicKeyFromCommonKeychain(commonKeychain: string) {
+  static publicKeyFromCommonKeychain(commonKeychain: string): string {
     const pub = EcdsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
     const secp256k1 = new ec('secp256k1');
     const key = secp256k1.keyFromPublic(pub, 'hex');
