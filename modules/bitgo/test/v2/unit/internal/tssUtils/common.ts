@@ -1,5 +1,6 @@
 import { ExchangeCommitmentResponse, SignatureShareRecord } from '@bitgo/sdk-core';
 import * as nock from 'nock';
+import * as _ from 'lodash';
 
 export async function nockSendTxRequest(params: {
   coin: string;
@@ -25,7 +26,7 @@ export async function nockSendSignatureShare(
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
-    .reply(status, status === 200 ? params.signatureShare : { error: 'some error' });
+    .reply(status, status === 200 ? (params.signatureShare as nock.Body) : ({ error: 'some error' } as nock.Body));
 }
 
 export async function nockSendSignatureShareWithResponse(
@@ -41,7 +42,7 @@ export async function nockSendSignatureShareWithResponse(
   const transactions = getRoute(params.tssType);
   return nock('https://bitgo.fakeurl')
     .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
-    .reply(status, status === 200 ? params.response : { error: 'some error' });
+    .reply(status, status === 200 ? (params.response as Body) : ({ error: 'some error' } as nock.Body));
 }
 
 export async function nockDeleteSignatureShare(
@@ -60,8 +61,10 @@ export async function nockCreateTxRequest(params: {
   response: unknown;
 }): Promise<nock.Scope> {
   return nock('https://bitgo.fakeurl')
-    .post(`/api/v2/wallet/${params.walletId}/txrequests`, params.requestBody)
-    .reply(200, params.response);
+    .post(`/api/v2/wallet/${params.walletId}/txrequests`, (body) => {
+      return _.isEqual(body, params.requestBody);
+    })
+    .reply(200, params.response as nock.Body);
 }
 
 export async function nockGetTxRequest(params: {
@@ -73,7 +76,7 @@ export async function nockGetTxRequest(params: {
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
-    .reply(200, params.response);
+    .reply(200, params.response as nock.Body);
 }
 
 export async function nockExchangeCommitments(params: {

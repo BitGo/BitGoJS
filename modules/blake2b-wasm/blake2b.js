@@ -1,8 +1,6 @@
 module.exports = loadWebAssembly;
 
-// turning off support for WebAssembly,
-//   chrome 69 has issues with loading webassembly in the main thread if the module size >4k
-loadWebAssembly.supported = false;
+loadWebAssembly.supported = true;
 
 function loadWebAssembly(opts) {
   if (!loadWebAssembly.supported) return null;

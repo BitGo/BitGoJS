@@ -189,7 +189,8 @@ describe('TSS Utils:', async function () {
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    // TODO(WP-346): sdk-test mocks conflict so we can't use persist
+    nock(bgUrl).get('/api/v1/client/constants').times(23).reply(200, { ttl: 3600, constants });
 
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',

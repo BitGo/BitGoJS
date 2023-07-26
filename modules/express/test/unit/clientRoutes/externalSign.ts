@@ -56,7 +56,7 @@ describe('External signer', () => {
       },
     };
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    nock(bgUrl).get('/api/v1/client/constants').times(3).reply(200, { ttl: 3600, constants });
   });
 
   after(() => {
@@ -91,12 +91,14 @@ describe('External signer', () => {
 
     await handleV2Sign(req);
 
-    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
-    signTransactionStub.should.be.calledOnceWith(
-      sinon.match({
-        prv: secret,
-      })
-    );
+    readFileStub.calledOnceWith('signerFileSystemPath').should.be.true();
+    signTransactionStub
+      .calledOnceWith(
+        sinon.match({
+          prv: secret,
+        })
+      )
+      .should.be.true();
     readFileStub.restore();
     signTransactionStub.restore();
     envStub.restore();

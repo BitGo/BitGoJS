@@ -1107,12 +1107,12 @@ describe('V2 Wallet:', function () {
       const txRequestNock = nock(bgUrl)
         .post(`/api/v2/${hbarWallet.coin()}/wallet/${hbarWallet.id()}/tx/build`)
         .reply((uri, body) => {
-          const params = JSON.parse(body);
+          const params = body as any;
           params.recipients.length.should.equal(1);
           params.recipients[0].tokenName.should.equal('thbar:usdc');
           params.type.should.equal('enabletoken');
           should.not.exist(params.enableTokens);
-          return params;
+          return [200, params];
         });
       await hbarWallet.buildTokenEnablements(params);
       txRequestNock.isDone().should.equal(true);
@@ -1242,21 +1242,24 @@ describe('V2 Wallet:', function () {
       const txRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${solWallet.id()}/txrequests`)
         .reply((url, body) => {
-          const bodyParams = JSON.parse(body);
+          const bodyParams = body as any;
           bodyParams.intent.intentType.should.equal('enableToken');
           bodyParams.intent.recipients.length.should.equal(0);
           bodyParams.intent.enableTokens.should.deepEqual(params.enableTokens);
-          return {
-            apiVersion: 'full',
-            transactions: [
-              {
-                unsignedTx: {
-                  serializedTxHex: 'fake transaction',
-                  feeInfo: 'fake fee info',
+          return [
+            200,
+            {
+              apiVersion: 'full',
+              transactions: [
+                {
+                  unsignedTx: {
+                    serializedTxHex: 'fake transaction',
+                    feeInfo: 'fake fee info',
+                  },
                 },
-              },
-            ],
-          };
+              ],
+            },
+          ];
         });
       await solWallet.buildTokenEnablements(params);
       txRequestNock.isDone().should.equal(true);
