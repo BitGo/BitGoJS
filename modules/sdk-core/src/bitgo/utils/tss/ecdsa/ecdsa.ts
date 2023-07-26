@@ -24,20 +24,29 @@ import {
   BackupGpgKey,
   BackupKeyShare,
   BitgoHeldBackupKeyShare,
+  CustomKShareGeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomPaillierModulusGetterFunction,
+  CustomSShareGeneratingFunction,
   RequestType,
   TSSParams,
   TSSParamsForMessage,
   TxRequest,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
-import { AShare, DShare, EncryptedNShare, SendShareType } from '../../../tss/ecdsa/types';
+import { AShare, DShare, EncryptedNShare, OShare, SendShareType, SShare, WShare } from '../../../tss/ecdsa/types';
 import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { BackupProvider, IWallet } from '../../../wallet';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
 import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
-import { ShareKeyPosition, TxRequestChallengeResponse } from '../../../tss/types';
+import {
+  ShareKeyPosition,
+  TssEcdsaStep1ReturnMessage,
+  TssEcdsaStep2ReturnMessage,
+  TxRequestChallengeResponse,
+} from '../../../tss/types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -600,49 +609,23 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       : await keychains.createBackup(recipientKeychainParams);
   }
 
-  /**
-   * Gets signing key, txRequestResolved and txRequestId
-   * @param {string | TxRequest} params.txRequest - transaction request object or id
-   * @param {string} params.prv - decrypted private key
-   * @param { string} params.reqId - request id
-   * @returns {Promise<TxRequest>}
-   */
-  private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
-    const pendingEcdsaTssInitialization = this.wallet.coinSpecific()?.pendingEcdsaTssInitialization;
-    if (pendingEcdsaTssInitialization) {
-      throw new Error(
-        'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
-      );
-    }
-
-    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.prv);
+  private async createTssEcdsaStep1SigningMaterial(params: {
+    challenges: {
+      enterpriseChallenge: EcdsaTypes.SerializedEcdsaChallenges;
+      bitgoChallenge: TxRequestChallengeResponse;
+    };
+    prv: string;
+    derivationPath: string;
+    walletPassphrase?: string;
+  }): Promise<TssEcdsaStep1ReturnMessage> {
+    const { challenges, derivationPath, prv } = params;
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
     if (userSigningMaterial.pShare.i !== 1) {
       throw new Error('Invalid user key');
     }
     if (!userSigningMaterial.backupNShare) {
       throw new Error('Invalid user key - missing backupNShare');
     }
-
-    const txRequest: TxRequest =
-      typeof params.txRequest === 'string'
-        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
-        : params.txRequest;
-
-    let signablePayload;
-    let derivationPath;
-
-    if (requestType === RequestType.tx) {
-      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
-      const unsignedTx =
-        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
-      derivationPath = unsignedTx.derivationPath;
-    } else if (requestType === RequestType.message) {
-      signablePayload = (params as TSSParamsForMessage).bufferToSign;
-      // TODO BG-67299 Message signing with derivation path
-      derivationPath = '';
-    }
-
     const MPC = new Ecdsa();
     const signingKey = MPC.keyDerive(
       userSigningMaterial.pShare,
@@ -653,7 +636,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoIndex = ShareKeyPosition.BITGO;
     const userIndex = userSigningMaterial.pShare.i;
 
-    const challenges = await this.getEcdsaSigningChallenges(txRequest.txRequestId, requestType, signingKey.xShare.n, 0);
     const { ntilde: ntildea, h1: h1a, h2: h2a, p: pa } = challenges.enterpriseChallenge;
     const { ntilde: ntildeb, h1: h1b, h2: h2b, p: pb, n: nb } = challenges.bitgoChallenge;
     const userXShare = MPC.appendChallenge(signingKey.xShare, { ntilde: ntildea, h1: h1a, h2: h2a }, { p: pa });
@@ -690,6 +672,265 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const vssProof = signingKey.nShares[bitgoIndex].v;
     const userPublicGpgKey = userGpgKey.publicKey;
     const publicShare = signingKey.nShares[bitgoIndex].y + signingKey.nShares[bitgoIndex].chaincode;
+    return {
+      privateShareProof: privateShareProof,
+      vssProof: vssProof,
+      publicShare: publicShare,
+      encryptedSignerOffsetShare: encryptedSignerShare,
+      userPublicGpgKey: userPublicGpgKey,
+      kShare: userSignShare.kShare,
+      wShare: params.walletPassphrase
+        ? this.bitgo.encrypt({ input: JSON.stringify(userSignShare.wShare), password: params.walletPassphrase })
+        : userSignShare.wShare,
+    };
+  }
+
+  private async createTssEcdsaStep2SigningMaterial(params: {
+    bitgoChallenge: TxRequestChallengeResponse;
+    wShare: WShare;
+    aShareFromBitgo: Omit<AShare, 'h1' | 'h2' | 'ntilde'>;
+    walletPassphrase?: string;
+  }): Promise<TssEcdsaStep2ReturnMessage> {
+    // Append the BitGo challenge to the Ashare to be used in subsequent proofs
+    const bitgoToUserAShareWithNtilde: AShare = {
+      ...params.aShareFromBitgo,
+      ...params.bitgoChallenge,
+    };
+    const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(
+      params.wShare,
+      bitgoToUserAShareWithNtilde
+    );
+    const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
+      userGammaAndMuShares.gShare as ECDSA.GShare
+    );
+    return {
+      muDShare: {
+        muShare: userGammaAndMuShares.muShare,
+        dShare: userOmicronAndDeltaShare.dShare,
+        i: userGammaAndMuShares.muShare.i,
+      },
+      oShare: params.walletPassphrase
+        ? this.bitgo.encrypt({
+            input: JSON.stringify(userOmicronAndDeltaShare.oShare),
+            password: params.walletPassphrase,
+          })
+        : userOmicronAndDeltaShare.oShare,
+    };
+  }
+
+  getOfflineSignerPaillierModulus(params: { prv: string }): { userPaillierModulus: string } {
+    assert(params.prv, 'Params to get paillier modulus are missing prv.');
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.prv);
+    return { userPaillierModulus: userSigningMaterial.pShare.n };
+  }
+
+  async createOfflineKShare(params: {
+    tssParams: TSSParams | TSSParamsForMessage;
+    challenges: {
+      enterpriseChallenge: EcdsaTypes.SerializedEcdsaChallenges;
+      bitgoChallenge: TxRequestChallengeResponse;
+    };
+    requestType: RequestType;
+    prv: string;
+    walletPassphrase: string;
+  }): Promise<TssEcdsaStep1ReturnMessage> {
+    const { tssParams, prv, requestType, challenges } = params;
+    assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
+    const txRequest: TxRequest = tssParams.txRequest;
+    let derivationPath;
+
+    if (requestType === RequestType.tx) {
+      assert(
+        txRequest.transactions || (txRequest as TxRequest).unsignedTxs,
+        'Unable to find transactions in txRequest'
+      );
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      derivationPath = unsignedTx.derivationPath;
+    } else if (requestType === RequestType.message) {
+      // TODO BG-67299 Message signing with derivation path
+      derivationPath = '';
+    }
+    return this.createTssEcdsaStep1SigningMaterial({
+      prv: prv,
+      challenges: challenges,
+      derivationPath: derivationPath,
+      walletPassphrase: params.walletPassphrase,
+    });
+  }
+
+  async createOfflineMuDeltaShare(params: {
+    aShareFromBitgo: Omit<AShare, 'ntilde' | 'h1' | 'h2'>;
+    bitgoChallenge: TxRequestChallengeResponse;
+    encryptedWShare: string;
+    walletPassphrase: string;
+  }): Promise<TssEcdsaStep2ReturnMessage> {
+    const decryptedWShare = this.bitgo.decrypt({ input: params.encryptedWShare, password: params.walletPassphrase });
+    return await this.createTssEcdsaStep2SigningMaterial({
+      aShareFromBitgo: params.aShareFromBitgo,
+      bitgoChallenge: params.bitgoChallenge,
+      wShare: JSON.parse(decryptedWShare),
+      walletPassphrase: params.walletPassphrase,
+    });
+  }
+
+  async createOfflineSShare(params: {
+    tssParams: TSSParams | TSSParamsForMessage;
+    dShareFromBitgo: DShare;
+    requestType: RequestType;
+    encryptedOShare: string;
+    walletPassphrase: string;
+  }): Promise<SShare> {
+    const { tssParams, requestType, dShareFromBitgo, encryptedOShare, walletPassphrase } = params;
+    assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
+    const txRequest: TxRequest = tssParams.txRequest;
+    let signablePayload;
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+    } else if (requestType === RequestType.message) {
+      signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
+    }
+    const decryptedOShare = this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
+    return await ECDSAMethods.createUserSignatureShare(JSON.parse(decryptedOShare), dShareFromBitgo, signablePayload);
+  }
+
+  async signEcdsaTssUsingExternalSigner(
+    params: TSSParams | TSSParamsForMessage,
+    requestType: RequestType,
+    externalSignerPaillierModulusGetter: CustomPaillierModulusGetterFunction,
+    externalSignerKShareGenerator: CustomKShareGeneratingFunction,
+    externalSignerMuDeltaShareGenerator: CustomMuDeltaShareGeneratingFunction,
+    externalSignerSShareGenerator: CustomSShareGeneratingFunction
+  ): Promise<TxRequest> {
+    const { txRequest } = params;
+    const pendingEcdsaTssInitialization = this.wallet.coinSpecific()?.pendingEcdsaTssInitialization;
+    if (pendingEcdsaTssInitialization) {
+      throw new Error(
+        'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
+      );
+    }
+    const txRequestObj: TxRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequest as string);
+    const { userPaillierModulus } = await externalSignerPaillierModulusGetter({ txRequest: txRequestObj });
+    const { enterpriseChallenge, bitgoChallenge } = await this.getEcdsaSigningChallenges(
+      txRequest as string,
+      requestType,
+      userPaillierModulus,
+      0
+    );
+    const step1SigningMaterial = await externalSignerKShareGenerator({
+      tssParams: {
+        ...params,
+        txRequest: txRequestObj,
+      },
+      challenges: { enterpriseChallenge, bitgoChallenge },
+      requestType: requestType,
+    });
+    // signing stage one with K share send to bitgo and receives A share
+    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestObj.txRequestId,
+      requestType,
+      SendShareType.KShare,
+      step1SigningMaterial.kShare,
+      step1SigningMaterial.encryptedSignerOffsetShare,
+      step1SigningMaterial.vssProof,
+      step1SigningMaterial.privateShareProof,
+      step1SigningMaterial.publicShare,
+      step1SigningMaterial.userPublicGpgKey
+    )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
+    const step2Return = await externalSignerMuDeltaShareGenerator({
+      txRequest: txRequestObj,
+      aShareFromBitgo: bitgoToUserAShare,
+      bitgoChallenge: bitgoChallenge,
+      encryptedWShare: step1SigningMaterial.wShare as string,
+    });
+    // signing stage two with muShare and dShare send to bitgo and receives D share
+    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestObj.txRequestId,
+      requestType,
+      SendShareType.MUShare,
+      step2Return.muDShare
+    )) as DShare;
+    const userSShare = await externalSignerSShareGenerator({
+      tssParams: {
+        ...params,
+        txRequest: txRequestObj,
+      },
+      dShareFromBitgo: bitgoToUserDShare,
+      requestType: requestType,
+      encryptedOShare: step2Return.oShare as string,
+    });
+    // signing stage three with SShare send to bitgo and receives SShare
+    await ECDSAMethods.sendShareToBitgo(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestObj.txRequestId,
+      requestType,
+      SendShareType.SShare,
+      userSShare
+    );
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestObj.txRequestId);
+  }
+
+  /**
+   * Gets signing key, txRequestResolved and txRequestId
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param { string} params.reqId - request id
+   * @returns {Promise<TxRequest>}
+   */
+  private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
+    const pendingEcdsaTssInitialization = this.wallet.coinSpecific()?.pendingEcdsaTssInitialization;
+    if (pendingEcdsaTssInitialization) {
+      throw new Error(
+        'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
+      );
+    }
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.prv);
+    if (userSigningMaterial.pShare.i !== 1) {
+      throw new Error('Invalid user key');
+    }
+    if (!userSigningMaterial.backupNShare) {
+      throw new Error('Invalid user key - missing backupNShare');
+    }
+
+    const txRequest: TxRequest =
+      typeof params.txRequest === 'string'
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        : params.txRequest;
+
+    let signablePayload = new Buffer('');
+    let derivationPath = '';
+
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+      derivationPath = unsignedTx.derivationPath;
+    } else if (requestType === RequestType.message) {
+      signablePayload = (params as TSSParamsForMessage).bufferToSign;
+      // TODO BG-67299 Message signing with derivation path
+    }
+    const paillierModulus = this.getOfflineSignerPaillierModulus({ prv: params.prv });
+    const challenges = await this.getEcdsaSigningChallenges(
+      txRequest.txRequestId,
+      requestType,
+      paillierModulus.userPaillierModulus,
+      0
+    );
+
+    const step1Return = await this.createTssEcdsaStep1SigningMaterial({
+      prv: params.prv,
+      challenges: challenges,
+      derivationPath: derivationPath,
+    });
 
     // signing stage one with K share send to bitgo and receives A share
     const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
@@ -698,29 +939,19 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       txRequest.txRequestId,
       requestType,
       SendShareType.KShare,
-      userSignShare.kShare,
-      encryptedSignerShare,
-      vssProof,
-      privateShareProof,
-      publicShare,
-      userPublicGpgKey
+      step1Return.kShare,
+      step1Return.encryptedSignerOffsetShare,
+      step1Return.vssProof,
+      step1Return.privateShareProof,
+      step1Return.publicShare,
+      step1Return.userPublicGpgKey
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
 
-    // Append the BitGo challenge to the Ashare to be used in subsequent proofs
-    const bitgoToUserAShareWithNtilde: AShare = {
-      ...bitgoToUserAShare,
-      ...challenges.bitgoChallenge,
-    };
-
-    const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(
-      userSignShare.wShare,
-      bitgoToUserAShareWithNtilde
-    );
-    const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
-      userGammaAndMuShares.gShare as ECDSA.GShare
-    );
-    const muShare = userGammaAndMuShares.muShare!;
-    const dShare = userOmicronAndDeltaShare.dShare;
+    const step2Return = await this.createTssEcdsaStep2SigningMaterial({
+      aShareFromBitgo: bitgoToUserAShare,
+      bitgoChallenge: challenges.bitgoChallenge,
+      wShare: step1Return.wShare as WShare,
+    });
 
     // signing stage two with muShare and dShare send to bitgo and receives D share
     const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
@@ -729,11 +960,11 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       txRequest.txRequestId,
       requestType,
       SendShareType.MUShare,
-      { muShare, dShare, i: muShare.i }
+      step2Return.muDShare
     )) as DShare;
 
     const userSShare = await ECDSAMethods.createUserSignatureShare(
-      userOmicronAndDeltaShare.oShare,
+      step2Return.oShare as OShare,
       bitgoToUserDShare,
       signablePayload,
       params.hash

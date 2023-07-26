@@ -27,6 +27,12 @@ import {
   CommitmentShareRecord,
   EncryptedSignerShareRecord,
   CustomCommitmentGeneratingFunction,
+  TSSParamsForMessage,
+  RequestType,
+  CustomPaillierModulusGetterFunction,
+  CustomKShareGeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 
@@ -117,11 +123,32 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {CustomGShareGeneratingFunction} externalSignerGShareGenerator a function that creates G shares in the EdDSA TSS flow
    * @returns {Promise<TxRequest>} - a signed tx request
    */
-  signUsingExternalSigner(
+  signEddsaTssUsingExternalSigner(
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction
+  ): Promise<TxRequest> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Signs a transaction using TSS for ECDSA and through utilization of custom share generators
+   *
+   * @param {params: TSSParams | TSSParamsForMessage} params - params object that represents parameters to sign a transaction or a message.
+   * @param {RequestType} requestType - the type of the request to sign (transaction or message).
+   * @param {CustomPaillierModulusGetterFunction} externalSignerPaillierModulusGetter a function that creates Paillier Modulus shares in the ECDSA TSS flow.
+   * @param {CustomKShareGeneratingFunction} externalSignerKShareGenerator a function that creates K shares in the ECDSA TSS flow.
+   * @param {CustomMuDeltaShareGeneratingFunction} externalSignerMuDeltaShareGenerator a function that creates Mu and Delta shares in the ECDSA TSS flow.
+   * @param {CustomSShareGeneratingFunction} externalSignerSShareGenerator a function that creates S shares in the ECDSA TSS flow.
+   */
+  signEcdsaTssUsingExternalSigner(
+    params: TSSParams | TSSParamsForMessage,
+    requestType: RequestType,
+    externalSignerPaillierModulusGetter: CustomPaillierModulusGetterFunction,
+    externalSignerKShareGenerator: CustomKShareGeneratingFunction,
+    externalSignerMuDeltaShareGenerator: CustomMuDeltaShareGeneratingFunction,
+    externalSignerSShareGenerator: CustomSShareGeneratingFunction
   ): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }

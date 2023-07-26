@@ -3,6 +3,7 @@
  */
 import {
   EddsaUtils,
+  EcdsaUtils,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
   UnsupportedCoinError,
@@ -11,6 +12,15 @@ import {
   CustomCommitmentGeneratingFunction,
   CommitmentShareRecord,
   EncryptedSignerShareRecord,
+  CustomPaillierModulusGetterFunction,
+  CustomKShareGeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
+  TssEcdsaStep1ReturnMessage,
+  TssEcdsaStep2ReturnMessage,
+  SShare,
+  ShareType,
+  MPCType,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -393,7 +403,7 @@ function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): 
 }
 
 export async function handleV2GenerateShareTSS(req: express.Request): Promise<any> {
-  const walletId = req.body.txRequest.walletId;
+  const walletId = req.body.txRequest ? req.body.txRequest.walletId : req.body.tssParams.txRequest.walletId;
   if (!walletId) {
     throw new Error('Missing required field: walletId');
   }
@@ -409,19 +419,41 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
   const bitgo = req.bitgo;
   const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.params.coin);
-  const eddUtils = new EddsaUtils(bitgo, coin);
   req.body.prv = privKey;
   req.body.walletPassphrase = walletPw;
   try {
-    switch (req.params.sharetype) {
-      case 'commitment':
-        return await eddUtils.createCommitmentShareFromTxRequest(req.body);
-      case 'R':
-        return await eddUtils.createRShareFromTxRequest(req.body);
-      case 'G':
-        return await eddUtils.createGShareFromTxRequest(req.body);
-      default:
-        throw new Error('Share type not supported, only commitment, G and R share generation is supported.');
+    if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
+      const eddsaUtils = new EddsaUtils(bitgo, coin);
+      switch (req.params.sharetype) {
+        case ShareType.Commitment:
+          return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
+        case ShareType.R:
+          return await eddsaUtils.createRShareFromTxRequest(req.body);
+        case ShareType.G:
+          return await eddsaUtils.createGShareFromTxRequest(req.body);
+        default:
+          throw new Error(
+            `Share type ${req.params.sharetype} not supported, only commitment, G and R share generation is supported.`
+          );
+      }
+    } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
+      const ecdsaUtils = new EcdsaUtils(bitgo, coin);
+      switch (req.params.sharetype) {
+        case ShareType.PaillierModulus:
+          return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
+        case ShareType.K:
+          return await ecdsaUtils.createOfflineKShare(req.body);
+        case ShareType.MuDelta:
+          return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
+        case ShareType.S:
+          return await ecdsaUtils.createOfflineSShare(req.body);
+        default:
+          throw new Error(
+            `Share type ${req.params.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
+          );
+      }
+    } else {
+      throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
     }
   } catch (error) {
     console.error('error while signing wallet transaction ', error);
@@ -792,15 +824,34 @@ function createSendParams(req: express.Request) {
 
 function createTSSSendParams(req: express.Request) {
   if (req.config.externalSignerUrl !== undefined) {
-    return {
-      ...req.body,
-      customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
-        req.config.externalSignerUrl,
-        req.params.coin
-      ),
-      customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
-      customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
-    };
+    const coin = req.bitgo.coin(req.params.coin);
+    if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
+      return {
+        ...req.body,
+        customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
+          req.config.externalSignerUrl,
+          req.params.coin
+        ),
+        customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
+      };
+    } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
+      return {
+        ...req.body,
+        customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
+          req.config.externalSignerUrl,
+          req.params.coin
+        ),
+        customKShareGeneratingFunction: createCustomKShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        customMuDeltaShareGeneratingFunction: createCustomMuDeltaShareGenerator(
+          req.config.externalSignerUrl,
+          req.params.coin
+        ),
+        customSShareGeneratingFunction: createCustomSShareGenerator(req.config.externalSignerUrl, req.params.coin),
+      };
+    } else {
+      throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
+    }
   } else {
     return req.body;
   }
@@ -1099,6 +1150,61 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
       }
     );
     return signedTx;
+  };
+}
+export function createCustomPaillierModulusGetter(
+  externalSignerUrl: string,
+  coin: string
+): CustomPaillierModulusGetterFunction {
+  return async function (params): Promise<{
+    userPaillierModulus: string;
+  }> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/PaillierModulus`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomKShareGenerator(externalSignerUrl: string, coin: string): CustomKShareGeneratingFunction {
+  return async function (params): Promise<TssEcdsaStep1ReturnMessage> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/K`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMuDeltaShareGenerator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMuDeltaShareGeneratingFunction {
+  return async function (params): Promise<TssEcdsaStep2ReturnMessage> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MuDelta`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomSShareGenerator(externalSignerUrl: string, coin: string): CustomSShareGeneratingFunction {
+  return async function (params): Promise<SShare> {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/S`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
   };
 }
 
