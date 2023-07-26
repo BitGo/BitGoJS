@@ -1183,7 +1183,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       .result();
   }
 
-  static publicKeyFromCommonKeychain(commonKeychain: string): string {
+  /**
+   * util function that checks that a commonKeychain is valid and can ultimately resolve to a valid public key
+   * @param commonKeychain - a user uploaded commonKeychain string
+   * @throws if the commonKeychain is invalid length or invalid format
+   */
+
+  static validateCommonKeychainPublicKey(commonKeychain: string) {
     const pub = EcdsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
     const secp256k1 = new ec('secp256k1');
     const key = secp256k1.keyFromPublic(pub, 'hex');
