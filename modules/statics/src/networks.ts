@@ -55,6 +55,7 @@ export interface AccountNetwork extends BaseNetwork {
   // some chains pay fees via an enterprise gas task. The account explorer url
   // is a url that can be used to look up the account for the gas tank on-chain.
   readonly accountExplorerUrl?: string;
+  readonly blockExplorerUrl?: string;
 }
 
 /**
@@ -379,6 +380,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
   accountExplorerUrl = 'https://etherscan.io/address/';
+  blockExplorerUrl = 'https://etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
   batcherContractAddress = '0x0c9b25dfe02b2c89cce86e1a0bd6c04a7aca01b6';
@@ -428,6 +430,7 @@ class Goerli extends Testnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://goerli.etherscan.io/tx/';
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
+  blockExplorerUrl = 'https://goerli.etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 5;
   batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
