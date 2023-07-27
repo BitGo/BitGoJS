@@ -53,6 +53,7 @@
     "@bitgo/sdk-coin-tia": "^1.1.2",
     "@bitgo/sdk-coin-trx": "^1.8.4",
     "@bitgo/sdk-coin-xtz": "^1.4.27",
+    "@bitgo/sdk-coin-zeta": "^1.0.0",
     "@bitgo/sdk-core": "^8.10.0",
     "@bitgo/sdk-lib-mpc": "^8.5.0",
     "@bitgo/statics": "^17.0.1",

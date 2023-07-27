@@ -149,6 +149,9 @@
       "path": "./modules/sdk-coin-zec"
     },
     {
+      "path": "./modules/sdk-coin-zeta"
+    },
+    {
       "path": "./modules/sdk-core"
     },
     {
