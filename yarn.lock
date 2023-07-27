@@ -16617,9 +16617,10 @@ superstruct@^0.14.2:
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-0.14.2.tgz#0dbcdf3d83676588828f1cf5ed35cda02f59025b"
   integrity sha512-nPewA6m9mR3d6k7WkZ8N8zpTWfenFH3q9pA2PkuiZxINr9DKB2+40wEQf0ixn8VaGuJ78AB6iWOtStI+/4FKZQ==
 
-"supertest-as-promised@https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz":
+supertest-as-promised@1.0.0:
   version "1.0.0"
-  resolved "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz#baae1dacb049ba958e2f693398acc69ee8b6ef12"
+  resolved "https://registry.yarnpkg.com/supertest-as-promised/-/supertest-as-promised-1.0.0.tgz#735dcd3705a17085db235df51d818953c1fbb7ac"
+  integrity sha512-N8ibuLjZDithNkCffompScmzumrZVMprwSkE2H460fMffZExDmpaJELC6pgffEwMzCJ+rTrJndEKl1dGvyNaPQ==
   dependencies:
     bluebird "^1.2.4"
     methods "^1.0.0"
