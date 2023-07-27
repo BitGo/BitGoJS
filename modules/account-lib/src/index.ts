@@ -86,6 +86,9 @@ export { Sei };
 import * as Injective from '@bitgo/sdk-coin-injective';
 export { Injective };
 
+import * as Zeta from '@bitgo/sdk-coin-zeta';
+export { Zeta };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -155,6 +158,8 @@ const coinBuilderMap = {
   tsei: Sei.TransactionBuilderFactory,
   injective: Injective.TransactionBuilderFactory,
   tinjective: Injective.TransactionBuilderFactory,
+  zeta: Zeta.TransactionBuilderFactory,
+  tzeta: Zeta.TransactionBuilderFactory,
 };
 
 /**

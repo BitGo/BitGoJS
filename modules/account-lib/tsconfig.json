@@ -83,6 +83,9 @@
       "path": "../sdk-coin-xtz"
     },
     {
+      "path": "../sdk-coin-zeta"
+    },
+    {
       "path": "../sdk-core"
     },
     {

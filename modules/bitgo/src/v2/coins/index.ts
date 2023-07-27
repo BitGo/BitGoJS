@@ -38,6 +38,7 @@ import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';
 import { Txrp, Xrp } from '@bitgo/sdk-coin-xrp';
 import { Txtz, Xtz } from '@bitgo/sdk-coin-xtz';
 import { Tzec, Zec } from '@bitgo/sdk-coin-zec';
+import { Tzeta, Zeta } from '@bitgo/sdk-coin-zeta';
 export { AbstractUtxoCoin };
 export { Algo, AlgoToken, Talgo };
 export { Ada, Tada };
@@ -78,6 +79,7 @@ export { StellarToken, Txlm, Xlm };
 export { Txrp, Xrp };
 export { Txtz, Xtz };
 export { Tzec, Zec };
+export { Tzeta, Zeta };
 
 import { coins } from '@bitgo/sdk-core';
 const { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP } = coins;
