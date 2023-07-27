@@ -23,6 +23,7 @@ import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
+import { stringToBuffer } from './parseString';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -32,7 +33,7 @@ type ArgsParseTransaction = {
   clipboard: boolean;
   path?: string;
   txid?: string;
-  hex?: string;
+  data?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;
@@ -60,15 +61,6 @@ type ArgsParseScript = {
   all: boolean;
   script: string;
 };
-
-function parseHex(hex: string): Buffer {
-  hex = hex.replace(/\s*/g, '').toLowerCase();
-  const data = Buffer.from(hex, 'hex');
-  if (data.toString('hex') !== hex) {
-    throw new Error(`invalid hex`);
-  }
-  return data;
-}
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
   if (cache) {
@@ -148,13 +140,13 @@ export const cmdParseTx = {
     'Display transaction components in human-readable form. ' +
     'Supported formats are Partially Signed Bitcoin Transaction (PSBT), ' +
     'bitcoinjs-lib encoding (Legacy) or fully signed transaction. ' +
-    'Bytes must be encoded in hex format.',
+    'Bytes must be encoded in hex or base64 format.',
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
-      .option('hex', { type: 'string', description: 'transaction bytes (hex-encoded)' })
+      .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
       .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
       .option('fetchAll', { type: 'boolean', default: false })
@@ -226,11 +218,11 @@ export const cmdParseTx = {
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
     }
 
-    if (argv.hex) {
+    if (argv.data) {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
-      data = argv.hex;
+      data = argv.data;
     }
 
     // strip whitespace
@@ -238,7 +230,7 @@ export const cmdParseTx = {
       throw new Error(`no txdata`);
     }
 
-    const bytes = parseHex(data);
+    const bytes = stringToBuffer(data, ['hex', 'base64']);
 
     let tx = utxolib.bitgo.isPsbt(bytes)
       ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
@@ -309,7 +301,7 @@ export const cmdParseScript = {
       .positional('script', { type: 'string', demandOption: true });
   },
   handler(argv: yargs.Arguments<ArgsParseScript>): void {
-    const script = parseHex(argv.script);
+    const script = stringToBuffer(argv.script, 'hex');
     const parsed = getScriptParser(argv).parse(script);
     console.log(formatString(parsed, { ...argv, all: true }));
   },
