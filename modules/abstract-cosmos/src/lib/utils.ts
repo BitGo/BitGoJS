@@ -518,7 +518,7 @@ export class CosmosUtils implements BaseUtils {
       }
       case TransactionType.ContractCall: {
         const value = messageData.value as ExecuteContractMessage;
-        this.validateExecuteContractMessage(value);
+        this.validateExecuteContractMessage(value, TransactionType.ContractCall);
         break;
       }
       default:
