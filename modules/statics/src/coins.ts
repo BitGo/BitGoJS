@@ -9672,6 +9672,78 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.WUSDC,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'bfc197c1-6fcc-4d63-8f20-596b06bf2eec',
+    'sol:hget-wormhole',
+    'Hedget (Wormhole)',
+    6,
+    '2ueY1bLcPHfuFzEJq7yN1V2Wrpu8nkun9xG2TVCE1mhD',
+    UnderlyingAsset.HGET,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'e18a88f5-c4f4-4ba4-b98a-6318c284524a',
+    'sol:ust-wormhole',
+    'UST (Wormhole)',
+    6,
+    '9vMJfxuKxXBoEa7rM12mYLMwTacLMLDJqHozw96WQL8i',
+    UnderlyingAsset.UST,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '6c8fb4d1-8a73-46ae-a69f-715648ec1748',
+    'sol:wftt-wormhole',
+    'Wrapped FTT (Wormhole)',
+    9,
+    'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
+    UnderlyingAsset.WFFT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '2e848aaf-b5ac-49b6-8bd2-eb8b56493ece',
+    'sol:inj-wormhole',
+    'Injective Token (Wormhole)',
+    8,
+    'Hgtvu9gsDTzUpBn69WjrhMyzaQhrAM9piTsezmZVQP6Z',
+    UnderlyingAsset.INJ,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'f6c73cf5-2faf-4076-bcf3-65a7124c0de7',
+    'sol:lua-wormhole',
+    'LuaToken (Wormhole)',
+    8,
+    '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
+    UnderlyingAsset.LUA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '6d542d82-4af1-4d42-b584-bfafc023388f',
+    'sol:ldo-wormhole',
+    'Lido DAO Token (Wormhole)',
+    8,
+    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
+    UnderlyingAsset.LDO,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '84ba4555-269a-4e25-8a13-c713defbebb7',
+    'sol:wbtc-wormhole',
+    'Wrapped BTC (Wormhole)',
+    8,
+    '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
+    UnderlyingAsset.WBTC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '9e03bb68-c6a2-43c9-95d0-4d27c110ef45',
+    'sol:cho-wormhole',
+    'choise.com Token (Wormhole)',
+    8,
+    '59McpTVgyGsSu5eQutvcKLFu7wrFe3ZkE2qdAi3HnvBn',
+    UnderlyingAsset.CHO,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

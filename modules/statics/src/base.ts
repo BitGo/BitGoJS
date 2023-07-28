@@ -1071,6 +1071,7 @@ export enum UnderlyingAsset {
   WET = 'wet',
   WETH = 'weth',
   WFLOW = 'wflow',
+  WFFT = 'wfft',
   WHALE = 'whale',
   WHT = 'wht',
   WILD = 'wild',
