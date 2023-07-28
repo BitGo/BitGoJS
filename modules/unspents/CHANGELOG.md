@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.15.4...@bitgo/unspents@0.16.0) (2023-07-28)
+
+### Features
+
+- **unspents:** add docs/input-costs.md, generation tool ([aa843da](https://github.com/BitGo/BitGoJS/commit/aa843da4ac4c538073c0244334500511998c0423))
+- **unspents:** fix unspents module setup ([687f4c3](https://github.com/BitGo/BitGoJS/commit/687f4c3c29885b1e5b5bf9d79782d265937d6f1d)), closes [#3651](https://github.com/BitGo/BitGoJS/issues/3651)
+
 ## [0.15.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.15.3...@bitgo/unspents@0.15.4) (2023-07-18)
 
 **Note:** Version bump only for package @bitgo/unspents

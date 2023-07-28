@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.0.12...@bitgo/sdk-unified-wallet@3.1.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+
 ## [3.0.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.0.11...@bitgo/sdk-unified-wallet@3.0.12) (2023-07-18)
 
 **Note:** Version bump only for package @bitgo/sdk-unified-wallet
