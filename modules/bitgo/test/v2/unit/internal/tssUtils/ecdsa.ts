@@ -5,11 +5,17 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { mockSerializedChallengeWithProofs, mockSerializedChallengeWithProofs2, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo, createSharedDataProof, RequestType } from '../../../../../src';
+import {
+  mockSerializedChallengeWithProofs,
+  mockSerializedChallengeWithProofs2,
+  TestableBG,
+  TestBitGo,
+} from '@bitgo/sdk-test';
+import { BitGo, createSharedDataProof, TssUtils, RequestType } from '../../../../../src';
 import {
   BackupGpgKey,
   BackupKeyShare,
+  BaseCoin,
   BitgoGPGPublicKey,
   BitgoHeldBackupKeyShare,
   common,
@@ -58,6 +64,8 @@ describe('TSS Ecdsa Utils:', async function () {
   let bgUrl: string;
   let tssUtils: ECDSAUtils.EcdsaUtils;
   let wallet: Wallet;
+  let bitgo: TestableBG & BitGo;
+  let baseCoin: BaseCoin;
   let bitgoKeyShare;
   let userKeyShare: KeyShare;
   let backupKeyShare: KeyShare;
@@ -143,10 +151,10 @@ describe('TSS Ecdsa Utils:', async function () {
       },
     };
 
-    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
-    const baseCoin = bitgo.coin(coinName);
+    baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
@@ -173,6 +181,7 @@ describe('TSS Ecdsa Utils:', async function () {
       enterprise: enterpriseId,
       coin: coinName,
       coinSpecific: {},
+      multisigType: 'tss',
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, wallet);
@@ -1490,6 +1499,40 @@ describe('TSS Ecdsa Utils:', async function () {
         "Failed to verify BitGo's challenge needed to enable ECDSA signing. Please contact support@bitgo.com"
       );
       nockGetBitgoChallengesApi.isDone().should.be.true();
+    });
+  });
+
+  describe('supportedTxRequestVersions', function () {
+    it('returns only full for hot wallets', function () {
+      const hotWallet = new Wallet(bitgo, baseCoin, { type: 'hot', multisigType: 'tss' });
+      const hotWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, hotWallet);
+      hotWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns only full for cold wallets', function () {
+      const coldWallet = new Wallet(bitgo, baseCoin, {
+        type: 'cold',
+        multisigType: 'tss',
+      });
+      const coldWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, coldWallet);
+
+      coldWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns only full for custodial wallets', function () {
+      const custodialWallet = new Wallet(bitgo, baseCoin, { type: 'custodial', multisigType: 'tss' });
+      const custodialWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, custodialWallet);
+      custodialWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns empty for trading wallets', function () {
+      const tradingWallet = new Wallet(bitgo, baseCoin, { type: 'trading', multisigType: 'tss' });
+      const tradingWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, tradingWallet);
+      tradingWalletTssUtils.supportedTxRequestVersions().should.deepEqual([]);
+    });
+    it('returns empty for non-tss wallets', function () {
+      const nonTssWalletData = { coin: 'tbtc', multisigType: 'onchain' };
+      const btcCoin = bitgo.coin('tbtc');
+      const nonTssWallet = new Wallet(bitgo, btcCoin, nonTssWalletData);
+      const nonTssWalletTssUtils = new TssUtils(bitgo, btcCoin, nonTssWallet);
+      nonTssWalletTssUtils.supportedTxRequestVersions().should.deepEqual([]);
     });
   });
 

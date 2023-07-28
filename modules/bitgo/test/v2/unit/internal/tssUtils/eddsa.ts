@@ -5,7 +5,7 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src/bitgo';
 import {
   common,
@@ -24,6 +24,7 @@ import {
   CommitmentType,
   ExchangeCommitmentResponse,
   EncryptedSignerShareType,
+  BaseCoin,
 } from '@bitgo/sdk-core';
 import { createWalletSignatures } from '../../tss/helpers';
 import {
@@ -45,6 +46,8 @@ describe('TSS Utils:', async function () {
   let userGpgKey;
   let backupGpgKey;
   let bitgoGpgKey;
+  let bitgo: TestableBG & BitGo;
+  let baseCoin: BaseCoin;
   let wallet: Wallet;
   let bitgoKeyShare;
   const reqId = new RequestTracer();
@@ -182,10 +185,10 @@ describe('TSS Utils:', async function () {
       },
     };
 
-    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
-    const baseCoin = bitgo.coin(coinName);
+    baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
@@ -201,6 +204,7 @@ describe('TSS Utils:', async function () {
         '5b3424f91bf349930e34017700000000',
       ],
       coinSpecific: {},
+      multisigType: 'tss',
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new TssUtils(bitgo, baseCoin, wallet);
@@ -868,6 +872,38 @@ describe('TSS Utils:', async function () {
       };
       const encryptedSignerShare = tssUtils.createUserToBitgoEncryptedSignerShare(value);
       encryptedSignerShare.should.deepEqual(validUserToBitgoEncryptedSignerShare);
+    });
+  });
+
+  describe('supportedTxRequestVersions', function () {
+    it('should return full for custodial wallets', async function () {
+      const custodialWallet = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'custodial' });
+      const custodialTssUtils = new TssUtils(bitgo, baseCoin, custodialWallet);
+      custodialTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('should return full for cold wallets', async function () {
+      const coldWallet = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'cold' });
+      const coldWalletTssUtils = new TssUtils(bitgo, baseCoin, coldWallet);
+      coldWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('should return full and lite for hot wallets', async function () {
+      const hotWallet = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'hot' });
+      const hotTssUtils = new TssUtils(bitgo, baseCoin, hotWallet);
+      const supportedTxRequestVersions = hotTssUtils.supportedTxRequestVersions();
+      supportedTxRequestVersions.should.deepEqual(['lite', 'full']);
+    });
+    it('should return empty for trading wallets', function () {
+      const tradingWallets = new Wallet(bitgo, baseCoin, { multisigType: 'tss', type: 'trading' });
+      const tradingWalletTssUtils = new TssUtils(bitgo, baseCoin, tradingWallets);
+      const supportedTxRequestVersions = tradingWalletTssUtils.supportedTxRequestVersions();
+      supportedTxRequestVersions.should.deepEqual([]);
+    });
+    it('should return empty for non-tss wallets', function () {
+      const nonTssWalletData = { coin: 'btc', multisigType: 'onchain' };
+      const btcCoin = bitgo.coin('tbtc');
+      const nonTssWallet = new Wallet(bitgo, btcCoin, nonTssWalletData);
+      const nonTssWalletTssUtils = new TssUtils(bitgo, btcCoin, nonTssWallet);
+      nonTssWalletTssUtils.supportedTxRequestVersions().should.deepEqual([]);
     });
   });
 

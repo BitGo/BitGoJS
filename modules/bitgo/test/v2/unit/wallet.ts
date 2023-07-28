@@ -3023,9 +3023,27 @@ describe('V2 Wallet:', function () {
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
-        sendTxRequest.resolves('sendTxResponse');
+        const txRequest: TxRequest = {
+          date: '',
+          intent: 'payment',
+          latest: false,
+          policiesChecked: false,
+          state: 'signed',
+          unsignedTxs: [],
+          userId: 'unit-test',
+          version: 0,
+          walletId: wallet.id(),
+          walletType: 'custodial',
+          txRequestId: signedTransaction.txRequestId,
+        };
+        sendTxRequest.resolves(txRequest);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+        const txRequestNock = nock(bgUrl)
+          .persist()
+          .get(`/api/v2/wallet/${walletData.id}/txrequests?txRequestIds=${signedTransaction.txRequestId}&latest=true`)
+          .reply(200, { txRequests: [txRequest] });
 
         const createTransferNock = nock(bgUrl)
           .persist()
@@ -3033,7 +3051,8 @@ describe('V2 Wallet:', function () {
           .reply(200);
 
         const sendMany = await custodialTssWallet.sendMany(sendManyInput);
-        sendMany.should.deepEqual('sendTxResponse');
+        sendMany.should.deepEqual(txRequest);
+        txRequestNock.isDone().should.be.true();
         createTransferNock.isDone().should.be.true();
       });
 

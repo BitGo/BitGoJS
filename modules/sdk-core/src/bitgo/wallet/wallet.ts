@@ -84,6 +84,7 @@ import {
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
+  WalletType,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
@@ -102,6 +103,15 @@ export enum ManageUnspentsOptions {
   BUILD_SIGN_SEND,
 }
 
+function isPrebuildTransactionResult(
+  prebuildTx: string | PrebuildTransactionResult | undefined
+): prebuildTx is PrebuildTransactionResult {
+  if (!prebuildTx || typeof prebuildTx === 'string') {
+    return false;
+  }
+  return (prebuildTx as PrebuildTransactionResult).walletId !== undefined;
+}
+
 export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
@@ -118,7 +128,7 @@ export class Wallet implements IWallet {
       const userDetails = _.find(walletData.users, { user: userId });
       this._permissions = _.get(userDetails, 'permissions');
     }
-    if (baseCoin?.supportsTss()) {
+    if (baseCoin?.supportsTss() && this._wallet.multisigType === 'tss') {
       switch (baseCoin.getMPCAlgorithm()) {
         case 'ecdsa':
           this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
@@ -283,6 +293,14 @@ export class Wallet implements IWallet {
    */
   coin(): string {
     return this._wallet.coin;
+  }
+
+  type(): WalletType | undefined {
+    return this._wallet.type;
+  }
+
+  multisigType(): 'onchain' | 'tss' {
+    return this._wallet.multisigType;
   }
 
   /**
@@ -1829,8 +1847,25 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
+    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() || [];
+    const mustUseTxRequestFull = supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
+
+    if (
+      // verify the wallet must use txRequest Full api and must rebuild the tx before submitting
+      mustUseTxRequestFull &&
+      isPrebuildTransactionResult(params.prebuildTx) &&
+      params.prebuildTx.buildParams?.preview
+    ) {
+      txPrebuildQuery = this.prebuildTransaction({
+        ...params,
+        ...{ ...params.prebuildTx.buildParams, preview: false },
+      });
+    } else {
+      txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
+    }
+
     // the prebuild can be overridden by providing an explicit tx
-    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
@@ -3038,6 +3073,14 @@ export class Wallet implements IWallet {
    * @param params send options
    */
   private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
+    const { apiVersion } = params;
+    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() ?? [];
+    const onlySupportsTxRequestFull =
+      supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
+    if (apiVersion === 'lite' && onlySupportsTxRequestFull) {
+      throw new Error('TxRequest Lite API is not supported for this wallet');
+    }
+
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
     if (!signedTransaction.txRequestId) {
       throw new Error('txRequestId missing from signed transaction');
@@ -3056,7 +3099,7 @@ export class Wallet implements IWallet {
     }
 
     // ECDSA TSS uses TxRequestFull
-    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full' || this._wallet.type === 'cold') {
+    if (apiVersion === 'full' || onlySupportsTxRequestFull) {
       return getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
     }
 

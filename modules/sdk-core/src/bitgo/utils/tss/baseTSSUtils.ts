@@ -396,4 +396,22 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     const bitgoPublicKeyStr = response.publicKey as string;
     return readKey({ armoredKey: bitgoPublicKeyStr });
   }
+
+  /**
+   * Returns supported TxRequest versions for this wallet
+   */
+  public supportedTxRequestVersions(): TxRequestVersion[] {
+    const walletType = this._wallet?.type();
+    const supportedWalletTypes = ['custodial', 'cold', 'hot'];
+    if (!walletType || this._wallet?.multisigType() !== 'tss' || !supportedWalletTypes.includes(walletType)) {
+      return [];
+    } else if (this._wallet?.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      return ['full'];
+    } else if (walletType === 'custodial' || walletType === 'cold') {
+      return ['full'];
+    } else if (this._wallet?.baseCoin.getMPCAlgorithm() === 'eddsa' && walletType === 'hot') {
+      return ['lite', 'full'];
+    }
+    return [];
+  }
 }
