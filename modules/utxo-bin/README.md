@@ -52,3 +52,11 @@ Convert to other networks:
 ```
 utxo-bin -n bitcoin parseAddress 3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC --convert
 ```
+
+## Generate addresses
+```
+utxo-bin generateAddresses \
+    --userKey xpub661MyMwAqRbcEvoSo4qrsT5xhByHzUoBjm88hdCPohF1rdQ4TkntuHfccN2N7FbmAmBgmaBxD7VY1QZ43YfgGRLBL37BBkBhYbezgnsPRVP \
+    --backupKey xpub661MyMwAqRbcF8Evdu2twZS3ELM8Wg6DqSrVR8GpvCeXMgj3rNPf4nasU1FBzX9yeWYTfyikk7rfuWS5FkMqGnh3HpxeeYtuQEx7FVq5FZa \
+    --bitgoKey xpub661MyMwAqRbcEnKX5fhLKdrixijBk4sYCZ7gQ1qRUmib2dXragQVAjv9GmXL4tusTKRwcrYAGrXGETFkFxKFSBCFUAuqdbdM9u2uyQtYkUW
+```
