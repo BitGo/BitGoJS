@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.4.0...@bitgo/sdk-coin-osmo@1.5.0) (2023-07-28)
+
+### Bug Fixes
+
+- **sdk-coin-osmo:** allow zero amount on contract call ([2245ba7](https://github.com/BitGo/BitGoJS/commit/2245ba7acde8ae669ed53ffeb0e58178054f3da3))
+
+### Features
+
+- **abstract-cosmos:** add wallet recovery for abstract cosmos ([1c62e4b](https://github.com/BitGo/BitGoJS/commit/1c62e4b42a6e58d2e3e14dbfa7e312ce062c5db3))
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+- **sdk-coin-osmo:** allow amount in execute contract transaction ([44be383](https://github.com/BitGo/BitGoJS/commit/44be383f38830aeb2d5825ee83c77aab444cfe25))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.3.2...@bitgo/sdk-coin-osmo@1.4.0) (2023-07-18)
 
 ### Features

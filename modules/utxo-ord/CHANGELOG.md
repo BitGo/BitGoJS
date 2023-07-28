@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.2.8...@bitgo/utxo-ord@1.3.0) (2023-07-28)
+
+### Features
+
+- **unspents:** fix unspents module setup ([687f4c3](https://github.com/BitGo/BitGoJS/commit/687f4c3c29885b1e5b5bf9d79782d265937d6f1d)), closes [#3651](https://github.com/BitGo/BitGoJS/issues/3651)
+
 ## [1.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.2.7...@bitgo/utxo-ord@1.2.8) (2023-07-18)
 
 **Note:** Version bump only for package @bitgo/utxo-ord

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.0.0...@bitgo/statics@18.1.0) (2023-07-28)
+
+### Features
+
+- **statics:** onboard batch of SOL wormhole tokens ([8a0e4b6](https://github.com/BitGo/BitGoJS/commit/8a0e4b6e2d2df030e947192192e6623e62c680ac))
+
 # [18.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@17.0.1...@bitgo/statics@18.0.0) (2023-07-18)
 
 ### Bug Fixes
