@@ -1,0 +1,53 @@
+transaction: 5ac5c7213c593aca7b05dc7f9d71d98cf66a9a7d6d0b92f91ae19b3ee03edc9e
+├── format: psbt
+├── complete: true
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: false
+├── status: unknown
+├── vsize: 335vbytes (1340wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 2.99
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: a0ed24c0b95caf63af50c9772e9dfb5d8d1a17bc9dc0eb610982a4c2114c4778:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├─┬ scriptSig: nonstandard
+│   │ ├── 0: 82
+│   │ ├── 1: 03f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f (33 bytes)
+│   │ ├── 2: 035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf2 (33 bytes)
+│   │ ├── 3: 03e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b (33 bytes)
+│   │ ├── 4: 83
+│   │ └── 5: 174
+│   ├── witness: []
+│   ├─┬ sigScript: p2sh
+│   │ ├─┬ pubkeys: 3
+│   │ │ ├── 0: 03f6f40764bd5d63f200a2778883acf75e96f15095c998263c087270d0c97e7e7f (33 bytes)
+│   │ │ ├── 1: 035ffb7abc70159e0469f4b989a6d5e1785a2904169ff050b2f468fe5d3d5dbbf2 (33 bytes)
+│   │ │ └── 2: 03e1524d7f6fc57ab3eacbb659b787106780a475d1db483952c2310b7e9a38975b (33 bytes)
+│   │ └─┬ signatures: [71byte] [71byte]
+│   │   ├── signed by: [0, 2]
+│   │   ├─┬ 0
+│   │   │ ├── bytes: 304402202047ee7a7f7d5d48c57074fcd1be5c361eb2e50e2c32fb88e144afd4b06dc562022000cf543ff78624ffcf12cbf804fc26a4b476072104903449ea4c34ce5a1c81e501 (71 bytes)
+│   │   │ ├── isCanonical: true
+│   │   │ ├── hashType: 1
+│   │   │ ├── r: 2047ee7a7f7d5d48c57074fcd1be5c361eb2e50e2c32fb88e144afd4b06dc562 (32 bytes)
+│   │   │ ├── s: 00cf543ff78624ffcf12cbf804fc26a4b476072104903449ea4c34ce5a1c81e5 (32 bytes)
+│   │   │ └── highS: false
+│   │   └─┬ 1
+│   │     ├── bytes: 304402204eae4cfe19c427a0ad34eb27ae6259fc0205f13cd7cac590c6a0ad31a8b54aa0022011ce940bb14d0bb2f9ee8a0e68f72b5926757a1decdc05c4613825ac703c49bb01 (71 bytes)
+│   │     ├── isCanonical: true
+│   │     ├── hashType: 1
+│   │     ├── r: 4eae4cfe19c427a0ad34eb27ae6259fc0205f13cd7cac590c6a0ad31a8b54aa0 (32 bytes)
+│   │     ├── s: 11ce940bb14d0bb2f9ee8a0e68f72b5926757a1decdc05c4613825ac703c49bb (32 bytes)
+│   │     └── highS: false
+│   ├── value: 0.0001
+│   └─┬ pubScript: a914567cd7b44f9f3a07c3138f37bf984b60fbbaf24387 (23 bytes)
+│     └── address: 2N18XezmyKhojprqNyFwPQCZLgwSjnDjMjg
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: 2ND2ojarDFfd2DCg8pokS2uDCwmKcbx6dQq
+    ├── value: 0.00009000
+    └─┬ scriptPubKey: [23byte]
+      ├── type: scripthash
+      ├── hex: a914d909474404c124a3d04c3fbff61faa49cf43c58b87
+      └── asm: OP_HASH160 d909474404c124a3d04c3fbff61faa49cf43c58b OP_EQUAL

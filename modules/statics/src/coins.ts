@@ -223,7 +223,7 @@ const INJECTIVE_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
 ];
-
+const ZETA_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -902,6 +902,26 @@ export const coins = CoinMap.fromCoins([
     SEI_FEATURES
   ),
   account(
+    '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
+    'zeta',
+    'Zeta',
+    Networks.main.zeta,
+    6,
+    UnderlyingAsset.ZETA,
+    BaseUnit.ZETA,
+    ZETA_FEATURES
+  ),
+  account(
+    '1aeb7754-1518-4aac-8cc0-e4bb07713a31',
+    'tzeta',
+    'Testnet Zeta',
+    Networks.test.zeta,
+    6,
+    UnderlyingAsset.ZETA,
+    BaseUnit.ZETA,
+    ZETA_FEATURES
+  ),
+  account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
     'injective',
     'Injective',
@@ -1281,6 +1301,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AION
   ),
   erc20(
+    'ec5b7fdf-83ce-4a26-8c1d-e54064061b43',
+    'ajna',
+    'AjnaToken',
+    18,
+    '0x9a96ec9b57fb64fbc60b423d1f4da7691bd35079',
+    UnderlyingAsset.AJNA
+  ),
+  erc20(
     'f34129eb-6ba1-44ad-a0a4-a55bbe375b5f',
     'ali',
     'Artificial Liquid Intelligence Token',
@@ -1463,6 +1491,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1321f1f1aa541a56c31682c57b80ecfccd9bb288',
     UnderlyingAsset.ARCX
+  ),
+  erc20(
+    '67af7aee-a78a-4c3a-a24c-b3ef21ea9f3c',
+    'arteq',
+    'arteQ NFT Investment Fund',
+    0,
+    '0x805c2077f3ab224d889f9c3992b41b2f4722c787',
+    UnderlyingAsset.ARTEQ
   ),
   erc20(
     '908540ad-6793-4bb5-8712-041a4c258d26',
@@ -2594,6 +2630,14 @@ export const coins = CoinMap.fromCoins([
     0,
     '0x1aadead0d2e0b6d888ae1d73b11db65a8447634a',
     UnderlyingAsset.ECHT
+  ),
+  erc20(
+    '93c2803d-7c7e-49b3-aa89-754f1506d415',
+    'ecox',
+    'ECOx',
+    18,
+    '0xcccd1ba9f7acd6117834e0d28f25645decb1736a',
+    UnderlyingAsset.ECOX
   ),
   erc20(
     'e4aa6af6-d658-4588-ad72-9fa4ca687469',
@@ -4717,6 +4761,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.QKC
   ),
   erc20(
+    'b184f862-4334-4027-b7cd-a0debe84eeb8',
+    'qlindo',
+    'Qlindo Realestate Investment Token',
+    0,
+    '0xc18c07a18198a6340cf4d94855fe5eb6dd33b46e',
+    UnderlyingAsset.QLINDO
+  ),
+  erc20(
     'ced49948-7b64-4696-a1c0-2eca3a63392f',
     'qvt',
     'Qvolta',
@@ -6019,6 +6071,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x0d438f3b5175bebc262bf23753c1e53d03432bde',
     UnderlyingAsset.WNXM
+  ),
+  erc20(
+    '90575654-b796-4ba5-8acf-dd381f7b3e9b',
+    'wld',
+    'Worldcoin',
+    18,
+    '0x163f8c2467924be0ae7b5347228cabf260318753',
+    UnderlyingAsset.WLD
   ),
   erc20(
     '9a5fada5-5f91-494b-bab5-8781d831fcd0',
@@ -9592,6 +9652,96 @@ export const coins = CoinMap.fromCoins([
     6,
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     UnderlyingAsset.FTT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'f194cd14-d0c2-443a-b717-e826143c7e33',
+    'sol:srm-wormhole',
+    'Serum (Wormhole)',
+    6,
+    'xnorPhAzWXUczCP3KjU5yDxmKKZi5cSbxytQ1LgE3kG',
+    UnderlyingAsset.SRM,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'cd7d9622-1467-405d-af1f-09edd1d431d6',
+    'sol:usdc-wormhole',
+    'USD Coin (PoS) (Wormhole)',
+    6,
+    'E2VmbootbVCBkMNNxKQgCLMS1X3NoGMaYAsufaAsf7M',
+    UnderlyingAsset.WUSDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'bfc197c1-6fcc-4d63-8f20-596b06bf2eec',
+    'sol:hget-wormhole',
+    'Hedget (Wormhole)',
+    6,
+    '2ueY1bLcPHfuFzEJq7yN1V2Wrpu8nkun9xG2TVCE1mhD',
+    UnderlyingAsset.HGET,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'e18a88f5-c4f4-4ba4-b98a-6318c284524a',
+    'sol:ust-wormhole',
+    'UST (Wormhole)',
+    6,
+    '9vMJfxuKxXBoEa7rM12mYLMwTacLMLDJqHozw96WQL8i',
+    UnderlyingAsset.UST,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '6c8fb4d1-8a73-46ae-a69f-715648ec1748',
+    'sol:wftt-wormhole',
+    'Wrapped FTT (Wormhole)',
+    9,
+    'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
+    UnderlyingAsset.WFFT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '2e848aaf-b5ac-49b6-8bd2-eb8b56493ece',
+    'sol:inj-wormhole',
+    'Injective Token (Wormhole)',
+    8,
+    'Hgtvu9gsDTzUpBn69WjrhMyzaQhrAM9piTsezmZVQP6Z',
+    UnderlyingAsset.INJ,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'f6c73cf5-2faf-4076-bcf3-65a7124c0de7',
+    'sol:lua-wormhole',
+    'LuaToken (Wormhole)',
+    8,
+    '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
+    UnderlyingAsset.LUA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '6d542d82-4af1-4d42-b584-bfafc023388f',
+    'sol:ldo-wormhole',
+    'Lido DAO Token (Wormhole)',
+    8,
+    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
+    UnderlyingAsset.LDO,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '84ba4555-269a-4e25-8a13-c713defbebb7',
+    'sol:wbtc-wormhole',
+    'Wrapped BTC (Wormhole)',
+    8,
+    '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
+    UnderlyingAsset.WBTC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '9e03bb68-c6a2-43c9-95d0-4d27c110ef45',
+    'sol:cho-wormhole',
+    'choise.com Token (Wormhole)',
+    8,
+    '59McpTVgyGsSu5eQutvcKLFu7wrFe3ZkE2qdAi3HnvBn',
+    UnderlyingAsset.CHO,
     AccountCoin.DEFAULT_FEATURES
   ),
   tsolToken(

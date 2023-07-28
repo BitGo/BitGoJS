@@ -1,0 +1,41 @@
+transaction: 62dbd6ca75327521321b1267ad78bbaed29e0873ebe0fe7d5972b25e863793ed
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 94vbytes (376wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 10.64
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: b5cb290dd25beea476eadaaea1ccd4ef6611ddcc86982e942d66361edb9c1aca:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig: undefined
+│   ├─┬ witness: nonstandard
+│   │ └── 0: 522103199dc3912467b37ff890cc1740c8ef4ac7a50bf3741d99590e905ca3a79c76702102396d5d0c79d779f9cf019cea9e81d2576bad476ea87ed634416205605a55ce8f210286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d18253ae (105 bytes)
+│   ├─┬ sigScript: p2wsh
+│   │ ├─┬ pubkeys: 3
+│   │ │ ├── 0: 03199dc3912467b37ff890cc1740c8ef4ac7a50bf3741d99590e905ca3a79c7670 (33 bytes)
+│   │ │ ├── 1: 02396d5d0c79d779f9cf019cea9e81d2576bad476ea87ed634416205605a55ce8f (33 bytes)
+│   │ │ └── 2: 0286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d182 (33 bytes)
+│   │ └─┬ signatures: [71byte]
+│   │   ├── signed by: [0]
+│   │   └─┬ 0
+│   │     ├── bytes: 3044022002204210957f9e2f4206ca8fe1a3892a38926ca0e87476a8c8d5fa5df3d8c4040220717de8fa23da5b788830feec6edd35ee9eb4e4291621c072d6f327cfa23f107a01 (71 bytes)
+│   │     ├── isCanonical: true
+│   │     ├── hashType: 1
+│   │     ├── r: 02204210957f9e2f4206ca8fe1a3892a38926ca0e87476a8c8d5fa5df3d8c404 (32 bytes)
+│   │     ├── s: 717de8fa23da5b788830feec6edd35ee9eb4e4291621c072d6f327cfa23f107a (32 bytes)
+│   │     └── highS: false
+│   ├── value: 0.0001
+│   └─┬ pubScript: 00204b1ab1ce9838362321329c5899a38f4c4bf83dd7386007bf9a45498d26cd307b (34 bytes)
+│     └── address: tb1qfvdtrn5c8qmzxgfjn3vfngu0f39ls0wh8psq00u6g4yc6fkdxpas33mzzt
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: tb1qzs2njc69axhkwp69783uwnkg208p9erl8lyh9yg6rc6pcyjed78q6kt44a
+    ├── value: 0.00009000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: witnessscripthash
+      ├── hex: 00201415396345e9af670745f1e3c74ec853ce12e47f3fc972911a1e341c12596f8e
+      └── asm: OP_0 1415396345e9af670745f1e3c74ec853ce12e47f3fc972911a1e341c12596f8e

@@ -33,7 +33,8 @@ export type InstructionParams =
   | StakingDeactivate
   | StakingWithdraw
   | AtaInit
-  | TokenTransfer;
+  | TokenTransfer
+  | StakingAuthorize;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -83,6 +84,11 @@ export interface StakingDeactivate {
 export interface StakingWithdraw {
   type: InstructionBuilderTypes.StakingWithdraw;
   params: { fromAddress: string; stakingAddress: string; amount: string };
+}
+
+export interface StakingAuthorize {
+  type: InstructionBuilderTypes.StakingAuthorize;
+  params: { stakingAddress: string; oldAuthorizeAddress; newAuthorizeAddress: string; newWithdrawAddress: string };
 }
 
 export interface AtaInit {

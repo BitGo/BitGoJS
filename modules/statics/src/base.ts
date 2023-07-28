@@ -63,6 +63,7 @@ export enum CoinFamily {
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
+  ZETA = 'zeta',
 }
 
 /**
@@ -262,6 +263,7 @@ export enum UnderlyingAsset {
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
+  ZETA = 'zeta',
 
   // ERC 20 tokens
   '1INCH' = '1inch',
@@ -279,6 +281,7 @@ export enum UnderlyingAsset {
   AGLD = 'agld',
   AGWD = 'agwd',
   AION = 'aion',
+  AJNA = 'ajna',
   AKRO = 'akro',
   ALCX = 'alcx',
   ALDRIN = 'aldrin',
@@ -310,6 +313,7 @@ export enum UnderlyingAsset {
   AQT = 'aqt',
   ARCT = 'arct',
   ARCX = 'arcx',
+  ARTEQ = 'arteq',
   ASD = 'asd',
   AST = 'ast',
   ATLAS = 'atlas',
@@ -483,6 +487,7 @@ export enum UnderlyingAsset {
   EASY = 'easy',
   EBTCQ = 'ebtcq',
   ECHT = 'echt',
+  ECOX = 'ecox',
   EDEN = 'eden',
   EDISON = 'edison',
   EMB = 'emb',
@@ -814,6 +819,7 @@ export enum UnderlyingAsset {
   QUICK = 'quick',
   QDT = 'qdt',
   QKC = 'qkc',
+  QLINDO = 'qlindo',
   QNT = 'qnt',
   QRDO = 'qrdo',
   QRL = 'qrl',
@@ -1065,10 +1071,12 @@ export enum UnderlyingAsset {
   WET = 'wet',
   WETH = 'weth',
   WFLOW = 'wflow',
+  WFFT = 'wfft',
   WHALE = 'whale',
   WHT = 'wht',
   WILD = 'wild',
   WNXM = 'wnxm',
+  WLD = 'wld',
   WLUNA = 'wluna',
   WLXT = 'wlxt',
   // Wrapped SOL
@@ -1077,6 +1085,7 @@ export enum UnderlyingAsset {
   WPX = 'wpx',
   WTC = 'wtc',
   // USD Coin (Wormhole)
+  WUSDC = 'wusdc',
   WUSDCV2 = 'wusdvcv2',
   // Tether USD (Wormhole)
   WUSDTV2 = 'wusdtv2',
@@ -1286,6 +1295,7 @@ export enum BaseUnit {
   BLD = 'ubld',
   SEI = 'usei',
   INJECTIVE = 'inj',
+  ZETA = 'azeta',
 }
 
 export interface BaseCoinConstructorOptions {

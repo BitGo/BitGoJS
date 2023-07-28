@@ -22,6 +22,9 @@ import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis'
 import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
+import { ScriptParser } from './ScriptParser';
+import { stringToBuffer } from './parseString';
+import { generateAddress } from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -31,7 +34,7 @@ type ArgsParseTransaction = {
   clipboard: boolean;
   path?: string;
   txid?: string;
-  hex?: string;
+  data?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;
@@ -53,6 +56,23 @@ type ArgsParseAddress = {
   address: string;
 };
 
+type ArgsParseScript = {
+  network?: string;
+  format: OutputFormat;
+  all: boolean;
+  script: string;
+};
+
+export type ArgsGenerateAddress = {
+  network?: string;
+  userKey: string;
+  backupKey: string;
+  bitgoKey: string;
+  chain?: number[];
+  showDerivationPath?: boolean;
+  limit: number;
+};
+
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
   if (cache) {
     const mkdir = promisify(fs.mkdir);
@@ -66,7 +86,7 @@ async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
 function getNetworkForName(name: string) {
   const network = utxolib.networks[name as utxolib.NetworkName];
   if (!network) {
-    throw new Error(`invalid network ${network}`);
+    throw new Error(`invalid network ${name}`);
   }
   return network;
 }
@@ -120,6 +140,10 @@ export function getAddressParser(argv: ArgsParseAddress): AddressParser {
   return new AddressParser(resolveNetwork(argv));
 }
 
+export function getScriptParser(argv: ArgsParseScript): ScriptParser {
+  return new ScriptParser(resolveNetwork(argv));
+}
+
 export const cmdParseTx = {
   command: 'parseTx [path]',
   aliases: ['parse', 'tx'],
@@ -127,13 +151,13 @@ export const cmdParseTx = {
     'Display transaction components in human-readable form. ' +
     'Supported formats are Partially Signed Bitcoin Transaction (PSBT), ' +
     'bitcoinjs-lib encoding (Legacy) or fully signed transaction. ' +
-    'Bytes must be encoded in hex format.',
+    'Bytes must be encoded in hex or base64 format.',
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
       .option('path', { type: 'string', nargs: 1, default: '' })
       .option('stdin', { type: 'boolean', default: false })
-      .option('hex', { type: 'string', description: 'transaction bytes (hex-encoded)' })
+      .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
       .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
       .option('fetchAll', { type: 'boolean', default: false })
@@ -205,25 +229,19 @@ export const cmdParseTx = {
       data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
     }
 
-    if (argv.hex) {
+    if (argv.data) {
       if (data) {
         throw new Error(`conflicting arguments`);
       }
-      data = argv.hex;
+      data = argv.data;
     }
 
     // strip whitespace
-    data = data?.replace(/\s*/g, '');
     if (!data) {
       throw new Error(`no txdata`);
     }
 
-    const bytes = Buffer.from(data, 'hex');
-
-    // make sure hex was parsed
-    if (bytes.toString('hex') !== data) {
-      throw new Error(`invalid hex`);
-    }
+    const bytes = stringToBuffer(data, ['hex', 'base64']);
 
     let tx = utxolib.bitgo.isPsbt(bytes)
       ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
@@ -282,3 +300,45 @@ export const cmdParseAddress = {
     console.log(formatString(parsed, argv));
   },
 } as const;
+
+export const cmdParseScript = {
+  command: 'parseScript [script]',
+  describe: 'parse script',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseScript> {
+    return b
+      .option('network', { alias: 'n', type: 'string' })
+      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('all', { type: 'boolean', default: false })
+      .positional('script', { type: 'string', demandOption: true });
+  },
+  handler(argv: yargs.Arguments<ArgsParseScript>): void {
+    const script = stringToBuffer(argv.script, 'hex');
+    const parsed = getScriptParser(argv).parse(script);
+    console.log(formatString(parsed, { ...argv, all: true }));
+  },
+};
+
+export const cmdGenerateAddress = {
+  command: 'generateAddresses',
+  describe: 'generate addresses',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsGenerateAddress> {
+    return b
+      .option('network', { alias: 'n', type: 'string' })
+      .option('userKey', { type: 'string', demandOption: true })
+      .option('backupKey', { type: 'string', demandOption: true })
+      .option('bitgoKey', { type: 'string', demandOption: true })
+      .option('chain', { type: 'number' })
+      .option('showDerivationPath', { type: 'boolean', default: true })
+      .array('chain')
+      .option('limit', { type: 'number', default: 100 });
+  },
+  handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
+    console.log('generating addresses..');
+    for (const address of generateAddress({
+      ...argv,
+      network: getNetworkForName(argv.network ?? 'bitcoin'),
+    })) {
+      console.log(address);
+    }
+  },
+};

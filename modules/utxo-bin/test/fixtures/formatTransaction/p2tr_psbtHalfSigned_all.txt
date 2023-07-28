@@ -1,0 +1,34 @@
+transaction: 3fb41f61475637862d825d1823b4a15a34a22f40e4e7f9f6f100d442f6575274
+├── format: psbt
+├── complete: false
+├── parsedAs: bitcoin testnet
+├── version: 1
+├── locktime: 0
+├── hasWitnesses: true
+├── status: unknown
+├── vsize: 94vbytes (376wu)
+├── fee [btc]: 0.00001000
+├── feeRate [sat/vbyte]: 10.64
+├─┬ inputs: 1 sum=0.00010000
+│ └─┬ 0: 95b1cabf19cdfbbf4e63b25249e518488f2e87d84cf976365ae85840098f5f59:0
+│   ├── sequence: ffffffff (4 bytes)
+│   ├── scriptSig: undefined
+│   ├── witness: []
+│   ├─┬ sigScript: taprootScriptPathSpend
+│   │ ├─┬ pubkeys: 2
+│   │ │ ├── 0: 0d0813a61dac1f2a21633db4e4b8c53b81734aa4a4aa8013259db8eb7ae6fbaa (32 bytes)
+│   │ │ └── 1: fa76b7b1f6a7613b559ccc03219c39d00e02dfc2edee0f685ac7821fee8cc750 (32 bytes)
+│   │ └─┬ signatures: [64byte]
+│   │   ├── signed by: [0]
+│   │   └─┬ 0
+│   │     └── bytes: f9ba5fa8fa0948c2e6bcc1cf82eb8cd7e09b6cc0b1b8552fa78fee529909d3c3324a75b80625bb23034bb13da2f3271587578b2b05713027bb060f2474b23d2f (64 bytes)
+│   ├── value: 0.0001
+│   └─┬ pubScript: 512090c8aadd97d4c12f769ff98e116a456446231073710a707bf101738dafb26e15 (34 bytes)
+│     └── address: tb1pjry24hvh6nqj7a5llx8pz6j9v3rzxyrnwy98q7l3q9ecmtajdc2smttedz
+└─┬ outputs: 1 sum=0.00009000
+  └─┬ 0: tb1pjqvj7jeh50rjg687pqsheajzwaytuh3tjy7tyg4s2ls2j0cz52wstz6f7v
+    ├── value: 0.00009000
+    └─┬ scriptPubKey: [34byte]
+      ├── type: taproot
+      ├── hex: 512090192f4b37a3c72468fe08217cf6427748be5e2b913cb222b057e0a93f02a29d
+      └── asm: OP_1 90192f4b37a3c72468fe08217cf6427748be5e2b913cb222b057e0a93f02a29d

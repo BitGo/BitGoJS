@@ -2,10 +2,12 @@
  * @prettier
  */
 
-import { common, Ed25519BIP32, Eddsa, HDTree, SignatureShareType, ShareKeyPosition } from '@bitgo/sdk-core';
+import { common, Ed25519BIP32, Eddsa, Ecdsa, HDTree, SignatureShareType, ShareKeyPosition } from '@bitgo/sdk-core';
+import { Hash } from 'crypto';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import * as should from 'should';
 import * as sinon from 'sinon';
+import { EcdsaPaillierProof, EcdsaTypes, hexToBigInt } from '@bitgo/sdk-lib-mpc';
 
 import 'should-http';
 import 'should-sinon';
@@ -15,8 +17,11 @@ import * as express from 'express';
 import { handleV2GenerateShareTSS, handleV2Sign } from '../../../src/clientRoutes';
 import { fetchKeys } from '../../../src/fetchEncryptedPrivKeys';
 import * as fs from 'fs';
+import { mockChallengeA, mockChallengeB } from './mocks/ecdsaNtilde';
 import { Coin, BitGo, SignedTransaction } from 'bitgo';
 import * as nock from 'nock';
+import { keyShareOneEcdsa, keyShareTwoEcdsa, keyShareThreeEcdsa } from './mocks/keyShares';
+const createKeccakHash = require('keccak');
 nock.restore();
 
 type Output = {
@@ -27,6 +32,7 @@ describe('External signer', () => {
   let bitgo: TestBitGoAPI;
   let bgUrl;
   let MPC: Eddsa;
+  let mpcEcdsa: Ecdsa;
   let hdTree: HDTree;
 
   const walletId = '61f039aad587c2000745c687373e0fa9';
@@ -47,6 +53,7 @@ describe('External signer', () => {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     hdTree = await Ed25519BIP32.initialize();
     MPC = await Eddsa.initialize(hdTree);
+    mpcEcdsa = new Ecdsa();
 
     const bitgoPublicKey =
       '-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nxk8EZIol0hMFK4EEAAoCAwTBJZKgCNfBZuD5AgIDM2hQky3Iw3T6EITaMnW2\nG9uKxFadVpslF0Dyp+kieW7JYPffUzSI+mCR7L/4rSsnLLHszRZiaXRnbyA8\nYml0Z29AdGVzdC5jb20+wowEEBMIAB0FAmSKJdIECwkHCAMVCAoEFgACAQIZ\nAQIbAwIeAQAhCRAL9sROnSoDRhYhBEFZxeQAYNOvaj3GZAv2xE6dKgNGj7MB\nAOJBnZqaWPway3B4fNB/Mi0v1wb9d2uDD28SgzzpsV/YAP90cryseKMF+dKw\n+to1vXTl8xb49cIU9gvcJYLqYUd+Fs5TBGSKJdISBSuBBAAKAgMErB+qJoUf\nvTyMP/9GGNsHY7ykqbwi/QYjim4bR560TyRQ8LKaxGwHN/1cbq4iQt45lYK2\nWpNQovBJ6U3DwKUFnQMBCAfCeAQYEwgACQUCZIol0gIbDAAhCRAL9sROnSoD\nRhYhBEFZxeQAYNOvaj3GZAv2xE6dKgNGSA8A/25BLEgyRERJFlDvGnavxRKu\nhHHV6kyzK9speNeTs1vzAP0cFkbE5Kvg6Xz9lag+cr6rFwrHC8m7znTbrbHq\n6eOi3w==\n=XFoJ\n-----END PGP PUBLIC KEY BLOCK-----\n';
@@ -56,7 +63,7 @@ describe('External signer', () => {
       },
     };
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    nock(bgUrl).get('/api/v1/client/constants').times(10).reply(200, { ttl: 3600, constants });
   });
 
   after(() => {
@@ -91,14 +98,218 @@ describe('External signer', () => {
 
     await handleV2Sign(req);
 
-    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
-    signTransactionStub.should.be.calledOnceWith(
-      sinon.match({
-        prv: secret,
-      })
-    );
+    readFileStub.calledOnceWith('signerFileSystemPath').should.be.true();
+    signTransactionStub
+      .calledOnceWith(
+        sinon.match({
+          prv: secret,
+        })
+      )
+      .should.be.true();
     readFileStub.restore();
     signTransactionStub.restore();
+    envStub.restore();
+  });
+
+  it('should read an encrypted prv from signerFileSystemPath and pass it to PaillierModulus, K, MuDelta, and S share generators', async () => {
+    const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
+    const user = keyShareOneEcdsa; // await mpcEcdsa.keyShare(1, 2, 3);
+    const backup = keyShareTwoEcdsa; // await mpcEcdsa.keyShare(2, 2, 3);
+    const bitgo = keyShareThreeEcdsa; // await mpcEcdsa.keyShare(3, 2, 3);
+    const bitgoCombinedKey = await mpcEcdsa.keyCombine(bitgo.pShare, [backup.nShares[3], user.nShares[3]]);
+    const userChallenge = mockChallengeA;
+    const bitgoChallenge = mockChallengeB;
+    const userSigningMaterial = {
+      pShare: user.pShare,
+      bitgoNShare: bitgo.nShares[1],
+      backupNShare: backup.nShares[1],
+    };
+    const bg = new BitGo({ env: 'test' });
+    const walletPassphrase = 'testPass';
+    const validPrv = bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
+    const output: Output = {};
+    output[walletID] = validPrv;
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
+    const envStub = sinon
+      .stub(process, 'env')
+      .value({ WALLET_62fe536a6b4cf70007acb48c0e7bb0b0_PASSPHRASE: walletPassphrase });
+    const tMessage = 'testMessage';
+    const bgTest = new BitGo({ env: 'test' });
+    const derivationPath = '';
+    const reqPaillierModulus = {
+      bitgo: bgTest,
+      body: {
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+      },
+      params: {
+        coin: 'tbsc',
+        sharetype: 'PaillierModulus',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const paillierResult = await handleV2GenerateShareTSS(reqPaillierModulus);
+    paillierResult.should.have.property('userPaillierModulus');
+    const userPaillierModulus = paillierResult.userPaillierModulus;
+    const [bitgoToUserPaillierChallenge, userToBitgoPaillierChallenge] = await Promise.all([
+      EcdsaPaillierProof.generateP(hexToBigInt(userPaillierModulus)),
+      EcdsaPaillierProof.generateP(hexToBigInt(bitgoCombinedKey.yShares[1].n)),
+    ]);
+    const reqK = {
+      bitgo: bgTest,
+      body: {
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
+              },
+            ],
+          },
+        },
+        challenges: {
+          enterpriseChallenge: {
+            ntilde: userChallenge.ntilde,
+            h1: userChallenge.h1,
+            h2: userChallenge.h2,
+            p: EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge }).p,
+          },
+          bitgoChallenge: {
+            ntilde: bitgoChallenge.ntilde,
+            h1: bitgoChallenge.h1,
+            h2: bitgoChallenge.h2,
+            p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
+            n: bitgo.pShare.n,
+          },
+        },
+        requestType: 0,
+      },
+      params: {
+        coin: 'tbsc',
+        sharetype: 'K',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const kResult = await handleV2GenerateShareTSS(reqK);
+    kResult.should.have.property('kShare');
+    kResult.should.have.property('wShare');
+    const aShareFromBitgo = await mpcEcdsa.signConvertStep1({
+      xShare: mpcEcdsa.appendChallenge(
+        bitgoCombinedKey.xShare,
+        bitgoChallenge,
+        EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge })
+      ),
+      yShare: bitgoCombinedKey.yShares[1],
+      kShare: kResult.kShare,
+    });
+    const reqMuDelta = {
+      bitgo: bgTest,
+      body: {
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        aShareFromBitgo: aShareFromBitgo.aShare,
+        bitgoChallenge: {
+          ntilde: bitgoChallenge.ntilde,
+          h1: bitgoChallenge.h1,
+          h2: bitgoChallenge.h2,
+          p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
+          n: bitgo.pShare.n,
+        },
+        encryptedWShare: kResult.wShare,
+      },
+      params: {
+        coin: 'tbsc',
+        sharetype: 'MuDelta',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const muDeltaResult = await handleV2GenerateShareTSS(reqMuDelta);
+    muDeltaResult.should.have.property('muDShare');
+    muDeltaResult.should.have.property('oShare');
+    const bitgoGShare = await mpcEcdsa.signConvertStep3({
+      bShare: aShareFromBitgo.bShare,
+      muShare: muDeltaResult.muDShare.muShare,
+    });
+    const bitgoDShare = mpcEcdsa.signCombine({
+      gShare: bitgoGShare.gShare,
+      signIndex: {
+        i: 1,
+        j: 3,
+      },
+    });
+    const reqS = {
+      bitgo: bgTest,
+      body: {
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
+              },
+            ],
+          },
+        },
+        dShareFromBitgo: bitgoDShare.dShare,
+        requestType: 0,
+        encryptedOShare: muDeltaResult.oShare,
+      },
+      params: {
+        coin: 'tbsc',
+        sharetype: 'S',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as express.Request;
+    const sResult = await handleV2GenerateShareTSS(reqS);
+    sResult.should.have.property('R');
+    sResult.should.have.property('s');
+    sResult.should.have.property('y');
+    const bitGoSShare = mpcEcdsa.sign(
+      Buffer.from(tMessage, 'hex'),
+      bitgoDShare.oShare,
+      muDeltaResult.muDShare.dShare,
+      createKeccakHash('keccak256') as Hash
+    );
+    const signature = mpcEcdsa.constructSignature([bitGoSShare, sResult]);
+    mpcEcdsa.verify(Buffer.from(tMessage, 'hex'), signature, createKeccakHash('keccak256') as Hash).should.be.true;
+    readFileStub.restore();
     envStub.restore();
   });
 

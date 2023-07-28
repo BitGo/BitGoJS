@@ -42,14 +42,14 @@ describe('Osmo contract call txn Builder', () => {
     should.deepEqual(tx.inputs, [
       {
         address: testTx.from,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
         address: testTx.to,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);
@@ -72,14 +72,14 @@ describe('Osmo contract call txn Builder', () => {
     should.deepEqual(tx.inputs, [
       {
         address: testTx.from,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
         address: testTx.to,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);
@@ -106,14 +106,14 @@ describe('Osmo contract call txn Builder', () => {
     should.deepEqual(tx.inputs, [
       {
         address: testTx.from,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
         address: testTx.to,
-        value: 'UNAVAILABLE',
+        value: '0',
         coin: basecoin.getChain(),
       },
     ]);

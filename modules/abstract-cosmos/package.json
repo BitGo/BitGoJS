@@ -15,7 +15,7 @@
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=14 <17"
+    "node": ">=16 <19"
   },
   "repository": {
     "type": "git",
@@ -40,6 +40,7 @@
     "@bitgo/sdk-core": "^8.11.0",
     "@bitgo/statics": "^18.0.0",
     "@bitgo/utxo-lib": "^9.3.0",
+    "@bitgo/sdk-lib-mpc": "^8.5.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/crypto": "^0.30.1",
     "@cosmjs/encoding": "^0.29.5",

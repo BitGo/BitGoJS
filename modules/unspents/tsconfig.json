@@ -1,19 +1,15 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2019",
-    "noImplicitAny": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "lib": ["es2019"],
-    "strict": true,
-    "declaration": true,
-    "types": ["lodash", "node", "mocha"],
+    "outDir": "./dist",
+    "rootDir": ".",
     "paths": {
       "bitcoinjs-lib/src/*": ["node_modules/bitcoinjs-lib/types/*"]
-    }
+    },
+    "esModuleInterop": true,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "test/**/*", "bin/**/*"]
 }

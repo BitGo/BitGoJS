@@ -5,11 +5,17 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { mockSerializedChallengeWithProofs, mockSerializedChallengeWithProofs2, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo, createSharedDataProof } from '../../../../../src';
+import {
+  mockSerializedChallengeWithProofs,
+  mockSerializedChallengeWithProofs2,
+  TestableBG,
+  TestBitGo,
+} from '@bitgo/sdk-test';
+import { BitGo, createSharedDataProof, TssUtils, RequestType } from '../../../../../src';
 import {
   BackupGpgKey,
   BackupKeyShare,
+  BaseCoin,
   BitgoGPGPublicKey,
   BitgoHeldBackupKeyShare,
   common,
@@ -17,13 +23,13 @@ import {
   ECDSA,
   ECDSAMethods,
   ECDSAUtils,
+  EnterpriseData,
   Keychain,
   RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
   Wallet,
-  EnterpriseData,
 } from '@bitgo/sdk-core';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo/sdk-lib-mpc';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
@@ -58,6 +64,8 @@ describe('TSS Ecdsa Utils:', async function () {
   let bgUrl: string;
   let tssUtils: ECDSAUtils.EcdsaUtils;
   let wallet: Wallet;
+  let bitgo: TestableBG & BitGo;
+  let baseCoin: BaseCoin;
   let bitgoKeyShare;
   let userKeyShare: KeyShare;
   let backupKeyShare: KeyShare;
@@ -143,14 +151,15 @@ describe('TSS Ecdsa Utils:', async function () {
       },
     };
 
-    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
-    const baseCoin = bitgo.coin(coinName);
+    baseCoin = bitgo.coin(coinName);
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    nock(bgUrl).persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    // TODO(WP-346): sdk-test mocks conflict so we can't use persist
+    nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
 
     const nockPromises = [
       nockBitgoKeychain({
@@ -172,6 +181,7 @@ describe('TSS Ecdsa Utils:', async function () {
       enterprise: enterpriseId,
       coin: coinName,
       coinSpecific: {},
+      multisigType: 'tss',
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, wallet);
@@ -670,7 +680,7 @@ describe('TSS Ecdsa Utils:', async function () {
       version: 1,
       userId: 'userId',
     };
-    let aShare, dShare, userSignShare;
+    let aShare, dShare, wShare, oShare, userSignShare, bitgoChallenges, enterpriseChallenges;
 
     beforeEach(async () => {
       // Initializing user and bitgo for creating shares for nocks
@@ -691,12 +701,12 @@ describe('TSS Ecdsa Utils:', async function () {
         EcdsaPaillierProof.generateP(hexToBigInt(bitgoSigningKey.yShares[1].n)),
       ]);
 
-      const bitgoChallenges = {
+      bitgoChallenges = {
         ...serializedBitgoChallenge,
         p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
         n: bitgoSigningKey.xShare.n,
       };
-      const enterpriseChallenges = {
+      enterpriseChallenges = {
         ...serializedEntChallenge,
         p: EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge }).p,
         n: bitgoSigningKey.xShare.n,
@@ -730,6 +740,7 @@ describe('TSS Ecdsa Utils:', async function () {
        *  and KShare from user and responds back with aShare and saves bShare for later use
        */
       userSignShare = await ECDSAMethods.createUserSignShare(userXShare, bitgoYShare);
+      wShare = userSignShare.wShare;
       const signatureShareOneFromUser: SignatureShareRecord = {
         from: SignatureShareType.USER,
         to: SignatureShareType.BITGO,
@@ -815,6 +826,7 @@ describe('TSS Ecdsa Utils:', async function () {
       const userOmicronAndDeltaShare = await ECDSAMethods.createUserOmicronAndDeltaShare(
         userGammaAndMuShares.gShare as ECDSA.GShare
       );
+      oShare = userOmicronAndDeltaShare.oShare;
       const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
       const userSShare = await ECDSAMethods.createUserSignatureShare(
         userOmicronAndDeltaShare.oShare,
@@ -913,6 +925,140 @@ describe('TSS Ecdsa Utils:', async function () {
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10];
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
+    it('getOfflineSignerPaillierModulus should succeed', async function () {
+      const paillierModulus = tssUtils.getOfflineSignerPaillierModulus({
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+      });
+      paillierModulus.userPaillierModulus.should.equal(userKeyShare.pShare.n);
+    });
+
+    it('createOfflineKShare should succeed', async function () {
+      const mockPassword = 'password';
+      const step1SigningMaterial = await tssUtils.createOfflineKShare({
+        tssParams: {
+          txRequest,
+          prv: '',
+          reqId: reqId,
+        },
+        challenges: {
+          enterpriseChallenge: enterpriseChallenges,
+          bitgoChallenge: bitgoChallenges,
+        },
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        requestType: RequestType.tx,
+        walletPassphrase: mockPassword,
+      });
+      step1SigningMaterial.privateShareProof.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+      step1SigningMaterial.vssProof?.length.should.equal(userKeyShare.nShares[3].v?.length);
+      step1SigningMaterial.publicShare.length.should.equal(
+        userKeyShare.nShares[3].y.length + userKeyShare.nShares[3].chaincode.length
+      );
+      step1SigningMaterial.encryptedSignerOffsetShare.should.startWith('-----BEGIN PGP MESSAGE-----');
+      step1SigningMaterial.userPublicGpgKey.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+      step1SigningMaterial.kShare.n.should.equal(userKeyShare.pShare.n);
+      step1SigningMaterial.wShare.should.startWith('{"iv":');
+    });
+
+    it('createOfflineKShare should fail with txId passed', async function () {
+      const mockPassword = 'password';
+      await tssUtils
+        .createOfflineKShare({
+          tssParams: {
+            txRequest: txRequest.txRequestId,
+            prv: '',
+            reqId: reqId,
+          },
+          challenges: {
+            enterpriseChallenge: enterpriseChallenges,
+            bitgoChallenge: bitgoChallenges,
+          },
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          requestType: RequestType.tx,
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith('Invalid txRequest type');
+    });
+
+    it('createOfflineMuDeltaShare should succeed', async function () {
+      const mockPassword = 'password';
+      const alphaLength = 1536;
+      const deltaLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare: bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+        walletPassphrase: mockPassword,
+      });
+      step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
+      step2SigningMaterial.muDShare.dShare.delta.length.should.equal(deltaLength);
+      step2SigningMaterial.oShare.should.startWith('{"iv":');
+    });
+
+    it('createOfflineMuDeltaShare should fail with incorrect password', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          aShareFromBitgo: aShare,
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+          walletPassphrase: 'password1',
+        })
+        .should.be.rejectedWith("password error - ccm: tag doesn't match");
+    });
+
+    it('createOfflineSShare should succeed', async function () {
+      const mockPassword = 'password';
+      const pubKeyLength = 66;
+      const privKeyLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const step3SigningMaterial = await tssUtils.createOfflineSShare({
+        tssParams: {
+          txRequest: txRequest,
+          prv: '',
+          reqId: reqId,
+        },
+        dShareFromBitgo: dShare,
+        encryptedOShare: bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+        walletPassphrase: mockPassword,
+        requestType: RequestType.tx,
+      });
+      step3SigningMaterial.R.length.should.equal(pubKeyLength);
+      step3SigningMaterial.y.length.should.equal(pubKeyLength);
+      step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineSShare should fail with txId passed', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineSShare({
+          tssParams: {
+            txRequest: txRequest.txRequestId,
+            prv: '',
+            reqId: reqId,
+          },
+          dShareFromBitgo: dShare,
+          encryptedOShare: bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+          walletPassphrase: mockPassword,
+          requestType: RequestType.tx,
+        })
+        .should.be.rejectedWith('Invalid txRequest type');
     });
 
     it('signTxRequest should fail with invalid user prv', async function () {
@@ -1236,7 +1382,10 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     function nockGetBitgoChallenges(response: unknown): nock.Scope {
-      return nock(bgUrl).get(`/api/v2/tss/ecdsa/challenges`).times(1).reply(200, response);
+      return nock(bgUrl)
+        .get(`/api/v2/tss/ecdsa/challenges`)
+        .times(1)
+        .reply(() => [200, response]);
     }
 
     it('succeeds for valid bitgo proofs', async function () {
@@ -1353,6 +1502,40 @@ describe('TSS Ecdsa Utils:', async function () {
     });
   });
 
+  describe('supportedTxRequestVersions', function () {
+    it('returns only full for hot wallets', function () {
+      const hotWallet = new Wallet(bitgo, baseCoin, { type: 'hot', multisigType: 'tss' });
+      const hotWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, hotWallet);
+      hotWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns only full for cold wallets', function () {
+      const coldWallet = new Wallet(bitgo, baseCoin, {
+        type: 'cold',
+        multisigType: 'tss',
+      });
+      const coldWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, coldWallet);
+
+      coldWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns only full for custodial wallets', function () {
+      const custodialWallet = new Wallet(bitgo, baseCoin, { type: 'custodial', multisigType: 'tss' });
+      const custodialWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, custodialWallet);
+      custodialWalletTssUtils.supportedTxRequestVersions().should.deepEqual(['full']);
+    });
+    it('returns empty for trading wallets', function () {
+      const tradingWallet = new Wallet(bitgo, baseCoin, { type: 'trading', multisigType: 'tss' });
+      const tradingWalletTssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, tradingWallet);
+      tradingWalletTssUtils.supportedTxRequestVersions().should.deepEqual([]);
+    });
+    it('returns empty for non-tss wallets', function () {
+      const nonTssWalletData = { coin: 'tbtc', multisigType: 'onchain' };
+      const btcCoin = bitgo.coin('tbtc');
+      const nonTssWallet = new Wallet(bitgo, btcCoin, nonTssWalletData);
+      const nonTssWalletTssUtils = new TssUtils(bitgo, btcCoin, nonTssWallet);
+      nonTssWalletTssUtils.supportedTxRequestVersions().should.deepEqual([]);
+    });
+  });
+
   describe('initiateChallengesForEnterprise', function () {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const adminEcdhKey = bitgo.keychains().create();
@@ -1466,6 +1649,28 @@ describe('TSS Ecdsa Utils:', async function () {
     const expectedMessageToSign = challenge.ntilde.concat(challenge.h1).concat(challenge.h2);
     const message = ECDSAUtils.EcdsaUtils.getMessageToSignFromChallenge(challenge);
     message.should.equal(expectedMessageToSign);
+  });
+  describe('validateCommonKeychainPublicKey', function () {
+    it('validateCommonKeychainPublicKey returns correct public key', function () {
+      const commonKeychain =
+        '03f40c70545b519bb7bbc7195fd4b7d5bbfc873bfd38b18596e4b47a05b6a88d552e2e8319cb31e279b99dbe54115a983d35e86679af96d81b7478d1df368f76a8';
+      const expectedPubKeyResult = `f40c70545b519bb7bbc7195fd4b7d5bbfc873bfd38b18596e4b47a05b6a88d556a10d6ab8055dc0b3a9af9dc4e42f4f9773c590afcc298d017c1b1ce29a88041`;
+      const actualPubKey = ECDSAUtils.EcdsaUtils.validateCommonKeychainPublicKey(commonKeychain);
+      actualPubKey.should.equal(expectedPubKeyResult);
+    });
+    it('validateCommonKeychainPublicKey throws correctly with invalid length', function () {
+      const commonKeychain = '03f40c70548';
+      should(() => ECDSAUtils.EcdsaUtils.validateCommonKeychainPublicKey(commonKeychain)).throwError(
+        'Invalid commonKeychain length, expected 130, got 11'
+      );
+    });
+    it('validateCommonKeychainPublicKey throws correctly with invalid commonKeychain', function () {
+      const commonKeychainWithInvalidCharacters =
+        '!@#$^0c70545b519bb7bbc7195fd4b7d5bfc873bfd38b18596e4b47a05b6a88d552e2e8319cb31e279b99dbe54115a983d35e86679af96d81b7478d1df368f76a8'; // 129 chars
+      should(() =>
+        ECDSAUtils.EcdsaUtils.validateCommonKeychainPublicKey(commonKeychainWithInvalidCharacters)
+      ).throwError('Unknown point format');
+    });
   });
 
   // #region Nock helpers

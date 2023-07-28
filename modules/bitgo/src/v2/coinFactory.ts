@@ -99,10 +99,12 @@ import {
   Txrp,
   Txtz,
   Tzec,
+  Tzeta,
   Xlm,
   Xrp,
   Xtz,
   Zec,
+  Zeta,
 } from './coins';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
@@ -190,10 +192,12 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('txrp', Txrp.createInstance);
   globalCoinFactory.register('txtz', Txtz.createInstance);
   globalCoinFactory.register('tzec', Tzec.createInstance);
+  globalCoinFactory.register('tzeta', Tzeta.createInstance);
   globalCoinFactory.register('xlm', Xlm.createInstance);
   globalCoinFactory.register('xrp', Xrp.createInstance);
   globalCoinFactory.register('xtz', Xtz.createInstance);
   globalCoinFactory.register('zec', Zec.createInstance);
+  globalCoinFactory.register('zeta', Zeta.createInstance);
 
   Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);

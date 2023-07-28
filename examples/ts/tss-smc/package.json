@@ -1,0 +1,12 @@
+{
+  "name": "tss-smc",
+  "version": "1.0.0",
+  "description": "TSS Self Managed Cold Wallets Examples",
+  "dependencies": {
+    "bitgo": "19.5.0"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}

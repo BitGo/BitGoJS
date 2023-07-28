@@ -1,0 +1,12 @@
+address: tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
+├─┬ bech32m
+│ ├── prefix: tb
+│ ├── words: 011406000c000819030f020d0118001a1011120213090211140a1906171611141a0105171b1f1a181a051b1d0b1b0808030c190510 (53 bytes)
+│ └── bytes: 0d0c0601191bc4d0e01a846429a451a2b26bda34d04b7dff58d177d5ed081b3258 (33 bytes)
+├── format: default
+├─┬ outputScript: 5120a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b (34 bytes)
+│ └─┬ scriptPubKey: [34byte]
+│   ├── type: taproot
+│   ├── hex: 5120a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
+│   └── asm: OP_1 a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
+└── network: testnet

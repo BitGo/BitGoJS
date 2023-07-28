@@ -16,7 +16,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14 <17",
+    "node": ">=16 <19",
     "npm": ">=3.10.10"
   },
   "scripts": {
@@ -89,6 +89,7 @@
     "@bitgo/sdk-coin-xtz": "^1.4.28",
     "@bitgo/sdk-coin-zec": "^1.3.28",
     "@bitgo/sdk-core": "^8.11.0",
+    "@bitgo/sdk-coin-zeta": "^1.0.0",
     "@bitgo/sdk-lib-mpc": "^8.5.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^18.0.0",

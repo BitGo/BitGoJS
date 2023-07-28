@@ -14,7 +14,12 @@ function getPrototypeKeys(obj: unknown): string[] {
   return keys;
 }
 
-export function parseUnknown(p: Parser, label: string | number, obj: unknown): ParserNode {
+export function parseUnknown(
+  p: Parser,
+  label: string | number,
+  obj: unknown,
+  { omit = [] }: { omit?: string[] } = {}
+): ParserNode {
   if (isParserNodeValue(obj)) {
     if (typeof obj === 'string') {
       obj = JSON.stringify(obj);
@@ -41,7 +46,7 @@ export function parseUnknown(p: Parser, label: string | number, obj: unknown): P
       undefined,
       allKeys.flatMap((k) => {
         const objAsRecord = obj as Record<string, unknown>;
-        if (omitObject(objAsRecord[k])) {
+        if (omitObject(objAsRecord[k]) || omit?.includes(k)) {
           return [];
         }
         try {

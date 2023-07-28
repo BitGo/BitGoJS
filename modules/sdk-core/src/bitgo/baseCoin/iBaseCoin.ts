@@ -242,9 +242,14 @@ export interface KeychainsTriplet {
   bitgoKeychain: Keychain;
 }
 
+interface BuildParams {
+  preview?: boolean;
+  recipients?: ITransactionRecipient[];
+}
+
 interface BaseSignable {
   wallet?: IWallet;
-  buildParams?: any;
+  buildParams?: BuildParams & Partial<any>;
   consolidateId?: string;
   txRequestId?: string;
 }

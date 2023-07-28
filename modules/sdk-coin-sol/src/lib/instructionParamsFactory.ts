@@ -1,6 +1,7 @@
 import {
   AllocateParams,
   AssignParams,
+  AuthorizeStakeParams,
   CreateAccountParams,
   DeactivateStakeParams,
   DelegateStakeParams,
@@ -26,6 +27,7 @@ import {
   StakingDeactivate,
   StakingWithdraw,
   TokenTransfer,
+  StakingAuthorize,
 } from './iface';
 import { getInstructionType } from './utils';
 import assert from 'assert';
@@ -55,6 +57,8 @@ export function instructionParamsFactory(
       return parseStakingWithdrawInstructions(instructions);
     case TransactionType.AssociatedTokenAccountInitialization:
       return parseAtaInitInstructions(instructions);
+    case TransactionType.StakingAuthorize:
+      return parseStakingAuthorizeInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -238,6 +242,7 @@ interface StakingInstructions {
   create?: CreateAccountParams;
   initialize?: InitializeStakeParams;
   delegate?: DelegateStakeParams;
+  authorize?: AuthorizeStakeParams[];
 }
 
 function validateStakingInstructions(stakingInstructions: StakingInstructions) {
@@ -506,6 +511,55 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
   if (memo) {
     instructionData.push(memo);
   }
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to authorized staking account params
+ * Only supports Nonce, Authorize instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking authorize tx
+ */
+function parseStakingAuthorizeInstructions(
+  instructions: TransactionInstruction[]
+): Array<Nonce | StakingAuthorize | Memo> {
+  const instructionData: Array<Nonce | StakingAuthorize | Memo> = [];
+  for (const instruction of instructions) {
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+        const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instruction);
+        const nonce: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: {
+            walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+            authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+          },
+        };
+        instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.Memo:
+        const memo: Memo = { type: InstructionBuilderTypes.Memo, params: { memo: instruction.data.toString() } };
+        instructionData.push(memo);
+        break;
+
+      case ValidInstructionTypesEnum.Authorize:
+        const authorize = StakeInstruction.decodeAuthorize(instruction);
+        instructionData.push({
+          type: InstructionBuilderTypes.StakingAuthorize,
+          params: {
+            stakingAddress: authorize.stakePubkey.toString(),
+            oldAuthorizeAddress: authorize.authorizedPubkey.toString(),
+            newAuthorizeAddress: authorize.newAuthorizedPubkey.toString(),
+            newWithdrawAddress: authorize.custodianPubkey?.toString() || '',
+          },
+        });
+        break;
+    }
+  }
+
   return instructionData;
 }
 

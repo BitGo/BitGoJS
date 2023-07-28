@@ -21,6 +21,11 @@ describe('Verify string type is used for value of unspent', function () {
   function matchMinMaxValue(minValue: string, maxValue: string): boolean {
     return minValue === '1' && maxValue === highPrecisionBigInt.toString();
   }
+  function assertIsString(val: unknown): asserts val is string {
+    if (typeof val !== 'string') {
+      throw new Error('Expected string');
+    }
+  }
 
   describe('unspents APIs with string type minValue and maxValue', function () {
     after(function () {
@@ -78,6 +83,8 @@ describe('Verify string type is used for value of unspent', function () {
       const maximumSpendableScope = nock(bgUrl)
         .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`)
         .query((queryParams) => {
+          assertIsString(queryParams.minValue);
+          assertIsString(queryParams.maxValue);
           return matchMinMaxValue(queryParams.minValue, queryParams.maxValue);
         })
         .reply(200, {});
@@ -97,7 +104,9 @@ describe('Verify string type is used for value of unspent', function () {
       const unspentsScope = nock(bgUrl)
         .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/unspents`)
         .query((queryParams) => {
-          return matchMinMaxValue(queryParams.minValue, queryParams.maxValue);
+          assertIsString(queryParams.minValue);
+          assertIsString(queryParams.maxValue);
+          return matchMinMaxValue(queryParams.minValue as string, queryParams.maxValue);
         })
         .reply(200, {});
 

@@ -1,18 +1,20 @@
-var assert = require('nanoassert');
-var wasm = require('./blake2b')();
+const assert = require('nanoassert');
+const wasm = require('./blake2b')();
 
-var head = 64;
-var freeList = [];
+let head = 64;
+const freeList = [];
 
 module.exports = Blake2b;
-var BYTES_MIN = (module.exports.BYTES_MIN = 16);
-var BYTES_MAX = (module.exports.BYTES_MAX = 64);
-var BYTES = (module.exports.BYTES = 32);
-var KEYBYTES_MIN = (module.exports.KEYBYTES_MIN = 16);
-var KEYBYTES_MAX = (module.exports.KEYBYTES_MAX = 64);
-var KEYBYTES = (module.exports.KEYBYTES = 32);
-var SALTBYTES = (module.exports.SALTBYTES = 16);
-var PERSONALBYTES = (module.exports.PERSONALBYTES = 16);
+const BYTES_MIN = (module.exports.BYTES_MIN = 16);
+const BYTES_MAX = (module.exports.BYTES_MAX = 64);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const BYTES = (module.exports.BYTES = 32);
+const KEYBYTES_MIN = (module.exports.KEYBYTES_MIN = 16);
+const KEYBYTES_MAX = (module.exports.KEYBYTES_MAX = 64);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const KEYBYTES = (module.exports.KEYBYTES = 32);
+const SALTBYTES = (module.exports.SALTBYTES = 16);
+const PERSONALBYTES = (module.exports.PERSONALBYTES = 16);
 
 function Blake2b(digestLength, key, salt, personal, noAssert) {
   if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal, noAssert);
@@ -94,7 +96,7 @@ Blake2b.prototype.digest = function (enc) {
   }
 
   assert(enc instanceof Uint8Array && enc.length >= this.digestLength, 'input must be Uint8Array or Buffer');
-  for (var i = 0; i < this.digestLength; i++) {
+  for (let i = 0; i < this.digestLength; i++) {
     enc[i] = wasm.memory[this.pointer + 128 + i];
   }
 
@@ -112,7 +114,7 @@ Blake2b.ready = function (cb) {
   if (!wasm) return cb(new Error('WebAssembly not supported'));
 
   // backwards compat, can be removed in a new major
-  var p = new Promise(function (reject, resolve) {
+  const p = new Promise(function (reject, resolve) {
     wasm.onload(function (err) {
       if (err) resolve();
       else reject();
@@ -125,11 +127,12 @@ Blake2b.ready = function (cb) {
 
 Blake2b.prototype.ready = Blake2b.ready;
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop() {}
 
 function hexSlice(buf, start, len) {
-  var str = '';
-  for (var i = 0; i < len; i++) str += toHex(buf[start + i]);
+  let str = '';
+  for (let i = 0; i < len; i++) str += toHex(buf[start + i]);
   return str;
 }
 

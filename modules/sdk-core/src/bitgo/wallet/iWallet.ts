@@ -16,7 +16,11 @@ import { ITradingAccount } from '../trading';
 import {
   CustomCommitmentGeneratingFunction,
   CustomGShareGeneratingFunction,
+  CustomKShareGeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomPaillierModulusGetterFunction,
   CustomRShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
   TokenEnablement,
   TokenTransferRecipientParams,
 } from '../utils';
@@ -160,6 +164,10 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   customCommitmentGeneratingFunction?: CustomCommitmentGeneratingFunction;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
   customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
+  customPaillierModulusGeneratingFunction?: CustomPaillierModulusGetterFunction;
+  customKShareGeneratingFunction?: CustomKShareGeneratingFunction;
+  customMuDeltaShareGeneratingFunction?: CustomMuDeltaShareGeneratingFunction;
+  customSShareGeneratingFunction?: CustomSShareGeneratingFunction;
   apiVersion?: ApiVersion;
   [index: string]: unknown;
 }
@@ -167,6 +175,10 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
 interface WalletSignMessageBase extends WalletSignBaseOptions {
   walletPassphrase?: string;
   custodianMessageId?: string;
+  customPaillierModulusGeneratingFunction?: CustomPaillierModulusGetterFunction;
+  customKShareGeneratingFunction?: CustomKShareGeneratingFunction;
+  customMuDeltaShareGeneratingFunction?: CustomMuDeltaShareGeneratingFunction;
+  customSShareGeneratingFunction?: CustomSShareGeneratingFunction;
 }
 
 export interface WalletSignMessageOptions extends WalletSignMessageBase {
@@ -615,6 +627,8 @@ export interface IWallet {
   confirmedBalanceString(): string;
   spendableBalanceString(): string;
   coin(): string;
+  type(): WalletType | undefined;
+  multisigType(): 'onchain' | 'tss';
   label(): string;
   keyIds(): string[];
   receiveAddress(): string;

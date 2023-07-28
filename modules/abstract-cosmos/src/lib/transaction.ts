@@ -224,13 +224,14 @@ export class CosmosTransaction extends BaseTransaction {
       case TransactionType.ContractCall:
         explanationResult.type = TransactionType.ContractCall;
         message = json.sendMessages[0].value as ExecuteContractMessage;
+        outputAmount = message.funds?.[0]?.amount ?? '0';
         outputs = [
           {
             address: message.contract,
-            amount: UNAVAILABLE_TEXT,
+            amount: outputAmount,
           },
         ];
-        outputAmount = UNAVAILABLE_TEXT;
+        outputAmount = outputAmount;
         break;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
@@ -304,12 +305,12 @@ export class CosmosTransaction extends BaseTransaction {
         const executeContractMessage = this.cosmosLikeTransaction.sendMessages[0].value as ExecuteContractMessage;
         inputs.push({
           address: executeContractMessage.sender,
-          value: UNAVAILABLE_TEXT,
+          value: executeContractMessage.funds?.[0]?.amount ?? '0',
           coin: this._coinConfig.name,
         });
         outputs.push({
           address: executeContractMessage.contract,
-          value: UNAVAILABLE_TEXT,
+          value: executeContractMessage.funds?.[0]?.amount ?? '0',
           coin: this._coinConfig.name,
         });
         break;

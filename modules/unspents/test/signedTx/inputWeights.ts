@@ -1,17 +1,19 @@
 import * as assert from 'assert';
+
+import * as mocha from 'mocha';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import {
-  getInputWeight,
   getInputComponentsWeight,
+  getInputWeight,
   InputComponents,
   inputComponentsP2sh,
   inputComponentsP2shP2pk,
   inputComponentsP2shP2wsh,
-  inputComponentsP2wsh,
+  inputComponentsP2trKeySpend,
   inputComponentsP2trScriptSpendLevel1,
   inputComponentsP2trScriptSpendLevel2,
-  inputComponentsP2trKeySpend,
+  inputComponentsP2wsh,
 } from '../../src/inputWeights';
 import { pushdataEncodingLength } from '../../src/scriptSizes';
 import {
@@ -71,7 +73,7 @@ describe('Input Script Sizes (Worst-Case)', function () {
     const signKeysStr = signKeys.join(',');
 
     describe(`inputType=${inputType} signKeys=${signKeysStr}`, function () {
-      it(`component sizes`, function () {
+      it(`component sizes`, function (this: mocha.Context) {
         this.timeout(10_000);
         let expectedComponents;
         switch (inputType) {

@@ -518,7 +518,7 @@ export class CosmosUtils implements BaseUtils {
       }
       case TransactionType.ContractCall: {
         const value = messageData.value as ExecuteContractMessage;
-        this.validateExecuteContractMessage(value);
+        this.validateExecuteContractMessage(value, TransactionType.ContractCall);
         break;
       }
       default:
@@ -646,10 +646,11 @@ export class CosmosUtils implements BaseUtils {
   /**
    * Validates an array of coin amounts.
    * @param {Coin[]} amountArray - The array of coin amounts to validate.
+   * @param {TransactionType} transactionType - optional field for transaction type
    */
-  validateAmountData(amountArray: Coin[]): void {
+  validateAmountData(amountArray: Coin[], transactionType?: TransactionType): void {
     amountArray.forEach((coinAmount) => {
-      this.validateAmount(coinAmount);
+      this.validateAmount(coinAmount, transactionType);
     });
   }
 
@@ -683,9 +684,10 @@ export class CosmosUtils implements BaseUtils {
   /**
    * Validates a coin amount.
    * @param {Coin} amount - The coin amount to validate.
+   * @param {TransactionType} transactionType - optional field for transaction type
    * @throws {InvalidTransactionError} Throws an error if the coin amount is invalid.
    */
-  validateAmount(amount: Coin): void {
+  validateAmount(amount: Coin, transactionType?: TransactionType): void {
     throw new NotImplementedError('validateAmount not implemented');
   }
 
@@ -719,9 +721,10 @@ export class CosmosUtils implements BaseUtils {
   /**
    * Validates a execute contract message
    * @param {ExecuteContractMessage} message - The execute contract message to validate
+   * @param {TransactionType} transactionType - optional field for transaction type
    * @throws {InvalidTransactionError} Throws an error if the message is invalid
    */
-  validateExecuteContractMessage(message: ExecuteContractMessage) {
+  validateExecuteContractMessage(message: ExecuteContractMessage, transactionType?: TransactionType) {
     if (!message.contract || !this.isValidContractAddress(message.contract)) {
       throw new InvalidTransactionError(`Invalid ExecuteContractMessage contract address: ` + message.contract);
     }
@@ -732,7 +735,7 @@ export class CosmosUtils implements BaseUtils {
       throw new InvalidTransactionError(`Invalid ExecuteContractMessage msg: ` + message.msg);
     }
     if (message.funds) {
-      this.validateAmountData(message.funds);
+      this.validateAmountData(message.funds, transactionType);
     }
   }
 }

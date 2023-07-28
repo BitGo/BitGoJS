@@ -4,7 +4,7 @@
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./dist/src/index.js",
   "engines": {
-    "node": ">=10.22.0 <17",
+    "node": ">=10.22.0 <19",
     "npm": ">=3.10.10"
   },
   "keywords": [

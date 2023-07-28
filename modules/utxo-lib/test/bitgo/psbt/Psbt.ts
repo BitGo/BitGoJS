@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Network, getNetworkName, networks, getNetworkList, testutil } from '../../../src';
+import { Network, getNetworkName, networks, getNetworkList, testutil, isMainnet } from '../../../src';
 import {
   getExternalChainCode,
   outputScripts,
@@ -25,19 +25,37 @@ import {
   Unspent,
   isWalletUnspent,
   updateWalletOutputForPsbt,
+  extractP2msOnlyHalfSignedTx,
+  toOutput,
+  createTransactionBuilderFromTransaction,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
+  isSupportedScriptType,
   ScriptType2Of3,
   ScriptTypeP2shP2pk,
   scriptTypes2Of3,
 } from '../../../src/bitgo/outputScripts';
 
-import { getDefaultWalletKeys, mockReplayProtectionUnspent, replayProtectionKeyPair } from '../../../src/testutil';
+import {
+  getDefaultWalletKeys,
+  Input,
+  mockReplayProtectionUnspent,
+  Output,
+  outputScriptTypes,
+  replayProtectionKeyPair,
+  signAllTxnInputs,
+} from '../../../src/testutil';
 
 import { defaultTestOutputAmount } from '../../transaction_util';
-import { constructTransactionUsingTxBuilder, signPsbt, toBigInt, validatePsbtParsing } from './psbtUtil';
+import {
+  assertEqualTransactions,
+  constructTransactionUsingTxBuilder,
+  signPsbt,
+  toBigInt,
+  validatePsbtParsing,
+} from './psbtUtil';
 
 import { mockUnspents } from '../../../src/testutil';
 import { constructPsbt } from './Musig2Util';
@@ -57,6 +75,101 @@ function getScriptTypes2Of3() {
   //  because the test suite is written with TransactionBuilder
   return outputScripts.scriptTypes2Of3.filter((scriptType) => scriptType !== 'p2trMusig2');
 }
+
+const halfSignedInputs = (['p2sh', 'p2wsh', 'p2shP2wsh'] as const).map((scriptType) => ({
+  scriptType,
+  value: BigInt(1000),
+}));
+const halfSignedOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(500) }));
+
+describe('extractP2msOnlyHalfSignedTx failure', function () {
+  it('invalid signature count', function () {
+    const psbt = testutil.constructPsbt(halfSignedInputs, halfSignedOutputs, network, rootWalletKeys, 'unsigned');
+    assert.throws(
+      () => extractP2msOnlyHalfSignedTx(psbt),
+      (e) => e.message === 'unexpected signature count undefined'
+    );
+  });
+
+  it('empty inputs', function () {
+    const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+    assert.throws(
+      () => extractP2msOnlyHalfSignedTx(psbt),
+      (e) => e.message === 'empty inputs or outputs'
+    );
+  });
+
+  it('unsupported script type', function () {
+    const psbt = testutil.constructPsbt(
+      [{ scriptType: 'p2tr', value: BigInt(1000) }],
+      [{ scriptType: 'p2sh', value: BigInt(900) }],
+      network,
+      rootWalletKeys,
+      'halfsigned'
+    );
+    assert.throws(
+      () => extractP2msOnlyHalfSignedTx(psbt),
+      (e) => e.message === 'unsupported script type taprootScriptPathSpend'
+    );
+  });
+});
+
+function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], outputs: Output[]) {
+  const coin = getNetworkName(network);
+
+  describe(`extractP2msOnlyHalfSignedTx success for ${coin}`, function () {
+    it(`success for ${coin}`, function () {
+      const signers: { signerName: KeyName; cosignerName: KeyName } = { signerName: 'user', cosignerName: 'backup' };
+      const txnOutputs = outputs;
+      const txnInputs = inputs
+        .map((v) =>
+          v.scriptType === 'p2sh' || v.scriptType === 'p2shP2wsh' || v.scriptType === 'p2wsh'
+            ? {
+                scriptType: v.scriptType,
+                value: v.value,
+              }
+            : undefined
+        )
+        .filter((v) => !!v) as testutil.TxnInput<bigint>[];
+
+      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'halfsigned', signers);
+      const halfSignedPsbtTx = extractP2msOnlyHalfSignedTx(psbt);
+
+      let txb = testutil.constructTxnBuilder(txnInputs, txnOutputs, network, rootWalletKeys, 'halfsigned', signers);
+      const halfSignedTxbTx = txb.buildIncomplete();
+
+      const unspents = toBigInt(inputs.map((input, i) => testutil.toUnspent(input, i, network, rootWalletKeys)));
+
+      assertEqualTransactions(halfSignedPsbtTx, halfSignedTxbTx);
+      validatePsbtParsing(halfSignedPsbtTx, psbt, unspents, 'halfsigned');
+      validatePsbtParsing(halfSignedTxbTx, psbt, unspents, 'halfsigned');
+
+      testutil.signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'fullsigned', signers);
+      const fullySignedPsbt = psbt.clone();
+      const psbtTx = psbt.finalizeAllInputs().extractTransaction();
+
+      const txnUnspents = txnInputs.map((v, i) => testutil.toTxnUnspent(v, i, network, rootWalletKeys));
+      const prevOutputs = txnUnspents.map((u) => toOutput(u, network));
+      txb = createTransactionBuilderFromTransaction<bigint>(halfSignedTxbTx, prevOutputs);
+      signAllTxnInputs(txb, txnInputs, rootWalletKeys, 'fullsigned', signers);
+      const txbTx = txb.build();
+
+      assertEqualTransactions(psbtTx, txbTx);
+      validatePsbtParsing(psbtTx, fullySignedPsbt, unspents, 'fullsigned');
+      validatePsbtParsing(txbTx, fullySignedPsbt, unspents, 'fullsigned');
+    });
+  });
+}
+
+getNetworkList()
+  .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
+  .forEach((network) => {
+    const supportedPsbtInputs = halfSignedInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
+    const supportedPsbtOutputs = halfSignedOutputs.filter((output) =>
+      isSupportedScriptType(network, output.scriptType)
+    );
+    runExtractP2msOnlyHalfSignedTxTest(network, supportedPsbtInputs, supportedPsbtOutputs);
+  });
 
 describe('isTransactionWithKeyPathSpendInput', function () {
   describe('transaction input', function () {

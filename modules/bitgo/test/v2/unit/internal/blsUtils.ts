@@ -3,15 +3,16 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src';
 import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
+import { Eth2 } from '@bitgo/sdk-coin-eth2';
 
 describe('BLS Utils:', async function () {
-  const bitgo: any = TestBitGo.decorate(BitGo, { env: 'mock' });
+  const bitgo: TestableBG & BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
   bitgo.initializeTestVars();
-  const eth2 = bitgo.coin('eth2');
+  const eth2: Eth2 = bitgo.coin('eth2') as Eth2;
   let bgUrl: string;
   let blsUtils: BlsUtils;
   let bitgoKeyShare;
@@ -35,15 +36,22 @@ describe('BLS Utils:', async function () {
       },
     };
 
-    nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants });
+    // TODO(WP-346): sdk-test mocks conflict so we can't use persist
+    nock(bitgo.microservicesUrl('')).get('/api/v1/client/constants').times(3).reply(200, { ttl: 3600, constants });
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     blsUtils = new BlsUtils(bitgo, eth2);
   });
 
   it('should generate BLS-DKG key chains', async function () {
-    const userKeyShare = eth2.generateKeyPair();
-    const backupKeyShare = eth2.generateKeyPair();
+    const userKeyShare: IBlsKeyPair = {
+      ...eth2.generateKeyPair(),
+      chaincode: '0',
+    };
+    const backupKeyShare: IBlsKeyPair = {
+      ...eth2.generateKeyPair(),
+      chaincode: '0',
+    };
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -94,12 +102,12 @@ describe('BLS Utils:', async function () {
     const backupSigningMaterial = {
       userShare: {
         pub: userKeyShare.pub,
-        priv: userKeyShare.secretShares[1],
+        priv: userKeyShare.secretShares![1],
         chaincode: userKeyShare.chaincode,
       },
       backupShare: {
         pub: backupKeyShare.pub,
-        priv: backupKeyShare.secretShares[1],
+        priv: backupKeyShare.secretShares![1],
         chaincode: backupKeyShare.chaincode,
         seed: backupKeyShare.seed,
       },
@@ -118,8 +126,8 @@ describe('BLS Utils:', async function () {
     const enterprise = 'enterprise';
     const originalPasscodeEncryptionCode = 'originalPasscodeEncryptionCode';
 
-    const userKeyShare = eth2.generateKeyPair();
-    const backupKeyShare = eth2.generateKeyPair();
+    const userKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
+    const backupKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -177,12 +185,12 @@ describe('BLS Utils:', async function () {
     const backupSigningMaterial = {
       userShare: {
         pub: userKeyShare.pub,
-        priv: userKeyShare.secretShares[1],
+        priv: userKeyShare.secretShares![1],
         chaincode: userKeyShare.chaincode,
       },
       backupShare: {
         pub: backupKeyShare.pub,
-        priv: backupKeyShare.secretShares[1],
+        priv: backupKeyShare.secretShares![1],
         chaincode: backupKeyShare.chaincode,
         seed: backupKeyShare.seed,
       },
@@ -198,8 +206,8 @@ describe('BLS Utils:', async function () {
   });
 
   it('should fail to generate BLS-DKG key chains', async function () {
-    const userKeyShare = eth2.generateKeyPair();
-    const backupKeyShare = eth2.generateKeyPair();
+    const userKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
+    const backupKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -228,17 +236,41 @@ describe('BLS Utils:', async function () {
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
 
     await blsUtils
-      .createUserKeychain(userGpgKey, userKeyShare, eth2.generateKeyPair(), bitgoKeychain, 'passphrase')
+      .createUserKeychain(
+        userGpgKey,
+        userKeyShare,
+        { ...eth2.generateKeyPair(), chaincode: '0' },
+        bitgoKeychain,
+        'passphrase'
+      )
       .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
     await blsUtils
-      .createUserKeychain(userGpgKey, eth2.generateKeyPair(), backupKeyShare, bitgoKeychain, 'passphrase')
+      .createUserKeychain(
+        userGpgKey,
+        { ...eth2.generateKeyPair(), chaincode: '0' },
+        backupKeyShare,
+        bitgoKeychain,
+        'passphrase'
+      )
       .should.be.rejectedWith('Failed to create user keychain - commonKeychains do not match.');
 
     await blsUtils
-      .createBackupKeychain(backupGpgKey, eth2.generateKeyPair(), backupKeyShare, bitgoKeychain, 'passphrase')
+      .createBackupKeychain(
+        backupGpgKey,
+        { ...eth2.generateKeyPair(), chaincode: '0' },
+        backupKeyShare,
+        bitgoKeychain,
+        'passphrase'
+      )
       .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
     await blsUtils
-      .createBackupKeychain(backupGpgKey, userKeyShare, eth2.generateKeyPair(), bitgoKeychain, 'passphrase')
+      .createBackupKeychain(
+        backupGpgKey,
+        userKeyShare,
+        { ...eth2.generateKeyPair(), chaincode: '0' },
+        bitgoKeychain,
+        'passphrase'
+      )
       .should.be.rejectedWith('Failed to create backup keychain - commonKeychains do not match.');
   });
 

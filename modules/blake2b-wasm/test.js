@@ -1,17 +1,15 @@
-var tape = require('tape');
-var blake2b = require('./');
-var vectors = require('blake2b/test-vectors.json');
+const tape = require('tape');
+const blake2b = require('./');
+const vectors = require('../blake2b/test-vectors.json');
 
-var readyCalled = false;
+let readyCalled = false;
 process.on('exit', function () {
   if (!readyCalled) throw new Error('ready not called');
 });
 
-blake2b.ready(function () {
-  readyCalled = true;
-
+function test(b2b) {
   tape('hello world', function (t) {
-    var hash = blake2b()
+    const hash = blake2b()
       .update(Buffer.from('hello'))
       .update(Buffer.from(' '))
       .update(Buffer.from('world'))
@@ -22,7 +20,7 @@ blake2b.ready(function () {
   });
 
   tape('hello world', function (t) {
-    var hash = blake2b(64)
+    const hash = blake2b(64)
       .update(Buffer.from('hello'))
       .update(Buffer.from(' '))
       .update(Buffer.from('world'))
@@ -36,14 +34,14 @@ blake2b.ready(function () {
   });
 
   tape('both at the same time', function (t) {
-    var a = blake2b();
-    var b = blake2b(64);
+    const a = blake2b();
+    const b = blake2b(64);
 
-    var hash = a.update(Buffer.from('hello')).update(Buffer.from(' ')).update(Buffer.from('world')).digest('hex');
+    let hash = a.update(Buffer.from('hello')).update(Buffer.from(' ')).update(Buffer.from('world')).digest('hex');
 
     t.same(hash, '256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610');
 
-    var hash = b.update(Buffer.from('hello')).update(Buffer.from(' ')).update(Buffer.from('world')).digest('hex');
+    hash = b.update(Buffer.from('hello')).update(Buffer.from(' ')).update(Buffer.from('world')).digest('hex');
 
     t.same(
       hash,
@@ -54,11 +52,11 @@ blake2b.ready(function () {
 
   vectors.forEach(function (vector, i) {
     tape('test-vectors.json #' + i, function (t) {
-      var key = vector.key && Buffer.from(vector.key, 'hex');
-      var salt = vector.salt && Buffer.from(vector.salt, 'hex');
-      var personal = vector.personal && Buffer.from(vector.personal, 'hex');
+      const key = vector.key && Buffer.from(vector.key, 'hex');
+      const salt = vector.salt && Buffer.from(vector.salt, 'hex');
+      const personal = vector.personal && Buffer.from(vector.personal, 'hex');
 
-      var hash = blake2b(vector.outlen, key, salt, personal, true)
+      const hash = blake2b(vector.outlen, key, salt, personal, true)
         .update(Buffer.from(vector.input, 'hex'))
         .digest('hex');
 
@@ -66,12 +64,16 @@ blake2b.ready(function () {
       t.end();
     });
   });
-});
+}
 
 tape('.ready()', function (t) {
-  var invokeCount = 0;
+  let invokeCount = 0;
   blake2b
     .ready()
+    .then(() => {
+      readyCalled = true;
+    })
+    .then(test)
     .then(function () {
       invokeCount++;
       throw new Error();

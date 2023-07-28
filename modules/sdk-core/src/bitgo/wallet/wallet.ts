@@ -29,6 +29,7 @@ import {
   EddsaUnsignedTransaction,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
+  RequestType,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
@@ -83,6 +84,7 @@ import {
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
+  WalletType,
 } from './iWallet';
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
@@ -101,6 +103,15 @@ export enum ManageUnspentsOptions {
   BUILD_SIGN_SEND,
 }
 
+function isPrebuildTransactionResult(
+  prebuildTx: string | PrebuildTransactionResult | undefined
+): prebuildTx is PrebuildTransactionResult {
+  if (!prebuildTx || typeof prebuildTx === 'string') {
+    return false;
+  }
+  return (prebuildTx as PrebuildTransactionResult).walletId !== undefined;
+}
+
 export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
@@ -117,7 +128,7 @@ export class Wallet implements IWallet {
       const userDetails = _.find(walletData.users, { user: userId });
       this._permissions = _.get(userDetails, 'permissions');
     }
-    if (baseCoin?.supportsTss()) {
+    if (baseCoin?.supportsTss() && this._wallet.multisigType === 'tss') {
       switch (baseCoin.getMPCAlgorithm()) {
         case 'ecdsa':
           this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
@@ -282,6 +293,14 @@ export class Wallet implements IWallet {
    */
   coin(): string {
     return this._wallet.coin;
+  }
+
+  type(): WalletType | undefined {
+    return this._wallet.type;
+  }
+
+  multisigType(): 'onchain' | 'tss' {
+    return this._wallet.multisigType;
   }
 
   /**
@@ -1603,6 +1622,16 @@ export class Wallet implements IWallet {
       return this.signTransactionTssExternalSignerEdDSA(params, this.baseCoin);
     }
 
+    if (
+      _.isFunction(params.customPaillierModulusGeneratingFunction) &&
+      _.isFunction(params.customKShareGeneratingFunction) &&
+      _.isFunction(params.customMuDeltaShareGeneratingFunction) &&
+      _.isFunction(params.customSShareGeneratingFunction)
+    ) {
+      // invoke external signer TSS for ECDSA workflow
+      return this.signTransactionTssExternalSignerECDSA(this.baseCoin, params);
+    }
+
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
     }
@@ -1818,8 +1847,25 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
+    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() || [];
+    const mustUseTxRequestFull = supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
+
+    if (
+      // verify the wallet must use txRequest Full api and must rebuild the tx before submitting
+      mustUseTxRequestFull &&
+      isPrebuildTransactionResult(params.prebuildTx) &&
+      params.prebuildTx.buildParams?.preview
+    ) {
+      txPrebuildQuery = this.prebuildTransaction({
+        ...params,
+        ...{ ...params.prebuildTx.buildParams, preview: false },
+      });
+    } else {
+      txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
+    }
+
     // the prebuild can be overridden by providing an explicit tx
-    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
@@ -2769,7 +2815,7 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Signs a transaction from a TSS wallet using external signer.
+   * Signs a transaction from a TSS EdDSA wallet using external signer.
    *
    * @param params signing options
    */
@@ -2799,11 +2845,66 @@ export class Wallet implements IWallet {
     }
 
     try {
-      const signedTxRequest = await this.tssUtils!.signUsingExternalSigner(
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a transaction from a TSS ECDSA wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerECDSA(
+    coin: IBaseCoin,
+    params: WalletSignTransactionOptions = {}
+  ): Promise<TxRequest> {
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
+    }
+
+    if (!params.customPaillierModulusGeneratingFunction) {
+      throw new Error('Generator function for paillier modulus required to sign transactions with External Signer.');
+    }
+
+    if (!params.customKShareGeneratingFunction) {
+      throw new Error('Generator function for K share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customMuDeltaShareGeneratingFunction) {
+      throw new Error('Generator function for MuDelta share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customSShareGeneratingFunction) {
+      throw new Error('Generator function for S share required to sign transactions with External Signer.');
+    }
+
+    try {
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEcdsaTssUsingExternalSigner(
+        {
+          txRequest: txRequestId,
+          prv: '',
+          reqId: new RequestTracer(),
+        },
+        RequestType.tx,
+        params.customPaillierModulusGeneratingFunction,
+        params.customKShareGeneratingFunction,
+        params.customMuDeltaShareGeneratingFunction,
+        params.customSShareGeneratingFunction
       );
       return signedTxRequest;
     } catch (e) {
@@ -2972,6 +3073,14 @@ export class Wallet implements IWallet {
    * @param params send options
    */
   private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
+    const { apiVersion } = params;
+    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() ?? [];
+    const onlySupportsTxRequestFull =
+      supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
+    if (apiVersion === 'lite' && onlySupportsTxRequestFull) {
+      throw new Error('TxRequest Lite API is not supported for this wallet');
+    }
+
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
     if (!signedTransaction.txRequestId) {
       throw new Error('txRequestId missing from signed transaction');
@@ -2990,7 +3099,7 @@ export class Wallet implements IWallet {
     }
 
     // ECDSA TSS uses TxRequestFull
-    if (this.baseCoin.getMPCAlgorithm() === 'ecdsa' || params.apiVersion === 'full' || this._wallet.type === 'cold') {
+    if (apiVersion === 'full' || onlySupportsTxRequestFull) {
       return getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
     }
 

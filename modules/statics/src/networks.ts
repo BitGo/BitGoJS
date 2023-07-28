@@ -55,6 +55,7 @@ export interface AccountNetwork extends BaseNetwork {
   // some chains pay fees via an enterprise gas task. The account explorer url
   // is a url that can be used to look up the account for the gas tank on-chain.
   readonly accountExplorerUrl?: string;
+  readonly blockExplorerUrl?: string;
 }
 
 /**
@@ -379,6 +380,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
   accountExplorerUrl = 'https://etherscan.io/address/';
+  blockExplorerUrl = 'https://etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
   batcherContractAddress = '0x0c9b25dfe02b2c89cce86e1a0bd6c04a7aca01b6';
@@ -428,6 +430,7 @@ class Goerli extends Testnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://goerli.etherscan.io/tx/';
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
+  blockExplorerUrl = 'https://goerli.etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 5;
   batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
@@ -613,7 +616,7 @@ class Bld extends Mainnet implements AccountNetwork {
 class BldTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Agoric';
   family = CoinFamily.BLD;
-  explorerUrl = 'https://testnet.ping.pub/agoric-devnet/tx/';
+  explorerUrl = 'https://emerynet.explorer.agoric.net/agoric/tx/';
 }
 
 class Sei extends Mainnet implements AccountNetwork {
@@ -627,6 +630,19 @@ class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
   explorerUrl = 'https://sei.explorers.guru/transaction/';
+}
+
+class Zeta extends Mainnet implements AccountNetwork {
+  name = 'Zeta';
+  family = CoinFamily.ZETA;
+  //  TODO(WIN-142): Zeta is still only in testnet update to mainnet url when it's live
+  explorerUrl = 'https://explorer.zetachain.com/cc/tx/';
+}
+
+class ZetaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Zeta';
+  family = CoinFamily.ZETA;
+  explorerUrl = 'https://athens3.explorer.zetachain.com/cc/tx/';
 }
 
 class Injective extends Mainnet implements AccountNetwork {
@@ -822,6 +838,7 @@ export const Networks = {
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
+    zeta: Object.freeze(new Zeta()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -867,5 +884,6 @@ export const Networks = {
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
+    zeta: Object.freeze(new ZetaTestnet()),
   },
 };

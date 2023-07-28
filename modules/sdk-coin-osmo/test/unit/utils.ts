@@ -3,6 +3,7 @@ import should from 'should';
 import utils from '../../src/lib/utils';
 import { blockHash, txIds } from '../resources/osmo';
 import * as testData from '../resources/osmo';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('utils', () => {
   it('should validate block hash correctly', () => {
@@ -37,8 +38,12 @@ describe('utils', () => {
     should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount1]));
     should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount2]));
     should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount3]));
+    should.doesNotThrow(() => utils.validateAmountData([testData.coinAmounts.amount6], TransactionType.ContractCall));
     should(() => utils.validateAmountData([testData.coinAmounts.amount4])).throwError(
       'transactionBuilder: validateAmount: Invalid amount: ' + testData.coinAmounts.amount4.amount
+    );
+    should(() => utils.validateAmountData([testData.coinAmounts.amount6])).throwError(
+      'transactionBuilder: validateAmount: Invalid amount: ' + testData.coinAmounts.amount6.amount
     );
     should(() => utils.validateAmountData([testData.coinAmounts.amount5])).throwError(
       'transactionBuilder: validateAmount: Invalid denom: ' + testData.coinAmounts.amount5.denom

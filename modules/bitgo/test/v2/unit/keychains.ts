@@ -59,6 +59,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.AVAXP &&
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
+        n.asset !== UnderlyingAsset.ZETA &&
         coinFamilyValues.includes(n.name)
     );
 
@@ -359,6 +360,7 @@ describe('V2 Keychains', function () {
             to: 'user',
             publicShare: 'ccc',
             privateShare: 'ccc private',
+            paillierPublicKey: 'ccc paillier',
             vssProof: 'ccc vss proof',
           },
           {
@@ -366,6 +368,7 @@ describe('V2 Keychains', function () {
             to: 'backup',
             publicShare: 'fff',
             privateShare: 'fff private',
+            paillierPublicKey: 'fff paillier',
             vssProof: 'fff vss proof',
           },
         ],
@@ -434,6 +437,7 @@ describe('V2 Keychains', function () {
                   j: 3,
                   publicShare: bitGoKeyResult.keyShares[0].publicShare,
                   privateShare: bitGoKeyResult.keyShares[0].privateShare,
+                  paillierPublicKey: bitGoKeyResult.keyShares[0].paillierPublicKey,
                   vssProof: bitGoKeyResult.keyShares[0].vssProof,
                 },
               },
@@ -443,6 +447,7 @@ describe('V2 Keychains', function () {
                   j: 3,
                   publicShare: bitGoKeyResult.keyShares[1].publicShare,
                   privateShare: bitGoKeyResult.keyShares[1].privateShare,
+                  paillierPublicKey: bitGoKeyResult.keyShares[1].paillierPublicKey,
                   vssProof: bitGoKeyResult.keyShares[1].vssProof,
                 },
               },
