@@ -24,6 +24,7 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
+import { generateAddress } from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -60,6 +61,16 @@ type ArgsParseScript = {
   format: OutputFormat;
   all: boolean;
   script: string;
+};
+
+export type ArgsGenerateAddress = {
+  network?: string;
+  userKey: string;
+  backupKey: string;
+  bitgoKey: string;
+  chain?: number[];
+  showDerivationPath?: boolean;
+  limit: number;
 };
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
@@ -304,5 +315,30 @@ export const cmdParseScript = {
     const script = stringToBuffer(argv.script, 'hex');
     const parsed = getScriptParser(argv).parse(script);
     console.log(formatString(parsed, { ...argv, all: true }));
+  },
+};
+
+export const cmdGenerateAddress = {
+  command: 'generateAddresses',
+  describe: 'generate addresses',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsGenerateAddress> {
+    return b
+      .option('network', { alias: 'n', type: 'string' })
+      .option('userKey', { type: 'string', demandOption: true })
+      .option('backupKey', { type: 'string', demandOption: true })
+      .option('bitgoKey', { type: 'string', demandOption: true })
+      .option('chain', { type: 'number' })
+      .option('showDerivationPath', { type: 'boolean', default: true })
+      .array('chain')
+      .option('limit', { type: 'number', default: 100 });
+  },
+  handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
+    console.log('generating addresses..');
+    for (const address of generateAddress({
+      ...argv,
+      network: getNetworkForName(argv.network ?? 'bitcoin'),
+    })) {
+      console.log(address);
+    }
   },
 };
