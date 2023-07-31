@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { generateAddress, parseIndexRange } from '../src/generateAddress';
+import { formatAddressWithFormatString, generateAddress, parseIndexRange } from '../src/generateAddress';
 import { getKeyTriple } from './parseAddress';
 
 describe('generateAddresses', function () {
@@ -14,7 +14,7 @@ describe('generateAddresses', function () {
       format: '%a',
       chain: [0, 1],
     })) {
-      lines.push(l);
+      lines.push(formatAddressWithFormatString(l, '%a'));
     }
 
     assert.strictEqual(lines.length, 4);

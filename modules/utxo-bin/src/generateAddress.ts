@@ -1,5 +1,8 @@
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Parser } from './Parser';
+import { parseUnknown } from './parseUnknown';
+import { formatTree } from './format';
 
 function getDefaultChainCodes(): number[] {
   return utxolib.bitgo.chainCodes.filter(
@@ -74,15 +77,12 @@ function getAddressProperties(
   };
 }
 
-function formatAddress(
-  keys: utxolib.bitgo.RootWalletKeys,
-  chain: utxolib.bitgo.ChainCode,
-  index: number,
-  network: utxolib.Network,
-  format: string
-): string {
-  const props = getAddressProperties(keys, chain, index, network);
+export function formatAddressTree(props: AddressProperties): string {
+  const parser = new Parser();
+  return formatTree(parseUnknown(parser, 'address', props));
+}
 
+export function formatAddressWithFormatString(props: AddressProperties, format: string): string {
   // replace all patterns with a % prefix from format string with the corresponding property
   // e.g. %p0 -> userPath, %k1 -> backupKey, etc.
   return format.replace(/%[a-z0-9]+/gi, (match) => {
@@ -113,7 +113,7 @@ export function* generateAddress(argv: {
   chain?: number[];
   format: string;
   index: number[];
-}): Generator<string> {
+}): Generator<AddressProperties> {
   const xpubs = [argv.userKey, argv.backupKey, argv.bitgoKey].map((k) => utxolib.bip32.fromBase58(k));
   assert(utxolib.bitgo.isTriple(xpubs));
   const rootXpubs = new utxolib.bitgo.RootWalletKeys(xpubs);
@@ -121,7 +121,8 @@ export function* generateAddress(argv: {
   for (const i of argv.index) {
     for (const chain of chains) {
       assert(utxolib.bitgo.isChainCode(chain));
-      yield formatAddress(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin, argv.format);
+      // yield formatAddress(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin, argv.format);
+      yield getAddressProperties(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin);
     }
   }
 }

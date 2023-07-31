@@ -24,7 +24,13 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
-import { generateAddress, getAddressPlaceholderDescription, parseIndexRange } from './generateAddress';
+import {
+  formatAddressTree,
+  formatAddressWithFormatString,
+  generateAddress,
+  getAddressPlaceholderDescription,
+  parseIndexRange,
+} from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -342,7 +348,11 @@ export const cmdGenerateAddress = {
       index: parseIndexRange(argv.index),
       network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
-      console.log(address);
+      if (argv.format === 'tree') {
+        console.log(formatAddressTree(address));
+      } else {
+        console.log(formatAddressWithFormatString(address, argv.format));
+      }
     }
   },
 };
