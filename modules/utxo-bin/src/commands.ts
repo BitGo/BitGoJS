@@ -24,7 +24,7 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
-import { generateAddress, getAddressPlaceholderDescription } from './generateAddress';
+import { generateAddress, getAddressPlaceholderDescription, parseIndexRange } from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -70,7 +70,7 @@ export type ArgsGenerateAddress = {
   bitgoKey: string;
   chain?: number[];
   format: string;
-  limit: number;
+  index: string;
 };
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
@@ -334,12 +334,12 @@ export const cmdGenerateAddress = {
         description: `Format string. Placeholders: ${getAddressPlaceholderDescription()}`,
       })
       .array('chain')
-      .option('limit', { type: 'number', default: 100 });
+      .option('index', { type: 'string', default: '0-99' });
   },
   handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
-    console.log('generating addresses..');
     for (const address of generateAddress({
       ...argv,
+      index: parseIndexRange(argv.index),
       network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
       console.log(address);

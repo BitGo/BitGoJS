@@ -94,6 +94,17 @@ function formatAddress(
   });
 }
 
+export function parseIndexRange(indexRange: string): number[] {
+  const ranges = indexRange.split(',');
+  return ranges.flatMap((range) => {
+    const [start, end] = range.split('-');
+    if (end) {
+      return Array.from({ length: Number(end) - Number(start) + 1 }, (_, i) => Number(start) + i);
+    }
+    return [Number(start)];
+  });
+}
+
 export function* generateAddress(argv: {
   network?: utxolib.Network;
   userKey: string;
@@ -101,13 +112,13 @@ export function* generateAddress(argv: {
   bitgoKey: string;
   chain?: number[];
   format: string;
-  limit: number;
+  index: number[];
 }): Generator<string> {
   const xpubs = [argv.userKey, argv.backupKey, argv.bitgoKey].map((k) => utxolib.bip32.fromBase58(k));
   assert(utxolib.bitgo.isTriple(xpubs));
   const rootXpubs = new utxolib.bitgo.RootWalletKeys(xpubs);
   const chains = argv.chain ?? getDefaultChainCodes();
-  for (let i = 0; i < argv.limit; i++) {
+  for (const i of argv.index) {
     for (const chain of chains) {
       assert(utxolib.bitgo.isChainCode(chain));
       yield formatAddress(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin, argv.format);
