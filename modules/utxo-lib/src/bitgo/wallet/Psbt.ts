@@ -474,7 +474,11 @@ export function isTransactionWithKeyPathSpendInput(
  * extendedPubkey.
  */
 export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): void {
-  const xPubs = rootWalletKeys.triple.map(
+  const safeRootWalletKeys = new RootWalletKeys(
+    rootWalletKeys.triple.map((bip32) => bip32.neutered()) as Triple<BIP32Interface>,
+    rootWalletKeys.derivationPrefixes
+  );
+  const xPubs = safeRootWalletKeys.triple.map(
     (bip32): GlobalXpub => ({
       extendedPubkey: bs58check.decode(bip32.toBase58()),
       masterFingerprint: bip32.fingerprint,

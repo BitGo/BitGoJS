@@ -1,34 +1,34 @@
 {
-  "txHex": "01000000036eca3ab087cbf1233de6e08dbc26821aa64e55b6cf940f4b4ea0b3bd9dd66c2e0100000000ffffffff9371a5e8fa5059676b9a24c8383728c0dc3c44e5faf9d8270a148843de1486030100000000fffffffffb2ab8358b579f727af80894e7f38aa0807e69416988f0da1a470cf3af2e54b10100000000ffffffff01b28dddc1b6d8bf0017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
+  "txHex": "0100000003d55c2db078b87d115c7e020cb8f4e6ffb7c3eabe2d3acdb336767a919889f4600000000000ffffffff17b100998b0de707160d63b4eaee9b8fd2b76298e534ab5b90dcc588b0f3b8900200000000ffffffff28503e85dd5e3c5ccc02b6483ca68577914cbc4e810a514f0cb084d8f12d7c750300000000ffffffff01b08dddc1b6d8bf0017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
   "txInfo": {
     "unspents": [
       {
-        "id": "2e6cd69dbdb3a04e4b0f94cfb6554ea61a8226bc8de0e63d23f1cb87b03aca6e:1",
+        "id": "60f48998917a7636b3cd3a2dbeeac3b7ffe6f4b80c027e5c117db878b02d5cd5:0",
         "address": "9xae6AdiekWGuFXbSuCGUFdzPc8RyQ9USD",
         "value": 9000000000000000,
-        "valueString": "9000000000000000",
         "chain": 1,
-        "index": 0
+        "index": 0,
+        "valueString": "9000000000000000"
       },
       {
-        "id": "038614de4388140a27d8f9fae5443cdcc0283738c8249a6b675950fae8a57193:1",
+        "id": "90b8f3b088c5dc905bab34e59862b7d28f9beeeab4630d1607e70d8b9900b117:2",
         "address": "9xF1zJqNn1hiNPd5jUiKq4y7ReBaFTfSf2",
-        "value": 18000000000000001,
-        "valueString": "18000000000000001",
+        "value": 18000000000000000,
         "chain": 1,
-        "index": 2
+        "index": 2,
+        "valueString": "18000000000000000"
       },
       {
-        "id": "b1542eaff30c471adaf0886941697e80a08af3e79408f87a729f578b35b82afb:1",
+        "id": "757c2df1d884b00c4f510a814ebc4c917785a63c48b602cc5c3c5edd853e5028:3",
         "address": "9rog6DJM66N8yChktk9j948hCWyQGHV84D",
-        "value": 27000000000000001,
-        "valueString": "27000000000000001",
+        "value": 27000000000000000,
         "chain": 1,
-        "index": 3
+        "index": 3,
+        "valueString": "27000000000000000"
       }
     ]
   },
   "feeInfo": {},
   "coin": "doge",
-  "txid": "76cf77e9a28ec98e8213ace8a8c19a8e53302d65ac4c763bbdb6aca540911bc8"
+  "txid": "854a3fd3fe95a311aaa5915bc14166d2b86f59a7260560f400ce65c28e47fcea"
 }
