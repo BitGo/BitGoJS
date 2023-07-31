@@ -24,7 +24,7 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
-import { generateAddress } from './generateAddress';
+import { generateAddress, getAddressPlaceholderDescription } from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -69,7 +69,7 @@ export type ArgsGenerateAddress = {
   backupKey: string;
   bitgoKey: string;
   chain?: number[];
-  showDerivationPath?: boolean;
+  format: string;
   limit: number;
 };
 
@@ -328,7 +328,11 @@ export const cmdGenerateAddress = {
       .option('backupKey', { type: 'string', demandOption: true })
       .option('bitgoKey', { type: 'string', demandOption: true })
       .option('chain', { type: 'number' })
-      .option('showDerivationPath', { type: 'boolean', default: true })
+      .option('format', {
+        type: 'string',
+        default: '%p0\t%a',
+        description: `Format string. Placeholders: ${getAddressPlaceholderDescription()}`,
+      })
       .array('chain')
       .option('limit', { type: 'number', default: 100 });
   },
