@@ -207,7 +207,7 @@ export const cmdParseTx = {
         throw new Error(`conflicting arguments`);
       }
       console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-      console.log('Press Ctrl-D to finish, or Ctrl-C to cancel.');
+      console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
       if (process.stdin.isTTY) {
         data = await readStdin();
       } else {

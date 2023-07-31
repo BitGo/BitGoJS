@@ -10,6 +10,7 @@ npm install --global @bitgo/utxo-bin
 ```
 
 # Sample Usage
+Either run using ``yarn ts-node bin/index.ts ...`` or install globally again using previous npm command.
 
 ## parseTx
 
