@@ -24,7 +24,13 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
-import { generateAddress } from './generateAddress';
+import {
+  formatAddressTree,
+  formatAddressWithFormatString,
+  generateAddress,
+  getAddressPlaceholderDescription,
+  parseIndexRange,
+} from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -69,8 +75,8 @@ export type ArgsGenerateAddress = {
   backupKey: string;
   bitgoKey: string;
   chain?: number[];
-  showDerivationPath?: boolean;
-  limit: number;
+  format: string;
+  index: string;
 };
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
@@ -328,17 +334,25 @@ export const cmdGenerateAddress = {
       .option('backupKey', { type: 'string', demandOption: true })
       .option('bitgoKey', { type: 'string', demandOption: true })
       .option('chain', { type: 'number' })
-      .option('showDerivationPath', { type: 'boolean', default: true })
+      .option('format', {
+        type: 'string',
+        default: '%p0\t%a',
+        description: `Format string. Placeholders: ${getAddressPlaceholderDescription()}`,
+      })
       .array('chain')
-      .option('limit', { type: 'number', default: 100 });
+      .option('index', { type: 'string', default: '0-99' });
   },
   handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
-    console.log('generating addresses..');
     for (const address of generateAddress({
       ...argv,
+      index: parseIndexRange(argv.index),
       network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
-      console.log(address);
+      if (argv.format === 'tree') {
+        console.log(formatAddressTree(address));
+      } else {
+        console.log(formatAddressWithFormatString(address, argv.format));
+      }
     }
   },
 };
