@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.19...@bitgo/sdk-coin-avaxp@3.6.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+
+## [3.5.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.18...@bitgo/sdk-coin-avaxp@3.5.19) (2023-07-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
 ## [3.5.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.5.17...@bitgo/sdk-coin-avaxp@3.5.18) (2023-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

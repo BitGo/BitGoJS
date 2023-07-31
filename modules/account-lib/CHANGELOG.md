@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.10.0...@bitgo/account-lib@4.11.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+- **sdk-coin-zeta:** zeta sdk init along with testcases ([b92d793](https://github.com/BitGo/BitGoJS/commit/b92d793a59ee1116e8f202b0f97c6720f6a76ab5))
+
+# [4.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.9.0...@bitgo/account-lib@4.10.0) (2023-07-18)
+
+### Features
+
+- **sdk-coin-injective:** injective sdk init along with testcases ([5064a10](https://github.com/BitGo/BitGoJS/commit/5064a10b4c36addf904b0d3772e3592224f05250))
+- **sdk-coin-injective:** injective sdk init along with testcases ([3cf36cc](https://github.com/BitGo/BitGoJS/commit/3cf36cc94eee7439109516e344c6d278443ff019))
+
+### Reverts
+
+- Revert "chore(sdk-coin-bnb): create new bnb module" ([e998a04](https://github.com/BitGo/BitGoJS/commit/e998a04de3df1069a7cc59a7f6d9fc7ca7f515d0))
+
 # [4.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.8.1...@bitgo/account-lib@4.9.0) (2023-06-21)
 
 ### Features

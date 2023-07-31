@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@2.1.0...@bitgo/sdk-coin-stx@2.2.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@2.0.11...@bitgo/sdk-coin-stx@2.1.0) (2023-07-18)
+
+### Features
+
+- **sdk-coin-stx:** update stx staking contract name ([70459e5](https://github.com/BitGo/BitGoJS/commit/70459e53f189bac7c1631a9a70a630eb844a7f18))
+
 ## [2.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@2.0.10...@bitgo/sdk-coin-stx@2.0.11) (2023-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

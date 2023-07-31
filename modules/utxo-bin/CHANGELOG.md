@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.12.0...@bitgo/utxo-bin@2.13.0) (2023-07-28)
+
+### Bug Fixes
+
+- **utxo-bin:** allow running individual tests from IntelliJ ([2ae3261](https://github.com/BitGo/BitGoJS/commit/2ae32613ffae30a4dbab97109ca2f73d0e63504f))
+
+### Features
+
+- add generateAddresses command ([e92ebbe](https://github.com/BitGo/BitGoJS/commit/e92ebbe9c3ddd9f5d073f2f49072ae3502ddcde7))
+- **utxo-bin:** add command parseScript ([6c348d6](https://github.com/BitGo/BitGoJS/commit/6c348d61d7d35a348d9bccfe8e86e0e3920614b8))
+- **utxo-bin:** add option to omit keys from unknown objects ([5b1d4f1](https://github.com/BitGo/BitGoJS/commit/5b1d4f170f27afdb7d2f8290102c7e458491ee20))
+- **utxo-bin:** add support for base64 ([d41ac94](https://github.com/BitGo/BitGoJS/commit/d41ac9482822f880f2e06ed94b2ff8133aed0cb2))
+- **utxo-bin:** improve display of buffers, undefined values ([a29d8bf](https://github.com/BitGo/BitGoJS/commit/a29d8bf27af8f476b2d6d5db8e2e80d461c41847))
+- **utxo-bin:** improve parseAddress tests ([1edeea7](https://github.com/BitGo/BitGoJS/commit/1edeea705b7909958325300f4e60e6791994c285))
+- **utxo-bin:** move formatTransaction fixtures to own directory ([4270cd7](https://github.com/BitGo/BitGoJS/commit/4270cd7ef53102085560be1da35b557dc0b8fccd))
+
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.11.0...@bitgo/utxo-bin@2.12.0) (2023-07-18)
+
+### Bug Fixes
+
+- **utxo-bin:** fix parsing of nonWitnessUtxo inputs ([9d31a11](https://github.com/BitGo/BitGoJS/commit/9d31a117d563d7e463b9dac5aa23ddb0e8ff8c0f))
+- **utxo-bin:** use clipboard-cjs ([8a3cdbb](https://github.com/BitGo/BitGoJS/commit/8a3cdbbdc47f86c55e6da22693b24a4796dfbbf0))
+
+### Features
+
+- **utxo-bin:** add parameter `--parseAsUnknown` ([ea6767e](https://github.com/BitGo/BitGoJS/commit/ea6767e7bbb8573e210992dd6d3a79e32fae239e))
+- **utxo-bin:** add support for PSBT ([6aea25f](https://github.com/BitGo/BitGoJS/commit/6aea25f00c6130c17b9d051b4422aca7d35f6c69))
+
 # [2.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.10.1...@bitgo/utxo-bin@2.11.0) (2023-06-21)
 
 ### Features

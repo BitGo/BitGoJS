@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.0.0...@bitgo/statics@18.1.0) (2023-07-28)
+
+### Features
+
+- **statics:** onboard batch of SOL wormhole tokens ([8a0e4b6](https://github.com/BitGo/BitGoJS/commit/8a0e4b6e2d2df030e947192192e6623e62c680ac))
+
+# [18.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@17.0.1...@bitgo/statics@18.0.0) (2023-07-18)
+
+### Bug Fixes
+
+- **statics:** update ADA block explorer url ([2d0fdb2](https://github.com/BitGo/BitGoJS/commit/2d0fdb21f3771da395c68574787e92c1a4da1a22))
+- **statics:** update XTZ/TXTZ block explorer ([a9963ac](https://github.com/BitGo/BitGoJS/commit/a9963acbf118c15be4b93b5ef46a88b54cccbf2b))
+- update bnb erc1155 token name ([68805d5](https://github.com/BitGo/BitGoJS/commit/68805d5d4b4a7b0b4f3c24473354a11cd4b7397c))
+
+### Features
+
+- add cold wallet feature flags ([a496574](https://github.com/BitGo/BitGoJS/commit/a49657487993c2d847e47fdcf38766874838b639))
+- **sdk-coin-injective:** injective sdk init along with testcases ([3cf36cc](https://github.com/BitGo/BitGoJS/commit/3cf36cc94eee7439109516e344c6d278443ff019))
+
+### Reverts
+
+- Revert "chore(sdk-coin-bnb): create new bnb module" ([e998a04](https://github.com/BitGo/BitGoJS/commit/e998a04de3df1069a7cc59a7f6d9fc7ca7f515d0))
+
+### BREAKING CHANGES
+
+- renames tbnb token name
+  Ticket: BG-00000
+
 ## [17.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@17.0.0...@bitgo/statics@17.0.1) (2023-06-21)
 
 ### Bug Fixes

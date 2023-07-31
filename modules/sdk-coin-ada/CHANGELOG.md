@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.4.0...@bitgo/sdk-coin-ada@2.5.0) (2023-07-28)
+
+### Features
+
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **root:** remove node 14 from engines ([6ec47cb](https://github.com/BitGo/BitGoJS/commit/6ec47cbd7996cc78bbf2cf7f16595c24fe43cd41))
+
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.22...@bitgo/sdk-coin-ada@2.4.0) (2023-07-18)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** cosmetic signature array might duplicate ([f742147](https://github.com/BitGo/BitGoJS/commit/f7421477cb1be9b2edbd5e682d6c89ab12e27765))
+- **sdk-core:** fix uploading unsigned sweep tx for sol, dot and ada ([ea85586](https://github.com/BitGo/BitGoJS/commit/ea855868adb781cbfdc73e92a81f9540b0d75c3b))
+
+### Features
+
+- **sdk-coin-ada:** implement util method for ADA tx body ([bc67850](https://github.com/BitGo/BitGoJS/commit/bc678502f19da7cfdf79813b7f614d36e3d81403))
+- **sdk-coin-ada:** parse partially signed tx hex ([dcfa939](https://github.com/BitGo/BitGoJS/commit/dcfa9392726db45a5a5c4de751a19fe7154ffa2f))
+- **sdk-coin-ada:** split claim rewards and claim unstaked ([271ccca](https://github.com/BitGo/BitGoJS/commit/271ccca2be0d562cb8f204002f229c11f1f80094))
+
 ## [2.3.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.3.21...@bitgo/sdk-coin-ada@2.3.22) (2023-06-21)
 
 ### Bug Fixes

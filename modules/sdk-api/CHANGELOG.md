@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.3...@bitgo/sdk-api@1.12.0) (2023-07-28)
+
+### Features
+
+- **unspents:** fix unspents module setup ([687f4c3](https://github.com/BitGo/BitGoJS/commit/687f4c3c29885b1e5b5bf9d79782d265937d6f1d)), closes [#3651](https://github.com/BitGo/BitGoJS/issues/3651)
+
+## [1.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.2...@bitgo/sdk-api@1.11.3) (2023-07-18)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
 ## [1.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.1...@bitgo/sdk-api@1.11.2) (2023-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-api
