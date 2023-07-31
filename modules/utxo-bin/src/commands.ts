@@ -29,6 +29,7 @@ import {
   formatAddressWithFormatString,
   generateAddress,
   getAddressPlaceholderDescription,
+  getRange,
   parseIndexRange,
 } from './generateAddress';
 
@@ -76,7 +77,8 @@ export type ArgsGenerateAddress = {
   bitgoKey: string;
   chain?: number[];
   format: string;
-  index: string;
+  index?: string[];
+  limit?: number;
 };
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
@@ -333,19 +335,36 @@ export const cmdGenerateAddress = {
       .option('userKey', { type: 'string', demandOption: true })
       .option('backupKey', { type: 'string', demandOption: true })
       .option('bitgoKey', { type: 'string', demandOption: true })
-      .option('chain', { type: 'number' })
       .option('format', {
         type: 'string',
         default: '%p0\t%a',
         description: `Format string. Placeholders: ${getAddressPlaceholderDescription()}`,
       })
+      .option('chain', { type: 'number', description: 'Address chain' })
       .array('chain')
-      .option('index', { type: 'string', default: '0-99' });
+      .option('index', {
+        type: 'string',
+        description: 'Address index. Can be given as a range (e.g. 0-99). Takes precedence over --limit.',
+      })
+      .array('index')
+      .option('limit', {
+        type: 'number',
+        description: 'Alias for --index with range starting at 0 to limit-1.',
+        default: 100,
+      });
   },
   handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
+    let indexRange: number[];
+    if (argv.index) {
+      indexRange = parseIndexRange(argv.index);
+    } else if (argv.limit) {
+      indexRange = getRange(0, argv.limit - 1);
+    } else {
+      throw new Error(`no index or limit`);
+    }
     for (const address of generateAddress({
       ...argv,
-      index: parseIndexRange(argv.index),
+      index: indexRange,
       network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
       if (argv.format === 'tree') {
