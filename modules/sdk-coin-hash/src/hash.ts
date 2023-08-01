@@ -1,6 +1,6 @@
 import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
 import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
+import { BaseUnit, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
@@ -49,7 +49,7 @@ export class Hash extends CosmosCoin {
   /** @inheritDoc **/
   getGasAmountDetails(): GasAmountDetails {
     return {
-      gasAmount: '381000000',
+      gasAmount: '500000000',
       gasLimit: 250000,
     };
   }
