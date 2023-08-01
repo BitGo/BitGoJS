@@ -10,7 +10,7 @@ describe('generateAddresses', function () {
       userKey,
       backupKey,
       bitgoKey,
-      index: parseIndexRange('0-1'),
+      index: parseIndexRange(['0-1']),
       format: '%a',
       chain: [0, 1],
     })) {

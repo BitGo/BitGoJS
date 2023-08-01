@@ -94,12 +94,15 @@ export function formatAddressWithFormatString(props: AddressProperties, format: 
   });
 }
 
-export function parseIndexRange(indexRange: string): number[] {
-  const ranges = indexRange.split(',');
+export function getRange(start: number, end: number): number[] {
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+export function parseIndexRange(ranges: string[]): number[] {
   return ranges.flatMap((range) => {
     const [start, end] = range.split('-');
     if (end) {
-      return Array.from({ length: Number(end) - Number(start) + 1 }, (_, i) => Number(start) + i);
+      return getRange(Number(start), Number(end));
     }
     return [Number(start)];
   });
