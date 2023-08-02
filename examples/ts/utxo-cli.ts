@@ -25,13 +25,22 @@ function printResult(result: unknown) {
 }
 
 function getOfflineVaultInfo(keychains: Keychain[]) {
+  const xpubsWithDerivationPath = Object.fromEntries(
+    keychains.map((keychain, i) => {
+      const name = ['user', 'backup', 'bitgo'][i];
+      return [
+        name,
+        {
+          xpub: keychain.pub,
+          derivedFromParentWithSeed: keychain.derivedFromParentWithSeed,
+        },
+      ];
+    })
+  );
+
   return {
-    xpubsWithDerivationPath: keychains.map((keychain) => {
-      return {
-        xpub: keychain.pub,
-        derivedFromParentWithSeed: keychain.derivedFromParentWithSeed,
-      };
-    }),
+    pubs: keychains.map((k) => k.pub),
+    xpubsWithDerivationPath,
   };
 }
 
