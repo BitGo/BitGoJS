@@ -26,7 +26,7 @@ function printResult(result: unknown) {
 
 function getOfflineVaultInfo(keychains: Keychain[]) {
   return {
-    xpubsWithDerivationPaths: keychains.map((keychain) => {
+    xpubsWithDerivationPath: keychains.map((keychain) => {
       return {
         xpub: keychain.pub,
         derivedFromParentWithSeed: keychain.derivedFromParentWithSeed,
