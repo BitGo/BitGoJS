@@ -1,8 +1,8 @@
-import { CosmosCoin } from '@bitgo/abstract-cosmos';
+import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
 import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseUnit, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 
-import { TransactionBuilderFactory } from './lib';
+import { KeyPair, TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 
 export class Hash extends CosmosCoin {
@@ -39,5 +39,28 @@ export class Hash extends CosmosCoin {
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
     return Environments[this.bitgo.getEnv()].hashNodeUrl;
+  }
+
+  /** @inheritDoc **/
+  getDenomination(): string {
+    return BaseUnit.HASH;
+  }
+
+  /** @inheritDoc **/
+  getGasAmountDetails(): GasAmountDetails {
+    return {
+      gasAmount: '500000000',
+      gasLimit: 250000,
+    };
+  }
+
+  /** @inheritDoc **/
+  getKeyPair(publicKey: string): CosmosKeyPair {
+    return new KeyPair({ pub: publicKey });
+  }
+
+  /** @inheritDoc **/
+  getAddressFromPublicKey(publicKey: string): string {
+    return new KeyPair({ pub: publicKey }).getAddress();
   }
 }
