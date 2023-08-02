@@ -23,35 +23,50 @@ describe('Sol Staking Authorize Builder', () => {
   const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
   const oldAuthorizedAccount = new KeyPair(testData.authAccount).getKeys();
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+  const custodianAccount = new KeyPair(testData.nonceAccount).getKeys();
+  const durableNonceParams = {
+    walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+    authWalletAddress: wallet.pub,
+  };
 
   describe('Succeed', () => {
     it('build a create staking authorization signed tx', async () => {
       const txBuilder = factory.getStakingAuthorizeBuilder();
       txBuilder
+        .fee({ amount: '5000' })
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
-        .nonce(recentBlockHash)
+        .nonce(recentBlockHash, durableNonceParams)
         .newAuthorizedAddress(wallet.pub)
-        .oldAuthorizedAddress(oldAuthorizedAccount.pub);
+        .oldAuthorizedAddress(oldAuthorizedAccount.pub)
+        .custodianAddress(custodianAccount.pub);
 
       txBuilder.sign({ key: wallet.prv });
       txBuilder.sign({ key: oldAuthorizedAccount.prv });
+      //      txBuilder.sign({ key: custodianAccount.prv });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(0);
       tx.outputs.length.should.equal(0);
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
+      const explain = await tx.explainTransaction();
+      should.equal(explain.type, 'StakingAuthorize');
+      should.equal(explain.fee.feeRate, 5000);
+      should.deepEqual(explain.durableNonce, durableNonceParams);
+      should.equal(explain.stakingAuthorize.params.custodianAddress, custodianAccount.pub);
       should.equal(rawTx, testData.STAKING_AUTHORIZE_SIGNED_TX);
     });
 
     it('build a create and delegate staking unsigned tx', async () => {
       const txBuilder = factory.getStakingAuthorizeBuilder();
       txBuilder
+        .fee({ amount: '5000' })
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
-        .nonce(recentBlockHash)
+        .nonce(recentBlockHash, durableNonceParams)
         .newAuthorizedAddress(wallet.pub)
-        .oldAuthorizedAddress(oldAuthorizedAccount.pub);
+        .oldAuthorizedAddress(oldAuthorizedAccount.pub)
+        .custodianAddress(custodianAccount.pub);
 
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(0);

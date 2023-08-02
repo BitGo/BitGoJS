@@ -319,7 +319,7 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
  */
 function stakingAuthorizeInstruction(data: StakingAuthorize): TransactionInstruction[] {
   const {
-    params: { stakingAddress, oldAuthorizeAddress, newAuthorizeAddress, newWithdrawAddress },
+    params: { stakingAddress, oldAuthorizeAddress, newAuthorizeAddress, newWithdrawAddress, custodianAddress },
   } = data;
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(oldAuthorizeAddress, 'Missing oldAuthorizeAddress param');
@@ -340,7 +340,7 @@ function stakingAuthorizeInstruction(data: StakingAuthorize): TransactionInstruc
     authorizedPubkey: new PublicKey(oldAuthorizeAddress),
     newAuthorizedPubkey: new PublicKey(newAuthorizeAddress),
     stakeAuthorizationType: StakeAuthorizationLayout.Withdrawer,
-    custodianPubkey: new PublicKey(newWithdrawAddress),
+    custodianPubkey: custodianAddress ? new PublicKey(custodianAddress) : undefined,
   });
   tx.add(authorizeStaking);
   tx.add(authorizeWithdraw);

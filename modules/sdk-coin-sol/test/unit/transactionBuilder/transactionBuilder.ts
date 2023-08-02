@@ -26,12 +26,17 @@ describe('Sol Transaction Builder', async () => {
 
   it('start and build an empty a transfer tx with fee', async () => {
     const txBuilder = factory.getTransferBuilder();
+    const durableNonceParams = {
+      walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+      authWalletAddress: authAccount.pub,
+    };
     txBuilder.sender(authAccount.pub);
-    txBuilder.nonce(validBlockhash);
+    txBuilder.nonce(validBlockhash, durableNonceParams);
     txBuilder.fee({ amount: 5000 });
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
-
+    const explain = tx.explainTransaction();
+    console.log(explain);
     const txJson = tx.toJson();
     txJson.lamportsPerSignature?.should.equal(5000);
   });

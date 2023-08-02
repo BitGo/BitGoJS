@@ -88,7 +88,13 @@ export interface StakingWithdraw {
 
 export interface StakingAuthorize {
   type: InstructionBuilderTypes.StakingAuthorize;
-  params: { stakingAddress: string; oldAuthorizeAddress; newAuthorizeAddress: string; newWithdrawAddress: string };
+  params: {
+    stakingAddress: string;
+    oldAuthorizeAddress;
+    newAuthorizeAddress: string;
+    newWithdrawAddress: string;
+    custodianAddress?: string;
+  };
 }
 
 export interface AtaInit {
@@ -109,6 +115,7 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   // only populated if blockhash is from a nonce account
   durableNonce?: DurableNonceParams;
   memo?: string;
+  stakingAuthorize?: StakingAuthorize;
 }
 
 export class TokenAssociateRecipient {

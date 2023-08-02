@@ -12,6 +12,7 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _newAuthorizedAddress: string;
   protected _oldAuthorizedAddress: string;
+  protected _custodianAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -30,6 +31,9 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
         this.stakingAddress(AuthorizeInstruction.params.stakingAddress);
         this.newAuthorizedAddress(AuthorizeInstruction.params.newAuthorizeAddress);
         this.oldAuthorizedAddress(AuthorizeInstruction.params.oldAuthorizeAddress);
+        if (AuthorizeInstruction.params.custodianAddress) {
+          this.custodianAddress(AuthorizeInstruction.params.custodianAddress!);
+        }
       }
     }
   }
@@ -51,7 +55,7 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   /**
    * The address of the new staking account authorization.
    *
-   * @param {string} stakingAddress public address of the staking account.
+   * @param {string} newAuthorizedAddress public address of the staking account.
    * @returns {StakeBuilder} This staking builder.
    *
    * @see https://docs.solana.com/staking/stake-accounts#account-address
@@ -63,9 +67,9 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   }
 
   /**
-   * The address of the new staking account authorization.
+   * The address of the old staking account authorization.
    *
-   * @param {string} stakingAddress public address of the staking account.
+   * @param {string} oldAuthorizedAddress public address of the staking account.
    * @returns {StakeBuilder} This staking builder.
    *
    * @see https://docs.solana.com/staking/stake-accounts#account-address
@@ -73,6 +77,20 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
   oldAuthorizedAddress(oldAuthorizedAddress: string): this {
     validateAddress(oldAuthorizedAddress, 'oldAuthorizedAddress');
     this._oldAuthorizedAddress = oldAuthorizedAddress;
+    return this;
+  }
+
+  /**
+   * The address of the staking account custodian address.
+   *
+   * @param {string} oldAuthorizedAddress public address of the staking account.
+   * @returns {StakeBuilder} This staking builder.
+   *
+   * @see https://docs.solana.com/staking/stake-accounts#account-address
+   */
+  custodianAddress(custodianAddress: string): this {
+    validateAddress(custodianAddress, 'custodianAddress');
+    this._custodianAddress = custodianAddress;
     return this;
   }
 
@@ -89,6 +107,7 @@ export class StakingAuthorizeBuilder extends TransactionBuilder {
         newWithdrawAddress: this._newAuthorizedAddress,
         newAuthorizeAddress: this._newAuthorizedAddress,
         oldAuthorizeAddress: this._oldAuthorizedAddress,
+        custodianAddress: this._custodianAddress,
       },
     };
     this._instructionsData = [stakingAccountData];

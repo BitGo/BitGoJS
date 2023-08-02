@@ -15,6 +15,7 @@ import {
   Memo,
   Nonce,
   StakingActivate,
+  StakingAuthorize,
   StakingWithdraw,
   TokenTransfer,
   TransactionExplanation,
@@ -343,6 +344,7 @@ export class Transaction extends BaseTransaction {
 
     let outputAmount = new BigNumber(0);
     const outputs: TransactionRecipient[] = [];
+    let stakingAuthorize: StakingAuthorize | undefined = undefined;
 
     for (const instruction of decodedInstructions) {
       switch (instruction.type) {
@@ -394,23 +396,28 @@ export class Transaction extends BaseTransaction {
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
           break;
-        default:
-          continue;
-      }
-
-      // After deserializing a transaction, durable nonce details are populated in the nonceInfo field
-      if (!durableNonce && this._solTransaction.nonceInfo) {
-        const nonceAdvanceInstruction = SystemInstruction.decodeNonceAdvance(
-          this._solTransaction.nonceInfo.nonceInstruction
-        );
-        durableNonce = {
-          authWalletAddress: nonceAdvanceInstruction.authorizedPubkey.toString(),
-          walletNonceAddress: nonceAdvanceInstruction.noncePubkey.toString(),
-        };
+        case InstructionBuilderTypes.StakingAuthorize:
+          const authorizeInstruction = instruction as StakingAuthorize;
+          stakingAuthorize = {
+            type: authorizeInstruction.type,
+            params: authorizeInstruction.params,
+          };
+          break;
       }
     }
 
-    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce);
+    // After deserializing a transaction, durable nonce details are populated in the nonceInfo field
+    if (!durableNonce && this._solTransaction.nonceInfo) {
+      const nonceAdvanceInstruction = SystemInstruction.decodeNonceAdvance(
+        this._solTransaction.nonceInfo.nonceInstruction
+      );
+      durableNonce = {
+        authWalletAddress: nonceAdvanceInstruction.authorizedPubkey.toString(),
+        walletNonceAddress: nonceAdvanceInstruction.noncePubkey.toString(),
+      };
+    }
+
+    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, stakingAuthorize);
   }
 
   private calculateFee(): string {
@@ -430,7 +437,8 @@ export class Transaction extends BaseTransaction {
     outputAmount: BigNumber,
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
-    durableNonce: undefined | DurableNonceParams = undefined
+    durableNonce: undefined | DurableNonceParams = undefined,
+    authorize: undefined | StakingAuthorize = undefined
   ): TransactionExplanation {
     const feeString = this.calculateFee();
     return {
@@ -459,6 +467,7 @@ export class Transaction extends BaseTransaction {
       memo: memo,
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
+      stakingAuthorize: authorize,
     };
   }
 }

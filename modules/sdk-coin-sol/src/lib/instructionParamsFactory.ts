@@ -553,7 +553,8 @@ function parseStakingAuthorizeInstructions(
             stakingAddress: authorize.stakePubkey.toString(),
             oldAuthorizeAddress: authorize.authorizedPubkey.toString(),
             newAuthorizeAddress: authorize.newAuthorizedPubkey.toString(),
-            newWithdrawAddress: authorize.custodianPubkey?.toString() || '',
+            newWithdrawAddress: authorize.newAuthorizedPubkey.toString(),
+            custodianAddress: authorize.custodianPubkey?.toString() || '',
           },
         });
         break;
