@@ -69,6 +69,7 @@ type ArgsCommon = {
 };
 
 type ArgsBuildTransaction = {
+  unspent?: string[];
   recipient: string[];
 };
 
@@ -88,6 +89,7 @@ async function buildTransaction(a: ArgsCommon & ArgsBuildTransaction) {
   });
   const wallet = await bitgo.coin(a.coin).wallets().get({ id: a.wallet });
   const transaction = await wallet.prebuildTransaction({
+    unspents: a.unspent?.length ? a.unspent : undefined,
     recipients,
   });
   const keychains = await getKeychains(bitgo.coin(a.coin), wallet);
