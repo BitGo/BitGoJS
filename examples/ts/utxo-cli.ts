@@ -9,16 +9,11 @@ function getBitGo(accessToken: string, env: string) {
   if (env !== 'test' && env !== 'prod') {
     throw new Error('env must be test or prod');
   }
-  return new BitGoAPI({ accessToken, env });
+  const bitgo = new BitGoAPI({ accessToken, env });
+  bitgo.register('btc', Btc.createInstance);
+  bitgo.register('tbtc', Tbtc.createInstance);
+  return bitgo;
 }
-
-const bitgo = new BitGoAPI({
-  accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test', // Change this to env: 'production' when you are ready for production
-});
-
-bitgo.register('btc', Btc.createInstance);
-bitgo.register('tbtc', Tbtc.createInstance);
 
 function printResult(result: unknown) {
   console.log(JSON.stringify(result, null, 4));
@@ -48,13 +43,41 @@ async function getKeychains(coin: BaseCoin, wallet: IWallet): Promise<Keychain[]
   return await Promise.all(wallet.keyIds().map((keyId) => coin.keychains().get({ id: keyId })));
 }
 
-async function buildTransaction(a: {
+async function withUnlock<T>(bitgo: BitGoAPI, otp: string | undefined, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (e.status !== 401 || !e.result?.needsOTP) {
+      throw e;
+    }
+  }
+
+  if (!otp) {
+    throw new Error('OTP required');
+  }
+
+  await bitgo.unlock({ otp });
+
+  return await fn();
+}
+
+type ArgsCommon = {
   env: string;
   accessToken: string;
   coin: string;
   wallet: string;
+};
+
+type ArgsBuildTransaction = {
   recipient: string[];
-}) {
+};
+
+type ArgsSubmitTransaction = {
+  otp?: string;
+  file: string;
+};
+
+async function buildTransaction(a: ArgsCommon & ArgsBuildTransaction) {
   const bitgo = await getBitGo(a.accessToken, a.env);
   const recipients = a.recipient.map((r) => {
     const [address, amount] = r.split(':');
@@ -72,6 +95,17 @@ async function buildTransaction(a: {
   printResult(transaction);
 }
 
+async function submitTransaction(a: ArgsCommon & ArgsSubmitTransaction) {
+  const bitgo = await getBitGo(a.accessToken, a.env);
+  const wallet = await bitgo.coin(a.coin).wallets().get({ id: a.wallet });
+  const transaction = JSON.parse(await fs.readFile(a.file, { encoding: 'utf8' }));
+  console.log(
+    await withUnlock(bitgo, a.otp, async () => {
+      return await wallet.submitTransaction(transaction);
+    })
+  );
+}
+
 yargs
   .option('env', { type: 'string', demandOption: true })
   .option('accessToken', { type: 'string', demandOption: true })
@@ -87,7 +121,16 @@ yargs
         .option('recipient', { type: 'string', demandOption: true })
         .array('recipient');
     },
-    async handler(a: { env: string; accessToken: string; coin: string; wallet: string; recipient: string[] }) {
+    async handler(a: ArgsCommon & ArgsBuildTransaction) {
       await buildTransaction(a);
+    },
+  })
+  .command({
+    command: 'submitTransaction',
+    builder(b) {
+      return b.option('file', { type: 'string', demandOption: true });
+    },
+    async handler(a: ArgsCommon & ArgsSubmitTransaction) {
+      await submitTransaction(a);
     },
   }).argv;
