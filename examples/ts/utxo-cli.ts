@@ -1,8 +1,9 @@
-const fs = require('fs/promises');
-
+import { BaseCoin, IWallet, Keychain } from '@bitgo/sdk-core';
 import * as yargs from 'yargs';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Btc, Tbtc } from '@bitgo/sdk-coin-btc';
+
+const fs = require('fs/promises');
 
 function getBitGo(accessToken: string, env: string) {
   if (env !== 'test' && env !== 'prod') {
@@ -21,6 +22,30 @@ bitgo.register('tbtc', Tbtc.createInstance);
 
 function printResult(result: unknown) {
   console.log(JSON.stringify(result, null, 4));
+}
+
+function getOfflineVaultInfo(keychains: Keychain[]) {
+  return {
+    xpubsWithDerivationPaths: keychains.map((keychain) => {
+      return {
+        xpub: keychain.pub,
+        derivedFromParentWithSeed: keychain.derivedFromParentWithSeed,
+      };
+    }),
+  };
+}
+
+async function getKeychains(coin: BaseCoin, wallet: IWallet): Promise<Keychain[]> {
+  return await Promise.all(wallet.keyIds().map((keyId) => coin.keychains().get({ id: keyId })));
+}
+
+async function withUnlock<T>(otp: string | undefined, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    console.dir(e);
+    throw e;
+  }
 }
 
 async function buildTransaction(a: {
@@ -42,14 +67,25 @@ async function buildTransaction(a: {
   const transaction = await wallet.prebuildTransaction({
     recipients,
   });
+  const keychains = await getKeychains(bitgo.coin(a.coin), wallet);
+  Object.assign(transaction, getOfflineVaultInfo(keychains));
   printResult(transaction);
 }
 
-async function submitTransaction(a: { env: string; accessToken: string; coin: string; wallet: string; file: string }) {
+async function submitTransaction(a: {
+  env: string;
+  otp?: string;
+  accessToken: string;
+  coin: string;
+  wallet: string;
+  file: string;
+}) {
   const bitgo = await getBitGo(a.accessToken, a.env);
   const wallet = await bitgo.coin(a.coin).wallets().get({ id: a.wallet });
   const transaction = JSON.parse(await fs.readFile(a.file, { encoding: 'utf8' }));
-  await wallet.submitTransaction(transaction);
+  await withUnlock(a.otp, async () => {
+    return await wallet.submitTransaction(transaction);
+  });
 }
 
 yargs
@@ -57,6 +93,7 @@ yargs
   .option('accessToken', { type: 'string', demandOption: true })
   .option('coin', { type: 'string', default: 'btc' })
   .option('wallet', { type: 'string', demandOption: true })
+  .option('otp', { type: 'string' })
   .command({
     command: 'buildTransaction',
     builder(b) {
@@ -75,7 +112,7 @@ yargs
     builder(b) {
       return b.option('file', { type: 'string', demandOption: true });
     },
-    async handler(a: { env: string; accessToken: string; coin: string; wallet: string; file: string }) {
+    async handler(a: { env: string; otp?: string; accessToken: string; coin: string; wallet: string; file: string }) {
       await submitTransaction(a);
     },
   }).argv;
