@@ -19,9 +19,24 @@ function printResult(result: unknown) {
   console.log(JSON.stringify(result, null, 4));
 }
 
-function getOfflineVaultInfo(keychains: Keychain[]) {
+type XPubsDict = Record<'user' | 'backup' | 'bitgo', { xpub: string; derivedFromParentWithSeed?: string }>;
+
+type OfflineVaultInfo = {
+  address: string;
+  amount: number;
+  pubs: string[];
+  xpubsWithDerivationPath: XPubsDict;
+};
+
+function getOfflineVaultInfo(
+  keychains: Keychain[],
+  recipients: { address: string; amount: number }[]
+): OfflineVaultInfo {
   const xpubsWithDerivationPath = Object.fromEntries(
     keychains.map((keychain, i) => {
+      if (!keychain.pub) {
+        throw new Error('pub required');
+      }
       const name = ['user', 'backup', 'bitgo'][i];
       return [
         name,
@@ -31,10 +46,28 @@ function getOfflineVaultInfo(keychains: Keychain[]) {
         },
       ];
     })
-  );
+  ) as XPubsDict;
+
+  let address: string;
+  const amount = recipients.reduce((sum, r) => sum + r.amount, 0);
+
+  if (recipients.length === 0) {
+    throw new Error('must specify at least one recipient');
+  } else if (recipients.length === 1) {
+    address = recipients[0].address;
+  } else {
+    address = '[multiple recipients]';
+  }
 
   return {
-    pubs: keychains.map((k) => k.pub),
+    address,
+    amount,
+    pubs: keychains.map((k) => {
+      if (k.pub) {
+        return k.pub;
+      }
+      throw new Error('pub required');
+    }),
     xpubsWithDerivationPath,
   };
 }
@@ -80,12 +113,15 @@ type ArgsSubmitTransaction = {
 
 async function buildTransaction(a: ArgsCommon & ArgsBuildTransaction) {
   const bitgo = await getBitGo(a.accessToken, a.env);
-  const recipients = a.recipient.map((r) => {
+  const recipients: {
+    address: string;
+    amount: number;
+  }[] = a.recipient.map((r) => {
     const [address, amount] = r.split(':');
     if (!address || !amount || isNaN(Number(amount))) {
       throw new Error('recipient must be in the format address:amount');
     }
-    return { address, amount };
+    return { address, amount: Number(amount) };
   });
   const wallet = await bitgo.coin(a.coin).wallets().get({ id: a.wallet });
   const transaction = await wallet.prebuildTransaction({
@@ -93,7 +129,7 @@ async function buildTransaction(a: ArgsCommon & ArgsBuildTransaction) {
     recipients,
   });
   const keychains = await getKeychains(bitgo.coin(a.coin), wallet);
-  Object.assign(transaction, getOfflineVaultInfo(keychains));
+  Object.assign(transaction, getOfflineVaultInfo(keychains, recipients));
   printResult(transaction);
 }
 
@@ -120,7 +156,11 @@ yargs
       return b
         .option('unspent', { type: 'string' })
         .array('unspent')
-        .option('recipient', { type: 'string', demandOption: true })
+        .option('recipient', {
+          description: 'Recipient in the format address:amount (amount in satoshi)',
+          type: 'string',
+          demandOption: true,
+        })
         .array('recipient');
     },
     async handler(a: ArgsCommon & ArgsBuildTransaction) {
