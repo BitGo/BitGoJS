@@ -906,7 +906,7 @@ export const coins = CoinMap.fromCoins([
     'zeta',
     'Zeta',
     Networks.main.zeta,
-    6,
+    18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
     ZETA_FEATURES
@@ -916,7 +916,7 @@ export const coins = CoinMap.fromCoins([
     'tzeta',
     'Testnet Zeta',
     Networks.test.zeta,
-    6,
+    18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
     ZETA_FEATURES
