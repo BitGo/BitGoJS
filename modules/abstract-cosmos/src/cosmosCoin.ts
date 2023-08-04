@@ -21,9 +21,12 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
+import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
+import { Buffer } from 'buffer';
 import { createHash, Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as querystring from 'querystring';
@@ -31,18 +34,15 @@ import * as request from 'superagent';
 import * as url from 'url';
 import {
   CosmosKeyPair,
+  CosmosLikeCoinRecoveryOutput,
   CosmosTransaction,
+  FeeData,
   GasAmountDetails,
   RecoveryOptions,
-  CosmosLikeCoinRecoveryOutput,
   SendMessage,
-  FeeData,
 } from './lib';
-import utils from './lib/utils';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { Buffer } from 'buffer';
-import { Coin } from '@cosmjs/stargate';
 import { ROOT_PATH } from './lib/constants';
+import utils from './lib/utils';
 
 /**
  * Cosmos accounts support memo Id based addresses
@@ -576,6 +576,9 @@ export class CosmosCoin extends BaseCoin {
     const response = await this.getAccountFromNode(senderAddress);
     if (response.status !== 200) {
       throw new Error('Account not found');
+    }
+    if (response.body.account['@type'] == ('/ethermint.types.v1.EthAccount' || '/injective.types.v1beta1.EthAccount')) {
+      return [response.body.account.base_account.account_number, response.body.account.base_account.sequence];
     }
     return [response.body.account.account_number, response.body.account.sequence];
   }
