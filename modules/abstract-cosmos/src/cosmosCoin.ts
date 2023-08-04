@@ -578,7 +578,9 @@ export class CosmosCoin extends BaseCoin {
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
-    if (response.body.account['@type'] == ('/ethermint.types.v1.EthAccount' || '/injective.types.v1beta1.EthAccount')) {
+    if (
+      ['/ethermint.types.v1.EthAccount', '/injective.types.v1beta1.EthAccount'].includes(response.body.account['@type'])
+    ) {
       return [response.body.account.base_account.account_number, response.body.account.base_account.sequence];
     }
     return [response.body.account.account_number, response.body.account.sequence];
