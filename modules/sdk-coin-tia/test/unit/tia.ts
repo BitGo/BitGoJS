@@ -15,9 +15,11 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   address,
+  mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/tia';
 import should = require('should');
+import nock = require('nock');
 
 describe('TIA', function () {
   let bitgo: TestBitGoAPI;
@@ -347,16 +349,15 @@ describe('TIA', function () {
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('ttia');
     const testBalance = '1500000';
-    const testAccountNumber = '123';
-    const testSequenceNumber = '0';
     const testChainId = 'test-chain';
 
     beforeEach(() => {
+      nock('https://k8s.testnet.lcd.injective.network')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
       const accountBalance = sandBox.stub(Tia.prototype, 'getAccountBalance' as keyof Tia);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
-
-      const accountDetails = sandBox.stub(Tia.prototype, 'getAccountDetails' as keyof Tia);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Tia.prototype, 'getChainId' as keyof Tia);
       chainId.withArgs().resolves(testChainId);
@@ -381,7 +382,6 @@ describe('TIA', function () {
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
-      sandBox.assert.calledOnce(basecoin.getAccountDetails);
       sandBox.assert.calledOnce(basecoin.getChainId);
 
       const txn = new CosmosTransaction(coin, utils);
@@ -400,16 +400,15 @@ describe('TIA', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const testZeroBalance = '0';
-    const testAccountNumber = '123';
-    const testSequenceNumber = '0';
     const testChainId = 'test-chain';
 
     beforeEach(() => {
+      nock('https://k8s.testnet.lcd.injective.network')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
       const accountBalance = sandBox.stub(Tia.prototype, 'getAccountBalance' as keyof Tia);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
-
-      const accountDetails = sandBox.stub(Tia.prototype, 'getAccountDetails' as keyof Tia);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Tia.prototype, 'getChainId' as keyof Tia);
       chainId.withArgs().resolves(testChainId);

@@ -387,3 +387,18 @@ export const wrwUser = {
     'a42166875f0f13acb828c724bd9d67d06c440dff6e308326e9833ab',
   walletPassphrase: 'bitgo_test@123',
 };
+
+export const mockAccountDetailsResponse = {
+  account: {
+    '@type': '/injective.types.v1beta1.EthAccount',
+    base_account: {
+      address: 'inj1wkcrz3cs47agnzw64r58drmlexs4w4grdldem8',
+      pub_key: {
+        '@type': '/cosmos.crypto.secp256k1.PubKey',
+        key: 'A+4Jt1KX92BFH9w4yL5B2vU7I5twG9AIWb+ZkUx0SiCj',
+      },
+      account_number: '42033',
+      sequence: '2',
+    },
+  },
+};

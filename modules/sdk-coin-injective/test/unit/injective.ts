@@ -15,9 +15,11 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   address,
+  mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/injective';
 import should = require('should');
+import nock = require('nock');
 
 describe('INJ', function () {
   let bitgo: TestBitGoAPI;
@@ -347,16 +349,15 @@ describe('INJ', function () {
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tinjective');
     const testBalance = '15000000000000000';
-    const testAccountNumber = '123';
-    const testSequenceNumber = '0';
     const testChainId = 'test-chain';
 
     beforeEach(() => {
+      nock('https://k8s.testnet.lcd.injective.network')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
       const accountBalance = sandBox.stub(Injective.prototype, 'getAccountBalance' as keyof Injective);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
-
-      const accountDetails = sandBox.stub(Injective.prototype, 'getAccountDetails' as keyof Injective);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Injective.prototype, 'getChainId' as keyof Injective);
       chainId.withArgs().resolves(testChainId);
@@ -381,7 +382,6 @@ describe('INJ', function () {
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
-      sandBox.assert.calledOnce(basecoin.getAccountDetails);
       sandBox.assert.calledOnce(basecoin.getChainId);
 
       const txn = new CosmosTransaction(coin, utils);
@@ -400,16 +400,15 @@ describe('INJ', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const testZeroBalance = '0';
-    const testAccountNumber = '123';
-    const testSequenceNumber = '0';
     const testChainId = 'test-chain';
 
     beforeEach(() => {
+      nock('https://k8s.testnet.lcd.injective.network')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
       const accountBalance = sandBox.stub(Injective.prototype, 'getAccountBalance' as keyof Injective);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
-
-      const accountDetails = sandBox.stub(Injective.prototype, 'getAccountDetails' as keyof Injective);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Injective.prototype, 'getChainId' as keyof Injective);
       chainId.withArgs().resolves(testChainId);
