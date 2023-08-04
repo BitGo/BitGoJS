@@ -26,4 +26,9 @@ export class Bsc extends AbstractEthLikeCoin {
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }
+
+  /** @inheritDoc */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
 }

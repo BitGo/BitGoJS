@@ -24,7 +24,14 @@ import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
-import { generateAddress } from './generateAddress';
+import {
+  formatAddressTree,
+  formatAddressWithFormatString,
+  generateAddress,
+  getAddressPlaceholderDescription,
+  getRange,
+  parseIndexRange,
+} from './generateAddress';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -69,8 +76,9 @@ export type ArgsGenerateAddress = {
   backupKey: string;
   bitgoKey: string;
   chain?: number[];
-  showDerivationPath?: boolean;
-  limit: number;
+  format: string;
+  index?: string[];
+  limit?: number;
 };
 
 async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
@@ -207,7 +215,7 @@ export const cmdParseTx = {
         throw new Error(`conflicting arguments`);
       }
       console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-      console.log('Press Ctrl-D to finish, or Ctrl-C to cancel.');
+      console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
       if (process.stdin.isTTY) {
         data = await readStdin();
       } else {
@@ -327,18 +335,43 @@ export const cmdGenerateAddress = {
       .option('userKey', { type: 'string', demandOption: true })
       .option('backupKey', { type: 'string', demandOption: true })
       .option('bitgoKey', { type: 'string', demandOption: true })
-      .option('chain', { type: 'number' })
-      .option('showDerivationPath', { type: 'boolean', default: true })
+      .option('format', {
+        type: 'string',
+        default: '%p0\t%a',
+        description: `Format string. Placeholders: ${getAddressPlaceholderDescription()}`,
+      })
+      .option('chain', { type: 'number', description: 'Address chain' })
       .array('chain')
-      .option('limit', { type: 'number', default: 100 });
+      .option('index', {
+        type: 'string',
+        description: 'Address index. Can be given as a range (e.g. 0-99). Takes precedence over --limit.',
+      })
+      .array('index')
+      .option('limit', {
+        type: 'number',
+        description: 'Alias for --index with range starting at 0 to limit-1.',
+        default: 100,
+      });
   },
   handler(argv: yargs.Arguments<ArgsGenerateAddress>): void {
-    console.log('generating addresses..');
+    let indexRange: number[];
+    if (argv.index) {
+      indexRange = parseIndexRange(argv.index);
+    } else if (argv.limit) {
+      indexRange = getRange(0, argv.limit - 1);
+    } else {
+      throw new Error(`no index or limit`);
+    }
     for (const address of generateAddress({
       ...argv,
+      index: indexRange,
       network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
-      console.log(address);
+      if (argv.format === 'tree') {
+        console.log(formatAddressTree(address));
+      } else {
+        console.log(formatAddressWithFormatString(address, argv.format));
+      }
     }
   },
 };

@@ -14,9 +14,4 @@ export class Tbsc extends Bsc {
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tbsc(bitgo, staticsCoin);
   }
-
-  /** @inheritDoc */
-  allowsAccountConsolidations(): boolean {
-    return true;
-  }
 }

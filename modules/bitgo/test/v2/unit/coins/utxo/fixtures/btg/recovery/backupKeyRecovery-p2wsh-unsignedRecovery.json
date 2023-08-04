@@ -1,34 +1,34 @@
 {
-  "txHex": "020000000389deff9cc9e00dbe79db98123684f62280fb00906c5fb09e78dcc731109034c10100000000ffffffffe6179a2012cb24c7352a7033f46f9603e9b97a0e8bd5a242248945b7a88699d10100000000ffffffff2fb24714bed57df2e925f705f237107d5f821071601416c7252eaa5b2e09fd7f0100000000ffffffff01b0d3c1230000000017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
+  "txHex": "0200000003d0213dbc5cf17396fcc1fa693c4fc1d255e837e6dc2d5e832f26f9f56905fd250000000000ffffffff09eee71471bdc7d142d70ff633b74f426270bce828ea27987c065f9133af3a070200000000ffffffff1edff28ee45853144120d132b24dcc60ceee0bb2dd8ae6e6386d937a87e055530300000000ffffffff01b0d3c1230000000017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
   "txInfo": {
     "unspents": [
       {
-        "id": "c134901031c7dc789eb05f6c9000fb8022f684361298db79be0de0c99cffde89:1",
+        "id": "25fd0569f5f9262f835e2ddce637e855d2c14f3c69fac1fc9673f15cbc3d21d0:0",
         "address": "btg1q5e7nvvypt2qpjxq74zwtry9klsqkcyvcee85anaa3pax7ae207gsgkznkj",
         "value": 100000000,
-        "valueString": "100000000",
         "chain": 21,
-        "index": 0
+        "index": 0,
+        "valueString": "100000000"
       },
       {
-        "id": "d19986a8b745892442a2d58b0e7ab9e903966ff433702a35c724cb12209a17e6:1",
+        "id": "073aaf33915f067c9827ea28e8bc7062424fb733f60fd742d1c7bd7114e7ee09:2",
         "address": "btg1q3v9yjlrzkufgd99d07806262dhqgfjf2zjdx5sfrw8uslnjs2uts6rglj3",
         "value": 200000000,
-        "valueString": "200000000",
         "chain": 21,
-        "index": 2
+        "index": 2,
+        "valueString": "200000000"
       },
       {
-        "id": "7ffd092e5baa2e25c71614607110825f7d1037f205f725e9f27dd5be1447b22f:1",
+        "id": "5355e0877a936d38e6e68addb20beece60cc4db232d12041145358e48ef2df1e:3",
         "address": "btg1qyerx34sx9a2a4zz7w320tuxz3hq84xn0hm6tzr6tek77tsknfg0sysc5ap",
         "value": 300000000,
-        "valueString": "300000000",
         "chain": 21,
-        "index": 3
+        "index": 3,
+        "valueString": "300000000"
       }
     ]
   },
   "feeInfo": {},
   "coin": "btg",
-  "txid": "e7d38436aac3dcaf5a79e2da0a74a166cac08840032bd64b7bbb81e299bae446"
+  "txid": "a5f7d4b77f5e86ff9478e5ae3fa605adbe1e91037994a4898dad52a35139da3e"
 }
