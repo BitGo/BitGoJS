@@ -5,6 +5,7 @@ import { formatSat } from './format';
 import { getParserTxProperties, ParserTx, ParserTxInput, ParserTxOutput } from './ParserTx';
 import { InputParser } from './InputParser';
 import { OutputParser } from './OutputParser';
+import { parseUnknown } from './parseUnknown';
 
 function formatConsensusBranchId(branchId: number): string {
   const map: Record<string, number> = {
@@ -142,5 +143,34 @@ export class TxParser extends Parser {
         this.parseOuts(outputs, tx, id, chainInfo)
       ),
     ]);
+  }
+
+  parseBytes(
+    bytes: Buffer,
+    params: {
+      txid?: string;
+      network: utxolib.Network;
+      parseAsUnknown?: boolean;
+      finalize?: boolean;
+    },
+    chainInfo?: ChainInfo
+  ): ParserNode {
+    let tx = utxolib.bitgo.isPsbt(bytes)
+      ? utxolib.bitgo.createPsbtFromBuffer(bytes, params.network)
+      : utxolib.bitgo.createTransactionFromBuffer(bytes, params.network, { amountType: 'bigint' });
+
+    const { id: txid } = getParserTxProperties(tx, undefined);
+    if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+      if (txid && params.txid && txid !== params.txid) {
+        throw new Error(`computed txid does not match txid argument`);
+      }
+    } else if (params.finalize) {
+      tx.finalizeAllInputs();
+      tx = tx.extractTransaction();
+    }
+    if (params.parseAsUnknown) {
+      return parseUnknown(new Parser(), 'tx', tx);
+    }
+    return this.parse(tx, chainInfo);
   }
 }

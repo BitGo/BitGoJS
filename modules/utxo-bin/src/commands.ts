@@ -21,7 +21,6 @@ import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
 import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
-import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
 import {
@@ -32,6 +31,7 @@ import {
   getRange,
   parseIndexRange,
 } from './generateAddress';
+import { getParserTxFromBytes, getParserTxProperties } from './ParserTx';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -251,19 +251,8 @@ export const cmdParseTx = {
 
     const bytes = stringToBuffer(data, ['hex', 'base64']);
 
-    let tx = utxolib.bitgo.isPsbt(bytes)
-      ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
-      : utxolib.bitgo.createTransactionFromBuffer(bytes, network, { amountType: 'bigint' });
-
+    const tx = getParserTxFromBytes(bytes, { network, txid: argv.txid, finalize: argv.finalize });
     const { id: txid } = getParserTxProperties(tx, undefined);
-    if (tx instanceof utxolib.bitgo.UtxoTransaction) {
-      if (argv.txid && txid !== argv.txid) {
-        throw new Error(`computed txid does not match txid argument`);
-      }
-    } else if (argv.finalize) {
-      tx.finalizeAllInputs();
-      tx = tx.extractTransaction();
-    }
 
     if (argv.parseAsUnknown) {
       console.log(formatString(parseUnknown(new Parser(), 'tx', tx), argv));

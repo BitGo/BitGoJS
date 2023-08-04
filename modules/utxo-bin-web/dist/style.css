@@ -1,0 +1,41 @@
+body {
+    font-family: monospace;
+    background: #f1f1f1;
+}
+
+/* Style the tree */
+.tree-view {
+    padding-left: 0;
+    list-style: none;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.root {
+    max-width: 100%;
+    overflow-x: auto;
+    word-break: break-word;
+}
+
+.tree-view .label {
+    vertical-align: top;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 100px;
+    margin-right: 20px; /* Space between label and value */
+}
+
+.tree-view .value {
+    max-width: calc(100% - 200px);
+    display: inline-block;
+    white-space: pre-line;
+    word-break: break-all;
+    user-select: contain;
+}
+
+.tree-view li {
+    position: relative;
+    padding-left: 1.5em;
+    padding-bottom: 0.25em;
+    border-left : 2px solid #ccc;
+}

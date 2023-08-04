@@ -24,6 +24,7 @@
     "url": "https://github.com/BitGo/BitGoJS.git",
     "directory": "modules/utxo-bin"
   },
+  "main": "./dist/src/index.js",
   "bin": "./dist/bin/index.js",
   "dependencies": {
     "@bitgo/blockapis": "^1.7.2",

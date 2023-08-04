@@ -32,10 +32,7 @@ function getOutputSum(outputs: { value: bigint }[]): bigint {
   return outputs.reduce((sum, o) => sum + o.value, BigInt(0));
 }
 
-export function getParserTxProperties(
-  tx: ParserTx,
-  prevOutputs: utxolib.TxOutput<bigint>[] | undefined
-): {
+type ParserTxProperties = {
   format: 'network' | 'legacy' | 'psbt';
   complete: boolean;
   id: string;
@@ -45,7 +42,12 @@ export function getParserTxProperties(
   outputSum: bigint;
   inputSum: bigint | undefined;
   hasWitnesses: boolean;
-} {
+};
+
+export function getParserTxProperties(
+  tx: ParserTx,
+  prevOutputs: utxolib.TxOutput<bigint>[] | undefined
+): ParserTxProperties {
   if (tx instanceof utxolib.bitgo.UtxoTransaction) {
     let complete = true;
     try {
@@ -102,6 +104,33 @@ export function getParserTxProperties(
 
   throw new Error('unknown transaction type');
 }
+
+export function getParserTxFromBytes(
+  bytes: Buffer,
+  params: {
+    network: utxolib.Network;
+    txid?: string;
+    finalize?: boolean;
+    prevOutputs?: utxolib.TxOutput<bigint>[];
+  }
+): ParserTx {
+  let tx = utxolib.bitgo.isPsbt(bytes)
+    ? utxolib.bitgo.createPsbtFromBuffer(bytes, params.network)
+    : utxolib.bitgo.createTransactionFromBuffer(bytes, params.network, { amountType: 'bigint' });
+
+  const properties = getParserTxProperties(tx, undefined);
+  if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+    if (params.txid && properties.id !== params.txid) {
+      throw new Error(`computed txid does not match txid argument`);
+    }
+  } else if (params.finalize) {
+    tx.finalizeAllInputs();
+    tx = tx.extractTransaction();
+  }
+
+  return tx;
+}
+
 export function getParserTxInputProperties(
   input: ParserTxInput,
   prevOut?: utxolib.bitgo.PsbtInput

@@ -1,0 +1,44 @@
+{
+  "name": "utxo-bin-web",
+  "version": "1.0.0",
+  "description": "Web-based frontend for the utxo-bin tool",
+  "main": "index.js",
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin"
+  ],
+  "scripts": {
+    "start": "webpack serve --open",
+    "prepare": "npm run build",
+    "build": "webpack",
+    "lint": "eslint --quiet .",
+    "unit-test": "echo 'No unit tests'",
+    "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-bin-web"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@bitgo/utxo-bin": "^2"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  }
+}
