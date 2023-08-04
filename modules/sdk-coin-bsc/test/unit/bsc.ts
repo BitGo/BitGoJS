@@ -24,6 +24,7 @@ describe('Binance Smart Chain', function () {
       bsc.getFullName().should.equal('Binance Smart Chain');
       bsc.getBaseFactor().should.equal(1e18);
       bsc.supportsTss().should.equal(true);
+      bsc.allowsAccountConsolidations().should.equal(true);
     });
 
     it('should return the right info for tbsc', function () {
