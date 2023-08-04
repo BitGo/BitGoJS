@@ -555,7 +555,8 @@ export class CosmosCoin extends BaseCoin {
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
-    return response.body.balances[0].amount;
+    const balance = response.body.balances.find((item) => item.denom === this.getDenomination());
+    return balance.amount;
   }
 
   /**
