@@ -59,6 +59,8 @@ export function instructionParamsFactory(
       return parseAtaInitInstructions(instructions);
     case TransactionType.StakingAuthorize:
       return parseStakingAuthorizeInstructions(instructions);
+    case TransactionType.StakingAuthorizeRaw:
+      return parseStakingAuthorizeRawInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -560,6 +562,39 @@ function parseStakingAuthorizeInstructions(
     }
   }
 
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to authorized staking account params
+ * Only supports Nonce, Authorize instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking authorize tx
+ */
+function parseStakingAuthorizeRawInstructions(instructions: TransactionInstruction[]): Array<Nonce | StakingAuthorize> {
+  const instructionData: Array<Nonce | StakingAuthorize> = [];
+  assert(instructions.length === 2, 'Invalid number of instructions');
+  const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instructions[0]);
+  const nonce: Nonce = {
+    type: InstructionBuilderTypes.NonceAdvance,
+    params: {
+      walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+      authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+    },
+  };
+  instructionData.push(nonce);
+  const authorize = instructions[1];
+  assert(authorize.keys.length === 5, 'Invalid number of keys in authorize instruction');
+  instructionData.push({
+    type: InstructionBuilderTypes.StakingAuthorize,
+    params: {
+      stakingAddress: authorize.keys[0].pubkey.toString(),
+      oldAuthorizeAddress: authorize.keys[2].pubkey.toString(),
+      newAuthorizeAddress: authorize.keys[3].pubkey.toString(),
+      custodianAddress: authorize.keys[4].pubkey.toString(),
+    },
+  });
   return instructionData;
 }
 

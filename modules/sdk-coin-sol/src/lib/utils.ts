@@ -23,6 +23,8 @@ import {
   VALID_SYSTEM_INSTRUCTION_TYPES,
   ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
+  nonceAdvanceInstruction,
+  validInstructionData,
 } from './constants';
 import {
   BuildTransactionError,
@@ -252,6 +254,9 @@ export function matchTransactionTypeByInstructionsOrder(
  */
 export function getTransactionType(transaction: SolTransaction): TransactionType {
   const { instructions } = transaction;
+  if (validateRawMsgInstruction(instructions)) {
+    return TransactionType.StakingAuthorizeRaw;
+  }
   validateIntructionTypes(instructions);
   for (const instruction of instructions) {
     const instructionType = getInstructionType(instruction);
@@ -330,6 +335,27 @@ export function validateIntructionTypes(instructions: TransactionInstruction[]):
   }
 }
 
+/**
+ * Validate solana instructions match raw msg authorize transaction
+ *
+ * @param {TransactionInstruction} instructions - a solana instruction
+ * @returns {boolean} true if the instructions match the raw msg authorize transaction
+ */
+export function validateRawMsgInstruction(instructions: TransactionInstruction[]): boolean {
+  // as web3.js cannot decode authorize instruction from CLI, we need to check it manually first
+  if (instructions.length === 2) {
+    const programId1 = instructions[0].programId.toString();
+    const programId2 = instructions[1].programId.toString();
+    if (programId1 === SystemProgram.programId.toString() && programId2 === StakeProgram.programId.toString()) {
+      const instructionName1 = SystemInstruction.decodeInstructionType(instructions[0]);
+      const data = instructions[1].data.toString('hex');
+      if (instructionName1 === nonceAdvanceInstruction && data === validInstructionData) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 /**
  * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
  *

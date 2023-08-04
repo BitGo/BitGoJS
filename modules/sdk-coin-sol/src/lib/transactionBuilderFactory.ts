@@ -12,6 +12,7 @@ import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TransferBuilderV2 } from './transferBuilderV2';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
+import { StakingRawMsgAuthorizeBuilder } from './stakingRawMsgAuthorizeBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -23,7 +24,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    *
    * @param { string} raw - Encoded transaction in base64 string format
    */
-  from(raw: string): TransactionBuilder {
+  from(raw: string): TransactionBuilder | StakingRawMsgAuthorizeBuilder {
     validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     try {
@@ -49,6 +50,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getAtaInitializationBuilder(tx);
         case TransactionType.StakingAuthorize:
           return this.getStakingAuthorizeBuilder(tx);
+        case TransactionType.StakingAuthorizeRaw:
+          return this.getStakingRawMsgAuthorizeBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -127,6 +130,20 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getStakingAuthorizeBuilder(tx?: Transaction): StakingAuthorizeBuilder {
     return this.initializeBuilder(tx, new StakingAuthorizeBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the raw message builder to authorized staking account.
+   *
+   * @param {Transaction} tx - the transaction to be used to intialize the builder
+   * @returns {StakingWithdrawBuilder} - the initialized staking authorize builder
+   */
+  getStakingRawMsgAuthorizeBuilder(tx?: Transaction): StakingRawMsgAuthorizeBuilder {
+    const builder = new StakingRawMsgAuthorizeBuilder(this._coinConfig);
+    if (tx) {
+      builder.initBuilder(tx);
+    }
+    return builder;
   }
 
   /**

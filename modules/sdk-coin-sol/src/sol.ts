@@ -31,7 +31,7 @@ import {
   EDDSAMethodTypes,
   EDDSAMethods,
 } from '@bitgo/sdk-core';
-import { KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
+import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromTokenName,
@@ -415,9 +415,13 @@ export class Sol extends BaseCoin {
     let rebuiltTransaction;
 
     try {
-      const transactionBuilder = factory.from(params.txBase64).fee({ amount: params.feeInfo.fee });
-      if (params.tokenAccountRentExemptAmount) {
-        transactionBuilder.associatedTokenAccountRent(params.tokenAccountRentExemptAmount);
+      const transactionBuilder = factory.from(params.txBase64);
+      if (transactionBuilder instanceof TransactionBuilder) {
+        const txBuilder = transactionBuilder as TransactionBuilder;
+        txBuilder.fee({ amount: params.feeInfo.fee });
+        if (params.tokenAccountRentExemptAmount) {
+          txBuilder.associatedTokenAccountRent(params.tokenAccountRentExemptAmount);
+        }
       }
       rebuiltTransaction = await transactionBuilder.build();
     } catch (e) {
