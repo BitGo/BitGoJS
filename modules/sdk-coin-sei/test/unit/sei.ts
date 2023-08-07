@@ -389,7 +389,7 @@ describe('SEI', function () {
       const txnJson = txn.toJson();
       const sendMessage = txnJson.sendMessages[0].value as SendMessage;
       const balance = new BigNumber(testBalance);
-      const gasAmount = new BigNumber(7000);
+      const gasAmount = new BigNumber(20000);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.toAddress, destinationAddress);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());

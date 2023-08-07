@@ -49,7 +49,7 @@ export class Hash extends CosmosCoin {
   /** @inheritDoc **/
   getGasAmountDetails(): GasAmountDetails {
     return {
-      gasAmount: '500000000',
+      gasAmount: '5000000000',
       gasLimit: 250000,
     };
   }

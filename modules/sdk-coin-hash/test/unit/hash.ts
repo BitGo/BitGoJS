@@ -346,7 +346,7 @@ describe('HASH', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('thash');
-    const testBalance = '1500000000';
+    const testBalance = '150000000000';
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
@@ -389,7 +389,7 @@ describe('HASH', function () {
       const txnJson = txn.toJson();
       const sendMessage = txnJson.sendMessages[0].value as SendMessage;
       const balance = new BigNumber(testBalance);
-      const gasAmount = new BigNumber(500000000);
+      const gasAmount = new BigNumber(5000000000);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.toAddress, destinationAddress);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
