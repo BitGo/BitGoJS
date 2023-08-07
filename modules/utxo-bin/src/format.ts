@@ -44,6 +44,9 @@ export function formatTree(
         if (Buffer.isBuffer(v)) {
           return `${v.toString('hex')} ${chalk.dim(`(${v.length} bytes)`)}`;
         }
+        if (v instanceof Uint8Array) {
+          return getLabelFromValue(Buffer.from(v));
+        }
     }
     throw new Error(`could not get label from value ${typeof v}`);
   }

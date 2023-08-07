@@ -3,6 +3,7 @@ import * as bech32 from 'bech32';
 
 import { Parser, ParserNode } from './Parser';
 
+const bs58 = require('bs58');
 const bs58check = require('bs58check');
 const cashaddress = require('cashaddress');
 
@@ -57,6 +58,11 @@ export class AddressParser extends Parser {
   }
 
   parseBase58(address: string): ParserNode[] {
+    const payload = bs58.decode(address);
+    return [this.node('payload', payload)];
+  }
+
+  parseBase58Check(address: string): ParserNode[] {
     const payload = bs58check.decode(address);
     return [
       this.node('payload', payload),
@@ -125,6 +131,7 @@ export class AddressParser extends Parser {
 
     return [
       ...decodeWith('base58', this.parseBase58.bind(this)),
+      ...decodeWith('base58Check', this.parseBase58Check.bind(this)),
       ...decodeWith('bech32', this.parseBech32.bind(this)),
       ...decodeWith('bech32m', this.parseBech32m.bind(this)),
       ...decodeWith('cashaddr', this.parseCashaddr.bind(this)),
