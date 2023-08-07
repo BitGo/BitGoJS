@@ -385,3 +385,16 @@ export const wrwUser = {
     '76a8698dd54bae6144011271515033788621d49d4575ca5cfbee633',
   walletPassphrase: 'bitgo_test@123',
 };
+
+export const mockAccountDetailsResponse = {
+  account: {
+    '@type': '/cosmos.auth.v1beta1.BaseAccount',
+    address: 'celestia1afvmmaqxpt2d5wegl0q84ch22n2clntg6hu0vl',
+    pub_key: {
+      '@type': '/cosmos.crypto.secp256k1.PubKey',
+      key: 'Am9Sn9QU/ZBsbmbxTnc3ObeCKD5tpEf7hPZiJgVtAziK',
+    },
+    account_number: '57405',
+    sequence: '6',
+  },
+};
