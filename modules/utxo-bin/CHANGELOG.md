@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.12.0...@bitgo/utxo-bin@2.14.0) (2023-08-04)
+
+### Bug Fixes
+
+- **utxo-bin:** allow running individual tests from IntelliJ ([2ae3261](https://github.com/BitGo/BitGoJS/commit/2ae32613ffae30a4dbab97109ca2f73d0e63504f))
+
+### Features
+
+- add generateAddresses command ([e92ebbe](https://github.com/BitGo/BitGoJS/commit/e92ebbe9c3ddd9f5d073f2f49072ae3502ddcde7))
+- update utxo-bin README ([d2ed321](https://github.com/BitGo/BitGoJS/commit/d2ed3218e638d174dfc94ae261c5ab94e17fff47))
+- **utxo-bin:** add `--format tree` option ([ac7917c](https://github.com/BitGo/BitGoJS/commit/ac7917c3edcfdd6422e81e7aea74e407eb9b52f7))
+- **utxo-bin:** add command parseScript ([6c348d6](https://github.com/BitGo/BitGoJS/commit/6c348d61d7d35a348d9bccfe8e86e0e3920614b8))
+- **utxo-bin:** add more flexible formatting for generateAddresses ([5deb8d5](https://github.com/BitGo/BitGoJS/commit/5deb8d5827928eed729564a4c61be3b5eabc8492))
+- **utxo-bin:** add option to omit keys from unknown objects ([5b1d4f1](https://github.com/BitGo/BitGoJS/commit/5b1d4f170f27afdb7d2f8290102c7e458491ee20))
+- **utxo-bin:** add support for base64 ([d41ac94](https://github.com/BitGo/BitGoJS/commit/d41ac9482822f880f2e06ed94b2ff8133aed0cb2))
+- **utxo-bin:** bring back parameter `--limit` ([193d960](https://github.com/BitGo/BitGoJS/commit/193d960d50e29eabd9351bb73f2d14bdd3373aa3))
+- **utxo-bin:** improve display of buffers, undefined values ([a29d8bf](https://github.com/BitGo/BitGoJS/commit/a29d8bf27af8f476b2d6d5db8e2e80d461c41847))
+- **utxo-bin:** improve parseAddress tests ([1edeea7](https://github.com/BitGo/BitGoJS/commit/1edeea705b7909958325300f4e60e6791994c285))
+- **utxo-bin:** make index argument more flexible ([b4fccda](https://github.com/BitGo/BitGoJS/commit/b4fccdac4319b5eece113f04bdb308e58d03702d))
+- **utxo-bin:** move formatTransaction fixtures to own directory ([4270cd7](https://github.com/BitGo/BitGoJS/commit/4270cd7ef53102085560be1da35b557dc0b8fccd))
+
 # [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.12.0...@bitgo/utxo-bin@2.13.0) (2023-07-28)
 
 ### Bug Fixes

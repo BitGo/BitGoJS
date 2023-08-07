@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.3.0...@bitgo/utxo-lib@9.5.0) (2023-08-04)
+
+### Bug Fixes
+
+- **utxo-lib:** allow uncompressed pubkeys in utxo-lib ([dd46f0d](https://github.com/BitGo/BitGoJS/commit/dd46f0d9f8b721e73b9e55f598d07ecb6e4f3a62))
+
+### Features
+
+- **abstract-utxo:** add psbt support backup recovery ([b312a86](https://github.com/BitGo/BitGoJS/commit/b312a86091c1320b4d7a02bd1ca5c3d2056c00c6))
+- **root:** add node 18 to engines and CI ([9cc6a70](https://github.com/BitGo/BitGoJS/commit/9cc6a70ba807161b7c6a0ebe3d7c47f25c7c8eca))
+- **utxo-lib:** add public key conversions b/w compressed & ([ff5c119](https://github.com/BitGo/BitGoJS/commit/ff5c11900443764b14cb1f90be916b200711086f))
+- **utxo-lib:** create output scripts for legacy safe wallets ([edf5ea7](https://github.com/BitGo/BitGoJS/commit/edf5ea7ffb39e4eeda981f6871d0ebd6dd85f863))
+- **utxo-lib:** extract half signed tx from psbt ([3145474](https://github.com/BitGo/BitGoJS/commit/31454748fcea6df7fbbf886937abc48b36fb9cbd))
+
 # [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.3.0...@bitgo/utxo-lib@9.4.0) (2023-07-28)
 
 ### Bug Fixes

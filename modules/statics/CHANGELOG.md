@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.0.0...@bitgo/statics@18.2.0) (2023-08-04)
+
+### Features
+
+- **statics:** add staking feature to ADA ([5425036](https://github.com/BitGo/BitGoJS/commit/54250368a079f77369b8d4b844fddb2aa8e15c62))
+- **statics:** onboard batch of SOL wormhole tokens ([8a0e4b6](https://github.com/BitGo/BitGoJS/commit/8a0e4b6e2d2df030e947192192e6623e62c680ac))
+
 # [18.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.0.0...@bitgo/statics@18.1.0) (2023-07-28)
 
 ### Features

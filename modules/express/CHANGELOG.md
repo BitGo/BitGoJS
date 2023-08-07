@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.30.0...@bitgo/express@9.32.0) (2023-08-04)
+
+### Bug Fixes
+
+- **root:** upgrade nock for node 18 support ([644836e](https://github.com/BitGo/BitGoJS/commit/644836ebf5385dddb986694b3b0a2f63b53e43e2))
+
+### Features
+
+- **express:** support ECDSA TSS in external signer ([03356c1](https://github.com/BitGo/BitGoJS/commit/03356c15f6ddb274c1e529f0efe21ed62168c807))
+
 # [9.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.30.0...@bitgo/express@9.31.0) (2023-07-28)
 
 ### Bug Fixes

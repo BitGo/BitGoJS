@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.11.0...@bitgo/sdk-core@8.13.0) (2023-08-04)
+
+### Bug Fixes
+
+- **sdk-core:** include paillier in tests ([1de3bc2](https://github.com/BitGo/BitGoJS/commit/1de3bc2cd6a8eb2164f975f317c53dd23af68b96))
+- **sdk-core:** use prebuilt-tx with tss full sendmany ([4adebcb](https://github.com/BitGo/BitGoJS/commit/4adebcba016d4ea163da4346f07af931daefaf43))
+- **sdk-core:** Use PrebuiltTx with Tss Full SendMany ([24af742](https://github.com/BitGo/BitGoJS/commit/24af7429ec4215ddd728f6ed16a6b3b07173bde6))
+
+### Features
+
+- **express:** support ECDSA TSS in external signer ([03356c1](https://github.com/BitGo/BitGoJS/commit/03356c15f6ddb274c1e529f0efe21ed62168c807))
+- **sdk-coin-sol:** add staking authorize builder ([57475b7](https://github.com/BitGo/BitGoJS/commit/57475b7249b7cf195b9f2c0073da77e67287f015))
+- **sdk-coin-zeta:** zeta sdk init along with testcases ([b92d793](https://github.com/BitGo/BitGoJS/commit/b92d793a59ee1116e8f202b0f97c6720f6a76ab5))
+- **sdk-core:** add pallier pub to bitgo tss key creation ([7461c85](https://github.com/BitGo/BitGoJS/commit/7461c85fe847a5b3b8f7963bc25fb66ad4762612))
+- **sdk-core:** add util to get public key from commonKeychain ([289fba0](https://github.com/BitGo/BitGoJS/commit/289fba02eaa137cb3f8f0cfd81d9e886a5ae3f7d))
+
 # [8.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.11.0...@bitgo/sdk-core@8.12.0) (2023-07-28)
 
 ### Bug Fixes
