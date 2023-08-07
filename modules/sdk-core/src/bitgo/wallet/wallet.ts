@@ -174,6 +174,7 @@ export class Wallet implements IWallet {
   prebuildWhitelistedParams(): string[] {
     return [
       'addressType',
+      'allowExternalChange',
       'apiVersion',
       'changeAddress',
       'consolidateAddresses',
