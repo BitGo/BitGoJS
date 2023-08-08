@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { Psbt as PsbtBase } from 'bip174';
 import {
   Bip32Derivation,
@@ -400,22 +401,23 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     );
   }
 
+  private isMultisigTaprootScript(script: Buffer): boolean {
+    try {
+      parsePubScript2Of3(script, 'taprootScriptPathSpend');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
   finalizeAllInputs(): this {
-    const isMultisigTaprootScript = (script: Buffer): boolean => {
-      try {
-        parsePubScript2Of3(script, 'taprootScriptPathSpend');
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
     checkForInput(this.data.inputs, 0); // making sure we have at least one
     this.data.inputs.map((input, idx) => {
       if (input.tapLeafScript?.length) {
-        return isMultisigTaprootScript(input.tapLeafScript[0].script)
+        return this.isMultisigTaprootScript(input.tapLeafScript[0].script)
           ? this.finalizeTaprootInput(idx)
           : this.finalizeTapInputWithSingleLeafScriptAndSignature(idx);
       } else if (this.isTaprootKeyPathInput(idx)) {
@@ -651,8 +653,20 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }
     const results: boolean[] = [];
 
+    assert(input.tapLeafScript?.length === 1, `single tapLeafScript is expected. Got ${input.tapLeafScript?.length}`);
+    const [tapLeafScript] = input.tapLeafScript;
+    const pubKeys = this.isMultisigTaprootScript(tapLeafScript.script)
+      ? parsePubScript2Of3(tapLeafScript.script, 'taprootScriptPathSpend').publicKeys
+      : undefined;
+
     for (const pSig of mySigs) {
       const { signature, leafHash, pubkey } = pSig;
+      if (pubKeys) {
+        assert(
+          pubKeys.find((pk) => pubkey.equals(pk)),
+          'public key not found in tap leaf script'
+        );
+      }
       let sigHashType: number;
       let sig: Buffer;
       if (signature.length === 65) {
@@ -931,7 +945,16 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (input.tapLeafScript.length !== 1) {
       throw new Error('Only one leaf script supported for signing');
     }
-    const tapLeafScript = input.tapLeafScript[0];
+    const [tapLeafScript] = input.tapLeafScript;
+
+    if (this.isMultisigTaprootScript(tapLeafScript.script)) {
+      const pubKeys = parsePubScript2Of3(tapLeafScript.script, 'taprootScriptPathSpend').publicKeys;
+      assert(
+        pubKeys.find((pk) => pubkey.equals(pk)),
+        'public key not found in tap leaf script'
+      );
+    }
+
     const parsedControlBlock = taproot.parseControlBlock(eccLib, tapLeafScript.controlBlock);
     const { leafVersion } = parsedControlBlock;
     if (leafVersion !== tapLeafScript.leafVersion) {
