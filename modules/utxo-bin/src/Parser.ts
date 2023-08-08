@@ -1,4 +1,4 @@
-export type ParserNodeValue = number | bigint | string | Buffer | boolean | undefined | null;
+export type ParserNodeValue = number | bigint | string | Buffer | Uint8Array | boolean | undefined | null;
 
 export function isParserNodeValue(v: unknown): v is ParserNodeValue {
   switch (typeof v) {
@@ -9,7 +9,7 @@ export function isParserNodeValue(v: unknown): v is ParserNodeValue {
     case 'bigint':
       return true;
     case 'object':
-      return v === null || Buffer.isBuffer(v);
+      return v === null || Buffer.isBuffer(v) || v instanceof Uint8Array;
   }
   return false;
 }
@@ -27,6 +27,9 @@ export class Parser {
     this.parseError = params.parseError ?? 'continue';
   }
   node(label: string | number, value: ParserNodeValue, nodes: ParserNode[] = []): ParserNode {
+    if (!isParserNodeValue(value)) {
+      throw new Error(`invalid node value ${typeof value}`);
+    }
     return {
       type: 'node',
       label: String(label),

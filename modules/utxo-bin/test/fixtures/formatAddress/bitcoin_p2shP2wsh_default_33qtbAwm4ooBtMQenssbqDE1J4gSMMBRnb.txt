@@ -1,5 +1,7 @@
 address: 33qtbAwm4ooBtMQenssbqDE1J4gSMMBRnb
 ├─┬ base58
+│ └── payload: 05179ddf848a574c6fdb30e6e564f2c8b8fc1135451b11bbc4 (25 bytes)
+├─┬ base58Check
 │ ├── payload: 05179ddf848a574c6fdb30e6e564f2c8b8fc113545 (21 bytes)
 │ ├── version: 5
 │ └── hash: 179ddf848a574c6fdb30e6e564f2c8b8fc113545 (20 bytes)
