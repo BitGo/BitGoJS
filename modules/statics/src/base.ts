@@ -204,6 +204,11 @@ export enum CoinFeature {
    * This coin supports cold wallets that use a TSS signing protocol
    */
   TSS_COLD = 'tss-cold',
+
+  /**
+   * This coin uses sha256 hash function for ECDSA TSS signatures
+   */
+  SHA256_WITH_ECDSA_TSS = 'sha256-with-ecdsa-tss',
 }
 
 /**
