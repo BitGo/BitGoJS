@@ -164,6 +164,7 @@ export class PendingApproval implements IPendingApproval {
 
     let canRecreateTransaction = true;
     params.previewPendingTxs = true;
+    params.pendingApprovalId = this.id();
     /*
      * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
      *

@@ -201,6 +201,7 @@ export class Wallet implements IWallet {
       'noSplitChange',
       'numBlocks',
       'nonce',
+      'pendingApprovalId',
       'preview',
       'previewPendingTxs',
       'receiveAddress',
