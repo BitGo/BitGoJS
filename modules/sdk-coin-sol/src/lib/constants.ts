@@ -105,3 +105,6 @@ export const ataInitInstructionIndexes = {
   InitializeAssociatedTokenAccount: 0,
   Memo: 1,
 } as const;
+
+export const nonceAdvanceInstruction = 'AdvanceNonceAccount';
+export const validInstructionData = '0a00000001000000';

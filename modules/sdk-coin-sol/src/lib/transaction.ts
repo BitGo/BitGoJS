@@ -15,6 +15,7 @@ import {
   Memo,
   Nonce,
   StakingActivate,
+  StakingAuthorizeParams,
   StakingWithdraw,
   TokenTransfer,
   TransactionExplanation,
@@ -23,10 +24,17 @@ import {
   WalletInit,
 } from './iface';
 import base58 from 'bs58';
-import { getInstructionType, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import {
+  getInstructionType,
+  getTransactionType,
+  isValidRawTransaction,
+  requiresAllSignatures,
+  validateRawMsgInstruction,
+} from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
-import { InstructionBuilderTypes, ValidInstructionTypesEnum, UNAVAILABLE_TEXT } from './constants';
+import { InstructionBuilderTypes, UNAVAILABLE_TEXT, ValidInstructionTypesEnum } from './constants';
+
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
   private _lamportsPerSignature: number | undefined;
@@ -194,8 +202,13 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingAuthorize:
           this.setTransactionType(TransactionType.StakingAuthorize);
           break;
+        case TransactionType.StakingAuthorizeRaw:
+          this.setTransactionType(TransactionType.StakingAuthorizeRaw);
+          break;
       }
-      this.loadInputsAndOutputs();
+      if (transactionType !== TransactionType.StakingAuthorizeRaw) {
+        this.loadInputsAndOutputs();
+      }
     } catch (e) {
       throw e;
     }
@@ -216,6 +229,16 @@ export class Transaction extends BaseTransaction {
       };
     }
 
+    if (this._type) {
+      const instrunctionData = instructionParamsFactory(this._type, this._solTransaction.instructions);
+      if (
+        !durableNonce &&
+        instrunctionData.length > 1 &&
+        instrunctionData[0].type === InstructionBuilderTypes.NonceAdvance
+      ) {
+        durableNonce = instrunctionData[0].params;
+      }
+    }
     const result: TxData = {
       id: this._solTransaction.signature ? this.id : undefined,
       feePayer: this._solTransaction.feePayer?.toString(),
@@ -336,6 +359,9 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc */
   explainTransaction(): TransactionExplanation {
+    if (validateRawMsgInstruction(this._solTransaction.instructions)) {
+      return this.explainRawMsgAuthorizeTransaction();
+    }
     const decodedInstructions = instructionParamsFactory(this._type, this._solTransaction.instructions);
 
     let memo: string | undefined = undefined;
@@ -459,6 +485,49 @@ export class Transaction extends BaseTransaction {
       memo: memo,
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
+    };
+  }
+
+  private explainRawMsgAuthorizeTransaction(): TransactionExplanation {
+    const { instructions } = this._solTransaction;
+    const nonceInstruction = SystemInstruction.decodeNonceAdvance(instructions[0]);
+    const durableNonce = {
+      walletNonceAddress: nonceInstruction.noncePubkey.toString(),
+      authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
+    };
+    const stakingAuthorizeParams: StakingAuthorizeParams = {
+      stakingAddress: instructions[1].keys[0].pubkey.toString(),
+      oldWithdrawAddress: instructions[1].keys[2].pubkey.toString(),
+      newWithdrawAddress: instructions[1].keys[3].pubkey.toString(),
+      custodianAddress: instructions[1].keys[4].pubkey.toString(),
+    };
+    const feeString = this.calculateFee();
+    return {
+      displayOrder: [
+        'id',
+        'type',
+        'blockhash',
+        'durableNonce',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'memo',
+      ],
+      id: this.id,
+      type: TransactionType[this.type].toString(),
+      changeOutputs: [],
+      changeAmount: '0',
+      outputAmount: 0,
+      outputs: [],
+      fee: {
+        fee: feeString,
+        feeRate: this.lamportsPerSignature,
+      },
+      blockhash: this.getNonce(),
+      durableNonce: durableNonce,
+      stakingAuthorize: stakingAuthorizeParams,
     };
   }
 }
