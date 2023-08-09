@@ -31,6 +31,7 @@ export interface ApproveOptions {
   tx?: string;
   xprv?: string;
   previewPendingTxs?: boolean;
+  pendingApprovalId?: string;
 }
 
 export interface PendingApprovalInfo {
