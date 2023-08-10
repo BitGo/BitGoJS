@@ -137,8 +137,6 @@ export class BatchTransactionBuilder extends TransactionBuilder {
         } else if (decodedCall.section === SectionNames.Proxy && decodedCall.method === MethodNames.AddProxy) {
           callsToBatch.push(this.getAddProxyCall(call.args as AddProxyBatchCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Bond) {
-          console.log('raw transaction', rawTransaction);
-          console.log('txMedhod from parsed transaction', JSON.stringify(txMethod));
           callsToBatch.push(this.getBondCall(call.args as StakeBatchCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Unbond) {
           callsToBatch.push(this.getUnbondCall(call.args as StakeMoreCallArgs));
