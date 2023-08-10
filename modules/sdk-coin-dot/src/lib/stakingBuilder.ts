@@ -29,7 +29,10 @@ export class StakingBuilder extends TransactionBuilder {
    */
   protected buildTransaction(): UnsignedTransaction {
     const baseTxInfo = this.createBaseTxInfo();
+    console.log('buildTransaction info', JSON.stringify(baseTxInfo));
+    console.log('_addToStake', this._addToStake);
     if (this._addToStake) {
+      console.log('calling bondExtra');
       return methods.staking.bondExtra(
         {
           maxAdditional: this._amount,
@@ -38,6 +41,7 @@ export class StakingBuilder extends TransactionBuilder {
         baseTxInfo.options
       );
     } else {
+      console.log('calling bond');
       return methods.staking.bond(
         {
           value: this._amount,
