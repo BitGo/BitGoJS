@@ -67,5 +67,11 @@
     "secrets.js-grempe": "^1.1.0",
     "superagent": "3.8.3",
     "superagent-proxy": "3.0.0"
+  },
+  "overrides": {
+    "degenerator": "5.0.0"
+  },
+  "resolutions": {
+    "degenerator": "5.0.0"
   }
 }
