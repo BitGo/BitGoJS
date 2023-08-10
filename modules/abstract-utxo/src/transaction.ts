@@ -209,8 +209,24 @@ export function explainPsbt<TNumber extends number | bigint>(
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
   const common = explainCommon(tx, params, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
+
+  // Set fee from subtracting inputs from outputs
+  const outputAmount = psbt.txOutputs.reduce((cumulative, curr) => cumulative + BigInt(curr.value), BigInt(0));
+  const inputAmount = psbt.txInputs.reduce((cumulative, txInput, i) => {
+    const data = psbt.data.inputs[i];
+    if (data.witnessUtxo) {
+      return cumulative + BigInt(data.witnessUtxo.value);
+    } else if (data.nonWitnessUtxo) {
+      const tx = bitgo.createTransactionFromBuffer<bigint>(data.nonWitnessUtxo, network, { amountType: 'bigint' });
+      return cumulative + BigInt(tx.outs[txInput.index].value);
+    } else {
+      throw new Error('could not find value on input');
+    }
+  }, BigInt(0));
+
   return {
     ...common,
+    fee: (inputAmount - outputAmount).toString(),
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
   } as TransactionExplanation;
