@@ -29,8 +29,8 @@ export class StakingBuilder extends TransactionBuilder {
    */
   protected buildTransaction(): UnsignedTransaction {
     const baseTxInfo = this.createBaseTxInfo();
-    console.log('buildTransaction info', JSON.stringify(baseTxInfo));
-    console.log('_addToStake', this._addToStake);
+    console.log('[Dot staking debug] buildTransaction info', JSON.stringify(baseTxInfo));
+    console.log('[Dot staking debug] _addToStake', this._addToStake);
     if (this._addToStake) {
       console.log('calling bondExtra');
       return methods.staking.bondExtra(
@@ -41,8 +41,10 @@ export class StakingBuilder extends TransactionBuilder {
         baseTxInfo.options
       );
     } else {
-      console.log('calling bond');
-      return methods.staking.bond(
+      console.log('[Dot staking debug] calling bond: ');
+      console.log('[Dot staking debug] this._amount: ', this._amount);
+      console.log('[Dot staking debug] this._controller: ', this._controller);
+      const bondMethod = methods.staking.bond(
         {
           value: this._amount,
           controller: this._controller,
@@ -51,6 +53,8 @@ export class StakingBuilder extends TransactionBuilder {
         baseTxInfo.baseTxInfo,
         baseTxInfo.options
       );
+      console.log('[Dot staking debug] encoded method: ', JSON.stringify(bondMethod.method));
+      return bondMethod;
     }
   }
 
