@@ -147,6 +147,7 @@ export class StakingBuilder extends TransactionBuilder {
     if (this._method?.name === MethodNames.Bond) {
       const txMethod = this._method.args as StakeArgs;
       this.amount(txMethod.value);
+      console.log('[Dot staking debug] calling owner: ', JSON.stringify(txMethod));
       this.owner({
         address: utils.decodeDotAddress(
           txMethod.controller.id,
