@@ -117,9 +117,10 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     let prebuild: utxolib.bitgo.UtxoPsbt;
     let recipient: { address: string; amount: string };
     let addressInfo: Record<string, any>;
+    const fee = BigInt(10000);
     before(async function () {
       // Make output address information
-      const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - BigInt(10000);
+      const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
       const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
       const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);
       const outputAddress = utxolib.bitgo.getWalletAddress(rootWalletKeys, outputChain, 0, coin.network);
@@ -153,6 +154,11 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
         recipients: [recipient],
         walletPassphrase,
       })) as HalfSignedUtxoTransaction;
+
+      // Can produce the right fee in explain transaction
+      const explainedTransaction = await coin.explainTransaction(res);
+      assert.strictEqual(explainedTransaction.fee, fee.toString());
+
       nocks.forEach((nock) => assert.ok(nock.isDone()));
 
       // Make sure that you can sign with bitgo key and extract the transaction
