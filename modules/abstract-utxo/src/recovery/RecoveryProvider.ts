@@ -1,4 +1,4 @@
-import { BlockchairApi, BlockstreamApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
+import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
 import { ApiNotImplementedError } from './baseApi';
 import { bitgo } from '@bitgo/utxo-lib';
 
@@ -26,7 +26,6 @@ export function forCoin(coinName: string, apiToken?: string): RecoveryProvider<n
   switch (coinName) {
     case 'btc':
     case 'tbtc':
-      return BlockstreamApi.forCoin(coinName);
     case 'bch':
     case 'bcha':
     case 'bsv':
