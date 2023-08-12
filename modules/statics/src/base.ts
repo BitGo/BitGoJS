@@ -246,6 +246,7 @@ export enum UnderlyingAsset {
   EOS = 'eos',
   ERD = 'erd',
   EUR = 'eur',
+  EURCV = 'eurcv',
   EUROC = 'euroc',
   GBP = 'gbp',
   GTC = 'gtc',
@@ -731,6 +732,7 @@ export enum UnderlyingAsset {
   MKR = 'mkr',
   MLN = 'mln',
   MNS = 'mns',
+  MNT = 'mnt',
   MNDE = 'mnde',
   MOC = 'moc',
   MOF = 'mof',
@@ -789,6 +791,7 @@ export enum UnderlyingAsset {
   PBTC = 'pbtc',
   PEG = 'peg',
   PEOPLE = 'people',
+  PEPE = 'pepe',
   PERP = 'perp',
   PETH = 'peth',
   PHNX = 'phnx',
@@ -1221,6 +1224,7 @@ export enum UnderlyingAsset {
   'polygon:fly' = 'polygon:fly',
   'polygon:gfc' = 'polygon:gfc',
   'polygon:rbw' = 'polygon:rbw',
+  'polygon:zed' = 'polygon:zed',
 
   // Polygon NFTs
   // generic NFTs
