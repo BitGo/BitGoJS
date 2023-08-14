@@ -179,7 +179,7 @@ export type StakeArgsPayeeRaw = { controller?: null; stash?: null; staked?: null
  */
 export interface StakeArgs {
   value: string;
-  controller: { id: string };
+  controller?: { id: string };
   payee: StakeArgsPayee;
 }
 
@@ -275,7 +275,7 @@ export type StakeBatchCallPayee =
 
 export interface StakeBatchCallArgs {
   value: string;
-  controller: { id: string };
+  controller?: { id: string };
   payee: StakeBatchCallPayee;
 }
 

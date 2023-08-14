@@ -216,7 +216,9 @@ export class Transaction extends BaseTransaction {
       const txMethod = decodedTx.method.args;
       if (utils.isBond(txMethod)) {
         const keypair = new KeyPair({
-          pub: Buffer.from(decodeAddress(txMethod.controller.id, false, this._registry.chainSS58)).toString('hex'),
+          pub: Buffer.from(decodeAddress(txMethod.controller?.id || '', false, this._registry.chainSS58)).toString(
+            'hex'
+          ),
         });
 
         result.controller = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));

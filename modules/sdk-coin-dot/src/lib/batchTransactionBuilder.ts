@@ -211,7 +211,8 @@ export class BatchTransactionBuilder extends TransactionBuilder {
     const baseTxInfo = this.createBaseTxInfo();
     const unsigned = methods.staking.bond(
       {
-        controller: args.controller.id,
+        // TODO(EA-1242): update DOT library to remove controller optional field -> https://github.com/paritytech/txwrapper-core/pull/309 and https://github.com/paritytech/substrate/pull/14039
+        controller: args.controller?.id || '',
         value: args.value,
         payee: this.getPayee(args.payee),
       },

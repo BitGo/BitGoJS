@@ -29,10 +29,7 @@ export class StakingBuilder extends TransactionBuilder {
    */
   protected buildTransaction(): UnsignedTransaction {
     const baseTxInfo = this.createBaseTxInfo();
-    console.log('[Dot staking debug] buildTransaction info', JSON.stringify(baseTxInfo));
-    console.log('[Dot staking debug] _addToStake', this._addToStake);
     if (this._addToStake) {
-      console.log('calling bondExtra');
       return methods.staking.bondExtra(
         {
           maxAdditional: this._amount,
@@ -41,10 +38,7 @@ export class StakingBuilder extends TransactionBuilder {
         baseTxInfo.options
       );
     } else {
-      console.log('[Dot staking debug] calling bond: ');
-      console.log('[Dot staking debug] this._amount: ', this._amount);
-      console.log('[Dot staking debug] this._controller: ', this._controller);
-      const bondMethod = methods.staking.bond(
+      return methods.staking.bond(
         {
           value: this._amount,
           controller: this._controller,
@@ -53,8 +47,6 @@ export class StakingBuilder extends TransactionBuilder {
         baseTxInfo.baseTxInfo,
         baseTxInfo.options
       );
-      console.log('[Dot staking debug] encoded method: ', JSON.stringify(bondMethod.method));
-      return bondMethod;
     }
   }
 
@@ -125,7 +117,7 @@ export class StakingBuilder extends TransactionBuilder {
     if (decodedTxn.method?.name === MethodNames.Bond) {
       const txMethod = decodedTxn.method.args as unknown as StakeArgs;
       const value = txMethod.value;
-      const controller = txMethod.controller.id;
+      const controller = txMethod.controller?.id;
       const payee = txMethod.payee;
       const validationResult = StakeTransactionSchema.validate({ value, controller, payee });
       if (validationResult.error) {
@@ -147,10 +139,9 @@ export class StakingBuilder extends TransactionBuilder {
     if (this._method?.name === MethodNames.Bond) {
       const txMethod = this._method.args as StakeArgs;
       this.amount(txMethod.value);
-      console.log('[Dot staking debug] calling owner: ', JSON.stringify(txMethod));
       this.owner({
         address: utils.decodeDotAddress(
-          txMethod.controller.id,
+          txMethod.controller?.id || '',
           utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
         ),
       });
