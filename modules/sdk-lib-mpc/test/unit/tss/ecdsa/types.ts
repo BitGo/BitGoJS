@@ -10,8 +10,8 @@ import {
   deserializePaillierChallengeProofs,
   serializePaillierChallengeProofs,
 } from '../../../../src/tss/ecdsa/types';
-import { mockedPaillierProofs } from '../../../paillierproof.util';
-import { ntildeProofs, rangeProofChallenges } from '../../../rangeproof.util';
+import { mockedPaillierProofs } from '../../../fixtures/paillierpProof.util';
+import { ntildeProofs, rangeProofChallenges } from '../../../fixtures/rangeProof.util';
 
 describe('Ecdsa', function () {
   it('serializeNtilde and deserializeNtilde are deterministic', function () {
