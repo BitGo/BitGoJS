@@ -52,7 +52,7 @@ export const TransferAllTransactionSchema = joi.object({
 
 const CreateStakeTransactionSchema = joi.object({
   value: joi.string().required(),
-  controller: addressSchema.required(),
+  controller: joi.string().optional(),
   payee: [
     joi.string(),
     joi.object({
