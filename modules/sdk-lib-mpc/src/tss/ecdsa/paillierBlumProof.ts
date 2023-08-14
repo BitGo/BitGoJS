@@ -35,7 +35,7 @@ function jacobi(a, n): bigint {
   if (n <= BigInt(0)) {
     throw new Error('n must greater than 0');
   }
-  if (n % BigInt(2) != BigInt(1)) {
+  if (n % BigInt(2) !== BigInt(1)) {
     throw new Error('n must be odd');
   }
   // step 1
@@ -43,12 +43,12 @@ function jacobi(a, n): bigint {
   let t = BigInt(1);
   let r;
   // step 3
-  while (a != BigInt(0)) {
+  while (a !== BigInt(0)) {
     // step 2
-    while (a % BigInt(2) == BigInt(0)) {
+    while (a % BigInt(2) === BigInt(0)) {
       a /= BigInt(2);
       r = n % BigInt(8);
-      if (r == BigInt(3) || r == BigInt(5)) {
+      if (r === BigInt(3) || r === BigInt(5)) {
         t = -t;
       }
     }
@@ -56,12 +56,12 @@ function jacobi(a, n): bigint {
     r = n;
     n = a;
     a = r;
-    if (a % BigInt(4) == BigInt(3) && n % BigInt(4) == BigInt(3)) {
+    if (a % BigInt(4) === BigInt(3) && n % BigInt(4) === BigInt(3)) {
       t = -t;
     }
     a = a % n;
   }
-  if (n == BigInt(1)) {
+  if (n === BigInt(1)) {
     return t;
   }
   return BigInt(0);
@@ -81,7 +81,7 @@ export async function prove(p: bigint, q: bigint): Promise<DeserializedPaillierB
   let w;
   while (true) {
     w = bigIntFromBufferBE(Buffer.from(await randBits(bitLength(N))));
-    if (jacobi(w, N) == BigInt(-1)) {
+    if (jacobi(w, N) === BigInt(-1)) {
       break;
     }
   }
@@ -107,7 +107,7 @@ export async function verify(N: bigint, { w, x, z }: DeserializedPaillierBlumPro
     throw new Error('N must be greater than 1');
   }
   // Verifier checks N is odd.
-  if (N % BigInt(2) != BigInt(1)) {
+  if (N % BigInt(2) !== BigInt(1)) {
     throw new Error('N must be an odd number');
   }
   // Verifier checks N is not prime.
@@ -115,18 +115,18 @@ export async function verify(N: bigint, { w, x, z }: DeserializedPaillierBlumPro
     throw new Error('N must be a composite number');
   }
   // Verifier checks that the Jacobi symbol for w is 1 wrt N.
-  if (jacobi(w, N) != BigInt(-1)) {
+  if (jacobi(w, N) !== BigInt(-1)) {
     throw new Error('Jacobi symbol of w must be -1 wrt to N');
   }
   // Verifier generates y_i.
   const y = generateY(N, w);
   for (let i = 0; i < m; i++) {
     // Verifier checks z_i ^ N mod N == y_i.
-    if (modPow(z[i], N, N) != y[i]) {
+    if (modPow(z[i], N, N) !== y[i]) {
       throw new Error(`Paillier verification of y[${i}] failed`);
     }
     // Verifier checks x_i ^ 4 mod N == y_i.
-    if (modPow(x[i], 4, N) != y[i]) {
+    if (modPow(x[i], 4, N) !== y[i]) {
       throw new Error(`Paillier verification of x[${i}] failed`);
     }
   }
