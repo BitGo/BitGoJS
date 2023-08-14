@@ -2834,6 +2834,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EURX
   ),
   erc20(
+    'ab3e6da9-d9b2-4ff5-a25e-e97b532b9a95',
+    'eurcv',
+    'EUR Coinvertible',
+    18,
+    '0xf7790914dc335b20aa19d7c9c9171e14e278a134',
+    UnderlyingAsset.EURCV
+  ),
+  erc20(
     'fd8e59ae-d6f1-4ab6-917e-954d052cf60c',
     'euroc',
     'Euro Coin',
@@ -4067,6 +4075,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MNS
   ),
   erc20(
+    '83efb059-93b4-44b6-ab68-c29d5bbc08e1',
+    'mnt',
+    'Mantle',
+    18,
+    '0x3c3a81e81dc49a522a592e7622a7e711c06bf354',
+    UnderlyingAsset.MNT
+  ),
+  erc20(
     '1301f2e6-3f4c-46ab-9f21-e6e8eadb0f3c',
     'mln',
     'Melon Token',
@@ -4481,6 +4497,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x7a58c0be72be218b41c608b7fe7c5bb630736c71',
     UnderlyingAsset.PEOPLE
+  ),
+  erc20(
+    'ad5a80bb-d3b0-4c8a-9b5f-dd2cab1c9999',
+    'pepe',
+    'Pepe',
+    18,
+    '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+    UnderlyingAsset.PEPE
   ),
   erc20(
     '8f767b43-c363-470a-b74b-695bb5ef629c',
@@ -9667,6 +9691,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '24afee36-2422-415e-a2f4-0010bd34a4b1',
+    'sol:wusdc-wormhole',
+    'USD Coin (Wormhole)',
+    6,
+    'FVsXUnbhifqJ4LiXQEbpUtXVdB8T5ADLKqSs5t1oc54F',
+    UnderlyingAsset.WUSDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     'bfc197c1-6fcc-4d63-8f20-596b06bf2eec',
     'sol:hget-wormhole',
     'Hedget (Wormhole)',
@@ -9986,6 +10019,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x431cd3c9ac9fc73644bf68bf5691f4b83f9e104f',
     UnderlyingAsset['polygon:rbw']
+  ),
+  polygonErc20(
+    '35fa22f7-6024-4dc0-ada4-dda635b9db91',
+    'polygon:zed',
+    'ZED RUN',
+    18,
+    '0x5ec03c1f7fa7ff05ec476d19e34a22eddb48acdc',
+    UnderlyingAsset['polygon:zed']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
