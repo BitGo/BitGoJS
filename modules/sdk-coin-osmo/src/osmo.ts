@@ -65,4 +65,9 @@ export class Osmo extends CosmosCoin {
   getAddressFromPublicKey(publicKey: string): string {
     return new KeyPair({ pub: publicKey }).getAddress();
   }
+
+  /** @inheritDoc **/
+  valuelessTransferAllowed(): boolean {
+    return true;
+  }
 }
