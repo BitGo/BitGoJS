@@ -1,4 +1,5 @@
 // Ntilde Proof where both alpha and t are a set of 128 proofs each.
+import { KeyPair } from 'paillier-bigint';
 import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../util';
 
 interface NtildeProof<T> {
@@ -194,6 +195,19 @@ export function serializePaillierChallengeWithProofs(
     ...serializePaillierChallengeProofs(challengeWithProofs),
   };
 }
+
+type paillierBlumProof<T> = {
+  w: T;
+  x: T[];
+  z: T[];
+};
+
+export type SerializedPaillierBlumProof = paillierBlumProof<string>;
+export type DeserializedPaillierBlumProof = paillierBlumProof<bigint>;
+
+export type KeyPairWithDeserializedPaillierBlumProof = DeserializedPaillierBlumProof & {
+  keyPair: KeyPair;
+};
 
 export interface RSAModulus {
   n: bigint;

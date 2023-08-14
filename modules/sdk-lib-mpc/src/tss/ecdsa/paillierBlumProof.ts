@@ -2,12 +2,18 @@ import { createHmac } from 'crypto';
 import { bitLength, randBits, isProbablyPrime } from 'bigint-crypto-utils';
 import { modInv, modPow } from 'bigint-mod-arith';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
+import { DeserializedPaillierBlumProof } from './types';
 
 // Security parameter.
 const m = 80;
 
-// Generate psuedo-random quadratic residue for (N, w, i).
-function generateY(N, w) {
+/**
+ * Generate psuedo-random quadratic residue for (N, w, i).
+ * @param N - the prime number to verify is a product of two large primes.
+ * @param w - a random number with the same bitLength as N, that satisfies the Jacobi of w is -1 wrt N.
+ * @returns {bigint[]} - set of challenges for N
+ */
+function generateY(N, w): bigint[] {
   const NBuf = bigIntToBufferBE(N);
   const wBuf = bigIntToBufferBE(w, NBuf.length);
   return Array(m)
@@ -24,7 +30,7 @@ function generateY(N, w) {
 }
 
 // https://en.wikipedia.org/wiki/Jacobi_symbol#Implementation_in_C++
-function jacobi(a, n) {
+function jacobi(a, n): bigint {
   // a/n is represented as (a,n)
   if (n <= BigInt(0)) {
     throw new Error('n must greater than 0');
@@ -62,11 +68,12 @@ function jacobi(a, n) {
 }
 
 /**
- * Prove that a modulus is the product of two large safe primes.
+ * Prove that a modulus (p*q) is the product of two large safe primes (p and q).
  * @param {bigint} p The larger prime factor of the modulus
  * @param {bigint} q The smaller prime factor of the modulus.
+ * @returns {DeserializedPaillierBlumProof} The proof that the modulus is the product of two large primes.
  */
-export async function prove(p, q) {
+export async function prove(p: bigint, q: bigint): Promise<DeserializedPaillierBlumProof> {
   // Prover selects random w with Jacobi symbol 1 wrt N.
   const N = p * q;
   const l = (p - BigInt(1)) * (q - BigInt(1));
@@ -90,10 +97,11 @@ export async function prove(p, q) {
 
 /**
  * Verify that N is the product of two large primes.
- * @param {bigint} N The modulus.
- * @param proof The proof to verify.
+ * @param {bigint} N The prime number being verified.
+ * @param {DeserializedPaillierBlumProof} The proof to verify N is a product of two large primes.
+ * @returns {boolean} True if N is a product of two large primes, and false otherwise.
  */
-export async function verify(N, { w, x, z }) {
+export async function verify(N: bigint, { w, x, z }: DeserializedPaillierBlumProof): Promise<boolean> {
   // Verifier checks N > 1.
   if (N <= 1) {
     throw new Error('N must be greater than 1');
