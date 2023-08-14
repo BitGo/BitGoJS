@@ -1,16 +1,10 @@
 import * as bcu from 'bigint-crypto-utils';
 import { PublicKey, PrivateKey, KeyPair } from 'paillier-bigint';
 import { prove } from './paillierBlumProof';
-
-export interface KeyPairWithProof {
-  keyPair: KeyPair;
-  w: bigint;
-  x: Array<bigint>;
-  z: Array<bigint>;
-}
+import { KeyPairWithDeserializedPaillierBlumProof } from './types';
 
 // Implementation based on paillier-bigint's generateRandomKeys
-export async function generatePaillierKey(bitlength = 3072): Promise<KeyPairWithProof> {
+export async function generatePaillierKey(bitlength = 3072): Promise<KeyPairWithDeserializedPaillierBlumProof> {
   let p, q, n;
   do {
     p = await bcu.prime(Math.floor(bitlength / 2) + 1);
