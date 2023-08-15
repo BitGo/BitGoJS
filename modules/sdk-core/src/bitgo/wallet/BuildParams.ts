@@ -47,7 +47,7 @@ export const BuildParams = t.exact(
       apiVersion: t.unknown,
       consolidateAddresses: t.unknown,
       consolidateId: t.unknown,
-      comment: t.unknown,
+      comment: t.string,
       delayMs: t.unknown,
       fee: t.unknown,
       feeRate: t.unknown,
