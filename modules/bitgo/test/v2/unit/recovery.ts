@@ -277,8 +277,8 @@ describe('Recovery:', function () {
       should.exist(recoveryTx);
 
       recoveryTx.coin.should.equal('ttrx');
-      recoveryTx.feeInfo.fee.should.equal('1000000');
-      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.feeInfo.fee.should.equal('2100000');
+      recoveryTx.recoveryAmount.should.equal(899047400);
       recoveryTx.txHex.should.equal(
         '{"visible":false,"txID":"98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49","raw_data":{"contract":[{"parameter":{"value":{"amount":10000000,"owner_address":"41e7e11df2c5704888c3cb63fb43a9498bd1812cb2","to_address":"41f5f414d447aafe70bb9b9d93912cbc4c54f0c014"},"type_url":"type.googleapis.com/protocol.TransferContract"},"type":"TransferContract"}],"ref_block_bytes":"a762","ref_block_hash":"18dfe946fbf7a0ac","expiration":1676746443000,"timestamp":1676659983799},"raw_data_hex":"0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630","signature":["79a110116657e75be81400ad4a9f738fd098695fc5fc6009176aa1c27924c4cdb2989fe2052b70c739b10cd3881c9872660b83998dc9316e6c8d11fb588d731d00","250d0bae2491596bd800d830aa9d4c6d25e1d01a4c860b856d6000a8ab8fa2082a1ae20168e0ab97c9ffd64824b483b9843db74e9553d5d9e68a3a64d414dd1201"]}'
       );
@@ -311,8 +311,8 @@ describe('Recovery:', function () {
       should.exist(recoveryTx);
 
       recoveryTx.coin.should.equal('ttrx');
-      recoveryTx.feeInfo.fee.should.equal('1000000');
-      recoveryTx.recoveryAmount.should.equal(199000000);
+      recoveryTx.feeInfo.fee.should.equal('2100000');
+      recoveryTx.recoveryAmount.should.equal(197900000);
       recoveryTx.addressInfo.address.should.equal('TNeGpwAurk7kjQLdcdWhFr8YP8E9Za8w1x');
       recoveryTx.addressInfo.chain.should.equal(0);
       recoveryTx.addressInfo.index.should.equal(1);
@@ -359,8 +359,8 @@ describe('Recovery:', function () {
       should.exist(recoveryTx);
 
       recoveryTx.coin.should.equal('ttrx');
-      recoveryTx.feeInfo.fee.should.equal('1000000');
-      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.feeInfo.fee.should.equal('2100000');
+      recoveryTx.recoveryAmount.should.equal(899047400);
       recoveryTx.tx.txID.should.equal('98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49');
       recoveryTx.tx.raw_data_hex.should.equal(
         '0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630'
@@ -383,8 +383,8 @@ describe('Recovery:', function () {
       should.exist(recoveryTx);
 
       recoveryTx.coin.should.equal('ttrx');
-      recoveryTx.feeInfo.fee.should.equal('1000000');
-      recoveryTx.recoveryAmount.should.equal(900147400);
+      recoveryTx.feeInfo.fee.should.equal('2100000');
+      recoveryTx.recoveryAmount.should.equal(899047400);
       recoveryTx.tx.txID.should.equal('98b398e3027e601870a86b0785f1f1d301f087dbaafe44337507b5001bae0d49');
       recoveryTx.tx.raw_data_hex.should.equal(
         '0a02a762220818dfe946fbf7a0ac40f89181afe6305a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a1541e7e11df2c5704888c3cb63fb43a9498bd1812cb2121541f5f414d447aafe70bb9b9d93912cbc4c54f0c01418c8d19cad0370b78be485e630'

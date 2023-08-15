@@ -33,6 +33,7 @@ import { TransactionReceipt } from './lib/iface';
 import { isInteger, isUndefined } from 'lodash';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
+export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
@@ -616,7 +617,7 @@ export class Trx extends BaseCoin {
         // call the node to get our account balance
         const accountInfo = await this.getAccountBalancesFromNode(address);
 
-        if (accountInfo.data[0] && accountInfo.data[0].balance > MINIMUM_TRON_MSIG_TRANSACTION_FEE) {
+        if (accountInfo.data[0] && accountInfo.data[0].balance > SAFE_TRON_TRANSACTION_FEE) {
           account = accountInfo;
           recoveryAmount = accountInfo.data[0].balance;
           userXPrv = userKey.toBase58(); // assign derived userXPrx
@@ -692,10 +693,10 @@ export class Trx extends BaseCoin {
         );
       }
     }
-    // construct the tx -
-    // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
-    // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun or 1 Tron)
-    if (!recoveryAmount || MINIMUM_TRON_MSIG_TRANSACTION_FEE > recoveryAmount) {
+
+    // a sweep potentially needs to pay for multi-sig transfer, destination account activation and bandwidth
+    // TRON foundation recommends 2.1 TRX for guaranteed confirmation
+    if (!recoveryAmount || SAFE_TRON_TRANSACTION_FEE > recoveryAmount) {
       throw new Error('Amount of funds to recover wouldnt be able to fund a send');
     }
 
@@ -731,7 +732,7 @@ export class Trx extends BaseCoin {
       };
     }
 
-    const recoveryAmountMinusFees = recoveryAmount - MINIMUM_TRON_MSIG_TRANSACTION_FEE;
+    const recoveryAmountMinusFees = recoveryAmount - SAFE_TRON_TRANSACTION_FEE;
     const buildTx = await this.getBuildTransaction(recoveryAddressHex, accountToRecoverAddr, recoveryAmountMinusFees);
 
     // construct our tx
@@ -743,7 +744,7 @@ export class Trx extends BaseCoin {
 
     // this tx should be enough to drop into a node
     if (isUnsignedSweep) {
-      return this.formatForOfflineVault(tx, MINIMUM_TRON_MSIG_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
+      return this.formatForOfflineVault(tx, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
     }
 
     const userPrv = this.xprvToCompressedPrv(userXPrv);
@@ -758,12 +759,7 @@ export class Trx extends BaseCoin {
       txBuilder.sign({ key: backupPrv });
     }
     const txSigned = await txBuilder.build();
-    return this.formatForOfflineVault(
-      txSigned,
-      MINIMUM_TRON_MSIG_TRANSACTION_FEE,
-      recoveryAmountMinusFees,
-      addressInfo
-    );
+    return this.formatForOfflineVault(txSigned, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
   }
 
   /**
