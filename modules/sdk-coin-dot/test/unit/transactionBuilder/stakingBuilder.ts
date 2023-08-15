@@ -11,7 +11,6 @@ describe('Dot Stake Builder', () => {
   let builder: StakingBuilder;
 
   const sender = accounts.account1;
-  const receiver = accounts.account2;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -57,7 +56,7 @@ describe('Dot Stake Builder', () => {
     it('should build a stake transaction', async () => {
       builder
         .amount('90034235235322')
-        .owner({ address: receiver.address })
+        .owner({ address: sender.address })
         .payee('Staked')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -69,7 +68,7 @@ describe('Dot Stake Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
+      should.deepEqual(txJson.controller, sender.address);
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
@@ -86,7 +85,7 @@ describe('Dot Stake Builder', () => {
     it('should build an unsigned stake transaction', async () => {
       builder
         .amount('90034235235322')
-        .owner({ address: receiver.address })
+        .owner({ address: sender.address })
         .payee('Staked')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -96,7 +95,7 @@ describe('Dot Stake Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
+      should.deepEqual(txJson.controller, sender.address);
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
@@ -111,19 +110,20 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
+      const address = '5F1mFBGhm7FrSKftDxzFPN8U1BqHKSAxEDhTV2Yx5JhCe2Nk';
       builder.from(rawTx.stake.signed);
       builder.validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
+      should.deepEqual(txJson.amount, '5000000000000');
+      should.deepEqual(txJson.controller, address);
       should.deepEqual(txJson.payee, 'Staked');
-      should.deepEqual(txJson.sender, sender.address);
+      should.deepEqual(txJson.sender, address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, genesisHash);
       should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, 200);
+      should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
@@ -131,67 +131,24 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
+      const address = '5F1mFBGhm7FrSKftDxzFPN8U1BqHKSAxEDhTV2Yx5JhCe2Nk';
       builder.from(rawTx.stake.unsigned);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock(referenceBlock)
-        .sender({ address: sender.address })
+        .sender({ address: address })
         .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
+      should.deepEqual(txJson.amount, '5000000000000');
+      should.deepEqual(txJson.controller, address);
       should.deepEqual(txJson.payee, 'Staked');
-      should.deepEqual(txJson.sender, sender.address);
+      should.deepEqual(txJson.sender, address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, genesisHash);
       should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, 200);
-      should.deepEqual(txJson.eraPeriod, 64);
-      should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, chainName);
-    });
-
-    it('should build from raw signed tx with receiver account', async () => {
-      builder.from(rawTx.stake.signedAlt);
-      builder.validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
-      const tx = await builder.build();
-      const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
-      should.deepEqual(txJson.payee, receiver.address);
-      should.deepEqual(txJson.sender, sender.address);
-      should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.referenceBlock, referenceBlock);
-      should.deepEqual(txJson.genesisHash, genesisHash);
-      should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, 200);
-      should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, chainName);
-      should.deepEqual(txJson.eraPeriod, 64);
-    });
-
-    it('should build from raw unsigned tx with payee account', async () => {
-      builder.from(rawTx.stake.unsignedAlt);
-      builder
-        .validity({ firstValid: 3933 })
-        .referenceBlock(referenceBlock)
-        .sender({ address: sender.address })
-        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
-      const tx = await builder.build();
-      const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '90034235235322');
-      should.deepEqual(txJson.controller, receiver.address);
-      should.deepEqual(txJson.payee, receiver.address);
-      should.deepEqual(txJson.sender, sender.address);
-      should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.referenceBlock, referenceBlock);
-      should.deepEqual(txJson.genesisHash, genesisHash);
-      should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, 200);
+      should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
