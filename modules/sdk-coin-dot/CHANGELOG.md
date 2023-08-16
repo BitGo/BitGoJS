@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.4.0) (2023-08-16)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** add logging to troublshoot DOT staking ([902558a](https://github.com/BitGo/BitGoJS/commit/902558a24c93ca8e7977bdbb370a24098aea775b))
+- **sdk-coin-dot:** add logs to debug dot staking txn build failure ([eb929e3](https://github.com/BitGo/BitGoJS/commit/eb929e351a2330e820360c54541943ad67ba15eb))
+- **sdk-coin-dot:** add more logs to debug Dot staking issue ([ccb9914](https://github.com/BitGo/BitGoJS/commit/ccb99143b7b1b875c7d81ebf3a90b966ab1cef8e))
+- **sdk-coin-dot:** make controller optional for bond call ([a6f6a0d](https://github.com/BitGo/BitGoJS/commit/a6f6a0d96afdb663a7a096c4eb2caf9ca1649d63))
+
+### Features
+
+- **sdk-coin-dot:** add logs to debug DOT staking issue ([33c1a9c](https://github.com/BitGo/BitGoJS/commit/33c1a9c2d7051481f1afb993376a18d421170aa0))
+- **sdk-coin-dot:** remove DOT console debug logging ([d4aad05](https://github.com/BitGo/BitGoJS/commit/d4aad0509a14bc0a89e8af7435353621044a1100))
+
 # [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.3.0) (2023-08-16)
 
 ### Bug Fixes
