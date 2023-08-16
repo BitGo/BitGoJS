@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.13.1) (2023-08-16)
+
+### Bug Fixes
+
+- **bitgo:** add overrides and resolutions to pkgs ([14c33b4](https://github.com/BitGo/BitGoJS/commit/14c33b4bbffda09ba6a389f540c1fb8cc2a43bf9))
+- **sdk-api:** upgrade critical vulnerabilities from snyk scan ([cd97347](https://github.com/BitGo/BitGoJS/commit/cd97347046b1a6644db6682e9f8e9ca8b5fe4ad7))
+
 # [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.11.3...@bitgo/sdk-api@1.13.0) (2023-08-04)
 
 ### Features

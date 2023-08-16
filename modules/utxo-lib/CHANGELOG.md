@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.5.1) (2023-08-16)
+
+### Bug Fixes
+
+- **utxo-lib:** p2tr fails to check pubkey against script ([09376da](https://github.com/BitGo/BitGoJS/commit/09376da5c621ec3a1d259b1bfd32b5377f18a2f9))
+
 # [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.3.0...@bitgo/utxo-lib@9.5.0) (2023-08-04)
 
 ### Bug Fixes
