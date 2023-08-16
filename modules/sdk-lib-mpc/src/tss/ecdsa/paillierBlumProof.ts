@@ -123,7 +123,7 @@ export async function verify(N: bigint, { w, x, z }: DeserializedPaillierBlumPro
   for (let i = 0; i < m; i++) {
     // Verifier checks z_i ^ N mod N == y_i.
     if (modPow(z[i], N, N) !== y[i]) {
-      throw new Error(`Paillier verification of y[${i}] failed`);
+      throw new Error(`Paillier verification of z[${i}] failed`);
     }
     // Verifier checks x_i ^ 4 mod N == y_i.
     if (modPow(x[i], 4, N) !== y[i]) {
