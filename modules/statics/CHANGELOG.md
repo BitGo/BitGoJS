@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@18.4.0) (2023-08-16)
+
+### Features
+
+- **statics:** add new coin feature for cosmos chains ([94341a1](https://github.com/BitGo/BitGoJS/commit/94341a12a08d99aa24988fe25e4cef712e3e73aa))
+
 # [18.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@18.3.0) (2023-08-16)
 
 ### Features
