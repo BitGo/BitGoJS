@@ -1,7 +1,6 @@
-// Ntilde Proof where both alpha and t are a set of 128 proofs each.
-import { KeyPair } from 'paillier-bigint';
 import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../util';
 
+// Ntilde Proof where both alpha and t are a set of 128 proofs each.
 interface NtildeProof<T> {
   alpha: T[];
   t: T[];
@@ -205,9 +204,45 @@ type paillierBlumProof<T> = {
 export type SerializedPaillierBlumProof = paillierBlumProof<string>;
 export type DeserializedPaillierBlumProof = paillierBlumProof<bigint>;
 
-export type KeyPairWithDeserializedPaillierBlumProof = DeserializedPaillierBlumProof & {
-  keyPair: KeyPair;
+/**
+ * Deserializes a paillier challenge and its proof from hex strings to big ints.
+ * @param paillierBlumProof
+ */
+export function deserializePaillierBlumProof(
+  paillierBlumProof: SerializedPaillierBlumProof
+): DeserializedPaillierBlumProof {
+  return {
+    w: hexToBigInt(paillierBlumProof.w),
+    x: convertHexArrToBigIntArr(paillierBlumProof.x),
+    z: convertHexArrToBigIntArr(paillierBlumProof.z),
+  };
+}
+
+/**
+ * Serializes a paillier challenge and its proof to hex strings.
+ * @param paillierBlumProof
+ */
+export function serializePaillierBlumProof(
+  paillierBlumProof: DeserializedPaillierBlumProof
+): SerializedPaillierBlumProof {
+  return {
+    w: bigIntToHex(paillierBlumProof.w, 768),
+    x: convertBigIntArrToHexArr(paillierBlumProof.x, 768),
+    z: convertBigIntArrToHexArr(paillierBlumProof.z, 768),
+  };
+}
+
+export type RawPaillierKey = {
+  // public modulus
+  n: bigint;
+  // private fields
+  lambda: bigint;
+  mu: bigint;
+  p: bigint;
+  q: bigint;
 };
+
+export type DeserializedKeyPairWithPaillierBlumProof = DeserializedPaillierBlumProof & RawPaillierKey;
 
 export interface RSAModulus {
   n: bigint;
