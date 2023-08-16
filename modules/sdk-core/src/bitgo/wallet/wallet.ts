@@ -2712,6 +2712,7 @@ export class Wallet implements IWallet {
     }
 
     let txRequest: TxRequest;
+    console.log(`Got params.type: ${JSON.stringify(params)}`);
     switch (params.type) {
       case 'transfer':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
@@ -2780,6 +2781,24 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             receiveAddress: params.receiveAddress,
             feeOptions,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'ContractCall':
+        if (!params.data) {
+          throw new Error(`data is missing in intent: ContractCall`);
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'ContractCall',
+            comment: params.comment,
+            nonce: params.nonce,
+            receiveAddress: params.receiveAddress,
+            feeOptions,
+            data: `${params.data}`,
           },
           apiVersion,
           params.preview

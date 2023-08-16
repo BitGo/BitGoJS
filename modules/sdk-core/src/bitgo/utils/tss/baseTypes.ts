@@ -159,6 +159,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   lowFeeTxid?: string;
   custodianTransactionId?: string;
   receiveAddress?: string;
+  data?: string;
 }
 export interface IntentRecipient {
   address: {
