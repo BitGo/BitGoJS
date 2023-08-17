@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@8.15.0) (2023-08-16)
+
+### Bug Fixes
+
+- **sdk-core:** add pendingappr id in build api ([3ace9ac](https://github.com/BitGo/BitGoJS/commit/3ace9ac74a0729f8ade84e8a0c8cd67429563147))
+- **sdk-core:** include tests in tsconfig.json ([91c1c6c](https://github.com/BitGo/BitGoJS/commit/91c1c6c47f809cbd826db2a7a59c96b74f0273e9))
+- **sdk-core:** move --recursive flag to package.json ([1147ebe](https://github.com/BitGo/BitGoJS/commit/1147ebe3d2ab1868fe1c6bbf343f68becc7d1169))
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-core:** add postWithCodec utility function ([ff1ad07](https://github.com/BitGo/BitGoJS/commit/ff1ad07dfe476d38ae17cfb691ef0e6375a394ea))
+
+# [8.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@8.14.0) (2023-08-16)
+
+### Bug Fixes
+
+- **sdk-core:** add pendingappr id in build api ([3ace9ac](https://github.com/BitGo/BitGoJS/commit/3ace9ac74a0729f8ade84e8a0c8cd67429563147))
+- **sdk-core:** include tests in tsconfig.json ([91c1c6c](https://github.com/BitGo/BitGoJS/commit/91c1c6c47f809cbd826db2a7a59c96b74f0273e9))
+- **sdk-core:** move --recursive flag to package.json ([1147ebe](https://github.com/BitGo/BitGoJS/commit/1147ebe3d2ab1868fe1c6bbf343f68becc7d1169))
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-core:** add postWithCodec utility function ([ff1ad07](https://github.com/BitGo/BitGoJS/commit/ff1ad07dfe476d38ae17cfb691ef0e6375a394ea))
+
 # [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.11.0...@bitgo/sdk-core@8.13.0) (2023-08-04)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.14.0...@bitgo/utxo-bin@2.16.0) (2023-08-16)
+
+### Features
+
+- **utxo-bin:** add regular base58 parsing ([41e856d](https://github.com/BitGo/BitGoJS/commit/41e856d44ffe75df42bae8140545d33ca5dd151e))
+
+# [2.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.14.0...@bitgo/utxo-bin@2.15.0) (2023-08-16)
+
+### Features
+
+- **utxo-bin:** add regular base58 parsing ([41e856d](https://github.com/BitGo/BitGoJS/commit/41e856d44ffe75df42bae8140545d33ca5dd151e))
+
 # [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.12.0...@bitgo/utxo-bin@2.14.0) (2023-08-04)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.9.0) (2023-08-16)
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.8.0) (2023-08-16)
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+
 # [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.5.6...@bitgo/sdk-coin-sol@2.7.0) (2023-08-04)
 
 ### Bug Fixes

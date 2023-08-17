@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.17.2) (2023-08-16)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+## [0.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.17.1) (2023-08-16)
+
+**Note:** Version bump only for package @bitgo/unspents
+
 # [0.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.15.4...@bitgo/unspents@0.17.0) (2023-08-04)
 
 ### Features

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.10.0...@bitgo/sdk-coin-trx@1.10.2) (2023-08-16)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.10.0...@bitgo/sdk-coin-trx@1.10.1) (2023-08-16)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.8.5...@bitgo/sdk-coin-trx@1.10.0) (2023-08-04)
 
 ### Features
