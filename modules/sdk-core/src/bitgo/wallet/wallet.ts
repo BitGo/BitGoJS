@@ -93,6 +93,9 @@ import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
 import { Hash } from 'crypto';
 import { ofcTokens } from '@bitgo/statics';
+import { SendTransactionRequest } from './SendTransactionRequest';
+import { buildParamKeys } from './BuildParams';
+import { postWithCodec } from '../utils/postWithCodec';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -171,65 +174,9 @@ export class Wallet implements IWallet {
     return this._wallet.balance;
   }
 
+  /** @deprecated use codec instead: t.exact(BuildParams).encode(v) */
   prebuildWhitelistedParams(): string[] {
-    return [
-      'addressType',
-      'apiVersion',
-      'changeAddress',
-      'consolidateAddresses',
-      'cpfpFeeRate',
-      'cpfpTxIds',
-      'enforceMinConfirmsForChange',
-      'feeRate',
-      'gasLimit',
-      'gasPrice',
-      'hopParams',
-      'idfSignedTimestamp',
-      'idfUserId',
-      'idfVersion',
-      'instant',
-      'lastLedgerSequence',
-      'ledgerSequenceDelta',
-      'maxFee',
-      'maxFeeRate',
-      'maxValue',
-      'memo',
-      'transferId',
-      'message',
-      'minConfirms',
-      'minValue',
-      'noSplitChange',
-      'numBlocks',
-      'nonce',
-      'pendingApprovalId',
-      'preview',
-      'previewPendingTxs',
-      'receiveAddress',
-      'recipients',
-      'reservation',
-      'sequenceId',
-      'strategy',
-      'sourceChain',
-      'destinationChain',
-      'targetWalletUnspents',
-      'trustlines',
-      'txFormat',
-      'type',
-      'unspents',
-      'nonParticipation',
-      'validFromBlock',
-      'validToBlock',
-      'messageKey',
-      'stakingOptions',
-      'eip1559',
-      'keyregTxBase64',
-      'closeRemainderTo',
-      'tokenName',
-      'enableTokens',
-      // param to set emergency flag on a custodial transaction.
-      // This transaction should be performed in less than 1 hour or it will fail.
-      'emergency',
-    ];
+    return buildParamKeys;
   }
 
   /**
@@ -1999,10 +1946,16 @@ export class Wallet implements IWallet {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
 
-    return this.bitgo
-      .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
-      .send(params)
-      .result();
+    return postWithCodec(
+      this.bitgo,
+      this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
+      SendTransactionRequest,
+      params,
+      {
+        /* for now, we will continue to use the original params and monitor encoding errors */
+        useEncodedBody: false,
+      }
+    ).result();
   }
 
   /**
