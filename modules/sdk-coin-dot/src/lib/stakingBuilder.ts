@@ -117,7 +117,7 @@ export class StakingBuilder extends TransactionBuilder {
     if (decodedTxn.method?.name === MethodNames.Bond) {
       const txMethod = decodedTxn.method.args as unknown as StakeArgs;
       const value = txMethod.value;
-      const controller = txMethod.controller?.id;
+      const controller = txMethod.controller?.id || this._sender;
       const payee = txMethod.payee;
       const validationResult = StakeTransactionSchema.validate({ value, controller, payee });
       if (validationResult.error) {
@@ -141,7 +141,7 @@ export class StakingBuilder extends TransactionBuilder {
       this.amount(txMethod.value);
       this.owner({
         address: utils.decodeDotAddress(
-          txMethod.controller?.id || '',
+          txMethod.controller?.id || this._sender,
           utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
         ),
       });
