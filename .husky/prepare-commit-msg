@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+rootDir=$(pwd)
+cd "$rootDir"
+
+yarn prepare-commit-msg "$@"
