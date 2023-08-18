@@ -1855,6 +1855,14 @@ export class Wallet implements IWallet {
       });
     }
 
+    if (mustUseTxRequestFull && signingParams.txPrebuild.txRequestId) {
+      assert(this.tssUtils, 'tssUtils must be defined for TSS wallets');
+      const txRequest = await this.tssUtils.getTxRequest(signingParams.txPrebuild.txRequestId);
+      if (this.tssUtils.isPendingApprovalTxRequestFull(txRequest)) {
+        return txRequest;
+      }
+    }
+
     try {
       return await this.signTransaction(signingParams);
     } catch (error) {

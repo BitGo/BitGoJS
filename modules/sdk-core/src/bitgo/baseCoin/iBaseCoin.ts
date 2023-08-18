@@ -6,7 +6,7 @@ import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
-import EddsaUtils from '../utils/tss/eddsa';
+import EddsaUtils, { TxRequest } from '../utils/tss/eddsa';
 import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
@@ -369,7 +369,8 @@ export type SignedTransaction =
   | HalfSignedAccountTransaction
   | HalfSignedUtxoTransaction
   | FullySignedTransaction
-  | SignedTransactionRequest;
+  | SignedTransactionRequest
+  | TxRequest;
 
 export interface SignedMessage {
   coin?: string;
