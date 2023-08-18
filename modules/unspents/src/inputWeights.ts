@@ -63,7 +63,7 @@ const opCheckSigSize = opSize;
 const ecdsaSignatureSize = 72;
 const schnorrPubkeySize = 32;
 const schnorrSignatureNoSighashSize = 64;
-const p2msPubScriptSize = 105;
+const p2msPubScriptSize = 105; // Note: This is valid for a compressed public key only
 const p2wshPubScriptSize = 34;
 const p2pkPubScriptSize = 35;
 
