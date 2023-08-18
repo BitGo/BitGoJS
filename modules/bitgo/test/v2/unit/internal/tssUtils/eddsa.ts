@@ -907,6 +907,35 @@ describe('TSS Utils:', async function () {
     });
   });
 
+  describe('isPendingApprovalTxRequestFull', () => {
+    it('should return true for full apiVersion and pendingApproval state', async () => {
+      const txRequest = {
+        apiVersion: 'full',
+        state: 'pendingApproval',
+      } as TxRequest;
+      const result = await tssUtils.isPendingApprovalTxRequestFull(txRequest);
+      result.should.be.true();
+    });
+
+    it('should return false for non-full apiVersion', async () => {
+      const txRequest = {
+        apiVersion: 'lite',
+        state: 'pendingApproval',
+      } as TxRequest;
+      const result = await tssUtils.isPendingApprovalTxRequestFull(txRequest);
+      result.should.be.false();
+    });
+
+    it('should return false for non-pendingApproval state', async () => {
+      const txRequest = {
+        apiVersion: 'full',
+        state: 'pendingDelivery',
+      } as TxRequest;
+      const result = await tssUtils.isPendingApprovalTxRequestFull(txRequest);
+      result.should.be.false();
+    });
+  });
+
   // #region Nock helpers
   async function generateBitgoKeychain(params: {
     coin: string;

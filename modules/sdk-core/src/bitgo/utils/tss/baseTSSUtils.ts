@@ -414,4 +414,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
     return [];
   }
+
+  isPendingApprovalTxRequestFull(txRequest: TxRequest): boolean {
+    const { apiVersion, state } = txRequest;
+    return apiVersion === 'full' && 'pendingApproval' === state;
+  }
 }

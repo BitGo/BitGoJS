@@ -1861,6 +1861,8 @@ describe('V2 Wallet:', function () {
         '5935d59cf660764331bafcade1855fd7',
       ],
       multisigType: 'tss',
+      coinSpecific: { addressVersion: 1 },
+      type: 'hot',
     };
 
     const polygonWalletData = {
@@ -1943,6 +1945,52 @@ describe('V2 Wallet:', function () {
 
     afterEach(function () {
       sandbox.verifyAndRestore();
+    });
+
+    describe('preBuildAndSignTransaction', async function () {
+      const params = {
+        walletPassphrase: 'passphrase12345',
+        prebuildTx: { walletId: tssEthWallet.id(), txRequestId: 'randomId' },
+        type: 'transfer',
+      };
+
+      beforeEach(function () {
+        sandbox
+          .stub(Keychains.prototype, 'getKeysForSigning')
+          .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+        sandbox.stub(tssEthWallet.baseCoin, 'verifyTransaction').resolves(true);
+      });
+
+      afterEach(function () {
+        sandbox.verifyAndRestore();
+      });
+
+      it('it should succeed but not sign if the txRequest is pending approval', async function () {
+        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
+        getTxRequestStub.resolves({ ...txRequestFull, state: 'pendingApproval' });
+
+        const signTransactionSpy = sandbox.spy(Wallet.prototype, 'signTransaction');
+
+        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
+        result.should.have.property('state');
+        result.state.should.equal('pendingApproval');
+        getTxRequestStub.calledOnce.should.be.true();
+        signTransactionSpy.notCalled.should.be.true();
+      });
+
+      it('it should succeed and sign if the txRequest is not pending approval', async function () {
+        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
+        getTxRequestStub.resolves(txRequestFull);
+
+        const signTransactionStub = sandbox.stub(Wallet.prototype, 'signTransaction');
+        signTransactionStub.resolves({ ...txRequestFull, state: 'signed' });
+
+        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
+        result.should.have.property('state');
+        result.state.should.equal('signed');
+        getTxRequestStub.calledOnce.should.be.true();
+        signTransactionStub.calledOnce.should.be.true();
+      });
     });
 
     describe('Transaction prebuilds', function () {
