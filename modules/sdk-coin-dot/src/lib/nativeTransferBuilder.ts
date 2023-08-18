@@ -37,7 +37,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
     if (this._sweepFreeBalance) {
       transferTx = methods.balances.transferAll(
         {
-          dest: this._to,
+          dest: { id: this._to },
           keepAlive: this._keepAddressAlive,
         },
         baseTxInfo.baseTxInfo,
@@ -47,7 +47,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       transferTx = methods.balances.transferKeepAlive(
         {
           value: this._amount,
-          dest: this._to,
+          dest: { id: this._to },
         },
         baseTxInfo.baseTxInfo,
         baseTxInfo.options

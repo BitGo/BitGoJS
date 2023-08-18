@@ -320,11 +320,7 @@ export class Utils implements BaseUtils {
    * @return true if arg is of type StakeBatchCallArgs, false otherwise.
    */
   isStakeBatchCallArgs(arg: BatchCallObject['args']): arg is StakeBatchCallArgs {
-    return (
-      (arg as StakeBatchCallArgs).value !== undefined &&
-      (arg as StakeBatchCallArgs).controller !== undefined &&
-      (arg as StakeBatchCallArgs).payee !== undefined
-    );
+    return (arg as StakeBatchCallArgs).value !== undefined && (arg as StakeBatchCallArgs).payee !== undefined;
   }
 
   /**
@@ -398,11 +394,7 @@ export class Utils implements BaseUtils {
    * @return true if arg is of type StakeArgs, false otherwise.
    */
   isBond(arg: TxMethod['args']): arg is StakeArgs {
-    return (
-      (arg as StakeArgs).value !== undefined &&
-      (arg as StakeArgs).controller !== undefined &&
-      (arg as StakeArgs).payee !== undefined
-    );
+    return (arg as StakeArgs).value !== undefined && (arg as StakeArgs).payee !== undefined;
   }
 
   /**
