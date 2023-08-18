@@ -4,6 +4,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import { getFixture } from './fixtures';
+
 const Wallet = require('../../../src/v1/wallet');
 import { BitGoAPI } from '../../../src/bitgoAPI';
 import * as _ from 'lodash';
@@ -356,6 +358,33 @@ describe('Wallet Prototype Methods', function () {
       signature2.tx.should.equal(
         '010000000001011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000023220020440e858228b753544b4c57e300296b55717f811053883f9be9b6a712eacd931cffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a870500483045022100bf3a8914a1bfe92661f27ca37c0d6b5c0b3c7353614c955646929f2e7eb89ffe02202d556b0ffab37c104bae67406ca16f8859cfa37c6a40f2013d89afcecd5594f30147304402205cf8d2f2be6ce083d35654bdc3fa85d7e71b227d457e9245bb603b21e7b5165102203ea686226db8320e08c26bfb304048b3a9473d0e05797d3658dacb2f09a2b51c0100695221032c505fc8a1e4b56811b27366a371e61c9faf565dd2fabaff7a70eac19c32157c210251160b583bd5dc0f0d48096505131c4347ab65b4f21ed57d76c38157499c003d2102679712d62a2560917cc43fd2cc3a1b9b61f528c88bc64905bae6ee079e60609f53ae00000000'
       );
+    });
+
+    it('signs an unsigned tx made of uncompressed public keys and verifies signatures', async function () {
+      const {
+        address,
+        redeemScript,
+        scriptPubKey,
+        userKeyWIF: signingKey,
+        unsignedTxHex,
+        halfSignedTxHex,
+      } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
+      const testBitgo = new BitGoAPI({ env: 'test' });
+      const fakeTestWallet = new Wallet(testBitgo, {
+        id: address,
+        private: { safe: { redeemScript } },
+      });
+      const halfSignedTx = await fakeTestWallet.signTransaction({
+        transactionHex: unsignedTxHex,
+        signingKey,
+        unspents: [
+          // https://blockstream.info/testnet/api/address/2N3L9cu9WN2Df7Xvb1Y8owokuDVj5Hdyv4i/utxo
+          { value: 100000, redeemScript, script: scriptPubKey },
+          { value: 100000, redeemScript, script: scriptPubKey },
+        ],
+        validate: true,
+      });
+      halfSignedTx.tx.should.equal(halfSignedTxHex);
     });
 
     it('BCH segwit should fail', async function () {

@@ -3,11 +3,13 @@ import * as crypto from 'crypto';
 
 import { Triple } from '../bitgo';
 import { RootWalletKeys } from '../bitgo';
-import { ecc } from '../noble_ecc';
+import { ecc, ECPair, ECPairInterface } from '../noble_ecc';
+import { networks } from '../networks';
 
 const bip32: BIP32API = BIP32Factory(ecc);
 
 export type KeyTriple = Triple<BIP32Interface>;
+export type UncompressedKeyTriple = Triple<ECPairInterface>;
 
 export function getKey(seed: string): BIP32Interface {
   return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
@@ -15,6 +17,21 @@ export function getKey(seed: string): BIP32Interface {
 
 export function getKeyTriple(seed: string): KeyTriple {
   return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
+}
+
+function getUncompressedKey(input) {
+  // Using input for deterministic randomness
+  return ECPair.makeRandom({
+    compressed: false,
+    network: networks.testnet,
+    rng: (): Buffer => {
+      return Buffer.alloc(32, input);
+    },
+  });
+}
+
+export function getUncompressedKeyTriple(inputs: Triple<number>): UncompressedKeyTriple {
+  return [getUncompressedKey(inputs[0]), getUncompressedKey(inputs[1]), getUncompressedKey(inputs[2])];
 }
 
 export function getKeyName(triple: Triple<BIP32Interface>, k: BIP32Interface): string | undefined {
