@@ -365,26 +365,41 @@ describe('Wallet Prototype Methods', function () {
         address,
         redeemScript,
         scriptPubKey,
-        userKeyWIF: signingKey,
+        userKeyWIF: userSigningKey,
+        bitgoKeyWIF: bitgoSigningKey,
         unsignedTxHex,
         halfSignedTxHex,
+        fullSignedTxHex,
       } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
       const testBitgo = new BitGoAPI({ env: 'test' });
       const fakeTestWallet = new Wallet(testBitgo, {
         id: address,
         private: { safe: { redeemScript } },
       });
+      const unspents = [
+        // https://blockstream.info/testnet/api/address/2N3L9cu9WN2Df7Xvb1Y8owokuDVj5Hdyv4i/utxo
+        { value: 100000, redeemScript, script: scriptPubKey },
+        { value: 100000, redeemScript, script: scriptPubKey },
+      ];
       const halfSignedTx = await fakeTestWallet.signTransaction({
         transactionHex: unsignedTxHex,
-        signingKey,
-        unspents: [
-          // https://blockstream.info/testnet/api/address/2N3L9cu9WN2Df7Xvb1Y8owokuDVj5Hdyv4i/utxo
-          { value: 100000, redeemScript, script: scriptPubKey },
-          { value: 100000, redeemScript, script: scriptPubKey },
-        ],
+        signingKey: userSigningKey,
+        unspents,
         validate: true,
       });
       halfSignedTx.tx.should.equal(halfSignedTxHex);
+
+      const fullSignedTx = await fakeTestWallet.signTransaction({
+        transactionHex: halfSignedTxHex,
+        signingKey: bitgoSigningKey,
+        unspents,
+        validate: true,
+        fullLocalSigning: true,
+      });
+      // Upon calling txb.build() instead after getting 2 valid signatures, we get a valid full signed tx that was broadcast
+      // and confirmed on testnet here: https://mempool.space/testnet/tx/bde09f1bd5e6661c28d90e4c96291853e21ba15ab42f3e4a30719decb73e791b
+      // It's present in the fullSignedTxHexBuildComplete property of the fixture.
+      fullSignedTx.tx.should.equal(fullSignedTxHex);
     });
 
     it('BCH segwit should fail', async function () {
