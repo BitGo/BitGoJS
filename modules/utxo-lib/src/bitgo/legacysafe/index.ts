@@ -48,8 +48,12 @@ export function createLegacySafeOutputScript2of3(
   }
 
   pubkeys.forEach((key) => {
-    if (key.length !== 65) {
-      throw new Error(`Unexpected key length ${key.length}. Must use uncompressed keys.`);
+    if (key.length !== pubkeys[0].length) {
+      throw new Error(`all pubkeys must have the same length`);
+    }
+    if (key.length !== 65 && key.length !== 33) {
+      // V1 Safe BTC wallets could contain either uncompressed or compressed pubkeys
+      throw new Error(`Unexpected key length ${key.length}, neither compressed nor uncompressed.`);
     }
   });
 

@@ -4,6 +4,7 @@ export * as bcashAddress from './bitcoincash';
 export * as keyutil from './keyutil';
 export * as nonStandardHalfSigned from './nonStandardHalfSigned';
 export * as outputScripts from './outputScripts';
+export * as legacySafe from './legacysafe';
 export * as musig2 from './Musig2';
 export * from './dash';
 export * from './parseInput';
