@@ -114,8 +114,12 @@ export function signPsbtInput(
   inputIndex: number,
   rootWalletKeys: RootWalletKeys,
   sign: 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
+  params?: {
+    signers?: { signerName: KeyName; cosignerName?: KeyName };
+    deterministic?: boolean;
+  }
 ): void {
+  const { signers, deterministic } = params ?? {};
   const { signerName, cosignerName } = signers ? signers : getSigners(input.scriptType);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
@@ -124,8 +128,8 @@ export function signPsbtInput(
       psbt.signInputHD(inputIndex, rootWalletKeys[signerName]);
     }
   }
-  if (sign === 'fullsigned' && cosignerName) {
-    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName]);
+  if (sign === 'fullsigned' && cosignerName && input.scriptType !== 'p2shP2pk') {
+    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic });
   }
 }
 
@@ -138,10 +142,14 @@ export function signAllPsbtInputs(
   inputs: Input[],
   rootWalletKeys: RootWalletKeys,
   sign: 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
+  params?: {
+    signers?: { signerName: KeyName; cosignerName?: KeyName };
+    deterministic?: boolean;
+  }
 ): void {
-  inputs.forEach((input, index) => {
-    signPsbtInput(psbt, input, index, rootWalletKeys, sign, signers);
+  const { signers, deterministic } = params ?? {};
+  inputs.forEach((input, inputIndex) => {
+    signPsbtInput(psbt, input, inputIndex, rootWalletKeys, sign, { signers, deterministic });
   });
 }
 
@@ -154,8 +162,12 @@ export function constructPsbt(
   network: Network,
   rootWalletKeys: RootWalletKeys,
   sign: 'unsigned' | 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
+  params?: {
+    signers?: { signerName: KeyName; cosignerName?: KeyName };
+    deterministic?: boolean;
+  }
 ): UtxoPsbt {
+  const { signers, deterministic } = params ?? {};
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
@@ -198,12 +210,12 @@ export function constructPsbt(
   }
 
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
-  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo']);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo'], { deterministic });
 
-  signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned');
+  signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', { signers });
 
   if (sign === 'fullsigned') {
-    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, signers);
+    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, { signers, deterministic });
   }
 
   return psbt;

@@ -550,3 +550,37 @@ export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<big
 
   return tx;
 }
+
+/**
+ * Clones the psbt without nonWitnessUtxo for non-segwit inputs and witnessUtxo is added instead.
+ * It is not BIP-174 compliant, so use it carefully.
+ */
+export function clonePsbtWithoutNonWitnessUtxo(psbt: UtxoPsbt): UtxoPsbt {
+  const newPsbt = psbt.clone();
+  const txInputs = psbt.txInputs;
+
+  psbt.data.inputs.forEach((input, i) => {
+    if (input.nonWitnessUtxo && !input.witnessUtxo) {
+      const tx = UtxoTransaction.fromBuffer<bigint>(input.nonWitnessUtxo, false, 'bigint', psbt.network);
+      if (!txInputs[i].hash.equals(tx.getHash())) {
+        throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
+      }
+      newPsbt.data.inputs[i].witnessUtxo = tx.outs[txInputs[i].index];
+    }
+    delete newPsbt.data.inputs[i].nonWitnessUtxo;
+  });
+
+  return newPsbt;
+}
+
+/**
+ * Deletes witnessUtxo for non-segwit inputs to make the PSBT BIP-174 compliant.
+ */
+export function deleteWitnessUtxoForNonSegwitInputs(psbt: UtxoPsbt): void {
+  psbt.data.inputs.forEach((input, i) => {
+    const scriptType = getPsbtInputScriptType(input);
+    if (scriptType === 'p2sh' || scriptType === 'p2shP2pk') {
+      delete input.witnessUtxo;
+    }
+  });
+}
