@@ -16,7 +16,7 @@ export const SendTransactionRequest = t.exact(
       invoice: t.unknown,
       videoApprovers: t.array(t.unknown),
     }),
-    BuildParams,
+    BuildParams.type,
   ])
 );
 

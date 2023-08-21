@@ -94,7 +94,7 @@ import { getTxRequest } from '../tss';
 import { Hash } from 'crypto';
 import { ofcTokens } from '@bitgo/statics';
 import { SendTransactionRequest } from './SendTransactionRequest';
-import { buildParamKeys } from './BuildParams';
+import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
 
 const debug = require('debug')('bitgo:v2:wallet');
@@ -1931,10 +1931,10 @@ export class Wallet implements IWallet {
 
     params.recipients = [];
 
-    // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
-    const submitParams = Object.assign(params, await this.prebuildAndSignTransaction(params));
-    delete (submitParams as any).wallet;
-    return await this.submitTransaction(submitParams);
+    return await this.submitTransaction({
+      ...(await this.prebuildAndSignTransaction(params)),
+      ...BuildParams.encode(params),
+    });
   }
 
   /**
