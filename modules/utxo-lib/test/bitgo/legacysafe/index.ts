@@ -31,12 +31,11 @@ describe('public key conversion', function () {
 
 describe('legacy safe scripts creation', function () {
   const compressedKeyPairs = getKeyTriple('utxo');
-  const compressedPubKeys = compressedKeyPairs.map((keyPair) => keyPair.publicKey);
 
-  it('throws error for compressed public keys', function () {
+  it('throws error for invalid public keys', function () {
     assert.throws(
-      () => createLegacySafeOutputScript2of3(compressedPubKeys, networks.bitcoin),
-      /^Error: Unexpected key length 33. Must use uncompressed keys.$/
+      () => createLegacySafeOutputScript2of3([Buffer.alloc(10), Buffer.alloc(11), Buffer.alloc(12)], networks.bitcoin),
+      /^Error: Unexpected key length 10, neither compressed nor uncompressed.$/
     );
   });
 
