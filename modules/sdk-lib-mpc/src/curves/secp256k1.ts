@@ -1,5 +1,5 @@
 import { bigIntFromU8ABE, bigIntToBufferBE } from '../util';
-import { BaseCurve } from './baseCurve';
+import { BaseCurve } from './types';
 import * as secp from '@noble/secp256k1';
 
 const order = secp.CURVE.n;

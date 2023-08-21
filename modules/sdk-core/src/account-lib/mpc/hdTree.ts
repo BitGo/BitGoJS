@@ -1,6 +1,3 @@
-/**
- * An interface for calculating a subkey in an HD key scheme.
- */
 import { createHmac } from 'crypto';
 import { Ed25519Curve } from './curves';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromBufferLE, bigIntToBufferLE } from './util';

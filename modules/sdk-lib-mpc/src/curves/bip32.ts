@@ -1,8 +1,9 @@
 import { createHmac } from 'crypto';
 
-import { pathToIndices, PrivateKeychain, PublicKeychain } from './hdTree';
+import { PrivateKeychain, PublicKeychain } from './types';
 import { Secp256k1Curve } from './secp256k1';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../util';
+import { pathToIndices } from './hdTree';
 
 export class BIP32 {
   static curve: Secp256k1Curve = new Secp256k1Curve();
