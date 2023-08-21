@@ -235,6 +235,8 @@ exports.createTransaction = function (params) {
 
   let changeOutputs: Output[] = [];
 
+  let containsUncompressedPublicKeys = false;
+
   // The transaction.
   let transaction = utxolib.bitgo.createTransactionBuilderForNetwork(network);
 
@@ -500,7 +502,14 @@ exports.createTransaction = function (params) {
             (feeSingleKeySourceAddress ? 1 : 0),
         };
 
+        // As per the response of get unspents API, for v1 safe wallets redeemScript is returned
+        // in the response in hex format
+        containsUncompressedPublicKeys = unspents.some(
+          (u) => u.redeemScript.length === 201 * 2 /* hex length is twice the length in bytes */
+        );
+
         estTxSize = estimateTransactionSize({
+          containsUncompressedPublicKeys,
           nP2shInputs: txInfo.nP2shInputs,
           nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
           nP2pkhInputs: txInfo.nP2pkhInputs,
@@ -511,6 +520,7 @@ exports.createTransaction = function (params) {
       .then(function () {
         minerFeeInfo = exports.calculateMinerFeeInfo({
           bitgo: params.wallet.bitgo,
+          containsUncompressedPublicKeys,
           feeRate: feeRate,
           nP2shInputs: txInfo.nP2shInputs,
           nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
@@ -802,16 +812,24 @@ const estimateTransactionSize = function (params) {
     throw new Error('expecting positive nOutputs');
   }
 
-  const estimatedSize =
-    VirtualSizes.txP2shInputSize * params.nP2shInputs +
+  // The size of an uncompressed public key is 32 bytes more than the compressed key,
+  // and hence, needs to be accounted for in the transaction size estimation.
+  const uncompressedPublicKeysTripleCorrectionFactor = 32 * 3;
+
+  return (
+    // This is not quite accurate - if there is a mix of inputs scripts where some used
+    // compressed keys and some used uncompressed keys, we would overestimate the size.
+    // Since we don't have mixed input sets, this should not be an issue in practice.
+    (VirtualSizes.txP2shInputSize +
+      (params.containsUncompressedPublicKeys ? uncompressedPublicKeysTripleCorrectionFactor : 0)) *
+      params.nP2shInputs +
     VirtualSizes.txP2shP2wshInputSize * (params.nP2shP2wshInputs || 0) +
     VirtualSizes.txP2pkhInputSizeUncompressedKey * (params.nP2pkhInputs || 0) +
     VirtualSizes.txP2pkhOutputSize * params.nOutputs +
     // if the tx contains at least one segwit input, the tx overhead is increased by 1
     VirtualSizes.txOverheadSize +
-    (params.nP2shP2wshInputs > 0 ? 1 : 0);
-
-  return estimatedSize;
+    (params.nP2shP2wshInputs > 0 ? 1 : 0)
+  );
 };
 
 /**

@@ -127,7 +127,7 @@ describe('Wallet Prototype Methods', function () {
   });
 
   describe('Create Transaction', function () {
-    let bgUrl;
+    let bgUrl, bgUrlTest;
     let fakeProdWallet;
 
     before(function () {
@@ -139,6 +139,7 @@ describe('Wallet Prototype Methods', function () {
         id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4',
         private: { keychains: [userKeypair, backupKeypair, bitgoKey] },
       });
+      bgUrlTest = common.Environments[bitgo.getEnv()].uri;
     });
 
     it('extra unspent fetch params', async function () {
@@ -360,31 +361,98 @@ describe('Wallet Prototype Methods', function () {
       );
     });
 
-    it('signs an unsigned tx made of uncompressed public keys and verifies signatures', async function () {
+    it('creates an unsigned tx made of uncompressed public keys of v1 safe wallet', async function () {
+      const { address, redeemScript, scriptPubKey } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
+      const testBitgo = new BitGoAPI({ env: 'test' });
+      const fakeTestV1SafeWallet = new Wallet(testBitgo, {
+        id: address,
+        private: { safe: { redeemScript } },
+      });
+      const unspentsToSpend = [
+        {
+          value: 100000,
+          redeemScript,
+          script: scriptPubKey,
+          tx_hash: 'a55d11dc8b701bd19601fbfe711a1e465fc8f128ec4474e78e1fd087e808e5fe',
+          tx_output_n: 0,
+          confirmations: 1,
+        },
+        {
+          value: 100000,
+          redeemScript,
+          script: scriptPubKey,
+          tx_hash: '48fb879cec879356045a331937023aed859f5dc5db955a1dc8a5ccf29f49d108',
+          tx_output_n: 0,
+          confirmations: 1,
+        },
+      ];
+      const recipients = {
+        '2MyGxrhLC4kRfuVjLqCVYFtC7DchhgMCiNz': 191340, // purposely set to simulate a sweep transaction
+      };
+
+      const scope = nock(bgUrlTest)
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2N3L9cu9WN2Df7Xvb1Y8owokuDVj5Hdyv4i' });
+
+      const result = await fakeTestV1SafeWallet.createTransaction({
+        recipients,
+        unspents: unspentsToSpend,
+        feeRate: 10000, // 10 sat/byte
+        bitgoFee: {
+          amount: 0,
+          address: '',
+        },
+      });
+
+      scope.isDone().should.be.true();
+
+      result.estimatedSize.should.equal(866);
+      result.fee.should.equal(8660);
+      // This should equal to 1 because this is a sweep transaction but due to hardcoded addition of
+      // 1 change output in transactionBuilder, it is 2.
+      // Because of this the estimated size of the transactions is more than what it actually is in the hex.
+      result.txInfo.nOutputs.should.equal(2);
+    });
+
+    it('signs an unsigned tx made of uncompressed public keys of v1 safe wallet & verifies signatures', async function () {
       const {
         address,
         redeemScript,
         scriptPubKey,
-        userKeyWIF: signingKey,
+        userKeyWIF: userSigningKey,
+        bitgoKeyWIF: bitgoSigningKey,
         unsignedTxHex,
         halfSignedTxHex,
+        fullSignedTxHex,
       } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
       const testBitgo = new BitGoAPI({ env: 'test' });
-      const fakeTestWallet = new Wallet(testBitgo, {
+      const fakeTestV1SafeWallet = new Wallet(testBitgo, {
         id: address,
         private: { safe: { redeemScript } },
       });
-      const halfSignedTx = await fakeTestWallet.signTransaction({
+      const unspentsToSpend = [
+        { value: 100000, redeemScript, script: scriptPubKey },
+        { value: 100000, redeemScript, script: scriptPubKey },
+      ];
+      const halfSignedTx = await fakeTestV1SafeWallet.signTransaction({
         transactionHex: unsignedTxHex,
-        signingKey,
-        unspents: [
-          // https://blockstream.info/testnet/api/address/2N3L9cu9WN2Df7Xvb1Y8owokuDVj5Hdyv4i/utxo
-          { value: 100000, redeemScript, script: scriptPubKey },
-          { value: 100000, redeemScript, script: scriptPubKey },
-        ],
+        signingKey: userSigningKey,
+        unspents: unspentsToSpend,
         validate: true,
       });
       halfSignedTx.tx.should.equal(halfSignedTxHex);
+
+      const fullSignedTx = await fakeTestV1SafeWallet.signTransaction({
+        transactionHex: halfSignedTxHex,
+        signingKey: bitgoSigningKey,
+        unspents: unspentsToSpend,
+        validate: true,
+        fullLocalSigning: true,
+      });
+      // Upon calling txb.build() instead after getting 2 valid signatures, we get a valid full signed tx that was broadcast
+      // and confirmed on testnet here: https://mempool.space/testnet/tx/bde09f1bd5e6661c28d90e4c96291853e21ba15ab42f3e4a30719decb73e791b
+      // It's present in the fullSignedTxHexBuildComplete property of the fixture.
+      fullSignedTx.tx.should.equal(fullSignedTxHex);
     });
 
     it('BCH segwit should fail', async function () {
