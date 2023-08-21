@@ -28,6 +28,11 @@ import {
   extractP2msOnlyHalfSignedTx,
   toOutput,
   createTransactionBuilderFromTransaction,
+  addXpubsToPsbt,
+  clonePsbtWithoutNonWitnessUtxo,
+  deleteWitnessUtxoForNonSegwitInputs,
+  getPsbtInputScriptType,
+  withUnsafeNonSegwit,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -41,6 +46,7 @@ import {
 import {
   getDefaultWalletKeys,
   Input,
+  inputScriptTypes,
   mockReplayProtectionUnspent,
   Output,
   outputScriptTypes,
@@ -81,6 +87,9 @@ const halfSignedInputs = (['p2sh', 'p2wsh', 'p2shP2wsh'] as const).map((scriptTy
   value: BigInt(1000),
 }));
 const halfSignedOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(500) }));
+
+const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
+const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
 
 describe('extractP2msOnlyHalfSignedTx failure', function () {
   it('invalid signature count', function () {
@@ -132,7 +141,7 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
         )
         .filter((v) => !!v) as testutil.TxnInput<bigint>[];
 
-      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'halfsigned', signers);
+      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'halfsigned', { signers });
       const halfSignedPsbtTx = extractP2msOnlyHalfSignedTx(psbt);
 
       let txb = testutil.constructTxnBuilder(txnInputs, txnOutputs, network, rootWalletKeys, 'halfsigned', signers);
@@ -144,7 +153,7 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
       validatePsbtParsing(halfSignedPsbtTx, psbt, unspents, 'halfsigned');
       validatePsbtParsing(halfSignedTxbTx, psbt, unspents, 'halfsigned');
 
-      testutil.signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'fullsigned', signers);
+      testutil.signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'fullsigned', { signers });
       const fullySignedPsbt = psbt.clone();
       const psbtTx = psbt.finalizeAllInputs().extractTransaction();
 
@@ -161,14 +170,91 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
   });
 }
 
+function runBuildSignSendFlowTest(network: Network, inputs: Input[], outputs: Output[]) {
+  const coin = getNetworkName(network);
+
+  function assertValidate(psbt: UtxoPsbt) {
+    psbt.data.inputs.forEach((input, i) => {
+      assert.ok(psbt.validateSignaturesOfInputHD(i, rootWalletKeys['user']));
+      if (getPsbtInputScriptType(input) !== 'p2shP2pk') {
+        assert.ok(psbt.validateSignaturesOfInputHD(i, rootWalletKeys['bitgo']));
+      }
+    });
+    assert.ok(psbt.validateSignaturesOfAllInputs());
+  }
+
+  describe(`Build, sign & send flow for ${coin}`, function () {
+    it(`success for ${coin}`, function () {
+      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'unsigned', {
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+      });
+
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
+
+      let psbtWithoutPrevTx = clonePsbtWithoutNonWitnessUtxo(psbt);
+      let hex = psbtWithoutPrevTx.toHex();
+
+      let psbtAtHsm = createPsbtFromHex(hex, network);
+      psbtAtHsm.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo'], { deterministic: true });
+      let hexAtHsm = psbtAtHsm.toHex();
+
+      let psbtFromHsm = createPsbtFromHex(hexAtHsm, network);
+      deleteWitnessUtxoForNonSegwitInputs(psbtFromHsm);
+      psbt.combine(psbtFromHsm);
+
+      testutil.signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', {
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+      });
+
+      psbtWithoutPrevTx = clonePsbtWithoutNonWitnessUtxo(psbt);
+      hex = psbtWithoutPrevTx.toHex();
+
+      psbtAtHsm = createPsbtFromHex(hex, network);
+      withUnsafeNonSegwit(psbtAtHsm, () => {
+        testutil.signAllPsbtInputs(psbtAtHsm, inputs, rootWalletKeys, 'fullsigned', {
+          signers: {
+            signerName: 'user',
+            cosignerName: 'bitgo',
+          },
+          deterministic: true,
+        });
+      });
+      withUnsafeNonSegwit(psbtAtHsm, () => {
+        assertValidate(psbtAtHsm);
+      });
+      hexAtHsm = psbtAtHsm.toHex();
+
+      psbtFromHsm = createPsbtFromHex(hexAtHsm, network);
+      deleteWitnessUtxoForNonSegwitInputs(psbtFromHsm);
+      psbt.combine(psbtFromHsm);
+
+      assertValidate(psbt);
+      assert.doesNotThrow(() => psbt.finalizeAllInputs().extractTransaction());
+    });
+  });
+}
+
 getNetworkList()
   .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
   .forEach((network) => {
-    const supportedPsbtInputs = halfSignedInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
-    const supportedPsbtOutputs = halfSignedOutputs.filter((output) =>
-      isSupportedScriptType(network, output.scriptType)
+    runExtractP2msOnlyHalfSignedTxTest(
+      network,
+      halfSignedInputs.filter((input) => isSupportedScriptType(network, input.scriptType)),
+      halfSignedOutputs.filter((output) => isSupportedScriptType(network, output.scriptType))
     );
-    runExtractP2msOnlyHalfSignedTxTest(network, supportedPsbtInputs, supportedPsbtOutputs);
+
+    const supportedPsbtInputs = psbtInputs.filter((input) =>
+      isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
+    );
+    const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
+    runBuildSignSendFlowTest(network, supportedPsbtInputs, supportedPsbtOutputs);
   });
 
 describe('isTransactionWithKeyPathSpendInput', function () {

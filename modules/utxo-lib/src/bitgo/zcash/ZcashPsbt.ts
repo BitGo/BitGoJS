@@ -8,7 +8,7 @@ import { Network, PsbtTransaction, Signer } from '../../';
 import { Psbt as PsbtBase } from 'bip174';
 import * as types from 'bitcoinjs-lib/src/types';
 import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
-import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
+import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER, withUnsafeNonSegwit } from '../PsbtUtil';
 const typeforce = require('typeforce');
 
 const CONSENSUS_BRANCH_ID_KEY = Buffer.concat([
@@ -126,20 +126,11 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
   // transactions because zcash hashes the value directly. Thus, it is unnecessary to have
   // the previous transaction hash on the unspent.
   signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
-    return this.withUnsafeSignNonSegwitTrue(super.signInput.bind(this, inputIndex, keyPair, sighashTypes));
+    return withUnsafeNonSegwit(this, super.signInput.bind(this, inputIndex, keyPair, sighashTypes));
   }
 
   validateSignaturesOfInput(inputIndex: number, validator: ValidateSigFunction, pubkey?: Buffer): boolean {
-    return this.withUnsafeSignNonSegwitTrue(super.validateSignaturesOfInput.bind(this, inputIndex, validator, pubkey));
-  }
-
-  private withUnsafeSignNonSegwitTrue<T>(fn: () => T): T {
-    (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
-    try {
-      return fn();
-    } finally {
-      (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    }
+    return withUnsafeNonSegwit(this, super.validateSignaturesOfInput.bind(this, inputIndex, validator, pubkey));
   }
 
   private setPropertyCheckSignatures(propName: keyof ZcashTransaction<bigint>, value: unknown) {

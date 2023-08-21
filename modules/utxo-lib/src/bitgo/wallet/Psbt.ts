@@ -9,7 +9,7 @@ import { UtxoTransaction } from '../UtxoTransaction';
 import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
-import { createPsbtFromTransaction } from '../transaction';
+import { createPsbtForNetwork, createPsbtFromTransaction } from '../transaction';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
 
 import {
@@ -549,4 +549,66 @@ export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<big
   });
 
   return tx;
+}
+
+/**
+ * Clones the psbt without nonWitnessUtxo for non-segwit inputs and witnessUtxo is added instead.
+ * It is not BIP-174 compliant, so use it carefully.
+ */
+export function clonePsbtWithoutNonWitnessUtxo(psbt: UtxoPsbt): UtxoPsbt {
+  const newPsbt = createPsbtForNetwork({ network: psbt.network });
+  newPsbt.setVersion(psbt.version);
+  newPsbt.setLocktime(psbt.locktime);
+  newPsbt.updateGlobal({ ...psbt.data.globalMap });
+
+  psbt.txOutputs.forEach((output, i) => {
+    newPsbt.addOutput({ ...output });
+    newPsbt.updateOutput(i, psbt.data.outputs[i]);
+  });
+
+  const partialSigs = new Map<number, PartialSig[]>();
+  const tapScriptSigs = new Map<number, TapScriptSig[]>();
+
+  psbt.txInputs.forEach((txIn, i) => {
+    assert(!isPsbtInputFinalized(psbt.data.inputs[i]));
+    newPsbt.addInput({ ...txIn });
+    const { partialSig, tapScriptSig, ...input } = psbt.data.inputs[i];
+    if (partialSig) {
+      partialSigs.set(i, partialSig);
+    }
+    if (tapScriptSig) {
+      tapScriptSigs.set(i, tapScriptSig);
+    }
+    if (input.nonWitnessUtxo && !input.witnessUtxo) {
+      const tx = UtxoTransaction.fromBuffer<bigint>(input.nonWitnessUtxo, false, 'bigint', psbt.network);
+      if (!txIn.hash.equals(tx.getHash())) {
+        throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
+      }
+      input.witnessUtxo = tx.outs[txIn.index];
+    }
+    delete input.nonWitnessUtxo;
+    newPsbt.updateInput(i, input);
+    input.unknownKeyVals?.forEach((keyVal) => newPsbt.addUnknownKeyValToInput(i, keyVal));
+  });
+
+  partialSigs.forEach((partialSig, i) => {
+    newPsbt.updateInput(i, { partialSig });
+  });
+  tapScriptSigs.forEach((tapScriptSig, i) => {
+    newPsbt.updateInput(i, { tapScriptSig });
+  });
+
+  return newPsbt;
+}
+
+/**
+ * Deletes witnessUtxo for non-segwit inputs to make the PSBT BIP-174 compliant.
+ */
+export function deleteWitnessUtxoForNonSegwitInputs(psbt: UtxoPsbt): void {
+  psbt.data.inputs.forEach((input, i) => {
+    const scriptType = getPsbtInputScriptType(input);
+    if (scriptType === 'p2sh' || scriptType === 'p2shP2pk') {
+      delete input.witnessUtxo;
+    }
+  });
 }

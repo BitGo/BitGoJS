@@ -1,5 +1,6 @@
 import { decodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { PsbtInput } from 'bip174/src/lib/interfaces';
+import { Psbt } from 'bitcoinjs-lib/src/psbt';
 
 /**
  * bitgo proprietary key identifier
@@ -103,4 +104,16 @@ export function isPsbt(data: Buffer | string): boolean {
     data = Buffer.from(data.slice(0, 10), 'hex');
   }
   return 5 <= data.length && data.readUInt32BE(0) === 0x70736274 && data.readUInt8(4) === 0xff;
+}
+
+/**
+ * This function allows signing or validating a psbt with non-segwit inputs those do not contain nonWitnessUtxo.
+ */
+export function withUnsafeNonSegwit<T>(psbt: Psbt, fn: () => T, unsafe = true): T {
+  (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = unsafe;
+  try {
+    return fn();
+  } finally {
+    (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+  }
 }
