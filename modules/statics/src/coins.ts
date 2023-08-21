@@ -4363,6 +4363,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ORBS
   ),
   erc20(
+    '3cdd832f-6776-4694-b8a0-90ba4fc50c89',
+    'ousg',
+    'Ondo Short-Term U.S. Government Bond Fund',
+    18,
+    '0x1b19c19393e2d034d8ff31ff34c81252fcbbee92',
+    UnderlyingAsset.OUSG
+  ),
+  erc20(
     '6d8d74dc-087c-499f-b7a8-c04645bef6f8',
     'oxt',
     'Orchid',
@@ -4707,6 +4715,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PYR
   ),
   erc20(
+    '8974a6e4-a143-4b8d-98e5-be0e63707092',
+    'pyusd',
+    'PayPal USD',
+    6,
+    '0x6c3ea9036406852006290770bedfcaba0e23a0e8',
+    UnderlyingAsset.PYUSD
+  ),
+  erc20(
     '62a385af-296f-44e7-b4f0-7a25a1e990dc',
     'qash',
     'QASH',
@@ -5033,6 +5049,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xa31b1767e09f842ecfd4bc471fe44f830e3891aa',
     UnderlyingAsset.ROOBEE
+  ),
+  erc20(
+    'a72f89b9-7c43-4547-8d4e-9f6d10867347',
+    'rpl',
+    'Rocket Pool',
+    18,
+    '0xd33526068d116ce69f19a9ee46f0bd304f21a51f',
+    UnderlyingAsset.RPL
   ),
   erc20(
     'bbe17b1a-04e4-4ed8-a941-db52c61f502a',
