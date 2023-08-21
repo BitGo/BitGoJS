@@ -2047,6 +2047,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CETH
   ),
   erc20(
+    'fd41106e-cf6f-4f0c-9868-a41fbcec8a49',
+    'cfx',
+    'Conflux',
+    18,
+    '0x969faf8ca66b0d53a5196b5d3a0952cd3a88e074',
+    UnderlyingAsset.CFX
+  ),
+  erc20(
     '843616fb-63cf-42d6-9dae-f3362864bd8f',
     'cho',
     'choise.com',
@@ -7084,6 +7092,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('779e9fa5-e4f2-4c74-947a-5b5df61e66df', 'ofcbusd', 'Binance USD', 18, UnderlyingAsset.BUSD),
   ofcerc20('50dab286-6071-4298-893b-fb6c38e3442b', 'ofccel', 'Celsius', 4, UnderlyingAsset.CEL),
   ofcerc20('94ea31eb-f35d-4075-a9fe-90a91a6b03f8', 'ofccelr', 'Celer Network', 18, UnderlyingAsset.CELR),
+  ofcerc20('f019a286-14bb-4e27-9c08-3c6216a59851', 'ofccfx', 'Conflux', 18, UnderlyingAsset.CFX),
   ofcerc20('37e74937-5392-423b-a3d5-d46dfb15251c', 'ofcchsb', 'SwissBorg', 8, UnderlyingAsset.CHSB),
   ofcerc20('e20ad46f-91ca-4bed-9484-74d1b4808672', 'ofccomp', 'Compound Token', 18, UnderlyingAsset.COMP),
   ofcerc20('3a0ae54e-223c-42c9-918f-effdd297db65', 'ofccro', 'Crypto.com Chain', 8, UnderlyingAsset.CRO),
@@ -7174,7 +7183,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('5f936db2-6014-4afa-b997-4e7c6b34e814', 'ofcpro', 'Propy', 18, UnderlyingAsset.PRO),
   ofcerc20('65055519-d950-466a-b713-f88d9b1bde7c', 'ofcpundix', 'Pundi X2', 18, UnderlyingAsset.PUNDIX),
   ofcerc20('fb602049-f477-43ea-b938-95c2484eda31', 'ofcray', 'Raydium', 6, UnderlyingAsset.RAY),
-  ofcerc20('1c3eec6c-c1be-4ca9-b044-6e4379be0287', 'ofcreef', 'REEF', 18, UnderlyingAsset.RAY),
+  ofcerc20('1c3eec6c-c1be-4ca9-b044-6e4379be0287', 'ofcreef', 'REEF', 18, UnderlyingAsset.REEF),
   ofcerc20('220aa19a-7b62-4132-aef2-475bbb83827d', 'ofcrep', 'Augur', 18, UnderlyingAsset.REP),
   ofcerc20('845f503b-66ce-4f4e-b841-163578b26d41', 'ofcrly', 'Rally', 18, UnderlyingAsset.RLY),
   ofcerc20('aee33f6d-ae42-4356-86a8-35d9b26633fa', 'ofcrndr', 'Render Token', 18, UnderlyingAsset.RNDR),

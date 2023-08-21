@@ -407,6 +407,7 @@ export enum UnderlyingAsset {
   CEL = 'cel',
   CELR = 'celr',
   CETH = 'ceth',
+  CFX = 'cfx',
   CHO = 'cho',
   CHFX = 'chfx',
   CHR = 'chr',
