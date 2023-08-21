@@ -1,14 +1,14 @@
-export interface PublicKeychain {
+export type PublicKeychain = {
   // public key
   pk: bigint;
   chaincode: bigint;
-}
+};
 
-export interface PrivateKeychain extends PublicKeychain {
+export type PrivateKeychain = PublicKeychain & {
   // secret key
   sk: bigint;
   prefix?: bigint;
-}
+};
 
 export interface HDTree {
   publicDerive(keychain: PublicKeychain, path: string): PublicKeychain;
