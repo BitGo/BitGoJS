@@ -177,7 +177,7 @@ describe(`UTXO coin signTransaction`, async function () {
     }));
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt({ inputs, outputs, network: coin.network, rootWalletKeys, sign: 'unsigned' });
 
     for (const v of [false, true]) {
       await signTransaction(psbt, v);
@@ -193,7 +193,7 @@ describe(`UTXO coin signTransaction`, async function () {
       }));
     const unspentSum = inputs.reduce((prev: bigint, cur) => prev + cur.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt({ inputs, outputs, network: coin.network, rootWalletKeys, sign: 'unsigned' });
 
     for (const v of [false, true]) {
       await signTransaction(psbt, v);
@@ -221,7 +221,7 @@ describe(`UTXO coin signTransaction`, async function () {
     const inputs: testutil.Input[] = [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }];
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt({ inputs, outputs, network: coin.network, rootWalletKeys, sign: 'unsigned' });
 
     await assert.rejects(
       async () => {
@@ -363,7 +363,7 @@ function run<TNumber extends number | bigint = number>(
       );
       const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
       const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-      return testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned');
+      return testutil.constructPsbt({ inputs, outputs, network: coin.network, walletKeys, sign: 'unsigned' });
     }
 
     async function getTransactionStages(): Promise<TransactionStages> {

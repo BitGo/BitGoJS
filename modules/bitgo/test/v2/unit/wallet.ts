@@ -370,13 +370,13 @@ describe('V2 Wallet:', function () {
     }
 
     it('should use a custom signing function if provided for PSBT with taprootKeyPathSpend input', async function () {
-      const psbt = utxoLib.testutil.constructPsbt(
-        [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }],
-        [{ scriptType: 'p2sh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
+      const psbt = utxoLib.testutil.constructPsbt({
+        inputs: [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(900) }],
+        network: basecoin.network,
+        rootWalletKeys: rootWalletKey,
+        sign: 'unsigned',
+      });
       const scope = nocks({ txHex: psbt.toHex() });
       const result = await wallet.sendMany({ recipients, customSigningFunction });
 
@@ -387,13 +387,13 @@ describe('V2 Wallet:', function () {
     });
 
     it('should use a custom signing function if provided for PSBT without taprootKeyPathSpend input', async function () {
-      const psbt = utxoLib.testutil.constructPsbt(
-        [{ scriptType: 'p2wsh', value: BigInt(1000) }],
-        [{ scriptType: 'p2sh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
+      const psbt = utxoLib.testutil.constructPsbt({
+        inputs: [{ scriptType: 'p2wsh', value: BigInt(1000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(900) }],
+        network: basecoin.network,
+        rootWalletKeys: rootWalletKey,
+        sign: 'unsigned',
+      });
       const scope = nocks({ txHex: psbt.toHex() });
       const result = await wallet.sendMany({ recipients, customSigningFunction });
 

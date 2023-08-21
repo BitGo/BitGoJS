@@ -126,20 +126,11 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
   // transactions because zcash hashes the value directly. Thus, it is unnecessary to have
   // the previous transaction hash on the unspent.
   signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
-    return this.withUnsafeSignNonSegwitTrue(super.signInput.bind(this, inputIndex, keyPair, sighashTypes));
+    return super.signInput(inputIndex, keyPair, { sighashTypes, unsafeSignNonSegwit: true });
   }
 
   validateSignaturesOfInput(inputIndex: number, validator: ValidateSigFunction, pubkey?: Buffer): boolean {
-    return this.withUnsafeSignNonSegwitTrue(super.validateSignaturesOfInput.bind(this, inputIndex, validator, pubkey));
-  }
-
-  private withUnsafeSignNonSegwitTrue<T>(fn: () => T): T {
-    (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
-    try {
-      return fn();
-    } finally {
-      (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    }
+    return super.validateSignaturesOfInput(inputIndex, validator, { pubkey, unsafeSignNonSegwit: true });
   }
 
   private setPropertyCheckSignatures(propName: keyof ZcashTransaction<bigint>, value: unknown) {

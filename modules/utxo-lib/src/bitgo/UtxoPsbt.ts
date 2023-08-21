@@ -61,8 +61,16 @@ import {
   ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
+import { Signer } from '../index';
+import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
 
-type SignatureParams = {
+export type UnsafeSignNonSegwit = { unsafeSignNonSegwit: boolean };
+
+type ValidateParams = UnsafeSignNonSegwit & {
+  pubkey?: Buffer;
+};
+
+type SignatureParams = UnsafeSignNonSegwit & {
   /** When true, and add the second (last) nonce and signature for a taproot key
    * path spend deterministically. Throws an error if done for the first nonce/signature
    * of a taproot keypath spend. Ignore for all other input types.
@@ -85,9 +93,13 @@ function defaultSighashTypes(network: Network): number[] {
   }
 }
 
+function toValidateParams(v?: Partial<ValidateParams> | Buffer): ValidateParams {
+  return Buffer.isBuffer(v) ? { unsafeSignNonSegwit: false, pubkey: v } : { unsafeSignNonSegwit: false, ...v };
+}
+
 function toSignatureParams(network: Network, v?: Partial<SignatureParams> | number[]): SignatureParams {
   if (Array.isArray(v)) return toSignatureParams(network, { sighashTypes: v });
-  return { deterministic: false, sighashTypes: defaultSighashTypes(network), ...v };
+  return { deterministic: false, unsafeSignNonSegwit: false, sighashTypes: defaultSighashTypes(network), ...v };
 }
 
 /**
@@ -512,80 +524,15 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this;
   }
 
-  /**
-   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
-   *
-   * Unlike the function it overrides, this does not take a validator. In BitGo
-   * context, we know how we want to validate so we just hard code the right
-   * validator.
-   */
-  validateSignaturesOfAllInputs(): boolean {
-    checkForInput(this.data.inputs, 0); // making sure we have at least one
-    const results = this.data.inputs.map((input, idx) => {
-      return this.validateSignaturesOfInputCommon(idx);
-    });
-    return results.reduce((final, res) => res && final, true);
-  }
-
-  /**
-   * @returns true iff any matching valid signature is found for a derived pub key from given HD key pair.
-   */
-  validateSignaturesOfInputHD(inputIndex: number, hdKeyPair: BIP32Interface): boolean {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    const pubKey = UtxoPsbt.deriveKeyPairForInput(hdKeyPair, input);
-    if (!pubKey) {
-      throw new Error('can not derive from HD key pair');
-    }
-    return this.validateSignaturesOfInputCommon(inputIndex, pubKey);
-  }
-
-  /**
-   * @returns true iff any valid signature(s) are found from bip32 data of PSBT or for given pub key.
-   */
-  validateSignaturesOfInputCommon(inputIndex: number, pubkey?: Buffer): boolean {
-    try {
-      if (this.isTaprootScriptPathInput(inputIndex)) {
-        return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
-      } else if (this.isTaprootKeyPathInput(inputIndex)) {
-        return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
-      }
-      return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), pubkey);
-    } catch (err) {
-      // Not an elegant solution. Might need upstream changes like custom error types.
-      if (err.message === 'No signatures for this pubkey') {
-        return false;
-      }
-      throw err;
-    }
-  }
-
-  private getMusig2SessionKey(
+  validateSignaturesOfInput(
     inputIndex: number,
-    sigHashType: number
-  ): {
-    participants: PsbtMusig2Participants;
-    nonces: Tuple<PsbtMusig2PubNonce>;
-    hash: Buffer;
-    sessionKey: SessionKey;
-  } {
-    const input = checkForInput(this.data.inputs, inputIndex);
-    if (!input.tapInternalKey || !input.tapMerkleRoot) {
-      throw new Error('both tapInternalKey and tapMerkleRoot are required');
-    }
-
-    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
-    const nonces = this.getMusig2Nonces(inputIndex, participants);
-
-    const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType]);
-
-    const sessionKey = createMusig2SigningSession({
-      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
-      pubKeys: participants.participantPubKeys,
-      txHash: hash,
-      internalPubKey: input.tapInternalKey,
-      tapTreeRoot: input.tapMerkleRoot,
-    });
-    return { participants, nonces, hash, sessionKey };
+    validator: ValidateSigFunction,
+    params?: Buffer | Partial<ValidateParams>
+  ): boolean {
+    const { unsafeSignNonSegwit, pubkey } = toValidateParams(params);
+    return unsafeSignNonSegwit
+      ? this.withUnsafeSignNonSegwitTrue(super.validateSignaturesOfInput.bind(this, inputIndex, validator, pubkey))
+      : super.validateSignaturesOfInput(inputIndex, validator, pubkey);
   }
 
   /**
@@ -683,6 +630,84 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @returns true iff any valid signature(s) are found from bip32 data of PSBT or for given pub key.
+   */
+  validateSignaturesOfInputCommon(inputIndex: number, params?: Buffer | Partial<ValidateParams>): boolean {
+    const { pubkey } = toValidateParams(params);
+    try {
+      if (this.isTaprootScriptPathInput(inputIndex)) {
+        return this.validateTaprootSignaturesOfInput(inputIndex, pubkey);
+      } else if (this.isTaprootKeyPathInput(inputIndex)) {
+        return this.validateTaprootMusig2SignaturesOfInput(inputIndex, pubkey);
+      }
+      return this.validateSignaturesOfInput(inputIndex, (p, m, s) => eccLib.verify(m, p, s, true), params);
+    } catch (err) {
+      // Not an elegant solution. Might need upstream changes like custom error types.
+      if (err.message === 'No signatures for this pubkey') {
+        return false;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
+   *
+   * Unlike the function it overrides, this does not take a validator. In BitGo
+   * context, we know how we want to validate so we just hard code the right
+   * validator.
+   */
+  validateSignaturesOfAllInputs(params?: ValidateSigFunction | UnsafeSignNonSegwit): boolean {
+    assert(typeof params !== 'function', 'validateSignaturesOfAllInputs does not take a validator');
+    checkForInput(this.data.inputs, 0); // making sure we have at least one
+    const results = this.data.inputs.map((input, idx) => {
+      return this.validateSignaturesOfInputCommon(idx, params);
+    });
+    return results.reduce((final, res) => res && final, true);
+  }
+
+  /**
+   * @returns true iff any matching valid signature is found for a derived pub key from given HD key pair.
+   */
+  validateSignaturesOfInputHD(inputIndex: number, hdKeyPair: BIP32Interface, params?: UnsafeSignNonSegwit): boolean {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    const pubkey = UtxoPsbt.deriveKeyPairForInput(hdKeyPair, input);
+    if (!pubkey) {
+      throw new Error('can not derive from HD key pair');
+    }
+    return this.validateSignaturesOfInputCommon(inputIndex, { ...params, pubkey });
+  }
+
+  private getMusig2SessionKey(
+    inputIndex: number,
+    sigHashType: number
+  ): {
+    participants: PsbtMusig2Participants;
+    nonces: Tuple<PsbtMusig2PubNonce>;
+    hash: Buffer;
+    sessionKey: SessionKey;
+  } {
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!input.tapInternalKey || !input.tapMerkleRoot) {
+      throw new Error('both tapInternalKey and tapMerkleRoot are required');
+    }
+
+    const participants = this.getMusig2Participants(inputIndex, input.tapInternalKey, input.tapMerkleRoot);
+    const nonces = this.getMusig2Nonces(inputIndex, participants);
+
+    const { hash } = this.getTaprootHashForSig(inputIndex, [sigHashType]);
+
+    const sessionKey = createMusig2SigningSession({
+      pubNonces: [nonces[0].pubNonce, nonces[1].pubNonce],
+      pubKeys: participants.participantPubKeys,
+      txHash: hash,
+      internalPubKey: input.tapInternalKey,
+      tapTreeRoot: input.tapMerkleRoot,
+    });
+    return { participants, nonces, hash, sessionKey };
+  }
+
+  /**
    * @param inputIndex
    * @param rootNodes optional input root bip32 nodes to verify with. If it is not provided, globalXpub will be used.
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
@@ -728,6 +753,23 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     }) as Triple<boolean>;
   }
 
+  private withUnsafeSignNonSegwitTrue<T>(fn: () => T): T {
+    (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
+    try {
+      return fn();
+    } finally {
+      (this as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+    }
+  }
+
+  signInput(inputIndex: number, keyPair: Signer, params?: number[] | Partial<SignatureParams>): this {
+    const { sighashTypes, unsafeSignNonSegwit } = toSignatureParams(this.network, params);
+    if (unsafeSignNonSegwit) {
+      return this.withUnsafeSignNonSegwitTrue(super.signInput.bind(this, inputIndex, keyPair, sighashTypes));
+    }
+    return super.signInput(inputIndex, keyPair, sighashTypes);
+  }
+
   /**
    * Mostly copied from bitcoinjs-lib/ts_src/psbt.ts
    */
@@ -738,12 +780,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     if (!hdKeyPair || !hdKeyPair.publicKey || !hdKeyPair.fingerprint) {
       throw new Error('Need HDSigner to sign input');
     }
-    const { sighashTypes, deterministic } = toSignatureParams(this.network, params);
+    const { sighashTypes, deterministic, unsafeSignNonSegwit } = toSignatureParams(this.network, params);
 
     const results: boolean[] = [];
     for (let i = 0; i < this.data.inputs.length; i++) {
       try {
-        this.signInputHD(i, hdKeyPair, { sighashTypes, deterministic });
+        this.signInputHD(i, hdKeyPair, { sighashTypes, deterministic, unsafeSignNonSegwit });
         results.push(true);
       } catch (err) {
         results.push(false);
@@ -819,11 +861,13 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     hdKeyPair: HDTaprootSigner | HDTaprootMusig2Signer,
     params?: number[] | Partial<SignatureParams>
   ): this {
-    const { sighashTypes, deterministic } = toSignatureParams(this.network, params);
+    const { sighashTypes, deterministic, unsafeSignNonSegwit } = toSignatureParams(this.network, params);
     if (this.isTaprootInput(inputIndex)) {
       return this.signTaprootInputHD(inputIndex, hdKeyPair, { sighashTypes, deterministic });
     } else {
-      return super.signInputHD(inputIndex, hdKeyPair, sighashTypes);
+      return unsafeSignNonSegwit
+        ? this.withUnsafeSignNonSegwitTrue(super.signInputHD.bind(this, inputIndex, hdKeyPair, sighashTypes))
+        : super.signInputHD(inputIndex, hdKeyPair, sighashTypes);
     }
   }
 

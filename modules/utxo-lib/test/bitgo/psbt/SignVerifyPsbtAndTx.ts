@@ -63,7 +63,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
 
   describe(`psbt build, sign and verify for ${coin} ${sign}`, function () {
     it(`getSignatureValidationArray with globalXpub ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      const psbt = constructPsbt({ inputs, outputs, network, rootWalletKeys, sign });
       addXpubsToPsbt(psbt, neutratedRootWalletKeys);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
@@ -79,7 +79,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
     });
 
     it(`getSignatureValidationArray with rootNodes ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      const psbt = constructPsbt({ inputs, outputs, network, rootWalletKeys, sign });
       addXpubsToPsbt(psbt, neutratedRootWalletKeys);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
@@ -95,7 +95,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
     });
 
     it(`getSignatureValidationArrayPsbt  ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      const psbt = constructPsbt({ inputs, outputs, network, rootWalletKeys, sign });
       const sigValidations = getSignatureValidationArrayPsbt(psbt, neutratedRootWalletKeys);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
@@ -106,7 +106,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
     });
 
     it(`psbt signature counts ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+      const psbt = constructPsbt({ inputs, outputs, network, rootWalletKeys, sign });
       const counts = getStrictSignatureCounts(psbt);
       const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
 

@@ -28,6 +28,9 @@ import {
   extractP2msOnlyHalfSignedTx,
   toOutput,
   createTransactionBuilderFromTransaction,
+  clonePsbtWithoutNonWitnessUtxo,
+  deleteWitnessUtxoForNonSegwitInputs,
+  addXpubsToPsbt,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -41,6 +44,7 @@ import {
 import {
   getDefaultWalletKeys,
   Input,
+  inputScriptTypes,
   mockReplayProtectionUnspent,
   Output,
   outputScriptTypes,
@@ -82,9 +86,18 @@ const halfSignedInputs = (['p2sh', 'p2wsh', 'p2shP2wsh'] as const).map((scriptTy
 }));
 const halfSignedOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(500) }));
 
+const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
+const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
 describe('extractP2msOnlyHalfSignedTx failure', function () {
   it('invalid signature count', function () {
-    const psbt = testutil.constructPsbt(halfSignedInputs, halfSignedOutputs, network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt({
+      inputs: halfSignedInputs,
+      outputs: halfSignedOutputs,
+      network,
+      rootWalletKeys,
+      sign: 'unsigned',
+    });
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
       (e) => e.message === 'unexpected signature count undefined'
@@ -92,7 +105,7 @@ describe('extractP2msOnlyHalfSignedTx failure', function () {
   });
 
   it('empty inputs', function () {
-    const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt({ inputs: [], outputs: [], network, rootWalletKeys, sign: 'unsigned' });
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
       (e) => e.message === 'empty inputs or outputs'
@@ -100,13 +113,13 @@ describe('extractP2msOnlyHalfSignedTx failure', function () {
   });
 
   it('unsupported script type', function () {
-    const psbt = testutil.constructPsbt(
-      [{ scriptType: 'p2tr', value: BigInt(1000) }],
-      [{ scriptType: 'p2sh', value: BigInt(900) }],
+    const psbt = testutil.constructPsbt({
+      inputs: [{ scriptType: 'p2tr', value: BigInt(1000) }],
+      outputs: [{ scriptType: 'p2sh', value: BigInt(900) }],
       network,
       rootWalletKeys,
-      'halfsigned'
-    );
+      sign: 'halfsigned',
+    });
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
       (e) => e.message === 'unsupported script type taprootScriptPathSpend'
@@ -132,7 +145,7 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
         )
         .filter((v) => !!v) as testutil.TxnInput<bigint>[];
 
-      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'halfsigned', signers);
+      const psbt = testutil.constructPsbt({ inputs, outputs, network, rootWalletKeys, sign: 'halfsigned', signers });
       const halfSignedPsbtTx = extractP2msOnlyHalfSignedTx(psbt);
 
       let txb = testutil.constructTxnBuilder(txnInputs, txnOutputs, network, rootWalletKeys, 'halfsigned', signers);
@@ -144,7 +157,7 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
       validatePsbtParsing(halfSignedPsbtTx, psbt, unspents, 'halfsigned');
       validatePsbtParsing(halfSignedTxbTx, psbt, unspents, 'halfsigned');
 
-      testutil.signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'fullsigned', signers);
+      testutil.signAllPsbtInputs({ psbt, inputs, rootWalletKeys, sign: 'fullsigned', signers });
       const fullySignedPsbt = psbt.clone();
       const psbtTx = psbt.finalizeAllInputs().extractTransaction();
 
@@ -161,14 +174,90 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
   });
 }
 
+function runClonePsbtWithoutNonWitnessUtxoTest(network: Network, inputs: Input[], outputs: Output[]) {
+  const coin = getNetworkName(network);
+
+  describe(`clonePsbtWithoutNonWitnessUtxo success for ${coin}`, function () {
+    it(`success for ${coin}`, function () {
+      const psbt = testutil.constructPsbt({
+        inputs,
+        outputs,
+        network,
+        rootWalletKeys,
+        sign: 'unsigned',
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+      });
+
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
+
+      let psbtWithoutPrevTx = clonePsbtWithoutNonWitnessUtxo(psbt);
+      let hex = psbtWithoutPrevTx.toHex();
+
+      let psbtAtHsm = createPsbtFromHex(hex, network);
+      psbtAtHsm.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo'], { deterministic: true });
+      let hexAtHsm = psbtAtHsm.toHex();
+
+      let psbtFromHsm = createPsbtFromHex(hexAtHsm, network);
+      deleteWitnessUtxoForNonSegwitInputs(psbtFromHsm);
+      psbt.combine(psbtFromHsm);
+
+      testutil.signAllPsbtInputs({
+        psbt,
+        inputs,
+        rootWalletKeys,
+        sign: 'halfsigned',
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+      });
+
+      psbtWithoutPrevTx = clonePsbtWithoutNonWitnessUtxo(psbt);
+      hex = psbtWithoutPrevTx.toHex();
+
+      psbtAtHsm = createPsbtFromHex(hex, network);
+      testutil.signAllPsbtInputs({
+        psbt: psbtAtHsm,
+        inputs,
+        rootWalletKeys,
+        sign: 'fullsigned',
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+        deterministic: true,
+        unsafeSignNonSegwit: true,
+      });
+      hexAtHsm = psbtAtHsm.toHex();
+
+      psbtFromHsm = createPsbtFromHex(hexAtHsm, network);
+      deleteWitnessUtxoForNonSegwitInputs(psbtFromHsm);
+      psbt.combine(psbtFromHsm);
+
+      assert.ok(psbt.validateSignaturesOfAllInputs());
+      assert.doesNotThrow(() => psbt.finalizeAllInputs().extractTransaction());
+    });
+  });
+}
+
 getNetworkList()
   .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
   .forEach((network) => {
-    const supportedPsbtInputs = halfSignedInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
-    const supportedPsbtOutputs = halfSignedOutputs.filter((output) =>
-      isSupportedScriptType(network, output.scriptType)
+    runExtractP2msOnlyHalfSignedTxTest(
+      network,
+      halfSignedInputs.filter((input) => isSupportedScriptType(network, input.scriptType)),
+      halfSignedOutputs.filter((output) => isSupportedScriptType(network, output.scriptType))
     );
-    runExtractP2msOnlyHalfSignedTxTest(network, supportedPsbtInputs, supportedPsbtOutputs);
+
+    const supportedPsbtInputs = psbtInputs.filter((input) =>
+      isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
+    );
+    const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
+    runClonePsbtWithoutNonWitnessUtxoTest(network, supportedPsbtInputs, supportedPsbtOutputs);
   });
 
 describe('isTransactionWithKeyPathSpendInput', function () {
@@ -180,16 +269,16 @@ describe('isTransactionWithKeyPathSpendInput', function () {
     });
 
     it('taprootKeyPath inputs successfully triggers', function () {
-      const psbt = testutil.constructPsbt(
-        [
+      const psbt = testutil.constructPsbt({
+        inputs: [
           { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
           { scriptType: 'p2sh', value: BigInt(1e8) },
         ],
-        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
         network,
         rootWalletKeys,
-        'fullsigned'
-      );
+        sign: 'fullsigned',
+      });
       assert(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
@@ -199,16 +288,16 @@ describe('isTransactionWithKeyPathSpendInput', function () {
     });
 
     it('no taprootKeyPath inputs successfully does not trigger', function () {
-      const psbt = testutil.constructPsbt(
-        [
+      const psbt = testutil.constructPsbt({
+        inputs: [
           { scriptType: 'p2trMusig2', value: BigInt(1e8) },
           { scriptType: 'p2sh', value: BigInt(1e8) },
         ],
-        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
         network,
         rootWalletKeys,
-        'fullsigned'
-      );
+        sign: 'fullsigned',
+      });
       assert(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction();
@@ -218,16 +307,16 @@ describe('isTransactionWithKeyPathSpendInput', function () {
     });
 
     it('unsigned inputs successfully fail', function () {
-      const psbt = testutil.constructPsbt(
-        [
+      const psbt = testutil.constructPsbt({
+        inputs: [
           { scriptType: 'p2wsh', value: BigInt(1e8) },
           { scriptType: 'p2sh', value: BigInt(1e8) },
         ],
-        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
         network,
         rootWalletKeys,
-        'unsigned'
-      );
+        sign: 'unsigned',
+      });
       const tx = psbt.getUnsignedTx();
       assert.strictEqual(isTransactionWithKeyPathSpendInput(tx), false);
       assert.strictEqual(isTransactionWithKeyPathSpendInput(tx.ins), false);
@@ -236,38 +325,38 @@ describe('isTransactionWithKeyPathSpendInput', function () {
 
   describe('psbt input', function () {
     it('empty inputs', function () {
-      const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+      const psbt = testutil.constructPsbt({ inputs: [], outputs: [], network, rootWalletKeys, sign: 'unsigned' });
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), false);
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), false);
     });
 
     it('psbt with taprootKeyPathInputs successfully triggers', function () {
-      const psbt = testutil.constructPsbt(
-        [
+      const psbt = testutil.constructPsbt({
+        inputs: [
           { scriptType: 'taprootKeyPathSpend', value: BigInt(1e8) },
           { scriptType: 'p2sh', value: BigInt(1e8) },
         ],
-        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
         network,
         rootWalletKeys,
-        'unsigned'
-      );
+        sign: 'unsigned',
+      });
 
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), true);
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), true);
     });
 
     it('psbt without taprootKeyPathInputs successfully does not trigger', function () {
-      const psbt = testutil.constructPsbt(
-        [
+      const psbt = testutil.constructPsbt({
+        inputs: [
           { scriptType: 'p2wsh', value: BigInt(1e8) },
           { scriptType: 'p2sh', value: BigInt(1e8) },
         ],
-        [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
+        outputs: [{ scriptType: 'p2sh', value: BigInt(2e8 - 10000) }],
         network,
         rootWalletKeys,
-        'halfsigned'
-      );
+        sign: 'halfsigned',
+      });
 
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt), false);
       assert.strictEqual(isTransactionWithKeyPathSpendInput(psbt.data.inputs), false);

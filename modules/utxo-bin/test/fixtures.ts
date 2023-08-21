@@ -59,7 +59,13 @@ export async function getPsbt(
       throw e;
     }
   }
-  const transaction = utxolib.testutil.constructPsbt(inputs, outputs, network, walletKeys, stage);
+  const transaction = utxolib.testutil.constructPsbt({
+    inputs,
+    outputs,
+    network,
+    rootWalletKeys: walletKeys,
+    sign: stage,
+  });
   if (writeFixture) {
     await fs.writeFile(writeFixture, JSON.stringify(transaction.toHex()), 'utf8');
   }

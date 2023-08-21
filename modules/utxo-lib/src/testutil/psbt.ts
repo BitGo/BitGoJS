@@ -26,7 +26,7 @@ import {
   verifySignatureWithUnspent,
   WalletUnspent,
 } from '../bitgo';
-import { Network } from '../networks';
+import { getMainnet, Network, networks } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
 import { toOutputScript } from '../address';
 
@@ -108,24 +108,31 @@ export function getSigners(inputType: InputScriptType): { signerName: KeyName; c
  * signs with first or second signature for single input.
  * p2shP2pk is signed only with first sign.
  */
-export function signPsbtInput(
-  psbt: UtxoPsbt,
-  input: Input,
-  inputIndex: number,
-  rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
-): void {
+export function signPsbtInput(params: {
+  psbt: UtxoPsbt;
+  input: Input;
+  inputIndex: number;
+  rootWalletKeys: RootWalletKeys;
+  sign: 'halfsigned' | 'fullsigned';
+  signers?: { signerName: KeyName; cosignerName?: KeyName };
+  deterministic?: boolean;
+  unsafeSignNonSegwit?: boolean;
+}): void {
+  const { psbt, input, inputIndex, rootWalletKeys, sign, signers, deterministic, unsafeSignNonSegwit } = params;
   const { signerName, cosignerName } = signers ? signers : getSigners(input.scriptType);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
-      psbt.signInput(inputIndex, rootWalletKeys[signerName]);
+      psbt.signInput(
+        inputIndex,
+        rootWalletKeys[signerName],
+        getMainnet(psbt.network) !== networks.zcash ? { unsafeSignNonSegwit } : undefined
+      );
     } else {
-      psbt.signInputHD(inputIndex, rootWalletKeys[signerName]);
+      psbt.signInputHD(inputIndex, rootWalletKeys[signerName], { unsafeSignNonSegwit });
     }
   }
-  if (sign === 'fullsigned' && cosignerName) {
-    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName]);
+  if (sign === 'fullsigned' && cosignerName && input.scriptType !== 'p2shP2pk') {
+    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic, unsafeSignNonSegwit });
   }
 }
 
@@ -133,29 +140,34 @@ export function signPsbtInput(
  * signs with first or second signature for all inputs.
  * p2shP2pk is signed only with first sign.
  */
-export function signAllPsbtInputs(
-  psbt: UtxoPsbt,
-  inputs: Input[],
-  rootWalletKeys: RootWalletKeys,
-  sign: 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
-): void {
-  inputs.forEach((input, index) => {
-    signPsbtInput(psbt, input, index, rootWalletKeys, sign, signers);
+export function signAllPsbtInputs(params: {
+  psbt: UtxoPsbt;
+  inputs: Input[];
+  rootWalletKeys: RootWalletKeys;
+  sign: 'halfsigned' | 'fullsigned';
+  signers?: { signerName: KeyName; cosignerName?: KeyName };
+  deterministic?: boolean;
+  unsafeSignNonSegwit?: boolean;
+}): void {
+  const { psbt, inputs, rootWalletKeys, sign, signers, deterministic, unsafeSignNonSegwit } = params;
+  inputs.forEach((input, inputIndex) => {
+    signPsbtInput({ psbt, input, inputIndex, rootWalletKeys, sign, signers, deterministic, unsafeSignNonSegwit });
   });
 }
 
 /**
  * construct psbt for given inputs, outputs, network and root wallet keys.
  */
-export function constructPsbt(
-  inputs: Input[],
-  outputs: Output[],
-  network: Network,
-  rootWalletKeys: RootWalletKeys,
-  sign: 'unsigned' | 'halfsigned' | 'fullsigned',
-  signers?: { signerName: KeyName; cosignerName?: KeyName }
-): UtxoPsbt {
+export function constructPsbt(params: {
+  inputs: Input[];
+  outputs: Output[];
+  network: Network;
+  rootWalletKeys: RootWalletKeys;
+  sign: 'unsigned' | 'halfsigned' | 'fullsigned';
+  signers?: { signerName: KeyName; cosignerName?: KeyName };
+  unsafeSignNonSegwit?: boolean;
+}): UtxoPsbt {
+  const { inputs, outputs, network, rootWalletKeys, sign, signers, unsafeSignNonSegwit } = params;
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
@@ -200,10 +212,10 @@ export function constructPsbt(
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo']);
 
-  signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned');
+  signAllPsbtInputs({ psbt, inputs, rootWalletKeys, sign: 'halfsigned', signers, unsafeSignNonSegwit });
 
   if (sign === 'fullsigned') {
-    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, signers);
+    signAllPsbtInputs({ psbt, inputs, rootWalletKeys, sign, signers, unsafeSignNonSegwit });
   }
 
   return psbt;
