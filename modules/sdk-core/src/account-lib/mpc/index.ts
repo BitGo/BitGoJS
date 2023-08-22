@@ -9,4 +9,4 @@ export * from './util';
 
 type KeyShare = EDDSA.KeyShare;
 
-export { Ed25519BIP32, HDTree, KeyShare, ShamirSecret, Bip32HdTree };
+export { Ed25519BIP32, HDTree, KeyShare, ShamirSecret, Bip32HdTree as BIP32 };
