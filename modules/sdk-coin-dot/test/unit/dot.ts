@@ -214,13 +214,13 @@ describe('DOT:', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      const txBuilder = basecoin.getBuilder().from(res.transactions[0].serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder
@@ -249,13 +249,13 @@ describe('DOT:', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      const txBuilder = basecoin.getBuilder().from(res.transactions[0].serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder
@@ -315,14 +315,14 @@ describe('DOT:', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.scanIndex.should.equal(1);
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
+      res.transactions[0].scanIndex.should.equal(1);
       sandBox.assert.calledTwice(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      const txBuilder = basecoin.getBuilder().from(res.transactions[0].serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder
@@ -355,14 +355,14 @@ describe('DOT:', function () {
         startingScanIndex: 1,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.scanIndex.should.equal(1);
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
+      res.transactions[0].scanIndex.should.equal(1);
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
+      const txBuilder = basecoin.getBuilder().from(res.transactions[0].serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder
