@@ -1521,12 +1521,12 @@ describe('SOL:', function () {
         scan: 1,
       });
       latestBlockHashTxn.should.not.be.empty();
-      latestBlockHashTxn.should.hasOwnProperty('serializedTx');
-      latestBlockHashTxn.should.hasOwnProperty('scanIndex');
-      should.equal(latestBlockHashTxn.scanIndex, 0);
+      latestBlockHashTxn.transactions[0].should.hasOwnProperty('serializedTx');
+      latestBlockHashTxn.transactions[0].should.hasOwnProperty('scanIndex');
+      should.equal(latestBlockHashTxn.transactions[0].scanIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
-      latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.serializedTx);
+      latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn.transactions[0].serializedTx);
       const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
 
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
@@ -1553,12 +1553,12 @@ describe('SOL:', function () {
       });
 
       durableNonceTxn.should.not.be.empty();
-      durableNonceTxn.should.hasOwnProperty('serializedTx');
-      durableNonceTxn.should.hasOwnProperty('scanIndex');
-      should.equal(durableNonceTxn.scanIndex, 0);
+      durableNonceTxn.transactions[0].should.hasOwnProperty('serializedTx');
+      durableNonceTxn.transactions[0].should.hasOwnProperty('scanIndex');
+      should.equal(durableNonceTxn.transactions[0].scanIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
-      durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.serializedTx);
+      durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn.transactions[0].serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
 
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
@@ -1582,12 +1582,12 @@ describe('SOL:', function () {
       });
 
       unsignedSweepTxn.should.not.be.empty();
-      unsignedSweepTxn.should.hasOwnProperty('serializedTx');
-      unsignedSweepTxn.should.hasOwnProperty('scanIndex');
-      should.equal(unsignedSweepTxn.scanIndex, 0);
+      unsignedSweepTxn.transactions[0].should.hasOwnProperty('serializedTx');
+      unsignedSweepTxn.transactions[0].should.hasOwnProperty('scanIndex');
+      should.equal(unsignedSweepTxn.transactions[0].scanIndex, 0);
 
       const unsignedSweepTxnDeserialize = new Transaction(coin);
-      unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.serializedTx);
+      unsignedSweepTxnDeserialize.fromRawTransaction(unsignedSweepTxn.transactions[0].serializedTx);
       const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
 
       should.equal(unsignedSweepTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
@@ -1700,12 +1700,12 @@ describe('SOL:', function () {
       });
 
       derivedWalletTxn.should.not.be.empty();
-      derivedWalletTxn.should.hasOwnProperty('serializedTx');
-      derivedWalletTxn.should.hasOwnProperty('scanIndex');
-      should.equal(derivedWalletTxn.scanIndex, 2);
+      derivedWalletTxn.transactions[0].should.hasOwnProperty('serializedTx');
+      derivedWalletTxn.transactions[0].should.hasOwnProperty('scanIndex');
+      should.equal(derivedWalletTxn.transactions[0].scanIndex, 2);
 
       const derivedWalletTxnDeserialize = new Transaction(coin);
-      derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.serializedTx);
+      derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn.transactions[0].serializedTx);
       const derivedWalletTxnJson = derivedWalletTxnDeserialize.toJson();
 
       should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.blockhash);
