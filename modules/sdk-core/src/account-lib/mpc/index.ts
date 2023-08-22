@@ -1,4 +1,4 @@
-import HDTree, { Ed25519BIP32, BIP32 } from './hdTree';
+import HDTree, { Ed25519BIP32, Bip32HdTree } from './hdTree';
 import { EDDSA } from './tss';
 import ShamirSecret from './shamir';
 
@@ -9,4 +9,4 @@ export * from './util';
 
 type KeyShare = EDDSA.KeyShare;
 
-export { Ed25519BIP32, HDTree, KeyShare, ShamirSecret, BIP32 };
+export { Ed25519BIP32, HDTree, KeyShare, ShamirSecret, Bip32HdTree };

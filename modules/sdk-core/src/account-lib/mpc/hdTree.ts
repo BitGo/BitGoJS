@@ -4,7 +4,7 @@ import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromBufferLE, bigIntToBuffe
 import { PublicKeychain, PrivateKeychain, HDTree, pathToIndices } from '@bitgo/sdk-lib-mpc';
 
 export default HDTree;
-export { BIP32, PublicKeychain, PrivateKeychain } from '@bitgo/sdk-lib-mpc';
+export { Bip32HdTree, PublicKeychain, PrivateKeychain } from '@bitgo/sdk-lib-mpc';
 
 // 2^256
 export const chaincodeBase = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');

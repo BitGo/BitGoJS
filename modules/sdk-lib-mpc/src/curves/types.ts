@@ -10,11 +10,6 @@ export type PrivateKeychain = PublicKeychain & {
   prefix?: bigint;
 };
 
-export type SplitSecret = {
-  shares: Record<number, bigint>;
-  v: bigint[];
-};
-
 /**
  * An interface for calculating a subkey in an HD key scheme.
  */

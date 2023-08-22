@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-
+import { BaseCurve } from '../curves';
+import { SplitSecret } from './types';
 import { bigIntFromBufferLE, bigIntToBufferLE, clamp } from '../util';
-import { BaseCurve, SplitSecret } from './types';
 
 export class Shamir {
   curve: BaseCurve;

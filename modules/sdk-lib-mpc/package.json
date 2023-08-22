@@ -36,6 +36,7 @@
     ]
   },
   "dependencies": {
+    "libsodium-wrappers-sumo": "^0.7.9",
     "@noble/secp256k1": "1.6.3",
     "@types/keccak": "^3.0.1",
     "@types/superagent": "4.1.15",

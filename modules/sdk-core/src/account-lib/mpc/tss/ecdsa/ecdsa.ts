@@ -1,7 +1,7 @@
 import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import * as secp from '@noble/secp256k1';
-import HDTree, { BIP32, chaincodeBase } from '../../hdTree';
+import HDTree, { Bip32HdTree, chaincodeBase } from '../../hdTree';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
@@ -55,7 +55,7 @@ const _5n = BigInt(5);
  */
 export default class Ecdsa {
   static curve: Secp256k1Curve = new Secp256k1Curve();
-  static hdTree: HDTree = new BIP32();
+  static hdTree: HDTree = new Bip32HdTree();
   static shamir: Shamir = new Shamir(Ecdsa.curve);
   /**
    * Generate shares for participant at index and split keys `(threshold,numShares)` ways.

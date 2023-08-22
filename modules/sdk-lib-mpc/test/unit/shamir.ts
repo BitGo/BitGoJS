@@ -1,17 +1,19 @@
-import { Ed25519Curve, ShamirSecret, Secp256k1Curve } from '@bitgo/sdk-core';
+import 'should';
 import { strict as assert } from 'assert';
+import { Shamir as ShamirSecret, Ed25519Curve, Secp256k1Curve } from '../../src';
 
-type tssCurves = Array<Ed25519Curve | Secp256k1Curve>;
+type TssCurves = (Ed25519Curve | Secp256k1Curve)[];
 
 const secret = BigInt(3012019);
 const secretString = secret.toString();
-let curves: tssCurves;
+let curves: TssCurves;
 
 /**
  * Shamir Key Share generation test
+ * @param curves
  * @param {bigint} salt
  */
-async function shamirKeyshareTests(curves: tssCurves, salt?: bigint) {
+async function shamirKeyshareTests(curves: TssCurves, salt?: bigint) {
   for (let index = 0; index < curves.length; index++) {
     const shamir = new ShamirSecret(curves[index]);
     const { shares, v } = shamir.split(secret, 2, 3, undefined, salt);
@@ -77,7 +79,7 @@ describe('Shamir Secret Sharing tests', async function () {
     splitUModified['7237005577332262213973186563042994240857116359379907606001950938285454250989'] = BigInt('0x1234');
     assert.throws(
       () => shamir.combine(splitUModified),
-      /Error: Failed to combine Shamir shares , Error: invalid reciprocate/,
+      /Error: Failed to combine Shamir shares , Error: invalid reciprocate/
     );
   });
 });
