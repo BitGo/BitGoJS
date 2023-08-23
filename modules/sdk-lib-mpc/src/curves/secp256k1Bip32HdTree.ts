@@ -5,7 +5,7 @@ import { Secp256k1Curve } from './secp256k1';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../util';
 import { pathToIndices } from './util';
 
-export class Bip32HdTree {
+export class Secp256k1Bip32HdTree {
   static curve: Secp256k1Curve = new Secp256k1Curve();
 
   publicDerive(keychain: PublicKeychain, path: string): PublicKeychain {
@@ -15,7 +15,7 @@ export class Bip32HdTree {
       const I = deriveSecp256k1Helper(index, chaincode, pk);
       const il = bigIntFromBufferBE(I.slice(0, 32));
       const ir = bigIntFromBufferBE(I.slice(32));
-      const left_pk = Bip32HdTree.curve.pointAdd(pk, Bip32HdTree.curve.basePointMult(il));
+      const left_pk = Secp256k1Bip32HdTree.curve.pointAdd(pk, Secp256k1Bip32HdTree.curve.basePointMult(il));
       return [left_pk, ir];
     }
     const [pk, chaincode] = indices.reduce(
@@ -32,8 +32,8 @@ export class Bip32HdTree {
       const I = deriveSecp256k1Helper(index, chaincode, pk, sk);
       const il = bigIntFromBufferBE(I.slice(0, 32));
       const ir = bigIntFromBufferBE(I.slice(32));
-      const left_pk = Bip32HdTree.curve.pointAdd(pk, Bip32HdTree.curve.basePointMult(il));
-      const left_sk = Bip32HdTree.curve.scalarAdd(sk, il);
+      const left_pk = Secp256k1Bip32HdTree.curve.pointAdd(pk, Secp256k1Bip32HdTree.curve.basePointMult(il));
+      const left_sk = Secp256k1Bip32HdTree.curve.scalarAdd(sk, il);
       return [left_pk, left_sk, ir];
     }
     const [pk, sk, chaincode] = indices.reduce(

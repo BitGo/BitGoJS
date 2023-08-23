@@ -32,7 +32,6 @@
 import { randomBytes, createHash } from 'crypto';
 import { Ed25519Curve } from '../../curves';
 import Shamir from '../../shamir';
-import HDTree from '../../hdTree';
 import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE, clamp } from '../../util';
 import {
   KeyShare,
@@ -49,6 +48,7 @@ import {
   GShare,
 } from './types';
 import assert from 'assert';
+import { HDTree } from '@bitgo/sdk-lib-mpc';
 
 // 2^256
 const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');
