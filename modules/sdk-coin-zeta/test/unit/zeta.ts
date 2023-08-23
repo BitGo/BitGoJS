@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Tzeta, Zeta } from '../../src';
@@ -11,8 +11,16 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   address,
+  wrwUser,
+  mockAccountDetailsResponse,
 } from '../resources/zeta';
 import should = require('should');
+import { coins } from '@bitgo/statics';
+import { beforeEach } from 'mocha';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { GAS_AMOUNT } from '../../src/lib/constants';
+import nock = require('nock');
 
 describe('Zeta', function () {
   let bitgo: TestBitGoAPI;
@@ -334,6 +342,130 @@ describe('Zeta', function () {
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover transaction: success path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const coin = coins.get('tzeta');
+    const testBalance = '15000000000000000';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      nock('https://zetachain-athens.blockpi.network/lcd/v1/public')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
+      const accountBalance = sandBox.stub(Zeta.prototype, 'getAccountBalance' as keyof Zeta);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+
+      const chainId = sandBox.stub(Zeta.prototype, 'getChainId' as keyof Zeta);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getAccountBalance);
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const txn = new CosmosTransaction(coin, utils);
+      txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const txnJson = txn.toJson();
+      const sendMessage = txnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance);
+      const gasAmount = new BigNumber(GAS_AMOUNT);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.toAddress, destinationAddress);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+  });
+
+  describe('Recover transaction: failure path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const testZeroBalance = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      nock('https://zetachain-athens.blockpi.network/lcd/v1/public')
+        .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
+        .reply(200, mockAccountDetailsResponse);
+
+      const accountBalance = sandBox.stub(Zeta.prototype, 'getAccountBalance' as keyof Zeta);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+
+      const chainId = sandBox.stub(Zeta.prototype, 'getChainId' as keyof Zeta);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw error if backupkey is not present', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing backupKey');
+    });
+
+    it('should throw error if userkey is not present', async function () {
+      await basecoin
+        .recover({
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing userKey');
+    });
+
+    it('should throw error if wallet passphrase is not present', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should throw error if there is no balance', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('Did not have enough funds to recover');
     });
   });
 });
