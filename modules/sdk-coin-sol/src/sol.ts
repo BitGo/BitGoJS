@@ -105,6 +105,13 @@ interface SolTx {
   serializedTx: string;
   scanIndex: number;
   coin?: string;
+  signableHex?: string;
+  derivationPath?: string;
+  parsedTx?: ParsedTransaction;
+}
+
+interface SolTxs {
+  transactions: SolTx[];
 }
 
 interface SolDurableNonceFromNode {
@@ -573,10 +580,10 @@ export class Sol extends BaseCoin {
    * @param {RecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {SolTx} the serialized transaction hex string and index
+   * @returns {SolTxs} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<SolTx> {
+  async recover(params: RecoveryOptions): Promise<SolTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -714,17 +721,40 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
+    const derivationPath = `m/${scanIndex}`;
+    const inputs = [
+      {
+        address: completedTransaction.inputs[0].address,
+        valueString: completedTransaction.inputs[0].value,
+        value: new BigNumber(completedTransaction.inputs[0].value).toNumber(),
+      },
+    ];
+    const outputs = [
+      {
+        address: completedTransaction.outputs[0].address,
+        valueString: completedTransaction.inputs[0].value,
+      },
+    ];
+    const spendAmount = completedTransaction.inputs[0].value;
+    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
     if (isUnsignedSweep) {
-      return {
+      const transaction: SolTx = {
         serializedTx: serializedTx,
         scanIndex: scanIndex,
         coin: this.getChain(),
+        signableHex: serializedTx,
+        derivationPath: derivationPath,
+        parsedTx: parsedTx,
       };
+      const transactions: SolTx[] = [transaction];
+      return { transactions: transactions };
     }
-    return {
+    const transaction: SolTx = {
       serializedTx: serializedTx,
       scanIndex: scanIndex,
     };
+    const transactions: SolTx[] = [transaction];
+    return { transactions: transactions };
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {
