@@ -1,12 +1,10 @@
-import HDTree, { Ed25519BIP32, BIP32 } from './hdTree';
+import { HDTree, Ed25519Bip32HdTree, Secp256k1Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { EDDSA } from './tss';
 import ShamirSecret from './shamir';
 
-export { Ecdsa, ECDSA, Eddsa, EDDSA, rangeProof } from './tss';
+type KeyShare = EDDSA.KeyShare;
 
 export * from './curves';
 export * from './util';
-
-type KeyShare = EDDSA.KeyShare;
-
-export { Ed25519BIP32, HDTree, KeyShare, ShamirSecret, BIP32 };
+export { Ecdsa, ECDSA, Eddsa, EDDSA, rangeProof } from './tss';
+export { Ed25519Bip32HdTree as Ed25519BIP32, HDTree, KeyShare, ShamirSecret, Secp256k1Bip32HdTree as BIP32 };

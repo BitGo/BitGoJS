@@ -1,7 +1,8 @@
 /**
  * @prettier
  */
-import { bigIntToBufferBE, Secp256k1Curve } from '@bitgo/sdk-core';
+
+import { bigIntToBufferBE, Secp256k1Curve } from '../../../src';
 
 describe('secp256k1 curve implementation', function () {
   const sec256k1 = new Secp256k1Curve();
@@ -96,7 +97,7 @@ describe('secp256k1 curve implementation', function () {
     const publicKey = BigInt('0x33ccfc7998b1ce2fad8b3f287d873f07ca8b3037897c2136c11100c02213c028e');
     const signature = Buffer.from(
       '006a43d5da66ec4b4c6eb307d18791b9744cc59dd2402ad395bb9efb513898c07f767139118b76e387564bf572b2cc481dbf3068b7ac27620f83a2819d735b7e5f',
-      'hex',
+      'hex'
     );
     const message = bigIntToBufferBE(BigInt('0xbe5548911159dca31c02102c9df8c842adb50ac6def360c343ee5586f2749c0c'));
     let verify = sec256k1.verify(message, signature, publicKey);

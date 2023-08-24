@@ -2,7 +2,7 @@ import assert from 'assert';
 import openpgp from 'openpgp';
 import sodium from 'libsodium-wrappers-sumo';
 import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
-import { BitGoBase } from './../../bitgoBase';
+import { BitGoBase } from '../../bitgoBase';
 import {
   DecryptableYShare,
   CombinedKey,
@@ -11,7 +11,7 @@ import {
   UserSigningMaterial,
   BackupSigningMaterial,
 } from './types';
-import { ShareKeyPosition } from './../types';
+import { ShareKeyPosition } from '../types';
 import {
   encryptAndSignText,
   readSignedMessage,
@@ -20,9 +20,9 @@ import {
   RequestType,
   CommitmentShareRecord,
   CommitmentType,
-} from './../../utils';
-import { BaseTransaction } from './../../../account-lib/baseCoin/baseTransaction';
-import { Ed25519BIP32 } from './../../../account-lib/mpc/hdTree';
+} from '../../utils';
+import { BaseTransaction } from '../../../account-lib';
+import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import _ = require('lodash');
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 
@@ -355,7 +355,7 @@ export async function encryptYShare(params: {
  * @returns {Promise<Eddsa>} the Eddsa instance
  */
 export async function getInitializedMpcInstance() {
-  const hdTree = await Ed25519BIP32.initialize();
+  const hdTree = await Ed25519Bip32HdTree.initialize();
   return await Eddsa.initialize(hdTree);
 }
 

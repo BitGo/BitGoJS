@@ -2,8 +2,9 @@ import assert from 'assert';
 import { KeyPair } from '../../src';
 import utils from '../../src/lib/utils';
 import should from 'should';
-import { Ed25519BIP32, Eddsa, HDTree } from '@bitgo/sdk-core';
+import { Eddsa } from '@bitgo/sdk-core';
 import bs58 from 'bs58';
+import { Ed25519Bip32HdTree, HDTree } from '@bitgo/sdk-lib-mpc';
 
 describe('SUI KeyPair', function () {
   let rootKeychain;
@@ -12,7 +13,7 @@ describe('SUI KeyPair', function () {
   let hdTree: HDTree;
 
   before(async () => {
-    hdTree = await Ed25519BIP32.initialize();
+    hdTree = await Ed25519Bip32HdTree.initialize();
     MPC = await Eddsa.initialize(hdTree);
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);

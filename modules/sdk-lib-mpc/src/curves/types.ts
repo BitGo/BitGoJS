@@ -1,7 +1,27 @@
+export type PublicKeychain = {
+  // public key
+  pk: bigint;
+  chaincode: bigint;
+};
+
+export type PrivateKeychain = PublicKeychain & {
+  // secret key
+  sk: bigint;
+  prefix?: bigint;
+};
+
+/**
+ * An interface for calculating a subkey in an HD key scheme.
+ */
+export interface HDTree {
+  publicDerive(keychain: PublicKeychain, path: string): PublicKeychain;
+
+  privateDerive(keychain: PrivateKeychain, path: string): PrivateKeychain;
+}
+
 /**
  * Base Interface for supporting elliptic curve parameters
  */
-
 export interface BaseCurve {
   // Function that reduces a scalar modulo the order of the
   // curve.

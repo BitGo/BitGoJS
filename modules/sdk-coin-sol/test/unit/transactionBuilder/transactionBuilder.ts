@@ -3,9 +3,10 @@ import * as bs58 from 'bs58';
 
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair } from '../../../src';
-import { Ed25519BIP32, Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
+import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 
 describe('Sol Transaction Builder', async () => {
   let builders;
@@ -366,7 +367,7 @@ describe('Sol Transaction Builder', async () => {
     });
 
     before('initialize mpc module', async () => {
-      const hdTree = await Ed25519BIP32.initialize();
+      const hdTree = await Ed25519Bip32HdTree.initialize();
       MPC = await Eddsa.initialize(hdTree);
     });
 

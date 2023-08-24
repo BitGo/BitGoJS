@@ -4,7 +4,6 @@
 import assert from 'assert';
 import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
-import { Ed25519BIP32 } from '../../../../account-lib';
 import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
 import { AddKeychainOptions, Keychain, CreateBackupOptions } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
@@ -36,6 +35,7 @@ import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YS
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
+import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 
 /**
  * Utility functions for TSS work flows.
@@ -379,7 +379,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const { txRequest, prv } = params;
     const txRequestResolved: TxRequest = txRequest;
 
-    const hdTree = await Ed25519BIP32.initialize();
+    const hdTree = await Ed25519Bip32HdTree.initialize();
     const MPC = await Eddsa.initialize(hdTree);
 
     const userSigningMaterial: SigningMaterial = JSON.parse(prv);
@@ -554,7 +554,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId = txRequest.txRequestId;
     }
 
-    const hdTree = await Ed25519BIP32.initialize();
+    const hdTree = await Ed25519Bip32HdTree.initialize();
     const MPC = await Eddsa.initialize(hdTree);
 
     const userSigningMaterial: SigningMaterial = JSON.parse(prv);
