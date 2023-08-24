@@ -70,6 +70,32 @@ describe('Account Consolidations:', function () {
           sinon.restore();
         });
 
+        it('should utilize codec for custodial consolidation', async function () {
+          const custodialWallet = new Wallet(bitgo, basecoin, {
+            id: '5f4168f4403d0c5c1c3bdd15486e757f',
+            coin: coinName,
+            type: 'custodial',
+          });
+
+          const initiateTxPath = `/api/v2/${custodialWallet.coin()}/wallet/${custodialWallet.id()}/tx/initiate`;
+          let req;
+          nock(bgUrl)
+            .post(initiateTxPath, (body) => {
+              req = body;
+              return true;
+            })
+            .reply(200);
+
+          const params = { prebuildTx: fixtures.buildAccountConsolidation[0] };
+          const paramsWithJunk = { ...params, junk: 'junk' };
+          const paramsAfterCodec = { ...params, type: 'consolidate' };
+
+          sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(fixtures.signedAccountConsolidationBuilds[0]);
+          await custodialWallet.sendAccountConsolidation(paramsWithJunk);
+
+          req.should.deepEqual(paramsAfterCodec);
+        });
+
         it('should not allow a non-account consolidation coin send', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
