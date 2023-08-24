@@ -492,8 +492,11 @@ export async function handleV2Sign(req: express.Request) {
 
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
-  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  let privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.params.coin);
+  if (req.body.derivationSeed) {
+    privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
+  }
   try {
     return await coin.signTransaction({ ...req.body, prv: privKey });
   } catch (error) {
@@ -1144,7 +1147,7 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
         superagent
           .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
           .type('json')
-          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs }),
+          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs, derivationSeed: params.derivationSeed }),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
