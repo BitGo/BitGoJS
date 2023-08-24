@@ -85,6 +85,9 @@ export async function prove(p: bigint, q: bigint): Promise<DeserializedPaillierB
       break;
     }
   }
+  // This is calculating the inverse of the function y^4 mod N,
+  // i.e.y ^ (1 / 4), where N = pq is a blum integer using HOC - Fact 2.160
+  // from cacr.uwaterloo.ca / hac / about / chap2.pdf
   // Prover generates y_i.
   const y = generateY(N, w);
   // Prover calculates z_i = y_i ^ d mod N
