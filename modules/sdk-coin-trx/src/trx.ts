@@ -579,7 +579,7 @@ export class Trx extends BaseCoin {
     let isReceiveAddress = false;
     let addressInfo: AddressInfo | undefined;
 
-    if (recoveryAmount > 0) {
+    if (recoveryAmount > SAFE_TRON_TRANSACTION_FEE) {
       const userXPub = keys[0].neutered().toBase58();
       const backupXPub = keys[1].neutered().toBase58();
 
