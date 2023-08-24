@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@8.16.0) (2023-08-24)
+
+### Bug Fixes
+
+- **sdk-core:** add pendingappr id in build api ([3ace9ac](https://github.com/BitGo/BitGoJS/commit/3ace9ac74a0729f8ade84e8a0c8cd67429563147))
+- **sdk-core:** handle txRequest full PA before signing ([9de0eae](https://github.com/BitGo/BitGoJS/commit/9de0eae7cab1ad406e80a818555a7c8557b47eb3))
+- **sdk-core:** include tests in tsconfig.json ([91c1c6c](https://github.com/BitGo/BitGoJS/commit/91c1c6c47f809cbd826db2a7a59c96b74f0273e9))
+- **sdk-core:** move --recursive flag to package.json ([1147ebe](https://github.com/BitGo/BitGoJS/commit/1147ebe3d2ab1868fe1c6bbf343f68becc7d1169))
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-core:** add postWithCodec utility function ([ff1ad07](https://github.com/BitGo/BitGoJS/commit/ff1ad07dfe476d38ae17cfb691ef0e6375a394ea))
+- **sdk-core:** add, use SendTransactionRequest and BuildParams codecs ([724fc6c](https://github.com/BitGo/BitGoJS/commit/724fc6c3adee3ef7dbeb39e023f2270ff36a233d))
+- **sdk-core:** extend build param codec ([e224ca3](https://github.com/BitGo/BitGoJS/commit/e224ca306608e9618d080fdb623db09307a91910))
+- **sdk-core:** use BuildParams codec in Wallet.accelerateTransaction ([a9fab81](https://github.com/BitGo/BitGoJS/commit/a9fab813f27cdb40123c49b01570ecb6b9a67d91))
+
 # [8.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@8.15.0) (2023-08-16)
 
 ### Bug Fixes
