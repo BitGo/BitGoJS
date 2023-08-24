@@ -24,6 +24,7 @@ import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactor
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
 import { isInteger } from 'lodash';
+import BigNumber from 'bignumber.js';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -63,6 +64,13 @@ interface DotTx {
   serializedTx: string;
   scanIndex: number;
   coin?: string;
+  signableHex?: string;
+  derivationPath?: string;
+  parsedTx?: ParsedTransaction;
+}
+
+interface DotTxs {
+  transactions: DotTx[];
 }
 
 const dotUtils = Utils.default;
@@ -343,7 +351,7 @@ export class Dot extends BaseCoin {
    * @returns {DotTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<DotTx> {
+  async recover(params: RecoveryOptions): Promise<DotTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -443,9 +451,39 @@ export class Dot extends BaseCoin {
         const signedTransaction = await txnBuilder.build();
         serializedTx = signedTransaction.toBroadcastFormat();
       } else {
-        return { serializedTx: serializedTx, scanIndex: i, coin: this.getChain() };
+        // Polkadot has a concept of existential desposit (ed), it is the minimum amount required by an address to have
+        // to keep the account active
+        const existentialDeposit = this.getChain() === 'tdot' ? 10000000000 : 1000000000000;
+        const value = new BigNumber(freeBalance).minus(new BigNumber(existentialDeposit));
+        const inputs = [
+          {
+            address: unsignedTransaction.inputs[0].address,
+            valueString: value.toString(),
+            value: value.toNumber(),
+          },
+        ];
+        const outputs = [
+          {
+            address: unsignedTransaction.outputs[0].address,
+            valueString: value.toString(),
+          },
+        ];
+        const spendAmount = value.toString();
+        const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+        const transaction: DotTx = {
+          serializedTx: serializedTx,
+          scanIndex: i,
+          coin: this.getChain(),
+          signableHex: serializedTx,
+          derivationPath: currPath,
+          parsedTx: parsedTx,
+        };
+        const transactions: DotTx[] = [transaction];
+        return { transactions: transactions };
       }
-      return { serializedTx: serializedTx, scanIndex: i };
+      const transaction: DotTx = { serializedTx: serializedTx, scanIndex: i };
+      const transactions: DotTx[] = [transaction];
+      return { transactions: transactions };
     }
     throw new Error('Did not find an address with funds to recover');
   }
