@@ -629,7 +629,7 @@ class Sei extends Mainnet implements AccountNetwork {
 class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://sei.explorers.guru/transaction/';
+  explorerUrl = 'https://www.seiscan.app/atlantic-2/txs/';
 }
 
 class Zeta extends Mainnet implements AccountNetwork {
