@@ -18,11 +18,13 @@ import {
   EDDSAMethodTypes,
   AddressFormat,
   Environments,
+  ITransactionRecipient,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
+import BigNumber from 'bignumber.js';
 
 export interface TransactionPrebuild {
   txHex: string;
@@ -56,6 +58,13 @@ interface AdaTx {
   serializedTx: string;
   scanIndex: number;
   coin?: string;
+  signableHex?: string;
+  derivationPath?: string;
+  parsedTx?: ParsedTransaction;
+}
+
+interface AdaTxs {
+  transactions: AdaTx[];
 }
 
 export type AdaTransactionExplanation = TransactionExplanation;
@@ -277,7 +286,7 @@ export class Ada extends BaseCoin {
    * @returns {AdaTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<AdaTx> {
+  async recover(params: RecoveryOptions): Promise<AdaTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -383,9 +392,38 @@ export class Ada extends BaseCoin {
         const signedTransaction = await txBuilder.build();
         serializedTx = signedTransaction.toBroadcastFormat();
       } else {
-        return { serializedTx: serializedTx, scanIndex: i, coin: this.getChain() };
+        const transactionPrebuild = { txHex: serializedTx };
+        const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
+        const output = (parsedTx.outputs as ITransactionRecipient)[0];
+        const inputs = [
+          {
+            address: senderAddr,
+            valueString: output.amount,
+            value: new BigNumber(output.amount).toNumber(),
+          },
+        ];
+        const outputs = [
+          {
+            address: output.address,
+            valueString: output.amount,
+          },
+        ];
+        const spendAmount = output.amount;
+        const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+        const transaction: AdaTx = {
+          serializedTx: serializedTx,
+          scanIndex: i,
+          coin: this.getChain(),
+          signableHex: serializedTx,
+          derivationPath: currPath,
+          parsedTx: completedParsedTx,
+        };
+        const transactions: AdaTx[] = [transaction];
+        return { transactions: transactions };
       }
-      return { serializedTx: serializedTx, scanIndex: i };
+      const transaction: AdaTx = { serializedTx: serializedTx, scanIndex: i };
+      const transactions: AdaTx[] = [transaction];
+      return { transactions: transactions };
     }
     throw new Error('Did not find an address with funds to recover');
   }

@@ -360,11 +360,11 @@ describe('ADA', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
@@ -379,11 +379,11 @@ describe('ADA', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
@@ -420,11 +420,11 @@ describe('ADA', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
@@ -441,11 +441,11 @@ describe('ADA', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('serializedTx');
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
@@ -489,13 +489,13 @@ describe('ADA', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.scanIndex.should.equal(1);
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
+      res.transactions[0].scanIndex.should.equal(1);
       sandBox.assert.calledThrice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
@@ -514,13 +514,13 @@ describe('ADA', function () {
         startingScanIndex: 1,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.scanIndex.should.equal(1);
+      res.transactions[0].should.hasOwnProperty('serializedTx');
+      res.transactions[0].should.hasOwnProperty('scanIndex');
+      res.transactions[0].scanIndex.should.equal(1);
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
 
       const tx = new Transaction(basecoin);
-      tx.fromRawTransaction(res.serializedTx);
+      tx.fromRawTransaction(res.transactions[0].serializedTx);
       const txJson = tx.toJson();
       const fee = Number(tx.explainTransaction().fee.fee);
       should.deepEqual(txJson.inputs[0].transaction_id, testnetUTXO.UTXO_1.tx_hash);
