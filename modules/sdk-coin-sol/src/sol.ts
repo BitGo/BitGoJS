@@ -30,6 +30,8 @@ import {
   VerifyTransactionOptions,
   EDDSAMethodTypes,
   EDDSAMethods,
+  EDDSASignature,
+  SignatureShareRecord,
 } from '@bitgo/sdk-core';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
@@ -150,6 +152,38 @@ interface RecoveryOptions {
   startingScanIndex?: number;
   scan?: number;
   seed?: string;
+}
+
+interface SweepRecoveryOptions {
+  signatureShares: SignatureShares[];
+}
+
+interface SignatureShares {
+  txRequest: TxRequest;
+  tssVersion: string;
+  ovc: Ovc[];
+}
+
+interface TxRequest {
+  transactions: OvcTransaction[];
+  walletCoin: string;
+}
+
+interface OvcTransaction {
+  unsignedTx: SolTx;
+  signatureShares: SignatureShareRecord[];
+  signatureShare: SignatureShare;
+}
+
+interface SignatureShare {
+  from: string;
+  to: string;
+  share: string;
+  publicShare: string;
+}
+
+interface Ovc {
+  eddsaSignature: EDDSASignature;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -592,6 +626,67 @@ export class Sol extends BaseCoin {
       authority: response.body.result.value.data.parsed.info.authority,
       blockhash: response.body.result.value.data.parsed.info.blockhash,
     };
+  }
+
+  /**
+   * Creates funds sweep recovery transaction(s) without BitGo
+   *
+   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
+   * and transactions to create broadcastable transactions
+   *
+   * @returns {SolTx[]} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
+   */
+  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<SolTx[]> {
+    if (
+      !params.signatureShares[0].ovc ||
+      params.signatureShares[0].ovc.length != params.signatureShares[0].txRequest.transactions.length
+    ) {
+      throw new Error('missing signature(s)');
+    }
+
+    const req = params.signatureShares[0].txRequest;
+    const broadcastableTransactions: SolTx[] = [];
+    for (let i = 0; i < req.transactions.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      if (!req.transactions[i].unsignedTx.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(req.transactions[i].unsignedTx.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, params.signatureShares[0].ovc[i].eddsaSignature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.R, 'hex'),
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.sigma, 'hex'),
+      ]);
+      const txBuilder = this.getBuilder().from(req.transactions[i].unsignedTx.serializedTx as string);
+      if (!req.transactions[i].unsignedTx.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = req.transactions[i].unsignedTx.coinSpecific!.commonKeychain! as string;
+      if (!params.signatureShares[0].txRequest.transactions[i].unsignedTx.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = req.transactions[i].unsignedTx.derivationPath as string;
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+      // add combined signature from ovc
+      const publicKeyObj = { pub: bs58EncodedPublicKey };
+      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+
+      const signedTransaction = await txBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: req.transactions[i].unsignedTx.scanIndex,
+      });
+    }
+
+    return broadcastableTransactions;
   }
 
   /**

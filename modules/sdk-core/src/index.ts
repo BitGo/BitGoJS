@@ -9,7 +9,7 @@ import { EddsaUtils } from './bitgo/utils/tss/eddsa/eddsa';
 export { EddsaUtils };
 import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };
-export { GShare, SignShare, YShare, Signature as edDSASignature } from './account-lib/mpc/tss/eddsa/types';
+export { GShare, SignShare, YShare, Signature as EDDSASignature } from './account-lib/mpc/tss/eddsa/types';
 export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/tss/types';
 export { SShare } from './bitgo/tss/ecdsa/types';
 import * as common from './common';

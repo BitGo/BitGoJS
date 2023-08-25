@@ -1509,6 +1509,15 @@ describe('SOL:', function () {
       sandBox.restore();
     });
 
+    it('should take OVC output and generate a signed sweep transaction', async function () {
+      const params = testData.ovcResponse;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn[0].serializedTx.should.equal(
+        'AvR+L909kzRq6NuaUe9F6Jt97MOiFs7jpW8MuOrwz4EbKF40d31dci/bgLTq4gpk/Hh3s5cA8FtbLkDQr15PqAE7yd8LOXvsLtO2REqMM/OCZ8wItfsqfTfia2xIfibRW3wHgw63jiaojbXeSqaYajJ/Ca7YwBUz5blydI3fYLgPAgECBsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQvLqE/j/nXlY2/JpxuNr/fXLXEPeS04dPvt9qz1dAoYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAADpiH20cxLj7KnOaoI5ANNoPxYjs472FdjDeMPft3kXdAgQDAgUBBAQAAAAEAgADDAIAAADwopo7AAAAAA=='
+      );
+      recoveryTxn[0].scanIndex.should.equal(0);
+    });
+
     it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
       // Latest Blockhash Recovery (BitGo-less)
       const latestBlockHashTxn = await basecoin.recover({
