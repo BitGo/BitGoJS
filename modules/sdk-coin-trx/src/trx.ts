@@ -530,6 +530,7 @@ export class Trx extends BaseCoin {
       },
       tx: txJSON, // Leaving it as txJSON for backwards compatibility
       coin: this.getChain(),
+      amount: recoveryAmount.toString(),
     };
     return addressInfo ? { ...format, addressInfo } : format;
   }

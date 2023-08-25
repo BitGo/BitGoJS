@@ -98,6 +98,66 @@ export const FirstExpectedSig =
 export const SecondExpectedSig =
   'f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600';
 
+export const UnsignedRecoverInputs = {
+  userxpub:
+    'xpub6BvMpt8ke8tCycBBw6uDob6PyNBkHbTyEztaRuwdMZhpiFk1mXpS7P7iv4c4w7XWFFRySMokUuFUqqgpZxK5wLxm6pgjpkNFhKsMaXTJoUN',
+  backupxpub:
+    'xpub687kC8LeSJwj1gYQr4Js2BHbLK1nFeLvMzsDmH2LKMNrqAHNfeCw1sp61cbf2WxeY1QssaUBh9EFJbJ9LBuPivv7XDsFPVaFYj19ueCNczT',
+  bitgoxpub:
+    'xpub661MyMwAqRbcFHCRyasU67NCA7V7goqUFPXvzsEiJd4SchCKyPtigHALvve5wtBdyHMZCWqpGzEsrQtfz6mE9m5QXWDantgbkmu56xvLwe3',
+  destinationAddress: 'TWkzN4WjxkyoRTmFHaMQ9po77uEerngjyQ',
+};
+
+export const RecoverAddressBalance = {
+  data: [
+    {
+      owner_permission: {
+        keys: [
+          {
+            address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+            weight: 1,
+          },
+          {
+            address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+            weight: 1,
+          },
+          {
+            address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+            weight: 1,
+          },
+        ],
+        threshold: 2,
+        permission_name: 'owner',
+      },
+      balance: 100000000,
+      trc20: [],
+      active_permission: [
+        {
+          operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+          keys: [
+            {
+              address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+              weight: 1,
+            },
+            {
+              address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+              weight: 1,
+            },
+            {
+              address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+              weight: 1,
+            },
+          ],
+          threshold: 2,
+          id: 2,
+          type: 'Active',
+          permission_name: 'active0',
+        },
+      ],
+    },
+  ],
+};
+
 export const UnsignedBuildTransaction = {
   visible: false,
   txID: '80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d',

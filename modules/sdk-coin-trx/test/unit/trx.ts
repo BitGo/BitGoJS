@@ -3,6 +3,9 @@ import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import * as _ from 'lodash';
 import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';
+import { beforeEach } from 'mocha';
+import sinon from 'sinon';
+import { RecoverAddressBalance, UnsignedRecoverInputs } from '../resources';
 
 describe('TRON:', function () {
   const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -175,6 +178,34 @@ describe('TRON:', function () {
       keyPair.prv.should.equal(
         'xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK'
       );
+    });
+  });
+
+  describe('Recover transaction', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = UnsignedRecoverInputs.destinationAddress;
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      accountBalance.withArgs().resolves(RecoverAddressBalance);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await basecoin.recover({
+        userKey: UnsignedRecoverInputs.userxpub,
+        backupKey: UnsignedRecoverInputs.backupxpub,
+        bitgoKey: UnsignedRecoverInputs.bitgoxpub,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.should.hasOwnProperty('feeInfo');
+      res.should.hasOwnProperty('amount');
     });
   });
 });
