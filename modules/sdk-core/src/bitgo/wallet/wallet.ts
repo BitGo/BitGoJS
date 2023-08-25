@@ -2423,7 +2423,7 @@ export class Wallet implements IWallet {
 
     if (this._wallet.type === 'custodial' && this._wallet.multisigType !== 'tss') {
       params.type = 'consolidate';
-      return await this.bitgo.post(this.url('/tx/initiate')).send(params).result();
+      return await this.bitgo.post(this.url('/tx/initiate')).send(BuildParams.encode(params)).result();
     }
 
     // one of a set of consolidation transactions
