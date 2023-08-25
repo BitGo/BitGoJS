@@ -146,7 +146,12 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
 }
 
 export interface CustomSigningFunction {
-  (params: { coin: IBaseCoin; txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
+  (params: {
+    coin: IBaseCoin;
+    txPrebuild: TransactionPrebuild;
+    pubs?: string[];
+    derivationSeed?: string;
+  }): Promise<SignedTransaction>;
 }
 
 export interface WalletSignBaseOptions {
