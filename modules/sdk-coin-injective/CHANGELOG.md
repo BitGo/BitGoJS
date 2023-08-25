@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-injective@1.4.0...@bitgo/sdk-coin-injective@1.4.4) (2023-08-25)
+
+### Bug Fixes
+
+- **abstract-cosmos:** getAccountDetails fix ([d5c6c74](https://github.com/BitGo/BitGoJS/commit/d5c6c74845e62ee3cd68321c55d729da1526fcae))
+- **abstract-cosmos:** getAccountDetails mock added for testcases ([1c8795a](https://github.com/BitGo/BitGoJS/commit/1c8795a194d66b41ff46c33d70d14e8343048936))
+
 ## [1.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-injective@1.4.0...@bitgo/sdk-coin-injective@1.4.3) (2023-08-24)
 
 ### Bug Fixes
