@@ -16,6 +16,7 @@ import {
   address,
   endpointResponses,
   testnetUTXO,
+  ovcResponse,
 } from '../resources';
 import * as _ from 'lodash';
 import { Ada, KeyPair, Tada } from '../../src';
@@ -349,6 +350,15 @@ describe('ADA', function () {
 
     afterEach(function () {
       sandBox.restore();
+    });
+
+    it('should take OVC output and generate a signed sweep transaction', async function () {
+      const params = ovcResponse;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn[0].serializedTx.should.equal(
+        '84a500818258204bd0f991c1532cffe31d4a10db492b43175ec326765b6b29ceee598df2b61f470001818258390087379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c87379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c1a05f359ff021a00028701031a024972e10480a10081825820bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137584001a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e663355384c13c749d04c17a80ba2a45cc127df480fc64a43199a772f11acd5b14a0ff5f6'
+      );
+      recoveryTxn[0].scanIndex.should.equal(0);
     });
 
     it('should recover a txn for non-bitgo recoveries', async function () {

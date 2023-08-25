@@ -19,6 +19,8 @@ import {
   AddressFormat,
   Environments,
   ITransactionRecipient,
+  EDDSASignature,
+  SignatureShareRecord,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -54,6 +56,38 @@ interface RecoveryOptions {
   startingScanIndex?: number;
   scan?: number;
   seed?: string;
+}
+
+interface SweepRecoveryOptions {
+  signatureShares: SignatureShares[];
+}
+
+interface SignatureShares {
+  txRequest: TxRequest;
+  tssVersion: string;
+  ovc: Ovc[];
+}
+
+interface TxRequest {
+  transactions: OvcTransaction[];
+  walletCoin: string;
+}
+
+interface OvcTransaction {
+  unsignedTx: AdaTx;
+  signatureShares: SignatureShareRecord[];
+  signatureShare: SignatureShare;
+}
+
+interface SignatureShare {
+  from: string;
+  to: string;
+  share: string;
+  publicShare: string;
+}
+
+interface Ovc {
+  eddsaSignature: EDDSASignature;
 }
 
 interface AdaTx {
@@ -297,13 +331,72 @@ export class Ada extends BaseCoin {
   }
 
   /**
-   * Builds a funds recovery transaction without BitGo
+   * Creates funds sweep recovery transaction(s) without BitGo
+   *
+   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
+   * and transactions to create broadcastable transactions
+   *
+   * @returns {AdaTx[]} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
+   */
+  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<AdaTx[]> {
+    if (
+      !params.signatureShares[0].ovc ||
+      params.signatureShares[0].ovc.length != params.signatureShares[0].txRequest.transactions.length
+    ) {
+      throw new Error('missing signature(s)');
+    }
+
+    const req = params.signatureShares[0].txRequest;
+    const broadcastableTransactions: AdaTx[] = [];
+    for (let i = 0; i < req.transactions.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      if (!req.transactions[i].unsignedTx.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(req.transactions[i].unsignedTx.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, params.signatureShares[0].ovc[i].eddsaSignature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.R, 'hex'),
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.sigma, 'hex'),
+      ]);
+      const txBuilder = this.getBuilder().from(req.transactions[i].unsignedTx.serializedTx as string);
+      if (!req.transactions[i].unsignedTx.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = req.transactions[i].unsignedTx.coinSpecific!.commonKeychain! as string;
+      if (!params.signatureShares[0].txRequest.transactions[i].unsignedTx.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = req.transactions[i].unsignedTx.derivationPath as string;
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const adaKeyPair = new AdaKeyPair({ pub: accountId });
+
+      // add combined signature from ovc
+      txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: req.transactions[i].unsignedTx.scanIndex,
+      });
+    }
+
+    return broadcastableTransactions;
+  }
+
+  /**
+   * Builds funds recovery transaction(s) without BitGo
    *
    * @param {RecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {AdaTx} the serialized transaction hex string and index
-   * of the address being swept
+   * @returns {AdaTx} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
    */
   async recover(params: RecoveryOptions): Promise<AdaTx[] | AdaSweepTxs> {
     if (!params.bitgoKey) {
