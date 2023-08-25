@@ -874,6 +874,7 @@ export enum UnderlyingAsset {
   RUBX = 'rubx',
   RUEDATK = 'ruedatk',
   RUN = 'run',
+  SAIL = 'sail',
   SALT = 'salt',
   SAND = 'sand',
   SASHIMI = 'sashimi',
@@ -1005,6 +1006,7 @@ export enum UnderlyingAsset {
   TOMOE = 'tomoe',
   TOK = 'tok',
   TONCOIN = 'toncoin',
+  TOPM = 'topm',
   TRAC = 'trac',
   TRAXX = 'traxx',
   TRIBE = 'tribe',
@@ -1250,6 +1252,7 @@ export enum UnderlyingAsset {
   'tpolygon:derc20' = 'tpolygon:derc20',
   'tpolygon:link' = 'tpolygon:link',
   'tpolygon:name' = 'tpolygon:name',
+  'tpolygon:opm' = 'tpolygon:opm',
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
   'terc1155:polygontoken' = 'terc1155:polygontoken',

@@ -5091,6 +5091,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RUEDATK
   ),
   erc20(
+    'd904868d-b066-4e88-b4ff-964a3f08212a',
+    'sail',
+    'SAIL Token',
+    18,
+    '0xd8f1460044925d2d5c723c7054cd9247027415b7',
+    UnderlyingAsset.SAIL
+  ),
+  erc20(
     'dfb1aa61-4f99-4778-949d-64246e5ccc9c',
     'salt',
     'Salt',
@@ -7886,6 +7894,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'f49e8632-7cd9-4e0b-a576-7e9cd12bcf82',
+    'topm',
+    'Goerli Test OPM',
+    18,
+    '0xfffad1676f1da8dfa7691db388a5d20d3b50c438',
+    UnderlyingAsset.TOPM,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     '7ac2ea4c-e856-4495-b727-0e0dde011cab',
     'terc18dp2',
     'Test ERC Token 18 Decimals',
@@ -10099,6 +10119,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x326c977e6efc84e512bb9c30f76e30c160ed06fb',
     UnderlyingAsset['tpolygon:link']
+  ),
+  tpolygonErc20(
+    'e1329794-1e16-4ea7-b7d6-82419b631ad9',
+    'tpolygon:opm',
+    'Polygon Test OPM',
+    18,
+    '0xe71b2e809598d8398222b890d7203808fa1d631f',
+    UnderlyingAsset['tpolygon:opm']
   ),
   terc721(
     '54d98031-6ebc-428a-b47c-b6ec7d6ad28a',
