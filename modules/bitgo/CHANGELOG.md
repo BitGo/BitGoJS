@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@19.11.0) (2023-08-25)
+
+### Bug Fixes
+
+- remove .nvmrc file ([a3edcc3](https://github.com/BitGo/BitGoJS/commit/a3edcc3725570d65154d541a932025bc3ad4416b))
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+- **sdk-core:** handle txRequest full PA before signing ([9de0eae](https://github.com/BitGo/BitGoJS/commit/9de0eae7cab1ad406e80a818555a7c8557b47eb3))
+
+### Features
+
+- **bitgo:** calculate fees explicitly for psbts ([7a7e288](https://github.com/BitGo/BitGoJS/commit/7a7e288c63718a112abf633b842e7538d1e25693))
+- **sdk-core:** use BuildParams codec in Wallet.sendAccountConsolidation ([7d340ec](https://github.com/BitGo/BitGoJS/commit/7d340ec674116badf3b05aadf1d9aae130a8c69d))
+
 # [19.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@19.10.0) (2023-08-24)
 
 ### Bug Fixes
