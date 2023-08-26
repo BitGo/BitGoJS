@@ -1,4 +1,4 @@
-import { BitGo, KeyType } from "bitgo";
+import { AddKeychainOptions, BitGo, KeyType } from "bitgo";
 import { readFileSync, writeFileSync } from "fs";
 
 // This creates a self-managed cold wallet
@@ -17,6 +17,10 @@ const walletName = "SMC Solana 2"; // Name of the wallet to be created
 
 // Set the bitgo key id from the step 1
 const bitgoKeyId = "649b69a0d2521600089f16044cd5e5cb";
+
+// OPTIONAL - Set the seed for the new wallet derivation (it can be any random string but needs to be unique)
+// *IMPORTANT* make sure to save the seed for each wallet, it will be needed to recover the wallet
+const derivedFromParentWithSeed = undefined // 'random seed'
 
 async function createSMCWalletStep2() {
   const ovc1CommonKeychain: { commonKeychain: string } =
@@ -41,11 +45,15 @@ async function createSMCWalletStep2() {
     throw new Error("Common keychain mismatch between the OVCs and BitGo");
   }
 
-  const userKeychainParams = {
+  const userKeychainParams: AddKeychainOptions = {
     source: "user",
     keyType: "tss" as KeyType,
     commonKeychain: ovc1CommonKeychain.commonKeychain,
   };
+
+  if(derivedFromParentWithSeed) {
+    userKeychainParams.derivedFromParentWithSeed = derivedFromParentWithSeed
+  }
   const userKeychain = await bitgoCoin.keychains().add(userKeychainParams);
 
   const backupKeychainParams = {
@@ -69,7 +77,7 @@ async function createSMCWalletStep2() {
 
   const wallet = await bitgoCoin.wallets().add(walletParams);
   const stringifiedWallet = JSON.stringify(wallet);
-  console.log('Wallet created sucessfully: ' + wallet.id)
+  console.log('Wallet created sucessfully:')
   console.log(stringifiedWallet);
   writeFileSync(`./json/wallet-${walletName}.json`, stringifiedWallet)
 }
