@@ -655,6 +655,7 @@ export enum UnderlyingAsset {
   JFIN = 'jfin',
   JPYX = 'jpyx',
   JSOL = 'jsol',
+  KARATE = 'karate',
   KEEP = 'keep',
   KEY = 'key',
   KIN = 'kin',

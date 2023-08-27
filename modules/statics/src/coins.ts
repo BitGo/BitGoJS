@@ -3626,6 +3626,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.JPYX
   ),
   erc20(
+    '46b65f94-d279-4d42-addc-0b7254aa4eeb',
+    'karate',
+    'Karate',
+    18,
+    '0x80008bcd713c38af90a9930288d446bc3bd2e684',
+    UnderlyingAsset.KARATE
+  ),
+  erc20(
     '70978c3f-dd25-432d-b3d3-9f42b7905990',
     'keep',
     'Keep',
