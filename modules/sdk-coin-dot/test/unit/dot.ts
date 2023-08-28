@@ -199,10 +199,67 @@ describe('DOT:', function () {
         headerNumber: testData.westendBlock.blockNumber,
         headerHash: testData.westendBlock.hash,
       });
+      accountInfoCB.withArgs('5Dtg2zKjVEL8p9keSM4dQ7nD26sVtMfCsyxkhvZZ9fqBbhw6').resolves({
+        nonce: 0,
+        freeBalance: 1510000000000,
+      });
     });
 
     afterEach(function () {
       sandBox.restore();
+    });
+
+    it('should generate unsigned sweep correctly', async function () {
+      const commonKeychain =
+        '3cd14f5d60744287cd3a50510e2964746b6feaad4b2300088eaae60d1a35f0abc518534d43b2614370d9a263aadb57edb5d0b78f816a519cd5896e7352920b67';
+      const recoveryDestination = '5GPAveMvmDsjxVT6Q2xiu5kYPbFAmdebHaiNZK14FBaSaAKh';
+
+      const unsigned = await basecoin.recover({ bitgoKey: commonKeychain, recoveryDestination });
+      unsigned.txRequests.should.not.be.undefined();
+      unsigned.txRequests.length.should.equal(1);
+      unsigned.txRequests[0].transactions.length.should.equal(1);
+      unsigned.txRequests[0].walletCoin.should.equal('tdot');
+      unsigned.txRequests[0].transactions[0].unsignedTx.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.serializedTx.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.scanIndex.should.equal(0);
+      unsigned.txRequests[0].transactions[0].unsignedTx.coin.should.equal('tdot');
+      unsigned.txRequests[0].transactions[0].unsignedTx.signableHex.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.derivationPath.should.equal('m/0');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs.length.should.equal(1);
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].address.should.equal(
+        '5Dtg2zKjVEL8p9keSM4dQ7nD26sVtMfCsyxkhvZZ9fqBbhw6'
+      );
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].valueString.should.equal('1500000000000');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].value.should.equal(1500000000000);
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs.length.should.equal(1);
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].address.should.equal(
+        '5GPAveMvmDsjxVT6Q2xiu5kYPbFAmdebHaiNZK14FBaSaAKh'
+      );
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].valueString.should.equal('1500000000000');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].coinName.should.equal('tdot');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.type.should.equal('');
+      unsigned.txRequests[0].transactions[0].unsignedTx.feeInfo.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.feeInfo.fee.should.equal(0);
+      unsigned.txRequests[0].transactions[0].unsignedTx.feeInfo.feeString.should.equal('0');
+      unsigned.txRequests[0].transactions[0].unsignedTx.coinSpecific.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.coinSpecific.firstValid.should.not.be.undefined();
+      unsigned.txRequests[0].transactions[0].unsignedTx.coinSpecific.maxDuration.should.equal(2400);
+      unsigned.txRequests[0].transactions[0].unsignedTx.coinSpecific.commonKeychain.should.equal(
+        '3cd14f5d60744287cd3a50510e2964746b6feaad4b2300088eaae60d1a35f0abc518534d43b2614370d9a263aadb57edb5d0b78f816a519cd5896e7352920b67'
+      );
+    });
+
+    it('should take OVC output and generate a signed sweep transaction', async function () {
+      const params = testData.ovcResponse;
+
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn[0].serializedTx.should.equal(
+        '0x2d02840050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c00057c131cde2be39f4ff23eeba11139c46dd8c6d69ff517abede37381d8d24f0bb30fd8805b2e51a9e2a75338d7fb7edb290be9638debedbfc001d10b8132be0b2b4a0400040400bf0678d312b2b2c7effd2b1f214ee13928d339391d5f5f7056608aa0d32b9edf01'
+      );
+      recoveryTxn[0].scanIndex.should.equal(0);
     });
 
     it('should recover a txn for non-bitgo recoveries', async function () {

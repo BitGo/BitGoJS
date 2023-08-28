@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^8.18.0",
+    "@bitgo/sdk-lib-mpc": "^8.7.0",
     "@bitgo/statics": "^21.0.0",
     "@polkadot/api": "10.9.1",
     "@polkadot/keyring": "12.3.2",
