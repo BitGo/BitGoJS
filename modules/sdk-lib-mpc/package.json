@@ -6,7 +6,7 @@
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "test": "yarn unit-test",
-    "unit-test": "nyc -- mocha",
+    "unit-test": "nyc -- mocha --recursive test",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
