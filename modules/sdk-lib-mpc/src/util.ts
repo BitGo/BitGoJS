@@ -1,6 +1,7 @@
 import { PublicKey } from 'paillier-bigint';
 import { bitLength, randBits } from 'bigint-crypto-utils';
 import { gcd } from 'bigint-mod-arith';
+import crypto from 'crypto';
 
 /**
  * Returns a bigint array from a hex string array
@@ -136,4 +137,23 @@ export async function randomPositiveCoPrimeLessThan(x: bigint): Promise<bigint> 
  */
 export async function randomBigInt(bitlength: number): Promise<bigint> {
   return bigIntFromBufferBE(Buffer.from(await randBits(bitlength, true)));
+}
+
+/**
+ * @param seed - used to construct derivation path deterministically
+ * @param isMaster - if set, path starts with prefix `m/`
+ * @return path `(m/)/999999/a/b` where `a` and `b` are 7-byte pseudorandom numbers based on seed
+ */
+export function getDerivationPath(seed: string, isMaster = true): string {
+  const derivationPathInput = sha256(sha256(`${seed}`)).toString('hex');
+  const derivationPathParts = [
+    parseInt(derivationPathInput.slice(0, 7), 16),
+    parseInt(derivationPathInput.slice(7, 14), 16),
+  ];
+  const prefix = isMaster ? 'm/' : '';
+  return prefix + '999999/' + derivationPathParts.join('/');
+}
+
+function sha256(input: crypto.BinaryLike): Buffer {
+  return crypto.createHash('sha256').update(input).digest();
 }
