@@ -127,6 +127,12 @@ export interface GetSigningKeyApi {
   ecdhKeychain?: string;
 }
 
+export interface EcdhDerivedKeypair {
+  derivedPubKey: string; // Hex string
+  derivationPath: string; // Derivation path of the keypair
+  xprv: string;
+}
+
 export enum KeyIndices {
   USER = 0,
   BACKUP = 1,

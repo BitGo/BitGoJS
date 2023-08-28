@@ -1281,30 +1281,19 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const challengesWithProofs = bitgoChallengesWithProofs
       ? bitgoChallengesWithProofs
       : await EcdsaUtils.getBitGoChallenges(bitgo);
+
     // Fetch user's ecdh public keychain needed for signing the challenges
-    const userSigningKey = await bitgo.getSigningKeyForUser(enterpriseId);
-    if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
-      throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
-    }
-    const userEcdhKeychain = await bitgo.getECDHKeychain(userSigningKey.ecdhKeychain);
-    let xprv;
-    try {
-      xprv = bitgo.decrypt({
-        password: userPassword,
-        input: userEcdhKeychain.encryptedXprv,
-      });
-    } catch (e) {
-      throw new Error('Incorrect password. Please try again.');
-    }
+    const ecdhKeypair = await bitgo.getEcdhKeypairPrivate(userPassword, enterpriseId);
+
     const signedBitGoInstChallenge = EcdsaUtils.signChallenge(
       challengesWithProofs.bitgoInstitutionalHsm,
-      xprv,
-      userSigningKey.derivationPath
+      ecdhKeypair.xprv,
+      ecdhKeypair.derivationPath
     );
     const signedBitGoNitroChallenge = EcdsaUtils.signChallenge(
       challengesWithProofs.bitgoNitroHsm,
-      xprv,
-      userSigningKey.derivationPath
+      ecdhKeypair.xprv,
+      ecdhKeypair.derivationPath
     );
     return {
       bitgoInstHsmAdminSignature: signedBitGoInstChallenge,
@@ -1332,28 +1321,15 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void> {
     // Fetch user's ecdh public keychain needed for signing the challenges
-    const userSigningKey = await bitgo.getSigningKeyForUser(entId);
-    if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
-      throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
-    }
-    const userEcdhKeychain = await bitgo.getECDHKeychain(userSigningKey.ecdhKeychain);
-    let xprv;
-    try {
-      xprv = bitgo.decrypt({
-        password: userPassword,
-        input: userEcdhKeychain.encryptedXprv,
-      });
-    } catch (e) {
-      throw new Error('Incorrect password. Please try again.');
-    }
+    const ecdhKeypair = await bitgo.getEcdhKeypairPrivate(userPassword, entId);
 
     // Generate and sign enterprise challenge
     const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(minModulusBitLength));
     const serializedEntChallengeWithProof = EcdsaTypes.serializeNtildeWithProofs(entChallengeWithProof);
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       serializedEntChallengeWithProof,
-      xprv,
-      userSigningKey.derivationPath
+      ecdhKeypair.xprv,
+      ecdhKeypair.derivationPath
     );
 
     await this.uploadChallengesToEnterprise(
@@ -1371,7 +1347,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * This initiates ecdsa signing for the enterprise users.
    * @param bitgo
    * @param entId - enterprise to enable ecdsa signing on
-   * @param entChallengeWithProofs - client side generated ent challenge with ZK proofs
+   * @param entChallenge - client side generated ent challenge with ZK proofs
    * @param entChallengeSignature - signature on enterprise challenge
    * @param bitgoIntChallengeSignature - signature on BitGo's institutional HSM challenge
    * @param bitgoNitroChallengeSignature - signature on BitGo's nitro HSM challenge
@@ -1379,20 +1355,16 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
   static async uploadChallengesToEnterprise(
     bitgo: BitGoBase,
     entId: string,
-    entChallengeWithProofs: EcdsaTypes.SerializedNtildeWithProofs,
+    entChallenge: EcdsaTypes.SerializedNtilde | EcdsaTypes.SerializedNtildeWithProofs,
     entChallengeSignature: string,
     bitgoIntChallengeSignature: string,
     bitgoNitroChallengeSignature: string
   ): Promise<void> {
     const body = {
       enterprise: {
-        ntilde: entChallengeWithProofs.ntilde,
-        h1: entChallengeWithProofs.h1,
-        h2: entChallengeWithProofs.h2,
-        ntildeProof: {
-          h1WrtH2: entChallengeWithProofs.ntildeProof.h1WrtH2,
-          h2WrtH1: entChallengeWithProofs.ntildeProof.h2WrtH1,
-        },
+        ntilde: entChallenge.ntilde,
+        h1: entChallenge.h1,
+        h2: entChallenge.h2,
         verifiers: {
           adminSignature: entChallengeSignature,
         },
@@ -1408,6 +1380,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         },
       },
     };
+    if ('ntildeProof' in entChallenge) {
+      body.enterprise['ntildeProof'] = entChallenge.ntildeProof;
+    }
     await bitgo
       .put(bitgo.url(`/enterprise/${entId}/tssconfig/ecdsa/challenge`, 2))
       .send(body)

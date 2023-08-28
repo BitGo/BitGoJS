@@ -30,3 +30,13 @@ export type BitGoProofSignatures = {
   bitgoNitroHsmAdminSignature: Buffer;
   bitgoInstHsmAdminSignature: Buffer;
 };
+
+interface NtildeVerifiers {
+  adminSignature: string;
+  bitgoNitroHsmSignature?: string;
+  bitgoInstitutionalHsmSignature?: string;
+}
+
+export type SerializedNtildeWithVerifiers = EcdsaTypes.SerializedNtilde & {
+  verifiers: NtildeVerifiers;
+};

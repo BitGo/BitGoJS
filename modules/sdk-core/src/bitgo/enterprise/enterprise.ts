@@ -8,8 +8,11 @@ import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterpris
 import { getFirstPendingTransaction } from '../internal';
 import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
-import { BitGoProofSignatures, EcdsaUtils } from '../utils/tss/ecdsa';
+import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { verifyEcdhSignature } from '../ecdh';
+import { Buffer } from 'buffer';
+import { EcdhDerivedKeypair } from '../keychain';
 
 export class Enterprise implements IEnterprise {
   private readonly bitgo: BitGoBase;
@@ -173,6 +176,77 @@ export class Enterprise implements IEnterprise {
       h2: enterpriseChallenge.h2,
       ntildeProof: enterpriseChallenge.ntildeProof,
     });
+  }
+
+  /**
+   * Resigns the enterprise and bitgo challenges with a new ECDH keychain.
+   * Verifies that the old keychain signed the challenges previously.
+   * @param oldEcdhKeypair - the old keychain that signed the challenges
+   * @param newEcdhKeypair - the new keychain that will sign the challenges
+   * @param entChallenge - existing signed enterprise challenge
+   * @param bitgoInstChallenge - existing signed bitgo institutional challenge
+   * @param bitgoNitroChallenge - existing signed bitgo nitro challenge
+   */
+  async resignEnterpriseChallenges(
+    oldEcdhKeypair: EcdhDerivedKeypair,
+    newEcdhKeypair: EcdhDerivedKeypair,
+    entChallenge: SerializedNtildeWithVerifiers,
+    bitgoInstChallenge: SerializedNtildeWithVerifiers,
+    bitgoNitroChallenge: SerializedNtildeWithVerifiers
+  ): Promise<void> {
+    // Verify all the challenges were signed by the old keypair
+    if (
+      !verifyEcdhSignature(
+        EcdsaUtils.getMessageToSignFromChallenge(entChallenge),
+        entChallenge.verifiers.adminSignature,
+        Buffer.from(oldEcdhKeypair.derivedPubKey, 'hex')
+      )
+    ) {
+      throw new Error(`Cannot re-sign. The Enterprise TSS config was signed by another user.`);
+    }
+    if (
+      !verifyEcdhSignature(
+        EcdsaUtils.getMessageToSignFromChallenge(bitgoInstChallenge),
+        bitgoInstChallenge.verifiers.adminSignature,
+        Buffer.from(oldEcdhKeypair.derivedPubKey, 'hex')
+      )
+    ) {
+      throw new Error(`Cannot re-sign. The BitGo Institutional TSS config was signed by another user.`);
+    }
+    if (
+      !verifyEcdhSignature(
+        EcdsaUtils.getMessageToSignFromChallenge(bitgoNitroChallenge),
+        bitgoNitroChallenge.verifiers.adminSignature,
+        Buffer.from(oldEcdhKeypair.derivedPubKey, 'hex')
+      )
+    ) {
+      throw new Error(`Cannot re-sign. The BitGo Nitro TSS config was signed by another user.`);
+    }
+
+    // Once all the challenges are verified, we can re-sign them with the new keypair.
+    const signedEntChallenge = EcdsaUtils.signChallenge(
+      entChallenge,
+      newEcdhKeypair.xprv,
+      newEcdhKeypair.derivationPath
+    );
+    const signedBitGoInstChallenge = EcdsaUtils.signChallenge(
+      bitgoInstChallenge,
+      newEcdhKeypair.xprv,
+      newEcdhKeypair.derivationPath
+    );
+    const signedBitGoNitroChallenge = EcdsaUtils.signChallenge(
+      bitgoNitroChallenge,
+      newEcdhKeypair.xprv,
+      newEcdhKeypair.derivationPath
+    );
+    await EcdsaUtils.uploadChallengesToEnterprise(
+      this.bitgo,
+      this.id,
+      entChallenge,
+      signedEntChallenge.toString('hex'),
+      signedBitGoInstChallenge.toString('hex'),
+      signedBitGoNitroChallenge.toString('hex')
+    );
   }
 
   /**
