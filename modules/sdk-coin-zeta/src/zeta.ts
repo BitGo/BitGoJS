@@ -1,8 +1,8 @@
-import { CosmosCoin } from '@bitgo/abstract-cosmos';
+import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
 import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-
-import { TransactionBuilderFactory } from './lib';
+import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
+import { KeyPair, TransactionBuilderFactory } from './lib';
+import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
 import utils from './lib/utils';
 
 export class Zeta extends CosmosCoin {
@@ -39,5 +39,37 @@ export class Zeta extends CosmosCoin {
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
     return Environments[this.bitgo.getEnv()].zetaNodeUrl;
+  }
+
+  /** @inheritDoc **/
+  getDenomination(): string {
+    return BaseUnit.ZETA;
+  }
+
+  /** @inheritDoc **/
+  getGasAmountDetails(): GasAmountDetails {
+    return {
+      gasAmount: GAS_AMOUNT,
+      gasLimit: GAS_LIMIT,
+    };
+  }
+
+  /** @inheritDoc **/
+  getKeyPair(publicKey: string): CosmosKeyPair {
+    return new KeyPair({ pub: publicKey });
+  }
+
+  /** @inheritDoc **/
+  getAddressFromPublicKey(publicKey: string): string {
+    return new KeyPair({ pub: publicKey }).getAddress();
+  }
+
+  /** @inheritDoc **/
+  protected async getAccountDetails(senderAddress: string): Promise<string[]> {
+    const response = await this.getAccountFromNode(senderAddress);
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return [response.body.account.base_account.account_number, response.body.account.base_account.sequence];
   }
 }

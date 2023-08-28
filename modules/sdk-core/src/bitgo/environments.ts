@@ -110,7 +110,7 @@ const mainnetBase: EnvironmentTemplate = {
   tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
   bldNodeUrl: 'https://agoric-api.polkachu.com',
-  zetaNodeUrl: 'https://api.athens2.zetachain.com', // TODO(WIN-142): update to mainnet url when it's live
+  zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public', // TODO(WIN-142): update to mainnet url when it's live
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -147,7 +147,7 @@ const testnetBase: EnvironmentTemplate = {
   tiaNodeUrl: 'https://api-mocha.pops.one',
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
-  zetaNodeUrl: 'https://api.athens2.zetachain.com',
+  zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',
