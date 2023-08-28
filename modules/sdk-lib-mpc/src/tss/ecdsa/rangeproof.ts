@@ -265,6 +265,9 @@ export function verify(
   proof: RangeProof,
   c: bigint
 ): boolean {
+  if (proof.u === BigInt(0) || proof.s === BigInt(0)) {
+    return false;
+  }
   const modulusBytes = Math.floor((modulusBits + 7) / 8);
   const q = curve.order();
   const q3 = q ** BigInt(3);
