@@ -1,5 +1,4 @@
 import { ECDSA } from './../../../account-lib/mpc/tss';
-import { SerializedNtilde } from "@bitgo/sdk-lib-mpc/dist/src/tss/ecdsa/types";
 
 export type NShare = ECDSA.NShare;
 export type KeyShare = ECDSA.KeyShare;
@@ -74,16 +73,6 @@ export type CreateCombinedKeyParams = {
   keyShare: ECDSA.KeyShare;
   encryptedNShares: DecryptableNShare[];
   commonKeychain: string;
-};
-
-interface NtildeVerifiers {
-  adminSignature: string;
-  bitgoNitroHsmSignature?: string;
-  bitgoInstitutionalHsmSignature?: string;
-}
-
-export type SerializedNtildeWithVerifiers = SerializedNtilde & {
-  verifiers: NtildeVerifiers;
 };
 
 export type SendShareToBitgoRT = AShare | DShare | SShare | Signature;

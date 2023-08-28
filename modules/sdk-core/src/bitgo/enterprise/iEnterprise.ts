@@ -3,7 +3,8 @@ import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
-import { BitGoProofSignatures } from '../utils/tss/ecdsa';
+import { BitGoProofSignatures, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
+import { EcdhDerivedKeypair } from '../keychain';
 
 // useEnterpriseEcdsaTssChallenge is deprecated
 export type EnterpriseFeatureFlag = 'useEnterpriseEcdsaTssChallenge';
@@ -33,5 +34,12 @@ export interface IEnterprise {
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void>;
   getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs>;
+  resignEnterpriseChallenges(
+    oldEcdhKeypair: EcdhDerivedKeypair,
+    newEcdhKeypair: EcdhDerivedKeypair,
+    entChallenge: SerializedNtildeWithVerifiers,
+    bitgoInstChallenge: SerializedNtildeWithVerifiers,
+    bitgoNitroChallenge: SerializedNtildeWithVerifiers
+  ): Promise<void>;
   hasFeatureFlags(flags: EnterpriseFeatureFlag[]): boolean;
 }
