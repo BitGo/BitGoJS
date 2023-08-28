@@ -25,6 +25,7 @@ import {
   common,
   DecryptOptions,
   defaultConstants,
+  EcdhDerivedKeypair,
   EncryptOptions,
   EnvironmentName,
   getAddressP2PKH,
@@ -85,6 +86,7 @@ const debug = debugLib('bitgo:api');
 const Blockchain = require('./v1/blockchain');
 const Keychains = require('./v1/keychains');
 import Wallet = require('./v1/wallet');
+
 const Wallets = require('./v1/wallets');
 const Markets = require('./v1/markets');
 const PendingApprovals = require('./v1/pendingapprovals');
@@ -1549,6 +1551,34 @@ export class BitGoAPI implements BitGoBase {
       ecdhKeychainPub = result.settings.ecdhKeychain;
     }
     return this.keychains().get({ xpub: ecdhKeychainPub });
+  }
+
+  /**
+   * Returns the user derived public and private ECDH keypair
+   * @param password password to decrypt the user's ECDH encrypted private key
+   * @param entId? optional enterprise id to check for permissions
+   */
+  async getEcdhKeypairPrivate(password: string, entId: string): Promise<EcdhDerivedKeypair> {
+    const userSigningKey = await this.getSigningKeyForUser(entId);
+    const pubkeyOfAdminEcdhKeyHex = userSigningKey.derivedPubkey;
+    if (!userSigningKey.ecdhKeychain || !userSigningKey.derivationPath) {
+      throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
+    }
+    const userEcdhKeychain = await this.getECDHKeychain(userSigningKey.ecdhKeychain);
+    let xprv;
+    try {
+      xprv = this.decrypt({
+        password: password,
+        input: userEcdhKeychain.encryptedXprv,
+      });
+    } catch (e) {
+      throw new Error('Incorrect password. Please try again.');
+    }
+    return {
+      derivedPubKey: pubkeyOfAdminEcdhKeyHex,
+      derivationPath: userSigningKey.derivationPath,
+      xprv,
+    };
   }
 
   /**
