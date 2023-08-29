@@ -2,7 +2,13 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import 'should';
 
-import { bigIntFromBufferBE, randomBigInt, randomPositiveCoPrimeLessThan, randomPositiveCoPrimeTo } from '../../src';
+import {
+  bigIntFromBufferBE,
+  randomBigInt,
+  randomPositiveCoPrimeLessThan,
+  randomPositiveCoPrimeTo,
+  getDerivationPath,
+} from '../../src';
 import { gcd } from 'bigint-mod-arith';
 
 describe('mpc utils', () => {
@@ -73,6 +79,33 @@ describe('mpc utils', () => {
         assert.strictEqual(res > 0, true);
         assert.strictEqual(gcd(res, testCase), BigInt(1));
       }
+    });
+  });
+
+  describe('getDerivationPath', function () {
+    it('should get derivation path from a provided seed', function () {
+      const seed = '1';
+      const derivationPath = getDerivationPath(seed);
+      assert.strictEqual(derivationPath, 'm/999999/163767512/266960264');
+    });
+
+    it('should get derivation path from a provided seed when it is not master', function () {
+      const seed = '1';
+      const isMaster = false;
+      const derivationPath = getDerivationPath(seed, isMaster);
+      assert.strictEqual(derivationPath, '999999/163767512/266960264');
+    });
+
+    it('should get derivation path from an empty string seed', function () {
+      const seed = '';
+      const derivationPath = getDerivationPath(seed);
+      assert.strictEqual(derivationPath, 'm/999999/98528782/41292633');
+    });
+
+    it('should get derivation path from a long string seed', function () {
+      const seed = 'thisisareallylongseedtoseeifitworksandconsistentlyworks';
+      const derivationPath = getDerivationPath(seed);
+      assert.strictEqual(derivationPath, 'm/999999/201872612/82248621');
     });
   });
 });
