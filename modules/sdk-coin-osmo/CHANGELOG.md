@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.6.0...@bitgo/sdk-coin-osmo@1.6.5) (2023-08-29)
+
+### Bug Fixes
+
+- **abstract-cosmos:** allow valueless transfer for osmosis ([7aa6752](https://github.com/BitGo/BitGoJS/commit/7aa6752711eb604acd0d6e9b0b6f0bdb5e5be991))
+
 ## [1.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.6.0...@bitgo/sdk-coin-osmo@1.6.4) (2023-08-25)
 
 ### Bug Fixes

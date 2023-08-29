@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.5.0...@bitgo/sdk-lib-mpc@8.7.0) (2023-08-29)
+
+### Features
+
+- **sdk-core:** add getDerivationPath method for smc wallets ([e0be65f](https://github.com/BitGo/BitGoJS/commit/e0be65f4c8904be313b4f453996f86326d2005e8))
+- **sdk-lib-mpc:** convert interface to type ([e1c1065](https://github.com/BitGo/BitGoJS/commit/e1c1065928691a1f9d43522aeafa8751c2424d3e))
+- **sdk-lib-mpc:** move ecdsa hdtree from core ([f0311a8](https://github.com/BitGo/BitGoJS/commit/f0311a8606b1a6aa82309ef7bb9a349782819c28))
+- **sdk-lib-mpc:** move shamir ([42fc946](https://github.com/BitGo/BitGoJS/commit/42fc946c8a5c4a1f7a09e5a9cb6c64a0b266a2a7))
+- **sdk-lib-mpc:** move types to types.ts ([cf2f482](https://github.com/BitGo/BitGoJS/commit/cf2f4821792172b1657fbcecd8886df5bacd817a))
+
 # [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.5.0...@bitgo/sdk-lib-mpc@8.6.0) (2023-08-25)
 
 ### Features
