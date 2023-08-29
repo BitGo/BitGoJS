@@ -34,7 +34,17 @@ import { isInteger, isUndefined } from 'lodash';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
+export const SAFE_TRON_TOKEN_TRANSACTION_FEE = 100 * 1e6; // TRON foundation recommends 100 TRX as fees for guaranteed transaction
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
+
+export const TOKEN_CONTRACT_ADDRESSES = [
+  // mainnet tokens
+  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
+  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+  // testnet tokens
+  'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
+  'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+];
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -540,6 +550,14 @@ export class Trx extends BaseCoin {
    * 1) Node query - how much money is in the account
    * 2) Build transaction - build our transaction for the amount
    * 3) Send signed build - send our signed build to a public node
+   *
+   * Note 1: for base address recoveries, fund will be recovered to recovery destination if base address balance is
+   * more than 2.1 TRX for native TRX recovery and 100 TRX for token recover. For receive addresses, fund will be
+   * recovered to base address first then swept to base address(decided as the universal pattern in team meeting).
+   *
+   * Note 2: the function supports token sweep from base address.
+   * TODO: support token sweep from receive address.
+   *
    * @param params
    */
   async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
@@ -568,17 +586,70 @@ export class Trx extends BaseCoin {
 
     // we need to decode our bitgoKey to a base58 address
     const bitgoHexAddr = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
-    const recoveryAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
-    let accountToRecoverAddr = bitgoHexAddr;
+    let recoveryFromAddrHex = bitgoHexAddr;
+    let recoveryToAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
     // call the node to get our account balance for base address
-    let account = await this.getAccountBalancesFromNode(Utils.getBase58AddressFromHex(accountToRecoverAddr));
+    let account = await this.getAccountBalancesFromNode(Utils.getBase58AddressFromHex(recoveryFromAddrHex));
     let recoveryAmount = account.data[0].balance;
 
     let userXPrv = keys[0].toBase58();
     let isReceiveAddress = false;
     let addressInfo: AddressInfo | undefined;
 
+    // Tokens must be recovered before the native asset. First construct token txns
+    let rawTokenTxn: any | undefined;
+    for (const token of account.data[0].trc20) {
+      for (const tokenContractAddr of TOKEN_CONTRACT_ADDRESSES) {
+        if (token[tokenContractAddr]) {
+          const amount = token[tokenContractAddr];
+          const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
+          rawTokenTxn = (
+            await this.getTriggerSmartContractTransaction(
+              recoveryToAddressHex,
+              recoveryFromAddrHex,
+              amount,
+              tokenContractAddrHex
+            )
+          ).transaction;
+          recoveryAmount = parseInt(amount, 10);
+          break;
+        }
+      }
+    }
+
+    // build and sign token txns
+    if (rawTokenTxn) {
+      // Check there is sufficient of the native asset to cover fees
+      const trxBalance = account.data[0].balance;
+      if (trxBalance < SAFE_TRON_TOKEN_TRANSACTION_FEE) {
+        throw new Error(
+          `Amount of funds to recover ${trxBalance} is less than ${SAFE_TRON_TOKEN_TRANSACTION_FEE} and wouldn't be able to fund a trc20 send`
+        );
+      }
+
+      const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
+
+      // this tx should be enough to drop into a node
+      if (isUnsignedSweep) {
+        return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+      }
+
+      const userPrv = this.xprvToCompressedPrv(userXPrv);
+
+      txBuilder.sign({ key: userPrv });
+
+      // krs recoveries don't get signed
+      if (!isKrsRecovery && !isReceiveAddress) {
+        const backupXPrv = keys[1].toBase58();
+        const backupPrv = this.xprvToCompressedPrv(backupXPrv);
+
+        txBuilder.sign({ key: backupPrv });
+      }
+      return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+    }
+
+    // Now let us recover the native Tron
     if (recoveryAmount > SAFE_TRON_TRANSACTION_FEE) {
       const userXPub = keys[0].neutered().toBase58();
       const backupXPub = keys[1].neutered().toBase58();
@@ -622,7 +693,8 @@ export class Trx extends BaseCoin {
           recoveryAmount = accountInfo.data[0].balance;
           userXPrv = userKey.toBase58(); // assign derived userXPrx
           isReceiveAddress = true;
-          accountToRecoverAddr = receiveAddress;
+          recoveryFromAddrHex = receiveAddress;
+          recoveryToAddressHex = bitgoHexAddr;
           addressInfo = {
             address,
             chain: 0,
@@ -633,107 +705,16 @@ export class Trx extends BaseCoin {
       }
     }
 
-    // first construct token txns
-    const tokenTxns: any = [];
-    for (const token of account.data[0].trc20) {
-      // mainnet tokens
-      if (token.TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8) {
-        const amount = token.TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8;
-        const contractAddr = Utils.getHexAddressFromBase58Address('TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8');
-        tokenTxns.push(
-          (
-            await this.getTriggerSmartContractTransaction(
-              recoveryAddressHex,
-              accountToRecoverAddr,
-              amount,
-              contractAddr
-            )
-          ).transaction
-        );
-      } else if (token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t) {
-        const amount = token.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t;
-        const contractAddr = Utils.getHexAddressFromBase58Address('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');
-        tokenTxns.push(
-          (
-            await this.getTriggerSmartContractTransaction(
-              recoveryAddressHex,
-              accountToRecoverAddr,
-              amount,
-              contractAddr
-            )
-          ).transaction
-        );
-
-        // testnet tokens
-      } else if (token.TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id) {
-        const amount = token.TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id;
-        const contractAddr = Utils.getHexAddressFromBase58Address('TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id');
-        tokenTxns.push(
-          (
-            await this.getTriggerSmartContractTransaction(
-              recoveryAddressHex,
-              accountToRecoverAddr,
-              amount,
-              contractAddr
-            )
-          ).transaction
-        );
-      } else if (token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs) {
-        const amount = token.TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs;
-        const contractAddr = Utils.getHexAddressFromBase58Address('TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs');
-        tokenTxns.push(
-          (
-            await this.getTriggerSmartContractTransaction(
-              recoveryAddressHex,
-              accountToRecoverAddr,
-              amount,
-              contractAddr
-            )
-          ).transaction
-        );
-      }
-    }
-
     // a sweep potentially needs to pay for multi-sig transfer, destination account activation and bandwidth
     // TRON foundation recommends 2.1 TRX for guaranteed confirmation
     if (!recoveryAmount || SAFE_TRON_TRANSACTION_FEE > recoveryAmount) {
-      throw new Error('Amount of funds to recover wouldnt be able to fund a send');
-    }
-
-    // build and sign token txns
-    const finalTokenTxs: any = [];
-    for (const tokenTxn of tokenTxns) {
-      const txBuilder = getBuilder(this.getChain()).from(tokenTxn);
-
-      // this tx should be enough to drop into a node
-      if (isUnsignedSweep) {
-        finalTokenTxs.push((await txBuilder.build()).toJson());
-        continue;
-      }
-
-      const userPrv = this.xprvToCompressedPrv(userXPrv);
-
-      txBuilder.sign({ key: userPrv });
-
-      // krs recoveries don't get signed
-      if (!isKrsRecovery && !isReceiveAddress) {
-        const backupXPrv = keys[1].toBase58();
-        const backupPrv = this.xprvToCompressedPrv(backupXPrv);
-
-        txBuilder.sign({ key: backupPrv });
-      }
-      finalTokenTxs.push((await txBuilder.build()).toJson());
-    }
-
-    // tokens must be recovered before the native asset, so that there is sufficient of the native asset to cover fees
-    if (finalTokenTxs.length > 0) {
-      return {
-        tokenTxs: finalTokenTxs,
-      };
+      throw new Error(
+        `Amount of funds to recover ${recoveryAmount} is less than ${SAFE_TRON_TRANSACTION_FEE} and wouldn't be able to fund a send`
+      );
     }
 
     const recoveryAmountMinusFees = recoveryAmount - SAFE_TRON_TRANSACTION_FEE;
-    const buildTx = await this.getBuildTransaction(recoveryAddressHex, accountToRecoverAddr, recoveryAmountMinusFees);
+    const buildTx = await this.getBuildTransaction(recoveryToAddressHex, recoveryFromAddrHex, recoveryAmountMinusFees);
 
     // construct our tx
     const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);

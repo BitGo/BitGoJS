@@ -341,7 +341,9 @@ describe('Recovery:', function () {
           walletPassphrase: 'test_wallet_passphrase',
           recoveryDestination: 'TEbha9FhQMZ3FRtZgok8QBunPQU4pZvBxX',
         })
-        .should.be.rejectedWith('Amount of funds to recover wouldnt be able to fund a send');
+        .should.be.rejectedWith(
+          "Amount of funds to recover undefined is less than 2100000 and wouldn't be able to fund a send"
+        );
     });
 
     it('should generate recovery tx with unencrypted keys', async function () {
@@ -404,16 +406,16 @@ describe('Recovery:', function () {
         recoveryDestination: 'TYPgx8NfDxB8pyiyTeiMkYzem1dNA6G12i',
       });
 
-      should.exist(recoveryTx.tokenTxs);
+      should.exist(recoveryTx);
 
-      recoveryTx.tokenTxs[0].signature[0].should.equal(
+      recoveryTx.tx.signature[0].should.equal(
         '4e9a6df65449b0081388dc5b5df8bcc21ec6c82b98c5eecb324d3396c676da7630f13549daf9eb09bb5015d344dd5f6afbaf941df8b220c5af846b2b19c1838201'
       );
-      recoveryTx.tokenTxs[0].signature[1].should.equal(
+      recoveryTx.tx.signature[1].should.equal(
         '6d67c274fd1295891ec1abd2bad4bd2fc19a0aecc4b20d02c09efbe9cfbb32e247da639488bbcbf1567c7cc777a67d0066dc7a2e7297704b3e8ffd0d057cfd0300'
       );
-      recoveryTx.tokenTxs[0].txID.should.equal('06d51eb1b4bd35d1f323c6edd6d63d7f11b1651b024e548ea2a8872a8fad7f5c');
-      recoveryTx.tokenTxs[0].raw_data_hex.should.equal(
+      recoveryTx.tx.txID.should.equal('06d51eb1b4bd35d1f323c6edd6d63d7f11b1651b024e548ea2a8872a8fad7f5c');
+      recoveryTx.tx.raw_data_hex.should.equal(
         '0a02a71c2208d0ecb53aa03882a640d8e4d985e6305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a15416a0a05e098c628f7f3ca63dbb5756e5c0c01852112154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb000000000000000000000000f5f414d447aafe70bb9b9d93912cbc4c54f0c014000000000000000000000000000000000000000000000000000000012410110070a2a9d685e630900180c2d72f'
       );
     });

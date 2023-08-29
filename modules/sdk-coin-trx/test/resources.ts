@@ -98,6 +98,138 @@ export const FirstExpectedSig =
 export const SecondExpectedSig =
   'f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600';
 
+export const TestRecoverData = {
+  userKey:
+    'xpub6BvMpt8ke8tCycBBw6uDob6PyNBkHbTyEztaRuwdMZhpiFk1mXpS7P7iv4c4w7XWFFRySMokUuFUqqgpZxK5wLxm6pgjpkNFhKsMaXTJoUN',
+  backupKey:
+    'xpub687kC8LeSJwj1gYQr4Js2BHbLK1nFeLvMzsDmH2LKMNrqAHNfeCw1sp61cbf2WxeY1QssaUBh9EFJbJ9LBuPivv7XDsFPVaFYj19ueCNczT',
+  bitgoKey:
+    'xpub661MyMwAqRbcFHCRyasU67NCA7V7goqUFPXvzsEiJd4SchCKyPtigHALvve5wtBdyHMZCWqpGzEsrQtfz6mE9m5QXWDantgbkmu56xvLwe3',
+  baseAddress: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+  firstReceiveAddress: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+  recoveryDestination: 'TWkzN4WjxkyoRTmFHaMQ9po77uEerngjyQ',
+};
+
+export function baseAddressBalance(trxBalance: number, trc20Balances: any[] = []) {
+  return {
+    data: [
+      {
+        owner_permission: {
+          keys: [
+            {
+              address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+              weight: 1,
+            },
+            {
+              address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+              weight: 1,
+            },
+            {
+              address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+              weight: 1,
+            },
+          ],
+          threshold: 2,
+          permission_name: 'owner',
+        },
+        balance: trxBalance,
+        trc20: trc20Balances,
+        active_permission: [
+          {
+            operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+            keys: [
+              {
+                address: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
+                weight: 1,
+              },
+              {
+                address: 'TBDy8HAy8vvhoqKc5V1hHQatfjZHM1MhPb',
+                weight: 1,
+              },
+              {
+                address: 'TPHPDfQ8Vs3Yp5UKDLHr5MjoVUrr5Y69m9',
+                weight: 1,
+              },
+            ],
+            threshold: 2,
+            id: 2,
+            type: 'Active',
+            permission_name: 'active0',
+          },
+        ],
+      },
+    ],
+  };
+}
+
+export function receiveAddressBalance(balance: number) {
+  return {
+    data: [
+      {
+        owner_permission: {
+          keys: [
+            {
+              address: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+              weight: 1,
+            },
+          ],
+          threshold: 1,
+          permission_name: 'owner',
+        },
+        active_permission: [
+          {
+            operations: '7fff1fc0033ec30f000000000000000000000000000000000000000000000000',
+            keys: [
+              {
+                address: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+                weight: 1,
+              },
+            ],
+            threshold: 1,
+            id: 2,
+            type: 'Active',
+            permission_name: 'active',
+          },
+        ],
+        balance: balance,
+        trc20: [],
+      },
+    ],
+  };
+}
+
+export const SampleRawTokenSendTxn = {
+  result: {
+    result: true,
+  },
+  transaction: {
+    visible: false,
+    txID: 'f8179caab4c781676cb33940948533e209dc7fe2135bbd6e00f60597862b86be',
+    raw_data: {
+      contract: [
+        {
+          parameter: {
+            value: {
+              data: 'a9059cbb000000000000000000000000e40b19afca3dde4ce8fcbc57ab41f8c326ab0cf2000000000000000000000000000000000000000000000000000000004190ab00',
+              owner_address: '41c25420255c2c5a2dd54ef69f92ef261e6bd4216a',
+              contract_address: '4142a1e39aefa49290f2b3f9ed688d7cecf86cd6e0',
+            },
+            type_url: 'type.googleapis.com/protocol.TriggerSmartContract',
+          },
+          type: 'TriggerSmartContract',
+        },
+      ],
+      ref_block_bytes: 'cba3',
+      ref_block_hash: 'e14cc425da3cfd94',
+      expiration: 1693357620000,
+      fee_limit: 100000000,
+      timestamp: 1693357561339,
+    },
+    raw_data_hex:
+      '0a02cba32208e14cc425da3cfd9440a0f6ea9fa4315aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c25420255c2c5a2dd54ef69f92ef261e6bd4216a12154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb000000000000000000000000e40b19afca3dde4ce8fcbc57ab41f8c326ab0cf2000000000000000000000000000000000000000000000000000000004190ab0070fbabe79fa431900180c2d72f',
+  },
+};
+
 export const UnsignedBuildTransaction = {
   visible: false,
   txID: '80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d',
