@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.16.0) (2023-08-29)
+
+### Bug Fixes
+
+- **bitgo:** add overrides and resolutions to pkgs ([14c33b4](https://github.com/BitGo/BitGoJS/commit/14c33b4bbffda09ba6a389f540c1fb8cc2a43bf9))
+- **sdk-api:** upgrade critical vulnerabilities from snyk scan ([cd97347](https://github.com/BitGo/BitGoJS/commit/cd97347046b1a6644db6682e9f8e9ca8b5fe4ad7))
+
+### Features
+
+- **sdk-api:** add size correction factor for transactions created ([5f0131c](https://github.com/BitGo/BitGoJS/commit/5f0131cd7016ad7dc4cf4b0be177e0c7ab7f4d25))
+- **sdk-api:** test for fully signed tx of v1 safe wallet ([ec91fb6](https://github.com/BitGo/BitGoJS/commit/ec91fb616187983611044230097236fa9229f55d))
+- **utxo-lib:** add tests for v1 safe wallets with uncompressed ([4ac75f0](https://github.com/BitGo/BitGoJS/commit/4ac75f0031a40aa17de37f176e3493284cba4cac))
+
 # [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.15.0) (2023-08-25)
 
 ### Bug Fixes
