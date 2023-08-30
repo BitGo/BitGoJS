@@ -67,10 +67,24 @@ interface DotTx {
   signableHex?: string;
   derivationPath?: string;
   parsedTx?: ParsedTransaction;
+  feeInfo?: {
+    fee: number;
+    feeString: string;
+  };
 }
 
-interface DotTxs {
-  transactions: DotTx[];
+interface DotUnsignedTx {
+  unsignedTx: DotTx;
+  signatureShares: [];
+}
+
+interface DotTxRequest {
+  walletCoin: string;
+  transactions: DotUnsignedTx[];
+}
+
+interface DotSweepTxs {
+  txRequests: DotTxRequest[];
 }
 
 const dotUtils = Utils.default;
@@ -351,7 +365,7 @@ export class Dot extends BaseCoin {
    * @returns {DotTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<DotTxs> {
+  async recover(params: RecoveryOptions): Promise<DotTx[] | DotSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -455,6 +469,7 @@ export class Dot extends BaseCoin {
         // to keep the account active
         const existentialDeposit = this.getChain() === 'tdot' ? 10000000000 : 1000000000000;
         const value = new BigNumber(freeBalance).minus(new BigNumber(existentialDeposit));
+        const walletCoin = this.getChain();
         const inputs = [
           {
             address: unsignedTransaction.inputs[0].address,
@@ -466,24 +481,33 @@ export class Dot extends BaseCoin {
           {
             address: unsignedTransaction.outputs[0].address,
             valueString: value.toString(),
+            coinName: walletCoin,
           },
         ];
         const spendAmount = value.toString();
         const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+        const feeInfo = { fee: 0, feeString: '0' };
         const transaction: DotTx = {
           serializedTx: serializedTx,
           scanIndex: i,
-          coin: this.getChain(),
-          signableHex: serializedTx,
+          coin: walletCoin,
+          signableHex: unsignedTransaction.signablePayload.toString('hex'),
           derivationPath: currPath,
           parsedTx: parsedTx,
+          feeInfo: feeInfo,
         };
-        const transactions: DotTx[] = [transaction];
-        return { transactions: transactions };
+        const unsignedTx: DotUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+        const transactions: DotUnsignedTx[] = [unsignedTx];
+        const txRequest: DotTxRequest = {
+          transactions: transactions,
+          walletCoin: walletCoin,
+        };
+        const txRequests: DotSweepTxs = { txRequests: [txRequest] };
+        return txRequests;
       }
       const transaction: DotTx = { serializedTx: serializedTx, scanIndex: i };
       const transactions: DotTx[] = [transaction];
-      return { transactions: transactions };
+      return transactions;
     }
     throw new Error('Did not find an address with funds to recover');
   }
