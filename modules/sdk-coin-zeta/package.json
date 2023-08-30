@@ -47,7 +47,7 @@
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1",
-    "@bitgo/sdk-lib-mpc": "^8.5.0"
+    "@bitgo/sdk-lib-mpc": "^8.6.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.15.0",
