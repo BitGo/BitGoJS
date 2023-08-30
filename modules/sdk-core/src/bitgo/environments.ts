@@ -147,7 +147,7 @@ const testnetBase: EnvironmentTemplate = {
   tiaNodeUrl: 'https://api-mocha.pops.one',
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
-  zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public',
+  zetaNodeUrl: 'https://rpc.ankr.com/http/zetachain_athens_testnet',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',
