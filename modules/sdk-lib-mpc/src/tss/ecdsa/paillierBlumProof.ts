@@ -1,6 +1,6 @@
-import { createHmac } from 'crypto';
+import { createHash } from 'crypto';
 import { bitLength, randBits, isProbablyPrime } from 'bigint-crypto-utils';
-import { modInv, modPow } from 'bigint-mod-arith';
+import { gcd, modInv, modPow } from 'bigint-mod-arith';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { DeserializedPaillierBlumProof } from './types';
 
@@ -16,16 +16,28 @@ const m = 80;
 function generateY(N, w): bigint[] {
   const NBuf = bigIntToBufferBE(N);
   const wBuf = bigIntToBufferBE(w, NBuf.length);
+  let counter = 0;
   return Array(m)
     .fill(null)
-    .map((_, i) => {
-      const h = bigIntFromBufferBE(
-        createHmac('sha256', Buffer.from([i]))
-          .update(NBuf)
-          .update(wBuf)
-          .digest()
-      );
-      return h * h;
+    .map((_) => {
+      while (true) {
+        let h = bigIntFromBufferBE(
+          // TypeScript doesn't like us using `outputLength` in the transform options,
+          // but it is required for shake256.
+          createHash('shake256', { outputLength: Math.floor((bitLength(N) + 7) / 8) })
+            .update(Buffer.from([counter++]))
+            .update('$')
+            .update(NBuf)
+            .update('$')
+            .update(wBuf)
+            .update('$')
+            .digest()
+        );
+        h = (h * h) % N;
+        if (gcd(h, N) === BigInt(1)) {
+          return h;
+        }
+      }
     });
 }
 
