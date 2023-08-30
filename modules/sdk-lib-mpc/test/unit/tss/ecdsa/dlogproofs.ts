@@ -4,7 +4,7 @@ import {
   generateNtildeProof,
   generateSafePrimes,
   verifyNtildeProof,
-} from '../../../../src/tss/ecdsa/rangeproof';
+} from '../../../../src/tss/ecdsa/rangeProof';
 import { OpenSSL } from '../../../../src';
 
 describe('h1H2DiscreteLogProofs', function () {
