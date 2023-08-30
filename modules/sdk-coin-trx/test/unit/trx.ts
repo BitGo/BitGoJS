@@ -3,6 +3,9 @@ import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import * as _ from 'lodash';
 import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';
+import sinon from 'sinon';
+import { baseAddressBalance, SampleRawTokenSendTxn, receiveAddressBalance, TestRecoverData } from '../resources';
+import should from 'should';
 
 describe('TRON:', function () {
   const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -175,6 +178,113 @@ describe('TRON:', function () {
       keyPair.prv.should.equal(
         'xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK'
       );
+    });
+  });
+
+  describe('Non-BitGo Recover', () => {
+    const sandBox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover trx from base address to recovery address', async function () {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      // a little more than 2.1 TRX
+      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(baseAddressBalance(3000000));
+      const res = await basecoin.recover({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        recoveryDestination: TestRecoverData.recoveryDestination,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.should.hasOwnProperty('feeInfo');
+      const rawData = JSON.parse(res.txHex).raw_data;
+      rawData.should.hasOwnProperty('contract');
+      const value = rawData.contract[0].parameter.value;
+      value.amount.should.equal(900000);
+      Utils.getBase58AddressFromHex(value.owner_address).should.equal(TestRecoverData.baseAddress);
+      Utils.getBase58AddressFromHex(value.to_address).should.equal(TestRecoverData.recoveryDestination);
+    });
+
+    it('should recover trx from receive address to base address', async function () {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(baseAddressBalance(2000000));
+      accountBalance.withArgs(TestRecoverData.firstReceiveAddress).resolves(receiveAddressBalance(102100000));
+
+      const res = await basecoin.recover({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        recoveryDestination: TestRecoverData.recoveryDestination,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.should.hasOwnProperty('feeInfo');
+      const rawData = JSON.parse(res.txHex).raw_data;
+      rawData.should.hasOwnProperty('contract');
+      const value = rawData.contract[0].parameter.value;
+      value.amount.should.equal(100000000);
+      Utils.getBase58AddressFromHex(value.owner_address).should.equal(TestRecoverData.firstReceiveAddress);
+      Utils.getBase58AddressFromHex(value.to_address).should.equal(TestRecoverData.baseAddress);
+    });
+
+    it('should recover token from base address to recovery address', async function () {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      // Minimum TRX balance to send erc20 tokens is 100 TRX
+      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(
+        baseAddressBalance(100000000, [
+          {
+            TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+          },
+        ])
+      );
+      const rawTokenTxn = sandBox.stub(Trx.prototype, 'getTriggerSmartContractTransaction' as keyof Trx);
+      rawTokenTxn.withArgs().resolves(SampleRawTokenSendTxn);
+
+      const res = await basecoin.recover({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        recoveryDestination: TestRecoverData.recoveryDestination,
+      });
+      res.should.not.be.empty();
+      res.recoveryAmount.should.equal(1100000000);
+      res.feeInfo.fee.should.equal('100000000');
+      should.not.exist(res.addressInfo);
+      const rawData = JSON.parse(res.txHex).raw_data;
+      rawData.should.hasOwnProperty('contract');
+      const value = rawData.contract[0].parameter.value;
+      Utils.getBase58AddressFromHex(value.owner_address).should.equal(TestRecoverData.baseAddress);
+      Utils.getBase58AddressFromHex(value.contract_address).should.equal('TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs');
+    });
+
+    it('should throw if trx balance at base address is not sufficient to cover token send', async function () {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      // 1 TRX is lower than the minimum TRX balance to send erc20 tokens which is 100 TRX
+      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(
+        baseAddressBalance(1000000, [
+          {
+            TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+          },
+        ])
+      );
+      const rawTokenTxn = sandBox.stub(Trx.prototype, 'getTriggerSmartContractTransaction' as keyof Trx);
+      rawTokenTxn.withArgs().resolves(SampleRawTokenSendTxn);
+
+      await basecoin
+        .recover({
+          userKey: TestRecoverData.userKey,
+          backupKey: TestRecoverData.backupKey,
+          bitgoKey: TestRecoverData.bitgoKey,
+          recoveryDestination: TestRecoverData.recoveryDestination,
+        })
+        .should.be.rejectedWith(
+          "Amount of funds to recover 1000000 is less than 100000000 and wouldn't be able to fund a trc20 send"
+        );
     });
   });
 });
