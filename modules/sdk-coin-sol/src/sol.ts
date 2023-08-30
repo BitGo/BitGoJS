@@ -41,6 +41,7 @@ import {
 } from './lib/utils';
 import * as request from 'superagent';
 import { isInteger } from 'lodash';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface TransactionFee {
   fee: string;
@@ -108,10 +109,27 @@ interface SolTx {
   signableHex?: string;
   derivationPath?: string;
   parsedTx?: ParsedTransaction;
+  feeInfo?: {
+    fee: number;
+    feeString: string;
+  };
+  coinSpecific?: {
+    commonKeychain?: string;
+  };
 }
 
-interface SolTxs {
-  transactions: SolTx[];
+interface SolUnsignedTx {
+  unsignedTx: SolTx;
+  signatureShares: [];
+}
+
+interface SolTxRequest {
+  walletCoin: string;
+  transactions: SolUnsignedTx[];
+}
+
+export interface SolSweepTxs {
+  txRequests: SolTxRequest[];
 }
 
 interface SolDurableNonceFromNode {
@@ -131,6 +149,7 @@ interface RecoveryOptions {
   };
   startingScanIndex?: number;
   scan?: number;
+  seed?: string;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -583,7 +602,7 @@ export class Sol extends BaseCoin {
    * @returns {SolTxs} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<SolTxs> {
+  async recover(params: RecoveryOptions): Promise<SolTx[] | SolSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -618,7 +637,7 @@ export class Sol extends BaseCoin {
 
     // Check for first derived wallet with funds
     for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const derivationPath = `m/${i}`;
+      const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
       bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
@@ -703,10 +722,11 @@ export class Sol extends BaseCoin {
       }
       const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
+      const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${scanIndex}` : `m/${scanIndex}`;
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
         backupSigningMaterial,
-        `m/${scanIndex}`,
+        derivationPath,
         unsignedTransaction
       );
 
@@ -721,7 +741,8 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
-    const derivationPath = `m/${scanIndex}`;
+    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${scanIndex}` : `m/${scanIndex}`;
+    const walletCoin = this.getChain();
     const inputs = [
       {
         address: completedTransaction.inputs[0].address,
@@ -733,28 +754,39 @@ export class Sol extends BaseCoin {
       {
         address: completedTransaction.outputs[0].address,
         valueString: completedTransaction.inputs[0].value,
+        coinName: walletCoin,
       },
     ];
     const spendAmount = completedTransaction.inputs[0].value;
     const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+    const feeInfo = { fee: totalFee, feeString: new BigNumber(totalFee).toString() };
+    const coinSpecific = { commonKeychain: bitgoKey };
     if (isUnsignedSweep) {
       const transaction: SolTx = {
         serializedTx: serializedTx,
         scanIndex: scanIndex,
-        coin: this.getChain(),
-        signableHex: serializedTx,
+        coin: walletCoin,
+        signableHex: completedTransaction.signablePayload.toString('hex'),
         derivationPath: derivationPath,
         parsedTx: parsedTx,
+        feeInfo: feeInfo,
+        coinSpecific: coinSpecific,
       };
-      const transactions: SolTx[] = [transaction];
-      return { transactions: transactions };
+      const unsignedTx: SolUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: SolUnsignedTx[] = [unsignedTx];
+      const txRequest: SolTxRequest = {
+        transactions: transactions,
+        walletCoin: walletCoin,
+      };
+      const txRequests: SolSweepTxs = { txRequests: [txRequest] };
+      return txRequests;
     }
     const transaction: SolTx = {
       serializedTx: serializedTx,
       scanIndex: scanIndex,
     };
     const transactions: SolTx[] = [transaction];
-    return { transactions: transactions };
+    return transactions;
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {
