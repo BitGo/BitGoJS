@@ -61,14 +61,14 @@ describe('TIA Key Pair', () => {
     it('from an invalid privateKey', () => {
       assert.throws(
         () => new KeyPair({ prv: '' }),
-        (e) => e.message === 'Unsupported private key'
+        (e: any) => e.message === 'Unsupported private key'
       );
     });
 
     it('from an invalid publicKey', () => {
       assert.throws(
         () => new KeyPair({ pub: '' }),
-        (e) => e.message.startsWith('Unsupported public key')
+        (e: any) => e.message.startsWith('Unsupported public key')
       );
     });
 
@@ -76,7 +76,7 @@ describe('TIA Key Pair', () => {
       const undefinedBuffer = undefined as unknown as Buffer;
       assert.throws(
         () => new KeyPair({ seed: undefinedBuffer }),
-        (e) => e.message.startsWith('Invalid key pair options')
+        (e: any) => e.message.startsWith('Invalid key pair options')
       );
     });
 
@@ -84,7 +84,7 @@ describe('TIA Key Pair', () => {
       const undefinedStr: string = undefined as unknown as string;
       assert.throws(
         () => new KeyPair({ prv: undefinedStr }),
-        (e) => e.message.startsWith('Invalid key pair options')
+        (e: any) => e.message.startsWith('Invalid key pair options')
       );
     });
 
@@ -92,7 +92,7 @@ describe('TIA Key Pair', () => {
       const undefinedStr: string = undefined as unknown as string;
       assert.throws(
         () => new KeyPair({ pub: undefinedStr }),
-        (e) => e.message.startsWith('Invalid key pair options')
+        (e: any) => e.message.startsWith('Invalid key pair options')
       );
     });
   });

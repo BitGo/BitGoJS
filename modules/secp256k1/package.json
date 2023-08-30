@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
-    "@types/node": "^14.18.12"
+    "@types/node": "^16.18.46"
   },
   "lint-staged": {
     "*.{js,ts}": [

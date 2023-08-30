@@ -133,7 +133,7 @@ export function validatePsbtParsing(
       if (scriptType === 'p2tr') {
         assert.throws(
           () => parsePsbtInput(psbt.data.inputs[i]),
-          (e) => e.message === 'could not parse input'
+          (e: any) => e.message === 'could not parse input'
         );
       } else {
         const psbtParsed = parsePsbtInput(psbt.data.inputs[i]);

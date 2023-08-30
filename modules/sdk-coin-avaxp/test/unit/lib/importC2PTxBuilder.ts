@@ -16,7 +16,7 @@ describe('AvaxP Import C2P Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_EMPTY
+        (e: any) => e.message === errorMessage.ERROR_UTXOS_EMPTY
       );
     });
 
@@ -25,7 +25,7 @@ describe('AvaxP Import C2P Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([{ outputID: '' } as any as DecodedUtxoObj]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
+        (e: any) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
       );
     });
   });

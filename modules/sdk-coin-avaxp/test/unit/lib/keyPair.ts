@@ -132,24 +132,24 @@ describe('Avax P Key Pair', () => {
     it('from an invalid public key', () => {
       assert.throws(
         () => new KeyPair({ pub: testData.INVALID_SHORT_KEYPAIR_KEY }),
-        (e) => e.message === testData.INVALID_PUBLIC_KEY_ERROR_MESSAGE
+        (e: any) => e.message === testData.INVALID_PUBLIC_KEY_ERROR_MESSAGE
       );
     });
 
     it('from an invalid private key', () => {
       assert.throws(
         () => new KeyPair({ prv: testData.INVALID_SHORT_KEYPAIR_KEY }),
-        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
+        (e: any) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
       );
       assert.throws(
         () => {
           new KeyPair({ prv: testData.INVALID_LONG_KEYPAIR_PRV });
         },
-        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
+        (e: any) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
       );
       assert.throws(
         () => new KeyPair({ prv: prvKey + pubKey }),
-        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
+        (e: any) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE
       );
     });
   });

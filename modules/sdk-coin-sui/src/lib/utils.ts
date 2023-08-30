@@ -270,18 +270,22 @@ export class Utils implements BaseUtils {
 
   getAmount(input: SuiJsonValue | TransactionBlockInput): number {
     return isPureArg(input)
-      ? builder.de(BCS.U64, Buffer.from(input.Pure).toString('base64'), 'base64')
+      ? builder.de(BCS.U64, Buffer.from(new Uint16Array(input.Pure)).toString('base64'), 'base64')
       : (input as TransactionBlockInput).value;
   }
 
   getAddress(input: TransactionBlockInput): string {
     if (input.hasOwnProperty('value')) {
       return isPureArg(input.value)
-        ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input?.value.Pure).toString('base64'), 'base64'))
+        ? normalizeSuiAddress(
+            builder.de(BCS.ADDRESS, Buffer.from(new Uint16Array(input.value?.Pure)).toString('base64'), 'base64')
+          )
         : (input as TransactionBlockInput).value;
     } else {
       return isPureArg(input)
-        ? normalizeSuiAddress(builder.de(BCS.ADDRESS, Buffer.from(input.Pure).toString('base64'), 'base64'))
+        ? normalizeSuiAddress(
+            builder.de(BCS.ADDRESS, Buffer.from(new Uint16Array(input.Pure)).toString('base64'), 'base64')
+          )
         : (input as TransactionBlockInput).value;
     }
   }

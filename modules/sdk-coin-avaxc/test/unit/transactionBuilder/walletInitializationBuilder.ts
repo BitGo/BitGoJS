@@ -88,7 +88,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txBuilder.counter(1);
       assert.throws(
         () => txBuilder.owner(testData.OWNER_1.ethAddress),
-        (e) => e.message === 'Multisig wallet owner can only be set for initialization transactions'
+        (e: any) => e.message === 'Multisig wallet owner can only be set for initialization transactions'
       );
     });
 
@@ -102,7 +102,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txBuilder.type(TransactionType.WalletInitialization);
       assert.throws(
         () => txBuilder.sign({ key: testData.OWNER_1.ethKey }),
-        (e) => e.message === 'Cannot sign an wallet initialization transaction without owners'
+        (e: any) => e.message === 'Cannot sign an wallet initialization transaction without owners'
       );
     });
 

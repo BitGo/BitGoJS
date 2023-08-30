@@ -1,6 +1,5 @@
 import { BCS, EnumTypeDefinition, getSuiMoveConfig, StructTypeDefinition } from '@mysten/bcs';
 import { SuiObjectRef } from './objects';
-import { PureCallArg } from '../builder';
 
 function registerUTF8String(bcs: BCS) {
   bcs.registerType(
@@ -10,7 +9,7 @@ function registerUTF8String(bcs: BCS) {
       return writer.writeVec(bytes, (writer, el) => writer.write8(el));
     },
     (reader) => {
-      let bytes = reader.readVec((reader) => reader.read8());
+      const bytes = reader.readVec((reader) => reader.read8());
       return new TextDecoder().decode(new Uint8Array(bytes));
     }
   );

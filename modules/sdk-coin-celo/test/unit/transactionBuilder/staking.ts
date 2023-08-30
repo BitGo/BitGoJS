@@ -292,7 +292,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.lock();
         },
-        (e) => e.message === testData.LOCK_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.LOCK_TRANSACTION_TYPE_ERROR
       );
     });
 
@@ -302,7 +302,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.vote();
         },
-        (e) => e.message === testData.VOTE_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.VOTE_TRANSACTION_TYPE_ERROR
       );
     });
 
@@ -312,7 +312,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.activate();
         },
-        (e) => e.message === testData.ACTIVATION_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.ACTIVATION_TRANSACTION_TYPE_ERROR
       );
     });
 
@@ -322,7 +322,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.unlock();
         },
-        (e) => e.message === testData.UNLOCK_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.UNLOCK_TRANSACTION_TYPE_ERROR
       );
     });
 
@@ -332,7 +332,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.unvote();
         },
-        (e) => e.message === testData.UNVOTE_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.UNVOTE_TRANSACTION_TYPE_ERROR
       );
     });
 
@@ -342,7 +342,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.withdraw();
         },
-        (e) => e.message === testData.WITHDRAW_TRANSACTION_TYPE_ERROR
+        (e: any) => e.message === testData.WITHDRAW_TRANSACTION_TYPE_ERROR
       );
     });
 
