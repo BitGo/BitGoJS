@@ -139,7 +139,7 @@ describe('p2trMusig2', function () {
       psbt.finalizeAllInputs();
       assert.throws(
         () => parsePsbtInput(psbt.data.inputs[0]),
-        (e) => e.message === 'Finalized PSBT parsing is not supported'
+        (e: any) => e.message === 'Finalized PSBT parsing is not supported'
       );
 
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
@@ -184,7 +184,7 @@ describe('p2trMusig2', function () {
 
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo),
-          (e) => e.message === 'tapBip32Derivation is required to create nonce'
+          (e: any) => e.message === 'tapBip32Derivation is required to create nonce'
         );
 
         psbt.data.inputs[0].tapBip32Derivation = tapBip32Derivation;
@@ -230,7 +230,7 @@ describe('p2trMusig2', function () {
 
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true }),
-          (e) => e.message === 'No nonces found on input #0'
+          (e: any) => e.message === 'No nonces found on input #0'
         );
 
         let noncesKeyVals = psbt.getProprietaryKeyVals(0, {
@@ -242,7 +242,7 @@ describe('p2trMusig2', function () {
         psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true }),
-          (e) => e.message === 'signer nonce must be set if cosigner nonce is to be derived deterministically'
+          (e: any) => e.message === 'signer nonce must be set if cosigner nonce is to be derived deterministically'
         );
 
         noncesKeyVals = psbt.getProprietaryKeyVals(0, {
@@ -261,7 +261,7 @@ describe('p2trMusig2', function () {
               deterministic: true,
               sessionId: Buffer.allocUnsafe(32),
             }),
-          (e) => e.message === 'Cannot add extra entropy when generating a deterministic nonce'
+          (e: any) => e.message === 'Cannot add extra entropy when generating a deterministic nonce'
         );
         const noncesKeyVals = psbt.getProprietaryKeyVals(0, {
           identifier: PSBT_PROPRIETARY_IDENTIFIER,
@@ -274,7 +274,7 @@ describe('p2trMusig2', function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user, { deterministic: true }),
-          (e) => e.message === `Only the cosigner's nonce can be set deterministically`
+          (e: any) => e.message === `Only the cosigner's nonce can be set deterministically`
         );
         const noncesKeyVals = psbt.getProprietaryKeyVals(0, {
           identifier: PSBT_PROPRIETARY_IDENTIFIER,
@@ -288,7 +288,7 @@ describe('p2trMusig2', function () {
         psbt.data.inputs[0].tapInternalKey = dummyTapInternalKey;
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === 'tapInternalKey and aggregated participant pub keys does not match'
+          (e: any) => e.message === 'tapInternalKey and aggregated participant pub keys does not match'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -297,7 +297,7 @@ describe('p2trMusig2', function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user, { sessionId: Buffer.allocUnsafe(33) }),
-          (e) => e.message === 'Invalid sessionId size 33'
+          (e: any) => e.message === 'Invalid sessionId size 33'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -306,7 +306,7 @@ describe('p2trMusig2', function () {
         const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', 'p2sh');
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user.neutered()),
-          (e) => e.message === 'private key is required to generate nonce'
+          (e: any) => e.message === 'private key is required to generate nonce'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -316,7 +316,7 @@ describe('p2trMusig2', function () {
         psbt.data.inputs[0].tapBip32Derivation = [];
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === 'tapBip32Derivation is required to create nonce'
+          (e: any) => e.message === 'tapBip32Derivation is required to create nonce'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -326,7 +326,7 @@ describe('p2trMusig2', function () {
         psbt.data.inputs[0].unknownKeyVals = [];
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === 'Found 0 matching participant key value instead of 1'
+          (e: any) => e.message === 'Found 0 matching participant key value instead of 1'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 0);
       });
@@ -339,7 +339,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Invalid keydata size ${keyVals[0].key.keydata.length} for participant pub keys`
+          (e: any) => e.message === `Invalid keydata size ${keyVals[0].key.keydata.length} for participant pub keys`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -352,7 +352,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Invalid participants keydata tapOutputKey`
+          (e: any) => e.message === `Invalid participants keydata tapOutputKey`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -365,7 +365,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Invalid participants keydata tapInternalKey`
+          (e: any) => e.message === `Invalid participants keydata tapInternalKey`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -385,7 +385,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `tapInternalKey and aggregated participant pub keys does not match`
+          (e: any) => e.message === `tapInternalKey and aggregated participant pub keys does not match`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -398,7 +398,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Invalid keydata size 65 for participant pub keys`
+          (e: any) => e.message === `Invalid keydata size 65 for participant pub keys`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -411,7 +411,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Invalid valuedata size 67 for participant pub keys`
+          (e: any) => e.message === `Invalid valuedata size 67 for participant pub keys`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -424,7 +424,7 @@ describe('p2trMusig2', function () {
         psbt.addProprietaryKeyValToInput(0, keyVals[0]);
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `Duplicate participant pub keys found`
+          (e: any) => e.message === `Duplicate participant pub keys found`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -434,7 +434,7 @@ describe('p2trMusig2', function () {
         psbt.data.inputs[0].tapBip32Derivation?.forEach((bv) => (bv.masterFingerprint = Buffer.allocUnsafe(4)));
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === 'No bip32Derivation masterFingerprint matched the HD keyPair fingerprint'
+          (e: any) => e.message === 'No bip32Derivation masterFingerprint matched the HD keyPair fingerprint'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -447,7 +447,7 @@ describe('p2trMusig2', function () {
         });
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === 'pubkey did not match bip32Derivation'
+          (e: any) => e.message === 'pubkey did not match bip32Derivation'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -465,7 +465,7 @@ describe('p2trMusig2', function () {
         });
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message.startsWith('more than one matching derivation for fingerprint')
+          (e: any) => e.message.startsWith('more than one matching derivation for fingerprint')
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -486,7 +486,7 @@ describe('p2trMusig2', function () {
 
         assert.throws(
           () => psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user),
-          (e) => e.message === `participant plain pub key should match one bip32Derivation plain pub key`
+          (e: any) => e.message === `participant plain pub key should match one bip32Derivation plain pub key`
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 1);
       });
@@ -499,7 +499,7 @@ describe('p2trMusig2', function () {
         psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
         assert.throws(
           () => psbt.signTaprootInputHD(0, rootWalletKeys.user.neutered()),
-          (e) => e.message === 'privateKey is required to sign p2tr musig2'
+          (e: any) => e.message === 'privateKey is required to sign p2tr musig2'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
       });
@@ -522,7 +522,7 @@ describe('p2trMusig2', function () {
               publicKey: walletKeys.user.publicKey,
               privateKey: walletKeys.user.privateKey!,
             }),
-          (e) => e.message === 'not a taproot musig2 input'
+          (e: any) => e.message === 'not a taproot musig2 input'
         );
         assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
       });
@@ -533,7 +533,7 @@ describe('p2trMusig2', function () {
         psbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo, { deterministic: true });
         assert.throws(
           () => psbt.signInputHD(0, rootWalletKeys.user, { deterministic: true }),
-          (e) => e.message === 'can only add a deterministic signature on the cosigner'
+          (e: any) => e.message === 'can only add a deterministic signature on the cosigner'
         );
       });
 
@@ -573,7 +573,7 @@ describe('p2trMusig2', function () {
             publicKey: walletKeys.user.publicKey,
             privateKey: walletKeys.user.privateKey!,
           }),
-        (e) => e.message === 'not a taproot musig2 input'
+        (e: any) => e.message === 'not a taproot musig2 input'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -585,7 +585,7 @@ describe('p2trMusig2', function () {
       psbt.data.inputs[0].unknownKeyVals = [];
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === 'Found 0 matching participant key value instead of 1'
+        (e: any) => e.message === 'Found 0 matching participant key value instead of 1'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 0);
     });
@@ -600,7 +600,7 @@ describe('p2trMusig2', function () {
             privateKey: rootWalletKeys.backup.privateKey!,
             publicKey: rootWalletKeys.backup.publicKey!,
           }),
-        (e) => e.message === 'signer pub key should match one of participant pub keys'
+        (e: any) => e.message === 'signer pub key should match one of participant pub keys'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -612,7 +612,7 @@ describe('p2trMusig2', function () {
       psbt.data.inputs[0].unknownKeyVals?.push(psbt.data.inputs[0].unknownKeyVals[2]);
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === 'Found 3 matching nonce key value instead of 1 or 2'
+        (e: any) => e.message === 'Found 3 matching nonce key value instead of 1 or 2'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 4);
     });
@@ -624,7 +624,7 @@ describe('p2trMusig2', function () {
       psbt.data.inputs[0].unknownKeyVals?.splice(2);
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === 'Found 1 matching nonce key value instead of 2'
+        (e: any) => e.message === 'Found 1 matching nonce key value instead of 2'
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 2);
     });
@@ -643,7 +643,7 @@ describe('p2trMusig2', function () {
       psbt.addProprietaryKeyValToInput(0, keyVals[1]);
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === `Invalid keydata size ${keyVals[1].key.keydata.length} for nonce`
+        (e: any) => e.message === `Invalid keydata size ${keyVals[1].key.keydata.length} for nonce`
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -662,7 +662,7 @@ describe('p2trMusig2', function () {
       psbt.addProprietaryKeyValToInput(0, keyVals[1]);
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === `Invalid valuedata size ${keyVals[1].value.length} for nonce`
+        (e: any) => e.message === `Invalid valuedata size ${keyVals[1].value.length} for nonce`
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -687,7 +687,7 @@ describe('p2trMusig2', function () {
       dummyKeyVals.forEach((kv, i) => psbt.addProprietaryKeyValToInput(0, dummyKeyVals[i]));
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === `Invalid nonce keydata participant pub key`
+        (e: any) => e.message === `Invalid nonce keydata participant pub key`
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -708,7 +708,7 @@ describe('p2trMusig2', function () {
       psbt.addProprietaryKeyValToInput(0, keyVals[1]);
       assert.throws(
         () => psbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === `Invalid nonce keydata tapOutputKey`
+        (e: any) => e.message === `Invalid nonce keydata tapOutputKey`
       );
       assert.strictEqual(psbt.getProprietaryKeyVals(0).length, 3);
     });
@@ -786,7 +786,7 @@ describe('p2trMusig2', function () {
       const psbt = constructPsbt(p2trMusig2Unspent, rootWalletKeys, 'user', 'bitgo', outputType);
       assert.throws(
         () => psbt.validateSignaturesOfAllInputs(),
-        (e) => e.message === `No signatures to validate`
+        (e: any) => e.message === `No signatures to validate`
       );
 
       psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
@@ -796,7 +796,7 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey),
-        (e) => e.message === `No signatures for this pubkey`
+        (e: any) => e.message === `No signatures for this pubkey`
       );
     });
 
@@ -812,14 +812,14 @@ describe('p2trMusig2', function () {
       psbt.data.inputs[0].tapInternalKey = undefined;
       assert.throws(
         () => psbt.validateTaprootMusig2SignaturesOfInput(0),
-        (e) => e.message === `both tapInternalKey and tapMerkleRoot are required`
+        (e: any) => e.message === `both tapInternalKey and tapMerkleRoot are required`
       );
 
       psbt.data.inputs[0].tapInternalKey = tapInternalKey;
       psbt.data.inputs[0].tapMerkleRoot = undefined;
       assert.throws(
         () => psbt.validateTaprootMusig2SignaturesOfInput(0, walletKeys.bitgo.publicKey),
-        (e) => e.message === `both tapInternalKey and tapMerkleRoot are required`
+        (e: any) => e.message === `both tapInternalKey and tapMerkleRoot are required`
       );
     });
 
@@ -862,7 +862,7 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => psbt.validateSignaturesOfAllInputs(),
-        (e) => e.message === `Found no pub nonce for pubkey`
+        (e: any) => e.message === `Found no pub nonce for pubkey`
       );
     });
 
@@ -894,7 +894,7 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => psbt.finalizeAllInputs(),
-        (e) => e.message === `invalid number of partial signatures 1 to finalize`
+        (e: any) => e.message === `invalid number of partial signatures 1 to finalize`
       );
     });
   });
@@ -917,7 +917,7 @@ describe('p2trMusig2', function () {
               : scriptType === 'p2tr'
               ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
               : psbt.signInputHD(index, rootWalletKeys.user),
-          (e) =>
+          (e: any) =>
             isSegwit(u.chain) && scriptType !== 'p2shP2wsh'
               ? e.message === `Witness script for input #${index} doesn't match the scriptPubKey in the prevout`
               : e.message === `Redeem script for input #${index} doesn't match the scriptPubKey in the prevout`
@@ -927,7 +927,7 @@ describe('p2trMusig2', function () {
       const p2trMusig2ScriptPathPsbt = constructPsbt([unspents[4]], rootWalletKeys, 'user', 'backup', outputType);
       assert.throws(
         () => p2trMusig2ScriptPathPsbt.signTaprootInputHD(0, rootWalletKeys.user),
-        (e) => e.message === `Witness script for input #0 doesn't match the scriptPubKey in the prevout`
+        (e: any) => e.message === `Witness script for input #0 doesn't match the scriptPubKey in the prevout`
       );
     });
 
@@ -943,14 +943,14 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => decodePsbtMusig2Participants(kv),
-        (e) =>
+        (e: any) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
         () => decodePsbtMusig2Participants(kv),
-        (e) =>
+        (e: any) =>
           e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for participants pub keys`
       );
     });
@@ -967,13 +967,13 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => decodePsbtMusig2Nonce(kv),
-        (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
+        (e: any) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
 
       kv.key.identifier = PSBT_PROPRIETARY_IDENTIFIER;
       assert.throws(
         () => decodePsbtMusig2Nonce(kv),
-        (e) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
+        (e: any) => e.message === `Invalid identifier ${kv.key.identifier} or subtype ${kv.key.subtype} for nonce`
       );
     });
 
@@ -992,7 +992,7 @@ describe('p2trMusig2', function () {
 
       assert.throws(
         () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
-        (e) => e.message === `invalid size 1. Must use x-only key.`
+        (e: any) => e.message === `invalid size 1. Must use x-only key.`
       );
 
       participantKeyValData = {
@@ -1002,7 +1002,7 @@ describe('p2trMusig2', function () {
       };
       assert.throws(
         () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
-        (e) => e.message === `invalid size 1. Must use plain key.`
+        (e: any) => e.message === `invalid size 1. Must use plain key.`
       );
 
       participantKeyValData = {
@@ -1012,19 +1012,19 @@ describe('p2trMusig2', function () {
       };
       assert.throws(
         () => assertPsbtMusig2Nonces(nonceKeyValData, participantKeyValData),
-        (e) => e.message === `Duplicate participant pub keys found`
+        (e: any) => e.message === `Duplicate participant pub keys found`
       );
     });
 
     it(`createTapTweak fails if invalid tapInternalKey or tapMerkleRoot is passed`, function () {
       assert.throws(
         () => createTapTweak(invalidTapInputKey, dummyTapOutputKey),
-        (e) => e.message === `invalid size 1. Must use x-only key.`
+        (e: any) => e.message === `invalid size 1. Must use x-only key.`
       );
 
       assert.throws(
         () => createTapTweak(dummyTapInternalKey, invalidTapOutputKey),
-        (e) => e.message === `invalid size 1. Must use tap merkle root.`
+        (e: any) => e.message === `invalid size 1. Must use tap merkle root.`
       );
     });
 
@@ -1041,7 +1041,7 @@ describe('p2trMusig2', function () {
             },
             new Musig2NonceStore()
           ),
-        (e) => e.message === `invalid size 1. Must use tx hash.`
+        (e: any) => e.message === `invalid size 1. Must use tx hash.`
       );
     });
 
@@ -1053,7 +1053,7 @@ describe('p2trMusig2', function () {
             participantPubKey: dummyParticipantPubKeys[0],
             tapOutputKey: dummyTapOutputKey,
           }),
-        (e) => e.message === `Invalid partialSig length 1`
+        (e: any) => e.message === `Invalid partialSig length 1`
       );
     });
 

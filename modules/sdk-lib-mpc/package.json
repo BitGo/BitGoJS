@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@noble/secp256k1": "1.6.3",
-    "@types/keccak": "^3.0.1",
     "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",

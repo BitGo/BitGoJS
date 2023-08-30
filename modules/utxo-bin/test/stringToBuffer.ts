@@ -5,7 +5,7 @@ import { stringToBuffer } from '../src/parseString';
 describe('stringToBuffer', function () {
   const bytes = Buffer.alloc(32, 42);
   it('converts hex and base64', function () {
-    for (const e of ['hex', 'base64']) {
+    for (const e of ['hex', 'base64'] as BufferEncoding[]) {
       const str = bytes.toString(e);
       assert.deepStrictEqual(stringToBuffer(str, ['hex', 'base64']), bytes);
 

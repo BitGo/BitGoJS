@@ -152,7 +152,7 @@ describe('Avax C-Chain Transfer Transaction', function () {
     builder.type(TransactionType.WalletInitialization);
     assert.throws(
       () => builder.transfer(),
-      (e) => e.message === 'Transfers can only be set for send transactions'
+      (e: any) => e.message === 'Transfers can only be set for send transactions'
     );
   });
 

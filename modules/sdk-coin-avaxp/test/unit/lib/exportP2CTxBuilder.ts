@@ -16,7 +16,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.amount('-1');
         },
-        (e) => e.message === errorMessage.ERROR_AMOUNT
+        (e: any) => e.message === errorMessage.ERROR_AMOUNT
       );
     });
     it('should fail target chain id length incorrect', () => {
@@ -24,7 +24,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.externalChainId(Buffer.from(testData.INVALID_CHAIN_ID));
         },
-        (e) => e.message === errorMessage.ERROR_CHAIN_ID_LENGTH
+        (e: any) => e.message === errorMessage.ERROR_CHAIN_ID_LENGTH
       );
     });
 
@@ -33,7 +33,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.externalChainId(testData.INVALID_CHAIN_ID);
         },
-        (e) => e.message === errorMessage.ERROR_CHAIN_ID_NOT_BASE58
+        (e: any) => e.message === errorMessage.ERROR_CHAIN_ID_NOT_BASE58
       );
     });
 
@@ -42,7 +42,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.externalChainId(testData.VALID_C_CHAIN_ID.slice(2));
         },
-        (e) => e.message === errorMessage.ERROR_CHAIN_ID_INVALID_CHECKSUM
+        (e: any) => e.message === errorMessage.ERROR_CHAIN_ID_INVALID_CHECKSUM
       );
     });
 
@@ -51,7 +51,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_EMPTY
+        (e: any) => e.message === errorMessage.ERROR_UTXOS_EMPTY
       );
     });
 
@@ -60,7 +60,7 @@ describe('AvaxP Export P2C Tx Builder', () => {
         () => {
           txBuilder.validateUtxos([{ outputID: '' } as any as DecodedUtxoObj]);
         },
-        (e) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
+        (e: any) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
       );
     });
   });

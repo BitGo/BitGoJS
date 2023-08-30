@@ -18,7 +18,7 @@ describe('AvaxP Transaction Builder Factory', () => {
         () => {
           factory.from('');
         },
-        (e) => e.message === errorMessage.ERROR_EMPTY_RAW_TRANSACTION
+        (e: any) => e.message === errorMessage.ERROR_EMPTY_RAW_TRANSACTION
       );
     });
 
@@ -27,7 +27,7 @@ describe('AvaxP Transaction Builder Factory', () => {
         () => {
           factory.from(testData.INVALID_RAW_TRANSACTION);
         },
-        (e) => e.message === errorMessage.ERROR_RAW_PARSING
+        (e: any) => e.message === errorMessage.ERROR_RAW_PARSING
       );
     });
 
@@ -41,7 +41,7 @@ describe('AvaxP Transaction Builder Factory', () => {
         () => {
           factory.getWalletInitializationBuilder();
         },
-        (e) => e.message === errorMessage.ERROR_WALLET_INITIALIZATION
+        (e: any) => e.message === errorMessage.ERROR_WALLET_INITIALIZATION
       );
     });
   });

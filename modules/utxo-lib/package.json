@@ -68,7 +68,7 @@
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
     "@types/fs-extra": "^9.0.12",
-    "@types/node": "^14.18.12",
+    "@types/node": "^16.18.46",
     "axios": "^0.21.1",
     "debug": "^3.1.0",
     "fs-extra": "^9.1.0"
