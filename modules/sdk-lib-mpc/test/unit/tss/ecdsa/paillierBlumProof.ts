@@ -19,7 +19,7 @@ describe('EcdsaPaillierBlumProof', function () {
   //   const values: any[] = [];
   //
   //   // to generate more fixtures, increase the mocha timeout and then reset it after generating
-  //   for (let i = 0; 5 < 1; i++) {
+  //   for (let i = 0; i < 5; i++) {
   //     const keypairWithProof = await generatePaillierKeyWithProof();
   //     values.push({
   //       n: bigIntToHex(keypairWithProof.n),
