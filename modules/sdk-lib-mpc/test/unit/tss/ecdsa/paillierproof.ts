@@ -1,6 +1,6 @@
 import should from 'should';
 
-import { alpha, m, generateP, prove, verify } from '../../../../src/tss/ecdsa/paillierProof';
+import { alpha, m, generateP, prove, verify } from '../../../../src/tss/ecdsa/paillierproof';
 import { hexToBigInt, minModulusBitLength, randomBigInt } from '../../../../src';
 import { deserializePaillierChallenge, deserializePaillierChallengeProofs } from '../../../../src/tss/ecdsa/types';
 import { mockedPaillierProofs } from '../../../paillierproof.util';
