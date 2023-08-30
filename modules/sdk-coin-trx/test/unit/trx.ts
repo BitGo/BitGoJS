@@ -181,7 +181,7 @@ describe('TRON:', function () {
     });
   });
 
-  describe('Non-BitGo Recover', () => {
+  describe('Build Unsigned Sweep', () => {
     const sandBox = sinon.createSandbox();
 
     afterEach(() => {
@@ -285,6 +285,16 @@ describe('TRON:', function () {
         .should.be.rejectedWith(
           "Amount of funds to recover 1000000 is less than 100000000 and wouldn't be able to fund a trc20 send"
         );
+    });
+  });
+
+  describe('Build Unsigned Consolidate', () => {
+    it('should call build consolidate transaction', async () => {
+      await basecoin.consolidateBatch({
+        userKey: 'userkye',
+        backupKey: 'backupkey',
+        bitgoKey: 'bitgokey',
+      });
     });
   });
 });

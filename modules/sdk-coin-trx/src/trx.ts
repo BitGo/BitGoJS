@@ -94,6 +94,14 @@ export interface RecoveryOptions {
   scan?: number;
 }
 
+export interface ConsolidateOptions {
+  userKey: string;
+  backupKey: string;
+  bitgoKey: string;
+  startingScanIndex?: number;
+  endingScanIndex?: number;
+}
+
 export interface FeeInfo {
   fee: string;
 }
@@ -106,6 +114,10 @@ export interface RecoveryTransaction {
   recoveryAmount?: number;
   tokenTxs?: TransactionReceipt[];
   addressInfo?: AddressInfo;
+}
+
+export interface ConsolidateTransactionBatch {
+  transactions: RecoveryTransaction[];
 }
 
 export enum NodeTypes {
@@ -542,6 +554,10 @@ export class Trx extends BaseCoin {
       coin: this.getChain(),
     };
     return addressInfo ? { ...format, addressInfo } : format;
+  }
+
+  async consolidateBatch(params: ConsolidateOptions): Promise<ConsolidateTransactionBatch> {
+    return Promise.reject(new Error('consolidateBatch not implemented'));
   }
 
   /**
