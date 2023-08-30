@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@21.0.0) (2023-08-29)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+
+### chore
+
+- **statics:** onboard new ERC20s tokens ([c43cc31](https://github.com/BitGo/BitGoJS/commit/c43cc313bd56dafc9cbeca3dfb124747faf458c4))
+
+### Features
+
+- **statics:** add new coin feature for cosmos chains ([94341a1](https://github.com/BitGo/BitGoJS/commit/94341a12a08d99aa24988fe25e4cef712e3e73aa))
+
+### BREAKING CHANGES
+
+- **statics:** FIX REEF to use UnderlyingAsset.REEF
+
 # [20.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@20.0.0) (2023-08-25)
 
 ### Bug Fixes

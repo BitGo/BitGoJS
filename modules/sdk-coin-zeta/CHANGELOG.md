@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@1.2.0...@bitgo/sdk-coin-zeta@1.3.0) (2023-08-29)
+
+### Features
+
+- **sdk-coin-zeta:** add recovery functionality for zeta ([b7d428f](https://github.com/BitGo/BitGoJS/commit/b7d428fcd69a22add44399a9a0e4eeb4519c4113))
+
 ## [1.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@1.2.0...@bitgo/sdk-coin-zeta@1.2.4) (2023-08-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zeta
