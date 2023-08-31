@@ -111,7 +111,6 @@
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",
     "@types/jasmine": "^3.5.12",
-    "@types/keccak": "3.0.1",
     "@types/lodash": "^4.14.121",
     "aws-sdk": "^2.1155.0",
     "karma": "^5.1.1",

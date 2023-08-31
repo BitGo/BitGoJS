@@ -17,7 +17,7 @@ describe('AvaxP Export C2P Tx Builder', () => {
           () => {
             txBuilder.amount(amount);
           },
-          (e) => e.message === errorMessage.ERROR_AMOUNT
+          (e: any) => e.message === errorMessage.ERROR_AMOUNT
         );
       }
     });
@@ -28,7 +28,7 @@ describe('AvaxP Export C2P Tx Builder', () => {
           () => {
             txBuilder.nonce(nonce);
           },
-          (e) => e.message === errorMessage.ERROR_NONCE
+          (e: any) => e.message === errorMessage.ERROR_NONCE
         );
       }
     });

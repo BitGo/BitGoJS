@@ -96,7 +96,7 @@ describe('extractP2msOnlyHalfSignedTx failure', function () {
     const psbt = testutil.constructPsbt(halfSignedInputs, halfSignedOutputs, network, rootWalletKeys, 'unsigned');
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
-      (e) => e.message === 'unexpected signature count undefined'
+      (e: any) => e.message === 'unexpected signature count undefined'
     );
   });
 
@@ -104,7 +104,7 @@ describe('extractP2msOnlyHalfSignedTx failure', function () {
     const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
-      (e) => e.message === 'empty inputs or outputs'
+      (e: any) => e.message === 'empty inputs or outputs'
     );
   });
 
@@ -118,7 +118,7 @@ describe('extractP2msOnlyHalfSignedTx failure', function () {
     );
     assert.throws(
       () => extractP2msOnlyHalfSignedTx(psbt),
-      (e) => e.message === 'unsupported script type taprootScriptPathSpend'
+      (e: any) => e.message === 'unsupported script type taprootScriptPathSpend'
     );
   });
 });
@@ -416,7 +416,7 @@ describe('Parse PSBT', function () {
     psbt.data.inputs.forEach((input, i) => {
       assert.throws(
         () => parsePsbtInput(input),
-        (e) => e.message === 'Finalized PSBT parsing is not supported'
+        (e: any) => e.message === 'Finalized PSBT parsing is not supported'
       );
     });
   });
@@ -444,7 +444,7 @@ describe('Parse PSBT', function () {
 
     assert.throws(
       () => parsePsbtInput(psbtP2tr.data.inputs[0]),
-      (e) => e.message === 'Found both p2sh and taprootScriptPath PSBT metadata.'
+      (e: any) => e.message === 'Found both p2sh and taprootScriptPath PSBT metadata.'
     );
   });
 
@@ -497,7 +497,7 @@ describe('Parse PSBT', function () {
 
       assert.throws(
         () => parsePsbtInput(psbtP2tr3.data.inputs[0]),
-        (e) => e.message === 'Bitgo only supports a single tap leaf script per input.'
+        (e: any) => e.message === 'Bitgo only supports a single tap leaf script per input.'
       );
     }
   });
