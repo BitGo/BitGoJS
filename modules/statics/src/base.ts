@@ -521,6 +521,7 @@ export enum UnderlyingAsset {
   ETHBEAR = 'ethbear',
   ETHHEDGE = 'ethhedge',
   ETHOS = 'ethos',
+  ETHX = 'ethx',
   ETV = 'etv',
   EUL = 'eul',
   EURS = 'eurs',
@@ -791,6 +792,7 @@ export enum UnderlyingAsset {
   PAY = 'pay',
   PBCH = 'pbch',
   PDATA = 'pdata',
+  PDI = 'pdi',
   PBTC = 'pbtc',
   PEG = 'peg',
   PEOPLE = 'people',
@@ -1060,6 +1062,7 @@ export enum UnderlyingAsset {
   VALOR = 'valor',
   VDX = 'vdx',
   VEGA = 'vega',
+  VEXT = 'vext',
   VGX = 'vgx',
   VISR = 'visr',
   VRGX = 'vrgx',
@@ -1138,6 +1141,7 @@ export enum UnderlyingAsset {
   YSEY = 'ysey',
   ZARX = 'zarx',
   ZBC = 'zbc',
+  ZBU = 'zbu',
   ZCO = 'zco',
   ZECBEAR = 'zecbear',
   ZECBULL = 'zecbull',
@@ -1207,6 +1211,7 @@ export enum UnderlyingAsset {
   'avaxc:usdt' = 'avaxc:usdt',
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
+  'avaxc:cai' = 'avaxc:cai',
   'tavaxc:opm' = 'tavaxc:opm',
 
   // polygon Token ERC-20
@@ -1232,6 +1237,7 @@ export enum UnderlyingAsset {
   'polygon:gfc' = 'polygon:gfc',
   'polygon:rbw' = 'polygon:rbw',
   'polygon:zed' = 'polygon:zed',
+  'polygon:vext' = 'polygon:vext',
 
   // Polygon NFTs
   // generic NFTs

@@ -2794,6 +2794,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ETHOS
   ),
   erc20(
+    'acf19e82-a0f9-4cb8-a30b-a46b00a1270c',
+    'ethx',
+    'Stader ETHx',
+    18,
+    '0xa35b1b31ce002fbf2058d22f30f95d405200a15b',
+    UnderlyingAsset.ETHX
+  ),
+  erc20(
     'a598f01d-06cb-4da8-88b0-31fef308d454',
     'etv',
     'Ecotech Visions',
@@ -4499,6 +4507,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PDATA
   ),
   erc20(
+    '19a1a196-e29d-4efb-a818-2cf283af6346',
+    'pdi',
+    'Phuture DeFi Index',
+    18,
+    '0x632806bf5c8f062932dd121244c9fbe7becb8b48',
+    UnderlyingAsset.PDI
+  ),
+  erc20(
     '0075d312-9842-49fb-bf4f-1023fcbf870b',
     'pbtc',
     'PegBitcoin Token',
@@ -5963,6 +5979,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VEGA
   ),
   erc20(
+    '2afb510c-8932-4baf-822d-fb1b3a70a5bd',
+    'vext',
+    'Veloce',
+    18,
+    '0xb2492e97a68a6e4b9e9a11b99f6c42e5accd38c7',
+    UnderlyingAsset.VEXT
+  ),
+  erc20(
     '00dd6c84-9651-45ba-9f05-f3c15cf83554',
     'vgx',
     'Voyager Token',
@@ -6353,6 +6377,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x29ec3ff4e1dcad5a207dbd5d14e48073abba0bd3',
     UnderlyingAsset.ZARX
+  ),
+  erc20(
+    '17abefe6-d618-4724-be13-8ef13749c2b1',
+    'zbu',
+    'ZEEBU',
+    18,
+    '0x8f9b4525681f3ea6e43b8e0a57bfff86c0a1dd2e',
+    UnderlyingAsset.ZBU
   ),
   erc20(
     'c0c239c6-484f-46a9-8454-06c19504ddea',
@@ -8577,6 +8609,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['avaxc:link']
   ),
   avaxErc20(
+    '47f2bdf9-05c8-4284-aa84-95dec73541f8',
+    'avaxc:cai',
+    'Colony Avalanche Index',
+    18,
+    '0x48f88a3fe843ccb0b5003e70b4192c1d7448bef0',
+    UnderlyingAsset['avaxc:cai']
+  ),
+  avaxErc20(
     '9db702af-2414-4926-a185-c9738e6a6d4b',
     'avaxc:usdt',
     'Tether USD',
@@ -10088,6 +10128,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x5ec03c1f7fa7ff05ec476d19e34a22eddb48acdc',
     UnderlyingAsset['polygon:zed']
+  ),
+  polygonErc20(
+    'adfb6158-a9c9-47eb-871b-fa8a9cc5c57e',
+    'polygon:vext',
+    'Veloce',
+    18,
+    '0x27842334c55c01ddfe81bf687425f906816c5141',
+    UnderlyingAsset['polygon:vext']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
