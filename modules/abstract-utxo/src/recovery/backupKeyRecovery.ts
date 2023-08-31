@@ -153,8 +153,11 @@ async function queryBlockchainUnspentsPath(
   async function gatherUnspents(addrIndex: number) {
     const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
     const address = coin.createMultiSigAddress(scriptType, 2, walletKeysForUnspent.publicKeys);
-
-    const addrInfo = await recoveryProvider.getAddressInfo(address.address);
+    // Blockchair uses cashaddr format when querying the API for address information. Convert legacy addresses to cashaddr
+    // before querying the API.
+    const formattedAddress =
+      coin.getChain() === 'bch' ? coin.canonicalAddress(address.address, 'cashaddr').split(':')[1] : address.address;
+    const addrInfo = await recoveryProvider.getAddressInfo(formattedAddress);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
@@ -163,7 +166,7 @@ async function queryBlockchainUnspentsPath(
 
       if (addrInfo.balance > 0) {
         console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
-        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([address.address]);
+        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([formattedAddress]);
         const processedUnspents = await Promise.all(
           addressUnspents.map(async (u): Promise<WalletUnspent<bigint>> => {
             const { txid, vout } = utxolib.bitgo.parseOutputId(u.id);
@@ -177,6 +180,9 @@ async function queryBlockchainUnspentsPath(
                 val = tx.outs[vout].value;
               }
             }
+            // the api may return cashaddr's instead of legacy for BCH and BCHA
+            // downstream processes's only expect legacy addresses
+            u = { ...u, address: coin.canonicalAddress(u.address) };
             return {
               ...u,
               value: val,
