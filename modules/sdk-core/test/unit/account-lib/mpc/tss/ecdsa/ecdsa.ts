@@ -36,10 +36,32 @@ describe('ecdsa tss', function () {
       ecdsa.keyShare(3, 2, 3),
     ]);
 
-    const [keyCombined1, keyCombined2] = [
+    const [keyCombined1, keyCombined2, keyCombined3] = [
       ecdsa.keyCombine(keyShare1.pShare, [keyShare2.nShares[1], keyShare3.nShares[1]]),
       ecdsa.keyCombine(keyShare2.pShare, [keyShare1.nShares[2], keyShare3.nShares[2]]),
+      ecdsa.keyCombine(keyShare3.pShare, [keyShare1.nShares[3], keyShare2.nShares[3]]),
     ];
+
+    keyCombined1.xShare.y.should.equal(keyCombined2.xShare.y);
+    keyCombined1.xShare.y.should.equal(keyCombined3.xShare.y);
+
+    keyCombined1.xShare.schnorrProofX?.should.not.be.undefined();
+    keyCombined2.xShare.schnorrProofX?.should.not.be.undefined();
+    keyCombined3.xShare.schnorrProofX?.should.not.be.undefined();
+
+    // Collect all VSS from nShares and verify Schnorr proofs against X_i.
+    // Note that this is something WP needs to do after keyCombine of all participants.
+    const Y = hexToBigInt(keyCombined1.xShare.y);
+
+    const VSSs = [
+      [hexToBigInt(keyShare1.nShares[2].v!)],
+      [hexToBigInt(keyShare2.nShares[3].v!)],
+      [hexToBigInt(keyShare3.nShares[1].v!)],
+    ];
+
+    ecdsa.verifySchnorrProofX(Y, VSSs, 1, keyCombined1.xShare.schnorrProofX!).should.be.true();
+    ecdsa.verifySchnorrProofX(Y, VSSs, 2, keyCombined2.xShare.schnorrProofX!).should.be.true();
+    ecdsa.verifySchnorrProofX(Y, VSSs, 3, keyCombined3.xShare.schnorrProofX!).should.be.true();
 
     const [ntilde1, ntilde2] = await Promise.all([
       EcdsaRangeProof.generateNtilde(512),
