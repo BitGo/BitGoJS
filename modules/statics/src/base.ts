@@ -1212,6 +1212,11 @@ export enum UnderlyingAsset {
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
   'avaxc:cai' = 'avaxc:cai',
+  'avaxc:aave' = 'avaxc:aave',
+  'avaxc:btc' = 'avaxc:btc',
+  'avaxc:dai' = 'avaxc:dai',
+  'avaxc:wbtc' = 'avaxc:wbtc',
+  'avaxc:weth' = 'avaxc:weth',
   'tavaxc:opm' = 'tavaxc:opm',
 
   // polygon Token ERC-20
@@ -1238,6 +1243,15 @@ export enum UnderlyingAsset {
   'polygon:rbw' = 'polygon:rbw',
   'polygon:zed' = 'polygon:zed',
   'polygon:vext' = 'polygon:vext',
+  'polygon:sushi' = 'polygon:sushi',
+  'polygon:wmatic' = 'polygon:wmatic',
+  'polygon:1inch' = 'polygon:1inch',
+  'polygon:comp' = 'polygon:comp',
+  'polygon:sol' = 'polygon:sol',
+  'polygon:wavax' = 'polygon:wavax',
+  'polygon:wbnb' = 'polygon:wbnb',
+  'polygon:wftm' = 'polygon:wftm',
+  'polygon:yfi' = 'polygon:yfi',
 
   // Polygon NFTs
   // generic NFTs

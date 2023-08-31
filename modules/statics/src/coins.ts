@@ -8632,6 +8632,70 @@ export const coins = CoinMap.fromCoins([
     '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     UnderlyingAsset['avaxc:usdc']
   ),
+  avaxErc20(
+    '7c0a3d09-82b4-4da0-9bc2-32c6de527b11',
+    'avaxc:usdc.e',
+    'USD Coin',
+    6,
+    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+    UnderlyingAsset['avaxc:usdc']
+  ),
+  avaxErc20(
+    'd9a021b1-a94a-495c-84c3-061d97c98748',
+    'avaxc:dai.e',
+    'Dai Stablecoin',
+    18,
+    '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',
+    UnderlyingAsset['avaxc:dai']
+  ),
+  avaxErc20(
+    'e6f2a1fd-4cb9-4eae-9278-434b334bdc09',
+    'avaxc:usdt.e',
+    'Tether USD',
+    6,
+    '0xc7198437980c041c805a1edcba50c1ce5db95118',
+    UnderlyingAsset['avaxc:usdt']
+  ),
+  avaxErc20(
+    '4a58ecf3-c505-4735-bf38-ce5f6e11fda6',
+    'avaxc:wbtc.e',
+    'Wrapped BTC',
+    8,
+    '0x50b7545627a5162f82a992c33b87adc75187b218',
+    UnderlyingAsset['avaxc:wbtc']
+  ),
+  avaxErc20(
+    '63f459fe-fa8c-412b-a8b8-2b2924690b77',
+    'avaxc:weth.e',
+    'Wrapped ETH',
+    18,
+    '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
+    UnderlyingAsset['avaxc:weth']
+  ),
+  avaxErc20(
+    'dc358736-07c0-4d72-a1cb-51710b4169b1',
+    'avaxc:aave.e',
+    'Aave',
+    18,
+    '0x63a72806098bd3d9520cc43356dd78afe5d386d9',
+    UnderlyingAsset['avaxc:aave']
+  ),
+  avaxErc20(
+    '46ba9a0f-a4ac-4678-8533-3c7c95e3f0eb',
+    'avaxc:usdc-wormhole',
+    'USD Coin (Wormhole)',
+    6,
+    '0x543672e9cbec728cbba9c3ccd99ed80ac3607fa8',
+    UnderlyingAsset['avaxc:usdc']
+  ),
+  avaxErc20(
+    '6e92ac8e-a2c8-49f3-8096-b630516bec5d',
+    'avaxc:btc.b',
+    'Bitcoin',
+    8,
+    '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
+    UnderlyingAsset['avaxc:btc']
+  ),
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',
     'tavaxc:link',
@@ -10136,6 +10200,102 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x27842334c55c01ddfe81bf687425f906816c5141',
     UnderlyingAsset['polygon:vext']
+  ),
+  polygonErc20(
+    '674c2d16-1ef2-4f06-8d04-9dd743013c28',
+    'polygon:sushi',
+    'Sushi',
+    18,
+    '0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a',
+    UnderlyingAsset['polygon:sushi']
+  ),
+  polygonErc20(
+    'c0c8d8fa-c382-4970-9d66-1dc21b8b3ee7',
+    'polygon:weth-pos',
+    'Wrapped Ether (Wormhole)',
+    18,
+    '0x11cd37bb86f65419713f30673a480ea33c826872',
+    UnderlyingAsset['polygon:weth']
+  ),
+  polygonErc20(
+    '787887a9-b81f-4de5-b053-06a281afe27e',
+    'polygon:wmatic',
+    'Wrapped Matic',
+    18,
+    '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+    UnderlyingAsset['polygon:wmatic']
+  ),
+  polygonErc20(
+    '9a835013-7099-467c-857f-75dadca5faf8',
+    'polygon:1inch-wormhole',
+    '1INCH (Wormhole)',
+    18,
+    '0x78cabc14b13de601d2b4bfdc608c8ff6896c6e59',
+    UnderlyingAsset['polygon:1inch']
+  ),
+  polygonErc20(
+    '8705adb8-3c88-4bd0-829b-44d65a511e8f',
+    'polygon:comp-wormhole',
+    'Compound (Wormhole)',
+    18,
+    '0x5708971abcd554c3bb92d77cc796ecdd619d2344',
+    UnderlyingAsset['polygon:comp']
+  ),
+  polygonErc20(
+    '11feac14-8aa6-4afa-8a0a-11305cbecaf3',
+    'polygon:sol-wormhole',
+    'Wrapped SOL (Wormhole)',
+    9,
+    '0xd93f7e271cb87c23aaa73edc008a79646d1f9912',
+    UnderlyingAsset['polygon:sol']
+  ),
+  polygonErc20(
+    'cb9d9f02-9eb6-426d-866a-7287892d2ed5',
+    'polygon:sushi-wormhole',
+    'Sushi (Wormhole)',
+    18,
+    '0x39ecfc5941dfb0bf9fede32ba1a8a2a36b0b9d7b',
+    UnderlyingAsset['polygon:sushi']
+  ),
+  polygonErc20(
+    'a5835e10-3ed0-4827-8636-fcb002e84791',
+    'polygon:wavax-wormhole',
+    'Wrapped AVAX (wormhole)',
+    18,
+    '0x7bb11e7f8b10e9e571e5d8eace04735fdfb2358a',
+    UnderlyingAsset['polygon:wavax']
+  ),
+  polygonErc20(
+    'a0e1824a-6a0e-4cc7-8917-d0ab0b5e4ffb',
+    'polygon:wbnb-wormhole',
+    'Wrapped BNB (Wormhole) ',
+    18,
+    '0xecdcb5b88f8e3c15f95c720c51c71c9e2080525d',
+    UnderlyingAsset['polygon:wbnb']
+  ),
+  polygonErc20(
+    'c7f68740-c8ba-4481-a33e-ac7e8824216f',
+    'polygon:wftm-wormhole',
+    'Wrapped FTM (Wormhole)',
+    18,
+    '0x3726831304d77f585f1aca9d9841cc3ef80daa62',
+    UnderlyingAsset['polygon:wftm']
+  ),
+  polygonErc20(
+    '43411260-a85c-41eb-b98d-6bf1709597bc',
+    'polygon:yfi-wormhole',
+    'Wrapped YFI (Wormhole)',
+    18,
+    '0x100c0f661f56b9b1905b6bdd3fa4604eae2ddab4',
+    UnderlyingAsset['polygon:yfi']
+  ),
+  polygonErc20(
+    'd756367f-5a54-46d3-8513-e9e26974e11d',
+    'polygon:wbtc-wormhole',
+    'Wrapped BTC (Wormhole)',
+    8,
+    '0x5d49c278340655b56609fdf8976eb0612af3a0c3',
+    UnderlyingAsset['polygon:wbtc']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
