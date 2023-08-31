@@ -25,6 +25,7 @@ import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
 import BigNumber from 'bignumber.js';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface TransactionPrebuild {
   txHex: string;
@@ -52,6 +53,7 @@ interface RecoveryOptions {
   walletPassphrase?: string;
   startingScanIndex?: number;
   scan?: number;
+  seed?: string;
 }
 
 interface AdaTx {
@@ -61,10 +63,27 @@ interface AdaTx {
   signableHex?: string;
   derivationPath?: string;
   parsedTx?: ParsedTransaction;
+  feeInfo?: {
+    fee: number;
+    feeString: string;
+  };
+  coinSpecific?: {
+    commonKeychain?: string;
+  };
 }
 
-interface AdaTxs {
-  transactions: AdaTx[];
+interface AdaUnsignedTx {
+  unsignedTx: AdaTx;
+  signatureShares: [];
+}
+
+interface AdaTxRequest {
+  walletCoin: string;
+  transactions: AdaUnsignedTx[];
+}
+
+interface AdaSweepTxs {
+  txRequests: AdaTxRequest[];
 }
 
 export type AdaTransactionExplanation = TransactionExplanation;
@@ -286,7 +305,7 @@ export class Ada extends BaseCoin {
    * @returns {AdaTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<AdaTxs> {
+  async recover(params: RecoveryOptions): Promise<AdaTx[] | AdaSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -315,7 +334,7 @@ export class Ada extends BaseCoin {
     const stakeKeyPair = new AdaKeyPair({ pub: MPC.deriveUnhardened(bitgoKey, 'm/0').slice(0, 64) });
 
     for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const currPath = `m/${i}`;
+      const currPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
       const paymentKeyPair = new AdaKeyPair({ pub: accountId });
       const senderAddr = Utils.default.createBaseAddressWithStakeAndPaymentKey(
@@ -394,6 +413,7 @@ export class Ada extends BaseCoin {
       } else {
         const transactionPrebuild = { txHex: serializedTx };
         const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
+        const walletCoin = this.getChain();
         const output = (parsedTx.outputs as ITransactionRecipient)[0];
         const inputs = [
           {
@@ -406,24 +426,35 @@ export class Ada extends BaseCoin {
           {
             address: output.address,
             valueString: output.amount,
+            coinName: walletCoin,
           },
         ];
         const spendAmount = output.amount;
         const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+        const feeInfo = { fee: 0, feeString: '0' };
+        const coinSpecific = { commonKeychain: bitgoKey };
         const transaction: AdaTx = {
           serializedTx: serializedTx,
           scanIndex: i,
-          coin: this.getChain(),
-          signableHex: serializedTx,
+          coin: walletCoin,
+          signableHex: unsignedTransaction.signablePayload.toString('hex'),
           derivationPath: currPath,
           parsedTx: completedParsedTx,
+          feeInfo: feeInfo,
+          coinSpecific: coinSpecific,
         };
-        const transactions: AdaTx[] = [transaction];
-        return { transactions: transactions };
+        const unsignedTx: AdaUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+        const transactions: AdaUnsignedTx[] = [unsignedTx];
+        const txRequest: AdaTxRequest = {
+          transactions: transactions,
+          walletCoin: walletCoin,
+        };
+        const txRequests: AdaSweepTxs = { txRequests: [txRequest] };
+        return txRequests;
       }
       const transaction: AdaTx = { serializedTx: serializedTx, scanIndex: i };
       const transactions: AdaTx[] = [transaction];
-      return { transactions: transactions };
+      return transactions;
     }
     throw new Error('Did not find an address with funds to recover');
   }
