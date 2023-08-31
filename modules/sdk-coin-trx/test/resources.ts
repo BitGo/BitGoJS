@@ -107,6 +107,7 @@ export const TestRecoverData = {
     'xpub661MyMwAqRbcFHCRyasU67NCA7V7goqUFPXvzsEiJd4SchCKyPtigHALvve5wtBdyHMZCWqpGzEsrQtfz6mE9m5QXWDantgbkmu56xvLwe3',
   baseAddress: 'TTgisRP7EJWMgpLXvbNHoHh5UotkjkBPoo',
   firstReceiveAddress: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+  secondReceiveAddress: 'TCeoT36uUTtzatTnPh77veqTy4utYujXW6',
   recoveryDestination: 'TWkzN4WjxkyoRTmFHaMQ9po77uEerngjyQ',
 };
 
@@ -162,14 +163,14 @@ export function baseAddressBalance(trxBalance: number, trc20Balances: any[] = []
   };
 }
 
-export function receiveAddressBalance(balance: number) {
+export function receiveAddressBalance(balance: number, address: string) {
   return {
     data: [
       {
         owner_permission: {
           keys: [
             {
-              address: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+              address: address,
               weight: 1,
             },
           ],
@@ -181,7 +182,7 @@ export function receiveAddressBalance(balance: number) {
             operations: '7fff1fc0033ec30f000000000000000000000000000000000000000000000000',
             keys: [
               {
-                address: 'TXD3WiQZGCKTbYjNyxpzyaT8TtNkeTq12V',
+                address: address,
                 weight: 1,
               },
             ],
@@ -195,6 +196,34 @@ export function receiveAddressBalance(balance: number) {
         trc20: [],
       },
     ],
+  };
+}
+
+export function creationTransaction(fromAddress: string, toAddress: string, amount: number) {
+  return {
+    visible: false,
+    txID: 'cc675f47b56f84c011ee87c7c0dde5a5fd662b48139805aaf3c488409e3aaf3b',
+    raw_data: {
+      contract: [
+        {
+          parameter: {
+            value: {
+              amount: amount,
+              owner_address: fromAddress,
+              to_address: toAddress,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        },
+      ],
+      ref_block_bytes: '37d3',
+      ref_block_hash: 'a47d2ac2189487b9',
+      expiration: 1693441548000,
+      timestamp: 1693441489854,
+    },
+    raw_data_hex:
+      '0a0237d32208a47d2ac2189487b940e0bdedc7a4315a68080112640a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412330a1541e8f88b4e239e85c92255b043450a34b65a329a54121541c25420255c2c5a2dd54ef69f92ef261e6bd4216a1880c2d72f70bef7e9c7a431',
   };
 }
 

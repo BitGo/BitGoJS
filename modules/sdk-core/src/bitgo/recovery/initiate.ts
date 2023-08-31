@@ -23,6 +23,13 @@ export interface InitiateRecoveryOptions {
   walletPassphrase?: string;
 }
 
+export interface InitiateConsolidationRecoveryOptions {
+  userKey: string;
+  backupKey: string;
+  bitgoKey?: string;
+  walletPassphrase?: string;
+}
+
 type GetKrsProviderOptions = { checkCoinFamilySupport?: boolean };
 
 /**
@@ -110,7 +117,7 @@ export function validateKey(
 
 export function getBip32Keys(
   bitgo: BitGoBase,
-  params: InitiateRecoveryOptions,
+  params: InitiateRecoveryOptions | InitiateConsolidationRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
 ): BIP32Interface[] {
   const isKrsRecovery = getIsKrsRecovery(params);

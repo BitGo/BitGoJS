@@ -36,6 +36,7 @@ export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
 export const SAFE_TRON_TOKEN_TRANSACTION_FEE = 100 * 1e6; // TRON foundation recommends 100 TRX as fees for guaranteed transaction
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export const TOKEN_CONTRACT_ADDRESSES = [
   // mainnet tokens
@@ -92,6 +93,18 @@ export interface RecoveryOptions {
   walletPassphrase?: string;
   startingScanIndex?: number;
   scan?: number;
+}
+
+export interface ConsolidationRecoveryOptions {
+  userKey: string;
+  backupKey: string;
+  bitgoKey: string;
+  startingScanIndex?: number; // default to 1 (inclusive)
+  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
+}
+
+export interface ConsolidationRecoveryBatch {
+  transactions: RecoveryTransaction[];
 }
 
 export interface FeeInfo {
@@ -707,7 +720,7 @@ export class Trx extends BaseCoin {
 
     // a sweep potentially needs to pay for multi-sig transfer, destination account activation and bandwidth
     // TRON foundation recommends 2.1 TRX for guaranteed confirmation
-    if (!recoveryAmount || SAFE_TRON_TRANSACTION_FEE > recoveryAmount) {
+    if (!recoveryAmount || SAFE_TRON_TRANSACTION_FEE >= recoveryAmount) {
       throw new Error(
         `Amount of funds to recover ${recoveryAmount} is less than ${SAFE_TRON_TRANSACTION_FEE} and wouldn't be able to fund a send`
       );
@@ -741,6 +754,69 @@ export class Trx extends BaseCoin {
     }
     const txSigned = await txBuilder.build();
     return this.formatForOfflineVault(txSigned, SAFE_TRON_TRANSACTION_FEE, recoveryAmountMinusFees, addressInfo);
+  }
+
+  /**
+   * Builds native TRX recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   * Note: there will be another recoverTokenConsolidations function to support token recover from receive addresses.
+   *
+   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<ConsolidationRecoveryBatch> {
+    const isUnsignedConsolidations = getIsUnsignedSweep(params);
+    const startIdx = params.startingScanIndex || 1;
+    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+    const baseAddrHex = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
+
+    const txnsBatch: RecoveryTransaction[] = [];
+    for (let i = startIdx; i < endIdx; i++) {
+      const derivationPath = `0/0/0/${i}`;
+      const userKey = keys[0].derivePath(derivationPath);
+      const userKeyXPub = userKey.neutered();
+      const receiveAddressHex = this.pubToHexAddress(this.xpubToUncompressedPub(userKeyXPub.toBase58()));
+      const receiveAddress = Utils.getBase58AddressFromHex(receiveAddressHex);
+      // call the node to get our account balance
+      const accountInfo = await this.getAccountBalancesFromNode(receiveAddress);
+
+      if (accountInfo.data[0] && accountInfo.data[0].balance > SAFE_TRON_TRANSACTION_FEE) {
+        const addressBalance = accountInfo.data[0].balance;
+        const addressInfo = {
+          address: receiveAddress,
+          chain: 0,
+          index: i,
+        };
+        const recoveryAmount = addressBalance - SAFE_TRON_TRANSACTION_FEE;
+        const buildTx = await this.getBuildTransaction(baseAddrHex, receiveAddressHex, recoveryAmount);
+        // construct our tx
+        const txBuilder = (getBuilder(this.getChain()) as WrappedBuilder).from(buildTx);
+        // Default expiry is 1 minute which is too short for recovery purposes
+        // extend the expiry to 1 day
+        txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+
+        if (!isUnsignedConsolidations) {
+          const userPrv = this.xprvToCompressedPrv(userKey.toBase58());
+          // receive address only needs to be signed by user key
+          txBuilder.sign({ key: userPrv });
+        }
+        const tx = await txBuilder.build();
+        txnsBatch.push(this.formatForOfflineVault(tx, SAFE_TRON_TRANSACTION_FEE, recoveryAmount, addressInfo));
+      }
+    }
+
+    return {
+      transactions: txnsBatch,
+    };
   }
 
   /**
