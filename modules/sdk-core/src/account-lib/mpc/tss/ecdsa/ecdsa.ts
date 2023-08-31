@@ -5,7 +5,6 @@ import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
-import Shamir from '../../shamir';
 import {
   EcdsaPaillierProof,
   EcdsaRangeProof,
@@ -19,6 +18,8 @@ import {
   HDTree,
   Secp256k1Bip32HdTree,
   chaincodeBase,
+  Shamir,
+  SchnorrProof,
 } from '@bitgo/sdk-lib-mpc';
 import {
   AShare,
@@ -73,7 +74,7 @@ export default class Ecdsa {
    * @param {number} threshold Signing threshold
    * @param {number} numShares  Number of shares
    * @param {Buffer} seed optional 64 byte seed to use for key generation
-   * @param {Boolean} sync optional sync flag, if true then a synchronous version of Paillier key generation is used that does not spawn Worker threads.
+   * @param sync optional sync flag, if true then a synchronous version of Paillier key generation is used that does not spawn Worker threads.
    * @returns {Promise<KeyShare>} Returns the private p-share
    * and n-shares to be distributed to participants at their corresponding index.
    */
@@ -97,6 +98,7 @@ export default class Ecdsa {
     if (!sync) {
       paillierKeyPair = await paillierBigint.generateRandomKeys(minModulusBitLength, true);
     } else {
+      // eslint-disable-next-line no-sync
       paillierKeyPair = paillierBigint.generateRandomKeysSync(minModulusBitLength, true);
     }
     const { publicKey, privateKey } = paillierKeyPair;
@@ -161,12 +163,19 @@ export default class Ecdsa {
     for (const share of nShares) {
       if (share.v) {
         try {
-          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
+          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v)], pShare.i);
         } catch (err) {
           throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
         }
       }
     }
+
+    // Generate Schnorr proof of knowledge of the discrete log of X = xG.
+    const X = Ecdsa.curve.basePointMult(x);
+
+    const proofContext = createHash('sha256').update(bigIntToBufferBE(y, Ecdsa.curve.pointBytes)).digest();
+
+    const schnorrProofX = Schnorr.createSchnorrProof(X, x, Ecdsa.curve, proofContext);
 
     // Chaincode will be used in future when we add support for key derivation for ecdsa
     const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
@@ -183,6 +192,7 @@ export default class Ecdsa {
         n: pShare.n,
         y: bigIntToBufferBE(y, 33).toString('hex'),
         x: bigIntToBufferBE(x, 32).toString('hex'),
+        schnorrProofX: schnorrProofX,
         chaincode: bigIntToBufferBE(chaincode, 32).toString('hex'),
       },
       yShares: {},
@@ -219,7 +229,7 @@ export default class Ecdsa {
     for (const share of nShares) {
       if (share.v) {
         try {
-          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v!)], pShare.i);
+          Ecdsa.shamir.verify(hexToBigInt(share.u), [hexToBigInt(share.y), hexToBigInt(share.v)], pShare.i);
         } catch (err) {
           throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
         }
@@ -242,6 +252,13 @@ export default class Ecdsa {
     // Calculate new signing key.
     const x = [split_u[pShare.i], ...nShares.map(({ u }) => hexToBigInt(u))].reduce(Ecdsa.curve.scalarAdd);
 
+    // Generate Schnorr proof of knowledge of the discrete log of X = xG.
+    const X = Ecdsa.curve.basePointMult(x);
+
+    const proofContext = createHash('sha256').update(bigIntToBufferBE(subkey.pk, Ecdsa.curve.pointBytes)).digest();
+
+    const schnorrProofX = Schnorr.createSchnorrProof(X, x, Ecdsa.curve, proofContext);
+
     const P_i: XShare = {
       i: pShare.i,
       l: pShare.l,
@@ -249,6 +266,7 @@ export default class Ecdsa {
       n: pShare.n,
       y: bigIntToBufferBE(subkey.pk, 33).toString('hex'),
       x: bigIntToBufferBE(x, 32).toString('hex'),
+      schnorrProofX: schnorrProofX,
       chaincode: bigIntToBufferBE(subkey.chaincode, 32).toString('hex'),
     };
 
@@ -271,6 +289,31 @@ export default class Ecdsa {
     }
 
     return shares;
+  }
+
+  /**
+   * Verify Schnorr proof of knowledge of the discrete log of X_i = x_i * G.
+   * @param Y The combined public key.
+   * @param VSSs The VSS shares received from all participants.
+   * @param index The i of X_i.
+   * @param proof The schnorr proof.
+   * @returns True if it's a valid proof with regards to Y and VSSs.
+   */
+  verifySchnorrProofX(Y: bigint, VSSs: bigint[][], index: number, proof: SchnorrProof): boolean {
+    if (index < 1 || index > VSSs.length) {
+      throw new Error('Invalid value supplied for index');
+    }
+
+    // Calculate X_i from public information.
+    let X_i = Y;
+    VSSs.forEach((VSS) => {
+      VSS.forEach((v) => {
+        X_i = Ecdsa.curve.pointAdd(X_i, Ecdsa.curve.pointMultiply(v, BigInt(index)));
+      });
+    });
+
+    const proofContext = createHash('sha256').update(bigIntToBufferBE(Y, Ecdsa.curve.pointBytes)).digest();
+    return Schnorr.verifySchnorrProof(X_i, proof, Ecdsa.curve, proofContext);
   }
 
   /**
@@ -385,7 +428,7 @@ export default class Ecdsa {
     const sigma = EcdsaPaillierProof.prove(
       hexToBigInt(xShare.n),
       hexToBigInt(xShare.l),
-      EcdsaTypes.deserializePaillierChallenge({ p: yShare.p! }).p
+      EcdsaTypes.deserializePaillierChallenge({ p: yShare.p }).p
     );
 
     const proofShare = {
@@ -1312,7 +1355,7 @@ export default class Ecdsa {
    * @param {OShare} oShare private omicron share of current participant
    * @param {DShare} dShare delta share received from the other participant
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
-   * @param {boolean} shouldHash if true, we hash the provided buffer before signing
+   * @param shouldHash if true, we hash the provided buffer before signing
    * @returns {VAShare}
    */
   sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash, shouldHash = true): VAShare {
