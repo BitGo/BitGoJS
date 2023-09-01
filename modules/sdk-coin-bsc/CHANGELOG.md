@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.8.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.8.0...@bitgo/sdk-coin-bsc@3.8.6) (2023-09-01)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [3.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.8.0...@bitgo/sdk-coin-bsc@3.8.5) (2023-08-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc
