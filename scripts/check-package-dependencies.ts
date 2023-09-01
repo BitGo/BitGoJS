@@ -12,6 +12,8 @@ const options = {
   ignorePatterns: ['dist', 'example', 'examples'],
   ignoreMatches: [
     '@components/**',
+    // Required for opengpg types
+    '@openpgp/web-stream-tools',
     '@types/**',
     'blake2b',
     // Required for sdk-coin-eth

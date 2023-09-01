@@ -176,15 +176,12 @@ export async function createSharedDataProof(
   // @ts-ignore
   signaturePacket.features = [1];
   notations.forEach(({ name, value }) => {
-    // @ts-ignore
-    signaturePacket.rawNotations.push([
-      {
-        name: name,
-        value: new Uint8Array(Buffer.from(value)),
-        humanReadable: true,
-        critical: 0,
-      },
-    ]);
+    signaturePacket.rawNotations.push({
+      name: name,
+      value: new Uint8Array(Buffer.from(value)),
+      humanReadable: true,
+      critical: false,
+    });
   });
 
   // Prepare signing data.
