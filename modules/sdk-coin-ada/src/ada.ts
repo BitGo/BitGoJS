@@ -331,10 +331,13 @@ export class Ada extends BaseCoin {
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const stakeKeyPair = new AdaKeyPair({ pub: MPC.deriveUnhardened(bitgoKey, 'm/0').slice(0, 64) });
+    const derivationPathPrefix = params.seed ? getDerivationPath(params.seed) : 'm';
+    const stakeKeyPair = new AdaKeyPair({
+      pub: MPC.deriveUnhardened(bitgoKey, derivationPathPrefix + '/0').slice(0, 64),
+    });
 
     for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const currPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
+      const currPath = derivationPathPrefix + `/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
       const paymentKeyPair = new AdaKeyPair({ pub: accountId });
       const senderAddr = Utils.default.createBaseAddressWithStakeAndPaymentKey(
