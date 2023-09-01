@@ -133,6 +133,13 @@ function run(
 
     const recoverUnspents = allUnspents.slice(0, -1);
 
+    // If the coin is bch, convert the mocked unspent address to cashaddr format since that is the format that blockchair
+    // returns on the /dashboards/addresses response
+    const mockedApiUnspents =
+      coin.getChain() === 'bch'
+        ? recoverUnspents.map((u) => ({ ...u, address: coin.canonicalAddress(u.address, 'cashaddr').split(':')[1] }))
+        : recoverUnspents;
+
     before('mock', function () {
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
     });
@@ -159,7 +166,7 @@ function run(
         userKeyPath: params.userKeyPath,
         krsProvider: params.krsProvider,
         ...params.keys,
-        recoveryProvider: new MockRecoveryProvider(recoverUnspents),
+        recoveryProvider: new MockRecoveryProvider(mockedApiUnspents),
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
