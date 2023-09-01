@@ -267,3 +267,68 @@ export const endpointResponses = {
   addressInfoResponse,
   tipInfoResponse,
 } as const;
+
+export const ovcResponse = {
+  signatureShares: [
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                '84a500818258204bd0f991c1532cffe31d4a10db492b43175ec326765b6b29ceee598df2b61f470001818258390087379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c87379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c1a05f359ff021a00028701031a024972e10480a10080f5f6',
+              scanIndex: 0,
+              coin: 'tada',
+              signableHex: '5bb7670d21e645a1b53401c870327547e7a0851b3f5882c99da828895975ca2b',
+              derivationPath: 'm/0',
+              parsedTx: {
+                inputs: [
+                  {
+                    address:
+                      'addr_test1qza02h4ulxk6rw8vk9jq3q8m54xjs9mfpuft8ggx4lggqp96740te7dd5xuwevtypzq0hf2d9qtkjrcjkwssdt7ssqzqtgprzt',
+                    valueString: '99834367',
+                    value: 99834367,
+                  },
+                ],
+                outputs: [
+                  {
+                    address:
+                      'addr_test1qzrn084u25e7he3pjc7fzhpuh30ss5mleh9y478c4cyw6ny8x70tc4fna0nzr93uj9wre0zlppfhlnw2ftu03tsga4xqdgsskf',
+                    valueString: '99834367',
+                    coinName: 'tada',
+                  },
+                ],
+                spendAmount: '99834367',
+                type: '',
+              },
+              feeInfo: { fee: 0, feeString: '0' },
+              coinSpecific: {
+                commonKeychain:
+                  '0213ddab6c4faefc31d26cfddd0b35c0d220e1e278f50d4fc7afe9f7e5c035dc419af459a6eab918f798d1cb1b3f5c45a7b01c0057685a0db69cbcbc3c247197',
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                '01a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e6633f199717597609785199edbdf1523b789705aff520b5dce0136a7129bb918ea05',
+              publicShare: 'bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137',
+            },
+          },
+        ],
+        walletCoin: 'tada',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: 'bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137',
+            R: '01a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e6633',
+            sigma: '55384c13c749d04c17a80ba2a45cc127df480fc64a43199a772f11acd5b14a0f',
+          },
+        },
+      ],
+    },
+  ],
+};
