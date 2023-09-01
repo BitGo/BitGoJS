@@ -18,6 +18,8 @@ import {
   VerifyTransactionOptions,
   EDDSAMethods,
   EDDSAMethodTypes,
+  edDSASignature,
+  SignatureShareRecord,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -25,6 +27,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
 import { isInteger } from 'lodash';
 import BigNumber from 'bignumber.js';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -49,6 +52,38 @@ export interface VerifiedTransactionParameters {
   prv: string;
 }
 
+interface SweepRecoveryOptions {
+  signatureShares: SignatureShares[];
+}
+
+interface SignatureShares {
+  txRequest: TxRequest;
+  tssVersion: string;
+  ovc: Ovc[];
+}
+
+interface TxRequest {
+  transactions: OvcTransaction[];
+  walletCoin: string;
+}
+
+interface OvcTransaction {
+  unsignedTx: DotTx;
+  signatureShares: SignatureShareRecord[];
+  signatureShare: SignatureShare;
+}
+
+interface SignatureShare {
+  from: string;
+  to: string;
+  share: string;
+  publicShare: string;
+}
+
+interface Ovc {
+  eddsaSignature: edDSASignature;
+}
+
 interface RecoveryOptions {
   userKey?: string; // Box A
   backupKey?: string; // Box B
@@ -58,6 +93,7 @@ interface RecoveryOptions {
   walletPassphrase?: string;
   startingScanIndex?: number;
   scan?: number;
+  seed?: string;
 }
 
 interface DotTx {
@@ -70,6 +106,11 @@ interface DotTx {
   feeInfo?: {
     fee: number;
     feeString: string;
+  };
+  coinSpecific?: {
+    firstValid?: number;
+    maxDuration?: number;
+    commonKeychain?: string;
   };
 }
 
@@ -390,7 +431,7 @@ export class Dot extends BaseCoin {
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
 
     for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const currPath = `m/${i}`;
+      const currPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
       const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
       const senderAddr = this.getAddressFromPublicKey(accountId);
       const { nonce, freeBalance } = await this.getAccountInfo(senderAddr);
@@ -401,13 +442,14 @@ export class Dot extends BaseCoin {
       // first build the unsigned txn
       const { headerNumber, headerHash } = await this.getHeaderInfo();
       const material = await this.getMaterial();
+      const validityWindow = { firstValid: headerNumber, maxDuration: this.MAX_VALIDITY_DURATION };
 
       const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
       txnBuilder
         .sweep()
         .to({ address: params.recoveryDestination })
         .sender({ address: senderAddr })
-        .validity({ firstValid: headerNumber, maxDuration: this.SWEEP_TXN_DURATION })
+        .validity(validityWindow)
         .referenceBlock(headerHash)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
         .fee({ amount: 0, type: 'tip' });
@@ -495,7 +537,9 @@ export class Dot extends BaseCoin {
           derivationPath: currPath,
           parsedTx: parsedTx,
           feeInfo: feeInfo,
+          coinSpecific: { ...validityWindow, commonKeychain: bitgoKey },
         };
+
         const unsignedTx: DotUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
         const transactions: DotUnsignedTx[] = [unsignedTx];
         const txRequest: DotTxRequest = {
@@ -510,6 +554,72 @@ export class Dot extends BaseCoin {
       return transactions;
     }
     throw new Error('Did not find an address with funds to recover');
+  }
+
+  /**
+   * Creates funds sweep recovery transaction(s) without BitGo
+   *
+   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
+   * and transactions to create broadcastable transactions
+   *
+   * @returns {DotTx[]} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
+   */
+  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<DotTx[]> {
+    if (
+      !params.signatureShares[0].ovc ||
+      params.signatureShares[0].ovc.length != params.signatureShares[0].txRequest.transactions.length
+    ) {
+      throw new Error('missing signature(s)');
+    }
+
+    const req = params.signatureShares[0].txRequest;
+    const broadcastableTransactions: DotTx[] = [];
+    for (let i = 0; i < req.transactions.length; i++) {
+      const signatureHex = Buffer.concat([
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.R, 'hex'),
+        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.sigma, 'hex'),
+      ]);
+      if (
+        !req.transactions[i].unsignedTx.coinSpecific ||
+        !req.transactions[i].unsignedTx.coinSpecific?.firstValid ||
+        !req.transactions[i].unsignedTx.coinSpecific?.maxDuration
+      ) {
+        throw new Error('missing validity window');
+      }
+      const validityWindow = {
+        firstValid: req.transactions[i].unsignedTx.coinSpecific?.firstValid,
+        maxDuration: req.transactions[i].unsignedTx.coinSpecific?.maxDuration,
+      };
+      const material = await this.getMaterial();
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      if (!req.transactions[i].unsignedTx.coinSpecific?.commonKeychain) {
+        throw new Error('missing common keychain');
+      }
+      if (!req.transactions[i].unsignedTx?.derivationPath) {
+        throw new Error('missing derivation path');
+      }
+      const accountId = MPC.deriveUnhardened(
+        req.transactions[i].unsignedTx.coinSpecific!.commonKeychain as string,
+        req.transactions[i].unsignedTx.derivationPath as string
+      ).slice(0, 64);
+      const senderAddr = this.getAddressFromPublicKey(accountId);
+      const txnBuilder = this.getBuilder()
+        .material(material)
+        .from(req.transactions[i].unsignedTx.serializedTx as string)
+        .sender({ address: senderAddr })
+        .validity(validityWindow);
+      const dotKeyPair = new DotKeyPair({ pub: accountId });
+      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txnBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: req.transactions[i].unsignedTx.scanIndex,
+      });
+    }
+    return broadcastableTransactions;
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

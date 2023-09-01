@@ -120,6 +120,72 @@ export const westendBlock = {
   hash: '0x3771101969cc5cf1b37db0bdce589fe9174a1b820341c4d3673ce301352a3d42',
 };
 
+export const ovcResponse = {
+  signatureShares: [
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                '0x90040400bf0678d312b2b2c7effd2b1f214ee13928d339391d5f5f7056608aa0d32b9edf012b4a0400d624000016000000e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423ea9190240f639000c66afbd7461ffac6c1c587abdb636873b791bf2c0769ecb8d',
+              scanIndex: 0,
+              coin: 'tdot',
+              signableHex:
+                '040400bf0678d312b2b2c7effd2b1f214ee13928d339391d5f5f7056608aa0d32b9edf012b4a0400d624000016000000e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423ea9190240f639000c66afbd7461ffac6c1c587abdb636873b791bf2c0769ecb8d',
+              derivationPath: 'm/0',
+              parsedTx: {
+                inputs: [
+                  {
+                    address: '5Dtg2zKjVEL8p9keSM4dQ7nD26sVtMfCsyxkhvZZ9fqBbhw6',
+                    valueString: '1500000000000',
+                    value: 1500000000000,
+                  },
+                ],
+                outputs: [
+                  {
+                    address: '5GPAveMvmDsjxVT6Q2xiu5kYPbFAmdebHaiNZK14FBaSaAKh',
+                    valueString: '1500000000000',
+                    coinName: 'tdot',
+                  },
+                ],
+                spendAmount: '1500000000000',
+                type: '',
+              },
+              feeInfo: { fee: 0, feeString: '0' },
+              coinSpecific: {
+                firstValid: 17269922,
+                maxDuration: 2400,
+                commonKeychain:
+                  '3cd14f5d60744287cd3a50510e2964746b6feaad4b2300088eaae60d1a35f0abc518534d43b2614370d9a263aadb57edb5d0b78f816a519cd5896e7352920b67',
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                '057c131cde2be39f4ff23eeba11139c46dd8c6d69ff517abede37381d8d24f0b46e84c8b024210202a84f25203e035a2298eb5862da4321f2f5ab804984b2c05',
+              publicShare: '50d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c',
+            },
+          },
+        ],
+        walletCoin: 'tdot',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: '50d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c',
+            R: '057c131cde2be39f4ff23eeba11139c46dd8c6d69ff517abede37381d8d24f0b',
+            sigma: 'b30fd8805b2e51a9e2a75338d7fb7edb290be9638debedbfc001d10b8132be0b',
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export const wrwUser = {
   userKey:
     '{"iv":"BJifMTDKIWs26T0sLhmQNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
