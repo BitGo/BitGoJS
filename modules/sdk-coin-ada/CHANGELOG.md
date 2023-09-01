@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.6.0...@bitgo/sdk-coin-ada@2.10.0) (2023-09-01)
+
+### Features
+
+- **sdk-coin-ada:** fix ada sweep recovery format for ovc signing ([7b88f90](https://github.com/BitGo/BitGoJS/commit/7b88f902d533507ee6f499ba5650e5a61d2c54b6))
+- **sdk-coin-ada:** return ovc compatible format for ada sweep txns ([a32d18a](https://github.com/BitGo/BitGoJS/commit/a32d18ab09162ca48aefe8bd5e3be52a7a6b3924))
+
 # [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.6.0...@bitgo/sdk-coin-ada@2.9.0) (2023-08-29)
 
 ### Features
