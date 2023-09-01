@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.8.0) (2023-09-01)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** add logging to troublshoot DOT staking ([902558a](https://github.com/BitGo/BitGoJS/commit/902558a24c93ca8e7977bdbb370a24098aea775b))
+- **sdk-coin-dot:** add logs to debug dot staking txn build failure ([eb929e3](https://github.com/BitGo/BitGoJS/commit/eb929e351a2330e820360c54541943ad67ba15eb))
+- **sdk-coin-dot:** add more logs to debug Dot staking issue ([ccb9914](https://github.com/BitGo/BitGoJS/commit/ccb99143b7b1b875c7d81ebf3a90b966ab1cef8e))
+- **sdk-coin-dot:** make controller optional for bond call ([a6f6a0d](https://github.com/BitGo/BitGoJS/commit/a6f6a0d96afdb663a7a096c4eb2caf9ca1649d63))
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+
+### Features
+
+- **sdk-coin-dot:** add logs to debug DOT staking issue ([33c1a9c](https://github.com/BitGo/BitGoJS/commit/33c1a9c2d7051481f1afb993376a18d421170aa0))
+- **sdk-coin-dot:** create function to produce broadcastable dot sweep ([ad9c9c4](https://github.com/BitGo/BitGoJS/commit/ad9c9c4cc79639a5745e82f62566afa6db2b8c6d))
+- **sdk-coin-dot:** fix dot sweep recovery format for ovc signing ([d73271b](https://github.com/BitGo/BitGoJS/commit/d73271bfcb806d980cd09db3828805b1ece8689d))
+- **sdk-coin-dot:** remove DOT console debug logging ([d4aad05](https://github.com/BitGo/BitGoJS/commit/d4aad0509a14bc0a89e8af7435353621044a1100))
+- **sdk-coin-dot:** return ovc compatible format for dot sweep txns ([748f40c](https://github.com/BitGo/BitGoJS/commit/748f40c044fb047639b9e8a0ecab30c4692523b0))
+
 # [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.7.0) (2023-08-29)
 
 ### Bug Fixes

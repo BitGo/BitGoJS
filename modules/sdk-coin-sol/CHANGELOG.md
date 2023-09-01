@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.13.0) (2023-09-01)
+
+### Features
+
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-coin-sol:** fix sol sweep recovery format for ovc signing ([0ef6f67](https://github.com/BitGo/BitGoJS/commit/0ef6f6757f54ac9164927cfa764fcded2214421b))
+- **sdk-coin-sol:** return ovc compatible format for sol sweep txns ([aa536ff](https://github.com/BitGo/BitGoJS/commit/aa536ffc24a7e7dd3d4069d2d1bae0704a85d686))
+
 # [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.12.0) (2023-08-29)
 
 ### Features

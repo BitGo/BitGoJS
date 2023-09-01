@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tia@1.4.0...@bitgo/sdk-coin-tia@1.4.6) (2023-09-01)
+
+### Bug Fixes
+
+- **abstract-cosmos:** getAccountDetails mock added for testcases ([1c8795a](https://github.com/BitGo/BitGoJS/commit/1c8795a194d66b41ff46c33d70d14e8343048936))
+- **abstract-cosmos:** update fee for recovery transaction ([c631c05](https://github.com/BitGo/BitGoJS/commit/c631c051b227e397ff21e85418a40f1655d2d3f4))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [1.4.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tia@1.4.0...@bitgo/sdk-coin-tia@1.4.5) (2023-08-29)
 
 ### Bug Fixes

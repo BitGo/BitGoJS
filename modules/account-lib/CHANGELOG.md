@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.12.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.12.0...@bitgo/account-lib@4.12.6) (2023-09-01)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+
 ## [4.12.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.12.0...@bitgo/account-lib@4.12.5) (2023-08-29)
 
 ### Bug Fixes
