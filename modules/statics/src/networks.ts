@@ -592,7 +592,7 @@ class Tia extends Mainnet implements AccountNetwork {
 class TiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Celestia';
   family = CoinFamily.TIA;
-  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+  explorerUrl = 'https://celestia.explorers.guru/transaction/';
 }
 
 class Hash extends Mainnet implements AccountNetwork {
@@ -642,7 +642,7 @@ class Zeta extends Mainnet implements AccountNetwork {
 class ZetaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Zeta';
   family = CoinFamily.ZETA;
-  explorerUrl = 'https://explorer.zetachain.com/cc/tx/';
+  explorerUrl = 'https://explorer.zetachain.com/cosmos/tx/';
 }
 
 class Injective extends Mainnet implements AccountNetwork {
