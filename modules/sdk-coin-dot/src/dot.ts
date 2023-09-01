@@ -18,7 +18,7 @@ import {
   VerifyTransactionOptions,
   EDDSAMethods,
   EDDSAMethodTypes,
-  edDSASignature,
+  EDDSASignature,
   SignatureShareRecord,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
@@ -81,7 +81,7 @@ interface SignatureShare {
 }
 
 interface Ovc {
-  eddsaSignature: edDSASignature;
+  eddsaSignature: EDDSASignature;
 }
 
 interface RecoveryOptions {

@@ -207,3 +207,67 @@ export const keys = {
   durableNoncePrivKey:
     '447272d65cc8b39f88ea23b5f16859bd84b3ecfd6176ef99535efab37541c83b051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c',
 };
+
+export const ovcResponse = {
+  signatureShares: [
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                'AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA7yd8LOXvsLtO2REqMM/OCZ8wItfsqfTfia2xIfibRW3wHgw63jiaojbXeSqaYajJ/Ca7YwBUz5blydI3fYLgPAgECBsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQvLqE/j/nXlY2/JpxuNr/fXLXEPeS04dPvt9qz1dAoYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAADpiH20cxLj7KnOaoI5ANNoPxYjs472FdjDeMPft3kXdAgQDAgUBBAQAAAAEAgADDAIAAADwopo7AAAAAA==',
+              scanIndex: 0,
+              coin: 'tsol',
+              signableHex:
+                '02010206c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c4f5f5987bfe26aa66013efd96d36360f2b4336c91f993259fb56051305614d42f2ea13f8ff9d7958dbf269c6e36bfdf5cb5c43de4b4e1d3efb7dab3d5d028604000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea94000003a621f6d1cc4b8fb2a739aa08e4034da0fc588ece3bd857630de30f7edde45dd0204030205010404000000040200030c02000000f0a29a3b00000000',
+              derivationPath: 'm/0',
+              parsedTx: {
+                inputs: [
+                  {
+                    address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
+                    valueString: '999990000',
+                    value: 999990000,
+                  },
+                ],
+                outputs: [
+                  {
+                    address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
+                    valueString: '999990000',
+                    coinName: 'tsol',
+                  },
+                ],
+                spendAmount: '999990000',
+                type: '',
+              },
+              feeInfo: { fee: 10000, feeString: '10000' },
+              coinSpecific: {
+                commonKeychain:
+                  'f342b7b3bfe5086d189bc0886139d3fbb1669381d725d9f6b6b522c62c8c14e8d772493a05c9bb82fb1adfb42dfae30f8746c3dc17bc0183806094f66d5e2fe0',
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                'f47e2fdd3d93346ae8db9a51ef45e89b7decc3a216cee3a56f0cb8eaf0cf811b04266d87b78fe27f9f4236c79ec62078562dadb220390c7e1264e28b6a2c5c0d',
+              publicShare: 'c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa',
+            },
+          },
+        ],
+        walletCoin: 'tsol',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: 'c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa',
+            R: 'f47e2fdd3d93346ae8db9a51ef45e89b7decc3a216cee3a56f0cb8eaf0cf811b',
+            sigma: '285e34777d5d722fdb80b4eae20a64fc7877b39700f05b5b2e40d0af5e4fa801',
+          },
+        },
+      ],
+    },
+  ],
+};
