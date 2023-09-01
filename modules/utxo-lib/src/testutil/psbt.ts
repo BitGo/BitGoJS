@@ -13,18 +13,17 @@ import {
   addWalletUnspentToPsbt,
   createPsbtForNetwork,
   getExternalChainCode,
+  getInternalChainCode,
   getSignatureVerifications,
   isWalletUnspent,
   KeyName,
   parseSignatureScript2Of3,
-  getInternalChainCode,
   RootWalletKeys,
   toOutput,
   Unspent,
   UtxoPsbt,
   UtxoTransaction,
   verifySignatureWithUnspent,
-  WalletUnspent,
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
@@ -227,7 +226,7 @@ export function constructPsbt(
  */
 export function verifyFullySignedSignatures(
   tx: UtxoTransaction<bigint>,
-  unspents: WalletUnspent<bigint>[],
+  unspents: Unspent<bigint>[],
   walletKeys: RootWalletKeys,
   signer: KeyName,
   cosigner: KeyName
