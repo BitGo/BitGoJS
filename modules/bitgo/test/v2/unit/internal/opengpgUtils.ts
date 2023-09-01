@@ -295,7 +295,7 @@ describe('OpenGPG Utils Tests', function () {
     it('should fail to generate a a GPG key for unknown curve', async function () {
       await openpgpUtils
         .generateGPGKeyPair('unknownCurve' as openpgp.EllipticCurveName)
-        .should.be.rejectedWith('Error generating keypair: Invalid curve');
+        .should.be.rejectedWith('Error generating keypair: Unknown curve');
     });
   });
 
