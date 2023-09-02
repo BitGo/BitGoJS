@@ -83,7 +83,7 @@
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "yarn run turbo lint",
     "lint-changed": "yarn run turbo lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD",
-    "unit-test-changed": "yarn run turbo unit-test --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD",
+    "unit-test-changed": "yarn run turbo unit-test --filter=\"[origin/${GITHUB_REPO_BRANCH:-master}...HEAD]\"",
     "browser-tests": "yarn run turbo webpack-prod && yarn run turbo browser-test",
     "gen-coverage-changed": "lerna run gen-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
     "coverage-changed": "lerna run upload-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel --",
