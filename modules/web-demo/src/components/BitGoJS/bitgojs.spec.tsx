@@ -37,7 +37,7 @@ it('BG-61420: use equals() of the polyfilled Buffer version in browser', () => {
 
   try {
     buffer.equals(array);
-  } catch (error) {
+  } catch (error: any) {
     expect(error.message).to.eq('Argument must be a Buffer');
   }
 
