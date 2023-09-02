@@ -52,7 +52,7 @@ export async function getPsbt(
       const psbtHex = JSON.parse(await fs.readFile(filename, 'utf8'));
       const transaction = utxolib.bitgo.createPsbtFromHex(psbtHex, network);
       return { transaction, prevOutputs: undefined };
-    } catch (e) {
+    } catch (e: any) {
       if (e.code === 'ENOENT') {
         return await getPsbt(network, params, { writeFixture: filename });
       }

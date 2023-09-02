@@ -51,7 +51,7 @@ export function parseUnknown(
         }
         try {
           return [parseUnknown(p, k, objAsRecord[k])];
-        } catch (e) {
+        } catch (e: any) {
           return [p.node(k, `Error: ${e.message}}`)];
         }
       })
