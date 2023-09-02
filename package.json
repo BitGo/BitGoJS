@@ -95,7 +95,7 @@
     "artifacts": "lerna run upload-artifacts --stream --parallel",
     "upload-docs": "lerna run upload-docs --stream --parallel",
     "gen-docs": "lerna run gen-docs --stream --parallel",
-    "check-fmt-changed": "yarn run turbo check-fmt --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --parallel",
+    "check-fmt-changed": "yarn run turbo check-fmt --filter=\"[origin/${GITHUB_REPO_BRANCH:-master}...HEAD]\"",
     "check-fmt": "yarn run turbo check-fmt",
     "check-commits": "yarn commitlint --from=origin/${GITHUB_REPO_BRANCH:-master} -V",
     "check-deps": "ts-node ./scripts/check-package-dependencies.ts",
