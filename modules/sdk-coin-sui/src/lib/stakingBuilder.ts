@@ -193,7 +193,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
               coin,
               programmableTxBuilder.pure(Inputs.Pure(req.validatorAddress, BCS.ADDRESS)),
             ],
-          } as MoveCallTransaction);
+          } as unknown as MoveCallTransaction);
         });
         break;
       case SuiTransactionType.WithdrawStake:
@@ -204,7 +204,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
             programmableTxBuilder.object(Inputs.SharedObjectRef(SUI_SYSTEM_STATE_OBJECT)),
             programmableTxBuilder.pure(Inputs.ObjectRef(this._withdrawDelegation.stakedSui)),
           ],
-        } as MoveCallTransaction);
+        } as unknown as MoveCallTransaction);
         break;
       default:
         throw new InvalidTransactionError(`unsupported target method`);
