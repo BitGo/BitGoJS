@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/sdk-test",
   "version": "1.2.36",
-  "private": "true",
+  "private": true,
   "description": "coin test libary for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
