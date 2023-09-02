@@ -12,7 +12,7 @@ const {
   resolveFallback,
 } = require('./base.config');
 const { mergeWith } = require('lodash');
-const bitgoConfig = require('./bitgojs.config');
+const bitgoConfig = require('./../../../webpack/bitgojs.config');
 
 module.exports = (env, options) => {
   return mergeWith(
