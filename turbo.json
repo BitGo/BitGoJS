@@ -32,5 +32,6 @@
     },
     "lint": {},
     "check-fmt": {}
-  }
+  },
+  "globalEnv": ["NODEVERSION"]
 }

@@ -78,7 +78,8 @@
     "modules/*"
   ],
   "scripts": {
-    "postinstall": "yarn run turbo build",
+    "postinstall": "test -n \"$NOYARNPOSTINSTALL\" || yarn build",
+    "build": "yarn run turbo build",
     "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "yarn run turbo lint",

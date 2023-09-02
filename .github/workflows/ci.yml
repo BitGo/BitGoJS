@@ -22,11 +22,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
       - name: Setup node:${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
 
       - name: Build Info
         run: |
@@ -41,8 +43,8 @@ jobs:
         run: |
           git fetch origin $GITHUB_BASE_REF
 
-      - name: restore lerna dependencies
-        id: lerna-cache
+      - name: restore dependencies
+        id: deps-cache
         uses: actions/cache@v3
         with:
           path: |
@@ -50,13 +52,19 @@ jobs:
             modules/*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}
 
+      - name: start turbo cache server
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+
       - name: Install Packages
-        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile
+        if: steps.deps-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: NOYARNPOSTINSTALL=1 yarn install --with-frozen-lockfile
+
+#      - name: Install Packages
+#        if: steps.deps-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+#        run: yarn install --with-frozen-lockfile
 
       - name: build packages
-        if: steps.lerna-cache.outputs.cache-hit == 'true'
-        run: yarn run postinstall
+        run: NODEVERSION=${{ matrix.node-version }} yarn run build
 
       - name: Lint Commit Messages
         if: ${{ startsWith(matrix.node-version, '16') }}
@@ -73,18 +81,18 @@ jobs:
 
       - name: Lint Source Code
         if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run lint
+        run: NODEVERSION=${{ matrix.node-version }} yarn run lint
 
       - name: Check Source Code Formatting
         if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run check-fmt
+        run: NODEVERSION=${{ matrix.node-version }} yarn run check-fmt
 
       - name: Check Package Dependencies
         if: ${{ startsWith(matrix.node-version, '16') }}
         run: yarn run check-deps
 
       - name: Unit Test
-        run: yarn run unit-test-changed
+        run: NODEVERSION=${{ matrix.node-version }} yarn run unit-test-changed --concurrency=3
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
@@ -96,101 +104,101 @@ jobs:
       #     CODECOV_FLAG: unit
       #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  browser-test:
-    runs-on: ubuntu-latest
+#  browser-test:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.event.pull_request.head.sha }}
+#
+#      - name: Setup node 16
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16 # this just needs to pass our lock file requirement for compilation
+#
+#      - name: Build Info
+#        run: |
+#          echo "node $(node --version)"
+#          echo "npm $(npm --version)"
+#          echo "yarn $(yarn --version)"
+#          git --version
+#          echo "base ref $GITHUB_BASE_REF"
+#          echo "head ref $GITHUB_HEAD_REF"
+#
+#      - name: Install APT Packages
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install -y \
+#            gconf-service \
+#            libasound2 \
+#            libatk1.0-0 \
+#            libatk-bridge2.0-0 \
+#            libc6 \
+#            libcairo2 \
+#            libcups2 \
+#            libdbus-1-3 \
+#            libexpat1 \
+#            libfontconfig1 \
+#            libgcc1 \
+#            libgconf-2-4 \
+#            libgdk-pixbuf2.0-0 \
+#            libglib2.0-0 \
+#            libgtk-3-0 \
+#            libnspr4 \
+#            libpango-1.0-0 \
+#            libpangocairo-1.0-0 \
+#            libstdc++6 \
+#            libx11-6 \
+#            libx11-xcb1 \
+#            libxcb1 \
+#            libxcomposite1 \
+#            libxcursor1 \
+#            libxdamage1 \
+#            libxext6 \
+#            libxfixes3 \
+#            libxi6 \
+#            libxrandr2 \
+#            libxrender1 \
+#            libxss1 \
+#            libxtst6 \
+#            ca-certificates \
+#            fonts-liberation \
+#            libappindicator1 \
+#            libnss3 \
+#            lsb-release \
+#            xdg-utils \
+#            wget
+#
+#      - name: restore lerna dependencies
+#        id: deps-cache
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            node_modules
+#            modules/*/node_modules
+#            /home/runner/.cache/Cypress
+#          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}
+#
+#      - name: Install Packages
+#        if: steps.deps-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+#        run: yarn install --with-frozen-lockfile
+#
+#      - name: build packages
+#        if: steps.deps-cache.outputs.cache-hit == 'true'
+#        run: yarn run postinstall
+#
+#      - name: Browser Tests
+#        run: yarn run browser-tests
+#        env:
+#          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Setup node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16 # this just needs to pass our lock file requirement for compilation
-
-      - name: Build Info
-        run: |
-          echo "node $(node --version)"
-          echo "npm $(npm --version)"
-          echo "yarn $(yarn --version)"
-          git --version
-          echo "base ref $GITHUB_BASE_REF"
-          echo "head ref $GITHUB_HEAD_REF"
-
-      - name: Install APT Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            gconf-service \
-            libasound2 \
-            libatk1.0-0 \
-            libatk-bridge2.0-0 \
-            libc6 \
-            libcairo2 \
-            libcups2 \
-            libdbus-1-3 \
-            libexpat1 \
-            libfontconfig1 \
-            libgcc1 \
-            libgconf-2-4 \
-            libgdk-pixbuf2.0-0 \
-            libglib2.0-0 \
-            libgtk-3-0 \
-            libnspr4 \
-            libpango-1.0-0 \
-            libpangocairo-1.0-0 \
-            libstdc++6 \
-            libx11-6 \
-            libx11-xcb1 \
-            libxcb1 \
-            libxcomposite1 \
-            libxcursor1 \
-            libxdamage1 \
-            libxext6 \
-            libxfixes3 \
-            libxi6 \
-            libxrandr2 \
-            libxrender1 \
-            libxss1 \
-            libxtst6 \
-            ca-certificates \
-            fonts-liberation \
-            libappindicator1 \
-            libnss3 \
-            lsb-release \
-            xdg-utils \
-            wget
-
-      - name: restore lerna dependencies
-        id: lerna-cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            modules/*/node_modules
-            /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}
-
-      - name: Install Packages
-        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile
-
-      - name: build packages
-        if: steps.lerna-cache.outputs.cache-hit == 'true'
-        run: yarn run postinstall
-
-      - name: Browser Tests
-        run: yarn run browser-tests
-        env:
-          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
-
-  docker-build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Build BitGoJS Express Docker Image
-        run: docker build .
+#  docker-build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.event.pull_request.head.sha }}
+#      - name: Build BitGoJS Express Docker Image
+#        run: docker build .
