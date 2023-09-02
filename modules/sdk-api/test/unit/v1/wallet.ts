@@ -32,6 +32,18 @@ BitGoAPI.prototype.fetchConstants = function () {
 
   return originalFetchConstants.apply(this, arguments as any);
 };
+
+type TransactionFixture = {
+  address: string;
+  redeemScript: string;
+  scriptPubKey: string;
+  unsignedTxHex: string;
+  halfSignedTxHex: string;
+  fullSignedTxHex: string;
+  userKeyWIF: string;
+  bitgoKeyWIF: string;
+};
+
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
@@ -362,7 +374,9 @@ describe('Wallet Prototype Methods', function () {
     });
 
     it('creates an unsigned tx made of uncompressed public keys of v1 safe wallet', async function () {
-      const { address, redeemScript, scriptPubKey } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
+      const { address, redeemScript, scriptPubKey } = await getFixture<TransactionFixture>(
+        `${__dirname}/fixtures/sign-transaction.json`
+      );
       const testBitgo = new BitGoAPI({ env: 'test' });
       const fakeTestV1SafeWallet = new Wallet(testBitgo, {
         id: address,
@@ -424,7 +438,7 @@ describe('Wallet Prototype Methods', function () {
         unsignedTxHex,
         halfSignedTxHex,
         fullSignedTxHex,
-      } = await getFixture(`${__dirname}/fixtures/sign-transaction.json`);
+      } = await getFixture<TransactionFixture>(`${__dirname}/fixtures/sign-transaction.json`);
       const testBitgo = new BitGoAPI({ env: 'test' });
       const fakeTestV1SafeWallet = new Wallet(testBitgo, {
         id: address,
