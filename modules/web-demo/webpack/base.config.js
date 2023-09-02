@@ -2,7 +2,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { join } = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
 const outputConfig = {
@@ -117,7 +116,6 @@ const prodRules = [
   {
     test: /\.scss$/,
     use: [
-      MiniCssExtractPlugin.loader,
       'css-loader',
       {
         loader: 'postcss-loader',
@@ -144,7 +142,6 @@ const devPlugins = [
 const prodPlugins = [
   new CleanWebpackPlugin(),
   new CopyPlugin(copyPluginPatterns),
-  new MiniCssExtractPlugin({ filename: scssConfig.destFileName }),
   new HtmlWebpackPlugin({
     template: './src/index.html',
     inject: true,
