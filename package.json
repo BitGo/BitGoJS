@@ -88,7 +88,7 @@
     "gen-coverage-changed": "lerna run gen-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
     "coverage-changed": "lerna run upload-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel --",
     "unit-test": "yarn run turbo unit-test",
-    "integration-test": "yarn run turbo integration-test --parallel",
+    "integration-test": "yarn run turbo integration-test",
     "coverage": "yarn gen-coverage && yarn upload-coverage",
     "gen-coverage": "node ./merge-coverage-reports.js && nyc report --reporter=text-lcov > coverage.lcov",
     "upload-coverage": "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F \"${CODECOV_FLAG:-flag-not-set}\"",
