@@ -107,7 +107,7 @@
     "push-docker-express": "docker push bitgo/express:latest && docker push bitgo/express:$(jq -r .version < modules/express/package.json)",
     "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
     "precommit": "lint-staged",
-    "lint-fix": "yarn run turbo lint --parallel -- --fix",
+    "lint-fix": "yarn run turbo lint -- -- --fix",
     "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js"
   }
 }
