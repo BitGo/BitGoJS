@@ -11,3 +11,4 @@ lab/
 .vscode/
 .env
 .yarn
+**/.turbo
