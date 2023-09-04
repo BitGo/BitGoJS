@@ -8634,7 +8634,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '7c0a3d09-82b4-4da0-9bc2-32c6de527b11',
-    'avaxc:usdc.e',
+    'avaxc:usdc-e',
     'USD Coin',
     6,
     '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
@@ -8642,7 +8642,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     'd9a021b1-a94a-495c-84c3-061d97c98748',
-    'avaxc:dai.e',
+    'avaxc:dai-e',
     'Dai Stablecoin',
     18,
     '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',
@@ -8650,7 +8650,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     'e6f2a1fd-4cb9-4eae-9278-434b334bdc09',
-    'avaxc:usdt.e',
+    'avaxc:usdt-e',
     'Tether USD',
     6,
     '0xc7198437980c041c805a1edcba50c1ce5db95118',
@@ -8658,7 +8658,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '4a58ecf3-c505-4735-bf38-ce5f6e11fda6',
-    'avaxc:wbtc.e',
+    'avaxc:wbtc-e',
     'Wrapped BTC',
     8,
     '0x50b7545627a5162f82a992c33b87adc75187b218',
@@ -8666,7 +8666,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '63f459fe-fa8c-412b-a8b8-2b2924690b77',
-    'avaxc:weth.e',
+    'avaxc:weth-e',
     'Wrapped ETH',
     18,
     '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
@@ -8674,7 +8674,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     'dc358736-07c0-4d72-a1cb-51710b4169b1',
-    'avaxc:aave.e',
+    'avaxc:aave-e',
     'Aave',
     18,
     '0x63a72806098bd3d9520cc43356dd78afe5d386d9',
@@ -8690,7 +8690,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '6e92ac8e-a2c8-49f3-8096-b630516bec5d',
-    'avaxc:btc.b',
+    'avaxc:btc-b',
     'Bitcoin',
     8,
     '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
