@@ -209,6 +209,61 @@ export const wrwUser = {
     'addr_test1qq4suqea0cq3urvhnaglcxxkfxvgk8sqy49edvlgfmu49myeh69kzsn0ygzzalqu5299ya693qnd55y2yegeqc42z7uqe66rk7',
 };
 
+export const consolidationWrwUser = {
+  userKey:
+    '{"iv":"qcRREiKdZPFDcQSI+2dwVA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"r0FMgKDcqY4=","ct":"hHXuyhDhaigvKY' +
+    'cQ7rdwra3HFJbBqCXwqbKcsItrJ4xYywU6GSsAbEa7/7AENDyljW9fpPsHB12ApkbILNuns4nAz' +
+    '7KfxGYgHNIgnp9OzfkVePLeO2Ho5tAOFMeqxx1l1WXCSWUzS299EU0fS1ainms+zhPR7K4pZSba' +
+    '7/LmPvU6c6ZnAv9kLnO+EJkdRNS8rF0n6Yz4iBL/PHlR0jcyPmMtPJL+7Q34im2Q3m+O9UYJnKS' +
+    '1yCy/iUhJsq5y2bZQBhZKIhqOXcC6keRfS+QaT346uFo05vsuJJyE5pRWmP/IrBfYNIlo1rJci8' +
+    'OPoM4E4ecMwDg01EnyIXFr52O3gPsooc805//FVZ1KUP4o/tEkyub+8LljY9b11mixXh4/zQSAs' +
+    'HsRplukkNWca8JW++ZEDDq1wwDmHJBYjf3cgw+YwOE83HcXP09ipc6Y76a/VKp6yEeM+AbWFJhT' +
+    'sCk8oRwmUC0VayOEU8xkOYwDU44XoNLo5J8v2doEBdFp0kaFll65Azb9vnnnOlsJBv1bQetifAR' +
+    'khJfsyn1AVgxJzbtd4rG/bVr45ptYl5fvg6d0Lj7Vls9kp1uGtOslpRb/25Oxtrq8yyw88yeZ/1' +
+    'isjZOtt5qg56LhwFd4aK3FIbs6XH15y/WvvA2DqYIUPVSsiZAZEMX4cV4NtsQZuALfSxbCLqbpS' +
+    'ZfB18Zu/oTUO2gCjlfbm6bpVBP0F/jcwrsJvS/nybzk3TU37eYyADOCVBb79lbla7XkpdKczXui' +
+    '1qA5bwKOIAVVdsQnlLW73q8TTlI3RzFItuDLCzgF5dQE16nn7XZUy56Naz+d4hicw0pb51IaScH' +
+    'OGGhR6bRfj+FLyqIlQafmXEkxpY/2T5QOwpzW7SHljHFxrswbK+6/jsiBRAnIh8fX3v32tOdHWb' +
+    '/amPyrFoAyM+S+1gpzklV2CvpvsYqMKGo/2o4LdxyBhi1pGXbOC6vjFqM5x8ltr4RpVSbsOfK0d' +
+    'kPQAdt7r/PBnCb+rbJjwmh8esWzz6xTrMTpfnn/RTvEQYuFdywdAhEpp6UHptRFpeaMLB5I+MW1' +
+    'YW4eBk2PmDbOBKTzVhzLUzFEKVQqNKvtFyja570RXC0kgRPg2CI0Bp4L0G7fZhlwszb2wD+Ch2Q' +
+    'WSAqScYcO4/gqeYgUXgVHvADw0Jfqv0GkFDbZXf9hlxnUOZEX7tmNglIbzArcsiia"}',
+  backupKey:
+    '{"iv":"S4OVMUUd+rwoycMW7X/HVw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"2eAlqOfUPyI=","ct":"cc7WN9N1ZfuRkT' +
+    'IHnZmkU7iOl/y2oGlwDb2M3TKpVCGDuPcj2CgIPKOWl7K1GqrfiM1EY3juKmRQe4OaqeSWm5Zb/' +
+    'otsLOw//M+IQHLTmt72s7qncz6wuKc17niHWWkUGqR40eLT7OSRhUIUlp6iPekY++bzOeSVhisK' +
+    '9uaX2tMX1ggL9k34dwTfn6/9rus7Q25PMnwPJ8hYrqG0iD9FhxLdZdnBc0nFAjdD0DA2QxbeC3p' +
+    'xliEjCK8D9NQf8ccYiBR+odjsak5WlZXp4tCAvxgzuErh6s0mz+otkydaku/Q7TG/MwOxL+vxNg' +
+    '93L3mD88SIKihwtmZitQ68ncCcQlpSroDQhi8l3RWrFpSAy4hsoVUTTaacqeCuQpxcpjuQ9H4yp' +
+    '3QVqAcF3eCMcAwU2cdGym4X0nviUtIF3XBchDqRvqN7tK5n6sizTaoB+l7xdldtoagy2knatYCE' +
+    'FI1Y7eE9ZhzRywOVCBW3ORUuBL8lVxaIMh+jJWi6Nm9lm2JAEKzmpaaqdnxH9QBz7KCmf2Z8D0+' +
+    'oLZ/z5HokxDFy8zhNYv4jWzoNF+iX1HnUmOmUJC3pCqFeTR9yWqV65Ztjl6T1Wu54uEkaANgxRc' +
+    'tIHIKKClBV6Wf8Uytu2F+BuGDKUnJjC99se5Zcjh78VfqEnYt4uCpZqbiWt1OgX04mLNHDdTwdN' +
+    'rNEnxBgSmEnphrFJ06RtZW2QGwE6JYgBApbhPplgarUw8aFL4p5zDlt8V5dmGCsi6YOvP8Vh9zI' +
+    'a4yrqvU56Ejj18hbenXsayS5JiRQhkIkTaU4BUvwTXZlAzirUSh6yCLTa93vPefq85UewAJFxmK' +
+    'Rb8J4tq9Rphh+mY28Wg0+jSDG+KytuI9typSxLKGwB5LD7rZ9CQww9RwjoFD4ITKBGHHP7WmQ3+' +
+    'F7DRkmN2bYgqELu5g/0IMCBfTxrOfxy32JODlZIIMSaUv+LoyE+wdTNIncaJew+oLlFqgSiCuHn' +
+    '+P8h3kph1DfEaWlHUiZJWOYFPCj5JS2pgzqbqZqyxkrT3E0hePHMba2IB3oyVUZcp2SQtpePFWo' +
+    'i4a06AZsgHaKmeabzYIZqd1KkU/FgxWvxEYiccRXHWTbXMM0yj7KpOfk15dX/c4KwFz8I85WzHZ' +
+    'SZdsYaiE5QMnk5Y3oAqWOw7DxfwPCzcswWZKwIhlQ1wgf2H8ffAvyXQ5cbJZ4iw=="}',
+  bitgoKey:
+    '78c594a99a6578b8d671eed92ebf464c50c8fde1e44bcc96bb8dd96725e24de6516086c8de1' +
+    'eacb4e90e7ca737623b24ee0e9a765347febf682f011ba4ae6539',
+  walletPassphrase: 'Ghghjkg!455544llll',
+  walletAddress0:
+    'addr_test1qppcxxfjf3ue0kl8hdzdagjpgm3htngufq28cac54cyem42rsvvnynrejld70w6ym63yz3hrwhx3cjq503m3ftsfnh2sq99vev',
+  walletAddress1:
+    'addr_test1qrdp3p9pjy4gm3xcxhc53af6pugljrpzh5e89a3ckwd6492rsvvnynrejld70w6ym63yz3hrwhx3cjq503m3ftsfnh2sysg4pd',
+  walletAddress2:
+    'addr_test1qp4er96xasenv3anpathn3ced9lmkkarurs3h8yuzkw9352rsvvnynrejld70w6ym63yz3hrwhx3cjq503m3ftsfnh2saddgnf',
+  walletAddress3:
+    'addr_test1qr2xtxrg0tpl8k5uwzjhn9vkv6ypykg5mm2zkdqejfz38v2rsvvnynrejld70w6ym63yz3hrwhx3cjq503m3ftsfnh2s3m54d4',
+  walletAddress4:
+    'addr_test1qp269ay92k44fulhkalttmfkhleyn7kn3pel695vhkx8h02rsvvnynrejld70w6ym63yz3hrwhx3cjq503m3ftsfnh2s20w4z0',
+};
+
 export const testnetUTXO = {
   UTXO_1: {
     tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
@@ -242,6 +297,16 @@ const OneUTXO = {
   ],
 };
 
+const OneUTXO2 = {
+  status: 200,
+  body: [
+    {
+      balance: testnetUTXO.UTXO_2.value,
+      utxo_set: [testnetUTXO.UTXO_2],
+    },
+  ],
+};
+
 const TwoUTXO = {
   status: 200,
   body: [
@@ -255,6 +320,7 @@ const TwoUTXO = {
 const addressInfoResponse = {
   ZeroUTXO,
   OneUTXO,
+  OneUTXO2,
   TwoUTXO,
 };
 

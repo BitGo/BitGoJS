@@ -29,6 +29,8 @@ import * as request from 'superagent';
 import BigNumber from 'bignumber.js';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+
 export interface TransactionPrebuild {
   txHex: string;
 }
@@ -53,8 +55,17 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
-  startingScanIndex?: number;
-  scan?: number;
+  seed?: string;
+  index?: number;
+}
+
+interface ConsolidationRecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C
+  walletPassphrase?: string;
+  startingScanIndex?: number; // default to 1 (inclusive)
+  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
   seed?: string;
 }
 
@@ -118,6 +129,17 @@ interface AdaTxRequest {
 
 interface AdaSweepTxs {
   txRequests: AdaTxRequest[];
+}
+
+interface AdaAddressParams {
+  bitgoKey: string;
+  index: number;
+  seed?: string;
+}
+
+interface AdaAddressAndAccountId {
+  address: string;
+  accountId: string;
 }
 
 export type AdaTransactionExplanation = TransactionExplanation;
@@ -394,161 +416,233 @@ export class Ada extends BaseCoin {
    * @returns {AdaTx} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: RecoveryOptions): Promise<AdaTx[] | AdaSweepTxs> {
+  async recover(params: RecoveryOptions): Promise<AdaTx | AdaSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    const addressParams = {
+      bitgoKey: params.bitgoKey,
+      index: index,
+      seed: params.seed,
+    };
+    const { address: senderAddr, accountId } = await this.getAdaAddressAndAccountId(addressParams);
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const { balance, utxoSet } = await this.getAddressInfo(senderAddr);
+    if (balance <= 0) {
+      throw new Error('Did not find address with funds to recover');
+    }
+
+    // first build the unsigned txn
+    const tipAbsSlot = await this.getChainTipInfo();
+    const txBuilder = this.getBuilder().getTransferBuilder();
+    txBuilder.changeAddress(params.recoveryDestination, balance.toString());
+    for (const utxo of utxoSet) {
+      txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
+    }
+    // each slot is about 1 second, so this transaction should be valid for
+    // 7 * 86,400 seconds (7 days) after creation
+    txBuilder.ttl(Number(tipAbsSlot.abs_slot) + 7 * 86400);
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    if (!isUnsignedSweep) {
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      // Clean up whitespace from entered values
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+      /** TODO BG-52419 Implement Codec for parsing */
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      // add signature
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+      const adaKeyPair = new AdaKeyPair({ pub: accountId });
+      txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txBuilder.build();
+      serializedTx = signedTransaction.toBroadcastFormat();
+    } else {
+      const transactionPrebuild = { txHex: serializedTx };
+      const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
+      const walletCoin = this.getChain();
+      const output = (parsedTx.outputs as ITransactionRecipient)[0];
+      const inputs = [
+        {
+          address: senderAddr,
+          valueString: output.amount,
+          value: new BigNumber(output.amount).toNumber(),
+        },
+      ];
+      const outputs = [
+        {
+          address: output.address,
+          valueString: output.amount,
+          coinName: walletCoin,
+        },
+      ];
+      const spendAmount = output.amount;
+      const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+      const fee = new BigNumber((parsedTx.fee as { fee: string }).fee);
+      const feeInfo = { fee: fee.toNumber(), feeString: fee.toString() };
+      const coinSpecific = { commonKeychain: bitgoKey };
+      const transaction: AdaTx = {
+        serializedTx: serializedTx,
+        scanIndex: index,
+        coin: walletCoin,
+        signableHex: unsignedTransaction.signablePayload.toString('hex'),
+        derivationPath: currPath,
+        parsedTx: completedParsedTx,
+        feeInfo: feeInfo,
+        coinSpecific: coinSpecific,
+      };
+      const unsignedTx: AdaUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: AdaUnsignedTx[] = [unsignedTx];
+      const txRequest: AdaTxRequest = {
+        transactions: transactions,
+        walletCoin: walletCoin,
+      };
+      const txRequests: AdaSweepTxs = { txRequests: [txRequest] };
+      return txRequests;
+    }
+    const transaction: AdaTx = { serializedTx: serializedTx, scanIndex: index };
+    return transaction;
+  }
+
+  /**
+   * Builds native ADA recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<AdaTx[] | AdaSweepTxs> {
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const startIdx = params.startingScanIndex || 1;
+    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const addressParams = {
+      bitgoKey: params.bitgoKey,
+      index: 0,
+      seed: params.seed,
+    };
+    const { address: baseAddress } = await this.getAdaAddressAndAccountId(addressParams);
+    const consolidationTransactions: any[] = [];
+    for (let i = startIdx; i < endIdx; i++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        recoveryDestination: baseAddress,
+        seed: params.seed,
+        index: i,
+      };
+
+      let recoveryTransaction;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (e.message === 'Did not find address with funds to recover') {
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as AdaSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push(recoveryTransaction);
+      }
+    }
+
+    if (consolidationTransactions.length == 0) {
+      throw new Error('Did not find an address with funds to recover');
+    }
+
+    if (isUnsignedSweep) {
+      const consolidationSweepTransactions: AdaSweepTxs = { txRequests: consolidationTransactions };
+      return consolidationSweepTransactions;
+    }
+
+    return consolidationTransactions;
+  }
+
+  /**
+   * Obtains ADA address and account id from provided bitgo key for the given index and seed (optional).
+   *
+   * @param {AdaAddressParams} params - params to obtain ada address and account id
+   */
+  async getAdaAddressAndAccountId(params: AdaAddressParams): Promise<AdaAddressAndAccountId> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
     let addrFormat = AddressFormat.testnet;
     if (this.getChain() === 'ada') {
       addrFormat = AddressFormat.mainnet;
     }
-    let startIdx = params.startingScanIndex;
-    if (startIdx === undefined) {
-      startIdx = 0;
-    } else if (!Number.isInteger(startIdx) || startIdx < 0) {
-      throw new Error('Invalid starting index to scan for addresses');
-    }
-    let numIteration = params.scan;
-    if (numIteration === undefined) {
-      numIteration = 20;
-    } else if (!Number.isInteger(numIteration) || numIteration <= 0) {
-      throw new Error('Invalid scanning factor');
-    }
+
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const derivationPathPrefix = params.seed ? getDerivationPath(params.seed) : 'm';
     const stakeKeyPair = new AdaKeyPair({
       pub: MPC.deriveUnhardened(bitgoKey, derivationPathPrefix + '/0').slice(0, 64),
     });
 
-    for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const currPath = derivationPathPrefix + `/${i}`;
-      const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-      const paymentKeyPair = new AdaKeyPair({ pub: accountId });
-      const senderAddr = Utils.default.createBaseAddressWithStakeAndPaymentKey(
-        stakeKeyPair,
-        paymentKeyPair,
-        addrFormat
-      );
-      const { balance, utxoSet } = await this.getAddressInfo(senderAddr);
-      if (balance <= 0) {
-        continue;
-      }
-
-      // first build the unsigned txn
-      const tipAbsSlot = await this.getChainTipInfo();
-      const txBuilder = this.getBuilder().getTransferBuilder();
-      txBuilder.changeAddress(params.recoveryDestination, balance.toString());
-      for (const utxo of utxoSet) {
-        txBuilder.input({ transaction_id: utxo.tx_hash, transaction_index: utxo.tx_index });
-      }
-      // each slot is about 1 second, so this transaction should be valid for
-      // 7 * 86,400 seconds (7 days) after creation
-      txBuilder.ttl(Number(tipAbsSlot.abs_slot) + 7 * 86400);
-      const unsignedTransaction = (await txBuilder.build()) as Transaction;
-
-      let serializedTx = unsignedTransaction.toBroadcastFormat();
-      if (!isUnsignedSweep) {
-        if (!params.userKey) {
-          throw new Error('missing userKey');
-        }
-        if (!params.backupKey) {
-          throw new Error('missing backupKey');
-        }
-        if (!params.walletPassphrase) {
-          throw new Error('missing wallet passphrase');
-        }
-
-        // Clean up whitespace from entered values
-        const userKey = params.userKey.replace(/\s/g, '');
-        const backupKey = params.backupKey.replace(/\s/g, '');
-
-        // Decrypt private keys from KeyCard values
-        let userPrv;
-        try {
-          userPrv = this.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
-        /** TODO BG-52419 Implement Codec for parsing */
-        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-        let backupPrv;
-        try {
-          backupPrv = this.bitgo.decrypt({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting backup keychain: ${e.message}`);
-        }
-        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-        // add signature
-        const signatureHex = await EDDSAMethods.getTSSSignature(
-          userSigningMaterial,
-          backupSigningMaterial,
-          currPath,
-          unsignedTransaction
-        );
-        const adaKeyPair = new AdaKeyPair({ pub: accountId });
-        txBuilder.addSignature({ pub: adaKeyPair.getKeys().pub }, signatureHex);
-        const signedTransaction = await txBuilder.build();
-        serializedTx = signedTransaction.toBroadcastFormat();
-      } else {
-        const transactionPrebuild = { txHex: serializedTx };
-        const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
-        const walletCoin = this.getChain();
-        const output = (parsedTx.outputs as ITransactionRecipient)[0];
-        const inputs = [
-          {
-            address: senderAddr,
-            valueString: output.amount,
-            value: new BigNumber(output.amount).toNumber(),
-          },
-        ];
-        const outputs = [
-          {
-            address: output.address,
-            valueString: output.amount,
-            coinName: walletCoin,
-          },
-        ];
-        const spendAmount = output.amount;
-        const completedParsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-        const feeInfo = { fee: 0, feeString: '0' };
-        const coinSpecific = { commonKeychain: bitgoKey };
-        const transaction: AdaTx = {
-          serializedTx: serializedTx,
-          scanIndex: i,
-          coin: walletCoin,
-          signableHex: unsignedTransaction.signablePayload.toString('hex'),
-          derivationPath: currPath,
-          parsedTx: completedParsedTx,
-          feeInfo: feeInfo,
-          coinSpecific: coinSpecific,
-        };
-        const unsignedTx: AdaUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-        const transactions: AdaUnsignedTx[] = [unsignedTx];
-        const txRequest: AdaTxRequest = {
-          transactions: transactions,
-          walletCoin: walletCoin,
-        };
-        const txRequests: AdaSweepTxs = { txRequests: [txRequest] };
-        return txRequests;
-      }
-      const transaction: AdaTx = { serializedTx: serializedTx, scanIndex: i };
-      const transactions: AdaTx[] = [transaction];
-      return transactions;
-    }
-    throw new Error('Did not find an address with funds to recover');
+    const currPath = derivationPathPrefix + `/${params.index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const paymentKeyPair = new AdaKeyPair({ pub: accountId });
+    const address = Utils.default.createBaseAddressWithStakeAndPaymentKey(stakeKeyPair, paymentKeyPair, addrFormat);
+    return { address, accountId };
   }
 
   /** inherited doc */
