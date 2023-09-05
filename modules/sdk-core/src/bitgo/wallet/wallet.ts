@@ -2811,8 +2811,11 @@ export class Wallet implements IWallet {
       throw new Error('Generator function for G share required to sign transactions with External Signer.');
     }
 
+    assert(this.tssUtils, 'tssUtils must be defined');
+    // adding this to rebuild the transaction just before signing for EdDSA transaction using external signer
+    await this.tssUtils.deleteSignatureShares(txRequestId);
+
     try {
-      assert(this.tssUtils, 'tssUtils must be defined');
       const signedTxRequest = await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
