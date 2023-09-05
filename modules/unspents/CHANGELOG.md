@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.22.0) (2023-09-05)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-api:** add size correction factor for transactions created ([5f0131c](https://github.com/BitGo/BitGoJS/commit/5f0131cd7016ad7dc4cf4b0be177e0c7ab7f4d25))
+
 # [0.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.21.0) (2023-09-01)
 
 ### Bug Fixes

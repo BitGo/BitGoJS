@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.6.0...@bitgo/abstract-cosmos@1.6.7) (2023-09-05)
+
+### Bug Fixes
+
+- **abstract-cosmos:** getAccountDetails fix ([d5c6c74](https://github.com/BitGo/BitGoJS/commit/d5c6c74845e62ee3cd68321c55d729da1526fcae))
+- **abstract-cosmos:** getAccountDetails fix ([3c869f2](https://github.com/BitGo/BitGoJS/commit/3c869f22ce9db917feaa75acec8a47696043bcd3))
+
 ## [1.6.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.6.0...@bitgo/abstract-cosmos@1.6.6) (2023-09-01)
 
 ### Bug Fixes
