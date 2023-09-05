@@ -566,47 +566,50 @@ export class Dot extends BaseCoin {
    * of the addresses being swept
    */
   async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<DotTx[]> {
-    if (
-      !params.signatureShares[0].ovc ||
-      params.signatureShares[0].ovc.length != params.signatureShares[0].txRequest.transactions.length
-    ) {
-      throw new Error('missing signature(s)');
-    }
-
-    const req = params.signatureShares[0].txRequest;
+    const req = params.signatureShares;
     const broadcastableTransactions: DotTx[] = [];
-    for (let i = 0; i < req.transactions.length; i++) {
-      const signatureHex = Buffer.concat([
-        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.R, 'hex'),
-        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.sigma, 'hex'),
-      ]);
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       if (
-        !req.transactions[i].unsignedTx.coinSpecific ||
-        !req.transactions[i].unsignedTx.coinSpecific?.firstValid ||
-        !req.transactions[i].unsignedTx.coinSpecific?.maxDuration
+        !transaction.coinSpecific ||
+        !transaction.coinSpecific?.firstValid ||
+        !transaction.coinSpecific?.maxDuration
       ) {
         throw new Error('missing validity window');
       }
       const validityWindow = {
-        firstValid: req.transactions[i].unsignedTx.coinSpecific?.firstValid,
-        maxDuration: req.transactions[i].unsignedTx.coinSpecific?.maxDuration,
+        firstValid: transaction.coinSpecific?.firstValid,
+        maxDuration: transaction.coinSpecific?.maxDuration,
       };
       const material = await this.getMaterial();
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      if (!req.transactions[i].unsignedTx.coinSpecific?.commonKeychain) {
-        throw new Error('missing common keychain');
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
       }
-      if (!req.transactions[i].unsignedTx?.derivationPath) {
-        throw new Error('missing derivation path');
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
       }
-      const accountId = MPC.deriveUnhardened(
-        req.transactions[i].unsignedTx.coinSpecific!.commonKeychain as string,
-        req.transactions[i].unsignedTx.derivationPath as string
-      ).slice(0, 64);
+      const derivationPath = transaction.derivationPath as string;
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
       const senderAddr = this.getAddressFromPublicKey(accountId);
       const txnBuilder = this.getBuilder()
         .material(material)
-        .from(req.transactions[i].unsignedTx.serializedTx as string)
+        .from(transaction.serializedTx as string)
         .sender({ address: senderAddr })
         .validity(validityWindow);
       const dotKeyPair = new DotKeyPair({ pub: accountId });
@@ -616,7 +619,7 @@ export class Dot extends BaseCoin {
 
       broadcastableTransactions.push({
         serializedTx: serializedTx,
-        scanIndex: req.transactions[i].unsignedTx.scanIndex,
+        scanIndex: transaction.scanIndex,
       });
     }
     return broadcastableTransactions;
