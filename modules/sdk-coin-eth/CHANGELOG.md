@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.7.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@4.7.7) (2023-09-05)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [4.7.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@4.7.6) (2023-09-01)
 
 ### Bug Fixes
