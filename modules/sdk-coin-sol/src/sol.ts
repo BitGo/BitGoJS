@@ -638,38 +638,34 @@ export class Sol extends BaseCoin {
    * of the addresses being swept
    */
   async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<SolTx[]> {
-    if (
-      !params.signatureShares[0].ovc ||
-      params.signatureShares[0].ovc.length != params.signatureShares[0].txRequest.transactions.length
-    ) {
-      throw new Error('missing signature(s)');
-    }
-
-    const req = params.signatureShares[0].txRequest;
+    const req = params.signatureShares;
     const broadcastableTransactions: SolTx[] = [];
-    for (let i = 0; i < req.transactions.length; i++) {
+
+    for (let i = 0; i < req.length; i++) {
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      if (!req.transactions[i].unsignedTx.signableHex) {
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
         throw new Error('Missing signable hex');
       }
-      const messageBuffer = Buffer.from(req.transactions[i].unsignedTx.signableHex!, 'hex');
-      const result = MPC.verify(messageBuffer, params.signatureShares[0].ovc[i].eddsaSignature);
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
       if (!result) {
         throw new Error('Invalid signature');
       }
-      const signatureHex = Buffer.concat([
-        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.R, 'hex'),
-        Buffer.from(params.signatureShares[0].ovc[i].eddsaSignature.sigma, 'hex'),
-      ]);
-      const txBuilder = this.getBuilder().from(req.transactions[i].unsignedTx.serializedTx as string);
-      if (!req.transactions[i].unsignedTx.coinSpecific?.commonKeychain) {
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+      const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      if (!transaction.coinSpecific?.commonKeychain) {
         throw new Error('Missing common keychain');
       }
-      const commonKeychain = req.transactions[i].unsignedTx.coinSpecific!.commonKeychain! as string;
-      if (!params.signatureShares[0].txRequest.transactions[i].unsignedTx.derivationPath) {
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
         throw new Error('Missing derivation path');
       }
-      const derivationPath = req.transactions[i].unsignedTx.derivationPath as string;
+      const derivationPath = transaction.derivationPath as string;
       const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
       const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
@@ -682,7 +678,7 @@ export class Sol extends BaseCoin {
 
       broadcastableTransactions.push({
         serializedTx: serializedTx,
-        scanIndex: req.transactions[i].unsignedTx.scanIndex,
+        scanIndex: transaction.scanIndex,
       });
     }
 
