@@ -262,6 +262,24 @@ describe('DOT:', function () {
       recoveryTxn[0].scanIndex.should.equal(0);
     });
 
+    it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
+      const params = testData.ovcResponse2;
+
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn[0].serializedTx.should.equal(
+        '0x2d028400f053d177371f4919b71017421aa34841ac87c926a14e8a7e75f092693665cb4a009871feb8389e12191b460ebea1f9e1716ada8a31d94ac08f5c15cb5f7be24683cdfc300ae3e6802c6f4b044dd92ea03d15b92399ab45803e43beb5cbff582a031b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
+      );
+      recoveryTxn[0].scanIndex.should.equal(1);
+      recoveryTxn[1].serializedTx.should.equal(
+        '0x2d028400cf7ed9f536373c8f874e780a4269ec1bd6799ed7d4a854c670b0c72805fac87600d153cbb683706ddf320f7b225af14ce4b59b868c07440aefa4c4e1297e49bcd5f6ee84f696b0c2e456e2a7f8779a78a2c832dfb47d5b283eba8408b003c7dd031b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
+      );
+      recoveryTxn[1].scanIndex.should.equal(2);
+      recoveryTxn[2].serializedTx.should.equal(
+        '0x2d0284009482ad7e43b40b7df3383244daafed32b3b9fd7541016b5c907f2d9052f85f8600e255698d110977faf33efb3336ba98ad7eaa2a1a926487fc696a277442d4414b2a441ba92d598f2b1f96f13b28785f5e572984035a608d63c48bd35ba955090e1b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
+      );
+      recoveryTxn[2].scanIndex.should.equal(3);
+    });
+
     it('should recover a txn for non-bitgo recoveries', async function () {
       const res = await basecoin.recover({
         userKey: testData.wrwUser.userKey,
@@ -271,13 +289,13 @@ describe('DOT:', function () {
         recoveryDestination: destAddr,
       });
       res.should.not.be.empty();
-      res[0].should.hasOwnProperty('serializedTx');
-      res[0].should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountInfo);
       sandBox.assert.calledOnce(basecoin.getHeaderInfo);
 
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res[0].serializedTx);
+      const txBuilder = basecoin.getBuilder().from(res.serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder
@@ -337,20 +355,24 @@ describe('DOT:', function () {
     });
   });
 
-  describe('Recover Transactions for wallet with multiple addresses:', () => {
+  describe('Build Unsigned Consolidation Recoveries:', () => {
     const sandBox = sinon.createSandbox();
-    const destAddr = testData.accounts.account1.address;
+    const baseAddr = testData.consolidationWrwUser.walletAddress0;
     const nonce = 123;
 
     beforeEach(function () {
       const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
-      accountInfoCB.withArgs(testData.wrwUser.walletAddress0).resolves({
+      accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress1).resolves({
         nonce: nonce,
         freeBalance: 0,
       });
-      accountInfoCB.withArgs(testData.wrwUser.walletAddress1).resolves({
+      accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress2).resolves({
         nonce: nonce,
         freeBalance: 8888,
+      });
+      accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress3).resolves({
+        nonce: nonce,
+        freeBalance: 10000,
       });
       const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
       headerInfoCB.resolves({
@@ -363,83 +385,117 @@ describe('DOT:', function () {
       sandBox.restore();
     });
 
-    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 0', async function () {
-      const res = await basecoin.recover({
-        userKey: testData.wrwUser.userKey,
-        backupKey: testData.wrwUser.backupKey,
-        bitgoKey: testData.wrwUser.bitgoKey,
-        walletPassphrase: testData.wrwUser.walletPassphrase,
-        recoveryDestination: destAddr,
+    it('should build signed consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        userKey: testData.consolidationWrwUser.userKey,
+        backupKey: testData.consolidationWrwUser.backupKey,
+        bitgoKey: testData.consolidationWrwUser.bitgoKey,
+        walletPassphrase: testData.consolidationWrwUser.walletPassphrase,
+        recoveryDestination: baseAddr,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
       });
       res.should.not.be.empty();
+      res.length.should.equal(2);
+      sandBox.assert.calledThrice(basecoin.getAccountInfo);
+      sandBox.assert.calledTwice(basecoin.getHeaderInfo);
+
       res[0].should.hasOwnProperty('serializedTx');
       res[0].should.hasOwnProperty('scanIndex');
-      res[0].scanIndex.should.equal(1);
-      sandBox.assert.calledTwice(basecoin.getAccountInfo);
-      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
-
+      res[0].scanIndex.should.equal(2);
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res[0].serializedTx);
+      const txBuilder1 = basecoin.getBuilder().from(res[0].serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
-      txBuilder
+      txBuilder1
         .validity({
           firstValid: testData.westendBlock.blockNumber,
-          maxDuration: basecoin.SWEEP_TXN_DURATION,
+          maxDuration: basecoin.MAX_VALIDITY_DURATION,
         })
         .referenceBlock(testData.westendBlock.hash);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress1);
-      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
-      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
-      should.deepEqual(txJson.genesisHash, genesisHash);
-      should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, nonce);
-      should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, chainName);
-      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+      const tx1 = await txBuilder1.build();
+      const txJson1 = tx1.toJson();
+      should.deepEqual(txJson1.sender, testData.consolidationWrwUser.walletAddress2);
+      should.deepEqual(txJson1.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson1.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson1.genesisHash, genesisHash);
+      should.deepEqual(txJson1.specVersion, specVersion);
+      should.deepEqual(txJson1.nonce, nonce);
+      should.deepEqual(txJson1.tip, 0);
+      should.deepEqual(txJson1.transactionVersion, txVersion);
+      should.deepEqual(txJson1.chainName, chainName);
+      // eraPeriod will always round to the next upper power of 2 for any input value, in this case 2400.
+      // 4096 is the "highest" value you can set, but the txn still may fail after 2400 blocks.
+      const eraPeriod = 4096;
+      should.deepEqual(txJson1.eraPeriod, eraPeriod);
+      should.deepEqual(txJson1.to, baseAddr);
+
+      res[1].should.hasOwnProperty('serializedTx');
+      res[1].should.hasOwnProperty('scanIndex');
+      res[1].scanIndex.should.equal(3);
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder2 = basecoin.getBuilder().from(res[1].serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder2
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.MAX_VALIDITY_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash);
+      const tx2 = await txBuilder2.build();
+      const txJson2 = tx2.toJson();
+      should.deepEqual(txJson2.sender, testData.consolidationWrwUser.walletAddress3);
+      should.deepEqual(txJson2.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson2.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson2.genesisHash, genesisHash);
+      should.deepEqual(txJson2.specVersion, specVersion);
+      should.deepEqual(txJson2.nonce, nonce);
+      should.deepEqual(txJson2.tip, 0);
+      should.deepEqual(txJson2.transactionVersion, txVersion);
+      should.deepEqual(txJson2.chainName, chainName);
+      should.deepEqual(txJson2.eraPeriod, eraPeriod);
+      should.deepEqual(txJson2.to, baseAddr);
     });
 
-    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 1', async function () {
-      const res = await basecoin.recover({
-        userKey: testData.wrwUser.userKey,
-        backupKey: testData.wrwUser.backupKey,
-        bitgoKey: testData.wrwUser.bitgoKey,
-        walletPassphrase: testData.wrwUser.walletPassphrase,
-        recoveryDestination: destAddr,
-        startingScanIndex: 1,
-      });
-      res.should.not.be.empty();
-      res[0].should.hasOwnProperty('serializedTx');
-      res[0].should.hasOwnProperty('scanIndex');
-      res[0].scanIndex.should.equal(1);
-      sandBox.assert.calledOnce(basecoin.getAccountInfo);
-      sandBox.assert.calledOnce(basecoin.getHeaderInfo);
-
-      // deserialize the txn and verify the fields are what we expect
-      const txBuilder = basecoin.getBuilder().from(res[0].serializedTx);
-      // some information isn't deserialized by the from method, so we will
-      // supply it again in order to re-build the txn
-      txBuilder
-        .validity({
-          firstValid: testData.westendBlock.blockNumber,
-          maxDuration: basecoin.SWEEP_TXN_DURATION,
+    it('should skip building consolidate transaction if balance is equal to zero', async function () {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.consolidationWrwUser.userKey,
+          backupKey: testData.consolidationWrwUser.backupKey,
+          bitgoKey: testData.consolidationWrwUser.bitgoKey,
+          walletPassphrase: testData.consolidationWrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 2,
         })
-        .referenceBlock(testData.westendBlock.hash);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      should.deepEqual(txJson.sender, testData.wrwUser.walletAddress1);
-      should.deepEqual(txJson.blockNumber, testData.westendBlock.blockNumber);
-      should.deepEqual(txJson.referenceBlock, testData.westendBlock.hash);
-      should.deepEqual(txJson.genesisHash, genesisHash);
-      should.deepEqual(txJson.specVersion, specVersion);
-      should.deepEqual(txJson.nonce, nonce);
-      should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, chainName);
-      should.deepEqual(txJson.eraPeriod, basecoin.SWEEP_TXN_DURATION);
+        .should.rejectedWith('Did not find an address with funds to recover');
+    });
+
+    it('should throw if startingScanIndex is not ge to 1', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.consolidationWrwUser.userKey,
+          backupKey: testData.consolidationWrwUser.backupKey,
+          bitgoKey: testData.consolidationWrwUser.bitgoKey,
+          startingScanIndex: -1,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: -1, endingScanIndex: 19.'
+        );
+    });
+
+    it('should throw if scan factor is too high', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.consolidationWrwUser.userKey,
+          backupKey: testData.consolidationWrwUser.backupKey,
+          bitgoKey: testData.consolidationWrwUser.bitgoKey,
+          startingScanIndex: 1,
+          endingScanIndex: 300,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
+        );
     });
   });
 
@@ -447,7 +503,6 @@ describe('DOT:', function () {
     const sandBox = sinon.createSandbox();
     const destAddr = testData.accounts.account1.address;
     const nonce = 123;
-    const numIteration = 10;
 
     beforeEach(function () {
       const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
@@ -469,10 +524,8 @@ describe('DOT:', function () {
           bitgoKey: testData.wrwUser.bitgoKey,
           walletPassphrase: testData.wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
-          scan: numIteration,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
-      sandBox.assert.callCount(basecoin.getAccountInfo, numIteration);
+        .should.rejectedWith('Did not find address with funds to recover');
     });
   });
 });
