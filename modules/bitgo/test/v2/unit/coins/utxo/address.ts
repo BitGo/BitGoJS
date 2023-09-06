@@ -96,6 +96,9 @@ function run(coin: AbstractUtxoCoin) {
 
         const a = coin.generateAddress(p);
         coin.isValidAddress(a.address).should.eql(true);
+        if (a.address !== a.address.toUpperCase()) {
+          coin.isValidAddress(a.address.toUpperCase()).should.eql(false);
+        }
         coin.verifyAddress({ ...a, keychains });
       });
     });
