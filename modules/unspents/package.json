@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "test": "mocha",
+    "test": "mocha --recursive test",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "unit-test": "npm run test"
