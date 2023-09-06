@@ -616,6 +616,7 @@ export const ovcResponse2 = {
               coinSpecific: {
                 commonKeychain:
                   '0213ddab6c4faefc31d26cfddd0b35c0d220e1e278f50d4fc7afe9f7e5c035dc419af459a6eab918f798d1cb1b3f5c45a7b01c0057685a0db69cbcbc3c247197',
+                lastScanIndex: 20,
               },
             },
             signatureShares: [],
