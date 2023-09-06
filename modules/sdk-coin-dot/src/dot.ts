@@ -25,9 +25,10 @@ import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
-import { isInteger } from 'lodash';
 import BigNumber from 'bignumber.js';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -91,8 +92,17 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
-  startingScanIndex?: number;
-  scan?: number;
+  seed?: string;
+  index?: number;
+}
+
+interface ConsolidationRecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C
+  walletPassphrase?: string;
+  startingScanIndex?: number; // default to 1 (inclusive)
+  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
   seed?: string;
 }
 
@@ -406,154 +416,207 @@ export class Dot extends BaseCoin {
    * @returns {DotTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<DotTx[] | DotSweepTxs> {
+  async recover(params: RecoveryOptions): Promise<DotTx | DotSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
-    let startIdx = params.startingScanIndex;
-    if (_.isUndefined(startIdx)) {
-      startIdx = 0;
-    } else if (!isInteger(startIdx) || startIdx < 0) {
-      throw new Error('Invalid starting index to scan for addresses');
-    }
-    let numIteration = params.scan;
-    if (_.isUndefined(numIteration)) {
-      numIteration = 20;
-    } else if (!isInteger(numIteration) || numIteration <= 0) {
-      throw new Error('Invalid scanning factor');
-    }
+
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
 
-    for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const currPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
-      const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
-      const senderAddr = this.getAddressFromPublicKey(accountId);
-      const { nonce, freeBalance } = await this.getAccountInfo(senderAddr);
-      if (freeBalance <= 0) {
-        continue;
-      }
-
-      // first build the unsigned txn
-      const { headerNumber, headerHash } = await this.getHeaderInfo();
-      const material = await this.getMaterial();
-      const validityWindow = { firstValid: headerNumber, maxDuration: this.MAX_VALIDITY_DURATION };
-
-      const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
-      txnBuilder
-        .sweep()
-        .to({ address: params.recoveryDestination })
-        .sender({ address: senderAddr })
-        .validity(validityWindow)
-        .referenceBlock(headerHash)
-        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
-        .fee({ amount: 0, type: 'tip' });
-      const unsignedTransaction = (await txnBuilder.build()) as Transaction;
-
-      let serializedTx = unsignedTransaction.toBroadcastFormat();
-      if (!isUnsignedSweep) {
-        if (!params.userKey) {
-          throw new Error('missing userKey');
-        }
-        if (!params.backupKey) {
-          throw new Error('missing backupKey');
-        }
-        if (!params.walletPassphrase) {
-          throw new Error('missing wallet passphrase');
-        }
-
-        // Clean up whitespace from entered values
-        const userKey = params.userKey.replace(/\s/g, '');
-        const backupKey = params.backupKey.replace(/\s/g, '');
-
-        // Decrypt private keys from KeyCard values
-        let userPrv;
-        try {
-          userPrv = this.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
-        /** TODO BG-52419 Implement Codec for parsing */
-        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-        let backupPrv;
-        try {
-          backupPrv = this.bitgo.decrypt({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting backup keychain: ${e.message}`);
-        }
-        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-        // add signature
-        const signatureHex = await EDDSAMethods.getTSSSignature(
-          userSigningMaterial,
-          backupSigningMaterial,
-          currPath,
-          unsignedTransaction
-        );
-        const dotKeyPair = new DotKeyPair({ pub: accountId });
-        txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
-        const signedTransaction = await txnBuilder.build();
-        serializedTx = signedTransaction.toBroadcastFormat();
-      } else {
-        // Polkadot has a concept of existential desposit (ed), it is the minimum amount required by an address to have
-        // to keep the account active
-        const existentialDeposit = this.getChain() === 'tdot' ? 10000000000 : 1000000000000;
-        const value = new BigNumber(freeBalance).minus(new BigNumber(existentialDeposit));
-        const walletCoin = this.getChain();
-        const inputs = [
-          {
-            address: unsignedTransaction.inputs[0].address,
-            valueString: value.toString(),
-            value: value.toNumber(),
-          },
-        ];
-        const outputs = [
-          {
-            address: unsignedTransaction.outputs[0].address,
-            valueString: value.toString(),
-            coinName: walletCoin,
-          },
-        ];
-        const spendAmount = value.toString();
-        const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-        const feeInfo = { fee: 0, feeString: '0' };
-        const transaction: DotTx = {
-          serializedTx: serializedTx,
-          scanIndex: i,
-          coin: walletCoin,
-          signableHex: unsignedTransaction.signablePayload.toString('hex'),
-          derivationPath: currPath,
-          parsedTx: parsedTx,
-          feeInfo: feeInfo,
-          coinSpecific: { ...validityWindow, commonKeychain: bitgoKey },
-        };
-
-        const unsignedTx: DotUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-        const transactions: DotUnsignedTx[] = [unsignedTx];
-        const txRequest: DotTxRequest = {
-          transactions: transactions,
-          walletCoin: walletCoin,
-        };
-        const txRequests: DotSweepTxs = { txRequests: [txRequest] };
-        return txRequests;
-      }
-      const transaction: DotTx = { serializedTx: serializedTx, scanIndex: i };
-      const transactions: DotTx[] = [transaction];
-      return transactions;
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const senderAddr = this.getAddressFromPublicKey(accountId);
+    const { nonce, freeBalance } = await this.getAccountInfo(senderAddr);
+    if (freeBalance <= 0) {
+      throw new Error('Did not find address with funds to recover');
     }
-    throw new Error('Did not find an address with funds to recover');
+
+    // first build the unsigned txn
+    const { headerNumber, headerHash } = await this.getHeaderInfo();
+    const material = await this.getMaterial();
+    const validityWindow = { firstValid: headerNumber, maxDuration: this.MAX_VALIDITY_DURATION };
+
+    const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
+    txnBuilder
+      .sweep()
+      .to({ address: params.recoveryDestination })
+      .sender({ address: senderAddr })
+      .validity(validityWindow)
+      .referenceBlock(headerHash)
+      .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce })
+      .fee({ amount: 0, type: 'tip' });
+    const unsignedTransaction = (await txnBuilder.build()) as Transaction;
+
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    if (!isUnsignedSweep) {
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      // Clean up whitespace from entered values
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+      /** TODO BG-52419 Implement Codec for parsing */
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      // add signature
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+      const dotKeyPair = new DotKeyPair({ pub: accountId });
+      txnBuilder.addSignature({ pub: dotKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txnBuilder.build();
+      serializedTx = signedTransaction.toBroadcastFormat();
+    } else {
+      // Polkadot has a concept of existential desposit (ed), it is the minimum amount required by an address to have
+      // to keep the account active
+      const existentialDeposit = this.getChain() === 'tdot' ? 10000000000 : 1000000000000;
+      const value = new BigNumber(freeBalance).minus(new BigNumber(existentialDeposit));
+      const walletCoin = this.getChain();
+      const inputs = [
+        {
+          address: unsignedTransaction.inputs[0].address,
+          valueString: value.toString(),
+          value: value.toNumber(),
+        },
+      ];
+      const outputs = [
+        {
+          address: unsignedTransaction.outputs[0].address,
+          valueString: value.toString(),
+          coinName: walletCoin,
+        },
+      ];
+      const spendAmount = value.toString();
+      const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+      const feeInfo = { fee: 0, feeString: '0' };
+      const transaction: DotTx = {
+        serializedTx: serializedTx,
+        scanIndex: index,
+        coin: walletCoin,
+        signableHex: unsignedTransaction.signablePayload.toString('hex'),
+        derivationPath: currPath,
+        parsedTx: parsedTx,
+        feeInfo: feeInfo,
+        coinSpecific: { ...validityWindow, commonKeychain: bitgoKey },
+      };
+
+      const unsignedTx: DotUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: DotUnsignedTx[] = [unsignedTx];
+      const txRequest: DotTxRequest = {
+        transactions: transactions,
+        walletCoin: walletCoin,
+      };
+      const txRequests: DotSweepTxs = { txRequests: [txRequest] };
+      return txRequests;
+    }
+    const transaction: DotTx = { serializedTx: serializedTx, scanIndex: index };
+    return transaction;
+  }
+
+  /**
+   * Builds native DOT recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<DotTx[] | DotSweepTxs> {
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const startIdx = params.startingScanIndex || 1;
+    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const baseIndex = 0;
+    const basePath = params.seed ? getDerivationPath(params.seed) + `/${baseIndex}` : `m/${baseIndex}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, basePath).slice(0, 64);
+    const baseAddress = this.getAddressFromPublicKey(accountId);
+
+    const consolidationTransactions: any[] = [];
+    for (let i = startIdx; i < endIdx; i++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        recoveryDestination: baseAddress,
+        seed: params.seed,
+        index: i,
+      };
+
+      let recoveryTransaction;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (e.message === 'Did not find address with funds to recover') {
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as DotSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push(recoveryTransaction);
+      }
+    }
+
+    if (consolidationTransactions.length == 0) {
+      throw new Error('Did not find an address with funds to recover');
+    }
+
+    if (isUnsignedSweep) {
+      const consolidationSweepTransactions: DotSweepTxs = { txRequests: consolidationTransactions };
+      return consolidationSweepTransactions;
+    }
+
+    return consolidationTransactions;
   }
 
   /**
