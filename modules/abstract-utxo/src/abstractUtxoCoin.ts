@@ -374,8 +374,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const formats = param && param.anyFormat ? undefined : ['default' as const];
     try {
-      utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
-      return true;
+      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
+      return address === utxolib.address.fromOutputScript(script, this.network);
     } catch (e) {
       return false;
     }

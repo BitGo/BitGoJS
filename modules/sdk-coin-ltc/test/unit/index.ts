@@ -28,8 +28,8 @@ describe('Litecoin:', function () {
       ltc.isValidAddress('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7').should.be.true();
       tltc.isValidAddress('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht').should.be.true();
       // all upper case is valid
-      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.true();
-      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.true();
+      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.false();
+      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.false();
       // mixed case is invalid
       ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYg7').should.be.false();
       tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86Ht').should.be.false();
