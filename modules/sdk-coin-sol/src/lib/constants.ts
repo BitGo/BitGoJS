@@ -39,6 +39,7 @@ export enum InstructionBuilderTypes {
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
   TokenTransfer = 'TokenTransfer',
   StakingAuthorize = 'Authorize',
+  StakingDelegate = 'Delegate',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -77,6 +78,11 @@ export const stakingActivateInstructionsIndexes = {
 /** Const to check the order of the Staking Authorize instructions when decode */
 export const stakingAuthorizeInstructionsIndexes = {
   Authorize: 0,
+} as const;
+
+/** Const to check the order of the Staking Delegate instructions when decode */
+export const stakingDelegateInstructionsIndexes = {
+  Delegate: 0,
 } as const;
 
 /** Const to check the order of the Staking Deactivate instructions when decode */

@@ -58,6 +58,8 @@ export enum TransactionType {
   StakingAuthorize,
   // Staking Authorize from raw message (e.g. SOL)
   StakingAuthorizeRaw,
+  // Delegate
+  StakingDelegate,
 }
 
 /**
