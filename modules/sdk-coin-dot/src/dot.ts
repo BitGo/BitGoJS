@@ -121,7 +121,13 @@ interface DotTx {
     firstValid?: number;
     maxDuration?: number;
     commonKeychain?: string;
+    lastScanIndex?: number;
   };
+}
+
+interface DotTxs {
+  transactions: DotTx[];
+  lastScanIndex: number;
 }
 
 interface DotUnsignedTx {
@@ -560,7 +566,7 @@ export class Dot extends BaseCoin {
    * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
-  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<DotTx[] | DotSweepTxs> {
+  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<DotTxs | DotSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
@@ -579,6 +585,7 @@ export class Dot extends BaseCoin {
     const baseAddress = this.getAddressFromPublicKey(accountId);
 
     const consolidationTransactions: any[] = [];
+    let lastScanIndex = startIdx;
     for (let i = startIdx; i < endIdx; i++) {
       const recoverParams = {
         userKey: params.userKey,
@@ -595,6 +602,7 @@ export class Dot extends BaseCoin {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
         if (e.message === 'Did not find address with funds to recover') {
+          lastScanIndex = i;
           continue;
         }
         throw e;
@@ -605,6 +613,7 @@ export class Dot extends BaseCoin {
       } else {
         consolidationTransactions.push(recoveryTransaction);
       }
+      lastScanIndex = i;
     }
 
     if (consolidationTransactions.length == 0) {
@@ -612,11 +621,22 @@ export class Dot extends BaseCoin {
     }
 
     if (isUnsignedSweep) {
+      // lastScanIndex will be used to inform user the last address index scanned for available funds (so they can
+      // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
+      // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
+      const lastTransactionCoinSpecific = {
+        commonKeychain:
+          consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
+            .commonKeychain,
+        lastScanIndex: lastScanIndex,
+      };
+      consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
+        lastTransactionCoinSpecific;
       const consolidationSweepTransactions: DotSweepTxs = { txRequests: consolidationTransactions };
       return consolidationSweepTransactions;
     }
 
-    return consolidationTransactions;
+    return { transactions: consolidationTransactions, lastScanIndex };
   }
 
   /**
@@ -628,9 +648,10 @@ export class Dot extends BaseCoin {
    * @returns {DotTx[]} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<DotTx[]> {
+  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<DotTxs> {
     const req = params.signatureShares;
     const broadcastableTransactions: DotTx[] = [];
+    let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -684,8 +705,12 @@ export class Dot extends BaseCoin {
         serializedTx: serializedTx,
         scanIndex: transaction.scanIndex,
       });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
     }
-    return broadcastableTransactions;
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

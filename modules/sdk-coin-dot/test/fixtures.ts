@@ -346,6 +346,7 @@ export const ovcResponse2 = {
                 maxDuration: 2400,
                 commonKeychain:
                   '3cd14f5d60744287cd3a50510e2964746b6feaad4b2300088eaae60d1a35f0abc518534d43b2614370d9a263aadb57edb5d0b78f816a519cd5896e7352920b67',
+                lastScanIndex: 20,
               },
             },
             signatureShares: [],

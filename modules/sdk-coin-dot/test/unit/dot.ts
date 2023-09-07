@@ -256,28 +256,30 @@ describe('DOT:', function () {
       const params = testData.ovcResponse;
 
       const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
-      recoveryTxn[0].serializedTx.should.equal(
+      recoveryTxn.transactions[0].serializedTx.should.equal(
         '0x2d02840050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c00057c131cde2be39f4ff23eeba11139c46dd8c6d69ff517abede37381d8d24f0bb30fd8805b2e51a9e2a75338d7fb7edb290be9638debedbfc001d10b8132be0b2b4a0400040400bf0678d312b2b2c7effd2b1f214ee13928d339391d5f5f7056608aa0d32b9edf01'
       );
-      recoveryTxn[0].scanIndex.should.equal(0);
+      recoveryTxn.transactions[0].scanIndex.should.equal(0);
+      recoveryTxn.lastScanIndex.should.equal(0);
     });
 
     it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
       const params = testData.ovcResponse2;
 
       const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
-      recoveryTxn[0].serializedTx.should.equal(
+      recoveryTxn.transactions[0].serializedTx.should.equal(
         '0x2d028400f053d177371f4919b71017421aa34841ac87c926a14e8a7e75f092693665cb4a009871feb8389e12191b460ebea1f9e1716ada8a31d94ac08f5c15cb5f7be24683cdfc300ae3e6802c6f4b044dd92ea03d15b92399ab45803e43beb5cbff582a031b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
       );
-      recoveryTxn[0].scanIndex.should.equal(1);
-      recoveryTxn[1].serializedTx.should.equal(
+      recoveryTxn.transactions[0].scanIndex.should.equal(1);
+      recoveryTxn.transactions[1].serializedTx.should.equal(
         '0x2d028400cf7ed9f536373c8f874e780a4269ec1bd6799ed7d4a854c670b0c72805fac87600d153cbb683706ddf320f7b225af14ce4b59b868c07440aefa4c4e1297e49bcd5f6ee84f696b0c2e456e2a7f8779a78a2c832dfb47d5b283eba8408b003c7dd031b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
       );
-      recoveryTxn[1].scanIndex.should.equal(2);
-      recoveryTxn[2].serializedTx.should.equal(
+      recoveryTxn.transactions[1].scanIndex.should.equal(2);
+      recoveryTxn.transactions[2].serializedTx.should.equal(
         '0x2d0284009482ad7e43b40b7df3383244daafed32b3b9fd7541016b5c907f2d9052f85f8600e255698d110977faf33efb3336ba98ad7eaa2a1a926487fc696a277442d4414b2a441ba92d598f2b1f96f13b28785f5e572984035a608d63c48bd35ba955090e1b37000004040050d1e116cdb32e61ba3ece275b620f503f0c5ae4e7690d9f9aa7e0b50303976c01'
       );
-      recoveryTxn[2].scanIndex.should.equal(3);
+      recoveryTxn.transactions[2].scanIndex.should.equal(3);
+      recoveryTxn.lastScanIndex.should.equal(20);
     });
 
     it('should recover a txn for non-bitgo recoveries', async function () {
@@ -355,7 +357,7 @@ describe('DOT:', function () {
     });
   });
 
-  describe('Build Unsigned Consolidation Recoveries:', () => {
+  describe('Build Consolidation Recoveries:', () => {
     const sandBox = sinon.createSandbox();
     const baseAddr = testData.consolidationWrwUser.walletAddress0;
     const nonce = 123;
@@ -396,15 +398,16 @@ describe('DOT:', function () {
         endingScanIndex: 4,
       });
       res.should.not.be.empty();
-      res.length.should.equal(2);
+      res.transactions.length.should.equal(2);
       sandBox.assert.calledThrice(basecoin.getAccountInfo);
       sandBox.assert.calledTwice(basecoin.getHeaderInfo);
 
-      res[0].should.hasOwnProperty('serializedTx');
-      res[0].should.hasOwnProperty('scanIndex');
-      res[0].scanIndex.should.equal(2);
+      const txn1 = res.transactions[0];
+      txn1.should.hasOwnProperty('serializedTx');
+      txn1.should.hasOwnProperty('scanIndex');
+      txn1.scanIndex.should.equal(2);
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder1 = basecoin.getBuilder().from(res[0].serializedTx);
+      const txBuilder1 = basecoin.getBuilder().from(txn1.serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder1
@@ -430,11 +433,13 @@ describe('DOT:', function () {
       should.deepEqual(txJson1.eraPeriod, eraPeriod);
       should.deepEqual(txJson1.to, baseAddr);
 
-      res[1].should.hasOwnProperty('serializedTx');
-      res[1].should.hasOwnProperty('scanIndex');
-      res[1].scanIndex.should.equal(3);
+      res.lastScanIndex.should.equal(3);
+      const txn2 = res.transactions[1];
+      txn2.should.hasOwnProperty('serializedTx');
+      txn2.should.hasOwnProperty('scanIndex');
+      txn2.scanIndex.should.equal(3);
       // deserialize the txn and verify the fields are what we expect
-      const txBuilder2 = basecoin.getBuilder().from(res[1].serializedTx);
+      const txBuilder2 = basecoin.getBuilder().from(txn2.serializedTx);
       // some information isn't deserialized by the from method, so we will
       // supply it again in order to re-build the txn
       txBuilder2
