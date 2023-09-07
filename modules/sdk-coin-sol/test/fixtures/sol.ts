@@ -107,6 +107,35 @@ const getAccountInfoResponse = {
   },
 };
 
+const getAccountInfoResponse2 = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: { apiVersion: '1.16.11', slot: 242229086 },
+      value: {
+        data: {
+          parsed: {
+            info: {
+              authority: 'LvDUy1MovMeusYaL8ErQAqL4PeD8H9W1RALJU3twUGj',
+              blockhash: 'CuuXb4dLUAgw12KmV9Lb1LHm67ojTZxwMfnwUGpyqMvP',
+              feeCalculator: { lamportsPerSignature: '5000' },
+            },
+            type: 'initialized',
+          },
+          program: 'nonce',
+          space: 80,
+        },
+        executable: false,
+        lamports: 1447680,
+        owner: '11111111111111111111111111111111',
+        rentEpoch: 0,
+      },
+    },
+    id: 1,
+  },
+};
+
 const getAccountBalanceResponse = {
   status: 200,
   body: {
@@ -148,6 +177,7 @@ export const SolResponses = {
   getFeesResponse,
   getAccountBalanceResponse,
   getAccountInfoResponse,
+  getAccountInfoResponse2,
   getAccountBalanceResponseNoFunds,
   getAccountBalanceResponseM2Derivation,
   getAccountBalanceResponseM1Derivation,
@@ -204,6 +234,8 @@ export const keys = {
   destinationPubKey: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
   walletPassword: 't3stSicretly!',
   durableNoncePubKey: '6LqY5ncj7s4b1c3YJV1hsn2hVPNhEfvDCNYMaCc1jJhX',
+  durableNoncePubKey2: '4Y3kQtmVUfF7nimtABPpCwjihmLgJUgm8eZTAo44c4u9',
+  durableNoncePubKey3: '6UW2N7eynvw1zjULpGDxPorJHj6wpvVgiFUcjzwoY6fg',
   durableNoncePrivKey:
     '447272d65cc8b39f88ea23b5f16859bd84b3ecfd6176ef99535efab37541c83b051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c',
 };
@@ -270,4 +302,177 @@ export const ovcResponse = {
       ],
     },
   ],
+};
+
+export const ovcResponse2 = {
+  signatureShares: [
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                'AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABNJM2UWbBUH5wT0JJHILlhCs33HX8DeE/8Tdsw6tGfZoMhCnSKv6TPWtBxy7Sb6sW8ksCUPnAWuHGGKmgjEMBAgECBmLrqxJrY2kbN/tcrQw3P8P15OljFGabFJAKBrUO1grNBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAIZQniiS73D6mwfpnfhVMC4lyYJtRSrmoZpF7yIlUdIDAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA==',
+              scanIndex: 1,
+              coin: 'tsol',
+              signableHex:
+                '0201020662ebab126b63691b37fb5cad0c373fc3f5e4e96314669b14900a06b50ed60acd051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c4f5f5987bfe26aa66013efd96d36360f2b4336c91f993259fb56051305614d42c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000086509e2892ef70fa9b07e99df855302e25c9826d452ae6a19a45ef222551d2030204030205010404000000040200030c02000000f03dcd1d00000000',
+              derivationPath: 'm/1',
+              parsedTx: {
+                inputs: [
+                  {
+                    address: '7f9P5FqH9hDsWzM13F9yiKpgyDLCiE3unnxx7KgKkhik',
+                    valueString: '499990000',
+                    value: 499990000,
+                  },
+                ],
+                outputs: [
+                  {
+                    address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
+                    valueString: '499990000',
+                    coinName: 'tsol',
+                  },
+                ],
+                spendAmount: '499990000',
+                type: '',
+              },
+              feeInfo: { fee: 10000, feeString: '10000' },
+              coinSpecific: {
+                commonKeychain:
+                  'f342b7b3bfe5086d189bc0886139d3fbb1669381d725d9f6b6b522c62c8c14e8d772493a05c9bb82fb1adfb42dfae30f8746c3dc17bc0183806094f66d5e2fe0',
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                'd40f2f33a62ee2b01d8e8de57a092192bf4fb5b5d2e6169bf311b5edc61547651f27370be7c76ff5205f40ace949bd88f01b18e0dcdf78aeed33afac9f720209',
+              publicShare: '62ebab126b63691b37fb5cad0c373fc3f5e4e96314669b14900a06b50ed60acd',
+            },
+          },
+        ],
+        walletCoin: 'tsol',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: '62ebab126b63691b37fb5cad0c373fc3f5e4e96314669b14900a06b50ed60acd',
+            R: 'd40f2f33a62ee2b01d8e8de57a092192bf4fb5b5d2e6169bf311b5edc6154765',
+            sigma: 'fb0de01cb8d26bd1fae9649f14db9b43120f724c490f296d90fee4b0b0dff508',
+          },
+        },
+      ],
+    },
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                'AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADcp9xJp3TFHdivEbhwJKldR4Ny+pasoFx+Bgk8q6g1iNiq7XSi1Ov3bs7euMkTj7nDRFqP8lv7xLTcvrBm9OQJAgECBp14ImBCdmVROlw0UveYS1MvG/ljCRI3MJTFmsxuXEoWBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHw0hyxvpVwtIx9/zeX2O16eTrY+aKIh1mdKg4MMg0eyxMLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAC7ws1XFslinwgtpISUViVWIVTHyD2Q0qj24YjKmrAmXAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA==',
+              scanIndex: 2,
+              coin: 'tsol',
+              signableHex:
+                '020102069d782260427665513a5c3452f7984b532f1bf9630912373094c59acc6e5c4a16051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c34872c6fa55c2d231f7fcde5f63b5e9e4eb63e68a221d6674a83830c8347b2c4c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea94000002ef0b355c5b258a7c20b692125158955885531f20f6434aa3db86232a6ac09970204030205010404000000040200030c02000000f03dcd1d00000000',
+              derivationPath: 'm/2',
+              parsedTx: {
+                inputs: [
+                  {
+                    address: 'BbhFquGMfMz2KcMrXrqZZhKD1GLcvBgtJnaA5sE7viv9',
+                    valueString: '499990000',
+                    value: 499990000,
+                  },
+                ],
+                outputs: [
+                  {
+                    address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
+                    valueString: '499990000',
+                    coinName: 'tsol',
+                  },
+                ],
+                spendAmount: '499990000',
+                type: '',
+              },
+              feeInfo: { fee: 10000, feeString: '10000' },
+              coinSpecific: {
+                commonKeychain:
+                  'f342b7b3bfe5086d189bc0886139d3fbb1669381d725d9f6b6b522c62c8c14e8d772493a05c9bb82fb1adfb42dfae30f8746c3dc17bc0183806094f66d5e2fe0',
+                lastScanIndex: 20,
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                'e2e1380e7398e05947ce65a3e9ca753a2957024032b329e8d5bef149c636c481d04cc96a656c063f0ad62fb55d46edeb39880b5cb7146db613e26968fd1e0a0b',
+              publicShare: '9d782260427665513a5c3452f7984b532f1bf9630912373094c59acc6e5c4a16',
+            },
+          },
+        ],
+        walletCoin: 'tsol',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: '9d782260427665513a5c3452f7984b532f1bf9630912373094c59acc6e5c4a16',
+            R: 'e2e1380e7398e05947ce65a3e9ca753a2957024032b329e8d5bef149c636c481',
+            sigma: '4a9064a9f59942a4a0f6cfbb6939577b39b9bf1a25f8f97ab7b3e954d4ce1f02',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export const wrwUser = {
+  userKey:
+    '{"iv":"1ngPVLcgxlv5FSh1ygiR2Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"p7A2qFEeWh8=","ct":"a2xFegpYHeqBSw' +
+    'cRvMq4ja+QPAxuJUwVIYmUz/oT6DzNDXc/G45rM++sj59vewHdmcDW+ayaqPaYZNzzQlOBDErww' +
+    '7ZDENSZfA/Ph/2/4xDBm1CKeNKnjtSz/yj4muMcaiW2/hwmdusVokWlN8rkEQQZv671z6A8h0u7' +
+    'fq9W22JfPJSB7KM5BYylIWhl4e6p4JorQ2sMDAeswFKjIrwzmljA112C8XJOYZDRED9LCN3/Z08' +
+    '7/3xeT8coFQKRXFFc2JWDjMGxi/eg/tl53VUvO1B4c0061kIRktO1aLM/nj75i+B8SITemgkv4g' +
+    'iZekPo9GaQtnkM5HEWMyLBW6LZ12DApnDfx1NE5aEAJNpNVgwu/Yvfs3/lAabm6ctdb/9aNXQlE' +
+    '4cQRHGuz5TqEPKJGPtzXzfLAmydYmatvh7MPcJtHjtxdt/4+FhsDlxa8RjqEnNksEY1mMM6li67' +
+    'kCqks2mqFtSv9OpAOjhlc7tscJO7NgdV2sqLJFvoczg4SOz+S2EtXWowdvhzgudjtP8s9aAXduV' +
+    '/rmNDtpK0kf5ODoaJgbGe7m6YFmBgCSJXBUWSbtB70mgoKmyfwC7qP5XAbwYOLZQzq2d/hbp85J' +
+    '8vU4E8fEQvAQSIee2fwobNZHLaO6+UQu3ucSGVLCKJ9WevL1veEzL6f9SeNJQYhKa7tV0jHYBSd' +
+    'SU2J9myHqXNa1X+2QmtzOiHthv9V6VghDrtXKPNbajMUA+u35C3613w76lX8tEv2nqYjp1fY1NJ' +
+    'h8FP8rLNd7R3Bn7iWHwHw4sllqLBog4XRdPaVaeCclNeNLhQj3czOMS/JI/rW2h3A3azrQw3Hac' +
+    'Jgma13hYzc4e6sWb+XjEke44p45TWc72y9hxAQ4+TZTIDM6EGXT1xRu62mwjOyaq+vFkw6T5ewQ' +
+    'rpAAsIwKtjhF0ILN4+OD55jKjjVzjJgFUGtTzyrkBWRzqv949Fr6aqV6x0eoLKJ1l028Mq4/PjT' +
+    'rb1pTyVcGOaa0xRBW6BMnhOSkbi+xE5Kv9kSLghXNl02R5CwO0Px2jD3vG0Pm1V/H+ZHlJsuLUo' +
+    'rAnOlAXArTqeQGLv90wlUr9JsQc80gjtiYVBIBPKzeGxnx7yMbj9x9fKvAglKSAGbiNwl9/REBX' +
+    'E7EXY3veDG0pJdYag3N0m4eXz6ITMctyFsVKQZALPDSsSmaZR0UcjbOOIC4YuISB9"}',
+  backupKey:
+    '{"iv":"wBepCUHdDonP5AVkRCTkkQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode"' +
+    ':"ccm","adata":"","cipher":"aes","salt":"ETz6faBtlh8=","ct":"CldHw22d0wWFPd' +
+    'dbQQcQHXfd6p5BvcE2Khp6FK57SdqUH9VZnTFjH6mqDYj0LfYVjtDkl/USckeYX5vI59iSrGxsV' +
+    'rOQWmRpyRObpPp6dcm06sBO+6gWvPWB62508XpIUN4g1aCbpOY1MUNEzGHIIjM44JPBj9BJRqr5' +
+    'DBw+fZrpp61UGx/4tYKB4+g65drybj45TW14BwJcu1vTZvsCs+JMmxxfnobqkCIjehIWn4dULl/' +
+    'Nl6f2/v0AJryI1XnomvTesTLAEUKI0dXAJhTBqGwgTbBdN+XdoqTbvMaBdY6Qe2fQjoxnvbQZyg' +
+    '18sHbaLpKVrKEBbhQ9CbamFHXRu88Vshrp9uymeoAaNjMeMGJLEiigeg2dNOraj6LTfFpmL+RF/' +
+    'z2tgewGrLAuDm8t5t3aJF3Aj4bAZcBgSQqzLiNcKUWXQER/Tfx7cPCYXtJh3Krij34pQG7ZkA91' +
+    'YPYFNjWgs0OfnHrOSZWYm9fS1IMGp0/qZaPilOSiHfcVI2Yc5+i2lsK+jyJh3qUQU00s8Edlzu3' +
+    'XpKbxlNZW48R63w9YsuUZ9PJkhT3YMIDwissUl1h7zeE0kwuaaERPxJiT1G5b9NS82sdZVEH+1B' +
+    'i/u3p65R/Zm/d81lneTHIaRRFRw4tLvwQhb0YVF4jph/ZruvqVQ9sXf81iS0wM1vbyvdHuSYk1p' +
+    'PcovRNnjQerurSSODO+xWup2gNkSLy3K6Vyjg1179+Aqsc2wwko4wHihubpWn2TJ+QqVNBPBDbN' +
+    'jhIS9o6+c5ZsRRWWfVZyRjPwYd7954ulG/uF8HaK2bkABkGpP10Q6ckb+t/HoN1MpGT/XXCxpLa' +
+    'ElxM5vj7+eekIKxN9yvKDwShseH7KqWwwZmnavqb1L5QnfG91XdokrE0Lqz/H1xiNxyW36WE2xj' +
+    'Fi7WV5RoySvTLNviXvH9apoZ8RR86mOnl0bAG4VbFmBf3a3jqIMm6yVyHT94Fnlz3V6yIibU2GB' +
+    'TFHeDu935KOFDhNmw7qti+TZxdLDvZsDKKR7AsFrZwmreFwHjg9Tao4JSmUJd3tHfaW71+T0kZQ' +
+    'SFwXrgMb5Lzr78WkhmEA7oZWrJP36X87CI8hMFhKwSb7FzfSHZCtRERLz2Q8C5Smd8b3EWvb1Ha' +
+    'y8qhGB8Czq+z1mJSKbymnMMBwco42Y30ofQ/xEBwO2TypJwKS9Ey+yddfA6ASuQ=="}',
+  bitgoKey:
+    '125746de1919236bd30a4809d718b1c161ab8f7674fe506bed438fa860adcfcc256f3721062' +
+    'dfeaea177c38c467a24228b9acf1a9f92fc2f5d0177bbbf218eb8',
+  walletPassphrase: 'Ghghjkg!455544llll',
+  walletAddress0: 'cyggsFnDvbfsPeiFXziebWsWAp6bW5Nc5SePTx8mebL',
+  walletAddress1: '9jCvKZbmzothfWS6P7AJxLKY8JLdapkurZbHsZ8p9TP8',
+  walletAddress2: '22USpDwmubAoY5uws4hp4YhJZwt4eoumeLrGGx5z7DWV',
+  walletAddress3: 'FNe4or6gc5vmmCCMASJyYu9BRoiL14fDhjC5vxoGFiW2',
 };

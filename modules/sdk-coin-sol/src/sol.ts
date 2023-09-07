@@ -42,8 +42,9 @@ import {
   isValidPublicKey,
 } from './lib/utils';
 import * as request from 'superagent';
-import { isInteger } from 'lodash';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export interface TransactionFee {
   fee: string;
@@ -104,7 +105,7 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
   tokenAccountRentExemptAmount?: string;
 }
 
-interface SolTx {
+export interface SolTx {
   serializedTx: string;
   scanIndex: number;
   coin?: string;
@@ -117,7 +118,13 @@ interface SolTx {
   };
   coinSpecific?: {
     commonKeychain?: string;
+    lastScanIndex?: number;
   };
+}
+
+export interface SolTxs {
+  transactions: SolTx[];
+  lastScanIndex: number;
 }
 
 interface SolUnsignedTx {
@@ -149,8 +156,21 @@ interface RecoveryOptions {
     publicKey: string;
     secretKey: string;
   };
-  startingScanIndex?: number;
-  scan?: number;
+  seed?: string;
+  index?: number;
+}
+
+interface ConsolidationRecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C
+  walletPassphrase?: string;
+  durableNonces: {
+    publicKeys: string[];
+    secretKey: string;
+  };
+  startingScanIndex?: number; // default to 1 (inclusive)
+  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
   seed?: string;
 }
 
@@ -637,9 +657,13 @@ export class Sol extends BaseCoin {
    * @returns {SolTx[]} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<SolTx[]> {
+  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<SolTxs> {
+    if (!params.signatureShares) {
+      ('Missing transaction(s)');
+    }
     const req = params.signatureShares;
     const broadcastableTransactions: SolTx[] = [];
+    let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -680,9 +704,13 @@ export class Sol extends BaseCoin {
         serializedTx: serializedTx,
         scanIndex: transaction.scanIndex,
       });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
     }
 
-    return broadcastableTransactions;
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 
   /**
@@ -693,7 +721,7 @@ export class Sol extends BaseCoin {
    * @returns {SolTxs} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<SolTx[] | SolSweepTxs> {
+  async recover(params: RecoveryOptions): Promise<SolTx | SolSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -702,45 +730,23 @@ export class Sol extends BaseCoin {
       throw new Error('invalid recoveryDestination');
     }
 
-    let startIdx = params.startingScanIndex;
-    if (_.isUndefined(startIdx)) {
-      startIdx = 0;
-    } else if (!isInteger(startIdx) || startIdx < 0) {
-      throw new Error('Invalid starting index to scan for addresses');
-    }
-    let numIteration = params.scan;
-    if (_.isUndefined(numIteration)) {
-      numIteration = 20;
-    } else if (!isInteger(numIteration) || numIteration <= 0) {
-      throw new Error('Invalid scanning factor');
-    }
-
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    let bs58EncodedPublicKey;
     let balance = 0;
-    let scanIndex;
     const feePerSignature = await this.getFees();
     const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
 
-    // Check for first derived wallet with funds
-    for (let i = startIdx; i < numIteration + startIdx; i++) {
-      const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${i}` : `m/${i}`;
-      const accountId = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
-      bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
-      balance = await this.getAccountBalance(bs58EncodedPublicKey);
-
-      if (balance > totalFee) {
-        scanIndex = i;
-        break;
-      }
-    }
+    balance = await this.getAccountBalance(bs58EncodedPublicKey);
     if (balance < totalFee) {
-      throw Error('no wallets found with sufficient funds');
+      throw Error('Did not find address with funds to recover');
     }
 
     const factory = this.getBuilder();
@@ -813,11 +819,10 @@ export class Sol extends BaseCoin {
       }
       const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
 
-      const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${scanIndex}` : `m/${scanIndex}`;
       const signatureHex = await EDDSAMethods.getTSSSignature(
         userSigningMaterial,
         backupSigningMaterial,
-        derivationPath,
+        currPath,
         unsignedTransaction
       );
 
@@ -832,7 +837,7 @@ export class Sol extends BaseCoin {
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
-    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${scanIndex}` : `m/${scanIndex}`;
+    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
     const walletCoin = this.getChain();
     const inputs = [
       {
@@ -855,7 +860,7 @@ export class Sol extends BaseCoin {
     if (isUnsignedSweep) {
       const transaction: SolTx = {
         serializedTx: serializedTx,
-        scanIndex: scanIndex,
+        scanIndex: index,
         coin: walletCoin,
         signableHex: completedTransaction.signablePayload.toString('hex'),
         derivationPath: derivationPath,
@@ -874,10 +879,115 @@ export class Sol extends BaseCoin {
     }
     const transaction: SolTx = {
       serializedTx: serializedTx,
-      scanIndex: scanIndex,
+      scanIndex: index,
     };
-    const transactions: SolTx[] = [transaction];
-    return transactions;
+    return transaction;
+  }
+
+  /**
+   * Builds native SOL recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<SolTxs | SolSweepTxs> {
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const startIdx = params.startingScanIndex || 1;
+    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    // validate durable nonces array
+    if (!params.durableNonces) {
+      throw new Error('Missing durable nonces');
+    }
+    if (!params.durableNonces.publicKeys) {
+      throw new Error('Invalid durable nonces: missing public keys');
+    }
+    if (!params.durableNonces.secretKey) {
+      throw new Error('Invalid durable nonces array: missing secret key');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const baseAddressIndex = 0;
+    const baseAddressPath = params.seed
+      ? getDerivationPath(params.seed) + `/${baseAddressIndex}`
+      : `m/${baseAddressIndex}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, baseAddressPath).slice(0, 64);
+    const baseAddress = new SolKeyPair({ pub: accountId }).getAddress();
+
+    let durableNoncePubKeysIndex = 0;
+    const durableNoncePubKeysLength = params.durableNonces.publicKeys.length;
+    const consolidationTransactions: any[] = [];
+    let lastScanIndex = startIdx;
+    for (let i = startIdx; i < endIdx; i++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        recoveryDestination: baseAddress,
+        seed: params.seed,
+        index: i,
+        durableNonce: {
+          publicKey: params.durableNonces.publicKeys[durableNoncePubKeysIndex],
+          secretKey: params.durableNonces.secretKey,
+        },
+      };
+
+      let recoveryTransaction;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (e.message === 'Did not find address with funds to recover') {
+          lastScanIndex = i;
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as SolSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push(recoveryTransaction);
+      }
+
+      lastScanIndex = i;
+      durableNoncePubKeysIndex++;
+      if (durableNoncePubKeysIndex >= durableNoncePubKeysLength) {
+        // no more available nonce accounts to create transactions
+        break;
+      }
+    }
+
+    if (consolidationTransactions.length === 0) {
+      throw new Error('Did not find an address with funds to recover');
+    }
+
+    if (isUnsignedSweep) {
+      // lastScanIndex will be used to inform user the last address index scanned for available funds (so they can
+      // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
+      // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
+      const lastTransactionCoinSpecific = {
+        commonKeychain:
+          consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
+            .commonKeychain,
+        lastScanIndex: lastScanIndex,
+      };
+      consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
+        lastTransactionCoinSpecific;
+      const consolidationSweepTransactions: SolSweepTxs = { txRequests: consolidationTransactions };
+      return consolidationSweepTransactions;
+    }
+
+    return { transactions: consolidationTransactions, lastScanIndex };
   }
 
   getTokenEnablementConfig(): TokenEnablementConfig {

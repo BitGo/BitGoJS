@@ -5,7 +5,7 @@ import * as testData from '../fixtures/sol';
 import * as should from 'should';
 import * as resources from '../resources/sol';
 import * as _ from 'lodash';
-import { KeyPair, Sol, Tsol, SolSweepTxs } from '../../src';
+import { KeyPair, Sol, Tsol, SolSweepTxs, SolTx, SolTxs } from '../../src';
 import { TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 import { getBuilderFactory } from './getBuilderFactory';
 import { Transaction } from '../../src/lib';
@@ -1512,10 +1512,25 @@ describe('SOL:', function () {
     it('should take OVC output and generate a signed sweep transaction', async function () {
       const params = testData.ovcResponse;
       const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
-      recoveryTxn[0].serializedTx.should.equal(
+      recoveryTxn.transactions[0].serializedTx.should.equal(
         'AvR+L909kzRq6NuaUe9F6Jt97MOiFs7jpW8MuOrwz4EbKF40d31dci/bgLTq4gpk/Hh3s5cA8FtbLkDQr15PqAE7yd8LOXvsLtO2REqMM/OCZ8wItfsqfTfia2xIfibRW3wHgw63jiaojbXeSqaYajJ/Ca7YwBUz5blydI3fYLgPAgECBsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQvLqE/j/nXlY2/JpxuNr/fXLXEPeS04dPvt9qz1dAoYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAADpiH20cxLj7KnOaoI5ANNoPxYjs472FdjDeMPft3kXdAgQDAgUBBAQAAAAEAgADDAIAAADwopo7AAAAAA=='
       );
-      recoveryTxn[0].scanIndex.should.equal(0);
+      recoveryTxn.transactions[0].scanIndex.should.equal(0);
+      recoveryTxn.lastScanIndex.should.equal(0);
+    });
+
+    it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
+      const params = testData.ovcResponse2;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        'AtQPLzOmLuKwHY6N5XoJIZK/T7W10uYWm/MRte3GFUdl+w3gHLjSa9H66WSfFNubQxIPckxJDyltkP7ksLDf9QgBNJM2UWbBUH5wT0JJHILlhCs33HX8DeE/8Tdsw6tGfZoMhCnSKv6TPWtBxy7Sb6sW8ksCUPnAWuHGGKmgjEMBAgECBmLrqxJrY2kbN/tcrQw3P8P15OljFGabFJAKBrUO1grNBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAIZQniiS73D6mwfpnfhVMC4lyYJtRSrmoZpF7yIlUdIDAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA=='
+      );
+      recoveryTxn.transactions[0].scanIndex.should.equal(1);
+      recoveryTxn.transactions[1].serializedTx.should.equal(
+        'AuLhOA5zmOBZR85lo+nKdTopVwJAMrMp6NW+8UnGNsSBSpBkqfWZQqSg9s+7aTlXezm5vxol+Pl6t7PpVNTOHwLcp9xJp3TFHdivEbhwJKldR4Ny+pasoFx+Bgk8q6g1iNiq7XSi1Ov3bs7euMkTj7nDRFqP8lv7xLTcvrBm9OQJAgECBp14ImBCdmVROlw0UveYS1MvG/ljCRI3MJTFmsxuXEoWBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHw0hyxvpVwtIx9/zeX2O16eTrY+aKIh1mdKg4MMg0eyxMLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAC7ws1XFslinwgtpISUViVWIVTHyD2Q0qj24YjKmrAmXAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA=='
+      );
+      recoveryTxn.transactions[1].scanIndex.should.equal(2);
+      recoveryTxn.lastScanIndex.should.equal(20);
     });
 
     it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
@@ -1526,16 +1541,14 @@ describe('SOL:', function () {
         bitgoKey: testData.keys.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey,
         walletPassphrase: testData.keys.walletPassword,
-        startingScanIndex: 0,
-        scan: 1,
       });
       latestBlockHashTxn.should.not.be.empty();
-      latestBlockHashTxn[0].should.hasOwnProperty('serializedTx');
-      latestBlockHashTxn[0].should.hasOwnProperty('scanIndex');
-      should.equal(latestBlockHashTxn[0].scanIndex, 0);
+      latestBlockHashTxn.should.hasOwnProperty('serializedTx');
+      latestBlockHashTxn.should.hasOwnProperty('scanIndex');
+      should.equal((latestBlockHashTxn as SolTx).scanIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
-      latestBlockhashTxnDeserialize.fromRawTransaction(latestBlockHashTxn[0].serializedTx);
+      latestBlockhashTxnDeserialize.fromRawTransaction((latestBlockHashTxn as SolTx).serializedTx);
       const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
 
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
@@ -1557,17 +1570,15 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
-        startingScanIndex: 0,
-        scan: 1,
       });
 
       durableNonceTxn.should.not.be.empty();
-      durableNonceTxn[0].should.hasOwnProperty('serializedTx');
-      durableNonceTxn[0].should.hasOwnProperty('scanIndex');
-      should.equal(durableNonceTxn[0].scanIndex, 0);
+      durableNonceTxn.should.hasOwnProperty('serializedTx');
+      durableNonceTxn.should.hasOwnProperty('scanIndex');
+      should.equal((durableNonceTxn as SolTx).scanIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
-      durableNonceTxnDeserialize.fromRawTransaction(durableNonceTxn[0].serializedTx);
+      durableNonceTxnDeserialize.fromRawTransaction((durableNonceTxn as SolTx).serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
 
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
@@ -1586,8 +1597,6 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
-        startingScanIndex: 0,
-        scan: 1,
       })) as SolSweepTxs;
 
       unsignedSweepTxn.should.not.be.empty();
@@ -1616,8 +1625,6 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanIndex: 0,
-          scan: 1,
         })
         .should.rejectedWith('missing userKey');
 
@@ -1628,8 +1635,6 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanIndex: 0,
-          scan: 1,
         })
         .should.rejectedWith('missing backupKey');
 
@@ -1640,8 +1645,6 @@ describe('SOL:', function () {
           backupKey: testData.keys.backupKey,
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
-          startingScanIndex: 0,
-          scan: 1,
         })
         .should.rejectedWith('missing wallet passphrase');
 
@@ -1653,8 +1656,6 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKey,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword + 'incorrect',
-          startingScanIndex: 0,
-          scan: 1,
         })
         .should.rejectedWith("Error decrypting user keychain: password error - ccm: tag doesn't match");
 
@@ -1666,62 +1667,191 @@ describe('SOL:', function () {
           bitgoKey: testData.keys.bitgoKeyNoFunds,
           recoveryDestination: testData.keys.destinationPubKey,
           walletPassphrase: testData.keys.walletPassword,
-          startingScanIndex: 0,
-          scan: 1,
         })
-        .should.rejectedWith('no wallets found with sufficient funds');
+        .should.rejectedWith('Did not find address with funds to recover');
+    });
+  });
 
-      // edge case of invalid wallet address index (scan limit)
-      await basecoin
-        .recover({
-          userKey: testData.keys.userKey,
-          backupKey: testData.keys.backupKey,
-          bitgoKey: testData.keys.bitgoKeyNoFunds,
-          recoveryDestination: testData.keys.destinationPubKey,
-          walletPassphrase: testData.keys.walletPassword,
-          startingScanIndex: 0,
-          scan: 0,
-        })
-        .should.rejectedWith('Invalid scanning factor');
+  describe('Build Unsigned Consolidation Recoveries:', () => {
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tsol');
+    const durableNonces = {
+      publicKeys: [
+        testData.keys.durableNoncePubKey,
+        testData.keys.durableNoncePubKey2,
+        testData.keys.durableNoncePubKey3,
+      ],
+      secretKey: testData.keys.durableNoncePrivKey,
+    };
 
-      // edge case of invalid wallet address index (starting index)
-      await basecoin
-        .recover({
-          userKey: testData.keys.userKey,
-          backupKey: testData.keys.backupKey,
-          bitgoKey: testData.keys.bitgoKeyNoFunds,
-          recoveryDestination: testData.keys.destinationPubKey,
-          walletPassphrase: testData.keys.walletPassword,
-          startingScanIndex: -2.5,
-          scan: 1,
+    beforeEach(() => {
+      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getLatestBlockhash',
+            params: [
+              {
+                commitment: 'finalized',
+              },
+            ],
+          },
         })
-        .should.rejectedWith('Invalid starting index to scan for addresses');
+        .resolves(testData.SolResponses.getBlockhashResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getFees',
+          },
+        })
+        .resolves(testData.SolResponses.getFeesResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.wrwUser.walletAddress1],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseNoFunds);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.wrwUser.walletAddress2],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.wrwUser.walletAddress3],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [
+              testData.keys.durableNoncePubKey,
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [
+              testData.keys.durableNoncePubKey2,
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountInfoResponse2);
     });
 
-    it('should recover a txn for a derived wallet address', async function () {
-      // Funds located at m2 derived wallet address
-      const derivedWalletTxn = await basecoin.recover({
-        userKey: testData.keys.userKey,
-        backupKey: testData.keys.backupKey,
-        bitgoKey: testData.keys.bitgoKey,
-        recoveryDestination: testData.keys.destinationPubKey,
-        walletPassphrase: testData.keys.walletPassword,
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should build signed consolidation recoveries', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
         startingScanIndex: 1,
-        scan: 3, // 2nd derivation of this wallet address is mocked to have funds
-      });
+        endingScanIndex: 4,
+        durableNonces: durableNonces,
+      })) as SolTxs;
+      res.should.not.be.empty();
+      res.transactions.length.should.equal(2);
+      res.lastScanIndex.should.equal(3);
 
-      derivedWalletTxn.should.not.be.empty();
-      derivedWalletTxn[0].should.hasOwnProperty('serializedTx');
-      derivedWalletTxn[0].should.hasOwnProperty('scanIndex');
-      should.equal(derivedWalletTxn[0].scanIndex, 2);
+      const txn1 = res.transactions[0];
+      const latestBlockhashTxnDeserialize1 = new Transaction(coin);
+      latestBlockhashTxnDeserialize1.fromRawTransaction((txn1 as SolTx).serializedTx);
+      const latestBlockhashTxnJson1 = latestBlockhashTxnDeserialize1.toJson();
 
-      const derivedWalletTxnDeserialize = new Transaction(coin);
-      derivedWalletTxnDeserialize.fromRawTransaction(derivedWalletTxn[0].serializedTx);
-      const derivedWalletTxnJson = derivedWalletTxnDeserialize.toJson();
+      const nonce1 = testData.SolResponses.getAccountInfoResponse.body.result.value.data.parsed.info.blockhash;
+      should.equal(latestBlockhashTxnJson1.nonce, nonce1);
+      should.equal(latestBlockhashTxnJson1.feePayer, testData.wrwUser.walletAddress2);
+      should.equal(latestBlockhashTxnJson1.numSignatures, testData.SolInputData.durableNonceSignatures);
 
-      should.equal(derivedWalletTxnJson.nonce, testData.SolInputData.blockhash);
-      should.equal(derivedWalletTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKeyM2Derivation);
-      should.equal(derivedWalletTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+      const txn2 = res.transactions[1];
+      const latestBlockhashTxnDeserialize2 = new Transaction(coin);
+      latestBlockhashTxnDeserialize2.fromRawTransaction((txn2 as SolTx).serializedTx);
+      const latestBlockhashTxnJson2 = latestBlockhashTxnDeserialize2.toJson();
+
+      const nonce2 = testData.SolResponses.getAccountInfoResponse2.body.result.value.data.parsed.info.blockhash;
+      should.equal(latestBlockhashTxnJson2.nonce, nonce2);
+      should.equal(latestBlockhashTxnJson2.feePayer, testData.wrwUser.walletAddress3);
+      should.equal(latestBlockhashTxnJson2.numSignatures, testData.SolInputData.durableNonceSignatures);
+    });
+
+    it('should skip building consolidate transaction if balance is equal to zero', async function () {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          walletPassphrase: testData.wrwUser.walletPassphrase,
+          startingScanIndex: 1,
+          endingScanIndex: 2,
+          durableNonces: durableNonces,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover');
+    });
+
+    it('should throw if startingScanIndex is not ge to 1', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          startingScanIndex: -1,
+          durableNonces: durableNonces,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: -1, endingScanIndex: 19.'
+        );
+    });
+
+    it('should throw if scan factor is too high', async () => {
+      await basecoin
+        .recoverConsolidations({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          startingScanIndex: 1,
+          endingScanIndex: 300,
+          durableNonces: durableNonces,
+        })
+        .should.be.rejectedWith(
+          'Invalid starting or ending index to scan for addresses. startingScanIndex: 1, endingScanIndex: 300.'
+        );
     });
   });
 });
