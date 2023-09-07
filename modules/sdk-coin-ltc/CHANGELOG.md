@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ltc@2.2.0...@bitgo/sdk-coin-ltc@2.2.8) (2023-09-07)
+
+### Bug Fixes
+
+- **abstract-utxo:** upper case address should return false ([f0b6c46](https://github.com/BitGo/BitGoJS/commit/f0b6c467daaa0e43bb2923993fb238c7a4ce6f59))
+
 ## [2.2.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ltc@2.2.0...@bitgo/sdk-coin-ltc@2.2.7) (2023-09-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ltc

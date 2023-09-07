@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.11.0) (2023-09-07)
+
+### Bug Fixes
+
+- loosen unspent type from WalletUnspent to Unspent ([340a04b](https://github.com/BitGo/BitGoJS/commit/340a04b1c3efe0ebb65285d6cfc7c9d6a22498c8))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **utxo-lib:** p2tr fails to check pubkey against script ([09376da](https://github.com/BitGo/BitGoJS/commit/09376da5c621ec3a1d259b1bfd32b5377f18a2f9))
+
+### Features
+
+- **utxo-lib:** add tests for v1 safe wallets with uncompressed ([4ac75f0](https://github.com/BitGo/BitGoJS/commit/4ac75f0031a40aa17de37f176e3493284cba4cac))
+- **utxo-lib:** allow both compressed & uncompressed pubkeys ([8db0785](https://github.com/BitGo/BitGoJS/commit/8db0785ecf7e5cfa05460a12c9c6943d0df0e033))
+- **utxo-lib:** remove prev tx from psbt ([69bb9a1](https://github.com/BitGo/BitGoJS/commit/69bb9a1a7bcddb685045e43113926a7a7e6169bd))
+
 # [9.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.10.0) (2023-09-05)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sei@1.4.0...@bitgo/sdk-coin-sei@1.4.8) (2023-09-07)
+
+### Bug Fixes
+
+- **abstract-cosmos:** update fee for recovery transaction ([c631c05](https://github.com/BitGo/BitGoJS/commit/c631c051b227e397ff21e85418a40f1655d2d3f4))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [1.4.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sei@1.4.0...@bitgo/sdk-coin-sei@1.4.7) (2023-09-05)
 
 ### Bug Fixes
