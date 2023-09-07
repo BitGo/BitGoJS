@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.5.0...@bitgo/abstract-utxo@3.13.0) (2023-09-07)
+
+### Bug Fixes
+
+- **abstract-utxo:** upper case address should return false ([f0b6c46](https://github.com/BitGo/BitGoJS/commit/f0b6c467daaa0e43bb2923993fb238c7a4ce6f59))
+
+### Features
+
+- **abstract-utxo:** change api used for bitcoin recovery from blockstream to blockchair ([6da5791](https://github.com/BitGo/BitGoJS/commit/6da5791bce2fc73d5d77c1eee6cb581b60da2079))
+- **bitgo:** calculate fees explicitly for psbts ([7a7e288](https://github.com/BitGo/BitGoJS/commit/7a7e288c63718a112abf633b842e7538d1e25693))
+
 # [3.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.5.0...@bitgo/abstract-utxo@3.12.0) (2023-09-05)
 
 ### Features
