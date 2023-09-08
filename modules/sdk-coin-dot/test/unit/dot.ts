@@ -203,6 +203,8 @@ describe('DOT:', function () {
         nonce: 0,
         freeBalance: 1510000000000,
       });
+      const getFeeCB = sandBox.stub(Dot.prototype, 'getFee' as keyof Dot);
+      getFeeCB.withArgs(destAddr, testData.wrwUser.walletAddress0, 1510000000000).resolves(15783812856);
     });
 
     afterEach(function () {
@@ -366,21 +368,25 @@ describe('DOT:', function () {
       const accountInfoCB = sandBox.stub(Dot.prototype, 'getAccountInfo' as keyof Dot);
       accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress1).resolves({
         nonce: nonce,
-        freeBalance: 0,
+        freeBalance: 10000000000,
       });
       accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress2).resolves({
         nonce: nonce,
-        freeBalance: 8888,
+        freeBalance: 1510000000000,
       });
       accountInfoCB.withArgs(testData.consolidationWrwUser.walletAddress3).resolves({
         nonce: nonce,
-        freeBalance: 10000,
+        freeBalance: 1510000000000,
       });
       const headerInfoCB = sandBox.stub(Dot.prototype, 'getHeaderInfo' as keyof Dot);
       headerInfoCB.resolves({
         headerNumber: testData.westendBlock.blockNumber,
         headerHash: testData.westendBlock.hash,
       });
+      const getFeeCB = sandBox.stub(Dot.prototype, 'getFee' as keyof Dot);
+      getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress1, 10000000000).resolves(15783812856);
+      getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress2, 1510000000000).resolves(15783812856);
+      getFeeCB.withArgs(baseAddr, testData.consolidationWrwUser.walletAddress3, 1510000000000).resolves(15783812856);
     });
 
     afterEach(function () {
