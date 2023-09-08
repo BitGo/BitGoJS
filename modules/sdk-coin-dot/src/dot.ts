@@ -548,6 +548,12 @@ export class Dot extends BaseCoin {
       // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
       // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
       const lastTransactionCoinSpecific = {
+        firstValid:
+          consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
+            .firstValid,
+        maxDuration:
+          consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
+            .maxDuration,
         commonKeychain:
           consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific
             .commonKeychain,
