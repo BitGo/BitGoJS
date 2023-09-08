@@ -1,9 +1,9 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
-import { KeychainsTriplet } from '../../baseCoin';
+import { KeychainsTriplet, ParsedTransaction } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
-import { EDDSA, GShare, SignShare } from '../../../account-lib/mpc/tss';
+import { EDDSA, GShare, SignShare, Signature } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 import { Hash } from 'crypto';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
@@ -369,6 +369,91 @@ export interface BitgoGPGPublicKey {
   name: string;
   publicKey: string;
   enterpriseId: string;
+}
+
+export interface MPCTx {
+  serializedTx: string;
+  scanIndex: number;
+  coin?: string;
+  signableHex?: string;
+  derivationPath?: string;
+  parsedTx?: ParsedTransaction;
+  feeInfo?: {
+    fee: number;
+    feeString: string;
+  };
+  coinSpecific?: {
+    firstValid?: number;
+    maxDuration?: number;
+    commonKeychain?: string;
+    lastScanIndex?: number;
+  };
+}
+
+export interface MPCRecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
+  recoveryDestination: string;
+  walletPassphrase?: string;
+  seed?: string;
+  index?: number;
+}
+
+export interface MPCConsolidationRecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey: string; // Box C
+  walletPassphrase?: string;
+  startingScanIndex?: number; // default to 1 (inclusive)
+  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
+  seed?: string;
+}
+
+export interface MPCSweepTxs {
+  txRequests: RecoveryTxRequest[];
+}
+
+export interface RecoveryTxRequest {
+  walletCoin: string;
+  transactions: MPCUnsignedTx[] | OvcTransaction[];
+}
+
+export interface MPCUnsignedTx {
+  unsignedTx: MPCTx;
+  signatureShares: [];
+}
+
+export interface MPCSweepRecoveryOptions {
+  signatureShares: SignatureShares[];
+}
+
+interface SignatureShares {
+  txRequest: RecoveryTxRequest;
+  tssVersion: string;
+  ovc: Ovc[];
+}
+
+interface OvcTransaction {
+  unsignedTx: MPCTx;
+  signatureShares: SignatureShareRecord[];
+  signatureShare: SignatureShare;
+}
+
+interface SignatureShare {
+  from: string;
+  to: string;
+  share: string;
+  publicShare: string;
+}
+
+interface Ovc {
+  eddsaSignature: Signature;
+}
+
+export interface MPCTxs {
+  transactions: MPCTx[];
+  lastScanIndex: number;
 }
 
 export type BackupGpgKey = SerializedKeyPair<string> | Key;

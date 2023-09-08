@@ -5,8 +5,8 @@ import * as testData from '../fixtures/sol';
 import * as should from 'should';
 import * as resources from '../resources/sol';
 import * as _ from 'lodash';
-import { KeyPair, Sol, Tsol, SolSweepTxs, SolTx, SolTxs } from '../../src';
-import { TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import { KeyPair, Sol, Tsol } from '../../src';
+import { TssUtils, TxRequest, Wallet, MPCSweepTxs, MPCTx, MPCTxs } from '@bitgo/sdk-core';
 import { getBuilderFactory } from './getBuilderFactory';
 import { Transaction } from '../../src/lib';
 import { coins } from '@bitgo/statics';
@@ -1545,10 +1545,10 @@ describe('SOL:', function () {
       latestBlockHashTxn.should.not.be.empty();
       latestBlockHashTxn.should.hasOwnProperty('serializedTx');
       latestBlockHashTxn.should.hasOwnProperty('scanIndex');
-      should.equal((latestBlockHashTxn as SolTx).scanIndex, 0);
+      should.equal((latestBlockHashTxn as MPCTx).scanIndex, 0);
 
       const latestBlockhashTxnDeserialize = new Transaction(coin);
-      latestBlockhashTxnDeserialize.fromRawTransaction((latestBlockHashTxn as SolTx).serializedTx);
+      latestBlockhashTxnDeserialize.fromRawTransaction((latestBlockHashTxn as MPCTx).serializedTx);
       const latestBlockhashTxnJson = latestBlockhashTxnDeserialize.toJson();
 
       should.equal(latestBlockhashTxnJson.nonce, testData.SolInputData.blockhash);
@@ -1575,10 +1575,10 @@ describe('SOL:', function () {
       durableNonceTxn.should.not.be.empty();
       durableNonceTxn.should.hasOwnProperty('serializedTx');
       durableNonceTxn.should.hasOwnProperty('scanIndex');
-      should.equal((durableNonceTxn as SolTx).scanIndex, 0);
+      should.equal((durableNonceTxn as MPCTx).scanIndex, 0);
 
       const durableNonceTxnDeserialize = new Transaction(coin);
-      durableNonceTxnDeserialize.fromRawTransaction((durableNonceTxn as SolTx).serializedTx);
+      durableNonceTxnDeserialize.fromRawTransaction((durableNonceTxn as MPCTx).serializedTx);
       const durableNonceTxnJson = durableNonceTxnDeserialize.toJson();
 
       should.equal(durableNonceTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
@@ -1597,7 +1597,7 @@ describe('SOL:', function () {
           publicKey: testData.keys.durableNoncePubKey,
           secretKey: testData.keys.durableNoncePrivKey,
         },
-      })) as SolSweepTxs;
+      })) as MPCSweepTxs;
 
       unsignedSweepTxn.should.not.be.empty();
       unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
@@ -1785,14 +1785,14 @@ describe('SOL:', function () {
         startingScanIndex: 1,
         endingScanIndex: 4,
         durableNonces: durableNonces,
-      })) as SolTxs;
+      })) as MPCTxs;
       res.should.not.be.empty();
       res.transactions.length.should.equal(2);
       res.lastScanIndex.should.equal(3);
 
       const txn1 = res.transactions[0];
       const latestBlockhashTxnDeserialize1 = new Transaction(coin);
-      latestBlockhashTxnDeserialize1.fromRawTransaction((txn1 as SolTx).serializedTx);
+      latestBlockhashTxnDeserialize1.fromRawTransaction((txn1 as MPCTx).serializedTx);
       const latestBlockhashTxnJson1 = latestBlockhashTxnDeserialize1.toJson();
 
       const nonce1 = testData.SolResponses.getAccountInfoResponse.body.result.value.data.parsed.info.blockhash;
@@ -1802,7 +1802,7 @@ describe('SOL:', function () {
 
       const txn2 = res.transactions[1];
       const latestBlockhashTxnDeserialize2 = new Transaction(coin);
-      latestBlockhashTxnDeserialize2.fromRawTransaction((txn2 as SolTx).serializedTx);
+      latestBlockhashTxnDeserialize2.fromRawTransaction((txn2 as MPCTx).serializedTx);
       const latestBlockhashTxnJson2 = latestBlockhashTxnDeserialize2.toJson();
 
       const nonce2 = testData.SolResponses.getAccountInfoResponse2.body.result.value.data.parsed.info.blockhash;
