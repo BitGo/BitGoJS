@@ -19,8 +19,14 @@ import {
   AddressFormat,
   Environments,
   ITransactionRecipient,
-  EDDSASignature,
-  SignatureShareRecord,
+  MPCTx,
+  MPCRecoveryOptions,
+  MPCConsolidationRecoveryOptions,
+  MPCSweepTxs,
+  RecoveryTxRequest,
+  MPCUnsignedTx,
+  MPCSweepRecoveryOptions,
+  MPCTxs,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -46,95 +52,6 @@ export interface AdaParseTransactionOptions extends BaseParseTransactionOptions 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
-}
-
-interface RecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C
-  recoveryDestination: string;
-  krsProvider?: string;
-  walletPassphrase?: string;
-  seed?: string;
-  index?: number;
-}
-
-interface ConsolidationRecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C
-  walletPassphrase?: string;
-  startingScanIndex?: number; // default to 1 (inclusive)
-  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
-  seed?: string;
-}
-
-interface SweepRecoveryOptions {
-  signatureShares: SignatureShares[];
-}
-
-interface SignatureShares {
-  txRequest: TxRequest;
-  tssVersion: string;
-  ovc: Ovc[];
-}
-
-interface TxRequest {
-  transactions: OvcTransaction[];
-  walletCoin: string;
-}
-
-interface OvcTransaction {
-  unsignedTx: AdaTx;
-  signatureShares: SignatureShareRecord[];
-  signatureShare: SignatureShare;
-}
-
-interface SignatureShare {
-  from: string;
-  to: string;
-  share: string;
-  publicShare: string;
-}
-
-interface Ovc {
-  eddsaSignature: EDDSASignature;
-}
-
-interface AdaTx {
-  serializedTx: string;
-  scanIndex: number;
-  coin?: string;
-  signableHex?: string;
-  derivationPath?: string;
-  parsedTx?: ParsedTransaction;
-  feeInfo?: {
-    fee: number;
-    feeString: string;
-  };
-  coinSpecific?: {
-    commonKeychain?: string;
-    lastScanIndex?: number;
-  };
-}
-
-interface AdaTxs {
-  transactions: AdaTx[];
-  lastScanIndex: number;
-}
-
-interface AdaUnsignedTx {
-  unsignedTx: AdaTx;
-  signatureShares: [];
-}
-
-interface AdaTxRequest {
-  walletCoin: string;
-  transactions: AdaUnsignedTx[];
-}
-
-interface AdaSweepTxs {
-  txRequests: AdaTxRequest[];
 }
 
 interface AdaAddressParams {
@@ -361,15 +278,15 @@ export class Ada extends BaseCoin {
   /**
    * Creates funds sweep recovery transaction(s) without BitGo
    *
-   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
+   * @param {MPCSweepRecoveryOptions} params parameters needed to combine the signatures
    * and transactions to create broadcastable transactions
    *
-   * @returns {AdaTx[]} array of the serialized transaction hex strings and indices
+   * @returns {MPCTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<AdaTxs> {
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     const req = params.signatureShares;
-    const broadcastableTransactions: AdaTx[] = [];
+    const broadcastableTransactions: MPCTx[] = [];
     let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
@@ -421,13 +338,13 @@ export class Ada extends BaseCoin {
   /**
    * Builds funds recovery transaction(s) without BitGo
    *
-   * @param {RecoveryOptions} params parameters needed to construct and
+   * @param {MPCRecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {AdaTx} array of the serialized transaction hex strings and indices
+   * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: RecoveryOptions): Promise<AdaTx | AdaSweepTxs> {
+  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -538,7 +455,7 @@ export class Ada extends BaseCoin {
       const fee = new BigNumber((parsedTx.fee as { fee: string }).fee);
       const feeInfo = { fee: fee.toNumber(), feeString: fee.toString() };
       const coinSpecific = { commonKeychain: bitgoKey };
-      const transaction: AdaTx = {
+      const transaction: MPCTx = {
         serializedTx: serializedTx,
         scanIndex: index,
         coin: walletCoin,
@@ -548,16 +465,16 @@ export class Ada extends BaseCoin {
         feeInfo: feeInfo,
         coinSpecific: coinSpecific,
       };
-      const unsignedTx: AdaUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-      const transactions: AdaUnsignedTx[] = [unsignedTx];
-      const txRequest: AdaTxRequest = {
+      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: MPCUnsignedTx[] = [unsignedTx];
+      const txRequest: RecoveryTxRequest = {
         transactions: transactions,
         walletCoin: walletCoin,
       };
-      const txRequests: AdaSweepTxs = { txRequests: [txRequest] };
+      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
       return txRequests;
     }
-    const transaction: AdaTx = { serializedTx: serializedTx, scanIndex: index };
+    const transaction: MPCTx = { serializedTx: serializedTx, scanIndex: index };
     return transaction;
   }
 
@@ -565,11 +482,11 @@ export class Ada extends BaseCoin {
    * Builds native ADA recoveries of receive addresses in batch without BitGo.
    * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
    *
-   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {MPCConsolidationRecoveryOptions} params - options for consolidation recovery.
    * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
-  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<AdaTxs | AdaSweepTxs> {
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
@@ -611,7 +528,7 @@ export class Ada extends BaseCoin {
       }
 
       if (isUnsignedSweep) {
-        consolidationTransactions.push((recoveryTransaction as AdaSweepTxs).txRequests[0]);
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
       } else {
         consolidationTransactions.push(recoveryTransaction);
       }
@@ -634,7 +551,7 @@ export class Ada extends BaseCoin {
       };
       consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
         lastTransactionCoinSpecific;
-      const consolidationSweepTransactions: AdaSweepTxs = { txRequests: consolidationTransactions };
+      const consolidationSweepTransactions: MPCSweepTxs = { txRequests: consolidationTransactions };
       return consolidationSweepTransactions;
     }
 

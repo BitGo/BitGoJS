@@ -18,8 +18,14 @@ import {
   VerifyTransactionOptions,
   EDDSAMethods,
   EDDSAMethodTypes,
-  EDDSASignature,
-  SignatureShareRecord,
+  MPCTx,
+  MPCRecoveryOptions,
+  MPCConsolidationRecoveryOptions,
+  MPCSweepTxs,
+  RecoveryTxRequest,
+  MPCUnsignedTx,
+  MPCSweepRecoveryOptions,
+  MPCTxs,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -51,97 +57,6 @@ export interface ExplainTransactionOptions {
 export interface VerifiedTransactionParameters {
   txHex: string;
   prv: string;
-}
-
-interface SweepRecoveryOptions {
-  signatureShares: SignatureShares[];
-}
-
-interface SignatureShares {
-  txRequest: TxRequest;
-  tssVersion: string;
-  ovc: Ovc[];
-}
-
-interface TxRequest {
-  transactions: OvcTransaction[];
-  walletCoin: string;
-}
-
-interface OvcTransaction {
-  unsignedTx: DotTx;
-  signatureShares: SignatureShareRecord[];
-  signatureShare: SignatureShare;
-}
-
-interface SignatureShare {
-  from: string;
-  to: string;
-  share: string;
-  publicShare: string;
-}
-
-interface Ovc {
-  eddsaSignature: EDDSASignature;
-}
-
-interface RecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C
-  recoveryDestination: string;
-  krsProvider?: string;
-  walletPassphrase?: string;
-  seed?: string;
-  index?: number;
-}
-
-interface ConsolidationRecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C
-  walletPassphrase?: string;
-  startingScanIndex?: number; // default to 1 (inclusive)
-  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
-  seed?: string;
-}
-
-interface DotTx {
-  serializedTx: string;
-  scanIndex: number;
-  coin?: string;
-  signableHex?: string;
-  derivationPath?: string;
-  parsedTx?: ParsedTransaction;
-  feeInfo?: {
-    fee: number;
-    feeString: string;
-  };
-  coinSpecific?: {
-    firstValid?: number;
-    maxDuration?: number;
-    commonKeychain?: string;
-    lastScanIndex?: number;
-  };
-}
-
-interface DotTxs {
-  transactions: DotTx[];
-  lastScanIndex: number;
-}
-
-interface DotUnsignedTx {
-  unsignedTx: DotTx;
-  signatureShares: [];
-}
-
-interface DotTxRequest {
-  walletCoin: string;
-  transactions: DotUnsignedTx[];
-}
-
-interface DotSweepTxs {
-  txRequests: DotTxRequest[];
 }
 
 const dotUtils = Utils.default;
@@ -416,13 +331,13 @@ export class Dot extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
-   * @param {RecoveryOptions} params parameters needed to construct and
+   * @param {MPCRecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {DotTx} the serialized transaction hex string and index
+   * @returns {MPCTx} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<DotTx | DotSweepTxs> {
+  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -542,7 +457,7 @@ export class Dot extends BaseCoin {
       const spendAmount = value.toString();
       const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
       const feeInfo = { fee: 0, feeString: '0' };
-      const transaction: DotTx = {
+      const transaction: MPCTx = {
         serializedTx: serializedTx,
         scanIndex: index,
         coin: walletCoin,
@@ -553,16 +468,16 @@ export class Dot extends BaseCoin {
         coinSpecific: { ...validityWindow, commonKeychain: bitgoKey },
       };
 
-      const unsignedTx: DotUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-      const transactions: DotUnsignedTx[] = [unsignedTx];
-      const txRequest: DotTxRequest = {
+      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: MPCUnsignedTx[] = [unsignedTx];
+      const txRequest: RecoveryTxRequest = {
         transactions: transactions,
         walletCoin: walletCoin,
       };
-      const txRequests: DotSweepTxs = { txRequests: [txRequest] };
+      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
       return txRequests;
     }
-    const transaction: DotTx = { serializedTx: serializedTx, scanIndex: index };
+    const transaction: MPCTx = { serializedTx: serializedTx, scanIndex: index };
     return transaction;
   }
 
@@ -570,11 +485,11 @@ export class Dot extends BaseCoin {
    * Builds native DOT recoveries of receive addresses in batch without BitGo.
    * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
    *
-   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {MPCConsolidationRecoveryOptions} params - options for consolidation recovery.
    * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
-  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<DotTxs | DotSweepTxs> {
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
@@ -617,7 +532,7 @@ export class Dot extends BaseCoin {
       }
 
       if (isUnsignedSweep) {
-        consolidationTransactions.push((recoveryTransaction as DotSweepTxs).txRequests[0]);
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
       } else {
         consolidationTransactions.push(recoveryTransaction);
       }
@@ -640,7 +555,7 @@ export class Dot extends BaseCoin {
       };
       consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
         lastTransactionCoinSpecific;
-      const consolidationSweepTransactions: DotSweepTxs = { txRequests: consolidationTransactions };
+      const consolidationSweepTransactions: MPCSweepTxs = { txRequests: consolidationTransactions };
       return consolidationSweepTransactions;
     }
 
@@ -650,15 +565,15 @@ export class Dot extends BaseCoin {
   /**
    * Creates funds sweep recovery transaction(s) without BitGo
    *
-   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
+   * @param {MPCSweepRecoveryOptions} params parameters needed to combine the signatures
    * and transactions to create broadcastable transactions
    *
-   * @returns {DotTx[]} array of the serialized transaction hex strings and indices
+   * @returns {MPCTx[]} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<DotTxs> {
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     const req = params.signatureShares;
-    const broadcastableTransactions: DotTx[] = [];
+    const broadcastableTransactions: MPCTx[] = [];
     let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {

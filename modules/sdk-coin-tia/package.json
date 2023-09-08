@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-tia",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "BitGo SDK coin library for Celestia",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,18 +40,18 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^1.6.8",
-    "@bitgo/sdk-core": "^8.21.0",
-    "@bitgo/sdk-lib-mpc": "^8.10.0",
-    "@bitgo/statics": "^24.0.0",
+    "@bitgo/abstract-cosmos": "^1.6.9",
+    "@bitgo/sdk-core": "^8.22.0",
+    "@bitgo/sdk-lib-mpc": "^8.11.0",
+    "@bitgo/statics": "^25.0.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.19.0",
-    "@bitgo/sdk-test": "^1.2.38",
+    "@bitgo/sdk-api": "^1.20.0",
+    "@bitgo/sdk-test": "^1.2.39",
     "@types/lodash": "^4.14.183"
   }
 }

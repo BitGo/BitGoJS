@@ -30,8 +30,14 @@ import {
   VerifyTransactionOptions,
   EDDSAMethodTypes,
   EDDSAMethods,
-  EDDSASignature,
-  SignatureShareRecord,
+  MPCTx,
+  MPCRecoveryOptions,
+  MPCConsolidationRecoveryOptions,
+  MPCSweepTxs,
+  RecoveryTxRequest,
+  MPCUnsignedTx,
+  MPCSweepRecoveryOptions,
+  MPCTxs,
 } from '@bitgo/sdk-core';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
@@ -105,105 +111,23 @@ export interface SolParseTransactionOptions extends BaseParseTransactionOptions 
   tokenAccountRentExemptAmount?: string;
 }
 
-export interface SolTx {
-  serializedTx: string;
-  scanIndex: number;
-  coin?: string;
-  signableHex?: string;
-  derivationPath?: string;
-  parsedTx?: ParsedTransaction;
-  feeInfo?: {
-    fee: number;
-    feeString: string;
-  };
-  coinSpecific?: {
-    commonKeychain?: string;
-    lastScanIndex?: number;
-  };
-}
-
-export interface SolTxs {
-  transactions: SolTx[];
-  lastScanIndex: number;
-}
-
-interface SolUnsignedTx {
-  unsignedTx: SolTx;
-  signatureShares: [];
-}
-
-interface SolTxRequest {
-  walletCoin: string;
-  transactions: SolUnsignedTx[];
-}
-
-export interface SolSweepTxs {
-  txRequests: SolTxRequest[];
-}
-
 interface SolDurableNonceFromNode {
   authority: string;
   blockhash: string;
 }
 
-interface RecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
-  recoveryDestination: string; // base58 address
-  walletPassphrase?: string;
+export interface SolRecoveryOptions extends MPCRecoveryOptions {
   durableNonce?: {
     publicKey: string;
     secretKey: string;
   };
-  seed?: string;
-  index?: number;
 }
 
-interface ConsolidationRecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
-  bitgoKey: string; // Box C
-  walletPassphrase?: string;
+export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
   durableNonces: {
     publicKeys: string[];
     secretKey: string;
   };
-  startingScanIndex?: number; // default to 1 (inclusive)
-  endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
-  seed?: string;
-}
-
-interface SweepRecoveryOptions {
-  signatureShares: SignatureShares[];
-}
-
-interface SignatureShares {
-  txRequest: TxRequest;
-  tssVersion: string;
-  ovc: Ovc[];
-}
-
-interface TxRequest {
-  transactions: OvcTransaction[];
-  walletCoin: string;
-}
-
-interface OvcTransaction {
-  unsignedTx: SolTx;
-  signatureShares: SignatureShareRecord[];
-  signatureShare: SignatureShare;
-}
-
-interface SignatureShare {
-  from: string;
-  to: string;
-  share: string;
-  publicShare: string;
-}
-
-interface Ovc {
-  eddsaSignature: EDDSASignature;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -654,15 +578,15 @@ export class Sol extends BaseCoin {
    * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
    * and transactions to create broadcastable transactions
    *
-   * @returns {SolTx[]} array of the serialized transaction hex strings and indices
+   * @returns {MPCTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async createBroadcastableSweepTransaction(params: SweepRecoveryOptions): Promise<SolTxs> {
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     if (!params.signatureShares) {
       ('Missing transaction(s)');
     }
     const req = params.signatureShares;
-    const broadcastableTransactions: SolTx[] = [];
+    const broadcastableTransactions: MPCTx[] = [];
     let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
@@ -715,13 +639,13 @@ export class Sol extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
-   * @param {RecoveryOptions} params parameters needed to construct and
+   * @param {SolRecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {SolTxs} the serialized transaction hex string and index
+   * @returns {MPCTx | MPCSweepTxs} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<SolTx | SolSweepTxs> {
+  async recover(params: SolRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -858,7 +782,7 @@ export class Sol extends BaseCoin {
     const feeInfo = { fee: totalFee, feeString: new BigNumber(totalFee).toString() };
     const coinSpecific = { commonKeychain: bitgoKey };
     if (isUnsignedSweep) {
-      const transaction: SolTx = {
+      const transaction: MPCTx = {
         serializedTx: serializedTx,
         scanIndex: index,
         coin: walletCoin,
@@ -868,16 +792,16 @@ export class Sol extends BaseCoin {
         feeInfo: feeInfo,
         coinSpecific: coinSpecific,
       };
-      const unsignedTx: SolUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-      const transactions: SolUnsignedTx[] = [unsignedTx];
-      const txRequest: SolTxRequest = {
+      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: MPCUnsignedTx[] = [unsignedTx];
+      const txRequest: RecoveryTxRequest = {
         transactions: transactions,
         walletCoin: walletCoin,
       };
-      const txRequests: SolSweepTxs = { txRequests: [txRequest] };
+      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
       return txRequests;
     }
-    const transaction: SolTx = {
+    const transaction: MPCTx = {
       serializedTx: serializedTx,
       scanIndex: index,
     };
@@ -888,11 +812,11 @@ export class Sol extends BaseCoin {
    * Builds native SOL recoveries of receive addresses in batch without BitGo.
    * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
    *
-   * @param {ConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {SolConsolidationRecoveryOptions} params - options for consolidation recovery.
    * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
-  async recoverConsolidations(params: ConsolidationRecoveryOptions): Promise<SolTxs | SolSweepTxs> {
+  async recoverConsolidations(params: SolConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
@@ -954,7 +878,7 @@ export class Sol extends BaseCoin {
       }
 
       if (isUnsignedSweep) {
-        consolidationTransactions.push((recoveryTransaction as SolSweepTxs).txRequests[0]);
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
       } else {
         consolidationTransactions.push(recoveryTransaction);
       }
@@ -983,7 +907,7 @@ export class Sol extends BaseCoin {
       };
       consolidationTransactions[consolidationTransactions.length - 1].transactions[0].unsignedTx.coinSpecific =
         lastTransactionCoinSpecific;
-      const consolidationSweepTransactions: SolSweepTxs = { txRequests: consolidationTransactions };
+      const consolidationSweepTransactions: MPCSweepTxs = { txRequests: consolidationTransactions };
       return consolidationSweepTransactions;
     }
 

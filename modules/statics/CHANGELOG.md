@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@25.0.0) (2023-09-08)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+- **statics:** fix avaxc bridged asset names ([fec8bb7](https://github.com/BitGo/BitGoJS/commit/fec8bb7e689fda23edd3ebc38328d29beeea3f6a))
+
+### chore
+
+- **statics:** onboard new ERC20s tokens ([c43cc31](https://github.com/BitGo/BitGoJS/commit/c43cc313bd56dafc9cbeca3dfb124747faf458c4))
+
+### Features
+
+- **statics:** add new coin feature for cosmos chains ([94341a1](https://github.com/BitGo/BitGoJS/commit/94341a12a08d99aa24988fe25e4cef712e3e73aa))
+- **statics:** adds ofcatom, ofctatom, ofcsui and ofctsui in coins.ts ([f15a1a3](https://github.com/BitGo/BitGoJS/commit/f15a1a3d103284779a596ff224ba5770239772a1))
+
+### BREAKING CHANGES
+
+- **statics:** FIX REEF to use UnderlyingAsset.REEF
+
 # [24.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@24.0.0) (2023-09-07)
 
 ### Bug Fixes
