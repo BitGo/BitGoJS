@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.32.0...@bitgo/express@9.39.0) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **express:** add external signer support for signig with derivation paths ([ceb89dd](https://github.com/BitGo/BitGoJS/commit/ceb89dd72b7f5f7c59484d5517ac32c4f499fd32))
+
+# [9.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.32.0...@bitgo/express@9.38.0) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **express:** add external signer support for signig with derivation paths ([ceb89dd](https://github.com/BitGo/BitGoJS/commit/ceb89dd72b7f5f7c59484d5517ac32c4f499fd32))
+
 # [9.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.32.0...@bitgo/express@9.37.0) (2023-09-07)
 
 ### Bug Fixes

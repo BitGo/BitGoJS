@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.6.0...@bitgo/sdk-coin-ada@2.14.0) (2023-09-09)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** fix ada createBroadcastableTransaction method for arrays of txns ([ee27caf](https://github.com/BitGo/BitGoJS/commit/ee27cafa9e6ad53b063c5365f4cafce0f4f46d89))
+- **sdk-coin-ada:** fix ada recovery for wallets derived from the same keys ([7900b22](https://github.com/BitGo/BitGoJS/commit/7900b22976a8829446cf0c991827239f9cdca19d))
+
+### Features
+
+- **sdk-coin-ada:** add consolidation method for ada recovery ([d912027](https://github.com/BitGo/BitGoJS/commit/d9120274fa7324dc2d0b37eae5f35300efc3b492))
+- **sdk-coin-ada:** add lastScanIndex for consolidation support ([bf9b910](https://github.com/BitGo/BitGoJS/commit/bf9b9103e11cd5e0e38304d6ba2999d76fc128dc))
+- **sdk-coin-ada:** create method to produce broadcastable ada sweep txn ([b5591ee](https://github.com/BitGo/BitGoJS/commit/b5591ee8e7a31cad1b817f02f9147bab10c49357))
+- **sdk-coin-ada:** fix ada sweep recovery format for ovc signing ([7b88f90](https://github.com/BitGo/BitGoJS/commit/7b88f902d533507ee6f499ba5650e5a61d2c54b6))
+- **sdk-coin-ada:** return ovc compatible format for ada sweep txns ([a32d18a](https://github.com/BitGo/BitGoJS/commit/a32d18ab09162ca48aefe8bd5e3be52a7a6b3924))
+
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.6.0...@bitgo/sdk-coin-ada@2.13.0) (2023-09-09)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** fix ada createBroadcastableTransaction method for arrays of txns ([ee27caf](https://github.com/BitGo/BitGoJS/commit/ee27cafa9e6ad53b063c5365f4cafce0f4f46d89))
+- **sdk-coin-ada:** fix ada recovery for wallets derived from the same keys ([7900b22](https://github.com/BitGo/BitGoJS/commit/7900b22976a8829446cf0c991827239f9cdca19d))
+
+### Features
+
+- **sdk-coin-ada:** add consolidation method for ada recovery ([d912027](https://github.com/BitGo/BitGoJS/commit/d9120274fa7324dc2d0b37eae5f35300efc3b492))
+- **sdk-coin-ada:** add lastScanIndex for consolidation support ([bf9b910](https://github.com/BitGo/BitGoJS/commit/bf9b9103e11cd5e0e38304d6ba2999d76fc128dc))
+- **sdk-coin-ada:** create method to produce broadcastable ada sweep txn ([b5591ee](https://github.com/BitGo/BitGoJS/commit/b5591ee8e7a31cad1b817f02f9147bab10c49357))
+- **sdk-coin-ada:** fix ada sweep recovery format for ovc signing ([7b88f90](https://github.com/BitGo/BitGoJS/commit/7b88f902d533507ee6f499ba5650e5a61d2c54b6))
+- **sdk-coin-ada:** return ovc compatible format for ada sweep txns ([a32d18a](https://github.com/BitGo/BitGoJS/commit/a32d18ab09162ca48aefe8bd5e3be52a7a6b3924))
+
 # [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@2.6.0...@bitgo/sdk-coin-ada@2.12.0) (2023-09-07)
 
 ### Bug Fixes
