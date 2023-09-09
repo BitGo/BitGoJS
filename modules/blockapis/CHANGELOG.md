@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.7.3...@bitgo/blockapis@1.7.13) (2023-09-09)
+
+**Note:** Version bump only for package @bitgo/blockapis
+
+## [1.7.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.7.3...@bitgo/blockapis@1.7.12) (2023-09-09)
+
+**Note:** Version bump only for package @bitgo/blockapis
+
 ## [1.7.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.7.3...@bitgo/blockapis@1.7.11) (2023-09-07)
 
 **Note:** Version bump only for package @bitgo/blockapis

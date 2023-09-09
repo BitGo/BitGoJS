@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [19.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@19.17.0) (2023-09-09)
+
+### Bug Fixes
+
+- **abstract-utxo:** upper case address should return false ([f0b6c46](https://github.com/BitGo/BitGoJS/commit/f0b6c467daaa0e43bb2923993fb238c7a4ce6f59))
+- remove .nvmrc file ([a3edcc3](https://github.com/BitGo/BitGoJS/commit/a3edcc3725570d65154d541a932025bc3ad4416b))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+- **sdk-core:** handle txRequest full PA before signing ([9de0eae](https://github.com/BitGo/BitGoJS/commit/9de0eae7cab1ad406e80a818555a7c8557b47eb3))
+
+### Features
+
+- **bitgo:** calculate fees explicitly for psbts ([7a7e288](https://github.com/BitGo/BitGoJS/commit/7a7e288c63718a112abf633b842e7538d1e25693))
+- **sdk-coin-trx:** consolidate to base address ([d3b7558](https://github.com/BitGo/BitGoJS/commit/d3b75585471ca22441acffc58b2f94d192e8c2a1))
+- **sdk-core:** add helpers to support resigning ent challenges ([e9bb150](https://github.com/BitGo/BitGoJS/commit/e9bb1505af331f6caa7b0bcda2037483f57238fd))
+- **sdk-core:** use BuildParams codec in Wallet.sendAccountConsolidation ([7d340ec](https://github.com/BitGo/BitGoJS/commit/7d340ec674116badf3b05aadf1d9aae130a8c69d))
+
+# [19.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@19.16.0) (2023-09-09)
+
+### Bug Fixes
+
+- **abstract-utxo:** upper case address should return false ([f0b6c46](https://github.com/BitGo/BitGoJS/commit/f0b6c467daaa0e43bb2923993fb238c7a4ce6f59))
+- remove .nvmrc file ([a3edcc3](https://github.com/BitGo/BitGoJS/commit/a3edcc3725570d65154d541a932025bc3ad4416b))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+- **sdk-core:** handle txRequest full PA before signing ([9de0eae](https://github.com/BitGo/BitGoJS/commit/9de0eae7cab1ad406e80a818555a7c8557b47eb3))
+
+### Features
+
+- **bitgo:** calculate fees explicitly for psbts ([7a7e288](https://github.com/BitGo/BitGoJS/commit/7a7e288c63718a112abf633b842e7538d1e25693))
+- **sdk-coin-trx:** consolidate to base address ([d3b7558](https://github.com/BitGo/BitGoJS/commit/d3b75585471ca22441acffc58b2f94d192e8c2a1))
+- **sdk-core:** add helpers to support resigning ent challenges ([e9bb150](https://github.com/BitGo/BitGoJS/commit/e9bb1505af331f6caa7b0bcda2037483f57238fd))
+- **sdk-core:** use BuildParams codec in Wallet.sendAccountConsolidation ([7d340ec](https://github.com/BitGo/BitGoJS/commit/7d340ec674116badf3b05aadf1d9aae130a8c69d))
+
 # [19.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@19.15.0) (2023-09-07)
 
 ### Bug Fixes
