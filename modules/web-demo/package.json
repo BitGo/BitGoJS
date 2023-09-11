@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/web-demo",
-  "version": "1.7.21",
+  "version": "1.7.22",
   "description": "BitGoJS Web demo package",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "@bitgo/sdk-coin-cspr": "^1.4.10",
     "@bitgo/sdk-coin-dash": "^1.5.10",
     "@bitgo/sdk-coin-doge": "^1.12.10",
-    "@bitgo/sdk-coin-dot": "^3.12.0",
+    "@bitgo/sdk-coin-dot": "^3.12.1",
     "@bitgo/sdk-coin-eos": "^1.5.10",
     "@bitgo/sdk-coin-etc": "^1.4.10",
     "@bitgo/sdk-coin-eth": "^4.7.10",
@@ -62,7 +62,7 @@
     "@bitgo/sdk-core": "^8.23.0",
     "@bitgo/sdk-lib-mpc": "^8.12.0",
     "@bitgo/statics": "^26.0.0",
-    "bitgo": "^19.17.0",
+    "bitgo": "^19.17.1",
     "lodash": "^4.17.15",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

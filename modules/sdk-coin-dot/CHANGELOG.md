@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.12.0...@bitgo/sdk-coin-dot@3.12.1) (2023-09-11)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** fix dot unsigned sweep consolidation recovery txn ([7c4a782](https://github.com/BitGo/BitGoJS/commit/7c4a782d2804343872390f66ebb829c41b6146fb))
+
 # [3.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.12.0) (2023-09-09)
 
 ### Bug Fixes
