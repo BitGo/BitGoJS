@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.6.0...@bitgo/sdk-coin-avaxc@2.6.10) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+## [2.6.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.6.0...@bitgo/sdk-coin-avaxc@2.6.9) (2023-09-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [2.6.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@2.6.0...@bitgo/sdk-coin-avaxc@2.6.8) (2023-09-07)
 
 ### Bug Fixes
