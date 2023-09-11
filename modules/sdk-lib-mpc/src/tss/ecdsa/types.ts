@@ -1,4 +1,11 @@
-import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../util';
+import {
+  bigIntToHex,
+  convertBigIntArrToHexArr,
+  convertHexArrToBigIntArr,
+  hexToBigInt,
+  hexToSignedBigInt,
+  signedBigIntToHex,
+} from '../../util';
 
 // Ntilde Proof where both alpha and t are a set of 128 proofs each.
 interface NtildeProof<T> {
@@ -280,4 +287,65 @@ export interface ZkVProof {
   Alpha: bigint;
   t: bigint;
   u: bigint;
+}
+
+type noSmallFactorsProof<T> = {
+  P: T;
+  Q: T;
+  A: T;
+  B: T;
+  T: T;
+  sigma: T;
+  z1: T;
+  z2: T;
+  w1: T;
+  w2: T;
+  v: T;
+};
+
+export type SerializedNoSmallFactorsProof = noSmallFactorsProof<string>;
+export type DeserializedNoSmallFactorsProof = noSmallFactorsProof<bigint>;
+
+/**
+ * Deserializes a Pi^fac proof from hex strings to big ints.
+ * @param noSmallFactorsProof
+ */
+export function deserializeNoSmallFactorsProof(
+  noSmallFactorsProof: SerializedNoSmallFactorsProof
+): DeserializedNoSmallFactorsProof {
+  return {
+    P: hexToSignedBigInt(noSmallFactorsProof.P),
+    Q: hexToSignedBigInt(noSmallFactorsProof.Q),
+    A: hexToSignedBigInt(noSmallFactorsProof.A),
+    B: hexToSignedBigInt(noSmallFactorsProof.B),
+    T: hexToSignedBigInt(noSmallFactorsProof.T),
+    sigma: hexToSignedBigInt(noSmallFactorsProof.sigma),
+    z1: hexToSignedBigInt(noSmallFactorsProof.z1),
+    z2: hexToSignedBigInt(noSmallFactorsProof.z2),
+    w1: hexToSignedBigInt(noSmallFactorsProof.w1),
+    w2: hexToSignedBigInt(noSmallFactorsProof.w2),
+    v: hexToSignedBigInt(noSmallFactorsProof.v),
+  };
+}
+
+/**
+ * Serializes a Pi^fac proof to hex strings.
+ * @param noSmallFactorsProof
+ */
+export function serializeNoSmallFactorsProof(
+  noSmallFactorsProof: DeserializedNoSmallFactorsProof
+): SerializedNoSmallFactorsProof {
+  return {
+    P: signedBigIntToHex(noSmallFactorsProof.P, 2 * (1 + 384)),
+    Q: signedBigIntToHex(noSmallFactorsProof.Q, 2 * (1 + 384)),
+    A: signedBigIntToHex(noSmallFactorsProof.A, 2 * (1 + 384)),
+    B: signedBigIntToHex(noSmallFactorsProof.B, 2 * (1 + 384)),
+    T: signedBigIntToHex(noSmallFactorsProof.T, 2 * (1 + 384)),
+    sigma: signedBigIntToHex(noSmallFactorsProof.sigma, 2 * (2 * 384 + 256 / 8)),
+    z1: signedBigIntToHex(noSmallFactorsProof.z1, 2 * (1 + 384 / 2 + (256 + 2 * 256) / 8)),
+    z2: signedBigIntToHex(noSmallFactorsProof.z2, 2 * (1 + 384 / 2 + (256 + 2 * 256) / 8)),
+    w1: signedBigIntToHex(noSmallFactorsProof.w1, 2 * (1 + (256 + 2 * 256) / 8)),
+    w2: signedBigIntToHex(noSmallFactorsProof.w2, 2 * (1 + (256 + 2 * 256) / 8)),
+    v: signedBigIntToHex(noSmallFactorsProof.v, 2 * (1 + 384 * 2 + (256 + 2 * 256) / 8)),
+  };
 }
