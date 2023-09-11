@@ -36,6 +36,25 @@ export function hexToBigInt(hex: string): bigint {
   return BigInt('0x' + hex);
 }
 
+export function hexToSignedBigInt(hex: string): bigint {
+  // Trim leading '0x' from string.
+  if (hex.slice(0, 2) === '0x') {
+    hex = hex.slice(2);
+  }
+  // Assume a number without a sign byte is always positive, or an unsigned number (ie zero).
+  if (hex.length <= 2) {
+    return BigInt('0x' + hex);
+  }
+  // Parse the number part of the string.
+  const num = BigInt('0x' + hex.slice(2));
+  // Interpret the first byte of the string as a sign byte.
+  // If it's non-zero, the number is negative.
+  if (parseInt(hex.slice(0, 2), 16)) {
+    return -num;
+  }
+  return num;
+}
+
 /**
  * Returns an hex string of the given bigint
  *
@@ -50,6 +69,30 @@ export function bigIntToHex(bigint: bigint, hexLength?: number): string {
     hex = hex.padStart(hexLength, '0');
   }
   return hex;
+}
+
+export function signedBigIntToHex(bigint: bigint, hexLength?: number): string {
+  // Return zero as an unsigned string.
+  if (bigint === BigInt(0)) {
+    return '00';
+  }
+  // Store the number's sign.
+  let neg;
+  if (bigint < BigInt(0)) {
+    bigint = -bigint;
+    neg = true;
+  }
+  // Convert number to unsigned hex.
+  let hex = bigint.toString(16);
+  hex = '0'.slice(0, hex.length % 2) + hex;
+  if (hexLength) {
+    hex = hex.padStart(hexLength - 2, '0');
+  }
+  // Prefix sign byte if necessary.
+  if (neg) {
+    return '01' + hex;
+  }
+  return '00' + hex;
 }
 
 export function bigIntToBufferLE(n: bigint, bytes?: number): Buffer {
