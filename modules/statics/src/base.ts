@@ -690,6 +690,7 @@ export enum UnderlyingAsset {
   LQID = 'lqid',
   LRC = 'lrc',
   LRCV2 = 'lrcv2',
+  LSETH = 'lseth',
   LTCBEAR = 'ltcbear',
   LTCBULL = 'ltcbull',
   LUA = 'lua',
@@ -1260,6 +1261,9 @@ export enum UnderlyingAsset {
 
   // BSC Token BEP-20
   'bsc:busd' = 'bsc:busd',
+  'bsc:ksm' = 'bsc:ksm',
+  'bsc:usdt' = 'bsc:usdt',
+  'bsc:vet' = 'bsc:vet',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs

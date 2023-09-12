@@ -3853,6 +3853,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LRCV2
   ),
   erc20(
+    '084d49c5-4a8e-4f9b-bc86-4b414c7364ec',
+    'lseth',
+    'Liquid Staked ETH',
+    18,
+    '0x48d93d8c45fb25125f13cdd40529bbeaa97a6565',
+    UnderlyingAsset.LSETH
+  ),
+  erc20(
     '69a336d1-d401-4efc-b613-615c6f19f450',
     'ltcbull',
     '3X Long Litecoin Token',
@@ -7110,6 +7118,30 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     UnderlyingAsset['bsc:busd']
+  ),
+  bscToken(
+    '2400c915-d610-45e7-bd7d-a028eb653b42',
+    'bsc:usdt',
+    'BSC-USD',
+    18,
+    '0x55d398326f99059ff775485246999027b3197955',
+    UnderlyingAsset['bsc:usdt']
+  ),
+  bscToken(
+    '95296300-6d0b-4011-9028-53f54750d4b6',
+    'bsc:ksm',
+    'Kusama (Binance Pegged)',
+    5,
+    '0xe646c8fc9f507529b05fe0a825ae9beb1aad9f6b',
+    UnderlyingAsset['bsc:ksm']
+  ),
+  bscToken(
+    '82e8167f-2c11-46b9-b7dd-eab667d8429b',
+    'bsc:vet',
+    'VeChain (Binance Pegged)',
+    9,
+    '0xa9d810e5555c2951239efe7a3245ef3c1b4ca8cf',
+    UnderlyingAsset['bsc:vet']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
