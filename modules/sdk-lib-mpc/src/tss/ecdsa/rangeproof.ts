@@ -105,6 +105,40 @@ export async function generateNtilde(bitlength = minModulusBitLength): Promise<D
 }
 
 /**
+ * Generate non-interactive challenge for Ntilde DLOG proofs.
+ * @param {DeserializedNtilde} ntilde Ntilde, h1, h2 to generate the proofs for.
+ * @param {bigint[]} alpha array of alpha values from the Ntilde proofs.
+ * @returns {Buffer} buffer of bytes reperesenting te challenge.
+ */
+function generateNIZKChallenge(ntilde: DeserializedNtilde, alpha: bigint[]): Buffer {
+  if (alpha.length !== ITERATIONS) {
+    throw Error(`List of alpha values has to be of length ${ITERATIONS}`);
+  }
+  const modulus_bytes: number = Math.ceil(bitLength(ntilde.ntilde) / 8);
+  const modulus_bytes_buf: Buffer = bigIntToBufferBE(BigInt(modulus_bytes), 4);
+  let msgToHash: Buffer = Buffer.concat([
+    bigIntToBufferBE(BigInt(3 + alpha.length), 4),
+    modulus_bytes_buf,
+    bigIntToBufferBE(ntilde.h1, modulus_bytes),
+    Buffer.from('$'),
+    modulus_bytes_buf,
+    bigIntToBufferBE(ntilde.h2, modulus_bytes),
+    Buffer.from('$'),
+    modulus_bytes_buf,
+    bigIntToBufferBE(ntilde.ntilde, modulus_bytes),
+  ]);
+  for (let i = 0; i < ITERATIONS; i++) {
+    msgToHash = Buffer.concat([
+      msgToHash,
+      Buffer.from('$'),
+      modulus_bytes_buf,
+      bigIntToBufferBE(alpha[i], modulus_bytes),
+    ]);
+  }
+  return createHash('sha256').update(msgToHash).digest();
+}
+
+/**
  * Generate iterations of Ntilde, h1, h2 discrete log proofs.
  * @param {DeserializedNtilde} ntilde Ntilde, h1, h2 to generate the proofs for.
  * @param {bigint} x Either alpha or beta depending on whether it is a discrete log proof of
@@ -119,20 +153,14 @@ export async function generateNtildeProof(
   q1: bigint,
   q2: bigint
 ): Promise<DeserializedNtildeProof> {
-  const q1MulQ2 = q1 * q2;
+  const q1MulQ2: bigint = q1 * q2;
   const a: bigint[] = [];
   const alpha: bigint[] = [];
-  let msgToHash: Buffer = Buffer.concat([
-    bigIntToBufferBE(ntilde.h1),
-    bigIntToBufferBE(ntilde.h2),
-    bigIntToBufferBE(ntilde.ntilde),
-  ]);
   for (let i = 0; i < ITERATIONS; i++) {
     a.push(randBetween(q1MulQ2));
     alpha.push(modPow(ntilde.h1, a[i], ntilde.ntilde));
-    msgToHash = Buffer.concat([msgToHash, bigIntToBufferBE(alpha[i], Math.ceil(bitLength(ntilde.ntilde) / 8))]);
   }
-  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  const simulatedResponse = generateNIZKChallenge(ntilde, alpha);
   const t: bigint[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
     // Get the ith bit from a buffer of bytes.
@@ -170,18 +198,7 @@ export async function verifyNtildeProof(
   ) {
     return false;
   }
-  let msgToHash: Buffer = Buffer.concat([
-    bigIntToBufferBE(ntilde.h1),
-    bigIntToBufferBE(ntilde.h2),
-    bigIntToBufferBE(ntilde.ntilde),
-  ]);
-  for (let i = 0; i < ntildeProof.alpha.length; i++) {
-    msgToHash = Buffer.concat([
-      msgToHash,
-      bigIntToBufferBE(ntildeProof.alpha[i], Math.ceil(bitLength(ntilde.ntilde) / 8)),
-    ]);
-  }
-  const simulatedResponse = createHash('sha256').update(msgToHash).digest();
+  const simulatedResponse = generateNIZKChallenge(ntilde, ntildeProof.alpha);
   for (let i = 0; i < ntildeProof.alpha.length; i++) {
     // Get the ith bit from a buffer of bytes.
     const ithBit = (simulatedResponse[Math.floor(i / 8)] >> (7 - (i % 8))) & 1;
