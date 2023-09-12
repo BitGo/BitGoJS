@@ -9,6 +9,7 @@ describe('Sol Staking Deactivate Builder', () => {
 
   const wallet = new KeyPair(testData.authAccount).getKeys();
   const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
+  const splitAccount = new KeyPair(testData.splitStakeAccount).getKeys();
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
@@ -33,6 +34,37 @@ describe('Sol Staking Deactivate Builder', () => {
         },
       ]);
       should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
+    });
+
+    it('building a staking multi deactivate tx', async () => {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
+      txBuilder.sign({ key: wallet.prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      txJson.instructionsData.should.deepEqual([
+        {
+          type: 'Deactivate',
+          params: {
+            fromAddress: wallet.pub,
+            stakingAddress: stakeAccount.pub,
+            amount: undefined,
+            unstakingAddress: undefined,
+          },
+        },
+        {
+          type: 'Deactivate',
+          params: {
+            fromAddress: wallet.pub,
+            stakingAddress: splitAccount.pub,
+            amount: undefined,
+            unstakingAddress: undefined,
+          },
+        },
+      ]);
+      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX);
     });
 
     it('building a staking deactivate signed tx with memo', async () => {

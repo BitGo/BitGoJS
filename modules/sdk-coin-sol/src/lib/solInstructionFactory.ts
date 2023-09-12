@@ -19,6 +19,7 @@ import {
   StakingActivate,
   StakingAuthorize,
   StakingDeactivate,
+  StakingDelegate,
   StakingWithdraw,
   TokenTransfer,
   Transfer,
@@ -55,6 +56,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return createATAInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingAuthorize:
       return stakingAuthorizeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingDelegate:
+      return stakingDelegateInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -344,6 +347,30 @@ function stakingAuthorizeInstruction(data: StakingAuthorize): TransactionInstruc
   });
   tx.add(authorizeStaking);
   tx.add(authorizeWithdraw);
+
+  return tx.instructions;
+}
+
+/**
+ * Construct Delegate Solana instructions
+ *
+ * @param {StakingActivate} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Delegate Solana instructions
+ */
+function stakingDelegateInstruction(data: StakingDelegate): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress, validator },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+  assert(validator, 'Missing validator param');
+  const tx = new Transaction();
+  const delegateStaking = StakeProgram.delegate({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+    votePubkey: new PublicKey(validator),
+  });
+  tx.add(delegateStaking);
 
   return tx.instructions;
 }
