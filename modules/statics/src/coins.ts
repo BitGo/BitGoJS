@@ -965,7 +965,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
+    [...ETH_FEATURES_WITH_STAKING_AND_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
@@ -975,7 +975,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [...ETH_FEATURES_WITH_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
+    [...ETH_FEATURES_WITH_STAKING_AND_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
   ),
   account(
     'f0e226b6-6cd8-4384-b0a5-ba8e4148a049',
