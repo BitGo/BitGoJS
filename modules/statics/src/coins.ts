@@ -1109,6 +1109,14 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
+  ofc(
+    '03df4c0c-12be-4b24-b3c3-c59be198711b',
+    'ofcbsc',
+    'Binance Smart Chain',
+    18,
+    UnderlyingAsset.BSC,
+    CoinKind.CRYPTO
+  ),
   ofc('7b79bc25-5497-4350-b961-4bbed2bea994', 'ofcsui', 'Sui', 9, UnderlyingAsset.SUI, CoinKind.CRYPTO),
   ofc('31bae66e-a135-42f9-b9d3-1623ab9c7ecc', 'ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   ofc('dbbceebe-9096-4d7b-ae9e-31eb8a3dc5ca', 'ofcsol', 'Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
@@ -1186,6 +1194,14 @@ export const coins = CoinMap.fromCoins([
     'Testnet Cosmos Hub ATOM',
     6,
     UnderlyingAsset.ATOM,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '52e600bb-b006-452b-9f82-f81c20d0168d',
+    'ofctbsc',
+    'Testnet Binance Smart Chain',
+    18,
+    UnderlyingAsset.BSC,
     CoinKind.CRYPTO
   ),
   tofc('89bfad1a-97f8-46f8-bec6-3faf145f3a74', 'ofctsui', 'Testnet Sui', 9, UnderlyingAsset.SUI, CoinKind.CRYPTO),
