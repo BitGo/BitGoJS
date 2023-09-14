@@ -399,7 +399,6 @@ describe('DOT:', function () {
         backupKey: testData.consolidationWrwUser.backupKey,
         bitgoKey: testData.consolidationWrwUser.bitgoKey,
         walletPassphrase: testData.consolidationWrwUser.walletPassphrase,
-        recoveryDestination: baseAddr,
         startingScanIndex: 1,
         endingScanIndex: 4,
       });
@@ -454,6 +453,110 @@ describe('DOT:', function () {
           maxDuration: basecoin.MAX_VALIDITY_DURATION,
         })
         .referenceBlock(testData.westendBlock.hash);
+      const tx2 = await txBuilder2.build();
+      const txJson2 = tx2.toJson();
+      should.deepEqual(txJson2.sender, testData.consolidationWrwUser.walletAddress3);
+      should.deepEqual(txJson2.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson2.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson2.genesisHash, genesisHash);
+      should.deepEqual(txJson2.specVersion, specVersion);
+      should.deepEqual(txJson2.nonce, nonce);
+      should.deepEqual(txJson2.tip, 0);
+      should.deepEqual(txJson2.transactionVersion, txVersion);
+      should.deepEqual(txJson2.chainName, chainName);
+      should.deepEqual(txJson2.eraPeriod, eraPeriod);
+      should.deepEqual(txJson2.to, baseAddr);
+    });
+
+    it('should build unsigned consolidation recoveries', async function () {
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: testData.consolidationWrwUser.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+      });
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(2);
+      sandBox.assert.calledThrice(basecoin.getAccountInfo);
+      sandBox.assert.calledTwice(basecoin.getHeaderInfo);
+
+      const txn1 = res.txRequests[0].transactions[0].unsignedTx;
+      txn1.should.hasOwnProperty('serializedTx');
+      txn1.should.hasOwnProperty('signableHex');
+      txn1.should.hasOwnProperty('scanIndex');
+      txn1.scanIndex.should.equal(2);
+      txn1.should.hasOwnProperty('coin');
+      txn1.coin.should.equal('tdot');
+      txn1.should.hasOwnProperty('derivationPath');
+      txn1.derivationPath.should.equal('m/2');
+
+      txn1.should.hasOwnProperty('coinSpecific');
+      const coinSpecific1 = txn1.coinSpecific;
+      coinSpecific1.should.hasOwnProperty('commonKeychain');
+      coinSpecific1.should.hasOwnProperty('firstValid');
+      coinSpecific1.firstValid.should.equal(testData.westendBlock.blockNumber);
+      coinSpecific1.should.hasOwnProperty('maxDuration');
+      coinSpecific1.maxDuration.should.equal(basecoin.MAX_VALIDITY_DURATION);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder1 = basecoin.getBuilder().from(txn1.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder1
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.MAX_VALIDITY_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash)
+        .sender({ address: testData.consolidationWrwUser.walletAddress2 });
+      const tx1 = await txBuilder1.build();
+      const txJson1 = tx1.toJson();
+      should.deepEqual(txJson1.sender, testData.consolidationWrwUser.walletAddress2);
+      should.deepEqual(txJson1.blockNumber, testData.westendBlock.blockNumber);
+      should.deepEqual(txJson1.referenceBlock, testData.westendBlock.hash);
+      should.deepEqual(txJson1.genesisHash, genesisHash);
+      should.deepEqual(txJson1.specVersion, specVersion);
+      should.deepEqual(txJson1.nonce, nonce);
+      should.deepEqual(txJson1.tip, 0);
+      should.deepEqual(txJson1.transactionVersion, txVersion);
+      should.deepEqual(txJson1.chainName, chainName);
+      // eraPeriod will always round to the next upper power of 2 for any input value, in this case 2400.
+      // 4096 is the "highest" value you can set, but the txn still may fail after 2400 blocks.
+      const eraPeriod = 4096;
+      should.deepEqual(txJson1.eraPeriod, eraPeriod);
+      should.deepEqual(txJson1.to, baseAddr);
+
+      const txn2 = res.txRequests[1].transactions[0].unsignedTx;
+      txn2.should.hasOwnProperty('serializedTx');
+      txn2.should.hasOwnProperty('signableHex');
+      txn2.should.hasOwnProperty('scanIndex');
+      txn2.scanIndex.should.equal(3);
+      txn2.should.hasOwnProperty('coin');
+      txn2.coin.should.equal('tdot');
+      txn2.should.hasOwnProperty('derivationPath');
+      txn2.derivationPath.should.equal('m/3');
+
+      txn2.should.hasOwnProperty('coinSpecific');
+      const coinSpecific2 = txn2.coinSpecific;
+      coinSpecific2.should.hasOwnProperty('commonKeychain');
+      coinSpecific2.should.hasOwnProperty('firstValid');
+      coinSpecific2.firstValid.should.equal(testData.westendBlock.blockNumber);
+      coinSpecific2.should.hasOwnProperty('maxDuration');
+      coinSpecific2.maxDuration.should.equal(basecoin.MAX_VALIDITY_DURATION);
+      coinSpecific2.should.hasOwnProperty('commonKeychain');
+      coinSpecific2.should.hasOwnProperty('lastScanIndex');
+      coinSpecific2.lastScanIndex.should.equal(3);
+
+      // deserialize the txn and verify the fields are what we expect
+      const txBuilder2 = basecoin.getBuilder().from(txn2.serializedTx);
+      // some information isn't deserialized by the from method, so we will
+      // supply it again in order to re-build the txn
+      txBuilder2
+        .validity({
+          firstValid: testData.westendBlock.blockNumber,
+          maxDuration: basecoin.MAX_VALIDITY_DURATION,
+        })
+        .referenceBlock(testData.westendBlock.hash)
+        .sender({ address: testData.consolidationWrwUser.walletAddress3 });
       const tx2 = await txBuilder2.build();
       const txJson2 = tx2.toJson();
       should.deepEqual(txJson2.sender, testData.consolidationWrwUser.walletAddress3);
