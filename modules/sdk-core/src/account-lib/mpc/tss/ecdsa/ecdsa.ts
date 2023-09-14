@@ -10,6 +10,9 @@ import {
   EcdsaPaillierProof,
   EcdsaRangeProof,
   EcdsaTypes,
+  EcdsaZkVProof,
+  HashCommitment,
+  Schnorr,
   randomPositiveCoPrimeTo,
   hexToBigInt,
   minModulusBitLength,
@@ -29,6 +32,7 @@ import {
   NShare,
   OShare,
   PShare,
+  PublicUTShare,
   RangeProofWithCheckShare,
   Signature,
   SignCombine,
@@ -44,10 +48,14 @@ import {
   SignShareRT,
   SShare,
   SubkeyShare,
+  UTShare,
+  VAShareWithProofs,
+  VAShare,
   WShare,
   XShare,
   XShareWithChallenges,
   YShareWithChallenges,
+  PublicVAShareWithProofs,
 } from './types';
 
 const _5n = BigInt(5);
@@ -1305,9 +1313,9 @@ export default class Ecdsa {
    * @param {DShare} dShare delta share received from the other participant
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
    * @param {boolean} shouldHash if true, we hash the provided buffer before signing
-   * @returns {SShare}
+   * @returns {VAShare}
    */
-  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash, shouldHash = true): SShare {
+  sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash, shouldHash = true): VAShare {
     const m = shouldHash ? (hash || createHash('sha256')).update(M).digest() : M;
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
@@ -1323,12 +1331,157 @@ export default class Ecdsa {
       Ecdsa.curve.scalarMult(bigIntFromU8ABE(m), hexToBigInt(oShare.k)),
       Ecdsa.curve.scalarMult(r, hexToBigInt(oShare.omicron))
     );
+
+    const l = Ecdsa.curve.scalarRandom();
+    const rho = Ecdsa.curve.scalarRandom();
+    const V = Ecdsa.curve.pointAdd(Ecdsa.curve.pointMultiply(R, s), Ecdsa.curve.basePointMult(l));
+    const A = Ecdsa.curve.basePointMult(rho);
+
+    const comDecom_V_A = HashCommitment.createCommitment(
+      Buffer.concat([bigIntToBufferBE(V, Ecdsa.curve.pointBytes), bigIntToBufferBE(A, Ecdsa.curve.pointBytes)])
+    );
+
     return {
       i: oShare.i,
       y: oShare.y,
       R: pointR.toHex(true),
       s: bigIntToBufferBE(s, 32).toString('hex'),
+      m: m,
+      l: l,
+      rho: rho,
+      V: V,
+      A: A,
+      comDecomVA: comDecom_V_A,
     };
+  }
+
+  /**
+   * Generate proofs of V_i and A_i values.
+   * @param {Buffer} M Message to commit to as part of the context of the proof.
+   *    This doesn't need to be the same message that was signed in the sign function above.
+   *    But it should be the same for all participants for the purpose of providing proof context.
+   * @param {VAShare} vaShare The VAShare to prove.
+   * @returns {VAShareWithProofs}
+   */
+  generateVAProofs(M: Buffer, vaShare: VAShare): VAShareWithProofs {
+    const s = hexToBigInt(vaShare.s);
+    const R = bigIntFromU8ABE(secp.Point.fromHex(vaShare.R).toRawBytes(true));
+
+    const proofContext = createHash('sha256').update(M).update(bigIntToBufferBE(R, Ecdsa.curve.pointBytes)).digest();
+
+    const zkVProof = EcdsaZkVProof.createZkVProof(vaShare.V, s, vaShare.l, R, Ecdsa.curve, proofContext);
+    const schnorrProof = Schnorr.createSchnorrProof(vaShare.A, vaShare.rho, Ecdsa.curve, proofContext);
+
+    return {
+      ...vaShare,
+      proofContext: proofContext,
+      zkVProofV: zkVProof,
+      schnorrProofA: schnorrProof,
+    };
+  }
+
+  /**
+   * Verify V_i and A_i values of all other participants during signing phase 5 steps 5A and 5B.
+   * @param {VAShareWithProofs} vaShare V_i, A_i info including SShare values of the currenct participant
+   * @param {PublicVAShareWithProofs[]} publicVAShares public V_i, A_i info of all other participants
+   * @returns {UTShare} U_i, T_i info of the current participant if all verifications pass
+   */
+  verifyVAShares(vaShare: VAShareWithProofs, publicVAShares: PublicVAShareWithProofs[]): UTShare {
+    publicVAShares.forEach((publicVAShare) => {
+      if (
+        !HashCommitment.verifyCommitment(publicVAShare.comDecomVA.commitment, {
+          secret: Buffer.concat([
+            bigIntToBufferBE(publicVAShare.V, Ecdsa.curve.pointBytes),
+            bigIntToBufferBE(publicVAShare.A, Ecdsa.curve.pointBytes),
+          ]),
+          blindingFactor: publicVAShare.comDecomVA.decommitment.blindingFactor,
+        })
+      ) {
+        throw new Error('Could not verify commitment of V_i and A_i');
+      }
+      if (
+        !Schnorr.verifySchnorrProof(publicVAShare.A, publicVAShare.schnorrProofA, Ecdsa.curve, vaShare.proofContext)
+      ) {
+        throw new Error('Could not verify Schnorr proof of A_i');
+      }
+      if (
+        !EcdsaZkVProof.verifyZkVProof(
+          publicVAShare.V,
+          publicVAShare.zkVProofV,
+          hexToBigInt(vaShare.R),
+          Ecdsa.curve,
+          vaShare.proofContext
+        )
+      ) {
+        throw new Error('Could not verify ZK proof of V_i');
+      }
+    });
+
+    const y = hexToBigInt(vaShare.y);
+    // r is R's x coordinate.  R is in compressed form, so we need to slice off the first byte.
+    const r = hexToBigInt(vaShare.R.slice(2));
+
+    // Calculate aggregation of all V_i and A_i.
+    let V = Ecdsa.curve.pointAdd(
+      Ecdsa.curve.pointAdd(
+        Ecdsa.curve.basePointMult(Ecdsa.curve.scalarNegate(bigIntFromU8ABE(vaShare.m))),
+        Ecdsa.curve.pointMultiply(y, Ecdsa.curve.scalarNegate(r))
+      ),
+      vaShare.V
+    );
+    let A = vaShare.A;
+    publicVAShares.forEach((publicVAShare) => {
+      V = Ecdsa.curve.pointAdd(V, publicVAShare.V);
+      A = Ecdsa.curve.pointAdd(A, publicVAShare.A);
+    });
+
+    // Calculate U_i = rho_i * V and T_i = l_i * A.
+    const U = Ecdsa.curve.pointMultiply(V, vaShare.rho);
+    const T = Ecdsa.curve.pointMultiply(A, vaShare.l);
+    const comDecom_U_T = HashCommitment.createCommitment(
+      Buffer.concat([bigIntToBufferBE(U, Ecdsa.curve.pointBytes), bigIntToBufferBE(T, Ecdsa.curve.pointBytes)])
+    );
+
+    return {
+      ...vaShare,
+      U,
+      T,
+      comDecomUT: comDecom_U_T,
+    };
+  }
+
+  /**
+   * Verify U_i and V_i values of all other participants during signing phase 5 steps 5C and 5D.
+   * @param {UTShare} utShare U_i, T_i info including SShare values of the currenct participant
+   * @param {PublicUTShare[]} publicUTShares public U_i, T_i info of all other participants
+   * @returns {SShare} SShare of the current participant if all verifications pass
+   */
+  verifyUTShares(utShare: UTShare, publicUTShares: PublicUTShare[]): SShare {
+    let sigmaU = utShare.U;
+    let sigmaT = utShare.T;
+
+    publicUTShares.forEach((publicUTShare) => {
+      if (
+        !HashCommitment.verifyCommitment(publicUTShare.comDecomUT.commitment, {
+          secret: Buffer.concat([
+            bigIntToBufferBE(publicUTShare.U, Ecdsa.curve.pointBytes),
+            bigIntToBufferBE(publicUTShare.T, Ecdsa.curve.pointBytes),
+          ]),
+          blindingFactor: publicUTShare.comDecomUT.decommitment.blindingFactor,
+        })
+      ) {
+        throw new Error('Could not verify commitment of U_i and T_i');
+      }
+
+      sigmaU = Ecdsa.curve.pointAdd(sigmaU, publicUTShare.U);
+      sigmaT = Ecdsa.curve.pointAdd(sigmaT, publicUTShare.T);
+    });
+
+    if (sigmaU !== sigmaT) {
+      throw new Error('Sum of all U_i does not match sum of all T_i');
+    }
+
+    return { ...utShare };
   }
 
   /**

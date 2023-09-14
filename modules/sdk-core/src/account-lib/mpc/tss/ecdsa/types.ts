@@ -1,4 +1,4 @@
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes, HashCommitDecommit, SchnorrProof } from '@bitgo/sdk-lib-mpc';
 
 /**
  * @deprecated use DeserializedNtildeProof from sdk-lib-mpc instead
@@ -282,3 +282,34 @@ export type Signature = {
   r: string;
   s: string;
 };
+
+export interface PublicVAShare {
+  V: bigint;
+  A: bigint;
+  comDecomVA: HashCommitDecommit;
+}
+
+export interface PublicVAShareWithProofs extends PublicVAShare, VAProofs {}
+
+export interface VAShare extends SShare, PublicVAShare {
+  m: Buffer;
+  l: bigint;
+  rho: bigint;
+}
+
+export interface VAProofs {
+  zkVProofV: EcdsaTypes.ZkVProof;
+  schnorrProofA: SchnorrProof;
+}
+
+export interface VAShareWithProofs extends VAShare, VAProofs {
+  proofContext: Buffer;
+}
+
+export interface PublicUTShare {
+  U: bigint;
+  T: bigint;
+  comDecomUT: HashCommitDecommit;
+}
+
+export interface UTShare extends SShare, PublicUTShare {}

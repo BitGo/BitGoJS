@@ -323,6 +323,7 @@ export interface SignatureShareRecord extends ShareBaseRecord {
 
 export enum CommitmentType {
   COMMITMENT = 'commitment',
+  DECOMMITMENT = 'decommitment',
 }
 export interface CommitmentShareRecord extends ShareBaseRecord {
   type: CommitmentType;
