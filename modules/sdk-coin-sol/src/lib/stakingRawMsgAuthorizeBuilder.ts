@@ -57,11 +57,15 @@ export class StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder {
     assert(this._transactionMessage, 'missing transaction message');
 
     this.validateMessage(this._transactionMessage);
-    this.transaction.solTransaction = SOLTransaction.populate(
+    const solTransaction = SOLTransaction.populate(
       SOLMessage.from(Buffer.from(this._transactionMessage, 'base64')),
       []
     );
+    // this is workaround for solana web3.js generate wrong signing message
+    const serialized = solTransaction.serialize({ requireAllSignatures: false }).toString('base64');
+    this.transaction.fromRawTransaction(serialized);
     this.transaction.setTransactionType(this.transactionType);
+    assert(this._transactionMessage === this.transaction.signablePayload.toString('base64'), 'wrong signing message');
     return this.transaction;
   }
 

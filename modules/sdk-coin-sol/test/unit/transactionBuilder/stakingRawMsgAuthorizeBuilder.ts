@@ -30,6 +30,28 @@ describe('Sol Staking Raw Message Authorize Builder', () => {
     });
   });
 
+  it('should build the same signable from serialized', async () => {
+    const txBuilder = factory.getStakingRawMsgAuthorizeBuilder();
+    const txMessage =
+      'BAMECoDazytL0bbodGt/WXG6IJW2pvlLl305hWXCGlHt70bmBUdHZ+Tx/Eaem+0Vb6TThw9npPPveW2WCR3KCfOulqMZtfOYQo9pyBarLWXIfxpFdcOi9A4Im/QsUe7hbsCjGrpOOXetDxq9uzNqtwdACPOxMQevLczIy3zLdXSbk62q15H2LD16wbn1nvRqqYZWCppSdXLp2C8mcRpkGwsUm87Yyw6niRkWxA2aqOixmn2QD7SFebJJ0rQY82xNaYV+CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABqHYF5E3VCqYNDe9/ip6slV/U1yKeHIraKSdwAAAAAAGp9UXGMd0yShWY5hpHV62i164o5tLbVxzVVshAAAAAAan1RcZLFaO4IqEX3PSl4jPA1wxRbIas0TYBi6pQAAAGZTlWqKritZU6YoLz1czsJ62HnJXjlaxFm7axbqnlOQCBgMECQAEBAAAAAcFBQgDAgEICgAAAAEAAAA=';
+    txBuilder.transactionMessage(txMessage);
+    const tx = await txBuilder.build();
+    tx.inputs.length.should.equal(0);
+    tx.outputs.length.should.equal(0);
+    const rawTx = tx.toBroadcastFormat();
+    const signable = tx.signablePayload;
+    const signableHex = signable.toString('base64');
+    should.equal(signableHex, txMessage);
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    const unsignedTxHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+    const txBuilder2 = factory.from(Buffer.from(unsignedTxHex, 'hex').toString('base64'));
+    const tx2 = await txBuilder2.build();
+
+    const signable2 = tx2.signablePayload;
+    should.equal(signable2.toString('base64'), txMessage);
+  });
+
   it('should build from an unsigned transaction', async () => {
     const txBuilder = factory.from(testData.STAKING_AUTHORIZE_RAW_MSG_TXN);
     const tx = await txBuilder.build();
