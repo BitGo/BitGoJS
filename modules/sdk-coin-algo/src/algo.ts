@@ -530,6 +530,19 @@ export class Algo extends BaseCoin {
   }
 
   /**
+   * Gets config for how token enablements work for this coin
+   * @returns
+   *    requiresTokenEnablement: True if tokens need to be enabled for this coin
+   *    supportsMultipleTokenEnablements: True if multiple tokens can be enabled in one transaction
+   */
+  getTokenEnablementConfig() {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+    };
+  }
+
+  /**
    * Stellar and Algorand both use keys on the ed25519 curve, but use different encodings.
    * As the HSM doesn't have explicit support to create Algorand addresses, we use the Stellar
    * keys and re-encode them to the Algorand encoding.

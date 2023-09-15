@@ -1076,6 +1076,53 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('Algorand tests', () => {
+    let algoWallet: Wallet;
+
+    before(async () => {
+      // This is not a real TALGO wallet
+      const walletData = {
+        id: '650204cf43d8b40007cd9e11a872ce65',
+        coin: 'talgo',
+        keys: [
+          '650204b78a75c90007790bce979ae34d',
+          '650204b766c56a00072956c08fb9cdf1',
+          '650204b8ccf1370007b32bb8155dfbec',
+        ],
+        coinSpecific: {
+          rootAddress: '2ULRGE64U7LTMT5M6REB7ORHX5GLJYWHTIV5EAXVLWQTTATVJDGM5KJMII',
+        },
+      };
+      algoWallet = new Wallet(bitgo, bitgo.coin('talgo'), walletData);
+    });
+
+    it('Should build token enablement transactions', async () => {
+      const params = {
+        enableTokens: [
+          {
+            name: 'talgo:USDt-180447',
+          },
+        ],
+      };
+      const txRequestNock = nock(bgUrl)
+        .post(`/api/v2/${algoWallet.coin()}/wallet/${algoWallet.id()}/tx/build`)
+        .reply((uri, body) => {
+          const params = body as any;
+          params.recipients.length.should.equal(1);
+          params.recipients[0].tokenName.should.equal('talgo:USDt-180447');
+          params.type.should.equal('enabletoken');
+          should.not.exist(params.enableTokens);
+          return [200, params];
+        });
+      await algoWallet.buildTokenEnablements(params);
+      txRequestNock.isDone().should.equal(true);
+    });
+
+    afterEach(() => {
+      nock.cleanAll();
+    });
+  });
+
   describe('Hedera tests', () => {
     let hbarWallet: Wallet;
 
