@@ -59,7 +59,8 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.AVAXP &&
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
-        n.asset !== UnderlyingAsset.ZETA &&
+        n.asset !== UnderlyingAsset.KAVA &&
+        n.asset !== UnderlyingAsset.CORE &&
         coinFamilyValues.includes(n.name)
     );
 
