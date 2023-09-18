@@ -16,6 +16,7 @@ export enum SuiTransactionType {
   Transfer = 'Transfer',
   AddStake = 'AddStake',
   WithdrawStake = 'WithdrawStake',
+  CustomTx = 'CustomTx',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -27,7 +28,12 @@ export interface TxData {
   sender: SuiAddress;
   expiration: TransactionExpiration;
   gasData: GasData;
-  kind: { ProgrammableTransaction: TransferProgrammableTransaction | StakingProgrammableTransaction };
+  kind: {
+    ProgrammableTransaction:
+      | TransferProgrammableTransaction
+      | StakingProgrammableTransaction
+      | CustomProgrammableTransaction;
+  };
 }
 
 export type TransferProgrammableTransaction =
@@ -51,7 +57,16 @@ export type UnstakingProgrammableTransaction =
       transactions: TransactionType[];
     };
 
-export interface SuiTransaction<T = TransferProgrammableTransaction | StakingProgrammableTransaction> {
+export type CustomProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
+export interface SuiTransaction<
+  T = TransferProgrammableTransaction | StakingProgrammableTransaction | CustomProgrammableTransaction
+> {
   id?: string;
   type: SuiTransactionType;
   sender: string;
@@ -85,4 +100,10 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/sui_system.md#function-request_withdraw_stake
    */
   RequestWithdrawStake = 'request_withdraw_stake',
+  /**
+   * Split StakedSui self to two parts, one with principal split_amount, and the remaining principal is left in self.
+   *
+   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/staking_pool.md#0x3_staking_pool_split
+   */
+  StakingPoolSplit = '::staking_pool::split',
 }

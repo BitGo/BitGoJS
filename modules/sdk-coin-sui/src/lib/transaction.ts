@@ -6,7 +6,13 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import { StakingProgrammableTransaction, SuiTransaction, TransferProgrammableTransaction, TxData } from './iface';
+import {
+  StakingProgrammableTransaction,
+  SuiTransaction,
+  SuiTransactionType,
+  TransferProgrammableTransaction,
+  TxData,
+} from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion } from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
@@ -16,7 +22,7 @@ import { fromB64, toB64 } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 import { TRANSACTION_DATA_MAX_SIZE, TransactionBlockDataBuilder } from './mystenlab/builder/TransactionDataBlock';
-import { builder } from './mystenlab/builder';
+import { builder, TransactionType } from './mystenlab/builder';
 import blake2b from '@bitgo/blake2b';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
@@ -166,7 +172,11 @@ export abstract class Transaction<T> extends BaseTransaction {
     const transactionBlock = TransactionBlockDataBuilder.fromBytes(data);
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
     const transactions = transactionBlock.transactions;
-    const txType = utils.getSuiTransactionType(transactions.length == 1 ? transactions[0] : transactions[1]);
+    let txType = utils.getSuiTransactionType(transactions.length == 1 ? transactions[0] : transactions[1]);
+    // although tricky to determine custom tx purely from a serialized tx, we can check if any command is a supported unique custom tx command, e.g. staking_pool split
+    if (transactions.some((tx) => this.isCustomTx(tx))) {
+      txType = SuiTransactionType.CustomTx;
+    }
     return {
       id: transactionBlock.getDigest(),
       type: txType,
@@ -182,6 +192,14 @@ export abstract class Transaction<T> extends BaseTransaction {
         budget: Number(transactionBlock.gasConfig.budget as string),
       },
     };
+  }
+
+  private static isCustomTx(tx: TransactionType): boolean {
+    try {
+      return utils.getSuiTransactionType(tx) === SuiTransactionType.CustomTx;
+    } catch (InvalidTransactionError) {
+      return false;
+    }
   }
 
   static getProperGasData(k: any): GasData {

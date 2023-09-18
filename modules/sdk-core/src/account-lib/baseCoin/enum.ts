@@ -60,6 +60,8 @@ export enum TransactionType {
   StakingAuthorizeRaw,
   // Delegate
   StakingDelegate,
+  // Custom transaction (e.g. SUI)
+  CustomTx,
 }
 
 /**

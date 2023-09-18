@@ -1,11 +1,11 @@
 import {
   BaseUtils,
   BuildTransactionError,
-  ParseTransactionError,
-  isValidEd25519PublicKey,
-  TransactionType,
-  Recipient,
   InvalidTransactionError,
+  isValidEd25519PublicKey,
+  ParseTransactionError,
+  Recipient,
+  TransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
@@ -13,11 +13,11 @@ import { isPureArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
 import {
   MethodNames,
+  RequestAddStake,
+  StakingProgrammableTransaction,
   SuiTransaction,
   SuiTransactionType,
   TransferProgrammableTransaction,
-  StakingProgrammableTransaction,
-  RequestAddStake,
 } from './iface';
 import { Buffer } from 'buffer';
 import {
@@ -190,6 +190,8 @@ export class Utils implements BaseUtils {
         return TransactionType.StakingAdd;
       case SuiTransactionType.WithdrawStake:
         return TransactionType.StakingWithdraw;
+      case SuiTransactionType.CustomTx:
+        return TransactionType.CustomTx;
     }
   }
 
@@ -208,6 +210,8 @@ export class Utils implements BaseUtils {
           return SuiTransactionType.AddStake;
         } else if (command.target.endsWith(MethodNames.RequestWithdrawStake)) {
           return SuiTransactionType.WithdrawStake;
+        } else if (command.target.endsWith(MethodNames.StakingPoolSplit)) {
+          return SuiTransactionType.CustomTx;
         } else {
           throw new InvalidTransactionError(`unsupported target method`);
         }
@@ -224,6 +228,14 @@ export class Utils implements BaseUtils {
         const index = transaction.amounts[0].index;
         const input = tx.tx.inputs[index] as any;
         amounts.push(this.getAmount(input));
+      }
+      if (transaction.kind === 'MoveCall') {
+        const type = this.getSuiTransactionType(transaction);
+        if (type === SuiTransactionType.CustomTx) {
+          const index = transaction.arguments[1].index;
+          const input = tx.tx.inputs[index] as any;
+          amounts.push(this.getAmount(input));
+        }
       }
       if (transaction.kind === 'TransferObjects') {
         const index = transaction.address.index;

@@ -4,6 +4,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
 import {
+  CustomProgrammableTransaction,
   StakingProgrammableTransaction,
   SuiTransaction,
   SuiTransactionType,
@@ -16,6 +17,8 @@ import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 import { UnstakingBuilder } from './unstakingBuilder';
 import { UnstakingTransaction } from './unstakingTransaction';
+import { CustomTransaction } from './customTransaction';
+import { CustomTransactionBuilder } from './customTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -40,6 +43,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const unstakingTransaction = new UnstakingTransaction(this._coinConfig);
           unstakingTransaction.fromRawTransaction(raw);
           return this.getUnstakingBuilder(unstakingTransaction);
+        case SuiTransactionType.CustomTx:
+          const customTransaction = new CustomTransaction(this._coinConfig);
+          customTransaction.fromRawTransaction(raw);
+          return this.getCustomTransactionBuilder(customTransaction);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -61,6 +68,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getUnstakingBuilder(tx?: Transaction<UnstakingProgrammableTransaction>): UnstakingBuilder {
     return this.initializeBuilder(tx, new UnstakingBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getCustomTransactionBuilder(tx?: Transaction<CustomProgrammableTransaction>): CustomTransactionBuilder {
+    return this.initializeBuilder(tx, new CustomTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
