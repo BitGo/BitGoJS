@@ -55,7 +55,7 @@
     "@bitgo/unspents": "^0.25.0",
     "@bitgo/utxo-lib": "^9.13.0",
     "@types/superagent": "4.1.15",
-    "bitcoinjs-message": "^2.0.0",
+    "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.2",
     "bluebird": "^3.5.3",
     "browser-or-node": "2.0.0",
     "bs58": "^2.0.1",

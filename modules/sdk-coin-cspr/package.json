@@ -48,7 +48,7 @@
     "bignumber.js": "^9.0.0",
     "casper-js-sdk": "2.7.6",
     "lodash": "^4.17.15",
-    "secp256k1": "4.0.2"
+    "secp256k1": "5.0.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.21.0",
