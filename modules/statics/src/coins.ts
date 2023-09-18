@@ -956,6 +956,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    '7df858d5-9da3-4071-ab06-399962ea87b7',
+    'core',
+    'Coreum',
+    Networks.main.core,
+    6,
+    UnderlyingAsset.CORE,
+    BaseUnit.CORE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
+    'tcore',
+    'Testnet Coreum',
+    Networks.test.core,
+    6,
+    UnderlyingAsset.TESTCORE,
+    BaseUnit.TESTCORE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
     'near',
     'Near',

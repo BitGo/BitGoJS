@@ -669,6 +669,18 @@ class KavaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.mintscan.io/kava-testnet/txs/';
 }
 
+class Core extends Mainnet implements AccountNetwork {
+  name = 'Coreum';
+  family = CoinFamily.CORE;
+  explorerUrl = 'https://explorer.coreum.com/coreum/transactions/';
+}
+
+class CoreTestnet extends Testnet implements AccountNetwork {
+  name = 'CoreumTestnet';
+  family = CoinFamily.CORE;
+  explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -820,6 +832,7 @@ export const Networks = {
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
+    core: Object.freeze(new Core()),
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
     dot: Object.freeze(new Polkadot()),
@@ -893,6 +906,7 @@ export const Networks = {
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    core: Object.freeze(new CoreTestnet()),
     tia: Object.freeze(new TiaTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
