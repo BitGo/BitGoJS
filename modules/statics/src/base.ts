@@ -46,6 +46,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   INJECTIVE = 'injective',
+  KAVA = 'kava',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
@@ -253,6 +254,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   INJECTIVE = 'injective',
+  KAVA = 'kava',
   LTC = 'ltc',
   NEAR = 'near',
   OSMO = 'osmo',
@@ -1337,6 +1339,7 @@ export enum BaseUnit {
   SEI = 'usei',
   INJECTIVE = 'inj',
   ZETA = 'azeta',
+  KAVA = 'ukava',
 }
 
 export interface BaseCoinConstructorOptions {
