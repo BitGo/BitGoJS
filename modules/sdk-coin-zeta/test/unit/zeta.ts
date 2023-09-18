@@ -353,7 +353,7 @@ describe('Zeta', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://zetachain-athens.blockpi.network/lcd/v1/public')
+      nock('https://rpc.ankr.com/http/zetachain_athens_testnet')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
@@ -404,7 +404,7 @@ describe('Zeta', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://zetachain-athens.blockpi.network/lcd/v1/public')
+      nock('https://rpc.ankr.com/http/zetachain_athens_testnet')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 

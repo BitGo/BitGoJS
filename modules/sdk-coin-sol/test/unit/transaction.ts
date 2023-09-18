@@ -17,8 +17,8 @@ describe('Sol Transaction', () => {
     });
     it('throw for toJson of empty tx', () => {
       const tx = new Transaction(coin);
+      should(() => tx.toJson()).throwError('Empty transaction');
       tx.solTransaction = new SolTransaction();
-      should(() => tx.toJson()).throwError('Nonce is not set');
       tx.solTransaction.recentBlockhash = testData.blockHashes.validBlockHashes[0];
       should(() => tx.toJson()).throwError('Invalid transaction, transaction type not supported: undefined');
     });
