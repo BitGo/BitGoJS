@@ -33,6 +33,7 @@ export enum CoinFamily {
   BTC = 'btc',
   BTG = 'btg',
   CELO = 'celo',
+  CORE = 'core',
   CSPR = 'cspr',
   DASH = 'dash',
   DOGE = 'doge',
@@ -46,6 +47,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   INJECTIVE = 'injective',
+  KAVA = 'kava',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
@@ -243,6 +245,7 @@ export enum UnderlyingAsset {
   DASH = 'dash',
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
+  CORE = 'core',
   CSPR = 'cspr',
   ETH = 'eth',
   ETH2 = 'eth2',
@@ -258,6 +261,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   INJECTIVE = 'injective',
+  KAVA = 'kava',
   LTC = 'ltc',
   NEAR = 'near',
   OSMO = 'osmo',
@@ -267,6 +271,7 @@ export enum UnderlyingAsset {
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
+  TESTCORE = 'testcore', // Coreum testnet uses different name for native coin
   TIA = 'tia', // Celestia
   TRX = 'trx',
   USD = 'usd',
@@ -1342,6 +1347,9 @@ export enum BaseUnit {
   SEI = 'usei',
   INJECTIVE = 'inj',
   ZETA = 'azeta',
+  KAVA = 'ukava',
+  CORE = 'ucore',
+  TESTCORE = 'utestcore', // Coreum testnet uses different name for native coin
 }
 
 export interface BaseCoinConstructorOptions {

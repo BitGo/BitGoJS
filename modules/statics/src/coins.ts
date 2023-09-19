@@ -937,6 +937,46 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    'c592d110-cf6d-4630-b6e8-cfe044db0be2',
+    'kava',
+    'Kava',
+    Networks.main.kava,
+    6,
+    UnderlyingAsset.KAVA,
+    BaseUnit.KAVA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    '62895d6b-6e99-4eba-82f1-9ce4e7658998',
+    'tkava',
+    'Testnet Kava',
+    Networks.test.kava,
+    6,
+    UnderlyingAsset.KAVA,
+    BaseUnit.KAVA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    '7df858d5-9da3-4071-ab06-399962ea87b7',
+    'core',
+    'Coreum',
+    Networks.main.core,
+    6,
+    UnderlyingAsset.CORE,
+    BaseUnit.CORE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
+    'tcore',
+    'Testnet Coreum',
+    Networks.test.core,
+    6,
+    UnderlyingAsset.TESTCORE,
+    BaseUnit.TESTCORE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
     'near',
     'Near',
