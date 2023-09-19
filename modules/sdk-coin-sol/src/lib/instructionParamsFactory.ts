@@ -28,6 +28,7 @@ import {
   StakingWithdraw,
   TokenTransfer,
   StakingAuthorize,
+  StakingDelegate,
 } from './iface';
 import { getInstructionType } from './utils';
 import assert from 'assert';
@@ -61,6 +62,8 @@ export function instructionParamsFactory(
       return parseStakingAuthorizeInstructions(instructions);
     case TransactionType.StakingAuthorizeRaw:
       return parseStakingAuthorizeRawInstructions(instructions);
+    case TransactionType.StakingDelegate:
+      return parseStakingDelegateInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -239,6 +242,46 @@ function parseStakingActivateInstructions(
 
   return instructionData;
 }
+/**
+ * Parses Solana instructions to create delegate tx
+ * Only supports Nonce, StakingDelegate
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking delegate tx
+ */
+function parseStakingDelegateInstructions(instructions: TransactionInstruction[]): Array<Nonce | StakingDelegate> {
+  const instructionData: Array<Nonce | StakingDelegate> = [];
+  for (const instruction of instructions) {
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+        const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instruction);
+        const nonce: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: {
+            walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+            authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+          },
+        };
+        instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.StakingDelegate:
+        const stakingDelegateParams = StakeInstruction.decodeDelegate(instruction);
+        const stakingDelegate: StakingDelegate = {
+          type: InstructionBuilderTypes.StakingDelegate,
+          params: {
+            fromAddress: stakingDelegateParams.authorizedPubkey.toString() || '',
+            stakingAddress: stakingDelegateParams.stakePubkey.toString() || '',
+            validator: stakingDelegateParams.votePubkey.toString() || '',
+          },
+        };
+        instructionData.push(stakingDelegate);
+        break;
+    }
+  }
+  return instructionData;
+}
 
 interface StakingInstructions {
   create?: CreateAccountParams;
@@ -275,7 +318,7 @@ function parseStakingDeactivateInstructions(
   instructions: TransactionInstruction[]
 ): Array<Nonce | StakingDeactivate | Memo> {
   const instructionData: Array<Nonce | StakingDeactivate | Memo> = [];
-  const unstakingInstructions = {} as UnstakingInstructions;
+  const unstakingInstructions: UnstakingInstructions[] = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -300,37 +343,77 @@ function parseStakingDeactivateInstructions(
         break;
 
       case ValidInstructionTypesEnum.Allocate:
-        unstakingInstructions.allocate = SystemInstruction.decodeAllocate(instruction);
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].allocate === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].allocate =
+            SystemInstruction.decodeAllocate(instruction);
+        } else {
+          unstakingInstructions.push({
+            allocate: SystemInstruction.decodeAllocate(instruction),
+          });
+        }
         break;
 
       case ValidInstructionTypesEnum.Assign:
-        unstakingInstructions.assign = SystemInstruction.decodeAssign(instruction);
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].assign === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].assign = SystemInstruction.decodeAssign(instruction);
+        } else {
+          unstakingInstructions.push({
+            assign: SystemInstruction.decodeAssign(instruction),
+          });
+        }
         break;
 
       case ValidInstructionTypesEnum.Split:
-        unstakingInstructions.split = StakeInstruction.decodeSplit(instruction);
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].split === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].split = StakeInstruction.decodeSplit(instruction);
+        } else {
+          unstakingInstructions.push({
+            split: StakeInstruction.decodeSplit(instruction),
+          });
+        }
         break;
 
       case ValidInstructionTypesEnum.StakingDeactivate:
-        unstakingInstructions.deactivate = StakeInstruction.decodeDeactivate(instruction);
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].deactivate === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].deactivate =
+            StakeInstruction.decodeDeactivate(instruction);
+        } else {
+          unstakingInstructions.push({
+            deactivate: StakeInstruction.decodeDeactivate(instruction),
+          });
+        }
         break;
     }
   }
 
-  validateUnstakingInstructions(unstakingInstructions);
-  const stakingDeactivate: StakingDeactivate = {
-    type: InstructionBuilderTypes.StakingDeactivate,
-    params: {
-      fromAddress: unstakingInstructions.deactivate?.authorizedPubkey.toString() || '',
-      stakingAddress:
-        unstakingInstructions.split?.stakePubkey.toString() ||
-        unstakingInstructions.deactivate?.stakePubkey.toString() ||
-        '',
-      amount: unstakingInstructions.split?.lamports.toString(),
-      unstakingAddress: unstakingInstructions.split?.splitStakePubkey.toString(),
-    },
-  };
-  instructionData.push(stakingDeactivate);
+  for (const unstakingInstruction of unstakingInstructions) {
+    validateUnstakingInstructions(unstakingInstruction);
+    const stakingDeactivate: StakingDeactivate = {
+      type: InstructionBuilderTypes.StakingDeactivate,
+      params: {
+        fromAddress: unstakingInstruction.deactivate?.authorizedPubkey.toString() || '',
+        stakingAddress:
+          unstakingInstruction.split?.stakePubkey.toString() ||
+          unstakingInstruction.deactivate?.stakePubkey.toString() ||
+          '',
+        amount: unstakingInstruction.split?.lamports.toString(),
+        unstakingAddress: unstakingInstruction.split?.splitStakePubkey.toString(),
+      },
+    };
+    instructionData.push(stakingDeactivate);
+  }
 
   return instructionData;
 }

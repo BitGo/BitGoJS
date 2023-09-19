@@ -205,6 +205,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingAuthorizeRaw:
           this.setTransactionType(TransactionType.StakingAuthorizeRaw);
           break;
+        case TransactionType.StakingDelegate:
+          this.setTransactionType(TransactionType.StakingDelegate);
+          break;
       }
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();
@@ -228,15 +231,14 @@ export class Transaction extends BaseTransaction {
         authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
       };
     }
-
+    const instructionData = instructionParamsFactory(this._type, this._solTransaction.instructions);
     if (this._type) {
-      const instrunctionData = instructionParamsFactory(this._type, this._solTransaction.instructions);
       if (
         !durableNonce &&
-        instrunctionData.length > 1 &&
-        instrunctionData[0].type === InstructionBuilderTypes.NonceAdvance
+        instructionData.length > 1 &&
+        instructionData[0].type === InstructionBuilderTypes.NonceAdvance
       ) {
-        durableNonce = instrunctionData[0].params;
+        durableNonce = instructionData[0].params;
       }
     }
     const result: TxData = {
@@ -246,7 +248,7 @@ export class Transaction extends BaseTransaction {
       nonce: this.getNonce(),
       durableNonce: durableNonce,
       numSignatures: this.signature.length,
-      instructionsData: instructionParamsFactory(this._type, this._solTransaction.instructions),
+      instructionsData: instructionData,
     };
     return result;
   }
@@ -350,6 +352,8 @@ export class Transaction extends BaseTransaction {
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
           break;
         case InstructionBuilderTypes.StakingAuthorize:
+          break;
+        case InstructionBuilderTypes.StakingDelegate:
           break;
       }
     }
