@@ -209,6 +209,11 @@ export enum CoinFeature {
    * This coin uses sha256 hash function for ECDSA TSS signatures
    */
   SHA256_WITH_ECDSA_TSS = 'sha256-with-ecdsa-tss',
+
+  /**
+   * This coin is cosmos like coin
+   */
+  COSMOS_LIKE_COINS = 'cosmos_like_coins',
 }
 
 /**

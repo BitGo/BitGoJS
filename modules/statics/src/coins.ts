@@ -217,6 +217,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
+  CoinFeature.COSMOS_LIKE_COINS,
 ];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
