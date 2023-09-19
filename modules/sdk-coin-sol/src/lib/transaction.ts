@@ -205,9 +205,6 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingAuthorizeRaw:
           this.setTransactionType(TransactionType.StakingAuthorizeRaw);
           break;
-        case TransactionType.StakingDelegate:
-          this.setTransactionType(TransactionType.StakingDelegate);
-          break;
       }
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();
@@ -353,8 +350,6 @@ export class Transaction extends BaseTransaction {
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
           break;
         case InstructionBuilderTypes.StakingAuthorize:
-          break;
-        case InstructionBuilderTypes.StakingDelegate:
           break;
       }
     }

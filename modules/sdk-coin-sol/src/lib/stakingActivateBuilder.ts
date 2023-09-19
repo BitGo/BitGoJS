@@ -54,7 +54,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
    * The address of the staking account.
    *
    * @param {string} stakingAddress public address of the staking account.
-   * @returns {StakingActivateBuilder} This staking builder.
+   * @returns {StakeBuilder} This staking builder.
    *
    * @see https://docs.solana.com/staking/stake-accounts#account-address
    */
@@ -68,7 +68,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
    * Set validator address to delegate funds to.
    *
    * @param {string} validator Validator address to delegate funds to.
-   * @returns {StakingActivateBuilder} This staking builder.
+   * @returns {StakeBuilder} This staking builder.
    *
    */
   validator(validator: string): this {

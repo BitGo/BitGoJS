@@ -34,8 +34,7 @@ export type InstructionParams =
   | StakingWithdraw
   | AtaInit
   | TokenTransfer
-  | StakingAuthorize
-  | StakingDelegate;
+  | StakingAuthorize;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -75,11 +74,6 @@ export interface TokenTransfer {
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
   params: { fromAddress: string; stakingAddress: string; amount: string; validator: string };
-}
-
-export interface StakingDelegate {
-  type: InstructionBuilderTypes.StakingDelegate;
-  params: { stakingAddress: string; fromAddress: string; validator: string };
 }
 
 export interface StakingDeactivate {
@@ -122,12 +116,6 @@ export type StakingAuthorizeParams = {
   custodianAddress?: string;
 };
 
-export type StakingDelegateParams = {
-  stakingAddress: string;
-  fromAddress: string;
-  validator: string;
-};
-
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: string;
   blockhash: Blockhash;
@@ -135,7 +123,6 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   durableNonce?: DurableNonceParams;
   memo?: string;
   stakingAuthorize?: StakingAuthorizeParams;
-  stakingDelegate?: StakingDelegateParams;
 }
 
 export class TokenAssociateRecipient {
