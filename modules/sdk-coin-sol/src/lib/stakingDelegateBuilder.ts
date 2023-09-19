@@ -24,19 +24,13 @@ export class StakingDelegateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    const stakingAddresses: string[] = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDelegate) {
         const activateInstruction: StakingDelegate = instruction;
         this.sender(activateInstruction.params.fromAddress);
-        stakingAddresses.push(activateInstruction.params.stakingAddress);
+        this.stakingAddress(activateInstruction.params.stakingAddress);
         this.validator(activateInstruction.params.validator);
       }
-    }
-    if (stakingAddresses.length > 1) {
-      this.stakingAddresses(stakingAddresses);
-    } else {
-      this.stakingAddress(stakingAddresses[0]);
     }
   }
 
@@ -90,7 +84,6 @@ export class StakingDelegateBuilder extends TransactionBuilder {
     assert(this._validator, 'Validator must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
-      this._instructionsData = [];
       for (const stakingAddress of this._stakingAddresses) {
         assert(stakingAddress, 'Staking Address must be set before building the transaction');
         if (this._sender === stakingAddress) {
@@ -122,6 +115,7 @@ export class StakingDelegateBuilder extends TransactionBuilder {
       };
       this._instructionsData = [stakingAccountData];
     }
+
     return await super.buildImplementation();
   }
 }

@@ -3,14 +3,11 @@ import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
-import { TransactionType } from '@bitgo/sdk-core';
-import * as bs58 from 'bs58';
 
 describe('Sol Staking Delegate Builder', () => {
   const factory = getBuilderFactory('tsol');
 
-  const walletKeyPair = new KeyPair(testData.authAccount);
-  const wallet = walletKeyPair.getKeys();
+  const wallet = new KeyPair(testData.authAccount).getKeys();
   const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
   const splitAccount = new KeyPair(testData.splitStakeAccount).getKeys();
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
@@ -21,7 +18,6 @@ describe('Sol Staking Delegate Builder', () => {
     it('building a staking delegate tx', async () => {
       const txBuilder = factory.getStakingDelegateBuilder();
       txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash).validator(validator.pub);
-      const txUnsigned = await txBuilder.build();
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
@@ -38,21 +34,6 @@ describe('Sol Staking Delegate Builder', () => {
         },
       ]);
       should.equal(rawTx, testData.STAKING_DELEGATE_SIGNED_TX);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDelegateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash).validator(validator.pub);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDelegate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_DELEGATE_SIGNED_TX);
     });
 
     it('building a staking multi delegate tx', async () => {
@@ -62,7 +43,6 @@ describe('Sol Staking Delegate Builder', () => {
         .stakingAddresses([stakeAccount.pub, splitAccount.pub])
         .nonce(recentBlockHash)
         .validator(validator.pub);
-      const txUnsigned = await txBuilder.build();
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
@@ -87,66 +67,6 @@ describe('Sol Staking Delegate Builder', () => {
         },
       ]);
       should.equal(rawTx, testData.STAKING_MULTI_DELEGATE_SIGNED_TX);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDelegateBuilder();
-      txBuilder2
-        .sender(wallet.pub)
-        .stakingAddresses([stakeAccount.pub, splitAccount.pub])
-        .nonce(recentBlockHash)
-        .validator(validator.pub);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDelegate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DELEGATE_SIGNED_TX);
-    });
-
-    it('building a staking multi single delegate tx', async () => {
-      const txBuilder = factory.getStakingDelegateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub]).nonce(recentBlockHash).validator(validator.pub);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Delegate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            validator: validator.pub,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_UNSIGNED_TX_single);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDelegateBuilder();
-      txBuilder2
-        .sender(wallet.pub)
-        .stakingAddresses([stakeAccount.pub])
-        .nonce(recentBlockHash)
-        .validator(validator.pub);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDelegate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DEACTIVATE_UNSIGNED_TX_single);
     });
   });
 

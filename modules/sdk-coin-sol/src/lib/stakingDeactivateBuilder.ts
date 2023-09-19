@@ -25,22 +25,16 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    const stakingAddresses: string[] = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
         const deactivateInstruction: StakingDeactivate = instruction;
         this.sender(deactivateInstruction.params.fromAddress);
-        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
+        this.stakingAddress(deactivateInstruction.params.stakingAddress);
         if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
           this.amount(deactivateInstruction.params.amount);
           this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
         }
       }
-    }
-    if (stakingAddresses.length > 1) {
-      this.stakingAddresses(stakingAddresses);
-    } else {
-      this.stakingAddress(stakingAddresses[0]);
     }
   }
 
@@ -111,7 +105,6 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     assert(this._sender, 'Sender must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
-      this._instructionsData = [];
       for (const stakingAddress of this._stakingAddresses) {
         const stakingDeactivateData: StakingDeactivate = {
           type: InstructionBuilderTypes.StakingDeactivate,
