@@ -14,6 +14,5 @@ export { StakingActivateBuilder } from './stakingActivateBuilder';
 export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 export { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
-export { StakingDelegateBuilder } from './stakingDelegateBuilder';
 export { StakingRawMsgAuthorizeBuilder } from './stakingRawMsgAuthorizeBuilder';
 export { Utils, Interface };

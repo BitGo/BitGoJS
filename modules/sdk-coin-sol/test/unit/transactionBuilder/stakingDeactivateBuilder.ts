@@ -3,16 +3,12 @@ import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
-import { TransactionType } from '@bitgo/sdk-core';
-import * as bs58 from 'bs58';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
 
-  const walletKeyPair = new KeyPair(testData.authAccount);
-  const wallet = walletKeyPair.getKeys();
+  const wallet = new KeyPair(testData.authAccount).getKeys();
   const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
-  const splitAccount = new KeyPair(testData.splitStakeAccount).getKeys();
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
@@ -20,7 +16,6 @@ describe('Sol Staking Deactivate Builder', () => {
     it('building a staking deactivate tx', async () => {
       const txBuilder = factory.getStakingDeactivateBuilder();
       txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
@@ -38,131 +33,6 @@ describe('Sol Staking Deactivate Builder', () => {
         },
       ]);
       should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
-    });
-
-    it('building a staking multi deactivate tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-          },
-        },
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: splitAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_UNSIGNED_TX);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX);
-    });
-
-    it('should build and sign a multi deactivate single', async function () {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub]).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX_single);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddresses([stakeAccount.pub]).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX_single);
-    });
-
-    it('should build and sign a deactivate single', async function () {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      const txUnsigned = await txBuilder.build();
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX_single);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(testData.STAKING_DEACTIVATE_UNSIGNED_TX_single).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_DEACTIVATE_SIGNED_TX_single);
     });
 
     it('building a staking deactivate signed tx with memo', async () => {

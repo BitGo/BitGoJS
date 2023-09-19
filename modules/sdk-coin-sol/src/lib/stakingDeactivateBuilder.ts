@@ -10,7 +10,6 @@ import { isValidStakingAmount, validateAddress } from './utils';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
-  protected _stakingAddresses: string[];
   protected _amount?: string;
   protected _unstakingAddress: string;
 
@@ -25,22 +24,16 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    const stakingAddresses: string[] = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
         const deactivateInstruction: StakingDeactivate = instruction;
         this.sender(deactivateInstruction.params.fromAddress);
-        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
+        this.stakingAddress(deactivateInstruction.params.stakingAddress);
         if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
           this.amount(deactivateInstruction.params.amount);
           this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
         }
       }
-    }
-    if (stakingAddresses.length > 1) {
-      this.stakingAddresses(stakingAddresses);
-    } else {
-      this.stakingAddress(stakingAddresses[0]);
     }
   }
 
@@ -55,22 +48,6 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   stakingAddress(stakingAddress: string): this {
     validateAddress(stakingAddress, 'stakingAddress');
     this._stakingAddress = stakingAddress;
-    return this;
-  }
-
-  /**
-   * The staking addresses of the staking account.
-   *
-   * @param {string[]} stakingAddresses public address of the staking accounts
-   * @returns {StakingDeactivateBuilder} This staking deactivate builder.
-   *
-   * @see https://docs.solana.com/staking/stake-accounts#account-address
-   */
-  stakingAddresses(stakingAddresses: string[]): this {
-    for (const stakingAddress of stakingAddresses) {
-      validateAddress(stakingAddress, 'stakingAddress');
-    }
-    this._stakingAddresses = stakingAddresses;
     return this;
   }
 
@@ -109,51 +86,37 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+    assert(this._stakingAddress, 'Staking address must be set before building the transaction');
 
-    if (this._stakingAddresses && this._stakingAddresses.length > 0) {
-      this._instructionsData = [];
-      for (const stakingAddress of this._stakingAddresses) {
-        const stakingDeactivateData: StakingDeactivate = {
-          type: InstructionBuilderTypes.StakingDeactivate,
-          params: {
-            fromAddress: this._sender,
-            stakingAddress: stakingAddress,
-          },
-        };
-        this._instructionsData.push(stakingDeactivateData);
-      }
-    } else {
-      assert(this._stakingAddress, 'Staking address must be set before building the transaction');
-
-      if (this._sender === this._stakingAddress) {
-        throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
-      }
-
-      if (this._amount) {
-        assert(
-          this._unstakingAddress,
-          'When partially unstaking the unstaking address must be set before building the transaction'
-        );
-      }
-
-      if (this._unstakingAddress) {
-        assert(
-          this._amount,
-          'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
-        );
-      }
-
-      const stakingDeactivateData: StakingDeactivate = {
-        type: InstructionBuilderTypes.StakingDeactivate,
-        params: {
-          fromAddress: this._sender,
-          stakingAddress: this._stakingAddress,
-          amount: this._amount,
-          unstakingAddress: this._unstakingAddress,
-        },
-      };
-      this._instructionsData = [stakingDeactivateData];
+    if (this._sender === this._stakingAddress) {
+      throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
     }
+
+    if (this._amount) {
+      assert(
+        this._unstakingAddress,
+        'When partially unstaking the unstaking address must be set before building the transaction'
+      );
+    }
+
+    if (this._unstakingAddress) {
+      assert(
+        this._amount,
+        'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
+      );
+    }
+
+    const stakingDeactivateData: StakingDeactivate = {
+      type: InstructionBuilderTypes.StakingDeactivate,
+      params: {
+        fromAddress: this._sender,
+        stakingAddress: this._stakingAddress,
+        amount: this._amount,
+        unstakingAddress: this._unstakingAddress,
+      },
+    };
+    this._instructionsData = [stakingDeactivateData];
+
     return await super.buildImplementation();
   }
 }

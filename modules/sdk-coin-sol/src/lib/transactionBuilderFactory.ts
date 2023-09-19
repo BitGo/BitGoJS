@@ -13,7 +13,6 @@ import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TransferBuilderV2 } from './transferBuilderV2';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingRawMsgAuthorizeBuilder } from './stakingRawMsgAuthorizeBuilder';
-import { StakingDelegateBuilder } from './stakingDelegateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -53,8 +52,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingAuthorizeBuilder(tx);
         case TransactionType.StakingAuthorizeRaw:
           return this.getStakingRawMsgAuthorizeBuilder(tx);
-        case TransactionType.StakingDelegate:
-          return this.getStakingDelegateBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -129,19 +126,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * Returns the builder to authorized staking account.
    *
    * @param {Transaction} tx - the transaction to be used to intialize the builder
-   * @returns {StakingAuthorizeBuilder} - the initialized staking authorize builder
+   * @returns {StakingWithdrawBuilder} - the initialized staking authorize builder
    */
   getStakingAuthorizeBuilder(tx?: Transaction): StakingAuthorizeBuilder {
     return this.initializeBuilder(tx, new StakingAuthorizeBuilder(this._coinConfig));
-  }
-  /**
-   * Returns the builder to delegate staking account.
-   *
-   * @param {Transaction} tx - the transaction to be used to delegate staking account
-   * @returns {StakingDelegateBuilder} - the staking delegate builder
-   */
-  getStakingDelegateBuilder(tx?: Transaction): StakingDelegateBuilder {
-    return this.initializeBuilder(tx, new StakingDelegateBuilder(this._coinConfig));
   }
 
   /**
