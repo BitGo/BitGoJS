@@ -27,6 +27,7 @@ import {
   GetUserPrvOptions,
   ManageUnspentsOptions,
   SignedMessage,
+  BaseTssUtils,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -34,6 +35,8 @@ import { BitGo } from '../../../src';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { getDefaultWalletKeys } from './coins/utxo/util';
+import { Tsol } from '@bitgo/sdk-coin-sol';
+import { Teth } from '@bitgo/sdk-coin-eth';
 
 require('should-sinon');
 
@@ -1954,42 +1957,54 @@ describe('V2 Wallet:', function () {
         type: 'transfer',
       };
 
-      beforeEach(function () {
-        sandbox
-          .stub(Keychains.prototype, 'getKeysForSigning')
-          .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
-        sandbox.stub(tssEthWallet.baseCoin, 'verifyTransaction').resolves(true);
-      });
+      ['eddsa', 'ecdsa'].forEach((keyCurvve: string) => {
+        describe(keyCurvve, () => {
+          const wallet = keyCurvve === 'eddsa' ? tssSolWallet : tssEthWallet;
 
-      afterEach(function () {
-        sandbox.verifyAndRestore();
-      });
+          beforeEach(function () {
+            sandbox
+              .stub(Keychains.prototype, 'getKeysForSigning')
+              .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+            if (keyCurvve === 'eddsa') {
+              sandbox.stub(Tsol.prototype, 'verifyTransaction').resolves(true);
+            } else {
+              sandbox.stub(Teth.prototype, 'verifyTransaction').resolves(true);
+            }
+          });
 
-      it('it should succeed but not sign if the txRequest is pending approval', async function () {
-        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
-        getTxRequestStub.resolves({ ...txRequestFull, state: 'pendingApproval' });
+          afterEach(function () {
+            sandbox.verifyAndRestore();
+          });
 
-        const signTransactionSpy = sandbox.spy(Wallet.prototype, 'signTransaction');
+          it('it should succeed but not sign if the txRequest is pending approval', async function () {
+            const getTxRequestStub = sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves({
+              ...txRequestFull,
+              state: 'pendingApproval',
+            });
 
-        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
-        result.should.have.property('state');
-        result.state.should.equal('pendingApproval');
-        getTxRequestStub.calledOnce.should.be.true();
-        signTransactionSpy.notCalled.should.be.true();
-      });
+            const signTransactionSpy = sandbox.spy(Wallet.prototype, 'signTransaction');
 
-      it('it should succeed and sign if the txRequest is not pending approval', async function () {
-        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
-        getTxRequestStub.resolves(txRequestFull);
+            const result = (await wallet.prebuildAndSignTransaction(params)) as TxRequest;
+            result.should.have.property('state');
+            result.state.should.equal('pendingApproval');
+            getTxRequestStub.calledOnce.should.be.true();
+            signTransactionSpy.notCalled.should.be.true();
+          });
 
-        const signTransactionStub = sandbox.stub(Wallet.prototype, 'signTransaction');
-        signTransactionStub.resolves({ ...txRequestFull, state: 'signed' });
+          it('it should succeed and sign if the txRequest is not pending approval', async function () {
+            const getTxRequestStub = sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest');
+            getTxRequestStub.resolves(txRequestFull);
 
-        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
-        result.should.have.property('state');
-        result.state.should.equal('signed');
-        getTxRequestStub.calledOnce.should.be.true();
-        signTransactionStub.calledOnce.should.be.true();
+            const signTransactionStub = sandbox.stub(Wallet.prototype, 'signTransaction');
+            signTransactionStub.resolves({ ...txRequestFull, state: 'signed' });
+
+            const result = (await wallet.prebuildAndSignTransaction(params)) as TxRequest;
+            result.should.have.property('state');
+            result.state.should.equal('signed');
+            getTxRequestStub.calledOnce.should.be.true();
+            signTransactionStub.calledOnce.should.be.true();
+          });
+        });
       });
     });
 
