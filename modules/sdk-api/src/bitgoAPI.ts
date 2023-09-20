@@ -93,9 +93,10 @@ const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
 
+let proxyAgent: any;
 if (!isBrowser && !isWebWorker) {
-  debug('enabling superagent-proxy wrapper');
-  require('superagent-proxy')(superagent);
+  debug('enabling proxy-agent');
+  proxyAgent = require('proxy-agent').ProxyAgent;
 }
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
@@ -328,10 +329,13 @@ export class BitGoAPI implements BitGoBase {
    * @param method
    */
   private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
-    let req = this.getAgentRequest(method, url);
-    if (this._proxy) {
+    const req = this.getAgentRequest(method, url);
+    if (this._proxy && proxyAgent !== undefined) {
       debug('proxying request through %s', this._proxy);
-      req = req.proxy(this._proxy);
+      const agent = new proxyAgent(this._proxy);
+      if (agent) {
+        req.agent(agent);
+      }
     }
 
     const originalThen = req.then.bind(req);
