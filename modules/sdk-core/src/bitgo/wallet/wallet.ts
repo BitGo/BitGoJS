@@ -1782,6 +1782,12 @@ export class Wallet implements IWallet {
       error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';
       throw error;
     }
+    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() || [];
+    if (params.apiVersion && !supportedTxRequestVersions.includes(params.apiVersion)) {
+      throw new Error(
+        `prebuildAndSignTransaction params.apiVersion=${params.apiVersion} must be one of ${supportedTxRequestVersions}`
+      );
+    }
 
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
 
@@ -1801,15 +1807,8 @@ export class Wallet implements IWallet {
     }
 
     let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
-    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() || [];
-    const mustUseTxRequestFull = supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
-
-    if (
-      // verify the wallet must use txRequest Full api and must rebuild the tx before submitting
-      mustUseTxRequestFull &&
-      isPrebuildTransactionResult(params.prebuildTx) &&
-      params.prebuildTx.buildParams?.preview
-    ) {
+    if (isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview) {
+      // If we prebuilt the txRequest with preview=true, then we should rebuild with preview=false to persist the request
       txPrebuildQuery = this.prebuildTransaction({
         ...params,
         ...{ ...params.prebuildTx.buildParams, preview: false },
@@ -1860,7 +1859,7 @@ export class Wallet implements IWallet {
       });
     }
 
-    if (mustUseTxRequestFull && signingParams.txPrebuild.txRequestId) {
+    if (signingParams.txPrebuild.txRequestId) {
       assert(this.tssUtils, 'tssUtils must be defined for TSS wallets');
       const txRequest = await this.tssUtils.getTxRequest(signingParams.txPrebuild.txRequestId);
       if (this.tssUtils.isPendingApprovalTxRequestFull(txRequest)) {

@@ -27,6 +27,7 @@ import {
   GetUserPrvOptions,
   ManageUnspentsOptions,
   SignedMessage,
+  BaseTssUtils,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -34,6 +35,8 @@ import { BitGo } from '../../../src';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { getDefaultWalletKeys } from './coins/utxo/util';
+import { Tsol } from '@bitgo/sdk-coin-sol';
+import { Teth } from '@bitgo/sdk-coin-eth';
 
 require('should-sinon');
 
@@ -1876,11 +1879,11 @@ describe('V2 Wallet:', function () {
       multisigType: 'tss',
     };
 
-    const tssWallet = new Wallet(bitgo, tsol, walletData);
+    const tssSolWallet = new Wallet(bitgo, tsol, walletData);
 
     let tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
     const tssPolygonWallet = new Wallet(bitgo, bitgo.coin('tpolygon'), polygonWalletData);
-    const custodialTssWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
+    const custodialTssSolWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
 
     const txRequest: TxRequest = {
       txRequestId: 'id',
@@ -1954,42 +1957,54 @@ describe('V2 Wallet:', function () {
         type: 'transfer',
       };
 
-      beforeEach(function () {
-        sandbox
-          .stub(Keychains.prototype, 'getKeysForSigning')
-          .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
-        sandbox.stub(tssEthWallet.baseCoin, 'verifyTransaction').resolves(true);
-      });
+      ['eddsa', 'ecdsa'].forEach((keyCurvve: string) => {
+        describe(keyCurvve, () => {
+          const wallet = keyCurvve === 'eddsa' ? tssSolWallet : tssEthWallet;
 
-      afterEach(function () {
-        sandbox.verifyAndRestore();
-      });
+          beforeEach(function () {
+            sandbox
+              .stub(Keychains.prototype, 'getKeysForSigning')
+              .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+            if (keyCurvve === 'eddsa') {
+              sandbox.stub(Tsol.prototype, 'verifyTransaction').resolves(true);
+            } else {
+              sandbox.stub(Teth.prototype, 'verifyTransaction').resolves(true);
+            }
+          });
 
-      it('it should succeed but not sign if the txRequest is pending approval', async function () {
-        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
-        getTxRequestStub.resolves({ ...txRequestFull, state: 'pendingApproval' });
+          afterEach(function () {
+            sandbox.verifyAndRestore();
+          });
 
-        const signTransactionSpy = sandbox.spy(Wallet.prototype, 'signTransaction');
+          it('it should succeed but not sign if the txRequest is pending approval', async function () {
+            const getTxRequestStub = sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves({
+              ...txRequestFull,
+              state: 'pendingApproval',
+            });
 
-        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
-        result.should.have.property('state');
-        result.state.should.equal('pendingApproval');
-        getTxRequestStub.calledOnce.should.be.true();
-        signTransactionSpy.notCalled.should.be.true();
-      });
+            const signTransactionSpy = sandbox.spy(Wallet.prototype, 'signTransaction');
 
-      it('it should succeed and sign if the txRequest is not pending approval', async function () {
-        const getTxRequestStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'getTxRequest');
-        getTxRequestStub.resolves(txRequestFull);
+            const result = (await wallet.prebuildAndSignTransaction(params)) as TxRequest;
+            result.should.have.property('state');
+            result.state.should.equal('pendingApproval');
+            getTxRequestStub.calledOnce.should.be.true();
+            signTransactionSpy.notCalled.should.be.true();
+          });
 
-        const signTransactionStub = sandbox.stub(Wallet.prototype, 'signTransaction');
-        signTransactionStub.resolves({ ...txRequestFull, state: 'signed' });
+          it('it should succeed and sign if the txRequest is not pending approval', async function () {
+            const getTxRequestStub = sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest');
+            getTxRequestStub.resolves(txRequestFull);
 
-        const result = (await tssEthWallet.prebuildAndSignTransaction(params)) as TxRequest;
-        result.should.have.property('state');
-        result.state.should.equal('signed');
-        getTxRequestStub.calledOnce.should.be.true();
-        signTransactionStub.calledOnce.should.be.true();
+            const signTransactionStub = sandbox.stub(Wallet.prototype, 'signTransaction');
+            signTransactionStub.resolves({ ...txRequestFull, state: 'signed' });
+
+            const result = (await wallet.prebuildAndSignTransaction(params)) as TxRequest;
+            result.should.have.property('state');
+            result.state.should.equal('signed');
+            getTxRequestStub.calledOnce.should.be.true();
+            signTransactionStub.calledOnce.should.be.true();
+          });
+        });
       });
     });
 
@@ -2011,15 +2026,15 @@ describe('V2 Wallet:', function () {
           intentType: 'payment',
         });
 
-        const txPrebuild = await tssWallet.prebuildTransaction({
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
           reqId,
           recipients,
           type: 'transfer',
         });
 
         txPrebuild.should.deepEqual({
-          walletId: tssWallet.id(),
-          wallet: tssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
           buildParams: {
@@ -2058,7 +2073,7 @@ describe('V2 Wallet:', function () {
           },
         });
 
-        const txPrebuild = await tssWallet.prebuildTransaction({
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
           reqId,
           recipients,
           type: 'transfer',
@@ -2069,8 +2084,8 @@ describe('V2 Wallet:', function () {
         });
 
         txPrebuild.should.deepEqual({
-          walletId: tssWallet.id(),
-          wallet: tssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
           buildParams: {
@@ -2105,7 +2120,7 @@ describe('V2 Wallet:', function () {
           tokenName,
         });
 
-        const txPrebuild = await tssWallet.prebuildTransaction({
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
           reqId,
           recipients,
           type: 'enabletoken',
@@ -2117,8 +2132,8 @@ describe('V2 Wallet:', function () {
         });
 
         txPrebuild.should.deepEqual({
-          walletId: tssWallet.id(),
-          wallet: tssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
           buildParams: {
@@ -2138,7 +2153,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail for non-transfer transaction types', async function () {
-        await tssWallet
+        await tssSolWallet
           .prebuildTransaction({
             reqId,
             recipients: [
@@ -2153,7 +2168,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail for full api version compatibility', async function () {
-        await custodialTssWallet
+        await custodialTssSolWallet
           .prebuildTransaction({
             reqId,
             apiVersion: 'lite',
@@ -2188,15 +2203,15 @@ describe('V2 Wallet:', function () {
           'full'
         );
 
-        const txPrebuild = await custodialTssWallet.prebuildTransaction({
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
           reqId,
           recipients,
           type: 'transfer',
         });
 
         txPrebuild.should.deepEqual({
-          walletId: tssWallet.id(),
-          wallet: custodialTssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: custodialTssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
           buildParams: {
@@ -2581,7 +2596,7 @@ describe('V2 Wallet:', function () {
           'full'
         );
 
-        const txPrebuild = await custodialTssWallet.prebuildTransaction({
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
           reqId,
           apiVersion: 'full',
           recipients,
@@ -2589,8 +2604,8 @@ describe('V2 Wallet:', function () {
         });
 
         txPrebuild.should.deepEqual({
-          walletId: tssWallet.id(),
-          wallet: custodialTssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: custodialTssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
           buildParams: {
@@ -2614,12 +2629,12 @@ describe('V2 Wallet:', function () {
         signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
 
         const txPrebuild = {
-          walletId: tssWallet.id(),
-          wallet: tssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
         };
-        const signedTransaction = await tssWallet.signTransaction({
+        const signedTransaction = await tssSolWallet.signTransaction({
           reqId,
           txPrebuild,
           prv: 'sercretKey',
@@ -2631,11 +2646,11 @@ describe('V2 Wallet:', function () {
 
       it('should fail to sign transaction without txRequestId', async function () {
         const txPrebuild = {
-          walletId: tssWallet.id(),
-          wallet: tssWallet,
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
           txHex: 'ababcdcd',
         };
-        await tssWallet
+        await tssSolWallet
           .signTransaction({
             reqId,
             txPrebuild,
@@ -2692,7 +2707,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should throw error for unsupported coins', async function () {
-        await tssWallet
+        await tssSolWallet
           .signMessage({
             reqId,
             message: { messageRaw },
@@ -2856,7 +2871,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should throw error for unsupported coins', async function () {
-        await tssWallet
+        await tssSolWallet
           .signTypedData({
             reqId,
             typedData: typedDataBase,
@@ -3046,7 +3061,7 @@ describe('V2 Wallet:', function () {
           txRequestId: 'txRequestId',
         };
 
-        const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+        const prebuildAndSignTransaction = sandbox.stub(tssSolWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
@@ -3056,7 +3071,7 @@ describe('V2 Wallet:', function () {
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
 
-        const sendMany = await tssWallet.sendMany(sendManyInput);
+        const sendMany = await tssSolWallet.sendMany(sendManyInput);
         sendMany.should.deepEqual('sendTxResponse');
       });
 
@@ -3065,7 +3080,7 @@ describe('V2 Wallet:', function () {
           txRequestId: 'txRequestId',
         };
 
-        const prebuildAndSignTransaction = sandbox.stub(custodialTssWallet, 'prebuildAndSignTransaction');
+        const prebuildAndSignTransaction = sandbox.stub(custodialTssSolWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
@@ -3098,7 +3113,7 @@ describe('V2 Wallet:', function () {
           .post(`/api/v2/wallet/${walletData.id}/txrequests/${signedTransaction.txRequestId}/transfers`)
           .reply(200);
 
-        const sendMany = await custodialTssWallet.sendMany(sendManyInput);
+        const sendMany = await custodialTssSolWallet.sendMany(sendManyInput);
         sendMany.should.deepEqual(txRequest);
         txRequestNock.isDone().should.be.true();
         createTransferNock.isDone().should.be.true();
@@ -3109,12 +3124,14 @@ describe('V2 Wallet:', function () {
           txHex: 'deadbeef',
         };
 
-        const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+        const prebuildAndSignTransaction = sandbox.stub(tssSolWallet, 'prebuildAndSignTransaction');
         prebuildAndSignTransaction.resolves(signedTransaction);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
-        await tssWallet.sendMany(sendManyInput).should.be.rejectedWith('txRequestId missing from signed transaction');
+        await tssSolWallet
+          .sendMany(sendManyInput)
+          .should.be.rejectedWith('txRequestId missing from signed transaction');
       });
     });
 
@@ -3122,10 +3139,10 @@ describe('V2 Wallet:', function () {
       it('should submit transaction with txRequestId', async function () {
         const nockSendTx = nock(bgUrl)
           .persist(false)
-          .post(tssWallet.url('/tx/send').replace(bgUrl, ''))
+          .post(tssSolWallet.url('/tx/send').replace(bgUrl, ''))
           .reply(200, { message: 'success' });
 
-        const submittedTx = await tssWallet.submitTransaction({
+        const submittedTx = await tssSolWallet.submitTransaction({
           txRequestId: 'id',
         });
         submittedTx.should.deepEqual({ message: 'success' });
@@ -3133,7 +3150,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail when txRequestId and txHex are both provided', async function () {
-        await tssWallet
+        await tssSolWallet
           .submitTransaction({
             txRequestId: 'id',
             txHex: 'beef',
@@ -3142,7 +3159,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail when txRequestId and halfSigned are both provided', async function () {
-        await tssWallet
+        await tssSolWallet
           .submitTransaction({
             txRequestId: 'id',
             halfSigned: {
@@ -3153,7 +3170,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('should fail when txHex and halfSigned are both provided', async function () {
-        await tssWallet
+        await tssSolWallet
           .submitTransaction({
             txHex: 'beef',
             halfSigned: {
@@ -3323,23 +3340,23 @@ describe('V2 Wallet:', function () {
         // commonPub + commonChaincode
         const commonKeychain = randomBytes(32).toString('hex') + randomBytes(32).toString('hex');
         const getKeyNock = nock(bgUrl)
-          .get(`/api/v2/tsol/key/${tssWallet.keyIds()[0]}`)
+          .get(`/api/v2/tsol/key/${tssSolWallet.keyIds()[0]}`)
           .reply(200, {
-            id: tssWallet.keyIds()[0],
+            id: tssSolWallet.keyIds()[0],
             commonKeychain: commonKeychain,
             source: 'user',
             encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
             coinSpecific: {},
           });
 
-        const stub = sinon.stub(tssWallet, 'createShare').callsFake(async (options) => {
+        const stub = sinon.stub(tssSolWallet, 'createShare').callsFake(async (options) => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           options!.keychain!.pub!.should.not.be.undefined();
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           options!.keychain!.pub!.should.equal(TssUtils.getPublicKeyFromCommonKeychain(commonKeychain));
           return undefined;
         });
-        await tssWallet.shareWallet({ email, permissions, walletPassphrase });
+        await tssSolWallet.shareWallet({ email, permissions, walletPassphrase });
 
         stub.calledOnce.should.be.true();
         getSharingKeyNock.isDone().should.be.True();
