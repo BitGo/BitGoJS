@@ -77,7 +77,7 @@ export function prove(
   const sqrtN0 = isqrt(n0);
   const alpha = randBetween(sqrtN0 << (ELL + EPSILON), -sqrtN0 << (ELL + EPSILON));
   const beta = randBetween(sqrtN0 << (ELL + EPSILON), -sqrtN0 << (ELL + EPSILON));
-  const sigma = randBetween((nHat * n0) << ELL, -(nHat * n0) << ELL);
+  const rho = randBetween((nHat * n0) << ELL, -(nHat * n0) << ELL);
   // Commit to p.
   const mu = randBetween(BigInt(1) << ELL, BigInt(-1) << ELL);
   const P = (modPow(s, p, nHat) * modPow(t, mu, nHat)) % nHat;
@@ -94,14 +94,14 @@ export function prove(
   const r = randBetween((nHat * n0) << (ELL + EPSILON), -(nHat * n0) << (ELL + EPSILON));
   const T = (modPow(Q, alpha, nHat) * modPow(t, r, nHat)) % nHat;
 
-  const sigmaHat = sigma - nu * p;
+  const rhoHat = rho - nu * p;
   const z1 = alpha + e * p;
   const z2 = beta + e * q;
   const w1 = x + e * mu;
   const w2 = y + e * nu;
-  const v = r + e * sigmaHat;
+  const v = r + e * rhoHat;
 
-  return { P, Q, A, B, T, sigma, z1, z2, w1, w2, v };
+  return { P, Q, A, B, T, rho, z1, z2, w1, w2, v };
 }
 
 /**
@@ -122,10 +122,10 @@ export function verify(
   t: bigint,
   proof: DeserializedNoSmallFactorsProof
 ): boolean {
-  const { P, Q, A, B, T, sigma, z1, z2, w1, w2, v } = proof;
+  const { P, Q, A, B, T, rho, z1, z2, w1, w2, v } = proof;
   const e = generateE(n0, w);
   const sqrtN0 = isqrt(n0);
-  const R = (modPow(s, n0, nHat) * modPow(t, sigma, nHat)) % nHat;
+  const R = (modPow(s, n0, nHat) * modPow(t, rho, nHat)) % nHat;
   if ((modPow(s, z1, nHat) * modPow(t, w1, nHat)) % nHat !== (A * modPow(P, e, nHat)) % nHat) {
     throw new Error('Could not verify no small factors proof');
   }

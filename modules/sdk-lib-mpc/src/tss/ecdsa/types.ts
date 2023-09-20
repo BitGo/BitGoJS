@@ -289,7 +289,7 @@ type noSmallFactorsProof<T> = {
   A: T;
   B: T;
   T: T;
-  sigma: T;
+  rho: T;
   z1: T;
   z2: T;
   w1: T;
@@ -313,7 +313,7 @@ export function deserializeNoSmallFactorsProof(
     A: hexToSignedBigInt(noSmallFactorsProof.A),
     B: hexToSignedBigInt(noSmallFactorsProof.B),
     T: hexToSignedBigInt(noSmallFactorsProof.T),
-    sigma: hexToSignedBigInt(noSmallFactorsProof.sigma),
+    rho: hexToSignedBigInt(noSmallFactorsProof.rho),
     z1: hexToSignedBigInt(noSmallFactorsProof.z1),
     z2: hexToSignedBigInt(noSmallFactorsProof.z2),
     w1: hexToSignedBigInt(noSmallFactorsProof.w1),
@@ -335,7 +335,7 @@ export function serializeNoSmallFactorsProof(
     A: signedBigIntToHex(noSmallFactorsProof.A, 2 * (1 + 384)),
     B: signedBigIntToHex(noSmallFactorsProof.B, 2 * (1 + 384)),
     T: signedBigIntToHex(noSmallFactorsProof.T, 2 * (1 + 384)),
-    sigma: signedBigIntToHex(noSmallFactorsProof.sigma, 2 * (2 * 384 + 256 / 8)),
+    rho: signedBigIntToHex(noSmallFactorsProof.rho, 2 * (2 * 384 + 256 / 8)),
     z1: signedBigIntToHex(noSmallFactorsProof.z1, 2 * (1 + 384 / 2 + (256 + 2 * 256) / 8)),
     z2: signedBigIntToHex(noSmallFactorsProof.z2, 2 * (1 + 384 / 2 + (256 + 2 * 256) / 8)),
     w1: signedBigIntToHex(noSmallFactorsProof.w1, 2 * (1 + (256 + 2 * 256) / 8)),
