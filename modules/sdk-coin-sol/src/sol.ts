@@ -5,7 +5,7 @@
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, CoinFeature, coins } from '@bitgo/statics';
 import * as _ from 'lodash';
 import {
   BaseCoin,
@@ -916,8 +916,10 @@ export class Sol extends BaseCoin {
 
   getTokenEnablementConfig(): TokenEnablementConfig {
     return {
-      requiresTokenEnablement: true,
-      supportsMultipleTokenEnablements: true,
+      requiresTokenEnablement: this._staticsCoin.features.includes(CoinFeature.REQUIRES_TOKEN_ENABLEMENT),
+      supportsMultipleTokenEnablements: this._staticsCoin.features.includes(
+        CoinFeature.SUPPORTS_MULTIPLE_TOKEN_ENABLEMENTS
+      ),
     };
   }
 

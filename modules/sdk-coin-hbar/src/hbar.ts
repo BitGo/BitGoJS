@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins, CoinFeature } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -368,8 +368,10 @@ export class Hbar extends BaseCoin {
 
   public getTokenEnablementConfig(): TokenEnablementConfig {
     return {
-      requiresTokenEnablement: true,
-      supportsMultipleTokenEnablements: true,
+      requiresTokenEnablement: this._staticsCoin.features.includes(CoinFeature.REQUIRES_TOKEN_ENABLEMENT),
+      supportsMultipleTokenEnablements: this._staticsCoin.features.includes(
+        CoinFeature.SUPPORTS_MULTIPLE_TOKEN_ENABLEMENTS
+      ),
     };
   }
 

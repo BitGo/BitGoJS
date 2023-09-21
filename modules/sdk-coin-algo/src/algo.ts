@@ -19,6 +19,7 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TokenEnablementConfig,
   TokenManagementType,
   TransactionExplanation,
   TransactionRecipient,
@@ -535,7 +536,7 @@ export class Algo extends BaseCoin {
    *    requiresTokenEnablement: True if tokens need to be enabled for this coin
    *    supportsMultipleTokenEnablements: True if multiple tokens can be enabled in one transaction
    */
-  getTokenEnablementConfig() {
+  getTokenEnablementConfig(): TokenEnablementConfig {
     return {
       requiresTokenEnablement: true,
       supportsMultipleTokenEnablements: false,

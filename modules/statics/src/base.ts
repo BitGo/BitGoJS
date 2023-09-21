@@ -140,6 +140,9 @@ export enum CoinFeature {
    * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.
    */
   SUPPORTS_TOKENS = 'supports-tokens',
+
+  REQUIRES_TOKEN_ENABLEMENT = 'requires-token-enablement',
+  SUPPORTS_MULTIPLE_TOKEN_ENABLEMENTS = 'supports-multiple-token-enablements',
   /*
    * Are fees for transactions of this coin paid for by the Enterprise (eg, Enterprise gas tank)?
    */
