@@ -480,6 +480,7 @@ export function parseKShare(share: SignatureShareRecord): KShare {
         z: shares[5],
         u: shares[6],
         w: shares[7],
+        nonce: shares[11 + 2 * EcdsaPaillierProof.m] ? shares[11 + 2 * EcdsaPaillierProof.m] : undefined,
         s: shares[8],
         s1: shares[9],
         s2: shares[10],
@@ -515,7 +516,9 @@ export function convertKShare(share: KShare): SignatureShareRecord {
       share.proof?.w || ''
     }${delimeter}${share.proof?.s || ''}${delimeter}${share.proof?.s1 || ''}${delimeter}${
       share.proof?.s2 || ''
-    }${delimeter}${(share.p || []).join(delimeter)}${delimeter}${(share.sigma || []).join(delimeter)}`,
+    }${delimeter}${(share.p || []).join(delimeter)}${delimeter}${(share.sigma || []).join(delimeter)}${delimeter}${
+      share.proof?.nonce || ''
+    }`,
   };
 }
 
@@ -536,6 +539,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
         z: shares[7],
         u: shares[8],
         w: shares[9],
+        nonce: shares[37 + EcdsaPaillierProof.m] ? shares[37 + EcdsaPaillierProof.m] : undefined,
         s: shares[10],
         s1: shares[11],
         s2: shares[12],
@@ -549,6 +553,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
         t: shares[15],
         v: shares[16],
         w: shares[17],
+        nonce: shares[38 + EcdsaPaillierProof.m] ? shares[38 + EcdsaPaillierProof.m] : undefined,
         s: shares[18],
         s1: shares[19],
         s2: shares[20],
@@ -566,6 +571,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
         t: shares[27],
         v: shares[28],
         w: shares[29],
+        nonce: shares[39 + EcdsaPaillierProof.m] ? shares[39 + EcdsaPaillierProof.m] : undefined,
         s: shares[30],
         s1: shares[31],
         s2: shares[32],
@@ -589,7 +595,7 @@ export function parseAShare(share: SignatureShareRecord): AShare {
     proof,
     gammaProof,
     wProof,
-    sigma: shares.slice(37),
+    sigma: shares.slice(37, 37 + EcdsaPaillierProof.m),
   };
 }
 
@@ -624,7 +630,9 @@ export function convertAShare(share: AShare): SignatureShareRecord {
       share.wProof?.s2 || ''
     }${delimeter}${share.wProof?.t1 || ''}${delimeter}${share.wProof?.t2 || ''}${delimeter}${
       share.wProof?.u || ''
-    }${delimeter}${share.wProof?.x || ''}${delimeter}${(share.sigma || []).join(delimeter)}`,
+    }${delimeter}${share.wProof?.x || ''}${delimeter}${(share.sigma || []).join(delimeter)}${delimeter}${
+      share.proof?.nonce || ''
+    }${delimeter}${share.gammaProof?.nonce || ''}${delimeter}${share.wProof?.nonce || ''}`,
   };
 }
 

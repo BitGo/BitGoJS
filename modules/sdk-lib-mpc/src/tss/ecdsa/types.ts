@@ -207,6 +207,7 @@ export interface RangeProof {
   z: bigint;
   u: bigint;
   w: bigint;
+  nonce?: Buffer;
   s: bigint;
   s1: bigint;
   s2: bigint;
@@ -219,6 +220,7 @@ export interface RangeProofWithCheck {
   t: bigint;
   v: bigint;
   w: bigint;
+  nonce?: Buffer;
   s: bigint;
   s1: bigint;
   s2: bigint;

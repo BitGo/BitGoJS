@@ -118,6 +118,7 @@ export type RangeProofShare = {
   z: string;
   u: string;
   w: string;
+  nonce?: string;
   s: string;
   s1: string;
   s2: string;
@@ -144,6 +145,7 @@ export type RangeProofWithCheckShare = {
   t: string;
   v: string;
   w: string;
+  nonce?: string;
   s: string;
   s1: string;
   s2: string;

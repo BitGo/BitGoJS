@@ -633,7 +633,7 @@ describe('Ecdsa tss helper functions tests', function () {
             ECDSAMethods.delimeter
           }${bitgoKShare.p.join(ECDSAMethods.delimeter)}${ECDSAMethods.delimeter}${bitgoKShare.sigma.join(
             ECDSAMethods.delimeter
-          )}`,
+          )}${ECDSAMethods.delimeter}`,
         } as SignatureShareRecord;
 
         const kshare = ECDSAMethods.convertKShare(bitgoKShare);
@@ -701,7 +701,9 @@ describe('Ecdsa tss helper functions tests', function () {
             mockShare.wProof?.t2 || ''
           }${ECDSAMethods.delimeter}${mockShare.wProof?.u || ''}${ECDSAMethods.delimeter}${mockShare.wProof?.x || ''}${
             ECDSAMethods.delimeter
-          }${mockShare.sigma!.join(ECDSAMethods.delimeter)}`,
+          }${mockShare.sigma.join(ECDSAMethods.delimeter)}${ECDSAMethods.delimeter}${ECDSAMethods.delimeter}${
+            ECDSAMethods.delimeter
+          }`,
         } as SignatureShareRecord;
 
         const aShare = ECDSAMethods.convertAShare(mockShare);

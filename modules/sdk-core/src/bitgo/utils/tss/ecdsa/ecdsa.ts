@@ -905,7 +905,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
         : params.txRequest;
 
-    let signablePayload = new Buffer('');
+    let signablePayload = Buffer.alloc(0);
     let derivationPath = '';
 
     if (requestType === RequestType.tx) {
