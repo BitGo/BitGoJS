@@ -74,7 +74,7 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].amount.should.equal('2200000000');
     explain.outputs[0].address.should.equal('0.0.43283');
     explain.outputs[0].memo.should.equal('1');
-    explain.fee.fee.should.equal(1160407);
+    explain.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
 
@@ -97,7 +97,7 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].address.should.equal('0.0.75861');
     explain.outputs[0].memo.should.equal('');
     explain.outputs[0].tokenName.should.equal('thbar:usdc');
-    explain.fee.fee.should.equal(1160407);
+    explain.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
 
@@ -120,7 +120,7 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].memo.should.equal('');
     explain.outputs[1].amount.should.equal('15');
     explain.outputs[1].address.should.equal('0.0.78963');
-    explain.fee.fee.should.equal(1160407);
+    explain.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
 
@@ -146,7 +146,7 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[1].amount.should.equal('15');
     explain.outputs[1].address.should.equal('0.0.78963');
     explain.outputs[1].tokenName.should.equal('thbar:usdc');
-    explain.fee.fee.should.equal(1160407);
+    explain.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
 
@@ -169,7 +169,7 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].address.should.equal('0.0.81320');
     explain.outputs[0].memo.should.equal('');
     explain.outputs[0].tokenName.should.equal('thbar:usdc');
-    explain.fee.fee.should.equal(1160407);
+    explain.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
 
