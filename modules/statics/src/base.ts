@@ -216,6 +216,11 @@ export enum CoinFeature {
    * This coin is cosmos like coin
    */
   COSMOS_LIKE_COINS = 'cosmos_like_coins',
+
+  /**
+   * This coin supports the ability to rebuild transactions on custody signing
+   */
+  REBUILD_ON_CUSTODY_SIGNING = 'rebuild-on-custody-signing',
 }
 
 /**
