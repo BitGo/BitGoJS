@@ -149,6 +149,7 @@ const DOT_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.EXPIRING_TRANSACTIONS,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
 ];
 const DOGE_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -218,6 +219,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
   CoinFeature.COSMOS_LIKE_COINS,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
 ];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
