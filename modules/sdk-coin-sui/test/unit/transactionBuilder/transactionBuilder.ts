@@ -3,12 +3,13 @@ import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { SuiTransactionType } from '../../../src/lib/iface';
-import { recipients, STAKING_AMOUNT } from '../../resources/sui';
+import { CUSTOM_TX_STAKING_POOL_SPLIT, recipients, STAKING_AMOUNT } from '../../resources/sui';
 import { KeyPair } from '../../../src/lib/keyPair';
 import { GasData } from '../../../src/lib/mystenlab/types';
 import { StakingTransaction, TransferTransaction } from '../../../src';
 import { UnstakingTransaction } from '../../../src/lib/unstakingTransaction';
 import { AMOUNT_UNKNOWN_TEXT } from '../../../src/lib/constants';
+import { CustomTransaction } from '../../../src/lib/customTransaction';
 
 describe('Sui Transaction Builder', async () => {
   let builders;
@@ -615,6 +616,29 @@ describe('Sui Transaction Builder', async () => {
       jsonTx.sender.should.equal(testData.sender.address);
       jsonTx.gasData.should.deepEqual(testData.gasData);
       builtTx.toBroadcastFormat().should.equal(testData.WITHDRAW_STAKED_SUI);
+    });
+  });
+  describe('Custom TX', async () => {
+    it('should sign a custom tx', async function () {
+      const keyPairSender = new KeyPair({ prv: testData.privateKeys.prvKey1 });
+
+      const txBuilder = factory.from(CUSTOM_TX_STAKING_POOL_SPLIT);
+      const tx = await txBuilder.build();
+      const unsignedTxHex = tx.toBroadcastFormat();
+      const signable = tx.signablePayload;
+      const signatureBytes = keyPairSender.signMessageinUint8Array(signable);
+      txBuilder.addSignature({ pub: keyPairSender.getKeys().pub }, Buffer.from(signatureBytes));
+      const signedTx = (await txBuilder.build()) as CustomTransaction;
+      const signedTxHex = signedTx.toBroadcastFormat();
+      should.equal(signedTxHex, unsignedTxHex);
+      should.equal(signedTx.signature.length, 1);
+      should.equal(signedTx.signature[0], Buffer.from(signatureBytes).toString('hex'));
+
+      const serializedSig = Buffer.from(signedTx.serializedSig).toString('base64');
+      should.equal(
+        serializedSig,
+        'APGQHoYbVSyL6M7lOQL5w2YYzeeVcTMEbe0Y4jVphQA+0QHq3VEDoXVwIukkL44z+vqsekviS4gQ0ZwUPTWHFQilzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw=='
+      );
     });
   });
 });
