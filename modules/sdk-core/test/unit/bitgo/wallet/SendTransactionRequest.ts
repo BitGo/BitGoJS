@@ -5,7 +5,7 @@ import { getCodecProperties } from '../../../../src/bitgo/utils/codecProps';
 
 describe('SendTransactionRequest', function () {
   it('has expected property count', function () {
-    assert.strictEqual(getCodecProperties(BuildParams).length, 73);
+    assert.strictEqual(getCodecProperties(BuildParams).length, 74);
   });
 
   it('enforces codec', function () {
