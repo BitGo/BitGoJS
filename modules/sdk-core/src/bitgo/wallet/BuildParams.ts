@@ -4,8 +4,10 @@ import * as t from 'io-ts';
 import { getCodecProperties } from '../utils/codecProps';
 
 export const BuildParamsUTXO = t.partial({
-  /* the change address type */
+  /* deprecated. the change address type */
   addressType: t.unknown,
+  /* the change address type */
+  changeAddressType: t.unknown,
   /* a fixed change address */
   changeAddress: t.unknown,
   cpfpFeeRate: t.unknown,

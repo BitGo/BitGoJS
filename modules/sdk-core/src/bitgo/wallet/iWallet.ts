@@ -91,6 +91,7 @@ export interface PrebuildTransactionOptions {
   instant?: boolean;
   memo?: Memo;
   addressType?: string;
+  changeAddressType?: string;
   hop?: boolean;
   walletPassphrase?: string;
   reservation?: {
