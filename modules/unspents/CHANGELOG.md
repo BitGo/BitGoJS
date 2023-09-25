@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.26.0) (2023-09-25)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **unspents:** move `--recursive` flag to mocha ([275b8fb](https://github.com/BitGo/BitGoJS/commit/275b8fba5e3e806dd0e92f6659c92d18c097c45f))
+
+### Features
+
+- **sdk-api:** add size correction factor for transactions created ([5f0131c](https://github.com/BitGo/BitGoJS/commit/5f0131cd7016ad7dc4cf4b0be177e0c7ab7f4d25))
+- **unspents:** add test for finding feePerKB ([f6397d7](https://github.com/BitGo/BitGoJS/commit/f6397d73e1726fb9e58ba6344bb7aab1a3297126))
+- **unspents:** add ZCash ZIP-0317 fee calculation ([8c86f8f](https://github.com/BitGo/BitGoJS/commit/8c86f8f754409c46fb3af82ee55ad031ca16129b))
+- **unspents:** extend tests ([aec14ec](https://github.com/BitGo/BitGoJS/commit/aec14ecedd67016e732b518a5e7a0ae036817fb6))
+
 # [0.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.17.0...@bitgo/unspents@0.25.0) (2023-09-09)
 
 ### Bug Fixes
