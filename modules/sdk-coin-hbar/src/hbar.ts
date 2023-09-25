@@ -50,7 +50,7 @@ export interface ExplainTransactionOptions {
   halfSigned?: {
     txHex: string;
   };
-  feeInfo: TransactionFee;
+  feeInfo?: TransactionFee;
   // TODO(BG-24809): get the memo from the toJson
   memo?: {
     type: string;
@@ -263,10 +263,6 @@ export class Hbar extends BaseCoin {
       throw new Error('missing explain tx parameters');
     }
 
-    if (!params.feeInfo) {
-      throw new Error('missing fee information');
-    }
-
     const factory = this.getBuilderFactory();
     const txBuilder = factory.from(txHex);
     const tx = await txBuilder.build();
@@ -335,7 +331,7 @@ export class Hbar extends BaseCoin {
       outputAmount: outputAmount.toString(),
       changeOutputs: [], // account based does not use change outputs
       changeAmount: '0', // account base does not make change
-      fee: params.feeInfo,
+      fee: params.feeInfo?.fee || txJson.fee, // in the instance no feeInfo is passed in as a param, show the fee given by the txJSON
       timestamp: txJson.startTime,
       expiration: txJson.validDuration,
     } as any;
