@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@4.2.0...@bitgo/sdk-coin-sui@4.3.0) (2023-09-25)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-coin-sui:** add custom tx type ([8136220](https://github.com/BitGo/BitGoJS/commit/81362200468f8a2d25b97186f56de5d5729fa0cf))
+
 ## [4.2.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@4.2.0...@bitgo/sdk-coin-sui@4.2.10) (2023-09-09)
 
 ### Bug Fixes
