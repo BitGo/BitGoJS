@@ -203,6 +203,7 @@ export class Utils implements BaseUtils {
    */
   getSuiTransactionType(command: TransactionCommandType): SuiTransactionType {
     switch (command.kind) {
+      case 'SplitCoins':
       case 'TransferObjects':
         return SuiTransactionType.Transfer;
       case 'MoveCall':

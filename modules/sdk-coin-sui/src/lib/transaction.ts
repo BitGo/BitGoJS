@@ -172,11 +172,7 @@ export abstract class Transaction<T> extends BaseTransaction {
     const transactionBlock = TransactionBlockDataBuilder.fromBytes(data);
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
     const transactions = transactionBlock.transactions;
-    let txType = utils.getSuiTransactionType(transactions.length == 1 ? transactions[0] : transactions[1]);
-    // although tricky to determine custom tx purely from a serialized tx, we can check if any command is a supported unique custom tx command, e.g. staking_pool split
-    if (transactions.some((tx) => this.isCustomTx(tx))) {
-      txType = SuiTransactionType.CustomTx;
-    }
+    const txType = this.getSuiTransactionType(transactions);
     return {
       id: transactionBlock.getDigest(),
       type: txType,
@@ -194,11 +190,19 @@ export abstract class Transaction<T> extends BaseTransaction {
     };
   }
 
-  private static isCustomTx(tx: TransactionType): boolean {
-    try {
-      return utils.getSuiTransactionType(tx) === SuiTransactionType.CustomTx;
-    } catch (InvalidTransactionError) {
-      return false;
+  private static getSuiTransactionType(transactions: TransactionType[]): SuiTransactionType {
+    // tricky to determine custom tx purely from a serialized tx, we can rely on following logic
+    if (transactions.length == 1) {
+      return utils.getSuiTransactionType(transactions[0]);
+    }
+    const txType = utils.getSuiTransactionType(transactions[1]);
+    if (txType !== SuiTransactionType.Transfer) {
+      return txType;
+    } else {
+      if (transactions.every((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.Transfer)) {
+        return SuiTransactionType.Transfer;
+      }
+      return SuiTransactionType.CustomTx;
     }
   }
 

@@ -617,6 +617,12 @@ describe('Sui Transaction Builder', async () => {
       jsonTx.gasData.should.deepEqual(testData.gasData);
       builtTx.toBroadcastFormat().should.equal(testData.WITHDRAW_STAKED_SUI);
     });
+
+    it('should determine correct type for withdrawal with amount', async function () {
+      const txBuilder = factory.from(testData.WITHDRAW_STAKED_SUI_WITH_AMOUNT);
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.StakingClaim);
+    });
   });
   describe('Custom TX', async () => {
     it('should sign a custom tx', async function () {
