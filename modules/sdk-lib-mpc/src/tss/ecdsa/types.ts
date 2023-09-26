@@ -301,6 +301,7 @@ type noSmallFactorsProof<T> = {
   w1: T;
   w2: T;
   v: T;
+  nonce: T;
 };
 
 export type SerializedNoSmallFactorsProof = noSmallFactorsProof<string>;
@@ -325,6 +326,7 @@ export function deserializeNoSmallFactorsProof(
     w1: hexToSignedBigInt(noSmallFactorsProof.w1),
     w2: hexToSignedBigInt(noSmallFactorsProof.w2),
     v: hexToSignedBigInt(noSmallFactorsProof.v),
+    nonce: hexToBigInt(noSmallFactorsProof.nonce),
   };
 }
 
@@ -347,5 +349,6 @@ export function serializeNoSmallFactorsProof(
     w1: signedBigIntToHex(noSmallFactorsProof.w1, 2 * (1 + (256 + 2 * 256) / 8)),
     w2: signedBigIntToHex(noSmallFactorsProof.w2, 2 * (1 + (256 + 2 * 256) / 8)),
     v: signedBigIntToHex(noSmallFactorsProof.v, 2 * (1 + 384 * 2 + (256 + 2 * 256) / 8)),
+    nonce: bigIntToHex(noSmallFactorsProof.nonce, 2 * 33),
   };
 }
