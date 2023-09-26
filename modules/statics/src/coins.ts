@@ -7161,6 +7161,78 @@ export const coins = CoinMap.fromCoins([
     '0xa1d6df714f91debf4e0802a542e13067f31b8262',
     UnderlyingAsset.RFOX
   ),
+  erc20(
+    'aa2e357c-9bbf-444c-bf83-dea86bdcbc44',
+    'swise',
+    'StakeWise',
+    18,
+    '0x48c3399719b582dd63eb5aadf12a40b4c3f52fa2',
+    UnderlyingAsset.SWISE
+  ),
+  erc20(
+    'ea58f25e-a0dc-4202-804e-9b62741a6e94',
+    'ankr',
+    'Ankr Network',
+    18,
+    '0x8290333cef9e6d528dd5618fb97a76f268f3edd4',
+    UnderlyingAsset.ANKR
+  ),
+  erc20(
+    '38c6dfc8-169e-42b5-b89b-c8af59859de9',
+    'damm',
+    'dAMM',
+    18,
+    '0xb3207935ff56120f3499e8ad08461dd403bf16b8',
+    UnderlyingAsset.DAMM
+  ),
+  erc20(
+    '72242a5e-0895-4a17-87a5-d124ff319e78',
+    'cere',
+    'CERE Network',
+    10,
+    '0x2da719db753dfa10a62e140f436e1d67f2ddb0d6',
+    UnderlyingAsset.CERE
+  ),
+  erc20(
+    '86591854-a0f9-4f8b-8164-472d7b2d6428',
+    'dpx',
+    'Dopex Governance Token',
+    18,
+    '0xeec2be5c91ae7f8a338e1e5f3b5de49d07afdc81',
+    UnderlyingAsset.DPX
+  ),
+  erc20(
+    '424e2da6-d3de-4fcd-a003-4a3e55bf3e3c',
+    'yfl',
+    'YFLink',
+    18,
+    '0x28cb7e841ee97947a86b06fa4090c8451f64c0be',
+    UnderlyingAsset.YFL
+  ),
+  erc20(
+    'c60376d7-5e59-4ae5-8db3-3035e23b463e',
+    'hft',
+    'Hashflow',
+    18,
+    '0xb3999f658c0391d94a37f7ff328f3fec942bcadc',
+    UnderlyingAsset.HFT
+  ),
+  erc20(
+    'eaa444e6-bf86-4e45-bf11-4375e9942e5a',
+    'ALK',
+    'Alkemi_Network_DAO_Tokenhflow',
+    18,
+    '0x6c16119b20fa52600230f074b349da3cb861a7e3',
+    UnderlyingAsset.ALK
+  ),
+  erc20(
+    'f7fb83ee-0489-4854-abb4-51da6692d8ac',
+    'fox',
+    'FOX',
+    18,
+    '0xc770eefad204b5180df6a14ee197d99d808ee52d',
+    UnderlyingAsset.FOX
+  ),
 
   celoToken(
     '1a9935a6-54d2-4988-97ff-d871338e29b5',
@@ -7571,6 +7643,14 @@ export const coins = CoinMap.fromCoins([
     'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
     UnderlyingAsset.USDT
   ),
+  tronToken(
+    '77fe25dc-7871-4d9d-9cc0-2e5cba6250ff',
+    'trx:sun',
+    'SUN',
+    18,
+    'TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S',
+    UnderlyingAsset.SUN
+  ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
     'algo:USDC-31566704',
@@ -7618,6 +7698,18 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'VCAD'
+  ),
+  algoToken(
+    'abe2e04e-d53b-4a23-9a68-08eaeb8b028e',
+    'algo:QCAD-84507107',
+    undefined,
+    'QCAD',
+    2,
+    UnderlyingAsset['algo:QCAD-84507107'],
+    'https://algoexplorer.io/asset/84507107',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'QCAD'
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
@@ -10038,6 +10130,24 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CHO,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    '61ba259d-f6a7-4007-829b-7ca03a0a6db3',
+    'sol:hnt',
+    'Helium Network Token',
+    8,
+    'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
+    UnderlyingAsset.HNT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'ffdd42e7-0788-426e-9094-c12954a858d9',
+    'sol:qcad',
+    'QCAD',
+    2,
+    'EeBX9JLdvsp4HnBbMgC1HnAjBkBQxgxtWxspcCLtT6ci',
+    UnderlyingAsset.QCAD,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
@@ -10398,6 +10508,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x5d49c278340655b56609fdf8976eb0612af3a0c3',
     UnderlyingAsset['polygon:wbtc']
+  ),
+  polygonErc20(
+    '8d759e07-43d3-4611-8a0d-f3bb0f6e7dee',
+    'polygon:vcnt',
+    'ViciCoin',
+    18,
+    '0x8a16d4bf8a0a716017e8d2262c4ac32927797a2f',
+    UnderlyingAsset['polygon:vcnt']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
