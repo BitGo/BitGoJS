@@ -2,7 +2,7 @@
  * Implementation of No Small Factors ($\Pi^\text{fac}).
  * https://eprint.iacr.org/2020/492.pdf Section B.4
  */
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { bitLength, randBetween } from 'bigint-crypto-utils';
 import { modPow } from 'bigint-mod-arith';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
@@ -12,20 +12,49 @@ const ORDER = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8c
 const ELL = BigInt(256);
 const EPSILON = BigInt(BigInt(2) * ELL);
 
-/**
- * Generate pseudo-random challenge value $e$ for $(N, w)$.
- * @param N - the prime number to verify is a product of two large primes.
- * @param w - a random number with the same bitLength as N, that satisfies the Jacobi of w is -1 wrt N.
- * @returns {bigint} - challenge value $e$.
- */
-function generateE(N: bigint, w: bigint): bigint {
-  const digest = createHash('shake256', { outputLength: 1 + Math.floor((bitLength(ORDER) + 7) / 8) })
+function hash(N: bigint, w: bigint, nonce: Buffer): Buffer {
+  // NOTE: There's a bug in node type file for crypto that prevents us from using Hash.copy({ outputLength: ... })
+  //       outputLength must be specified on the copy() for a shake256 hash to behave correctly.
+  //       On the other hand, since it's very likely that the first hash will fall in the desired range, using
+  //       Hash.copy() to save on repeated calling update(`${N}$${w}$`) may not be worth it.
+  return createHash('shake256', { outputLength: 1 + Math.floor((bitLength(ORDER) + 7) / 8) })
     .update(bigIntToBufferBE(N))
     .update('$')
     .update(bigIntToBufferBE(w))
     .update('$')
+    .update(nonce)
     .digest();
-  const e = bigIntFromBufferBE(digest.subarray(1)) % ORDER;
+}
+
+/**
+ * Generate pseudo-random challenge value $e$ and associated $nonce$ for $(N, w)$.
+ * @param N - the prime number to verify is a product of two large primes.
+ * @param w - a random number with the same bitLength as N, that satisfies the Jacobi of w is -1 wrt N.
+ * @returns {nonce, e} - challenge value $e$ and associated $nonce$ that makes $e$ uniformly random from $(-order, order)$.
+ */
+function generateEforProve(N: bigint, w: bigint): { nonce: Buffer; e: bigint } {
+  let nonce: Buffer, e: bigint, digest: Buffer;
+  do {
+    nonce = randomBytes(33);
+    digest = hash(N, w, nonce);
+    e = bigIntFromBufferBE(digest.subarray(1));
+  } while (e >= ORDER);
+  if (digest[0] & 1) {
+    return { nonce, e: -e };
+  }
+  return { nonce, e };
+}
+
+/**
+ * Generate pseudo-random challenge value $e$ for $(N, w)$ and associated $nonce$.
+ * @param N - the prime number to verify is a product of two large primes.
+ * @param w - a random number with the same bitLength as N, that satisfies the Jacobi of w is -1 wrt N.
+ * @param nonce - a random nonce.
+ * @returns {bigint} - challenge value $e$.
+ */
+function generateEforVerify(N: bigint, w: bigint, nonce: Buffer): bigint {
+  const digest = hash(N, w, nonce);
+  const e = bigIntFromBufferBE(digest.subarray(1));
   if (digest[0] & 1) {
     return -e;
   }
@@ -73,7 +102,7 @@ export function prove(
   t: bigint
 ): DeserializedNoSmallFactorsProof {
   const n0 = p * q;
-  const e = generateE(n0, w);
+  const { nonce, e } = generateEforProve(n0, w);
   const sqrtN0 = isqrt(n0);
   const alpha = randBetween(sqrtN0 << (ELL + EPSILON), -sqrtN0 << (ELL + EPSILON));
   const beta = randBetween(sqrtN0 << (ELL + EPSILON), -sqrtN0 << (ELL + EPSILON));
@@ -101,7 +130,7 @@ export function prove(
   const w2 = y + e * nu;
   const v = r + e * rhoHat;
 
-  return { P, Q, A, B, T, rho, z1, z2, w1, w2, v };
+  return { P, Q, A, B, T, rho, z1, z2, w1, w2, v, nonce: bigIntFromBufferBE(nonce) };
 }
 
 /**
@@ -122,8 +151,11 @@ export function verify(
   t: bigint,
   proof: DeserializedNoSmallFactorsProof
 ): boolean {
-  const { P, Q, A, B, T, rho, z1, z2, w1, w2, v } = proof;
-  const e = generateE(n0, w);
+  const { P, Q, A, B, T, rho, z1, z2, w1, w2, v, nonce } = proof;
+  const e = generateEforVerify(n0, w, bigIntToBufferBE(nonce, 33));
+  if (e < -ORDER || e > ORDER) {
+    throw new Error('Could not verify no small factors proof');
+  }
   const sqrtN0 = isqrt(n0);
   const R = (modPow(s, n0, nHat) * modPow(t, rho, nHat)) % nHat;
   if ((modPow(s, z1, nHat) * modPow(t, w1, nHat)) % nHat !== (A * modPow(P, e, nHat)) % nHat) {
