@@ -228,6 +228,7 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.TRANSACTION_DATA,
   CoinFeature.GENERIC_TOKEN,
 ];
+const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 
 export const coins = CoinMap.fromCoins([
   utxo(
@@ -1039,6 +1040,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
     POLYGON_FEATURES
+  ),
+  account(
+    'b5ba2fc6-706b-433f-9bcf-4ea4aaa09281',
+    'ton',
+    'Ton',
+    Networks.main.ton,
+    9,
+    UnderlyingAsset.TON,
+    BaseUnit.TON,
+    TON_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '8244f85f-943c-4520-8e68-9e7f4361a13f',
+    'tton',
+    'Testnet Ton',
+    Networks.test.ton,
+    9,
+    UnderlyingAsset.TON,
+    BaseUnit.TON,
+    TON_FEATURES,
+    KeyCurve.Ed25519
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',

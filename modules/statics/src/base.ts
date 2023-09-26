@@ -60,6 +60,7 @@ export enum CoinFamily {
   STX = 'stx',
   SUSD = 'susd',
   TIA = 'tia', // Celestia
+  TON = 'ton',
   TRX = 'trx',
   XLM = 'xlm',
   XRP = 'xrp',
@@ -278,6 +279,7 @@ export enum UnderlyingAsset {
   STX = 'stx',
   TESTCORE = 'testcore', // Coreum testnet uses different name for native coin
   TIA = 'tia', // Celestia
+  TON = 'ton',
   TRX = 'trx',
   USD = 'usd',
   XLM = 'xlm',
@@ -1355,6 +1357,7 @@ export enum BaseUnit {
   XTZ = 'micro xtz',
   STX = 'micro-STX',
   SUI = 'MIST',
+  TON = 'nanos',
   NEAR = 'yocto',
   OFC = 'ofcCoin',
   OSMO = 'uosmo',

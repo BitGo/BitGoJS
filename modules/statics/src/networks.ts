@@ -669,6 +669,18 @@ class KavaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.mintscan.io/kava-testnet/txs/';
 }
 
+class Ton extends Mainnet implements AccountNetwork {
+  name = 'Ton';
+  family = CoinFamily.TON;
+  explorerUrl = 'https://https://tonscan.org/';
+}
+
+class TonTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Ton';
+  family = CoinFamily.TON;
+  explorerUrl = 'https://https://testnet.tonscan.org/';
+}
+
 class Core extends Mainnet implements AccountNetwork {
   name = 'Coreum';
   family = CoinFamily.CORE;
@@ -860,6 +872,7 @@ export const Networks = {
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
     tia: Object.freeze(new Tia()),
+    ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
@@ -908,6 +921,7 @@ export const Networks = {
     susd: Object.freeze(new SUSDTestnet()),
     core: Object.freeze(new CoreTestnet()),
     tia: Object.freeze(new TiaTestnet()),
+    ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
