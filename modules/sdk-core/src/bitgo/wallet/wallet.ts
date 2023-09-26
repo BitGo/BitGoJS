@@ -2536,7 +2536,11 @@ export class Wallet implements IWallet {
     } else {
       // Rewrite tokens into recipients for buildTransaction
       buildParams.recipients = params.enableTokens.map((token) => {
-        const address = token.address || this._wallet.coinSpecific?.baseAddress;
+        // If token has non address, take the first wallet address is stored in its coin-specific property
+        // In account-based coin implementations that use wallet contracts, the address is called baseAddress (e.g. eth-like, xtz)
+        // for others it's called rootAddress (e.g. xrp, xlm, algo, trx)
+        const address =
+          token.address || this._wallet.coinSpecific?.baseAddress || this._wallet.coinSpecific?.rootAddress;
         if (!address) {
           throw new Error('Wallet does not have base address, must specify with token param');
         }
