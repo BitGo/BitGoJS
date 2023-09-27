@@ -4086,7 +4086,8 @@ export const coins = CoinMap.fromCoins([
     'Metadium',
     18,
     '0xde2f7766c8bf14ca67193128535e5c7454f8387c',
-    UnderlyingAsset.META
+    UnderlyingAsset.META,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   erc20(
     '4e6a9555-8eca-4843-bdfc-a57c82880b15',
