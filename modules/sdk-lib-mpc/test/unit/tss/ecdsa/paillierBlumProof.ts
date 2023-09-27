@@ -11,25 +11,25 @@ import { prove, verify } from '../../../../src/tss/ecdsa/paillierBlumProof';
 
 describe('EcdsaPaillierBlumProof', function () {
   // Uncomment the following when you need to generate new fixtures
-  // it('should generate fixtures', async function () {
-  //   const { serializePaillierBlumProof } = require('../../../../src/tss/ecdsa/types');
-  //   const { bigIntToHex, generatePaillierKeyWithProof } = require('../../../../src');
-  //   const fs = require('fs');
-  //
-  //   const values: any[] = [];
-  //
-  //   // to generate more fixtures, increase the mocha timeout and then reset it after generating
-  //   for (let i = 0; 5 < 1; i++) {
-  //     const keypairWithProof = await generatePaillierKeyWithProof();
-  //     values.push({
-  //       n: bigIntToHex(keypairWithProof.n),
-  //       p: bigIntToHex(keypairWithProof.p),
-  //       q: bigIntToHex(keypairWithProof.q),
-  //       ...serializePaillierBlumProof(keypairWithProof),
-  //     });
-  //   }
-  //   fs.writeFileSync('./test/fixtures/mockPaillierBlumProof.json', JSON.stringify(values, null, 2));
-  // });
+  xit('should generate fixtures', async function () {
+    const { serializePaillierBlumProof } = require('../../../../src/tss/ecdsa/types');
+    const { bigIntToHex, generatePaillierKeyWithProof } = require('../../../../src');
+    const fs = require('fs');
+
+    const values: any[] = [];
+
+    // to generate more fixtures, increase the mocha timeout and then reset it after generating
+    for (let i = 0; 5 < 1; i++) {
+      const keypairWithProof = await generatePaillierKeyWithProof();
+      values.push({
+        n: bigIntToHex(keypairWithProof.n),
+        p: bigIntToHex(keypairWithProof.p),
+        q: bigIntToHex(keypairWithProof.q),
+        ...serializePaillierBlumProof(keypairWithProof),
+      });
+    }
+    fs.writeFileSync('./test/fixtures/mockPaillierBlumProof.json', JSON.stringify(values, null, 2));
+  });
 
   describe('prove', function () {
     fixtures.forEach((fixture, i) => {
