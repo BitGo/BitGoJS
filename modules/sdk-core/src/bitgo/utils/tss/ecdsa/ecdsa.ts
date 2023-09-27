@@ -794,9 +794,19 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
     }
     const decryptedOShare = this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
-    return await ECDSAMethods.createUserSignatureShare(JSON.parse(decryptedOShare), dShareFromBitgo, signablePayload);
+    const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
+      JSON.parse(decryptedOShare),
+      dShareFromBitgo,
+      signablePayload
+    );
+    // return only required SShare without bigints from VAShare
+    return {
+      i,
+      R,
+      s,
+      y,
+    };
   }
-
   async signEcdsaTssUsingExternalSigner(
     params: TSSParams | TSSParamsForMessage,
     requestType: RequestType,
