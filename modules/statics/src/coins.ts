@@ -7278,7 +7278,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'eaa444e6-bf86-4e45-bf11-4375e9942e5a',
-    'ALK',
+    'alk',
     'Alkemi_Network_DAO_Tokenhflow',
     18,
     '0x6c16119b20fa52600230f074b349da3cb861a7e3',
