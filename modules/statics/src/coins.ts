@@ -1151,7 +1151,21 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.HBAR,
     CoinKind.CRYPTO
   ),
+  ofc('140ac16e-e39a-49d0-ae69-60019ff35727', 'ofcbld', 'Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
+  ofc('220b2568-e996-40d1-af2c-fc4f79019069', 'ofctia', 'Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
+  ofc(
+    'd7cced3c-285a-4a2c-8212-cf959fd15db3',
+    'ofcinjective',
+    'Injective',
+    18,
+    UnderlyingAsset.INJECTIVE,
+    CoinKind.CRYPTO
+  ),
+  ofc('3977b3bd-abf2-476b-9d2a-4666d3b0aa10', 'ofcosmo', 'Osmosis', 6, UnderlyingAsset.OSMO, CoinKind.CRYPTO),
+  ofc('5958e6e9-c6d7-4372-8d1d-c681f595c481', 'ofchash', 'Provenance', 9, UnderlyingAsset.HASH, CoinKind.CRYPTO),
+  ofc('4616eb4e-9244-449c-a503-02cb2d715b2c', 'ofcsei', 'Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
+  ofc('50a00889-47d2-44b5-8dc8-1fb3b4f47b86', 'ofczeta', 'Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
   ofc(
     '03df4c0c-12be-4b24-b3c3-c59be198711b',
     'ofcbsc',
@@ -1231,6 +1245,8 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('c2161656-219d-439a-be96-01fc67ed22a8', 'ofctstx', 'Test Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
+  tofc('916488ca-3607-4c3f-96b4-e5a97edc8767', 'ofctbld', 'Testnet Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
+  tofc('ccf34023-f025-433a-8014-bda198907a3a', 'ofcttia', 'Testnet Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   tofc(
     'f6c23fad-16b6-4bf9-99ae-199ae8ac849d',
     'ofctatom',
@@ -1239,6 +1255,25 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATOM,
     CoinKind.CRYPTO
   ),
+  tofc(
+    '3b0f5716-94c3-4c5b-be70-cfd08b2f1fdf',
+    'ofctinjective',
+    'Testnet Injective',
+    18,
+    UnderlyingAsset.INJECTIVE,
+    CoinKind.CRYPTO
+  ),
+  tofc('1573da4d-15a8-4dae-9368-84ec0507e251', 'ofctosmo', 'Testnet Osmosis', 6, UnderlyingAsset.OSMO, CoinKind.CRYPTO),
+  tofc(
+    '4bbb64d1-6bd2-4c53-8be0-f99229362c3d',
+    'ofcthash',
+    'Testnet Provenance',
+    9,
+    UnderlyingAsset.HASH,
+    CoinKind.CRYPTO
+  ),
+  tofc('a7770053-4fe7-432e-a554-5d3ecc1cc4ad', 'ofctsei', 'Testnet Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
+  tofc('801c0437-d4fd-4e5a-8656-a6bb596f0640', 'ofctzeta', 'Testnet Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
   tofc(
     '52e600bb-b006-452b-9f82-f81c20d0168d',
     'ofctbsc',
