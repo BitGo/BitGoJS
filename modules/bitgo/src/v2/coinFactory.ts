@@ -44,6 +44,7 @@ import {
   Hash,
   Hbar,
   Injective,
+  Kava,
   Ltc,
   Ofc,
   OfcToken,
@@ -83,6 +84,7 @@ import {
   Thbar,
   Tia,
   Tinjective,
+  Tkava,
   Tltc,
   Tosmo,
   Tpolygon,
@@ -138,6 +140,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('hbar', Hbar.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
+  globalCoinFactory.register('kava', Kava.createInstance);
   globalCoinFactory.register('near', Near.createInstance);
   globalCoinFactory.register('ofc', Ofc.createInstance);
   globalCoinFactory.register('osmo', Osmo.createInstance);
@@ -175,6 +178,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('tinjective', Tinjective.createInstance);
+  globalCoinFactory.register('tkava', Tkava.createInstance);
   globalCoinFactory.register('tltc', Tltc.createInstance);
   globalCoinFactory.register('tnear', TNear.createInstance);
   globalCoinFactory.register('tosmo', Tosmo.createInstance);

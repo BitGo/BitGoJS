@@ -104,6 +104,9 @@
       "path": "./modules/sdk-coin-injective"
     },
     {
+      "path": "./modules/sdk-coin-kava"
+    },
+    {
       "path": "./modules/sdk-coin-ltc"
     },
     {

@@ -111,6 +111,9 @@
       "path": "../sdk-coin-injective"
     },
     {
+      "path": "../sdk-coin-kava"
+    },
+    {
       "path": "../sdk-coin-ltc"
     },
     {
