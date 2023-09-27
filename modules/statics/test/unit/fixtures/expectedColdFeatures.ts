@@ -80,6 +80,8 @@ export const expectedColdFeatures = {
     'tsui',
     'ttia',
     'tzeta',
+    'ton',
+    'tton',
   ],
   neither: [
     'ethw',
