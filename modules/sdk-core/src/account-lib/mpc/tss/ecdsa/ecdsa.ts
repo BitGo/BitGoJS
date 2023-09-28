@@ -382,11 +382,13 @@ export default class Ecdsa {
 
     // create paillier challenge proof based on the other signers challenge
     // only send sigma if we also send challenge p
-    const sigma = EcdsaPaillierProof.prove(
-      hexToBigInt(xShare.n),
-      hexToBigInt(xShare.l),
-      EcdsaTypes.deserializePaillierChallenge({ p: yShare.p! }).p
-    );
+    const sigma = yShare.p
+      ? EcdsaPaillierProof.prove(
+          hexToBigInt(xShare.n),
+          hexToBigInt(xShare.l),
+          EcdsaTypes.deserializePaillierChallenge({ p: yShare.p }).p
+        )
+      : [];
 
     const proofShare = {
       z: bigIntToBufferBE(proof.z, 384).toString('hex'),
