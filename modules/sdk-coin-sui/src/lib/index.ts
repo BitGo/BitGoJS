@@ -6,6 +6,8 @@ export { StakingBuilder } from './stakingBuilder';
 export { StakingTransaction } from './stakingTransaction';
 export { UnstakingBuilder } from './unstakingBuilder';
 export { UnstakingTransaction } from './unstakingTransaction';
+export { CustomTransaction } from './customTransaction';
+export { CustomTransactionBuilder } from './customTransactionBuilder';
 export { Transaction } from './transaction';
 export { TransferTransaction } from './transferTransaction';
 export { TransactionBuilder } from './transactionBuilder';
