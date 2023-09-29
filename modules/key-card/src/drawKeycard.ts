@@ -3,6 +3,22 @@ import * as QRCode from 'qrcode';
 import { FAQ } from './faq';
 import { QrData } from './generateQrData';
 import { splitKeys } from './utils';
+import { KeyCurve } from '@bitgo/statics';
+
+export interface IDrawKeyCard {
+  activationCode?: string;
+  keyCardImage?: HTMLImageElement;
+  qrData: QrData;
+  questions: FAQ[];
+  walletLabel: string;
+  curve?: KeyCurve;
+}
+
+enum KeyCurveName {
+  ed25519 = 'EDDSA',
+  secp256k1 = 'ECDSA',
+  bls = 'BLS',
+}
 
 // Max for Binary/Byte Data https://github.com/soldair/node-qrcode#qr-code-capacity
 // the largest theoretically possible value is actually 2953 but the QR codes get so dense that scanning them with a
@@ -69,13 +85,8 @@ export async function drawKeycard({
   keyCardImage,
   qrData,
   walletLabel,
-}: {
-  activationCode?: string;
-  keyCardImage?: HTMLImageElement;
-  qrData: QrData;
-  questions: FAQ[];
-  walletLabel: string;
-}): Promise<jsPDF> {
+  curve,
+}: IDrawKeyCard): Promise<jsPDF> {
   // document details
   const width = 8.5 * 72;
   let y = 0;
@@ -100,7 +111,7 @@ export async function drawKeycard({
   }
   doc.setFontSize(font.header).setTextColor(color.black);
   y = moveDown(y, 25);
-  doc.text('KeyCard', left(325), y - 1);
+  doc.text('KeyCard', left(curve && !activationCode ? 460 : 325), y - 1);
   if (activationCode) {
     doc.setFontSize(font.header).setTextColor(color.gray);
     doc.text(activationCode, left(460), y);
@@ -111,21 +122,23 @@ export async function drawKeycard({
   const date = new Date().toDateString();
   y = moveDown(y, margin);
   doc.setFontSize(font.body).setTextColor(color.gray);
-  doc.text('Created on ' + date + ' for wallet named:', left(0), y);
+  const title = curve ? KeyCurveName[curve] + ' key:' : 'wallet named:';
+  doc.text('Created on ' + date + ' for ' + title, left(0), y);
   // copy
   y = moveDown(y, 25);
   doc.setFontSize(font.subheader).setTextColor(color.black);
   doc.text(walletLabel, left(0), y);
-  // Red Bar
-  y = moveDown(y, 20);
-  doc.setFillColor(255, 230, 230);
-  doc.rect(left(0), y, width - 2 * margin, 32, 'F');
+  if (!curve) {
+    // Red Bar
+    y = moveDown(y, 20);
+    doc.setFillColor(255, 230, 230);
+    doc.rect(left(0), y, width - 2 * margin, 32, 'F');
 
-  // warning message
-  y = moveDown(y, 20);
-  doc.setFontSize(font.body).setTextColor(color.red);
-  doc.text('Print this document, or keep it securely offline. See below for FAQ.', left(75), y);
-
+    // warning message
+    y = moveDown(y, 20);
+    doc.setFontSize(font.body).setTextColor(color.red);
+    doc.text('Print this document, or keep it securely offline. See below for FAQ.', left(75), y);
+  }
   // Generate the first page's data for the backup PDF
   y = moveDown(y, 35);
   const qrSize = 130;
