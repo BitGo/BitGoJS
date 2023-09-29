@@ -18,9 +18,6 @@ const derivedFromParentWithSeed = undefined // 'random seed'
 // Set user common keychain from the OVC User public key
 const userCommonKeyChain = "6e1bf...9c967"
 
-// Set the backup key id (you can get this from wallet json file, is the second key in the array of keys)
-const backupKeyId = "649b69a0d2521600089f16044cd5e5cb";
-
 // Set the bitgo key id (you can get this from wallet json file, is the third key in the array of keys)
 const bitgoKeyId = "649b69a0d2521600089f16044cd5e5cb";
 
@@ -38,17 +35,6 @@ async function createSMCWalletStep2() {
     throw new Error("Common keychain mismatch between the User and Bitgo key");
   }
 
-
-  const backupKeyChain = await bitgoCoin.keychains().get({ id: backupKeyId })
-
-  if (!backupKeyChain || !backupKeyChain.commonKeychain) {
-    throw new Error("BitGo keychain not found")
-  }
-
-  if (backupKeyChain.commonKeychain !== userCommonKeyChain) {
-    throw new Error("Common keychain mismatch between the User and Backup key");
-  }
-
   if (!derivedFromParentWithSeed) {
     throw new Error("derivedFromParentWithSeed is required")
   }
@@ -60,6 +46,15 @@ async function createSMCWalletStep2() {
     derivedFromParentWithSeed
   };
   const userKeychain = await bitgoCoin.keychains().add(userKeychainParams);
+
+  const backupKeyChainParams = {
+    source: "backup",
+    keyType: "tss" as KeyType,
+    commonKeychain: userCommonKeyChain,
+    derivedFromParentWithSeed
+  };
+
+  const backupKeyChain = await bitgoCoin.keychains().add(backupKeyChainParams);
 
   const walletParams = {
     label: walletName,
