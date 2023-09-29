@@ -51,16 +51,18 @@ async function createSMCWalletStep2() {
     commonKeychain: ovc1CommonKeychain.commonKeychain,
   };
 
-  if(derivedFromParentWithSeed) {
-    userKeychainParams.derivedFromParentWithSeed = derivedFromParentWithSeed
-  }
-  const userKeychain = await bitgoCoin.keychains().add(userKeychainParams);
-
-  const backupKeychainParams = {
+  const backupKeychainParams: AddKeychainOptions = {
     source: "backup",
     keyType: "tss" as KeyType,
     commonKeychain: ovc1CommonKeychain.commonKeychain,
   };
+
+
+  if(derivedFromParentWithSeed) {
+    userKeychainParams.derivedFromParentWithSeed = derivedFromParentWithSeed
+    backupKeychainParams.derivedFromParentWithSeed = derivedFromParentWithSeed
+  }
+  const userKeychain = await bitgoCoin.keychains().add(userKeychainParams);
 
   const backupKeychain = await bitgoCoin.keychains().add(backupKeychainParams);
 
