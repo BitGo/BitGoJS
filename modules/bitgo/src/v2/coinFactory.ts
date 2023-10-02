@@ -26,6 +26,7 @@ import {
   Btg,
   Celo,
   CeloToken,
+  Core,
   Cspr,
   Dash,
   Doge,
@@ -83,6 +84,7 @@ import {
   Thbar,
   Tia,
   Tinjective,
+  Tcore,
   Tltc,
   Tosmo,
   Tpolygon,
@@ -121,6 +123,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('btc', Btc.createInstance);
   globalCoinFactory.register('btg', Btg.createInstance);
   globalCoinFactory.register('celo', Celo.createInstance);
+  globalCoinFactory.register('core', Core.createInstance);
   globalCoinFactory.register('cspr', Cspr.createInstance);
   globalCoinFactory.register('dash', Dash.createInstance);
   globalCoinFactory.register('doge', Doge.createInstance);
@@ -161,6 +164,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tbsv', Tbsv.createInstance);
   globalCoinFactory.register('tbtc', Tbtc.createInstance);
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
+  globalCoinFactory.register('tcore', Tcore.createInstance);
   globalCoinFactory.register('tcspr', Tcspr.createInstance);
   globalCoinFactory.register('tdash', Tdash.createInstance);
   globalCoinFactory.register('tdoge', Tdoge.createInstance);
