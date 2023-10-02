@@ -173,15 +173,11 @@ describe('TSS ECDSA TESTS', function () {
         { index: 1, threshold: 2, numShares: 1 },
       ];
       for (let index = 0; index < invalidConfigs.length; index++) {
-        try {
-          await MPC.keyShare(
-            invalidConfigs[index].index,
-            invalidConfigs[index].threshold,
-            invalidConfigs[index].numShares,
-          );
-        } catch (e) {
-          e.should.equal('Invalid KeyShare Config');
-        }
+        await MPC.keyShare(
+          invalidConfigs[index].index,
+          invalidConfigs[index].threshold,
+          invalidConfigs[index].numShares,
+        ).should.be.rejectedWith('Invalid KeyShare Config');
       }
     });
 

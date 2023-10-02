@@ -1,4 +1,4 @@
-import { EcdsaTypes, HashCommitDecommit, SchnorrProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes, HashCommitDecommit, HashDecommitment, SchnorrProof } from '@bitgo/sdk-lib-mpc';
 
 /**
  * @deprecated use DeserializedNtildeProof from sdk-lib-mpc instead
@@ -33,6 +33,18 @@ export type SerializedNtilde = EcdsaTypes.SerializedNtilde;
  */
 export type SerializedNtildeWithProofs = EcdsaTypes.SerializedNtildeWithProofs;
 
+// Private share of the user generated during key generation,
+// up to the point where private contribution u is generated and its correcponding
+// partial public key y is committed to.
+export type UYShare = {
+  i: number; // participant index
+  t: number; // threshold
+  c: number; // number of shares
+  uu: string; // unsplit shamir share of secret
+  comDecomY: HashCommitDecommit; // commitment and decommitment of y = uu * G
+  chaincode: string;
+};
+
 // Private share of the user generated during key generation
 export type PShare = {
   i: number; // participant index
@@ -57,6 +69,8 @@ export type NShare = SignIndex & {
   n: string;
   u: string; // shamir share of secret at j'th index
   y: string;
+  comY?: Buffer; // commitment of y
+  decomY?: HashDecommitment; // decommitment of y
   v?: string;
   chaincode: string;
 };
