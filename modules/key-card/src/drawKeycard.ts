@@ -1,18 +1,7 @@
 import { jsPDF } from 'jspdf';
 import * as QRCode from 'qrcode';
-import { FAQ } from './faq';
-import { QrData } from './generateQrData';
 import { splitKeys } from './utils';
-import { KeyCurve } from '@bitgo/statics';
-
-export interface IDrawKeyCard {
-  activationCode?: string;
-  keyCardImage?: HTMLImageElement;
-  qrData: QrData;
-  questions: FAQ[];
-  walletLabel: string;
-  curve?: KeyCurve;
-}
+import { IDrawKeyCard } from './types';
 
 enum KeyCurveName {
   ed25519 = 'EDDSA',

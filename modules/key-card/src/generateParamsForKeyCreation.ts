@@ -1,16 +1,12 @@
 import * as assert from 'assert';
-import { IDrawKeyCard } from './drawKeycard';
-import { GenerateKeycardParams } from '.';
+import { GenerateQrDataBaseParams, GenerateQrDataForKeychainParams, IDrawKeyCard } from './types';
 
 export function generateParamsForKeyCreation({
   curve,
   bitgoKeychain,
   walletLabel,
   keyCardImage,
-}: GenerateKeycardParams): IDrawKeyCard {
-  assert(curve, 'curve is required');
-  assert(bitgoKeychain, 'bitgoKeychain is required');
-  assert(bitgoKeychain.id, 'bitgoKeychain.id is required');
+}: GenerateQrDataForKeychainParams & GenerateQrDataBaseParams): IDrawKeyCard {
   assert(bitgoKeychain.commonKeychain, 'bitgoKeychain.commonKeychain is required');
   return {
     walletLabel,

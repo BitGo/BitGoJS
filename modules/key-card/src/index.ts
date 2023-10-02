@@ -1,27 +1,24 @@
-import { generateQrData, GenerateQrDataParams } from './generateQrData';
+import jsPDF from 'jspdf';
+
+import { generateQrData } from './generateQrData';
 import { generateFaq } from './faq';
 import { drawKeycard } from './drawKeycard';
-import jsPDF from 'jspdf';
 import { generateParamsForKeyCreation } from './generateParamsForKeyCreation';
+import { GenerateKeycardParams } from './types';
 
 export * from './drawKeycard';
 export * from './faq';
 export * from './generateQrData';
 export * from './utils';
-
-export interface GenerateKeycardParams extends GenerateQrDataParams {
-  activationCode?: string;
-  keyCardImage?: HTMLImageElement;
-  walletLabel: string;
-}
+export * from './types';
 
 export async function generateKeycard(params: GenerateKeycardParams): Promise<void> {
   let keycard: jsPDF;
-  if (!params.curve && params.coin) {
+  if ('coin' in params) {
     const questions = generateFaq(params.coin.fullName);
     const qrData = generateQrData(params);
     keycard = await drawKeycard({ ...params, questions, qrData });
-  } else if (params.curve && !params.coin) {
+  } else if ('curve' in params) {
     const data = generateParamsForKeyCreation(params);
     keycard = await drawKeycard(data);
   } else {

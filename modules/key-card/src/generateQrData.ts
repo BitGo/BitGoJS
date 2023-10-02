@@ -1,48 +1,8 @@
-import { BaseCoin, KeyCurve } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
-
-export interface GenerateQrDataParams {
-  // The backup keychain as it is returned from the BitGo API upon creation
-  backupKeychain?: Keychain;
-  // The name of the 3rd party provider of the backup key if neither the user nor BitGo stores it
-  backupKeyProvider?: string;
-  // The key id of the backup key, only used for cold keys
-  backupMasterKey?: string;
-  // The BitGo keychain as it is returned from the BitGo API upon creation
-  bitgoKeychain: Keychain;
-  // The coin of the wallet that was/ is about to be created
-  coin?: Readonly<BaseCoin>;
-  // A code that can be used to encrypt the wallet password to.
-  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
-  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
-  passcodeEncryptionCode?: string;
-  // The wallet password
-  // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
-  // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
-  passphrase?: string;
-  // The user keychain as it is returned from the BitGo API upon creation
-  userKeychain?: Keychain;
-  // The key id of the user key, only used for cold keys
-  userMasterKey?: string;
-  // The curve used for the key
-  curve?: KeyCurve;
-}
-
-interface QrDataEntry {
-  data: string;
-  description: string;
-  title: string;
-  publicMasterKey?: string;
-}
-
-export interface QrData {
-  backup?: QrDataEntry;
-  bitgo?: QrDataEntry;
-  passcode?: QrDataEntry;
-  user: QrDataEntry;
-}
+import { GenerateQrDataParams, QrData, QrDataEntry } from './types';
 
 function getPubFromKey(key: Keychain): string | undefined {
   switch (key.type) {
@@ -151,9 +111,6 @@ export function generateQrData({
   userKeychain,
   userMasterKey,
 }: GenerateQrDataParams): QrData {
-  assert(userKeychain, 'userKeychain is required');
-  assert(backupKeychain, 'backupKeychain is required');
-  assert(coin, 'coin is required');
   const qrData: QrData = {
     user: generateUserQrData(userKeychain, userMasterKey),
     backup: generateBackupQrData(coin, backupKeychain, {
