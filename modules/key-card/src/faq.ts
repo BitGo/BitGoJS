@@ -1,8 +1,4 @@
-export interface FAQ {
-  question: string;
-  // the answer to the question, already split into individual lines of text
-  answer: string[];
-}
+import { FAQ } from './types';
 
 export function generateFaq(coinName: string): FAQ[] {
   const sectionACoinSpecific = `The KeyCard contains important information which can be used to recover the ${coinName} `;

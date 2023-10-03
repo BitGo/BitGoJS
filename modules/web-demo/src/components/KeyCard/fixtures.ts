@@ -1,5 +1,5 @@
 import { generateKeycard } from '@bitgo/key-card';
-import { coins } from '@bitgo/statics';
+import { KeyCurve, coins } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
 
 function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {
@@ -272,5 +272,21 @@ export async function downloadKeycardForSelfManagedHotAdvancedPolygonWallet() {
     passphrase: 'test_wallet_passphrase',
     userKeychain,
     walletLabel: 'SMHA Polygon Wallet',
+  });
+}
+
+export async function downloadKeycardForSelfManagedColdEddsaKey() {
+  const bitgoKeychain: Keychain = {
+    id: '63e50a158312c00007bd35c89cc5fb1a',
+    type: 'tss',
+    commonKeychain:
+      '021150550261463d753e96647bd5debb05d9ef325f4368cc160bf03365e4dadc756416f1230ccc4a1f24eb4924395bced22400f63d4837d511a28da015728ca049',
+  };
+
+  await generateKeycard({
+    bitgoKeychain,
+    curve: KeyCurve.Ed25519,
+    walletLabel: 'My EdDSA Key',
+    keyCardImage: await downloadKeycardImage('bitgo'),
   });
 }
