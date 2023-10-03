@@ -687,6 +687,66 @@ describe('XLM:', function () {
         validTransaction.should.equal(true);
       });
     });
+
+    describe('enabletoken transactions', function () {
+      it('should fail to verify a enbletoken transaction with unmatching number of token', async function () {
+        const txParams = {
+          recipients: [],
+          type: 'enabletoken',
+        };
+
+        const buildResult = {
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
+
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
+
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('transaction prebuild does not match expected trustline operations');
+      });
+
+      it('should fail to verify a enbletoken transaction with unmatching token', async function () {
+        const txParams = {
+          type: 'enabletoken',
+          recipients: [
+            {
+              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              amount: 0,
+              address: '',
+            },
+          ],
+        };
+
+        const buildResult = {
+          txBase64:
+            'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
+
+        nock(uri).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).reply(200, buildResult);
+
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
+      });
+    });
   });
 
   describe('Federation lookups:', function () {
