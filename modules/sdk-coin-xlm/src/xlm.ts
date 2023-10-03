@@ -16,6 +16,7 @@ import {
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
+  ITransactionRecipient,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
@@ -23,6 +24,7 @@ import {
   promiseProps,
   SignTransactionOptions as BaseSignTransactionOptions,
   StellarFederationUserNotFoundError,
+  TokenEnablementConfig,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
@@ -93,6 +95,8 @@ interface HalfSignedTransaction {
   halfSigned: {
     txBase64: string;
   };
+  recipients?: ITransactionRecipient[];
+  type?: string;
 }
 
 interface SupplementGenerateWalletOptions {
@@ -745,12 +749,19 @@ export class Xlm extends BaseCoin {
     const keyPair = stellar.Keypair.fromSecret(prv);
     const tx = new stellar.Transaction(txPrebuild.txBase64, this.getStellarNetwork());
     tx.sign(keyPair);
+    const txBase64 = Xlm.txToString(tx);
 
-    return {
-      halfSigned: {
-        txBase64: Xlm.txToString(tx),
-      },
-    };
+    const type = txPrebuild?.buildParams?.type;
+    const recipients = txPrebuild?.buildParams?.recipients;
+    if (type === 'enabletoken') {
+      return {
+        halfSigned: { txBase64 },
+        type,
+        recipients,
+      };
+    } else {
+      return { halfSigned: { txBase64 } };
+    }
   }
 
   /**
@@ -943,6 +954,37 @@ export class Xlm extends BaseCoin {
    * @param {stellar.Operation} operations - tx operations
    * @param {TransactionParams} txParams - params used to build the tx
    */
+  verifyEnableTokenTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
+    const trustlineOperations = _.filter(operations, ['type', 'changeTrust']) as stellar.Operation.ChangeTrust[];
+    if (trustlineOperations.length !== _.get(txParams, 'recipients', []).length) {
+      throw new Error('transaction prebuild does not match expected trustline operations');
+    }
+    _.forEach(trustlineOperations, (op: stellar.Operation) => {
+      if (op.type !== 'changeTrust') {
+        throw new Error('Invalid asset type');
+      }
+      if (op.line.getAssetType() === 'liquidity_pool_shares') {
+        throw new Error('Invalid asset type');
+      }
+      const asset = op.line as stellar.Asset;
+      const opToken = this.getTokenNameFromStellarAsset(asset);
+      const tokenTrustline = _.find(txParams.recipients, (recipient) => {
+        // trustline params use limits in base units
+        const opLimitBaseUnits = this.bigUnitsToBaseUnits(op.limit);
+        // Enable token limit is set to Xlm.maxTrustlineLimit by default
+        return recipient.tokenName === opToken && opLimitBaseUnits === Xlm.maxTrustlineLimit;
+      });
+      if (!tokenTrustline) {
+        throw new Error('transaction prebuild does not match expected trustline tokens');
+      }
+    });
+  }
+
+  /**
+   * Verify that a tx prebuild's operations comply with the original intention
+   * @param {stellar.Operation} operations - tx operations
+   * @param {TransactionParams} txParams - params used to build the tx
+   */
   verifyTrustlineTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
     const trustlineOperations = _.filter(operations, ['type', 'changeTrust']) as stellar.Operation.ChangeTrust[];
     if (trustlineOperations.length !== _.get(txParams, 'trustlines', []).length) {
@@ -1010,7 +1052,9 @@ export class Xlm extends BaseCoin {
       (operation) => operation.type === 'createAccount' || operation.type === 'payment'
     );
 
-    if (txParams.type === 'trustline') {
+    if (txParams.type === 'enabletoken') {
+      this.verifyEnableTokenTxOperations(tx.operations, txParams);
+    } else if (txParams.type === 'trustline') {
       this.verifyTrustlineTxOperations(tx.operations, txParams);
     } else {
       if (_.isEmpty(outputOperations)) {
@@ -1104,5 +1148,18 @@ export class Xlm extends BaseCoin {
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
+  }
+
+  /**
+   * Gets config for how token enablements work for this coin
+   * @returns
+   *    requiresTokenEnablement: True if tokens need to be enabled for this coin
+   *    supportsMultipleTokenEnablements: True if multiple tokens can be enabled in one transaction
+   */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+    };
   }
 }
