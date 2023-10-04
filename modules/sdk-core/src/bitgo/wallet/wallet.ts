@@ -1820,24 +1820,29 @@ export class Wallet implements IWallet {
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
-    try {
-      await this.baseCoin.verifyTransaction({
-        txParams: txPrebuild.buildParams || params,
-        txPrebuild,
-        wallet: this,
-        verification: params.verification ?? {},
-        reqId: params.reqId,
-        walletType: this._wallet.multisigType,
-      });
-    } catch (e) {
-      console.error('transaction prebuild failed local validation:', e.message);
-      console.error(
-        'transaction params:',
-        _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
-      );
-      console.error('transaction prebuild:', txPrebuild);
-      console.trace(e);
-      throw e;
+    // if txRequestId is the only key in the prebuild, then we are dealing with a already verified build and we can skip to signing
+    const prebuildKeys = Object.keys(txPrebuild);
+    const skipVerification = prebuildKeys.length === 1 && prebuildKeys[0] === 'txRequestId' && !!txPrebuild.txRequestId;
+    if (!skipVerification) {
+      try {
+        await this.baseCoin.verifyTransaction({
+          txParams: txPrebuild.buildParams || params,
+          txPrebuild,
+          wallet: this,
+          verification: params.verification ?? {},
+          reqId: params.reqId,
+          walletType: this._wallet.multisigType,
+        });
+      } catch (e) {
+        console.error('transaction prebuild failed local validation:', e.message);
+        console.error(
+          'transaction params:',
+          _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
+        );
+        console.error('transaction prebuild:', txPrebuild);
+        console.trace(e);
+        throw e;
+      }
     }
     // pass our three keys
     const signingParams = {
