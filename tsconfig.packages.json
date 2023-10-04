@@ -134,6 +134,9 @@
       "path": "./modules/sdk-coin-tia"
     },
     {
+      "path": "./modules/sdk-coin-ton"
+    },
+    {
       "path": "./modules/sdk-coin-trx"
     },
     {
