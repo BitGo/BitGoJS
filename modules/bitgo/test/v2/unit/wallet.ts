@@ -2707,6 +2707,90 @@ describe('V2 Wallet:', function () {
       });
     });
 
+    describe('getUserKeyAndSignTssTransaction', function () {
+      ['eddsa', 'ecdsa'].forEach((keyCurve: string) => {
+        describe(keyCurve, () => {
+          const wallet = keyCurve === 'eddsa' ? tssSolWallet : tssEthWallet;
+          let getKeysStub: sinon.SinonStub;
+          let signTransactionStub: sinon.SinonStub;
+          beforeEach(function () {
+            getKeysStub = sandbox.stub(Keychains.prototype, 'getKeysForSigning');
+
+            signTransactionStub = sandbox
+              .stub(Wallet.prototype, 'signTransaction')
+              .resolves({ ...txRequestFull, state: 'signed' });
+          });
+
+          afterEach(function () {
+            sandbox.verifyAndRestore();
+          });
+          it('should sign transaction', async function () {
+            getKeysStub.resolves([
+              {
+                commonKeychain: 'test',
+                id: '',
+                pub: '',
+                type: 'tss',
+                encryptedPrv:
+                  '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+              },
+            ]);
+            const params = {
+              walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+              txRequestId: 'id',
+            };
+
+            const response = await wallet.getUserKeyAndSignTssTransaction(params);
+            response.should.deepEqual({ ...txRequestFull, state: 'signed' });
+
+            getKeysStub.calledOnce.should.be.true();
+            signTransactionStub.calledOnce.should.be.true();
+          });
+
+          it('should throw if the keychain doesnt have the encryptedKey', async function () {
+            getKeysStub.resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'tss' }]);
+            const params = {
+              walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+              txRequestId: 'id',
+            };
+
+            await wallet
+              .getUserKeyAndSignTssTransaction(params)
+              .should.be.rejectedWith('the user keychain does not have property encryptedPrv');
+
+            getKeysStub.calledOnce.should.be.true();
+            signTransactionStub.notCalled.should.be.true();
+          });
+
+          it('should throw if password is invalid', async function () {
+            getKeysStub.resolves([
+              {
+                commonKeychain: 'test',
+                id: '',
+                pub: '',
+                type: 'tss',
+                encryptedPrv:
+                  '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+              },
+            ]);
+            const params = {
+              walletPassphrase: 'randompass',
+              txRequestId: 'id',
+            };
+
+            await wallet
+              .getUserKeyAndSignTssTransaction(params)
+              .should.be.rejectedWith(
+                `unable to decrypt keychain with the given wallet passphrase. Error: {"message":"password error - ccm: tag doesn't match"}`
+              );
+
+            getKeysStub.calledOnce.should.be.true();
+            signTransactionStub.notCalled.should.be.true();
+          });
+        });
+      });
+    });
+
     describe('Message Signing', function () {
       const txHash = '0xrrrsss1b';
       const txRequestForMessageSigning: TxRequest = {
