@@ -46,7 +46,8 @@
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
     "tweetnacl": "^1.0.3",
-    "tonweb": "^0.0.62"
+    "tonweb": "^0.0.62",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.22.0",
