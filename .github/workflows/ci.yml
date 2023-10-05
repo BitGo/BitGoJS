@@ -48,7 +48,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -170,7 +170,7 @@ jobs:
             node_modules
             modules/*/node_modules
             /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
