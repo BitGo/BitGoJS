@@ -1551,6 +1551,43 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Gets the User Keychain and sign a TSS transaction
+   * @param txRequestId The transaction request id
+   * @param walletPassphrase The wallet passphrase
+   * @return Promise<SignedTransaction>
+   */
+  async getUserKeyAndSignTssTransaction({
+    txRequestId,
+    walletPassphrase,
+  }: {
+    txRequestId: string;
+    walletPassphrase: string;
+  }): Promise<SignedTransaction> {
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('getUserKeyAndSignTssTransaction is only supported for TSS wallets');
+    }
+    const reqId = new RequestTracer();
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
+
+    // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    const userKeychain = keychains[0];
+    if (!userKeychain || !userKeychain.encryptedPrv) {
+      throw new Error('the user keychain does not have property encryptedPrv');
+    }
+    try {
+      this.bitgo.decrypt({ input: userKeychain.encryptedPrv, password: walletPassphrase });
+    } catch (e) {
+      const error: any = new Error(
+        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
+      );
+      error.code = 'wallet_passphrase_incorrect';
+      throw error;
+    }
+
+    return this.signTransaction({ txPrebuild: { txRequestId }, walletPassphrase, reqId, keychain: userKeychain });
+  }
+
+  /**
    * Sign a transaction
    * @param params
    * - txPrebuild
