@@ -222,6 +222,11 @@ export enum CoinFeature {
    * This coin supports the ability to rebuild transactions on custody signing
    */
   REBUILD_ON_CUSTODY_SIGNING = 'rebuild-on-custody-signing',
+
+  /**
+   * This coin supports higher limit for tx request rebuild, which is 10 by default
+   */
+  INCREASED_TX_REQUEST_REBUILD_LIMIT = 'increased-tx-request-rebuild-limit',
 }
 
 /**
