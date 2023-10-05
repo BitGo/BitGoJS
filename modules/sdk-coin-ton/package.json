@@ -41,8 +41,12 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^8.24.0",
+    "@bitgo/sdk-lib-mpc": "^8.13.0",
     "@bitgo/statics": "^27.0.0",
-    "bignumber.js": "^9.0.0"
+    "bignumber.js": "^9.0.0",
+    "bn.js": "^5.2.1",
+    "tweetnacl": "^1.0.3",
+    "tonweb": "^0.0.62"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.22.0",

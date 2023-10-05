@@ -11,10 +11,16 @@ import {
 import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
+
+  constructor(coinConfig: Readonly<CoinConfig>) {
+    super(coinConfig);
+    this._transaction = new Transaction(coinConfig);
+  }
 
   // get and set region
   /**
@@ -39,7 +45,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this._signatures.push({ publicKey, signature });
+    this.transaction.signature.push(signature.toString('hex'));
   }
 
   /**
@@ -50,7 +56,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   sender(senderAddress: string): this {
-    throw new Error('Method not implemented.');
+    this.transaction.sender = senderAddress;
+    return this;
   }
 
   fee(feeOptions: FeeOptions): this {
@@ -59,12 +66,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    throw new Error('Method not implemented.');
+    this.transaction.fromRawTransaction(rawTransaction);
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new Error('Method not implemented.');
+    await this.transaction.build();
+    //    if (this.si) {
+    //      this.transaction.sign(this._signer);
+    //    }
+    //    if (this._signatures?.length > 0) {
+    //      this.transaction.constructSignedPayload(this._signatures[0].signature);
+    //    }
+    this.transaction.loadInputsAndOutputs();
+    return this.transaction;
   }
 
   // region Validators
@@ -82,12 +98,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    throw new Error('Method not implemented.');
+    return;
   }
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    throw new Error('Method not implemented.');
+    if (!transaction) {
+      throw new Error('transaction not defined');
+    }
+    this.validateAddress(transaction.recipient);
+    this.validateValue(new BigNumber(transaction.recipient.amount));
   }
 
   /** @inheritdoc */
@@ -95,5 +115,25 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
+  }
+
+  setMessage(msg: string): TransactionBuilder {
+    this.transaction.message = msg;
+    return this;
+  }
+
+  sequenceNumber(number: number): TransactionBuilder {
+    this.transaction.seqno = number;
+    return this;
+  }
+
+  expireTime(number: number): TransactionBuilder {
+    this.transaction.expireTime = number;
+    return this;
+  }
+
+  publicKey(key: string): TransactionBuilder {
+    this.transaction.publicKey = key;
+    return this;
   }
 }
