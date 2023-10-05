@@ -7,17 +7,58 @@ on:
     branches:
       - master
       - rel/**
-
   workflow_dispatch:
 
 jobs:
-  unit-test:
+  house-keeping:
+    name: House Keeping
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Build Env Info
+        run: |
+          echo "node $(node --version)"
+          echo "npm $(npm --version)"
+          echo "yarn $(yarn --version)"
+          git --version
+          echo "base ref $GITHUB_BASE_REF"
+          echo "head ref $GITHUB_HEAD_REF"
+
+      - name: Fetch Base Ref
+        run: git fetch origin $GITHUB_BASE_REF
+
+      - name: Lint Commit Messages
+        run: GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+
+      - name: Check In-Repo Package Versions
+        run: yarn run check-versions
+
+      - name: Dependency Audit
+        run: yarn run improved-yarn-audit --min-severity high
+
+      - name: Lint Source Code
+        run: yarn run lint
+
+      - name: Check Source Code Formatting
+        run: yarn run check-fmt
+
+      - name: Check Package Dependencies
+        run: yarn run check-deps
+
+  unit-test:
+    name: Unit Test (node${{ matrix.node-version }})
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16.x, 18.x]
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,7 +69,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Build Info
+      - name: Build Env Info
         run: |
           echo "node $(node --version)"
           echo "npm $(npm --version)"
@@ -37,11 +78,7 @@ jobs:
           echo "base ref $GITHUB_BASE_REF"
           echo "head ref $GITHUB_HEAD_REF"
 
-      - name: Fetch Base Ref
-        run: |
-          git fetch origin $GITHUB_BASE_REF
-
-      - name: restore lerna dependencies
+      - name: Restore `lerna` Dependencies
         id: lerna-cache
         uses: actions/cache@v3
         with:
@@ -54,34 +91,9 @@ jobs:
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
         run: yarn install --with-frozen-lockfile
 
-      - name: build packages
+      - name: Build Packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
         run: yarn run postinstall
-
-      - name: Lint Commit Messages
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: |
-          GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
-
-      - name: Check In-Repo Package Versions
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run check-versions
-
-      - name: Dependency Audit
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run improved-yarn-audit --min-severity high
-
-      - name: Lint Source Code
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run lint
-
-      - name: Check Source Code Formatting
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run check-fmt
-
-      - name: Check Package Dependencies
-        if: ${{ startsWith(matrix.node-version, '16') }}
-        run: yarn run check-deps
 
       - name: Unit Test
         run: yarn run unit-test-changed
@@ -97,8 +109,8 @@ jobs:
       #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   browser-test:
+    name: Browser Test
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -107,7 +119,7 @@ jobs:
       - name: Setup node 16
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # this just needs to pass our lock file requirement for compilation
+          node-version: 18 # this just needs to pass our lock file requirement for compilation
 
       - name: Build Info
         run: |
@@ -162,7 +174,7 @@ jobs:
             xdg-utils \
             wget
 
-      - name: restore lerna dependencies
+      - name: Restore `lerna` Dependencies
         id: lerna-cache
         uses: actions/cache@v3
         with:
@@ -176,7 +188,7 @@ jobs:
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
         run: yarn install --with-frozen-lockfile
 
-      - name: build packages
+      - name: Build Packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
         run: yarn run postinstall
 
@@ -186,8 +198,8 @@ jobs:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
   docker-build:
+    name: Docker Build
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
         with:
