@@ -27,6 +27,7 @@ export enum CoinFamily {
   AVAXP = 'avaxp',
   BCH = 'bch',
   BCHA = 'bcha',
+  BERA = 'bera',
   BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
@@ -47,6 +48,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   INJECTIVE = 'injective',
+  ISLM = 'islm',
   KAVA = 'kava',
   LTC = 'ltc',
   POLYGON = 'polygon',
@@ -248,6 +250,7 @@ export enum UnderlyingAsset {
   AXLV2 = 'axlv2',
   BCH = 'bch',
   BCHA = 'bcha',
+  BERA = 'bera',
   BLD = 'bld', // Agoric
   BSC = 'bsc',
   BSV = 'bsv',
@@ -272,6 +275,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   INJECTIVE = 'injective',
+  ISLM = 'islm',
   KAVA = 'kava',
   LTC = 'ltc',
   NEAR = 'near',
@@ -1376,6 +1380,8 @@ export enum BaseUnit {
   KAVA = 'ukava',
   CORE = 'ucore',
   TESTCORE = 'utestcore', // Coreum testnet uses different name for native coin
+  BERA = 'abera',
+  ISLM = 'aISLM',
 }
 
 export interface BaseCoinConstructorOptions {
