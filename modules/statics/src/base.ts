@@ -196,6 +196,10 @@ export enum CoinFeature {
    */
   CUSTODY_BITGO_FRANKFURT = 'custody-bitgo-frankfurt',
   /*
+   * This coin supports custody in BitGo Sister Trust 1 entities
+   */
+  CUSTODY_BITGO_SISTER_TRUST_ONE = 'custody-bitgo-sister-trust-one',
+  /*
    * This coin has transactions that expire after a certain amount of time.
    */
   EXPIRING_TRANSACTIONS = 'expiring-transactions',
