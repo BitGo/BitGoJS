@@ -1,7 +1,7 @@
 import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
@@ -9,13 +9,13 @@ import sinon from 'sinon';
 import { Injective, Tinjective } from '../../src';
 import utils from '../../src/lib/utils';
 import {
+  address,
+  mockAccountDetailsResponse,
   TEST_DELEGATE_TX,
   TEST_SEND_TX,
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
-  address,
-  mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/injective';
 import should = require('should');
@@ -267,7 +267,7 @@ describe('INJ', function () {
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: 'UNAVAILABLE',
+        outputAmount: undefined,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },

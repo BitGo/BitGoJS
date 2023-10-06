@@ -1,23 +1,24 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import should = require('should');
 import sinon from 'sinon';
 import { Atom, Tatom, Transaction } from '../../src';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { GAS_AMOUNT } from '../../src/lib/constants';
+import { SendMessage } from '../../src/lib/iface';
 import utils from '../../src/lib/utils';
 import {
   address,
   TEST_DELEGATE_TX,
+  TEST_SEND_MANY_TX,
   TEST_SEND_TX,
+  TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
-  TEST_TX_WITH_MEMO,
   wrwUser,
 } from '../resources/atom';
-import { coins } from '@bitgo/statics';
-import { SendMessage } from '../../src/lib/iface';
-import { GAS_AMOUNT } from '../../src/lib/constants';
+import should = require('should');
 
 describe('ATOM', function () {
   let bitgo: TestBitGoAPI;
@@ -121,6 +122,28 @@ describe('ATOM', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify sendMany transaction', async function () {
+      const txPrebuild = {
+        txHex: TEST_SEND_MANY_TX.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+            amount: '500',
+          },
+          {
+            address: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+            amount: '500',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should succeed to verify delegate transaction', async function () {
       const txPrebuild = {
         txHex: TEST_DELEGATE_TX.signedTxBase64,
@@ -205,6 +228,31 @@ describe('ATOM', function () {
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_SEND_TX.gasBudget.amount[0].amount },
+        type: 0,
+      });
+    });
+
+    it('should explain sendMany transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_SEND_MANY_TX.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_SEND_MANY_TX.hash,
+        outputs: [
+          {
+            address: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+            amount: '500',
+          },
+          {
+            address: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+            amount: '500',
+          },
+        ],
+        outputAmount: '1000',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_SEND_MANY_TX.gasBudget.amount[0].amount },
         type: 0,
       });
     });

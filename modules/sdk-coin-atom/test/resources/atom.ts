@@ -44,6 +44,52 @@ export const TEST_SEND_TX = {
   },
 };
 
+export const TEST_SEND_MANY_TX = {
+  hash: 'F104E7246AF4BC292B5DDD8CEAE131E599B061C38ED5AE67BC6029FFD9FCF4BE',
+  signature: 'z63EmmgJ0A5i+YMkVRr+wNkuaJEP0SqDapmGAtT4TuMv5+bI0DgtwLUgFrDxF+Yc8twgAIn+7tB6HwLzSSdibA==',
+  pubKey: 'Ah0Xud1r7fdljxs/dx9Rud1Un55KArr94VMtAMoUXBsO',
+  privateKey: 'cGQSjk/xusPlqScte8OnHMAaW7Zjt1wu7R6W4eYzLUg=',
+  signedTxBase64:
+    'Cp4CCowBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmwKLWNvc21vczFzbWVma3E5eWF4Z3c5YzlmaHltNnFzcDc0NnE4ODRjemVhY24zMhItY29zbW9zMTZnaG45YzZmNXl1YTA5enF3N3k3OTRtdmMzMGg0eTRtZDdja3VrGgwKBXVhdG9tEgM1MDAKjAEKHC9jb3Ntb3MuYmFuay52MWJldGExLk1zZ1NlbmQSbAotY29zbW9zMXNtZWZrcTl5YXhndzljOWZoeW02cXNwNzQ2cTg4NGN6ZWFjbjMyEi1jb3Ntb3MxeXRlejA2eXgwdTN5anpqamptMDJ4eXgzbWgyNWFrZW56cWwzbjgaDAoFdWF0b20SAzUwMBJpClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiECHRe53Wvt92WPGz93H1G53VSfnkoCuv3hUy0AyhRcGw4SBAoCCAEYFhIVCg8KBXVhdG9tEgYzMDAwMDAQkKEPGkDPrcSaaAnQDmL5gyRVGv7A2S5okQ/RKoNqmYYC1PhO4y/n5sjQOC3AtSAWsPEX5hzy3CAAif7u0HofAvNJJ2Js',
+  sender: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+  chainId: 'theta-testnet-001',
+  accountNumber: 723763,
+  sequence: 22,
+  memo: '',
+  sendMessages: [
+    {
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        amount: [
+          {
+            denom: 'uatom',
+            amount: '500',
+          },
+        ],
+        toAddress: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+        fromAddress: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+      },
+    },
+    {
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        amount: [
+          {
+            denom: 'uatom',
+            amount: '500',
+          },
+        ],
+        toAddress: 'cosmos1ytez06yx0u3yjzjjjm02xyx3mh25akenzql3n8',
+        fromAddress: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+      },
+    },
+  ],
+  gasBudget: {
+    amount: [{ denom: 'uatom', amount: '300000' }],
+    gasLimit: 250000,
+  },
+};
+
 export const TEST_DELEGATE_TX = {
   hash: '3FF02D82E6799633A33AA07CE26093913E6D7598AA9116A13D70B13302410BA3',
   signature: 'bxQvMdcZqetn4LAxYAhNeyluqfeDPIn/U7HMCw/0tIh4NY4JuHcZmSFFVxxks2oxWHzcnblxZnOSDtDpVIvHwQ==',
