@@ -693,6 +693,30 @@ class CoreTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }
 
+class Bera extends Mainnet implements AccountNetwork {
+  name = 'Berachain';
+  family = CoinFamily.BERA;
+  explorerUrl = undefined;
+}
+
+class BeraTestnet extends Testnet implements AccountNetwork {
+  name = 'BerachainTestnet';
+  family = CoinFamily.BERA;
+  explorerUrl = undefined;
+}
+
+class Islm extends Mainnet implements AccountNetwork {
+  name = 'Haqq';
+  family = CoinFamily.ISLM;
+  explorerUrl = 'https://ping.pub/haqq/tx/';
+}
+
+class IslmTestnet extends Testnet implements AccountNetwork {
+  name = 'HaqqTestnet';
+  family = CoinFamily.ISLM;
+  explorerUrl = 'https://testnet.ping.pub/haqq/tx/';
+}
+
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -840,6 +864,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    bera: Object.freeze(new Bera()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
@@ -858,6 +883,7 @@ export const Networks = {
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     injective: Object.freeze(new Injective()),
+    islm: Object.freeze(new Islm()),
     kava: Object.freeze(new Kava()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
@@ -889,6 +915,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    bera: Object.freeze(new BeraTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
@@ -904,6 +931,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
+    islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),

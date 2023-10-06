@@ -61,6 +61,8 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ETHW &&
         n.asset !== UnderlyingAsset.KAVA &&
         n.asset !== UnderlyingAsset.CORE &&
+        n.asset !== UnderlyingAsset.BERA &&
+        n.asset !== UnderlyingAsset.ISLM &&
         coinFamilyValues.includes(n.name)
     );
 

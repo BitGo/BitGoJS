@@ -982,6 +982,46 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    'd367b226-5b38-4aa4-918c-df1859647d6d',
+    'bera',
+    'Bera',
+    Networks.main.bera,
+    0,
+    UnderlyingAsset.BERA,
+    BaseUnit.BERA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    '6d262f34-b21b-4b35-9a5d-94103ff1f168',
+    'tbera',
+    'Testnet Bera',
+    Networks.test.bera,
+    0,
+    UnderlyingAsset.BERA,
+    BaseUnit.BERA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'b473d5f0-1590-4edf-bc9f-813aff515a23',
+    'islm',
+    'Islamic Coin',
+    Networks.main.islm,
+    18,
+    UnderlyingAsset.ISLM,
+    BaseUnit.ISLM,
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+  ),
+  account(
+    '02eced2c-cf1d-4660-832c-858685ae7107',
+    'tislm',
+    'Testnet Islamic Coin',
+    Networks.test.islm,
+    18,
+    UnderlyingAsset.ISLM,
+    BaseUnit.ISLM,
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+  ),
+  account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
     'near',
     'Near',
