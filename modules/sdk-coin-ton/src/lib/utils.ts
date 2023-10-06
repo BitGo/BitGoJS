@@ -1,9 +1,15 @@
-import { BaseUtils } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import TonWeb from 'tonweb';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    try {
+      Buffer.from(address, 'base64');
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** @inheritdoc */
@@ -18,7 +24,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    throw new Error('Method not implemented.');
+    return isValidEd25519PublicKey(key);
   }
 
   /** @inheritdoc */
@@ -29,6 +35,17 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new Error('Method not implemented.');
+  }
+
+  async getAddressFromPublicKey(publicKey: string): Promise<string> {
+    const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
+    const WalletClass = tonweb.wallet.all['v4R2'];
+    const wallet = new WalletClass(tonweb.provider, {
+      publicKey: TonWeb.utils.hexToBytes(publicKey),
+      wc: 0,
+    });
+    const address = await wallet.getAddress();
+    return address.toString(true, true, true);
   }
 }
 

@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { Recipient, TransactionType } from '@bitgo/sdk-core';
 
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -9,5 +9,10 @@ export class TransferBuilder extends TransactionBuilder {
 
   protected get transactionType(): TransactionType {
     return TransactionType.Send;
+  }
+
+  send(recipient: Recipient): TransferBuilder {
+    this.transaction.recipient = recipient;
+    return this;
   }
 }
