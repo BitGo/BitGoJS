@@ -8,11 +8,12 @@ import {
 import { Transaction } from './transaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
-import { BaseKey, InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, InvalidTransactionError, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { UNAVAILABLE_TEXT } from './constants';
 
 export class CustomTransaction extends Transaction<CustomProgrammableTransaction> {
   private _rawTransaction: string;
+  private _recipients: Recipient[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -70,13 +71,13 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
       return;
     }
 
-    const recipients = utils.getRecipients(this._suiTransaction);
-    this._outputs = recipients.map((recipient, index) => ({
+    this._recipients = utils.getRecipients(this._suiTransaction);
+    this._outputs = this._recipients.map((recipient, index) => ({
       address: recipient.address,
       value: recipient.amount,
       coin: this._coinConfig.name,
     }));
-    const totalAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const totalAmount = this._recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
 
     this._inputs = [
       {
@@ -92,6 +93,13 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
    */
   get rawTransaction(): string {
     return this._rawTransaction;
+  }
+
+  /**
+   * Get the recipients of the transaction if there is any transfers.
+   */
+  get recipients(): Recipient[] {
+    return this._recipients;
   }
 
   /**

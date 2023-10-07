@@ -1,6 +1,6 @@
 import { coins } from '@bitgo/statics';
 import { CustomTransaction } from '../../../src/lib/customTransaction';
-import { CUSTOM_TX_STAKING_POOL_SPLIT } from '../../resources/sui';
+import { CUSTOM_TX_STAKING_POOL_SPLIT, UNSUPPORTED_TX } from '../../resources/sui';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
@@ -51,6 +51,10 @@ describe('Sui Custom Transaction Builder', () => {
       should.equal(explainedTx.outputAmount, '5000000000');
       should.equal(explainedTx.fee.fee, '1000000000');
       should.equal(explainedTx.type, TransactionType.CustomTx);
+
+      const recipients = tx.recipients;
+      should.equal(recipients.length, 1);
+      should.equal(recipients[0].address, '0x5be5ee85cf5825bd07df7bbe78f19bcaafd42e9e685fda1acf24233cd7b925a6');
     });
 
     it('should init builder from a custom tx', async function () {
@@ -80,6 +84,12 @@ describe('Sui Custom Transaction Builder', () => {
       const deserialized = (await factory.from(rawTx).build()) as CustomTransaction;
       should.deepEqual(deserialized, tx);
       deserialized.toBroadcastFormat().should.equal(rawTx);
+    });
+
+    it('should reject a custom tx with unsupported txn type', async function () {
+      should(() => factory.from(UNSUPPORTED_TX)).throwError(
+        'unsupported target method 0000000000000000000000000000000000000000000000000000000000000003::staking_pool::split_staked_sui'
+      );
     });
   });
 });

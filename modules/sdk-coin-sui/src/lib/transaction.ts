@@ -195,15 +195,17 @@ export abstract class Transaction<T> extends BaseTransaction {
     if (transactions.length == 1) {
       return utils.getSuiTransactionType(transactions[0]);
     }
-    const txType = utils.getSuiTransactionType(transactions[1]);
-    if (txType !== SuiTransactionType.Transfer) {
-      return txType;
-    } else {
-      if (transactions.every((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.Transfer)) {
-        return SuiTransactionType.Transfer;
-      }
-      return SuiTransactionType.CustomTx;
+    if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.AddStake)) {
+      return SuiTransactionType.AddStake;
     }
+    if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WithdrawStake)) {
+      return SuiTransactionType.WithdrawStake;
+    }
+    if (transactions.every((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.Transfer)) {
+      return SuiTransactionType.Transfer;
+    }
+
+    return SuiTransactionType.CustomTx;
   }
 
   static getProperGasData(k: any): GasData {

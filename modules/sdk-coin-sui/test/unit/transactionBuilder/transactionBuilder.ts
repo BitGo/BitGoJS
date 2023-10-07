@@ -3,7 +3,7 @@ import * as testData from '../../resources/sui';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { SuiTransactionType } from '../../../src/lib/iface';
-import { CUSTOM_TX_STAKING_POOL_SPLIT, recipients, STAKING_AMOUNT } from '../../resources/sui';
+import { CUSTOM_TX_STAKING_POOL_SPLIT, recipients, STAKING_AMOUNT, UNSUPPORTED_TX } from '../../resources/sui';
 import { KeyPair } from '../../../src/lib/keyPair';
 import { GasData } from '../../../src/lib/mystenlab/types';
 import { StakingTransaction, TransferTransaction } from '../../../src';
@@ -644,6 +644,12 @@ describe('Sui Transaction Builder', async () => {
       should.equal(
         serializedSig,
         'APGQHoYbVSyL6M7lOQL5w2YYzeeVcTMEbe0Y4jVphQA+0QHq3VEDoXVwIukkL44z+vqsekviS4gQ0ZwUPTWHFQilzaq1j4wMuCiXuFW4ojFfuoBhEiBy/K4eB5BkHZ+eZw=='
+      );
+    });
+
+    it('should fail to build if unsupported txn type', async function () {
+      should(() => factory.from(UNSUPPORTED_TX)).throwError(
+        'unsupported target method 0000000000000000000000000000000000000000000000000000000000000003::staking_pool::split_staked_sui'
       );
     });
   });

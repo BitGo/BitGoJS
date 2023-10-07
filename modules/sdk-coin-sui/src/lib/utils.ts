@@ -214,10 +214,10 @@ export class Utils implements BaseUtils {
         } else if (command.target.endsWith(MethodNames.StakingPoolSplit)) {
           return SuiTransactionType.CustomTx;
         } else {
-          throw new InvalidTransactionError(`unsupported target method`);
+          throw new InvalidTransactionError(`unsupported target method ${command.target}`);
         }
       default:
-        throw new InvalidTransactionError(`unsupported transaction kind`);
+        throw new InvalidTransactionError(`unsupported transaction kind ${command.kind}`);
     }
   }
 
