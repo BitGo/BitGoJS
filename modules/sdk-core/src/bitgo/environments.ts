@@ -30,6 +30,7 @@ interface EnvironmentTemplate {
   tiaNodeUrl: string;
   seiNodeUrl: string;
   bldNodeUrl: string;
+  beraNodeUrl: string;
   zetaNodeUrl: string;
   coreNodeUrl: string;
   dotNodeUrls: string[];
@@ -111,6 +112,7 @@ const mainnetBase: EnvironmentTemplate = {
   tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
   bldNodeUrl: 'https://agoric-api.polkachu.com',
+  beraNodeUrl: '', // TODO(WIN-693): update url when mainnet goes live
   zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public', // TODO(WIN-142): update to mainnet url when it's live
   coreNodeUrl: 'https://full-node.mainnet-1.coreum.dev:26657',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
@@ -149,6 +151,7 @@ const testnetBase: EnvironmentTemplate = {
   tiaNodeUrl: 'https://api-mocha.pops.one',
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
+  beraNodeUrl: '', // TODO(WIN-693): update url when testnet goes live
   zetaNodeUrl: 'https://rpc.ankr.com/http/zetachain_athens_testnet',
   coreNodeUrl: 'https://full-node.testnet-1.coreum.dev:26657',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
