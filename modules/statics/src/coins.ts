@@ -988,7 +988,7 @@ export const coins = CoinMap.fromCoins([
     'bera',
     'Bera',
     Networks.main.bera,
-    0,
+    18,
     UnderlyingAsset.BERA,
     BaseUnit.BERA,
     COSMOS_SIDECHAIN_FEATURES
@@ -998,7 +998,7 @@ export const coins = CoinMap.fromCoins([
     'tbera',
     'Testnet Bera',
     Networks.test.bera,
-    0,
+    18,
     UnderlyingAsset.BERA,
     BaseUnit.BERA,
     COSMOS_SIDECHAIN_FEATURES
