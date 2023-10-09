@@ -232,6 +232,7 @@ const GENERIC_TOKEN_FEATURES = [
 ];
 const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const ARBETH_FEATURES = [...ETH_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
+const OPETH_FEATURES = [...ETH_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 
 export const coins = CoinMap.fromCoins([
   utxo(
@@ -1125,6 +1126,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARBETH,
     BaseUnit.ETH,
     ARBETH_FEATURES
+  ),
+  account(
+    '1d1cd251-88e1-4d0a-81a9-3e080de8757b',
+    'opeth',
+    'Optimism Ethereum',
+    Networks.main.optimism,
+    18,
+    UnderlyingAsset.OPETH,
+    BaseUnit.ETH,
+    OPETH_FEATURES
+  ),
+  account(
+    'efe943c4-1144-44d2-ae34-acdbe469cfcd',
+    'topeth',
+    'Testnet Optimism Ethereum',
+    Networks.test.optimism,
+    18,
+    UnderlyingAsset.OPETH,
+    BaseUnit.ETH,
+    OPETH_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',

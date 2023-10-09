@@ -869,6 +869,22 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0xcdf01a31ea2a1d62951aac3a5743c4416f9da3fb';
 }
 
+class Optimism extends Mainnet implements EthereumNetwork {
+  name = 'Optimism';
+  family = CoinFamily.OPETH;
+  explorerUrl = 'https://optimistic.etherscan.io/ tx/';
+  accountExplorerUrl = 'https://optimistic.etherscan.io/address/';
+  chainId = 10;
+}
+
+class OptimismTestnet extends Testnet implements EthereumNetwork {
+  name = 'OptimismTestnet';
+  family = CoinFamily.OPETH;
+  explorerUrl = 'https://optimism-sepolia.blockscout.com/tx/';
+  accountExplorerUrl = 'https://optimism-sepolia.blockscout.com/address/';
+  chainId = 11155420;
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -905,6 +921,7 @@ export const Networks = {
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
+    optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
@@ -956,6 +973,7 @@ export const Networks = {
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
