@@ -23,7 +23,7 @@ import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
-import * as crypto from 'crypto';
+import { Hash, createHash } from 'crypto';
 import * as constants from './constants';
 import {
   CosmosLikeTransaction,
@@ -310,6 +310,16 @@ export class CosmosUtils implements BaseUtils {
   }
 
   /**
+   * Takes a hex encoded pubkey, converts it to the Amino JSON representation (type/value wrapper)
+   * and returns it as protobuf `Any`
+   * @param {string} pubkey hex encoded compressed secp256k1 public key
+   * @returns {Any} pubkey encoded as protobuf `Any`
+   */
+  getEncodedPubkey(pubkey: string): Any {
+    return encodePubkey(encodeSecp256k1Pubkey(fromHex(pubkey)));
+  }
+
+  /**
    * Creates a txRaw from an cosmos like transaction @see CosmosLikeTransaction
    * @Precondition cosmosLikeTransaction.publicKey must be defined
    * @param {CosmosLikeTransaction} cosmosLikeTransaction
@@ -319,7 +329,7 @@ export class CosmosUtils implements BaseUtils {
     if (!cosmosLikeTransaction.publicKey) {
       throw new Error('publicKey is required to create a txRaw');
     }
-    const encodedPublicKey: Any = encodePubkey(encodeSecp256k1Pubkey(fromHex(cosmosLikeTransaction.publicKey)));
+    const encodedPublicKey: Any = this.getEncodedPubkey(cosmosLikeTransaction.publicKey);
     const messages = cosmosLikeTransaction.sendMessages as unknown as Any[];
     let txBodyValue;
     if (cosmosLikeTransaction.memo) {
@@ -597,8 +607,7 @@ export class CosmosUtils implements BaseUtils {
         authInfoBytes: unsignedTx.authInfoBytes,
         signatures: [signature],
       });
-      hash = crypto
-        .createHash('sha256')
+      hash = createHash('sha256')
         .update(TxRaw.encode(signedTx).finish())
         .digest()
         .toString('hex')
@@ -737,6 +746,14 @@ export class CosmosUtils implements BaseUtils {
     if (message.funds) {
       this.validateAmountData(message.funds, transactionType);
     }
+  }
+
+  /**
+   * Get coin specific hash function
+   * @returns {Hash} The hash function
+   */
+  getHashFunction(): Hash {
+    return createHash('sha256');
   }
 }
 
