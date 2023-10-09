@@ -50,6 +50,7 @@
     "@bitgo/sdk-api": "^1.22.0",
     "@bitgo/sdk-coin-ada": "^2.15.0",
     "@bitgo/sdk-coin-algo": "^1.5.11",
+    "@bitgo/sdk-coin-arbeth": "^1.0.0",
     "@bitgo/sdk-coin-atom": "^3.6.11",
     "@bitgo/sdk-coin-avaxc": "^2.7.0",
     "@bitgo/sdk-coin-avaxp": "^3.7.11",
