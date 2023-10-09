@@ -139,6 +139,22 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   stakeKeyDeposit = 2000000;
 }
 
+class Arbitrum extends Mainnet implements EthereumNetwork {
+  name = 'Arbitrum';
+  family = CoinFamily.ARBETH;
+  explorerUrl = 'https://arbiscan.io/tx/';
+  accountExplorerUrl = 'https://arbiscan.io/address/';
+  chainId = 42161;
+}
+
+class ArbitrumTestnet extends Testnet implements EthereumNetwork {
+  name = 'ArbitrumTestnet';
+  family = CoinFamily.ARBETH;
+  explorerUrl = 'https://sepolia-explorer.arbitrum.io/tx/';
+  accountExplorerUrl = 'https://sepolia-explorer.arbitrum.io/address/';
+  chainId = 421614;
+}
+
 class AvalancheC extends Mainnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheC';
@@ -857,6 +873,7 @@ export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
+    arbitrum: Object.freeze(new Arbitrum()),
     atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
     avalancheP: Object.freeze(new AvalancheP()),
@@ -908,6 +925,7 @@ export const Networks = {
   test: {
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
+    arbitrum: Object.freeze(new ArbitrumTestnet()),
     atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     avalancheP: Object.freeze(new AvalanchePTestnet()),

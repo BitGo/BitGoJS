@@ -49,6 +49,7 @@ export const expectedColdFeatures = {
   ],
   justTSS: [
     'ada',
+    'arbeth',
     'atom',
     'bera',
     'bld',
@@ -66,6 +67,7 @@ export const expectedColdFeatures = {
     'sui',
     'zeta',
     'tada',
+    'tarbeth',
     'tatom',
     'tbera',
     'tbld',

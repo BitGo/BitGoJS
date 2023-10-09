@@ -231,6 +231,7 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.GENERIC_TOKEN,
 ];
 const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const ARBETH_FEATURES = [...ETH_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 
 export const coins = CoinMap.fromCoins([
   utxo(
@@ -1104,6 +1105,26 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.TON,
     TON_FEATURES,
     KeyCurve.Ed25519
+  ),
+  account(
+    '020b57ce-bff0-4e25-95ce-0f3a94086db4',
+    'arbeth',
+    'Arbitrum Ethereum',
+    Networks.main.arbitrum,
+    18,
+    UnderlyingAsset.ARBETH,
+    BaseUnit.ETH,
+    ARBETH_FEATURES
+  ),
+  account(
+    '1c51d919-9a1a-48b6-ac6d-ec3c593af949',
+    'tarbeth',
+    'Testnet Arbitrum Ethereum',
+    Networks.test.arbitrum,
+    18,
+    UnderlyingAsset.ARBETH,
+    BaseUnit.ETH,
+    ARBETH_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
