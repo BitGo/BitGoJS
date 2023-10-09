@@ -55,6 +55,7 @@ export enum CoinFamily {
   POLYGON = 'polygon',
   NEAR = 'near',
   OFC = 'ofc',
+  OPETH = 'opeth',
   OSMO = 'osmo',
   RBTC = 'rbtc',
   SEI = 'sei',
@@ -285,6 +286,7 @@ export enum UnderlyingAsset {
   KAVA = 'kava',
   LTC = 'ltc',
   NEAR = 'near',
+  OPETH = 'opeth',
   OSMO = 'osmo',
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
