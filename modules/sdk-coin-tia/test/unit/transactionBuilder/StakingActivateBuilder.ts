@@ -118,4 +118,51 @@ describe('Tia Delegate txn Builder', () => {
       },
     ]);
   });
+
+  it('should build a sendMany stake tx', async function () {
+    const testSendManyTx = testData.TEST_SEND_MANY_STAKE_TX;
+    const txBuilder = factory.getStakingActivateBuilder();
+    txBuilder.sequence(testSendManyTx.sequence);
+    txBuilder.gasBudget(testSendManyTx.gasBudget);
+    txBuilder.messages(testSendManyTx.sendMessages.map((msg) => msg.value));
+    txBuilder.publicKey(toHex(fromBase64(testSendManyTx.pubKey)));
+    txBuilder.chainId(testSendManyTx.chainId);
+    txBuilder.accountNumber(testSendManyTx.accountNumber);
+    txBuilder.memo('');
+    txBuilder.addSignature(
+      { pub: toHex(fromBase64(testSendManyTx.pubKey)) },
+      Buffer.from(testSendManyTx.signature, 'base64')
+    );
+
+    const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
+    should.equal(tx.type, TransactionType.StakingActivate);
+    should.deepEqual(json.gasBudget, testSendManyTx.gasBudget);
+    should.deepEqual(json.sendMessages, testSendManyTx.sendMessages);
+    should.deepEqual(json.publicKey, toHex(fromBase64(testSendManyTx.pubKey)));
+    should.deepEqual(json.sequence, testSendManyTx.sequence);
+    should.deepEqual(
+      tx.inputs,
+      testSendManyTx.sendMessages.map((msg) => {
+        return {
+          address: msg.value.delegatorAddress,
+          value: msg.value.amount.amount,
+          coin: 'ttia',
+        };
+      })
+    );
+    should.deepEqual(
+      tx.outputs,
+      testSendManyTx.sendMessages.map((msg) => {
+        return {
+          address: msg.value.validatorAddress,
+          value: msg.value.amount.amount,
+          coin: 'ttia',
+        };
+      })
+    );
+    should.equal(tx.id, testSendManyTx.hash);
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testSendManyTx.signedTxBase64);
+  });
 });

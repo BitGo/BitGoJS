@@ -1,24 +1,24 @@
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
+import { beforeEach } from 'mocha';
 import sinon from 'sinon';
 import { Osmo, Tosmo } from '../../src';
 import utils from '../../src/lib/utils';
 import {
+  address,
   TEST_DELEGATE_TX,
+  TEST_EXECUTE_CONTRACT_TRANSACTION,
   TEST_SEND_TX,
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
-  TEST_EXECUTE_CONTRACT_TRANSACTION,
-  address,
   wrwUser,
 } from '../resources/osmo';
 import should = require('should');
-import { coins } from '@bitgo/statics';
-import { beforeEach } from 'mocha';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 
 describe('OSMO', function () {
   let bitgo: TestBitGoAPI;
@@ -302,7 +302,7 @@ describe('OSMO', function () {
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: 'UNAVAILABLE',
+        outputAmount: undefined,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },

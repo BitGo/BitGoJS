@@ -11,9 +11,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { fromHex, toBase64 } from '@cosmjs/encoding';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
-
 import { UNAVAILABLE_TEXT } from './constants';
-
 import {
   CosmosLikeTransaction,
   DelegateOrUndelegeteMessage,
@@ -174,64 +172,65 @@ export class CosmosTransaction extends BaseTransaction {
    */
   explainTransactionInternal(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     let outputs: TransactionRecipient[];
-    let message;
     let outputAmount;
     switch (json.type) {
       case TransactionType.Send:
         explanationResult.type = TransactionType.Send;
-        message = json.sendMessages[0].value as SendMessage;
-        outputAmount = message.amount[0].amount;
-        outputs = [
-          {
-            address: message.toAddress,
-            amount: outputAmount,
-          },
-        ];
+        outputAmount = BigInt(0);
+        outputs = json.sendMessages.map((message) => {
+          const sendMessage = message.value as SendMessage;
+          outputAmount = outputAmount + BigInt(sendMessage.amount[0].amount);
+          return {
+            address: sendMessage.toAddress,
+            amount: sendMessage.amount[0].amount,
+          };
+        });
         break;
       case TransactionType.StakingActivate:
         explanationResult.type = TransactionType.StakingActivate;
-        message = json.sendMessages[0].value as DelegateOrUndelegeteMessage;
-        outputAmount = message.amount.amount;
-        outputs = [
-          {
-            address: message.validatorAddress,
-            amount: outputAmount,
-          },
-        ];
+        outputAmount = BigInt(0);
+        outputs = json.sendMessages.map((message) => {
+          const delegateMessage = message.value as DelegateOrUndelegeteMessage;
+          outputAmount = outputAmount + BigInt(delegateMessage.amount.amount);
+          return {
+            address: delegateMessage.validatorAddress,
+            amount: delegateMessage.amount.amount,
+          };
+        });
         break;
       case TransactionType.StakingDeactivate:
         explanationResult.type = TransactionType.StakingDeactivate;
-        message = json.sendMessages[0].value as DelegateOrUndelegeteMessage;
-        outputAmount = message.amount.amount;
-        outputs = [
-          {
-            address: message.validatorAddress,
-            amount: outputAmount,
-          },
-        ];
+        outputAmount = BigInt(0);
+        outputs = json.sendMessages.map((message) => {
+          const delegateMessage = message.value as DelegateOrUndelegeteMessage;
+          outputAmount = outputAmount + BigInt(delegateMessage.amount.amount);
+          return {
+            address: delegateMessage.validatorAddress,
+            amount: delegateMessage.amount.amount,
+          };
+        });
         break;
       case TransactionType.StakingWithdraw:
         explanationResult.type = TransactionType.StakingWithdraw;
-        message = json.sendMessages[0].value as WithdrawDelegatorRewardsMessage;
-        outputs = [
-          {
-            address: message.validatorAddress,
+        outputs = json.sendMessages.map((message) => {
+          const withdrawMessage = message.value as WithdrawDelegatorRewardsMessage;
+          return {
+            address: withdrawMessage.validatorAddress,
             amount: UNAVAILABLE_TEXT,
-          },
-        ];
-        outputAmount = UNAVAILABLE_TEXT;
+          };
+        });
         break;
       case TransactionType.ContractCall:
         explanationResult.type = TransactionType.ContractCall;
-        message = json.sendMessages[0].value as ExecuteContractMessage;
-        outputAmount = message.funds?.[0]?.amount ?? '0';
-        outputs = [
-          {
-            address: message.contract,
-            amount: outputAmount,
-          },
-        ];
-        outputAmount = outputAmount;
+        outputAmount = BigInt(0);
+        outputs = json.sendMessages.map((message) => {
+          const executeContractMessage = message.value as ExecuteContractMessage;
+          outputAmount = outputAmount + BigInt(executeContractMessage.funds?.[0]?.amount ?? '0');
+          return {
+            address: executeContractMessage.contract,
+            amount: executeContractMessage.funds?.[0]?.amount ?? '0',
+          };
+        });
         break;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
@@ -243,7 +242,7 @@ export class CosmosTransaction extends BaseTransaction {
     }
     return {
       ...explanationResult,
-      outputAmount,
+      outputAmount: outputAmount?.toString(),
       outputs,
     };
   }
@@ -262,56 +261,64 @@ export class CosmosTransaction extends BaseTransaction {
     const inputs: Entry[] = [];
     switch (this.type) {
       case TransactionType.Send:
-        const message = this.cosmosLikeTransaction.sendMessages[0].value as SendMessage;
-        inputs.push({
-          address: message.fromAddress,
-          value: message.amount[0].amount,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: message.toAddress,
-          value: message.amount[0].amount,
-          coin: this._coinConfig.name,
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const sendMessage = message.value as SendMessage;
+          inputs.push({
+            address: sendMessage.fromAddress,
+            value: sendMessage.amount[0].amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: sendMessage.toAddress,
+            value: sendMessage.amount[0].amount,
+            coin: this._coinConfig.name,
+          });
         });
         break;
       case TransactionType.StakingActivate:
       case TransactionType.StakingDeactivate:
-        const delegateMessage = this.cosmosLikeTransaction.sendMessages[0].value as DelegateOrUndelegeteMessage;
-        inputs.push({
-          address: delegateMessage.delegatorAddress,
-          value: delegateMessage.amount.amount,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: delegateMessage.validatorAddress,
-          value: delegateMessage.amount.amount,
-          coin: this._coinConfig.name,
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const delegateMessage = message.value as DelegateOrUndelegeteMessage;
+          inputs.push({
+            address: delegateMessage.delegatorAddress,
+            value: delegateMessage.amount.amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: delegateMessage.validatorAddress,
+            value: delegateMessage.amount.amount,
+            coin: this._coinConfig.name,
+          });
         });
         break;
       case TransactionType.StakingWithdraw:
-        const withdrawMessage = this.cosmosLikeTransaction.sendMessages[0].value as WithdrawDelegatorRewardsMessage;
-        inputs.push({
-          address: withdrawMessage.delegatorAddress,
-          value: UNAVAILABLE_TEXT,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: withdrawMessage.validatorAddress,
-          value: UNAVAILABLE_TEXT,
-          coin: this._coinConfig.name,
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const withdrawMessage = message.value as WithdrawDelegatorRewardsMessage;
+          inputs.push({
+            address: withdrawMessage.delegatorAddress,
+            value: UNAVAILABLE_TEXT,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: withdrawMessage.validatorAddress,
+            value: UNAVAILABLE_TEXT,
+            coin: this._coinConfig.name,
+          });
         });
         break;
       case TransactionType.ContractCall:
-        const executeContractMessage = this.cosmosLikeTransaction.sendMessages[0].value as ExecuteContractMessage;
-        inputs.push({
-          address: executeContractMessage.sender,
-          value: executeContractMessage.funds?.[0]?.amount ?? '0',
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: executeContractMessage.contract,
-          value: executeContractMessage.funds?.[0]?.amount ?? '0',
-          coin: this._coinConfig.name,
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const executeContractMessage = message.value as ExecuteContractMessage;
+          inputs.push({
+            address: executeContractMessage.sender,
+            value: executeContractMessage.funds?.[0]?.amount ?? '0',
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: executeContractMessage.contract,
+            value: executeContractMessage.funds?.[0]?.amount ?? '0',
+            coin: this._coinConfig.name,
+          });
         });
         break;
       default:

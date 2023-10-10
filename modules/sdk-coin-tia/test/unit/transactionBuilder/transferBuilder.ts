@@ -157,4 +157,50 @@ describe('Tia Transfer Builder', () => {
       },
     ]);
   });
+
+  it('should build a sendMany Transfer tx', async function () {
+    const testSendManyTx = testData.TEST_SEND_MANY_TX;
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sequence(testSendManyTx.sequence);
+    txBuilder.gasBudget(testSendManyTx.gasBudget);
+    txBuilder.messages(testSendManyTx.sendMessages.map((msg) => msg.value));
+    txBuilder.publicKey(toHex(fromBase64(testSendManyTx.pubKey)));
+    txBuilder.chainId(testSendManyTx.chainId);
+    txBuilder.accountNumber(testSendManyTx.accountNumber);
+    txBuilder.addSignature(
+      { pub: toHex(fromBase64(testSendManyTx.pubKey)) },
+      Buffer.from(testSendManyTx.signature, 'base64')
+    );
+
+    const tx = await txBuilder.build();
+    const json = await (await txBuilder.build()).toJson();
+    should.equal(tx.type, TransactionType.Send);
+    should.deepEqual(json.gasBudget, testSendManyTx.gasBudget);
+    should.deepEqual(json.sendMessages, testSendManyTx.sendMessages);
+    should.deepEqual(json.publicKey, toHex(fromBase64(testSendManyTx.pubKey)));
+    should.deepEqual(json.sequence, testSendManyTx.sequence);
+    should.deepEqual(
+      tx.inputs,
+      testSendManyTx.sendMessages.map((msg) => {
+        return {
+          address: msg.value.fromAddress,
+          value: msg.value.amount[0].amount,
+          coin: 'ttia',
+        };
+      })
+    );
+    should.deepEqual(
+      tx.outputs,
+      testSendManyTx.sendMessages.map((msg) => {
+        return {
+          address: msg.value.toAddress,
+          value: msg.value.amount[0].amount,
+          coin: 'ttia',
+        };
+      })
+    );
+    should.equal(tx.id, testSendManyTx.hash);
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, testSendManyTx.signedTxBase64);
+  });
 });

@@ -44,6 +44,131 @@ export const TEST_SEND_TX = {
   },
 };
 
+export const TEST_SEND_MANY_TX = {
+  hash: 'F72944EA53BA7795E8AB7B07232445946752DB8BFBB2CA01B9F7D8803AA5FAFB',
+  signature: 'w49jpRImzNo77zag0IdWyVK5iiUnt2TH4QmvNkiF8Kd6YKn0rVLaPmhJt7aJAGnX2pT8AyCNT4x45Aj0RVnYtg==',
+  pubKey: 'Aybzx++eXuqQDnbXAxMHEBIShkNdUN3YhD9M586N/SfA',
+  privateKey: 'c3J/YwqMZ8WhKSmmmHi7tNZuvoYyqdZMzAVIBK19IBE=',
+  signedTxBase64:
+    'CqoCCpIBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnIKL2NlbGVzdGlhMXluM3Q4cXVqbXR4anNueDdhbmdqdWEzamh2a2p4eTVuNXhnczBuEi9jZWxlc3RpYTE1dmtldmhjODQ5Znh4YzVjcHYzNjByZzN0NTZoMGswcnlna2tueRoOCgR1dGlhEgYxMDAwMDAKkgEKHC9jb3Ntb3MuYmFuay52MWJldGExLk1zZ1NlbmQScgovY2VsZXN0aWExeW4zdDhxdWptdHhqc254N2FuZ2p1YTNqaHZranh5NW41eGdzMG4SL2NlbGVzdGlhMXBlNmx1ZDQ4cWV0bGg0ODYwdXZyazJyOTRhcW4wNjRqbjZqeHNrGg4KBHV0aWESBjEwMDAwMBJnClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiEDJvPH755e6pAOdtcDEwcQEhKGQ11Q3diEP0znzo39J8ASBAoCCAEYLRITCg0KBHV0aWESBTIwMDAwEMCaDBpAw49jpRImzNo77zag0IdWyVK5iiUnt2TH4QmvNkiF8Kd6YKn0rVLaPmhJt7aJAGnX2pT8AyCNT4x45Aj0RVnYtg==',
+  sender: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+  chainId: 'mocha-4',
+  accountNumber: 47998,
+  sequence: 45,
+  sendMessages: [
+    {
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        amount: [
+          {
+            denom: 'utia',
+            amount: '100000',
+          },
+        ],
+        toAddress: 'celestia15vkevhc849fxxc5cpv360rg3t56h0k0rygkkny',
+        fromAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+    {
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        amount: [
+          {
+            denom: 'utia',
+            amount: '100000',
+          },
+        ],
+        toAddress: 'celestia1pe6lud48qetlh4860uvrk2r94aqn064jn6jxsk',
+        fromAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+  ],
+  gasBudget: {
+    amount: [{ denom: 'utia', amount: '20000' }],
+    gasLimit: 200000,
+  },
+};
+
+export const TEST_SEND_MANY_STAKE_TX = {
+  hash: '41FDE39A6294A4AB3985CE073D6F91E53E5E48A10121A4AF1C816A1CCEAAFEF7',
+  signature: '+FTvI+MeURNUDE3Vd7AjjWxglBQPet4Hmwqn+kLwvCtpCnwrFkGIKh/ei+wZCrGGO8aRRy0HhZDB4QamOLYKzg==',
+  pubKey: 'Aybzx++eXuqQDnbXAxMHEBIShkNdUN3YhD9M586N/SfA',
+  privateKey: 'c3J/YwqMZ8WhKSmmmHi7tNZuvoYyqdZMzAVIBK19IBE=',
+  signedTxBase64:
+    'CsMCCp4BCiMvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dEZWxlZ2F0ZRJ3Ci9jZWxlc3RpYTF5bjN0OHF1am10eGpzbng3YW5nanVhM2podmtqeHk1bjV4Z3MwbhI2Y2VsZXN0aWF2YWxvcGVyMXU2NTV0Z3VsM3N1N3MwdTdreHloNm1kd2N5NXFuNnh3bDMyczBkGgwKBHV0aWESBDcwMDAKnwEKIy9jb3Ntb3Muc3Rha2luZy52MWJldGExLk1zZ0RlbGVnYXRlEngKL2NlbGVzdGlhMXluM3Q4cXVqbXR4anNueDdhbmdqdWEzamh2a2p4eTVuNXhnczBuEjZjZWxlc3RpYXZhbG9wZXIxOXVyZzlhd2p6d3E4ZDQwdndqZHZ2MHl3OWtnZWhzY2YwengzZ3MaDQoEdXRpYRIFMTEwMDASZwpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAybzx++eXuqQDnbXAxMHEBIShkNdUN3YhD9M586N/SfAEgQKAggBGDASEwoNCgR1dGlhEgUzMDAwMBDgpxIaQPhU7yPjHlETVAxN1XewI41sYJQUD3reB5sKp/pC8LwraQp8KxZBiCof3ovsGQqxhjvGkUctB4WQweEGpji2Cs4=',
+  chainId: 'mocha-4',
+  accountNumber: 47998,
+  sequence: 48,
+  sendMessages: [
+    {
+      typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+      value: {
+        amount: {
+          denom: 'utia',
+          amount: '7000',
+        },
+        validatorAddress: 'celestiavaloper1u655tgul3su7s0u7kxyh6mdwcy5qn6xwl32s0d',
+        delegatorAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+    {
+      typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+      value: {
+        amount: {
+          denom: 'utia',
+          amount: '11000',
+        },
+        validatorAddress: 'celestiavaloper19urg9awjzwq8d40vwjdvv0yw9kgehscf0zx3gs',
+        delegatorAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+  ],
+  gasBudget: {
+    amount: [{ denom: 'utia', amount: '30000' }],
+    gasLimit: 300000,
+  },
+};
+
+export const TEST_SEND_MANY_UNSTAKE_TX = {
+  hash: '11A81B3542A12F95CBBD6CA126A0A407C752DBFFA03884B7BE8DEE839A7C2D1D',
+  signature: 'Nq25TSajPGzmJHGXvbzzQcCFZ452cC8bew+07nxebGQ5VorJzerlY08rmxFhsVcKRGJhZet/f8s9C0OPyQQ3tA==',
+  pubKey: 'Aybzx++eXuqQDnbXAxMHEBIShkNdUN3YhD9M586N/SfA',
+  privateKey: 'c3J/YwqMZ8WhKSmmmHi7tNZuvoYyqdZMzAVIBK19IBE=',
+  signedTxBase64:
+    'CsYCCqABCiUvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dVbmRlbGVnYXRlEncKL2NlbGVzdGlhMXluM3Q4cXVqbXR4anNueDdhbmdqdWEzamh2a2p4eTVuNXhnczBuEjZjZWxlc3RpYXZhbG9wZXIxdTY1NXRndWwzc3U3czB1N2t4eWg2bWR3Y3k1cW42eHdsMzJzMGQaDAoEdXRpYRIENTAwMAqgAQolL2Nvc21vcy5zdGFraW5nLnYxYmV0YTEuTXNnVW5kZWxlZ2F0ZRJ3Ci9jZWxlc3RpYTF5bjN0OHF1am10eGpzbng3YW5nanVhM2podmtqeHk1bjV4Z3MwbhI2Y2VsZXN0aWF2YWxvcGVyMTl1cmc5YXdqendxOGQ0MHZ3amR2djB5dzlrZ2Voc2NmMHp4M2dzGgwKBHV0aWESBDkwMDASZwpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAybzx++eXuqQDnbXAxMHEBIShkNdUN3YhD9M586N/SfAEgQKAggBGDISEwoNCgR1dGlhEgUzNTAwMBCwrhUaQDatuU0mozxs5iRxl72880HAhWeOdnAvG3sPtO58XmxkOVaKyc3q5WNPK5sRYbFXCkRiYWXrf3/LPQtDj8kEN7Q=',
+  chainId: 'mocha-4',
+  accountNumber: 47998,
+  sequence: 50,
+  sendMessages: [
+    {
+      typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+      value: {
+        amount: {
+          denom: 'utia',
+          amount: '5000',
+        },
+        validatorAddress: 'celestiavaloper1u655tgul3su7s0u7kxyh6mdwcy5qn6xwl32s0d',
+        delegatorAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+    {
+      typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+      value: {
+        amount: {
+          denom: 'utia',
+          amount: '9000',
+        },
+        validatorAddress: 'celestiavaloper19urg9awjzwq8d40vwjdvv0yw9kgehscf0zx3gs',
+        delegatorAddress: 'celestia1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+      },
+    },
+  ],
+  gasBudget: {
+    amount: [{ denom: 'utia', amount: '35000' }],
+    gasLimit: 350000,
+  },
+};
+
 export const TEST_DELEGATE_TX = {
   hash: '205B08B8148C27BA290945FA1A1110FE8F6A60F023D5D765E9C5EF61FD1FFDC6',
   signature: '7t7e7cuzamTzcy/8/3phcZqGvmialvRTAg4Zg4bAS5Eqki+rhHZ3K6wmfsDbWDbhMdiL0bQyt9maX8nEKMY1DA==',

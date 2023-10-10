@@ -22,7 +22,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';

@@ -1,7 +1,7 @@
 import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
@@ -9,13 +9,16 @@ import sinon from 'sinon';
 import { Tia, Ttia } from '../../src';
 import utils from '../../src/lib/utils';
 import {
+  address,
+  mockAccountDetailsResponse,
   TEST_DELEGATE_TX,
+  TEST_SEND_MANY_STAKE_TX,
+  TEST_SEND_MANY_TX,
+  TEST_SEND_MANY_UNSTAKE_TX,
   TEST_SEND_TX,
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
-  address,
-  mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/tia';
 import should = require('should');
@@ -124,6 +127,28 @@ describe('TIA', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify sendMany transaction', async function () {
+      const txPrebuild = {
+        txHex: TEST_SEND_MANY_TX.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: 'celestia15vkevhc849fxxc5cpv360rg3t56h0k0rygkkny',
+            amount: '100000',
+          },
+          {
+            address: 'celestia1pe6lud48qetlh4860uvrk2r94aqn064jn6jxsk',
+            amount: '100000',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should succeed to verify delegate transaction', async function () {
       const txPrebuild = {
         txHex: TEST_DELEGATE_TX.signedTxBase64,
@@ -212,6 +237,81 @@ describe('TIA', function () {
       });
     });
 
+    it('should explain sendMany transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_SEND_MANY_TX.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_SEND_MANY_TX.hash,
+        outputs: [
+          {
+            address: 'celestia15vkevhc849fxxc5cpv360rg3t56h0k0rygkkny',
+            amount: '100000',
+          },
+          {
+            address: 'celestia1pe6lud48qetlh4860uvrk2r94aqn064jn6jxsk',
+            amount: '100000',
+          },
+        ],
+        outputAmount: '200000',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_SEND_MANY_TX.gasBudget.amount[0].amount },
+        type: 0,
+      });
+    });
+
+    it('should explain sendMany stake transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_SEND_MANY_STAKE_TX.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_SEND_MANY_STAKE_TX.hash,
+        outputs: [
+          {
+            address: 'celestiavaloper1u655tgul3su7s0u7kxyh6mdwcy5qn6xwl32s0d',
+            amount: '7000',
+          },
+          {
+            address: 'celestiavaloper19urg9awjzwq8d40vwjdvv0yw9kgehscf0zx3gs',
+            amount: '11000',
+          },
+        ],
+        outputAmount: '18000',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_SEND_MANY_STAKE_TX.gasBudget.amount[0].amount },
+        type: 13,
+      });
+    });
+
+    it('should explain sendMany unstake transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txHex: TEST_SEND_MANY_UNSTAKE_TX.signedTxBase64,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'],
+        id: TEST_SEND_MANY_UNSTAKE_TX.hash,
+        outputs: [
+          {
+            address: 'celestiavaloper1u655tgul3su7s0u7kxyh6mdwcy5qn6xwl32s0d',
+            amount: '5000',
+          },
+          {
+            address: 'celestiavaloper19urg9awjzwq8d40vwjdvv0yw9kgehscf0zx3gs',
+            amount: '9000',
+          },
+        ],
+        outputAmount: '14000',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: TEST_SEND_MANY_UNSTAKE_TX.gasBudget.amount[0].amount },
+        type: 17,
+      });
+    });
+
     it('should explain a delegate transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
         txHex: TEST_DELEGATE_TX.signedTxBase64,
@@ -267,7 +367,7 @@ describe('TIA', function () {
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: 'UNAVAILABLE',
+        outputAmount: undefined,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },
