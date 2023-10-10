@@ -712,13 +712,13 @@ class CoreTestnet extends Testnet implements AccountNetwork {
 class Bera extends Mainnet implements AccountNetwork {
   name = 'Berachain';
   family = CoinFamily.BERA;
-  explorerUrl = undefined;
+  explorerUrl = undefined; // TODO(WIN-693): update url when mainnet is live
 }
 
 class BeraTestnet extends Testnet implements AccountNetwork {
   name = 'BerachainTestnet';
   family = CoinFamily.BERA;
-  explorerUrl = undefined;
+  explorerUrl = undefined; // TODO(WIN-693): update url when testnet is live
 }
 
 class Islm extends Mainnet implements AccountNetwork {
@@ -731,6 +731,18 @@ class IslmTestnet extends Testnet implements AccountNetwork {
   name = 'HaqqTestnet';
   family = CoinFamily.ISLM;
   explorerUrl = 'https://testnet.ping.pub/haqq/tx/';
+}
+
+class Dydx extends Mainnet implements AccountNetwork {
+  name = 'dYdX';
+  family = CoinFamily.DV4TNT;
+  explorerUrl = 'https://testnet.mintscan.io/dydx-testnet/tx/'; // TODO(WIN-706): update url when mainnet is live
+}
+
+class DydxTestnet extends Testnet implements AccountNetwork {
+  name = 'dYdXTestnet';
+  family = CoinFamily.DV4TNT;
+  explorerUrl = 'https://testnet.mintscan.io/dydx-testnet/tx/';
 }
 
 class Stx extends Mainnet implements StacksNetwork {
@@ -906,6 +918,7 @@ export const Networks = {
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
     dot: Object.freeze(new Polkadot()),
+    dydx: Object.freeze(new Dydx()),
     eCash: Object.freeze(new ECash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
@@ -958,6 +971,7 @@ export const Networks = {
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
     dot: Object.freeze(new PolkadotTestnet()),
+    dydx: Object.freeze(new DydxTestnet()),
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),

@@ -59,10 +59,11 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.AVAXP &&
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
-        n.asset !== UnderlyingAsset.KAVA &&
-        n.asset !== UnderlyingAsset.CORE &&
-        n.asset !== UnderlyingAsset.BERA &&
-        n.asset !== UnderlyingAsset.ISLM &&
+        n.asset !== UnderlyingAsset.KAVA && // TODO(WIN-707): remove this once coin-specific module is added
+        n.asset !== UnderlyingAsset.CORE && // TODO(WIN-707): remove this once coin-specific module is added
+        n.asset !== UnderlyingAsset.BERA && // TODO(WIN-707): remove this once coin-specific module is added
+        n.asset !== UnderlyingAsset.ISLM && // TODO(WIN-707): remove this once coin-specific module is added
+        n.asset !== UnderlyingAsset.DV4TNT && // TODO(WIN-707): remove this once coin-specific module is added
         n.asset !== UnderlyingAsset.ARBETH && // TODO(WIN-692): remove this once coin-specific module for arbeth is added
         n.asset !== UnderlyingAsset.OPETH && // TODO(WIN-692): remove this once coin-specific module for opeth is added
         coinFamilyValues.includes(n.name)

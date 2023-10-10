@@ -1024,6 +1024,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
   ),
   account(
+    '27670180-b2b7-4423-853f-0aff40b4b852',
+    'dv4tnt',
+    'DV4TNT',
+    Networks.main.dydx,
+    6,
+    UnderlyingAsset.DV4TNT,
+    BaseUnit.DV4TNT,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'c1f87ec2-ba04-4128-b203-50b7c7783cf1',
+    'tdv4tnt',
+    'Testnet DV4TNT',
+    Networks.test.dydx,
+    6,
+    UnderlyingAsset.DV4TNT,
+    BaseUnit.DV4TNT,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
     'near',
     'Near',

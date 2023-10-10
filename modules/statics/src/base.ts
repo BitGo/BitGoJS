@@ -40,6 +40,7 @@ export enum CoinFamily {
   DASH = 'dash',
   DOGE = 'doge',
   DOT = 'dot',
+  DV4TNT = 'dv4tnt',
   ETH = 'eth',
   ETH2 = 'eth2',
   ETHW = 'ethw',
@@ -524,6 +525,7 @@ export enum UnderlyingAsset {
   DRPU = 'drpu',
   DRV = 'drv',
   DUC = 'duc',
+  DV4TNT = 'dv4tnt',
   DX1U = 'dx1u',
   DXGT = 'dxgt',
   DXPT = 'dxpt',
@@ -1390,6 +1392,7 @@ export enum BaseUnit {
   TESTCORE = 'utestcore', // Coreum testnet uses different name for native coin
   BERA = 'abera',
   ISLM = 'aISLM',
+  DV4TNT = 'dv4tnt',
 }
 
 export interface BaseCoinConstructorOptions {
