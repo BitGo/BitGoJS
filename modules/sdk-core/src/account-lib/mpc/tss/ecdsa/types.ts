@@ -74,6 +74,7 @@ export type XShare = {
   n: string;
   y: string; // combined public key
   x: string; // combined secret
+  schnorrProofX: SchnorrProof; // schnorr proof of knowledge of x
   chaincode: string;
 };
 

@@ -1,13 +1,15 @@
 /**
  * @prettier
  */
+import assert from 'assert';
 import { Hash, randomBytes } from 'crypto';
 import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaPaillierProof, EcdsaTypes, Schnorr, SchnorrProof } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import * as paillierBigint from 'paillier-bigint';
 import {
+  schnorrProofs,
   ntildes,
   paillerKeys,
   mockNShares,
@@ -42,6 +44,22 @@ describe('TSS ECDSA TESTS', function () {
       .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
       .onCall(5)
       .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair);
+
+    const schnorrProofMock = sinon
+      .stub(Schnorr, 'createSchnorrProof')
+      .onCall(0)
+      .returns(schnorrProofs[0] as unknown as SchnorrProof)
+      .onCall(1)
+      .returns(schnorrProofs[1] as unknown as SchnorrProof)
+      .onCall(2)
+      .returns(schnorrProofs[2] as unknown as SchnorrProof)
+      .onCall(3)
+      .returns(schnorrProofs[3] as unknown as SchnorrProof)
+      .onCall(4)
+      .returns(schnorrProofs[4] as unknown as SchnorrProof)
+      .onCall(5)
+      .returns(schnorrProofs[5] as unknown as SchnorrProof);
+
     [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     // Needs to run this serially for testing deterministic key generation
@@ -80,6 +98,8 @@ describe('TSS ECDSA TESTS', function () {
     commonPublicKey = aKeyCombine.xShare.y;
     paillierMock.reset();
     paillierMock.restore();
+    schnorrProofMock.reset();
+    schnorrProofMock.restore();
   });
 
   describe('Ecdsa Key Generation Test', function () {
@@ -114,9 +134,9 @@ describe('TSS ECDSA TESTS', function () {
     it('should generate keyshares with specific seed', async function () {
       // Keys should be deterministic when using seed
       const [, , , D, E, F] = keyShares;
-      mockDKeyShare.should.deepEqual(D);
-      mockEKeyShare.should.deepEqual(E);
-      mockFKeyShare.should.deepEqual(F);
+      assert.deepEqual(D, mockDKeyShare);
+      assert.deepEqual(E, mockEKeyShare);
+      assert.deepEqual(F, mockFKeyShare);
     });
 
     it('should fail if seed is length less than 64 bytes', async function () {
