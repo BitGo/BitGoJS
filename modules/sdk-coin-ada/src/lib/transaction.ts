@@ -13,6 +13,14 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 export interface TransactionInput {
   transaction_id: string;
   transaction_index: number;
+  asset_list?: AssetList[];
+  value?: string;
+}
+
+export interface AssetList {
+  policy_id: string;
+  asset_name: string;
+  quantity: string;
 }
 
 export interface TransactionOutput {

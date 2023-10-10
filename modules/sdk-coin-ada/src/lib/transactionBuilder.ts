@@ -15,7 +15,8 @@ import { KeyPair } from './keyPair';
 import util from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { BigNum } from '@emurgo/cardano-serialization-lib-nodejs';
-
+import assert from 'assert';
+import { Buffer } from 'buffer';
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction!: Transaction;
   protected _signers: KeyPair[] = [];
@@ -125,26 +126,59 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this.transaction;
   }
 
+  newTxBuilderConfig() {
+    return CardanoWasm.TransactionBuilderConfigBuilder.new().build();
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    const inputs = CardanoWasm.TransactionInputs.new();
+    const txBuilder = CardanoWasm.TransactionBuilder.new(this.newTxBuilderConfig());
+
+    // get receiver address from output and get key hash
+    // https://github.com/Emurgo/yoroi-frontend/blob/d5f1c317ccf0cfd6327f9ea513fc2903efcdd5c7/packages/yoroi-connector/example-cardano/index.js#L498-L503
+    const receiverAddress = this._transactionOutputs[0].address;
+    const address = CardanoWasm.Address.from_bech32(receiverAddress);
+    const baseAddress = CardanoWasm.BaseAddress.from_address(address);
+    const keyHash = baseAddress?.payment_cred().to_keyhash();
+    assert(keyHash);
     this._transactionInputs.forEach((input) => {
-      inputs.add(
-        CardanoWasm.TransactionInput.new(
-          CardanoWasm.TransactionHash.from_bytes(Buffer.from(input.transaction_id, 'hex')),
-          input.transaction_index
-        )
-      );
+      assert(input.asset_list);
+      if (input.asset_list.length > 0) {
+        for (const asset of input.asset_list) {
+          const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+          const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+          const assets = CardanoWasm.Assets.new();
+          assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+          const multiAsset = CardanoWasm.MultiAsset.new();
+          multiAsset.insert(policyId, assets);
+
+          txBuilder.add_key_input(
+            keyHash,
+            CardanoWasm.TransactionInput.new(
+              CardanoWasm.TransactionHash.from_bytes(Buffer.from(input.transaction_id)),
+              input.transaction_index
+            ),
+            CardanoWasm.Value.new_with_assets(CardanoWasm.BigNum.from_str(input.value!), multiAsset)
+          );
+        }
+      } else {
+        txBuilder.add_key_input(
+          keyHash,
+          CardanoWasm.TransactionInput.new(
+            CardanoWasm.TransactionHash.from_bytes(Buffer.from(input.transaction_id, 'hex')),
+            input.transaction_index
+          ),
+          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(input.value!))
+        );
+      }
     });
     let outputs = CardanoWasm.TransactionOutputs.new();
     let totalAmountToSend = CardanoWasm.BigNum.zero();
     this._transactionOutputs.forEach((output) => {
       const amount = CardanoWasm.BigNum.from_str(output.amount);
-      outputs.add(
-        CardanoWasm.TransactionOutput.new(
-          CardanoWasm.Address.from_bech32(output.address),
-          CardanoWasm.Value.new(amount)
-        )
+
+      txBuilder.add_output(
+        CardanoWasm.TransactionOutput.new(address, CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount)))
       );
       totalAmountToSend = totalAmountToSend.checked_add(amount);
     });
@@ -161,7 +195,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         outputs.add(mockChange);
       }
 
-      const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+      txBuilder.add_change_if_needed(CardanoWasm.Address.from_bech32(this._changeAddress));
+      // const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+      const txBody = txBuilder.build();
       txBody.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
       const txHash = CardanoWasm.hash_transaction(txBody);
 
@@ -255,7 +291,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       outputs.add(changeOutput);
     }
 
-    const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+    txBuilder.add_change_if_needed(CardanoWasm.Address.from_bech32(this._changeAddress));
+    const txRaw = txBuilder.build();
 
     const certs = CardanoWasm.Certificates.new();
     for (const cert of this._certs) {
