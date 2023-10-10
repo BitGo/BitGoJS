@@ -2,7 +2,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { CustomProgrammableTransaction, SuiTransaction, SuiTransactionType } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CustomTransaction } from './customTransaction';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import assert from 'assert';
 import utils from './utils';
@@ -63,6 +63,10 @@ export class CustomTransactionBuilder extends TransactionBuilder<CustomProgramma
   }
 
   /**
+   * Currently custom tx only allows a combination of 3 types of SUI transactions:
+   * 1. SplitCoins
+   * 2. TransferObjects
+   * 3. MoveCall
    * @inheritdoc
    */
   validateTransaction(transaction: CustomTransaction): void {
@@ -70,11 +74,16 @@ export class CustomTransactionBuilder extends TransactionBuilder<CustomProgramma
       return;
     }
     this.validateTransactionFields();
-
-    // Check all the transaction types are supported
-    this.transaction.suiTransaction.tx.transactions.forEach((tx) => {
-      utils.getSuiTransactionType(tx);
-    });
+    try {
+      this.transaction.suiTransaction.tx.transactions.forEach((tx) => {
+        utils.getSuiTransactionType(tx);
+      });
+    } catch (e) {
+      if (e instanceof InvalidTransactionError) {
+        throw new BuildTransactionError(e.message);
+      }
+      throw e;
+    }
   }
 
   /**
