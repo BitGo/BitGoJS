@@ -75,6 +75,9 @@
       "path": "../sdk-coin-celo"
     },
     {
+      "path": "../sdk-coin-core"
+    },
+    {
       "path": "../sdk-coin-cspr"
     },
     {

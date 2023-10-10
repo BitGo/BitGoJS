@@ -31,6 +31,7 @@ interface EnvironmentTemplate {
   seiNodeUrl: string;
   bldNodeUrl: string;
   zetaNodeUrl: string;
+  coreNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -111,6 +112,7 @@ const mainnetBase: EnvironmentTemplate = {
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
   bldNodeUrl: 'https://agoric-api.polkachu.com',
   zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public', // TODO(WIN-142): update to mainnet url when it's live
+  coreNodeUrl: 'https://full-node.mainnet-1.coreum.dev:26657',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -148,6 +150,7 @@ const testnetBase: EnvironmentTemplate = {
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
   zetaNodeUrl: 'https://rpc.ankr.com/http/zetachain_athens_testnet',
+  coreNodeUrl: 'https://full-node.testnet-1.coreum.dev:26657',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',
