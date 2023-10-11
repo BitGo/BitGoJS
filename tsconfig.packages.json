@@ -122,6 +122,9 @@
       "path": "./modules/sdk-coin-near"
     },
     {
+      "path": "./modules/sdk-coin-opeth"
+    },
+    {
       "path": "./modules/sdk-coin-osmo"
     },
     {
