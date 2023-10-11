@@ -56,6 +56,9 @@
       "path": "../sdk-coin-injective"
     },
     {
+      "path": "../sdk-coin-islm"
+    },
+    {
       "path": "../sdk-coin-near"
     },
     {
