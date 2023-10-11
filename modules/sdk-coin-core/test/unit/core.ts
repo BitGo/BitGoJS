@@ -306,7 +306,7 @@ describe('Core', function () {
             amount: 'UNAVAILABLE',
           },
         ],
-        outputAmount: 'UNAVAILABLE',
+        outputAmount: undefined,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: TEST_WITHDRAW_REWARDS_TX.gasBudget.amount[0].amount },
