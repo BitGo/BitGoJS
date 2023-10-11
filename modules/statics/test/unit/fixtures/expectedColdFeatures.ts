@@ -1,5 +1,5 @@
 export const expectedColdFeatures = {
-  both: ['eth', 'eth2', 'gteth', 'teth2', 'polygon', 'tpolygon'],
+  both: ['eth', 'eth2', 'gteth', 'teth2', 'polygon', 'tpolygon', 'hteth'],
   justMultiSig: [
     'algo',
     'avaxc',

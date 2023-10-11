@@ -525,6 +525,26 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
+    '68aec0bd-1d9a-40fa-bcef-7fa9538f65d3',
+    'hteth',
+    'Holesky Testnet Ethereum',
+    Networks.test.holesky,
+    18,
+    UnderlyingAsset.ETH,
+    BaseUnit.ETH,
+    [
+      ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+      CoinFeature.TSS,
+      CoinFeature.TSS_COLD,
+      CoinFeature.MULTISIG_COLD,
+      CoinFeature.EVM_WALLET,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ]
+  ),
+  account(
     'bfe3a3d5-2210-4bac-b494-40c45ed89267',
     'eth2',
     'Ethereum 2.0',

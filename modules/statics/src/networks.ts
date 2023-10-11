@@ -438,6 +438,19 @@ class Goerli extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
 }
 
+class Holesky extends Testnet implements EthereumNetwork {
+  name = 'Holesky';
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://holesky.beaconcha.in/tx/';
+  accountExplorerUrl = 'https://holesky.beaconcha.in/address/';
+  blockExplorerUrl = 'https://holesky.beaconcha.in/block/';
+  // https://chainlist.org/chain/17000
+  chainId = 17000;
+  batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
+  forwarderFactoryAddress = '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917';
+  forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
+}
+
 class EthereumClassic extends Mainnet implements EthereumNetwork {
   name = 'EthereumClassic';
   family = CoinFamily.ETC;
@@ -907,6 +920,7 @@ export const Networks = {
     kava: Object.freeze(new KavaTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
+    holesky: Object.freeze(new Holesky()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
