@@ -1379,7 +1379,7 @@ export enum BaseUnit {
   XTZ = 'micro xtz',
   STX = 'micro-STX',
   SUI = 'MIST',
-  TON = 'nanos',
+  TON = 'nanoton',
   NEAR = 'yocto',
   OFC = 'ofcCoin',
   OSMO = 'uosmo',
