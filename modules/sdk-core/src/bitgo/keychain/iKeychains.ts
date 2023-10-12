@@ -71,6 +71,7 @@ export interface AddKeychainOptions {
   userGPGPublicKey?: string;
   backupGPGPublicKey?: string;
   algoUsed?: string;
+  isDistributedCustody?: boolean;
 }
 
 export interface ApiKeyShare {
@@ -103,6 +104,7 @@ export interface CreateBitGoOptions {
   enterprise?: string;
   reqId?: IRequestTracer;
   keyType?: KeyType;
+  isDistributedCustody?: boolean;
 }
 
 export interface CreateMpcOptions {

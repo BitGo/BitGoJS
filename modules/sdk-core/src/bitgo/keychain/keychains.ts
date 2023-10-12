@@ -197,6 +197,7 @@ export class Keychains implements IKeychains {
         'originalPasscodeEncryptionCode',
         'enterprise',
         'derivedFromParentWithSeed',
+        'isDistributedCustody',
       ]
     );
 
@@ -230,6 +231,7 @@ export class Keychains implements IKeychains {
         userGPGPublicKey: params.userGPGPublicKey,
         backupGPGPublicKey: params.backupGPGPublicKey,
         algoUsed: params.algoUsed,
+        isDistributedCustody: params.isDistributedCustody,
       })
       .result();
   }
