@@ -4,14 +4,14 @@
 import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
+import { AbstractEthLikeTssCoin } from './abstractEthLikeTssCoin';
 import { TransactionBuilder as EthTransactionBuilder, TransactionPrebuild } from '@bitgo/sdk-coin-eth';
 
 export type CoinNames = {
   [network: string]: string;
 };
 
-export class EthLikeToken extends AbstractEthLikeCoin {
+export class EthLikeToken extends AbstractEthLikeTssCoin {
   public readonly tokenConfig: EthLikeTokenConfig;
 
   protected constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig, coinNames: CoinNames) {
