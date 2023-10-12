@@ -62,6 +62,9 @@ export { Stx };
 import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
 export { Algo };
 
+import * as Arbeth from '@bitgo/sdk-coin-arbeth';
+export { Arbeth };
+
 import * as Atom from '@bitgo/sdk-coin-atom';
 export { Atom };
 
@@ -165,6 +168,8 @@ const coinBuilderMap = {
   tzeta: Zeta.TransactionBuilderFactory,
   core: Core.TransactionBuilderFactory,
   tcore: Core.TransactionBuilderFactory,
+  arbeth: Arbeth.TransactionBuilder,
+  tarbeth: Arbeth.TransactionBuilder,
 };
 
 /**

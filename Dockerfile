@@ -53,6 +53,7 @@ COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
@@ -114,6 +115,7 @@ cd /var/modules/sjcl && yarn link && \
 cd /var/modules/unspents && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
+cd /var/modules/sdk-coin-arbeth && yarn link && \
 cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
@@ -178,6 +180,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
+    yarn link @bitgo/sdk-coin-arbeth && \
     yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
