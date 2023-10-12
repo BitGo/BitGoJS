@@ -150,6 +150,14 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
+  hteth: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
   tetc: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
