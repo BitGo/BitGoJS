@@ -7798,6 +7798,17 @@ export const coins = CoinMap.fromCoins([
     '',
     'AQUA'
   ),
+  stellarToken(
+    '9ed420a6-3da6-4b3f-984b-19b03f3098ec',
+    'xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2',
+    'EURC',
+    7,
+    UnderlyingAsset['xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2'],
+    'circle.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'EURC'
+  ),
   tronToken(
     '85d99eb6-84a1-4525-a9df-db82bcc21568',
     'trx:wbtc',
@@ -10415,6 +10426,14 @@ export const coins = CoinMap.fromCoins([
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
+  ),
+  polygonErc20(
+    'b4404060-9cd8-49ed-91f8-21d9b7b0dde6',
+    'polygon:treta',
+    'Treta',
+    18,
+    '0xbda21dcb59b131dc2e6a403d3a2e2b066ae7c33f',
+    UnderlyingAsset['polygon:treta']
   ),
   polygonErc20(
     '35ac1f4a-3ece-4d7d-83ca-87a5768718a8',
