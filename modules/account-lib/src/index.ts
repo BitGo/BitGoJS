@@ -77,6 +77,9 @@ export { AvaxP };
 import * as Tia from '@bitgo/sdk-coin-tia';
 export { Tia };
 
+import * as Bera from '@bitgo/sdk-coin-bera';
+export { Bera };
+
 import * as Bld from '@bitgo/sdk-coin-bld';
 export { Bld };
 
@@ -164,6 +167,8 @@ const coinBuilderMap = {
   tsei: Sei.TransactionBuilderFactory,
   injective: Injective.TransactionBuilderFactory,
   tinjective: Injective.TransactionBuilderFactory,
+  bera: Bera.TransactionBuilderFactory,
+  tbera: Bera.TransactionBuilderFactory,
   zeta: Zeta.TransactionBuilderFactory,
   tzeta: Zeta.TransactionBuilderFactory,
   core: Core.TransactionBuilderFactory,
