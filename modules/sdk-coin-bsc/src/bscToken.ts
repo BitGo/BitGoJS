@@ -3,12 +3,12 @@
  */
 
 import { EthLikeTokenConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { CoinNames, EthLikeMPCToken } from '@bitgo/abstract-eth';
 
 export { EthLikeTokenConfig };
 
-export class BscToken extends EthLikeToken {
+export class BscToken extends EthLikeMPCToken {
   public readonly tokenConfig: EthLikeTokenConfig;
   static coinNames: CoinNames = {
     Mainnet: 'bsc',
@@ -27,13 +27,5 @@ export class BscToken extends EthLikeToken {
 
   getFullName(): string {
     return 'Bsc Token';
-  }
-
-  supportsTss(): boolean {
-    return true;
-  }
-
-  getMPCAlgorithm(): MPCAlgorithm {
-    return 'ecdsa';
   }
 }
