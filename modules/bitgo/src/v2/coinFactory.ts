@@ -14,6 +14,7 @@ import {
   Ada,
   Algo,
   Arbeth,
+  ArbethToken,
   Atom,
   AvaxC,
   AvaxCToken,
@@ -253,6 +254,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   PolygonToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  ArbethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 

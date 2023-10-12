@@ -2,6 +2,7 @@ import {
   account,
   AccountCoin,
   algoToken,
+  arbethErc20,
   avaxErc20,
   bscToken,
   celoToken,
@@ -18,6 +19,7 @@ import {
   solToken,
   stellarToken,
   talgoToken,
+  tarbethErc20,
   tavaxErc20,
   tbscToken,
   tceloToken,
@@ -10802,6 +10804,22 @@ export const coins = CoinMap.fromCoins([
     '',
     Networks.test.polygon,
     KeyCurve.Secp256k1
+  ),
+  arbethErc20(
+    '14a21e93-b123-4437-b99f-0489947d0379',
+    'arbeth:link',
+    'Chainlink Token',
+    18,
+    '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4',
+    UnderlyingAsset['arbeth:link']
+  ),
+  tarbethErc20(
+    'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
+    'tarbeth:link',
+    'Arbitrum Test LINK',
+    18,
+    '0x143e1dae4f018ff86051a01d44a1b49b13704056',
+    UnderlyingAsset['tarbeth:link']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
