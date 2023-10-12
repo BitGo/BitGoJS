@@ -2019,6 +2019,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BOND
   ),
   erc20(
+    '1ff8e770-33b9-4e62-9837-9eb26d67e191',
+    'botto',
+    'BOTTO',
+    18,
+    '0x9dfad1b7102d46b1b197b90095b5c4e9f5845bba',
+    UnderlyingAsset.BOTTO
+  ),
+  erc20(
     '49fefa5c-efc4-46c6-ae6f-efd7fd51ea2d',
     'blocks',
     'BLOCKS ',
@@ -6176,6 +6184,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.UTK1
   ),
   erc20(
+    'cb6fd4f8-b74b-4ecc-94ef-6c233781f9b4',
+    'vcore',
+    'VCORE',
+    18,
+    '0x733b5056a0697e7a4357305fe452999a0c409feb',
+    UnderlyingAsset.VCORE
+  ),
+  erc20(
     '999583a7-19e0-41b6-86a6-aa115a03b29d',
     'valor',
     'ValorToken',
@@ -7287,6 +7303,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x037a54aab062628c9bbae1fdb1583c195585fe41',
     UnderlyingAsset.LCX
+  ),
+  erc20(
+    '4beb03af-6838-42a4-9996-9516217afd29',
+    'flip',
+    'Chainflip',
+    18,
+    '0x826180541412d574cf1336d22c0c0a287822678a',
+    UnderlyingAsset.FLIP
   ),
   erc20(
     'd66b743b-8101-46e4-a3a9-8a32e47f8cda',
