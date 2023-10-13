@@ -106,4 +106,10 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/staking_pool.md#0x3_staking_pool_split
    */
   StakingPoolSplit = '::staking_pool::split',
+  /**
+   * Transfer ownership of obj to recipient.
+   *
+   * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/transfer.md#function-public_transfer
+   */
+  PublicTransfer = '::transfer::public_transfer',
 }

@@ -211,7 +211,10 @@ export class Utils implements BaseUtils {
           return SuiTransactionType.AddStake;
         } else if (command.target.endsWith(MethodNames.RequestWithdrawStake)) {
           return SuiTransactionType.WithdrawStake;
-        } else if (command.target.endsWith(MethodNames.StakingPoolSplit)) {
+        } else if (
+          command.target.endsWith(MethodNames.StakingPoolSplit) ||
+          command.target.endsWith(MethodNames.PublicTransfer)
+        ) {
           return SuiTransactionType.CustomTx;
         } else {
           throw new InvalidTransactionError(`unsupported target method ${command.target}`);
