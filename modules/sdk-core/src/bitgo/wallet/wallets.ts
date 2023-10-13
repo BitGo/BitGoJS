@@ -173,6 +173,9 @@ export class Wallets implements IWallets {
    * @param params.disableKRSEmail
    * @param params.walletVersion
    * @param params.multisigType optional multisig type, 'onchain' or 'tss' or 'blsdkg'; if absent, we will defer to the coin's default type
+   * @param params.isDistributedCustody optional parameter for creating bitgo key. This is only necessary if you want to create
+   *                                    a distributed custody wallet. If provided, you must have the enterprise license and pass in
+   *                                    `params.enterprise` into `generateWallet` as well.
    * @returns {*}
    */
   async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
@@ -252,6 +255,19 @@ export class Wallets implements IWallets {
       }
 
       return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase });
+    }
+
+    // Handle distributed custody
+    if (params.isDistributedCustody) {
+      if (!params.enterprise) {
+        throw new Error('must provide enterprise when creating distributed custody wallet');
+      }
+      if (params.multisigType !== 'onchain') {
+        throw new Error('distributed custody wallets must be onchain');
+      }
+      if (!walletParams.isCold) {
+        throw new Error('distributed custody wallets must be cold');
+      }
     }
 
     const hasBackupXpub = !!params.backupXpub;
@@ -392,7 +408,9 @@ export class Wallets implements IWallets {
     const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
       userKeychain: userKeychainPromise(),
       backupKeychain: backupKeychainPromise(),
-      bitgoKeychain: this.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId }),
+      bitgoKeychain: this.baseCoin
+        .keychains()
+        .createBitGo({ enterprise: params.enterprise, reqId, isDistributedCustody: params.isDistributedCustody }),
     });
 
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];

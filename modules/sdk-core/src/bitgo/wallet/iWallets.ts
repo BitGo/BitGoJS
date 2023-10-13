@@ -48,6 +48,7 @@ export interface GenerateWalletOptions {
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
   multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  isDistributedCustody?: boolean;
 }
 
 export interface GetWalletByAddressOptions {
