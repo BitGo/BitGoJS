@@ -27,7 +27,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
-import { createHash, Hash, randomBytes } from 'crypto';
+import { Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as querystring from 'querystring';
 import * as request from 'superagent';
@@ -227,7 +227,7 @@ export class CosmosCoin extends BaseCoin {
     // Step 7: Sign the tx
     const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const signableBuffer = Buffer.from(signableHex, 'hex');
-    MPC.verify(signableBuffer, signature, createHash('sha256'));
+    MPC.verify(signableBuffer, signature, this.getHashFunction());
     const cosmosKeyPair = this.getKeyPair(publicKey);
     txnBuilder.addSignature({ pub: cosmosKeyPair.getKeys().pub }, Buffer.from(signature.r + signature.s, 'hex'));
     const signedTransaction = await txnBuilder.build();
@@ -382,8 +382,8 @@ export class CosmosCoin extends BaseCoin {
     const MESSAGE = Buffer.from(txHex, 'hex');
 
     const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, createHash('sha256')),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, createHash('sha256')),
+      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, this.getHashFunction()),
+      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, this.getHashFunction()),
     ];
 
     return MPC.constructSignature([signA, signB]);
@@ -619,12 +619,9 @@ export class CosmosCoin extends BaseCoin {
     return true;
   }
 
-  /**
-   * Retrieves the SHA256 hash function.
-   * @returns {Hash} The SHA256 hash function.
-   */
+  /** @inheritDoc **/
   getHashFunction(): Hash {
-    return createHash('sha256');
+    return utils.getHashFunction();
   }
 
   /**

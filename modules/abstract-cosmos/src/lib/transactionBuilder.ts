@@ -9,7 +9,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Secp256k1, sha256 } from '@cosmjs/crypto';
+import { Secp256k1 } from '@cosmjs/crypto';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import BigNumber from 'bignumber.js';
 import { CosmosTransactionMessage, FeeData, MessageData } from './iface';
@@ -198,7 +198,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
         this._accountNumber,
         this._chainId
       );
-      const txnHash = sha256(makeSignBytes(signDoc));
+      const txnHash = Uint8Array.from(this._utils.getHashFunction().update(makeSignBytes(signDoc)).digest());
       const signature = await Secp256k1.createSignature(txnHash, privateKey);
       const compressedSig = Buffer.concat([signature.r(), signature.s()]);
       this.addSignature({ pub: this.transaction.cosmosLikeTransaction.publicKey }, compressedSig);

@@ -113,6 +113,9 @@
       "path": "./modules/sdk-coin-injective"
     },
     {
+      "path": "./modules/sdk-coin-islm"
+    },
+    {
       "path": "./modules/sdk-coin-ltc"
     },
     {

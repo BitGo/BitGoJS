@@ -33,6 +33,7 @@ interface EnvironmentTemplate {
   beraNodeUrl: string;
   zetaNodeUrl: string;
   coreNodeUrl: string;
+  islmNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
     full: string;
@@ -115,6 +116,7 @@ const mainnetBase: EnvironmentTemplate = {
   beraNodeUrl: '', // TODO(WIN-693): update url when mainnet goes live
   zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public', // TODO(WIN-142): update to mainnet url when it's live
   coreNodeUrl: 'https://full-node.mainnet-1.coreum.dev:26657',
+  islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -154,6 +156,7 @@ const testnetBase: EnvironmentTemplate = {
   beraNodeUrl: '', // TODO(WIN-693): update url when testnet goes live
   zetaNodeUrl: 'https://rpc.ankr.com/http/zetachain_athens_testnet',
   coreNodeUrl: 'https://full-node.testnet-1.coreum.dev:26657',
+  islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',

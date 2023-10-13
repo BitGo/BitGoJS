@@ -1,6 +1,22 @@
 import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 
+/**
+ * Defines the protobuf typeUrl for the public key
+ */
+export enum PubKeyTypeUrl {
+  secp256k1 = '/cosmos.crypto.secp256k1.PubKey',
+  ethSecp256k1 = '/ethermint.crypto.v1.ethsecp256k1.PubKey',
+}
+
+/**
+ * Defines the amino encoding name for the public key
+ */
+export enum PubKeyType {
+  secp256k1 = 'tendermint/PubKeySecp256k1',
+  ethSecp256k1 = 'tendermint/PubKeyEthSecp256k1',
+}
+
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
 }
