@@ -1324,6 +1324,37 @@ export enum UnderlyingAsset {
   // Cardano Token
   adaTestnetToken = 'temporary-placeholder',
 
+  // solana token
+  '3uejh-usdc' = '3uejh-usdc',
+  'avax-usdc' = 'avax-usdc',
+  'bop-usdc' = 'bop-usdc',
+  'elu-usdt' = 'elu-usdt',
+  'fida-usdc' = 'fida-usdc',
+  'fida-usdt' = 'fida-usdt',
+  'ftt-ftt' = 'ftt-ftt',
+  'link-usdc' = 'link-usdc',
+  'lqid-usdc' = 'lqid-usdc',
+  'maticpo-usdc' = 'maticpo-usdc',
+  'msol-sol' = 'msol-sol',
+  'msol-usdc' = 'msol-usdc',
+  'prism-usdc' = 'prism-usdc',
+  'rendoge-usdc' = 'rendoge-usdc',
+  'shdw-usdc' = 'shdw-usdc',
+  'sol-wtust' = 'sol-wtust',
+  'srm-usdc' = 'srm-usdc',
+  'srmet-srm' = 'srmet-srm',
+  'sushi-usdc' = 'sushi-usdc',
+  'tuatlas' = 'tuatlas',
+  'tucope' = 'tucope',
+  'tulike' = 'tulike',
+  'tureal' = 'tureal',
+  'tusamo' = 'tusamo',
+  'usdt-usdc' = 'usdt-usdc',
+  'wbwbnb-usdc' = 'wbwbnb-usdc',
+  'wheth-usdc' = 'wheth-usdc',
+  'wtust-usdt' = 'wtust-usdt',
+  'xcope-usdc' = 'xcope-usdc',
+
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
 }

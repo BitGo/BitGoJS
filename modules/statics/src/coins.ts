@@ -10207,6 +10207,295 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.QCAD,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'd805ce9a-f000-46d2-a23d-71188ae868ec',
+    'sol:3uejh-usdc-atrix',
+    '3uejH-USDC (Atrix)',
+    6,
+    '8Vu7Y3xZg75sUYiNxDi5zRFamtDGn7afMoFVpaeoy4Fj',
+    UnderlyingAsset['3uejh-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '68b4748e-72a2-431c-9836-ff6a3d7e7b76',
+    'sol:3uejh-usdc-ray',
+    '3uejH-USDC (Raydium)',
+    9,
+    '5Xn6kWHwnQiL5JRFHqZhF9qDE4gWkhCCUomccfak6Pqd',
+    UnderlyingAsset['3uejh-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '011fdc13-c2fe-497a-a3c2-84741833ed7f',
+    'sol:avax-usdc',
+    'AVAX-USDC (Atrix)',
+    6,
+    '9Q2Jcc2Xpjr5QExCezwBTKnRyXRfvtyEFTNssYPKrZSP',
+    UnderlyingAsset['avax-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'e4b54695-ea0b-465a-846a-6932f2fc0964',
+    'sol:bop-usdc',
+    'BOP-USDC (Atrix)',
+    6,
+    'FuTJE1yfz5u17T7gpqyMuUaCnnzLTes8R5QjXpMd8f1P',
+    UnderlyingAsset['bop-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '3d239b43-9ed2-4ea4-9117-10a20c1476b7',
+    'sol:elu-usdt',
+    'ELU-USDT (Raydium)',
+    9,
+    '6DGD2tQaPPaupNKYJhp3JpqSHnY1mUqTMQsVqCASriau',
+    UnderlyingAsset['elu-usdt'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'aaf93558-44b2-41a4-b526-17af8a60aa25',
+    'sol:fida-usdc',
+    'FIDA-USDC (Atrix)',
+    6,
+    '22DFMbkx4jHgaEjKz2D4yaq51YS2LXcQ7GFJT9RDrmJz',
+    UnderlyingAsset['fida-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '8d7214f1-00e2-44e3-b5c1-7f25c7ec5c4e',
+    'sol:fida-usdt',
+    'FIDA-USDT (Atrix)',
+    6,
+    '4aN1Vrq1F292EbZ8cW2SbTby7bCG1Ubqh1sLoFrj8Rkf',
+    UnderlyingAsset['fida-usdt'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'b8f5c65b-52fc-4de9-a137-888e5d34e2a4',
+    'sol:ftt-ftt',
+    'FTT-FTT (Atrix)',
+    6,
+    'HCygAsuXLXyb8Krf88wXi8k3VqJi4qLXJxk9YfojFPEj',
+    UnderlyingAsset['ftt-ftt'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '560128e2-1eff-4f3a-b74c-826abf6403d1',
+    'sol:link-usdc',
+    'LINK-USDC (Atrix)',
+    6,
+    '3rAjv5d83R47t5TyTjZTbWAKdFY8tb1jYgt44hEiyRhd',
+    UnderlyingAsset['link-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '0300083e-b497-4399-95bc-cb6ee301f42a',
+    'sol:lqid-usdc',
+    'LQID-USDC (Atrix)',
+    6,
+    '2dHFjKHdmXLMmZQrF4nuxn3V175XQNCR4kcDBHuiQ4So',
+    UnderlyingAsset['lqid-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '48ced08b-8ee9-4e7c-920c-825d9cffb98d',
+    'sol:maticpo-usdc',
+    'MATICPO-USDC (Atrix)',
+    6,
+    'qxWs2xtSZ3ojvhaNiZ48NGRzNjZQU9K46ZmHu6inrc9',
+    UnderlyingAsset['maticpo-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '3cf7a8b8-6cdb-46e7-9371-e63b85d4edf2',
+    'sol:msol-sol',
+    'MSOL-SOL (Atrix)',
+    6,
+    '5Ho7kHt8vahC2zW6p99y3ENXWp1s2vSbFKWUPwdoPVEC',
+    UnderlyingAsset['msol-sol'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '9518933c-9a10-42f1-903e-e1f85034f13d',
+    'sol:msol-usdc',
+    'MSOL-USDC (Aldrin)',
+    0,
+    'H37kHxy82uLoF8t86wK414KzpVJy7uVJ9Kvt5wYsTGPh',
+    UnderlyingAsset['msol-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '64edb7e2-6cd4-4257-b0f9-a873718ad5a7',
+    'sol:prism-usdc',
+    'PRISM-USDC (Raydium)',
+    6,
+    '3baYkTcudvSFMe25UpZcBfdp4FA5kL2E4pfaeJ8AiYJB',
+    UnderlyingAsset['prism-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '803bb18c-b9ed-4342-aa94-985f9ab31974',
+    'sol:rendoge-usdc',
+    'RENDOGE-USDC (Atrix)',
+    6,
+    'AdP5rgP2cbcG6vib14MRGJZULAAswGLx4desPSMxfzZB',
+    UnderlyingAsset['rendoge-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'ff2bd6df-d901-4adc-a5af-2cad6e59d6bf',
+    'sol:shdw-usdc-ray',
+    'SHDW-USDC (Raydium)',
+    9,
+    'BeSq84RRsqQMKonw89mfYDg2dBcVc52LGN3zG6muFczu',
+    UnderlyingAsset['shdw-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '5acc0db3-a5fd-415e-a5b1-8d0f1cf530f7',
+    'sol:shdw-usdc-atrix',
+    'SHDW-USDC (Atrix)',
+    6,
+    '63F79Xww6UTSJbPiJeuJ6Yn1yRZUzUAqLddbavPiRG6r',
+    UnderlyingAsset['shdw-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '594e4ed9-8a17-4386-9569-9c4ebcd35815',
+    'sol:sol-wtust',
+    'SOL-wtUST (Atrix)',
+    6,
+    '8DUT2gszpXrGjYaJfH6cutUGLCUCDA4zd68dWsxXcF1y',
+    UnderlyingAsset['sol-wtust'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'a8b0fd4e-4819-44b1-bb70-7a88dcdb75dd',
+    'sol:srm-usdc',
+    'SRM-USDC (Atrix)',
+    6,
+    'Ck9t5PgHSxm3TAcwHB7Ncw1HvGGRwRehdWLzSanUtxzJ',
+    UnderlyingAsset['srm-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '53e04b66-377f-4330-9b69-22914ec1392c',
+    'sol:srmet-srm',
+    'SRMet-SRM (Atrix)',
+    6,
+    'E5LLJLgiyQ1QmMAci7efsPXjSxXGfncWrBB6kJ1GaaBT',
+    UnderlyingAsset['srmet-srm'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'e784c670-c82f-4cd4-ae43-7416fb68b1ad',
+    'sol:sushi-usdc-atrix',
+    'SUSHI-USDC (Atrix)',
+    6,
+    'Fv1LohviCN4qRzmEUqqJdWd7B5zLxrGEQ7dXADyXdcvA',
+    UnderlyingAsset['sushi-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '89312563-c185-4f09-a30f-27501e56a83c',
+    'sol:sushi-usdc-ray',
+    'SUSHI-USDC (Raydium)',
+    8,
+    '3wVrtQZsiDNp5yTPyfEzQHPU6iuJoMmpnWg6CTt4V8sR',
+    UnderlyingAsset['sushi-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'af08f93f-e8ee-40d9-be0a-b069017c3517',
+    'sol:tuatlas',
+    'tuAtlas (Tulip)',
+    8,
+    '9eGNc4BZCAgpTSEjbu7ACCLjpnZh1WSdts3y4nMik4e7',
+    UnderlyingAsset['tuatlas'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'cb63efc6-5184-4fea-8f97-218cad72f412',
+    'sol:tucope',
+    'tuCOPE (Tulip)',
+    6,
+    '8cm7UrBiDQ4C1ntQSCZfHSWKUizdW31ddTQGNY6Lym3B',
+    UnderlyingAsset['tucope'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'a3d947eb-1dcf-4094-be0c-8503f624270f',
+    'sol:tulike',
+    'tuLIKE (Tulip)',
+    9,
+    'DRu91PV94sb6kX6HwMGnGM8TuHrjycS4FmJNRWEgyw6n',
+    UnderlyingAsset['tulike'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '8699d0d5-95c1-447b-9f2f-bd2de134a633',
+    'sol:tureal',
+    'tuREAL (Tulip)',
+    6,
+    '8B1mqpvZYmpjAXVPBevaQBPbnufLz7ZZTBH6tgMVYCWe',
+    UnderlyingAsset['tureal'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '9124d731-ab65-4e43-b9df-42fae8931d28',
+    'sol:tusamo',
+    'tuSAMO (Tulip)',
+    9,
+    'CEqYVZCL7sHQ8gChh1yL3uajc2UDs6DXuYjPZyRox6MC',
+    UnderlyingAsset['tusamo'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '2203150e-0162-467e-b693-4087fcb434f4',
+    'sol:usdt-usdc',
+    'USDT-USDC (Atrix)',
+    6,
+    '4jL2htQtstTzatmtJL85M6z89E238ozg5eUa9u54Qyxb',
+    UnderlyingAsset['usdt-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '79318d31-1c12-4e25-a5ec-f39a86a1459f',
+    'sol:wbwbnb-usdc',
+    'wbWBNB-USDC (Atrix)',
+    6,
+    'B8ruZRLvFzk5fF3jBNp5RpT5sNrd3sasgfSyEuTbzZqk',
+    UnderlyingAsset['wbwbnb-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '134fd5d0-c7aa-4446-b6a2-d59aeca1dc4e',
+    'sol:wheth-usdc',
+    'whETH-USDC (Atrix)',
+    6,
+    'AW7jJo1Mu6Ht6kgT5RpwGYjpsXEQbEeXpLdKkViotiWU',
+    UnderlyingAsset['wheth-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'b3ca6d5b-db84-4814-a0c0-f154a18fe594',
+    'sol:wtust-usdt',
+    'wtUST-USDT (Atrix)',
+    6,
+    '4G6Z1HQcTVE22NgSiZk6JbwiN55KD9Dk2k4Rx6HTnZEm',
+    UnderlyingAsset['wtust-usdt'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '78ab6651-a0a0-47b6-9515-08caf7c8e6a6',
+    'sol:xcope-usdc',
+    'XCOPE-USDC (Raydium)',
+    0,
+    '2Vyyeuyd15Gp8aH6uKE72c4hxc8TVSLibxDP9vzspQWG',
+    UnderlyingAsset['xcope-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
@@ -10288,6 +10577,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
+
   polygonErc20(
     '35ac1f4a-3ece-4d7d-83ca-87a5768718a8',
     'polygon:usdc',
