@@ -24,7 +24,7 @@ describe('Arbeth Token:', function () {
     arbethTokenCoin.getFullName().should.equal('Arbeth Token');
     arbethTokenCoin.getBaseFactor().should.equal(1e18);
     arbethTokenCoin.type.should.equal(tokenName);
-    arbethTokenCoin.name.should.equal('Chainlink Token');
+    arbethTokenCoin.name.should.equal('Arbitrum Test LINK');
     arbethTokenCoin.coin.should.equal('tarbeth');
     arbethTokenCoin.network.should.equal('Testnet');
     arbethTokenCoin.decimalPlaces.should.equal(18);

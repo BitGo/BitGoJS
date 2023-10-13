@@ -10810,7 +10810,7 @@ export const coins = CoinMap.fromCoins([
     'arbeth:link',
     'Chainlink Token',
     18,
-    '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4',
+    '0xf97f4df75117a78c1a5a0dbb814af92458539fb4',
     UnderlyingAsset['arbeth:link']
   ),
   tarbethErc20(
