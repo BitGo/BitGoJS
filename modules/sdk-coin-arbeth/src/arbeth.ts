@@ -1,3 +1,7 @@
+/**
+ * @prettier
+ */
+
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeMPCCoin } from '@bitgo/abstract-eth';

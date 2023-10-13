@@ -1,7 +1,7 @@
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { Ada, Tada } from '@bitgo/sdk-coin-ada';
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
-import { Arbeth, Tarbeth } from '@bitgo/sdk-coin-arbeth';
+import { Arbeth, Tarbeth, ArbethToken } from '@bitgo/sdk-coin-arbeth';
 import { Atom, Tatom } from '@bitgo/sdk-coin-atom';
 import { AvaxC, AvaxCToken, TavaxC } from '@bitgo/sdk-coin-avaxc';
 import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
@@ -46,7 +46,7 @@ import { Tzec, Zec } from '@bitgo/sdk-coin-zec';
 import { Tzeta, Zeta } from '@bitgo/sdk-coin-zeta';
 export { AbstractUtxoCoin };
 export { Algo, AlgoToken, Talgo };
-export { Arbeth, Tarbeth };
+export { Arbeth, Tarbeth, ArbethToken };
 export { Ada, Tada };
 export { Atom, Tatom };
 export { AvaxC, AvaxCToken, TavaxC };
