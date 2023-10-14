@@ -532,6 +532,7 @@ export interface CrossChainUTXO {
 }
 
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
+export type SubWalletType = 'distributedCustody';
 
 export interface WalletData {
   id: string;
@@ -559,6 +560,7 @@ export interface WalletData {
   };
   multisigType: 'onchain' | 'tss';
   type?: WalletType;
+  subType?: SubWalletType;
   tokens?: Record<string, any>[];
 }
 
