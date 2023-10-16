@@ -1334,6 +1334,12 @@ export enum UnderlyingAsset {
   'terc721:polygontoken' = 'terc721:polygontoken',
   'terc1155:polygontoken' = 'terc1155:polygontoken',
 
+  // Arbitrum mainnet tokens
+  'arbeth:link' = 'arbeth:link',
+
+  // Arbitrum testnet tokens
+  'tarbeth:link' = 'tarbeth:link',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',
