@@ -181,6 +181,9 @@ const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
       case Networks.test.goerli:
         baseCoin = 'gteth';
         break;
+      case Networks.test.holesky:
+        baseCoin = 'hteth';
+        break;
       default:
         throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
     }

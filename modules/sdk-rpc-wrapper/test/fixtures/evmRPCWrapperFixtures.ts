@@ -3,7 +3,7 @@ import { EVMRPCTransactionOptions } from '../../src';
 
 export const ethWalletData = {
   id: '598f606cd8fc24710d2ebadb1d9459bb',
-  coin: 'gteth',
+  coin: 'hteth',
   keys: ['598f606cd8fc24710d2ebad89dce86c2', '598f606cc8e43aef09fcb785221d9dd2', '5935d59cf660764331bafcade1855fd7'],
   multisigType: 'tss',
 };

@@ -47,6 +47,7 @@ import {
   Gteth,
   Hash,
   Hbar,
+  Hteth,
   Injective,
   Islm,
   Ltc,
@@ -152,6 +153,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('gteth', Gteth.createInstance);
   globalCoinFactory.register('hash', Hash.createInstance);
   globalCoinFactory.register('hbar', Hbar.createInstance);
+  globalCoinFactory.register('hteth', Hteth.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
   globalCoinFactory.register('islm', Islm.createInstance);
