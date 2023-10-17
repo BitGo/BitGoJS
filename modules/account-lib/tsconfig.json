@@ -68,6 +68,9 @@
       "path": "../sdk-coin-near"
     },
     {
+      "path": "../sdk-coin-opeth"
+    },
+    {
       "path": "../sdk-coin-osmo"
     },
     {

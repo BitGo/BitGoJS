@@ -116,6 +116,9 @@ export { Bsc };
 import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
+import * as Opeth from '@bitgo/sdk-coin-opeth';
+export { Opeth };
+
 import * as Sui from '@bitgo/sdk-coin-sui';
 export { Sui };
 
@@ -180,6 +183,8 @@ const coinBuilderMap = {
   tcore: Core.TransactionBuilderFactory,
   arbeth: Arbeth.TransactionBuilder,
   tarbeth: Arbeth.TransactionBuilder,
+  opeth: Opeth.TransactionBuilder,
+  topeth: Opeth.TransactionBuilder,
 };
 
 /**

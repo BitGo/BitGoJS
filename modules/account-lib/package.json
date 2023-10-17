@@ -47,6 +47,7 @@
     "@bitgo/sdk-coin-injective": "^1.4.11",
     "@bitgo/sdk-coin-islm": "^1.0.0",
     "@bitgo/sdk-coin-near": "^1.6.11",
+    "@bitgo/sdk-coin-opeth": "^1.0.0",
     "@bitgo/sdk-coin-osmo": "^1.6.11",
     "@bitgo/sdk-coin-polygon": "^1.8.0",
     "@bitgo/sdk-coin-rbtc": "^1.5.11",
