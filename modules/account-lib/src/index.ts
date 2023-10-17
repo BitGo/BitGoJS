@@ -122,6 +122,9 @@ export { Opeth };
 import * as Sui from '@bitgo/sdk-coin-sui';
 export { Sui };
 
+import * as Ton from '@bitgo/sdk-coin-ton';
+export { Ton };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -185,6 +188,8 @@ const coinBuilderMap = {
   tarbeth: Arbeth.TransactionBuilder,
   opeth: Opeth.TransactionBuilder,
   topeth: Opeth.TransactionBuilder,
+  ton: Ton.TransactionBuilder,
+  tton: Ton.TransactionBuilder,
 };
 
 /**
