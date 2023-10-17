@@ -429,6 +429,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   finalizeTaprootInput(inputIndex: number): this {
+    const checkPartialSigSighashes = (sig: Buffer) => {
+      const sighashType = sig.length === 64 ? Transaction.SIGHASH_DEFAULT : sig.readUInt8(sig.length - 1);
+      const inputSighashType = input.sighashType === undefined ? Transaction.SIGHASH_DEFAULT : input.sighashType;
+      assert(sighashType === inputSighashType, 'signature sighash does not match input sighash type');
+    };
     const input = checkForInput(this.data.inputs, inputIndex);
     // witness = control-block script first-sig second-sig
     if (input.tapLeafScript?.length !== 1) {
@@ -442,6 +447,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!sig) {
         throw new Error('Could not find signatures in Script Sig.');
       }
+      checkPartialSigSighashes(sig.signature);
       witness.unshift(sig.signature);
     }
 
