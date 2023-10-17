@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Network, getNetworkName, networks, getNetworkList, testutil, isMainnet } from '../../../src';
+import { Network, getNetworkName, networks, getNetworkList, testutil, isMainnet, Transaction } from '../../../src';
 import {
   getExternalChainCode,
   outputScripts,
@@ -90,6 +90,26 @@ const halfSignedOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, v
 
 const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
 const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+describe('Psbt Misc', function () {
+  it('fail to finalise p2tr sighash mismatch', function () {
+    const psbt = testutil.constructPsbt(
+      [{ scriptType: 'p2tr', value: BigInt(1000) }],
+      [{ scriptType: 'p2sh', value: BigInt(900) }],
+      network,
+      rootWalletKeys,
+      'fullsigned'
+    );
+    assert(psbt.validateSignaturesOfAllInputs());
+    const tapScriptSig = psbt.data.inputs[0].tapScriptSig;
+    assert(tapScriptSig);
+    tapScriptSig[0].signature = Buffer.concat([tapScriptSig[0].signature, Buffer.of(Transaction.SIGHASH_ALL)]);
+    assert.throws(
+      () => psbt.finalizeAllInputs(),
+      (e: any) => e.message === 'signature sighash does not match input sighash type'
+    );
+  });
+});
 
 describe('extractP2msOnlyHalfSignedTx failure', function () {
   it('invalid signature count', function () {
