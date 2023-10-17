@@ -15,9 +15,16 @@ export interface TransactionInput {
   transaction_index: number;
 }
 
+export interface Asset {
+  policy_id: string;
+  asset_name: string;
+  quantity: string;
+}
+
 export interface TransactionOutput {
   address: string;
   amount: string;
+  multiAssets?: CardanoWasm.MultiAsset;
 }
 
 export interface Witness {
@@ -140,6 +147,7 @@ export class Transaction extends BaseTransaction {
       result.outputs.push({
         address: output.address().to_bech32(),
         amount: output.amount().coin().to_str(),
+        multiAssets: output.amount().multiasset() || undefined,
       });
     }
 

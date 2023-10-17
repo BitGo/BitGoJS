@@ -39,6 +39,123 @@ describe('ADA Transaction Builder', async () => {
     should.equal(txBroadcast, testData.rawTx.unsignedTx2);
   });
 
+  it('build a tx with single asset', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    const outputAmount = 7823121;
+    txBuilder.output({
+      address: testData.rawTx.outputAddress1.address,
+      amount: outputAmount.toString(),
+    });
+    const policyId = '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f';
+    const assetName = '534e454b';
+    const quantity = '6000000';
+    txBuilder.assets({
+      policy_id: policyId,
+      asset_name: assetName,
+      quantity: quantity,
+    });
+    const totalInput = 21032023;
+    txBuilder.changeAddress(testData.rawTx.outputAddress2.address, totalInput.toString());
+    txBuilder.ttl(800000000);
+    const tx = (await txBuilder.build()) as Transaction;
+    should.equal(tx.type, TransactionType.Send);
+    const txData = tx.toJson();
+    txData.witnesses.length.should.equal(0);
+    txData.certs.length.should.equal(0);
+    txData.withdrawals.length.should.equal(0);
+    txData.outputs.length.should.equal(3);
+    txData.outputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    txData.outputs[1].address.should.equal(testData.rawTx.outputAddress2.address);
+    txData.outputs[2].address.should.equal(testData.rawTx.outputAddress1.address);
+
+    // token assertion
+    const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(assetName, 'hex'));
+    const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
+    txData.outputs[2].should.have.property('multiAssets');
+    (txData.outputs[2].multiAssets as CardanoWasm.MultiAsset)
+      .get_asset(expectedPolicyId, expectedAssetName)
+      .to_str()
+      .should.equal(quantity);
+
+    const fee = tx.getFee;
+    txData.outputs[1].amount.should.equal((totalInput - outputAmount - Number(fee)).toString());
+    fee.should.equal('167261');
+    txData.id.should.equal(testData.rawTx.txHash3);
+    const txBroadcast = tx.toBroadcastFormat();
+    should.equal(txBroadcast, testData.rawTx.unsignedTx3);
+  });
+
+  it('build a tx with multiple assets', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    const outputAmount = 7823121;
+    txBuilder.output({
+      address: testData.rawTx.outputAddress1.address,
+      amount: outputAmount.toString(),
+    });
+    const asset1_policyId = '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f';
+    const asset1_assetName = '534e454b';
+    const asset1_quantity = '6000000';
+    const asset2_policyId = '1f7a58a1aa1e6b047a42109ade331ce26c9c2cce027d043ff264fb1f';
+    const asset2_assetName = '425249434b53';
+    const asset2_quantity = '5000000';
+
+    txBuilder.assets({
+      policy_id: asset1_policyId,
+      asset_name: asset1_assetName,
+      quantity: asset1_quantity,
+    });
+    txBuilder.assets({
+      policy_id: asset2_policyId,
+      asset_name: asset2_assetName,
+      quantity: asset2_quantity,
+    });
+
+    const totalInput = 21032023;
+    txBuilder.changeAddress(testData.rawTx.outputAddress2.address, totalInput.toString());
+    txBuilder.ttl(800000000);
+    const tx = (await txBuilder.build()) as Transaction;
+    should.equal(tx.type, TransactionType.Send);
+    const txData = tx.toJson();
+    txData.witnesses.length.should.equal(0);
+    txData.certs.length.should.equal(0);
+    txData.withdrawals.length.should.equal(0);
+    txData.outputs.length.should.equal(4);
+    txData.outputs[0].address.should.equal(testData.rawTx.outputAddress1.address);
+    txData.outputs[1].address.should.equal(testData.rawTx.outputAddress2.address);
+    txData.outputs[2].address.should.equal(testData.rawTx.outputAddress1.address);
+
+    // token assertion
+    const asset1_expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(asset1_assetName, 'hex'));
+    const asset1_expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset1_policyId, 'hex'));
+    txData.outputs[2].should.have.property('multiAssets');
+    (txData.outputs[2].multiAssets as CardanoWasm.MultiAsset)
+      .get_asset(asset1_expectedPolicyId, asset1_expectedAssetName)
+      .to_str()
+      .should.equal(asset1_quantity);
+    const asset2_expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(asset2_assetName, 'hex'));
+    const asset2_expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset2_policyId, 'hex'));
+    txData.outputs[3].should.have.property('multiAssets');
+    (txData.outputs[3].multiAssets as CardanoWasm.MultiAsset)
+      .get_asset(asset2_expectedPolicyId, asset2_expectedAssetName)
+      .to_str()
+      .should.equal(asset2_quantity);
+
+    const fee = tx.getFee;
+    txData.outputs[1].amount.should.equal((totalInput - outputAmount - Number(fee)).toString());
+    fee.should.equal('167261');
+    txData.id.should.equal(testData.rawTx.txHash4);
+    const txBroadcast = tx.toBroadcastFormat();
+    should.equal(txBroadcast, testData.rawTx.unsignedTx4);
+  });
+
   it('build and sign a transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.input({
