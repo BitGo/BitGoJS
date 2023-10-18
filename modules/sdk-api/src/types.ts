@@ -88,6 +88,16 @@ export interface AuthenticateOptions {
   forceSMS?: boolean;
   extensible?: boolean;
   forceV1Auth?: boolean;
+  /**
+   * Whether or not to ensure that the user's ECDH keychain is created.
+   * @type {boolean}
+   * @default false
+   * @description If set to true, the user's ECDH keychain will be created if it does not already exist.
+   * The ecdh keychain is a user level keychain that enables the sharing of secret material,
+   * primarily for wallet sharing, as well as the signing of less private material such as various cryptographic challenges.
+   * It is highly recommended that this is always set to avoid any issues when using a BitGo wallet
+   */
+  ensureEcdhKeychain?: boolean;
 }
 
 export interface ProcessedAuthenticationOptions {
@@ -274,4 +284,19 @@ export interface VerifyPushTokenOptions {
 export interface RegisterPushTokenOptions {
   pushToken: unknown;
   operatingSystem: unknown;
+}
+
+export interface LoginResponse {
+  // The API session route does not return this. It's annotated by the SDK
+  access_token?: string;
+  derivationPath: string;
+  encryptedECDHXprv?: string;
+  encryptedToken?: string;
+  // Unit timestamp of expiration
+  expires_at: number;
+  // seconds in which the token will expire from issuance
+  expires_in: number;
+  scope: string[];
+  token_type: string;
+  user: unknown;
 }

@@ -1,24 +1,7 @@
-import * as _ from 'lodash';
-import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
-import * as secp256k1 from 'secp256k1';
-import * as bs58 from 'bs58';
-import * as bitcoinMessage from 'bitcoinjs-message';
-import {
-  handleResponseError,
-  handleResponseResult,
-  serializeRequestData,
-  setRequestQueryString,
-  toBitgoRequest,
-  verifyResponse,
-} from './api';
-import debugLib from 'debug';
-import * as superagent from 'superagent';
-import * as urlLib from 'url';
-import { createHmac } from 'crypto';
-import * as utxolib from '@bitgo/utxo-lib';
 import {
   AliasEnvironments,
   BaseCoin,
+  bitcoin,
   BitGoBase,
   BitGoRequest,
   CoinConstructor,
@@ -38,10 +21,30 @@ import {
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
+import * as utxolib from '@bitgo/utxo-lib';
+import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
+import * as bitcoinMessage from 'bitcoinjs-message';
+import { isBrowser, isWebWorker } from 'browser-or-node';
+import * as bs58 from 'bs58';
+import { createHmac } from 'crypto';
+import debugLib from 'debug';
+import * as _ from 'lodash';
+import * as secp256k1 from 'secp256k1';
+import * as superagent from 'superagent';
+import * as urlLib from 'url';
+import {
+  handleResponseError,
+  handleResponseResult,
+  serializeRequestData,
+  setRequestQueryString,
+  toBitgoRequest,
+  verifyResponse,
+} from './api';
+import { decrypt, encrypt } from './encrypt';
 import {
   AccessTokenOptions,
-  AddAccessTokenResponse,
   AddAccessTokenOptions,
+  AddAccessTokenResponse,
   AuthenticateOptions,
   AuthenticateWithAuthCodeOptions,
   BitGoAPIOptions,
@@ -57,6 +60,7 @@ import {
   GetEcdhSecretOptions,
   GetUserOptions,
   ListWebhookNotificationsOptions,
+  LoginResponse,
   PingOptions,
   ProcessedAuthenticationOptions,
   ReconstitutedSecret,
@@ -79,8 +83,6 @@ import {
 } from './types';
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
-import { decrypt, encrypt } from './encrypt';
-import { isBrowser, isWebWorker } from 'browser-or-node';
 const debug = debugLib('bitgo:api');
 
 const Blockchain = require('./v1/blockchain');
@@ -749,9 +751,76 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Creates a new ECDH keychain for the user.
+   * @param {string} loginPassword - The user's login password.
+   * @returns {Promise<any>} - A promise that resolves with the new ECDH keychain data.
+   * @throws {Error} - Throws an error if there is an issue creating the keychain.
+   */
+  public async createUserEcdhKeychain(loginPassword: string): Promise<any> {
+    const keyData = this.keychains().create();
+    const hdNode = bitcoin.HDNode.fromBase58(keyData.xprv);
+
+    /**
+     * Add the new ECDH keychain to the user's account.
+     * @type {Promise<any>} - A promise that resolves with the new ECDH keychain.
+     */
+    return await this.keychains().add({
+      source: 'ecdh',
+      xpub: hdNode.neutered().toBase58(),
+      encryptedXprv: this.encrypt({
+        password: loginPassword,
+        input: hdNode.toBase58(),
+      }),
+    });
+  }
+
+  /**
+   * Updates the user's settings with the provided parameters.
+   * @param {Object} params - The parameters to update the user's settings with.
+   * @returns {Promise<any>}
+   * @throws {Error} - Throws an error if there is an issue updating the user's settings.
+   */
+  private async updateUserSettings(params: any): Promise<any> {
+    return this.put(this.url('/user/settings', 2)).send(params).result();
+  }
+
+  /**
+   * Ensures that the user's ECDH keychain is created for wallet sharing and TSS wallets.
+   * If the keychain does not exist, it will be created and the user's settings will be updated.
+   * @param {string} loginPassword - The user's login password.
+   * @returns {Promise<any>} - A promise that resolves with the user's settings ensuring we have the ecdhKeychain in there.
+   * @throws {Error} - Throws an error if there is an issue creating the keychain or updating the user's settings.
+   */
+  private async ensureUserEcdhKeychainIsCreated(loginPassword: string): Promise<any> {
+    /**
+     * Get the user's current settings.
+     */
+    const userSettings = await this.get(this.url('/user/settings')).result();
+    /**
+     * If the user's ECDH keychain does not exist, create a new keychain and update the user's settings.
+     */
+    if (!userSettings.settings.ecdhKeychain) {
+      const newKeychain = await this.createUserEcdhKeychain(loginPassword);
+      await this.updateUserSettings({
+        settings: {
+          ecdhKeychain: newKeychain.xpub,
+        },
+      });
+      /**
+       * Update the user's settings object with the new ECDH keychain.
+       */
+      userSettings.settings.ecdhKeychain = newKeychain.xpub;
+    }
+    /**
+     * Return the user's ECDH keychain settings.
+     */
+    return userSettings.settings;
+  }
+
+  /**
    * Login to the bitgo platform.
    */
-  async authenticate(params: AuthenticateOptions): Promise<any> {
+  async authenticate(params: AuthenticateOptions): Promise<LoginResponse | any> {
     try {
       if (!_.isObject(params)) {
         throw new Error('required object params');
@@ -805,7 +874,12 @@ export class BitGoAPI implements BitGoBase {
         response.body.access_token = this._token;
       }
 
-      return handleResponseResult<any>()(response);
+      const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
+      if (userSettings?.ecdhKeychain) {
+        response.body.user.ecdhKeychain = userSettings.ecdhKeychain;
+      }
+
+      return handleResponseResult<LoginResponse>()(response);
     } catch (e) {
       handleResponseError(e);
     }
