@@ -611,7 +611,7 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('authenticate', function () {
-    it('should calculate a new ECDH sharing secret correctly', async function () {
+    it('should get or create the ecdhKeychain if ensureEcdhKeychain is set', async function () {
       nock('https://bitgo.fakeurl')
         .post('/api/auth/v1/session')
         .reply(200, {
