@@ -621,6 +621,10 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('authenticate', function () {
+    afterEach(function ensureNoPendingMocks() {
+      nock.pendingMocks().should.be.empty();
+    });
+
     it('should get the ecdhKeychain if ensureEcdhKeychain is set and user already has ecdhKeychain', async function () {
       nock('https://bitgo.fakeurl')
         .post('/api/auth/v1/session')
@@ -635,9 +639,6 @@ describe('BitGo Prototype Methods', function () {
             ecdhKeychain: 'some-existing-xpub',
           },
         });
-      nock('https://bitgo.fakeurl').post('/api/v1/keychain').reply(200, {
-        xpub: 'some-xpub',
-      });
 
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       const response = await bitgo.authenticate({
