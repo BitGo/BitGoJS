@@ -129,7 +129,12 @@ describe('BitGo Prototype Methods', function () {
       bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri: 'https://microservices.uri' } as any);
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
-        .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
+        .reply(200, {
+          user: {
+            username: 'test@bitgo.com',
+          },
+          access_token: 'token12356',
+        });
 
       await bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
@@ -139,7 +144,12 @@ describe('BitGo Prototype Methods', function () {
       bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
-        .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
+        .reply(200, {
+          user: {
+            username: 'test@bitgo.com',
+          },
+          access_token: 'token12356',
+        });
 
       await bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
@@ -611,7 +621,36 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('authenticate', function () {
-    it('should get or create the ecdhKeychain if ensureEcdhKeychain is set', async function () {
+    it('should get the ecdhKeychain if ensureEcdhKeychain is set and user already has ecdhKeychain', async function () {
+      nock('https://bitgo.fakeurl')
+        .post('/api/auth/v1/session')
+        .reply(200, {
+          access_token: 'access_token',
+          user: { username: 'auth-test@bitgo.com' },
+        });
+      nock('https://bitgo.fakeurl')
+        .get('/api/v1/user/settings')
+        .reply(200, {
+          settings: {
+            ecdhKeychain: 'some-existing-xpub',
+          },
+        });
+      nock('https://bitgo.fakeurl').post('/api/v1/keychain').reply(200, {
+        xpub: 'some-xpub',
+      });
+
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const response = await bitgo.authenticate({
+        username: 'auth-test@bitgo.com',
+        password: 'password123',
+        otp: '000000',
+        ensureEcdhKeychain: true,
+      });
+
+      should.exist(response.user.ecdhKeychain);
+      response.user.ecdhKeychain.should.equal('some-existing-xpub');
+    });
+    it('should create the ecdhKeychain if ensureEcdhKeychain is set and the user does not already have ecdhKeychain', async function () {
       nock('https://bitgo.fakeurl')
         .post('/api/auth/v1/session')
         .reply(200, {

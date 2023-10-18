@@ -750,39 +750,72 @@ export class BitGoAPI implements BitGoBase {
     this._token = accessToken;
   }
 
-  public createAccountKeychain = async (password: string): Promise<any> => {
+  /**
+   * Creates a new ECDH keychain for the user.
+   * @param {string} loginPassword - The user's login password.
+   * @returns {Promise<any>} - A promise that resolves with the new ECDH keychain data.
+   * @throws {Error} - Throws an error if there is an issue creating the keychain.
+   */
+  public async createUserEcdhKeychain(loginPassword: string): Promise<any> {
     const keyData = this.keychains().create();
     const hdNode = bitcoin.HDNode.fromBase58(keyData.xprv);
 
+    /**
+     * Add the new ECDH keychain to the user's account.
+     * @type {Promise<any>} - A promise that resolves with the new ECDH keychain.
+     */
     return await this.keychains().add({
       source: 'ecdh',
       xpub: hdNode.neutered().toBase58(),
       encryptedXprv: this.encrypt({
-        password: password,
+        password: loginPassword,
         input: hdNode.toBase58(),
       }),
     });
-  };
+  }
 
-  private updateUserSettings(params: any): Promise<any> {
+  /**
+   * Updates the user's settings with the provided parameters.
+   * @param {Object} params - The parameters to update the user's settings with.
+   * @returns {Promise<any>}
+   * @throws {Error} - Throws an error if there is an issue updating the user's settings.
+   */
+  private async updateUserSettings(params: any): Promise<any> {
     return this.put(this.url('/user/settings', 2)).send(params).result();
   }
 
-  private ensureUserEcdhKeychainIsCreated = async (password: string): Promise<any> => {
+  /**
+   * Ensures that the user's ECDH keychain is created for wallet sharing and TSS wallets.
+   * If the keychain does not exist, it will be created and the user's settings will be updated.
+   * @param {string} loginPassword - The user's login password.
+   * @returns {Promise<any>} - A promise that resolves with the user's settings ensuring we have the ecdhKeychain in there.
+   * @throws {Error} - Throws an error if there is an issue creating the keychain or updating the user's settings.
+   */
+  private async ensureUserEcdhKeychainIsCreated(loginPassword: string): Promise<any> {
+    /**
+     * Get the user's current settings.
+     */
     const userSettings = await this.get(this.url('/user/settings')).result();
+    /**
+     * If the user's ECDH keychain does not exist, create a new keychain and update the user's settings.
+     */
     if (!userSettings.settings.ecdhKeychain) {
-      const newKeychain = await this.createAccountKeychain(password);
+      const newKeychain = await this.createUserEcdhKeychain(loginPassword);
       await this.updateUserSettings({
         settings: {
           ecdhKeychain: newKeychain.xpub,
         },
       });
+      /**
+       * Update the user's settings object with the new ECDH keychain.
+       */
       userSettings.settings.ecdhKeychain = newKeychain.xpub;
-      return userSettings.settings;
     }
-
+    /**
+     * Return the user's ECDH keychain settings.
+     */
     return userSettings.settings;
-  };
+  }
 
   /**
    * Login to the bitgo platform.
@@ -842,7 +875,9 @@ export class BitGoAPI implements BitGoBase {
       }
 
       const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
-      response.body.user.ecdhKeychain = userSettings?.ecdhKeychain;
+      if (userSettings?.ecdhKeychain) {
+        response.body.user.ecdhKeychain = userSettings.ecdhKeychain;
+      }
 
       return handleResponseResult<LoginResponse>()(response);
     } catch (e) {

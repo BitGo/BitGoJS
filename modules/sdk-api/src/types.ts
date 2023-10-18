@@ -88,6 +88,15 @@ export interface AuthenticateOptions {
   forceSMS?: boolean;
   extensible?: boolean;
   forceV1Auth?: boolean;
+  /**
+   * Whether or not to ensure that the user's ECDH keychain is created.
+   * @type {boolean}
+   * @default false
+   * @description If set to true, the user's ECDH keychain will be created if it does not already exist.
+   * The ecdh keychain is a user level keychain that enables the sharing of secret material,
+   * primarily for wallet sharing, as well as the signing of less private material such as various cryptographic challenges.
+   * It is highly recommended that this is always set to avoid any issues when using a BitGo wallet
+   */
   ensureEcdhKeychain?: boolean;
 }
 
