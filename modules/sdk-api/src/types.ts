@@ -88,6 +88,7 @@ export interface AuthenticateOptions {
   forceSMS?: boolean;
   extensible?: boolean;
   forceV1Auth?: boolean;
+  ensureEcdhKeychain?: boolean;
 }
 
 export interface ProcessedAuthenticationOptions {
@@ -274,4 +275,19 @@ export interface VerifyPushTokenOptions {
 export interface RegisterPushTokenOptions {
   pushToken: unknown;
   operatingSystem: unknown;
+}
+
+export interface LoginResponse {
+  // The API session route does not return this. It's annotated by the SDK
+  access_token?: string;
+  derivationPath: string;
+  encryptedECDHXprv?: string;
+  encryptedToken?: string;
+  // Unit timestamp of expiration
+  expires_at: number;
+  // seconds in which the token will expire from issuance
+  expires_in: number;
+  scope: string[];
+  token_type: string;
+  user: unknown;
 }

@@ -1,24 +1,7 @@
-import * as _ from 'lodash';
-import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
-import * as secp256k1 from 'secp256k1';
-import * as bs58 from 'bs58';
-import * as bitcoinMessage from 'bitcoinjs-message';
-import {
-  handleResponseError,
-  handleResponseResult,
-  serializeRequestData,
-  setRequestQueryString,
-  toBitgoRequest,
-  verifyResponse,
-} from './api';
-import debugLib from 'debug';
-import * as superagent from 'superagent';
-import * as urlLib from 'url';
-import { createHmac } from 'crypto';
-import * as utxolib from '@bitgo/utxo-lib';
 import {
   AliasEnvironments,
   BaseCoin,
+  bitcoin,
   BitGoBase,
   BitGoRequest,
   CoinConstructor,
@@ -38,10 +21,30 @@ import {
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
+import * as utxolib from '@bitgo/utxo-lib';
+import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
+import * as bitcoinMessage from 'bitcoinjs-message';
+import { isBrowser, isWebWorker } from 'browser-or-node';
+import * as bs58 from 'bs58';
+import { createHmac } from 'crypto';
+import debugLib from 'debug';
+import * as _ from 'lodash';
+import * as secp256k1 from 'secp256k1';
+import * as superagent from 'superagent';
+import * as urlLib from 'url';
+import {
+  handleResponseError,
+  handleResponseResult,
+  serializeRequestData,
+  setRequestQueryString,
+  toBitgoRequest,
+  verifyResponse,
+} from './api';
+import { decrypt, encrypt } from './encrypt';
 import {
   AccessTokenOptions,
-  AddAccessTokenResponse,
   AddAccessTokenOptions,
+  AddAccessTokenResponse,
   AuthenticateOptions,
   AuthenticateWithAuthCodeOptions,
   BitGoAPIOptions,
@@ -57,6 +60,7 @@ import {
   GetEcdhSecretOptions,
   GetUserOptions,
   ListWebhookNotificationsOptions,
+  LoginResponse,
   PingOptions,
   ProcessedAuthenticationOptions,
   ReconstitutedSecret,
@@ -79,8 +83,6 @@ import {
 } from './types';
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
-import { decrypt, encrypt } from './encrypt';
-import { isBrowser, isWebWorker } from 'browser-or-node';
 const debug = debugLib('bitgo:api');
 
 const Blockchain = require('./v1/blockchain');
@@ -748,10 +750,28 @@ export class BitGoAPI implements BitGoBase {
     this._token = accessToken;
   }
 
+  public createAccountKeychain = async (password: string): Promise<any> => {
+    const keyData = this.keychains().create();
+    const hdNode = bitcoin.HDNode.fromBase58(keyData.xprv);
+
+    return await this.keychains().add({
+      source: 'ecdh',
+      xpub: hdNode.neutered().toBase58(),
+      encryptedXprv: this.encrypt({
+        password: password,
+        input: hdNode.toBase58(),
+      }),
+    });
+  };
+
+  public updateUserSettings(params: any): Promise<any> {
+    return this.put('/api/v2/user/settings').send(params).result();
+  }
+
   /**
    * Login to the bitgo platform.
    */
-  async authenticate(params: AuthenticateOptions): Promise<any> {
+  async authenticate(params: AuthenticateOptions): Promise<LoginResponse | any> {
     try {
       if (!_.isObject(params)) {
         throw new Error('required object params');
@@ -803,9 +823,25 @@ export class BitGoAPI implements BitGoBase {
 
         // add the remaining component for easier access
         response.body.access_token = this._token;
+
+        if (params.ensureEcdhKeychain) {
+          /**
+           * If the user has no ECDH keychain, create one and update the user settings
+           * this is needed for wallet sharing and TSS wallet support
+           */
+          const userSettings = await this.get(this.url('/user/settings')).result();
+          if (!userSettings.ecdhKeychain) {
+            const newKeychain = await this.createAccountKeychain(password);
+            await this.updateUserSettings({
+              settings: {
+                ecdhKeychain: newKeychain.xpub,
+              },
+            });
+          }
+        }
       }
 
-      return handleResponseResult<any>()(response);
+      return handleResponseResult<LoginResponse>()(response);
     } catch (e) {
       handleResponseError(e);
     }
