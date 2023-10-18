@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@1.2.0...@bitgo/sdk-coin-zeta@1.10.0) (2023-10-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-zeta:** update mock for zet fullnode ([33890ae](https://github.com/BitGo/BitGoJS/commit/33890aecf87c8fdb5177b215612f4498595394d7))
+
+### Features
+
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+- **sdk-coin-zeta:** add recovery functionality for zeta ([b7d428f](https://github.com/BitGo/BitGoJS/commit/b7d428fcd69a22add44399a9a0e4eeb4519c4113))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@1.2.0...@bitgo/sdk-coin-zeta@1.9.0) (2023-09-25)
 
 ### Bug Fixes
