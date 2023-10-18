@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@1.4.0...@bitgo/abstract-eth@1.5.0) (2023-10-18)
+
+### Features
+
+- **abstract-eth:** add abstractethliketsscoin class ([eb99545](https://github.com/BitGo/BitGoJS/commit/eb995457d7787af073f0a9eafe6e4d420228f5f0))
+
 ## [1.4.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@1.4.0...@bitgo/abstract-eth@1.4.11) (2023-09-25)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

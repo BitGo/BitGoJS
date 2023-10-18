@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.5.0...@bitgo/sdk-coin-celo@1.5.12) (2023-10-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [1.5.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.5.0...@bitgo/sdk-coin-celo@1.5.11) (2023-09-25)
 
 ### Bug Fixes
