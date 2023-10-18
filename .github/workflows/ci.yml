@@ -186,5 +186,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Update Dockerfile
+        run: yarn update-dockerfile
+
+      - name: Check if Dockerfile is up to date
+        run: git diff --exit-code Dockerfile
+
       - name: Build BitGoJS Express Docker Image
         run: docker build .
