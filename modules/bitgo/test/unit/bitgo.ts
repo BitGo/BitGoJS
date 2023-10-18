@@ -3,14 +3,14 @@
 //
 
 import * as crypto from 'crypto';
-import * as should from 'should';
 import * as nock from 'nock';
+import * as should from 'should';
 
-import * as BitGoJS from '../../src/index';
 import { common } from '@bitgo/sdk-core';
-const rp = require('request-promise');
-import * as _ from 'lodash';
 import { bip32, ECPair } from '@bitgo/utxo-lib';
+import * as _ from 'lodash';
+import * as BitGoJS from '../../src/index';
+const rp = require('request-promise');
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';
@@ -607,6 +607,44 @@ describe('BitGo Prototype Methods', function () {
       (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} } as any)).should.throw(
         /expected string password/
       );
+    });
+  });
+
+  describe('authenticate', function () {
+    it('should calculate a new ECDH sharing secret correctly', async function () {
+      nock('https://bitgo.fakeurl')
+        .post('/api/auth/v1/session')
+        .reply(200, {
+          access_token: 'access_token',
+          user: { username: 'auth-test@bitgo.com' },
+        });
+      /**
+       * This is {} because want to make sure the user has no ecdhXpub set before we set it
+       */
+      nock('https://bitgo.fakeurl').get('/api/v1/user/settings').reply(200, {
+        settings: {},
+      });
+      nock('https://bitgo.fakeurl').post('/api/v1/keychain').reply(200, {
+        xpub: 'some-xpub',
+      });
+      nock('https://bitgo.fakeurl')
+        .put('/api/v2/user/settings')
+        .reply(200, {
+          settings: {
+            ecdhKeychain: 'some-xpub',
+          },
+        });
+
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const response = await bitgo.authenticate({
+        username: 'auth-test@bitgo.com',
+        password: 'password123',
+        otp: '000000',
+        ensureEcdhKeychain: true,
+      });
+
+      should.exist(response.user.ecdhKeychain);
+      response.user.ecdhKeychain.should.equal('some-xpub');
     });
   });
 });

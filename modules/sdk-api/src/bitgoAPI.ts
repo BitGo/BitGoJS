@@ -764,9 +764,25 @@ export class BitGoAPI implements BitGoBase {
     });
   };
 
-  public updateUserSettings(params: any): Promise<any> {
-    return this.put('/api/v2/user/settings').send(params).result();
+  private updateUserSettings(params: any): Promise<any> {
+    return this.put(this.url('/user/settings', 2)).send(params).result();
   }
+
+  private ensureUserEcdhKeychainIsCreated = async (password: string): Promise<any> => {
+    const userSettings = await this.get(this.url('/user/settings')).result();
+    if (!userSettings.settings.ecdhKeychain) {
+      const newKeychain = await this.createAccountKeychain(password);
+      await this.updateUserSettings({
+        settings: {
+          ecdhKeychain: newKeychain.xpub,
+        },
+      });
+      userSettings.settings.ecdhKeychain = newKeychain.xpub;
+      return userSettings.settings;
+    }
+
+    return userSettings.settings;
+  };
 
   /**
    * Login to the bitgo platform.
@@ -823,23 +839,10 @@ export class BitGoAPI implements BitGoBase {
 
         // add the remaining component for easier access
         response.body.access_token = this._token;
-
-        if (params.ensureEcdhKeychain) {
-          /**
-           * If the user has no ECDH keychain, create one and update the user settings
-           * this is needed for wallet sharing and TSS wallet support
-           */
-          const userSettings = await this.get(this.url('/user/settings')).result();
-          if (!userSettings.ecdhKeychain) {
-            const newKeychain = await this.createAccountKeychain(password);
-            await this.updateUserSettings({
-              settings: {
-                ecdhKeychain: newKeychain.xpub,
-              },
-            });
-          }
-        }
       }
+
+      const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
+      response.body.user.ecdhKeychain = userSettings?.ecdhKeychain;
 
       return handleResponseResult<LoginResponse>()(response);
     } catch (e) {
