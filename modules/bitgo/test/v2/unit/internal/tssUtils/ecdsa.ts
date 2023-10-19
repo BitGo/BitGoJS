@@ -53,7 +53,7 @@ type KeyShare = ECDSA.KeyShare;
 
 describe('TSS Ecdsa Utils:', async function () {
   const isThirdPartyBackup = false;
-  const coinName = 'gteth';
+  const coinName = 'hteth';
   const reqId = new RequestTracer();
   const walletId = '5b34252f1bf349930e34020a00000000';
   const enterpriseId = '6449153a6f6bc20006d66771cdbe15d3';

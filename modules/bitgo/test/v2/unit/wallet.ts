@@ -2508,7 +2508,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('populate intent should return valid eth acceleration intent', async function () {
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2516,7 +2516,7 @@ describe('V2 Wallet:', function () {
         };
         const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
 
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           reqId,
           intentType: 'acceleration',
           lowFeeTxid,
@@ -2530,7 +2530,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('populate intent should return valid eth acceleration intent for receive address', async function () {
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
 
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -2539,7 +2539,7 @@ describe('V2 Wallet:', function () {
         const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
         const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
 
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           reqId,
           intentType: 'acceleration',
           lowFeeTxid,
@@ -2555,14 +2555,14 @@ describe('V2 Wallet:', function () {
       });
 
       it('populate intent should return valid eth fillNonce intent', async function () {
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
         const feeOptions = {
           maxFeePerGas: 3000000000,
           maxPriorityFeePerGas: 2000000000,
         };
         const nonce = '1';
 
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           reqId,
           intentType: 'fillNonce',
           nonce,
@@ -2576,7 +2576,7 @@ describe('V2 Wallet:', function () {
       });
 
       it('populate intent should return valid eth fillNonce intent for receive address nonce filling tx', async function () {
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
         const feeOptions = {
           maxFeePerGas: 3000000000,
           maxPriorityFeePerGas: 2000000000,
@@ -2584,7 +2584,7 @@ describe('V2 Wallet:', function () {
         const nonce = '1';
         const receiveAddress = '0x062176bc9345da3e8ee90361b0cf6ff883ba7206';
 
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           reqId,
           intentType: 'fillNonce',
           nonce,
@@ -2600,14 +2600,14 @@ describe('V2 Wallet:', function () {
       });
 
       it('should populate intent with custodianTransactionId', async function () {
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
         const feeOptions = {
           maxFeePerGas: 3000000000,
           maxPriorityFeePerGas: 2000000000,
         };
         const nonce = '1';
 
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           custodianTransactionId: 'unittest',
           reqId,
           intentType: 'fillNonce',
@@ -3406,9 +3406,9 @@ describe('V2 Wallet:', function () {
           },
         ];
 
-        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('gteth'));
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
         // @ts-expect-error only pass in params being tested
-        const intent = mpcUtils.populateIntent(bitgo.coin('gteth'), {
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
           intentType: 'payment',
           recipients,
           feeOptions,

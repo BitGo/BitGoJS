@@ -12,7 +12,7 @@ import {
   SendManyOptions,
 } from '@bitgo/sdk-core';
 import { EVMRPCRequest } from '../../src/types';
-import { Gteth } from '@bitgo/sdk-coin-eth';
+import { Hteth } from '@bitgo/sdk-coin-eth';
 import * as sinon from 'sinon';
 import {
   ethWalletData,
@@ -40,7 +40,7 @@ describe('EVMRPCWrapper handleRPCCall', function () {
 
   before(function () {
     bitgo.initializeTestVars();
-    bitgo.safeRegister(coin, Gteth.createInstance);
+    bitgo.safeRegister(coin, Hteth.createInstance);
     wallet = new Wallet(bitgo, bitgo.coin(coin), ethWalletData);
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     evmRPCWrapper = new EvmRPCWrapper(wallet);

@@ -418,7 +418,7 @@ describe('Eth Transaction builder wallet initialization', function () {
     });
 
     it('succeed when build via contract call', async () => {
-      const txBuilder = getBuilder('gteth') as TransactionBuilder;
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
       txBuilder.type(TransactionType.ContractCall);
       txBuilder.fee({
         eip1559: {
@@ -435,7 +435,7 @@ describe('Eth Transaction builder wallet initialization', function () {
       txBuilder.contract('0xd536f4b9f9127a39f19820ca18baac7cd157471f');
       const tx = await txBuilder.build();
       const txhex = tx.toBroadcastFormat();
-      const builderFrom = getBuilder('gteth') as TransactionBuilder;
+      const builderFrom = getBuilder('hteth') as TransactionBuilder;
       builderFrom.from(txhex);
       const txFrom = await builderFrom.build();
       should.deepEqual(tx.id, txFrom.id);

@@ -31,7 +31,7 @@ describe('MMI:', function () {
     });
 
     it(`should sign an eth mmi transaction with custodianTransactionId`, async function () {
-      const coin = bitgo.coin('gteth');
+      const coin = bitgo.coin('hteth');
       const userKeychain = {
         prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
         pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',

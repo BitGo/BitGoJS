@@ -1,10 +1,9 @@
+import { TransactionType } from '@bitgo/sdk-core';
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
 import should from 'should';
-import { coins, EthereumNetwork } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
-
-import * as testData from '../../resources/eth';
 import { decodeTransferData, getCommon, Transaction, TransactionBuilder, TransferBuilder } from '../../../src';
+import * as testData from '../../resources/eth';
 import { getBuilder } from '../getBuilder';
 
 describe('Eth transaction builder send', () => {
@@ -113,6 +112,27 @@ describe('Eth transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
       should.equal(tx.toJson().chainId, 5);
+    });
+
+    it('Holesky chain id should be correct', async () => {
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
+      txBuilder.fee({
+        fee: '1000000000',
+        gasLimit: '12100000',
+      });
+      txBuilder.counter(2);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract(contractAddress);
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+      transferBuilder
+        .amount('0')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.sign({ key: testData.PRIVATE_KEY });
+      const tx = await txBuilder.build();
+      should.equal(tx.toJson().chainId, 17000);
     });
   });
 

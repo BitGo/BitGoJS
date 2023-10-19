@@ -299,10 +299,10 @@ describe('Ecdsa tss helper functions tests', function () {
     const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
 
     before('initializes', async function () {
-      const baseCoin = bitgo.coin('gteth');
+      const baseCoin = bitgo.coin('hteth');
       const walletData = {
         id: '5b34252f1bf349930e34020a00000000',
-        coin: 'gteth',
+        coin: 'hteth',
         keys: [
           '5b3424f91bf349930e34017500000000',
           '5b3424f91bf349930e34017600000000',
