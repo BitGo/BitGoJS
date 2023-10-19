@@ -48,7 +48,7 @@
     "@celo/contractkit": "^2.0.0",
     "@celo/wallet-base": "^2.0.0",
     "@celo/wallet-local": "^2.0.0",
-    "@ethereumjs/common": "^2.4.0",
+    "@ethereumjs/common": "^2.6.5",
     "bignumber.js": "^9.0.0",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "7.1.5",

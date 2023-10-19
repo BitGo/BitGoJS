@@ -44,7 +44,7 @@
     "@bitgo/sdk-lib-mpc": "^8.13.0",
     "@bitgo/statics": "^27.0.0",
     "@bitgo/utxo-lib": "^9.14.0",
-    "@ethereumjs/common": "^2.4.0",
+    "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0",
     "@ethereumjs/util": "8.0.3",
     "@metamask/eth-sig-util": "^5.0.2",
