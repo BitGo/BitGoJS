@@ -197,7 +197,6 @@ export class Keychains implements IKeychains {
         'originalPasscodeEncryptionCode',
         'enterprise',
         'derivedFromParentWithSeed',
-        'isDistributedCustody',
       ]
     );
 
