@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.41.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.32.0...@bitgo/express@9.41.0) (2023-10-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **express:** add external signer support for signig with derivation paths ([ceb89dd](https://github.com/BitGo/BitGoJS/commit/ceb89dd72b7f5f7c59484d5517ac32c4f499fd32))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
 # [9.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.32.0...@bitgo/express@9.40.0) (2023-09-25)
 
 ### Bug Fixes

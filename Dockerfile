@@ -54,15 +54,15 @@ COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
+COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
-COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-core /var/modules/sdk-coin-core/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
@@ -119,15 +119,15 @@ cd /var/modules/unspents && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
 cd /var/modules/sdk-coin-arbeth && yarn link && \
+cd /var/modules/abstract-eth && yarn link && \
+cd /var/modules/sdk-coin-eth && yarn link && \
 cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
-cd /var/modules/sdk-coin-eth && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
-cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
+cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/sdk-coin-bsc && yarn link && \
-cd /var/modules/abstract-eth && yarn link && \
 cd /var/modules/sdk-coin-celo && yarn link && \
 cd /var/modules/sdk-coin-core && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
@@ -187,15 +187,15 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
     yarn link @bitgo/sdk-coin-arbeth && \
+    yarn link @bitgo/abstract-eth && \
+    yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
-    yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-bera && \
-    yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/abstract-cosmos && \
+    yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/sdk-coin-bsc && \
-    yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-celo && \
     yarn link @bitgo/sdk-coin-core && \
     yarn link @bitgo/sdk-coin-cspr && \
@@ -238,9 +238,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Tue, 26 Sep 2023 16:05:43 GMT"
-LABEL version=9.40.0
-LABEL git_hash=e4c1d48b99f17329a4843ebf16b6c24036bf828f
+LABEL created="Wed, 18 Oct 2023 22:35:26 GMT"
+LABEL version=9.41.0
+LABEL git_hash=8a67ec6a2383f2dc72b00c2ef1c284c42464c4d0
 #LABEL_END
 
 USER node
