@@ -10,7 +10,7 @@ import {
   TransactionType,
   UtilsError,
 } from '@bitgo/sdk-core';
-import { Transaction, TransactionInput, TransactionOutput, Withdrawal } from './transaction';
+import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal } from './transaction';
 import { KeyPair } from './keyPair';
 import util from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
@@ -29,6 +29,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _certs: CardanoWasm.Certificate[] = [];
   protected _withdrawals: Withdrawal[] = [];
   protected _type: TransactionType;
+  protected _multiAssets: Asset[] = [];
   private _fee: BigNum;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -44,6 +45,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   output(o: TransactionOutput): this {
     this._transactionOutputs.push(o);
+    return this;
+  }
+
+  assets(a: Asset): this {
+    this._multiAssets.push(a);
     return this;
   }
 
@@ -253,6 +259,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
       const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
       outputs.add(changeOutput);
+    }
+
+    // support for multi-asset consolidation
+    if (this._multiAssets !== undefined) {
+      this._multiAssets.forEach((asset) => {
+        let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+        const toAddress = CardanoWasm.Address.from_bech32(this._transactionOutputs[0].address);
+        txOutputBuilder = txOutputBuilder.with_address(toAddress);
+        let txOutputAmountBuilder = txOutputBuilder.next();
+        const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+        const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+        const multiAsset = CardanoWasm.MultiAsset.new();
+        const assets = CardanoWasm.Assets.new();
+        assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+        multiAsset.insert(policyId, assets);
+
+        // coin value should be zero since this output is related to token
+        const coinValue = '0';
+        txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(
+          CardanoWasm.BigNum.from_str(coinValue),
+          multiAsset
+        );
+
+        const txOutput = txOutputAmountBuilder.build();
+        outputs.add(txOutput);
+      });
     }
 
     const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
