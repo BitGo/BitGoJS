@@ -262,9 +262,6 @@ export class Wallets implements IWallets {
       if (!params.enterprise) {
         throw new Error('must provide enterprise when creating distributed custody wallet');
       }
-      if (params.multisigType !== 'onchain') {
-        throw new Error('distributed custody wallets must be onchain');
-      }
       if (!walletParams.isCold) {
         throw new Error('distributed custody wallets must be cold');
       }
