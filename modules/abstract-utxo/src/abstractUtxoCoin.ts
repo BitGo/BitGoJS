@@ -1442,7 +1442,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<any> {
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<any> {
+    if (buildParams.wallet.subType() === 'distributedCustody') {
+      return { txFormat: 'psbt' };
+    }
+
     return {};
   }
 
