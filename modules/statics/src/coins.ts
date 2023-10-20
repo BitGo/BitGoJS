@@ -65,6 +65,7 @@ const BTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const BTG_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -145,6 +146,7 @@ const ALGO_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const DOT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -172,6 +174,7 @@ const HBAR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const POLYGON_FEATURES = [
   ...ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -207,7 +210,13 @@ const MATIC_FEATURES = [
   CoinFeature.METAMASK_INSTITUTIONAL,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
-const SUI_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const SUI_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+  CoinFeature.BULK_TRANSACTION,
+];
 const TRX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
@@ -224,6 +233,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.COSMOS_LIKE_COINS,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.INCREASED_TX_REQUEST_REBUILD_LIMIT,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
@@ -497,6 +507,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
   account(
