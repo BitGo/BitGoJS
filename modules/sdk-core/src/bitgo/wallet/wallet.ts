@@ -72,6 +72,7 @@ import {
   ShareWalletOptions,
   SimulateWebhookOptions,
   SubmitTransactionOptions,
+  SubWalletType,
   SweepOptions,
   TransferBySequenceIdOptions,
   TransferCommentOptions,
@@ -249,6 +250,10 @@ export class Wallet implements IWallet {
 
   multisigType(): 'onchain' | 'tss' {
     return this._wallet.multisigType;
+  }
+
+  subType(): SubWalletType | undefined {
+    return this._wallet.subType;
   }
 
   /**
