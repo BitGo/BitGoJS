@@ -2001,8 +2001,7 @@ export class Wallet implements IWallet {
       SendTransactionRequest,
       params,
       {
-        /* for now, we will continue to use the original params and monitor encoding errors */
-        useEncodedBody: false,
+        useEncodedBody: true,
       }
     ).result();
   }
