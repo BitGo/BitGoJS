@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@4.10.0) (2023-10-20)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
 # [4.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@4.9.0) (2023-10-18)
 
 ### Bug Fixes
