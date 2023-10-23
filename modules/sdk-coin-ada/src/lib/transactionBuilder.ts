@@ -257,34 +257,59 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         });
       }
 
-      const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
-      outputs.add(changeOutput);
-    }
+      // If totalAmountToSend is 0, its consolidation
+      if (totalAmountToSend.to_str() == '0') {
+        // support for multi-asset consolidation
+        if (this._multiAssets !== undefined) {
+          const totalNumberOfAssets = CardanoWasm.BigNum.from_str(this._multiAssets.length.toString());
+          const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str('1000000');
+          const minAmountNeededForTotalAssetOutputs = minAmountNeededForOneAssetOutput.checked_mul(totalNumberOfAssets);
 
-    // support for multi-asset consolidation
-    if (this._multiAssets !== undefined) {
-      this._multiAssets.forEach((asset) => {
-        let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
-        const toAddress = CardanoWasm.Address.from_bech32(this._transactionOutputs[0].address);
-        txOutputBuilder = txOutputBuilder.with_address(toAddress);
-        let txOutputAmountBuilder = txOutputBuilder.next();
-        const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
-        const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
-        const multiAsset = CardanoWasm.MultiAsset.new();
-        const assets = CardanoWasm.Assets.new();
-        assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
-        multiAsset.insert(policyId, assets);
+          if (!change.less_than(minAmountNeededForTotalAssetOutputs)) {
+            this._multiAssets.forEach((asset) => {
+              let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+              // changeAddress is the root address, which is where we want the tokens assets to be sent to
+              const toAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+              txOutputBuilder = txOutputBuilder.with_address(toAddress);
+              let txOutputAmountBuilder = txOutputBuilder.next();
+              const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+              const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+              const multiAsset = CardanoWasm.MultiAsset.new();
+              const assets = CardanoWasm.Assets.new();
+              assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+              multiAsset.insert(policyId, assets);
 
-        // coin value should be zero since this output is related to token
-        const coinValue = '0';
-        txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(
-          CardanoWasm.BigNum.from_str(coinValue),
-          multiAsset
-        );
+              txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(
+                minAmountNeededForOneAssetOutput,
+                multiAsset
+              );
 
-        const txOutput = txOutputAmountBuilder.build();
-        outputs.add(txOutput);
-      });
+              const txOutput = txOutputAmountBuilder.build();
+              outputs.add(txOutput);
+            });
+
+            // finally send the remaining ADA in its own output
+            const remainingOutputAmount = change.checked_sub(minAmountNeededForTotalAssetOutputs);
+            const changeOutput = CardanoWasm.TransactionOutput.new(
+              changeAddress,
+              CardanoWasm.Value.new(remainingOutputAmount)
+            );
+            outputs.add(changeOutput);
+          } else {
+            throw new BuildTransactionError(
+              'Insufficient funds: need a minimum of 1 ADA per output to construct token consolidation'
+            );
+          }
+        } else {
+          // If there are no tokens to consolidate, you only have 1 output which is ADA alone
+          const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+          outputs.add(changeOutput);
+        }
+      } else {
+        // If this isn't a consolidate request, whatever change that needs to be sent back to the rootaddress is added as a separate output here
+        const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+        outputs.add(changeOutput);
+      }
     }
 
     const txRaw = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
