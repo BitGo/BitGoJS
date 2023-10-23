@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.7.0...@bitgo/sdk-coin-polygon@1.10.0) (2023-10-20)
+
+### Features
+
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@1.7.0...@bitgo/sdk-coin-polygon@1.9.0) (2023-10-18)
 
 ### Features

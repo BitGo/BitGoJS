@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.6.0...@bitgo/sdk-coin-osmo@1.8.0) (2023-10-20)
+
+### Bug Fixes
+
+- **abstract-cosmos:** allow valueless transfer for osmosis ([7aa6752](https://github.com/BitGo/BitGoJS/commit/7aa6752711eb604acd0d6e9b0b6f0bdb5e5be991))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@1.6.0...@bitgo/sdk-coin-osmo@1.7.0) (2023-10-18)
 
 ### Bug Fixes
