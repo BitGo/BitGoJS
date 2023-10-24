@@ -3897,7 +3897,7 @@
     rxjs "^7.8.1"
     tslib "^2.5.3"
 
-"@polkadot/api@10.9.1", "@polkadot/api@^10.7.1":
+"@polkadot/api@10.10.1", "@polkadot/api@10.9.1", "@polkadot/api@^10.7.1":
   version "10.9.1"
   resolved "https://registry.npmjs.org/@polkadot/api/-/api-10.9.1.tgz"
   integrity sha512-ND/2UqZBWvtt4PfV03OStTKg0mxmPk4UpMAgJKutdgsz/wP9CYJ1KbjwFgPNekL9JnzbKQsWyQNPVrcw7kQk8A==
@@ -3920,7 +3920,7 @@
     rxjs "^7.8.1"
     tslib "^2.5.3"
 
-"@polkadot/keyring@12.3.2", "@polkadot/keyring@^12.2.1", "@polkadot/keyring@^12.3.1":
+"@polkadot/keyring@12.3.2", "@polkadot/keyring@12.5.1", "@polkadot/keyring@^12.2.1", "@polkadot/keyring@^12.3.1":
   version "12.3.2"
   resolved "https://registry.npmjs.org/@polkadot/keyring/-/keyring-12.3.2.tgz"
   integrity sha512-NTdtDeI0DP9l/45hXynNABeP5VB8piw5YR+CbUxK2e36xpJWVXwbcOepzslg5ghE9rs8UKJb30Z/HqTU4sBY0Q==
@@ -4029,7 +4029,7 @@
     "@polkadot/util" "^12.3.1"
     tslib "^2.5.3"
 
-"@polkadot/types@10.9.1":
+"@polkadot/types@10.10.1", "@polkadot/types@10.9.1":
   version "10.9.1"
   resolved "https://registry.npmjs.org/@polkadot/types/-/types-10.9.1.tgz"
   integrity sha512-AG33i2ZGGfq7u+5rkAdGrXAQHHl844/Yv+junH5ZzX69xiCoWO1bH/yzDUNBdpki2GlACWvF9nLYh3F2tVF93w==
@@ -4043,7 +4043,7 @@
     rxjs "^7.8.1"
     tslib "^2.5.3"
 
-"@polkadot/util-crypto@12.3.2", "@polkadot/util-crypto@^12.3.1":
+"@polkadot/util-crypto@12.3.2", "@polkadot/util-crypto@12.5.1", "@polkadot/util-crypto@^12.3.1":
   version "12.3.2"
   resolved "https://registry.npmjs.org/@polkadot/util-crypto/-/util-crypto-12.3.2.tgz"
   integrity sha512-pTpx+YxolY0BDT4RcGmgeKbHHD/dI6Ll9xRsqmVdIjpcVVY20uDNTyXs81ZNtfKgyod1y9JQkfNv2Dz9iEpTkQ==
@@ -4059,7 +4059,7 @@
     "@scure/base" "1.1.1"
     tslib "^2.5.3"
 
-"@polkadot/util@12.3.2", "@polkadot/util@^12.3.1":
+"@polkadot/util@12.3.2", "@polkadot/util@12.5.1", "@polkadot/util@^12.3.1":
   version "12.3.2"
   resolved "https://registry.npmjs.org/@polkadot/util/-/util-12.3.2.tgz"
   integrity sha512-y/JShcGyOamCUiSIg++XZuLHt1ktSKBaSH2K5Nw5NXlgP0+7am+GZzqPB8fQ4qhYLruEOv+YRiz0GC1Zr9S+wg==
