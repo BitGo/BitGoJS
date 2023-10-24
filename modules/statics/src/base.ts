@@ -235,6 +235,11 @@ export enum CoinFeature {
    * This coin supports higher limit for tx request rebuild, which is 10 by default
    */
   INCREASED_TX_REQUEST_REBUILD_LIMIT = 'increased-tx-request-rebuild-limit',
+
+  /**
+   * This coin supports bulk transaction creation
+   */
+  BULK_TRANSACTION = 'bulk-transaction',
 }
 
 /**
