@@ -12,12 +12,14 @@ import { SUI_ADDRESS_LENGTH } from './constants';
 import { isPureArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
 import {
+  CustomProgrammableTransaction,
   MethodNames,
   RequestAddStake,
   StakingProgrammableTransaction,
   SuiTransaction,
   SuiTransactionType,
   TransferProgrammableTransaction,
+  UnstakingProgrammableTransaction,
 } from './iface';
 import { Buffer } from 'buffer';
 import {
@@ -224,35 +226,68 @@ export class Utils implements BaseUtils {
     }
   }
 
-  getRecipients(tx: SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction>): Recipient[] {
-    const amounts: number[] = [];
-    const addresses: string[] = [];
-    tx.tx.transactions.forEach((transaction, i) => {
+  getRecipients(
+    tx: SuiTransaction<
+      | TransferProgrammableTransaction
+      | StakingProgrammableTransaction
+      | UnstakingProgrammableTransaction
+      | CustomProgrammableTransaction
+    >
+  ): Recipient[] {
+    const receipts: Recipient[] = [];
+    const splitResults: number[] = [];
+    tx.tx.transactions.forEach((transaction) => {
       if (transaction.kind === 'SplitCoins') {
         const index = transaction.amounts[0].index;
         const input = tx.tx.inputs[index] as any;
-        amounts.push(this.getAmount(input));
+        splitResults.push(this.getAmount(input));
       }
-      if (transaction.kind === 'MoveCall') {
-        const type = this.getSuiTransactionType(transaction);
-        if (type === SuiTransactionType.CustomTx) {
-          const index = transaction.arguments[1].index;
-          const input = tx.tx.inputs[index] as any;
-          amounts.push(this.getAmount(input));
-        }
+
+      if (transaction.kind === 'MoveCall' && transaction.target.endsWith(MethodNames.StakingPoolSplit)) {
+        const index = transaction.arguments[1].index;
+        const input = tx.tx.inputs[index] as any;
+        splitResults.push(this.getAmount(input));
       }
+    });
+
+    const destinations: string[] = [];
+    tx.tx.transactions.forEach((transaction) => {
       if (transaction.kind === 'TransferObjects') {
         const index = transaction.address.index;
         const input = tx.tx.inputs[index] as any;
-        addresses.push(this.getAddress(input));
+        destinations.push(this.getAddress(input));
       }
     });
-    return addresses.map((address, index) => {
-      return {
+    destinations.map((address, i) => {
+      receipts.push({
         address: address,
-        amount: Number(amounts[index]).toString(),
-      } as Recipient;
+        amount: splitResults[i].toString(),
+      });
     });
+
+    tx.tx.transactions.forEach((transaction) => {
+      if (transaction.kind === 'MoveCall' && transaction.target.endsWith(MethodNames.PublicTransfer)) {
+        const destinationArg = transaction.arguments[1];
+        const destinationInput = tx.tx.inputs[destinationArg.index] as any;
+        const destination = this.getAddress(destinationInput);
+
+        const movingObject = transaction.arguments[0];
+        if (movingObject.kind === 'Input') {
+          receipts.push({
+            address: destination,
+            amount: '0', // set 0, not able to get amount merely from parsing
+            data: 'unknown amount',
+          });
+        } else if (movingObject.kind === 'Result') {
+          receipts.push({
+            address: destination,
+            amount: splitResults[movingObject.index].toString(),
+          });
+        }
+      }
+    });
+
+    return receipts;
   }
 
   /**
