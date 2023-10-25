@@ -111,6 +111,27 @@ export function createOutputScriptP2shP2pk(pubkey: Buffer): SpendableScript {
   };
 }
 
+export function getOutputScript(scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh', conditionScript: Buffer): Buffer {
+  let output;
+  switch (scriptType) {
+    case 'p2sh':
+      ({ output } = bitcoinjs.payments.p2sh({ redeem: { output: conditionScript } }));
+      break;
+    case 'p2shP2wsh':
+      ({ output } = bitcoinjs.payments.p2sh({
+        redeem: { output: getOutputScript('p2wsh', conditionScript) },
+      }));
+      break;
+    case 'p2wsh':
+      ({ output } = bitcoinjs.payments.p2wsh({ redeem: { output: conditionScript } }));
+      break;
+  }
+  if (output === undefined) {
+    throw new Error(`output undefined`);
+  }
+  return output;
+}
+
 /**
  * Return scripts for 2-of-3 multisig output
  * @param pubkeys - the key triple for multisig
@@ -148,32 +169,25 @@ export function createOutputScript2of3(
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
   assert(script2of3.output);
 
-  let scriptPubKey: bitcoinjs.Payment;
   let redeemScript: bitcoinjs.Payment | undefined;
   let witnessScript: bitcoinjs.Payment | undefined;
   switch (scriptType) {
     case 'p2sh':
       redeemScript = script2of3;
-      scriptPubKey = bitcoinjs.payments.p2sh({ redeem: script2of3 });
       break;
     case 'p2shP2wsh':
       witnessScript = script2of3;
       redeemScript = bitcoinjs.payments.p2wsh({ redeem: script2of3 });
-      scriptPubKey = bitcoinjs.payments.p2sh({ redeem: redeemScript });
       break;
     case 'p2wsh':
       witnessScript = script2of3;
-      scriptPubKey = bitcoinjs.payments.p2wsh({ redeem: witnessScript });
       break;
     default:
       throw new Error(`unknown multisig script type ${scriptType}`);
   }
 
-  assert(scriptPubKey);
-  assert(scriptPubKey.output);
-
   return {
-    scriptPubKey: scriptPubKey.output,
+    scriptPubKey: getOutputScript(scriptType, script2of3.output),
     redeemScript: redeemScript?.output,
     witnessScript: witnessScript?.output,
   };

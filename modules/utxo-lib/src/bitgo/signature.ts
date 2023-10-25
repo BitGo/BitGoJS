@@ -8,6 +8,7 @@ import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
   createSpendScriptP2tr,
+  getOutputScript,
   ScriptType,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
@@ -99,6 +100,21 @@ export function getSignatureVerifications<TNumber extends number | bigint>(
 
     if (prevOutputs.length !== transaction.ins.length) {
       throw new Error(`prevOutputs length ${prevOutputs.length}, expected ${transaction.ins.length}`);
+    }
+  }
+
+  if (
+    parsedScript.scriptType !== 'taprootKeyPathSpend' &&
+    parsedScript.scriptType !== 'taprootScriptPathSpend' &&
+    prevOutputs
+  ) {
+    const prevOutScript = prevOutputs[inputIndex].script;
+
+    const output = getOutputScript(parsedScript.scriptType, parsedScript.pubScript);
+    if (!prevOutScript.equals(output)) {
+      throw new Error(
+        `prevout script ${prevOutScript.toString('hex')} does not match computed script ${output.toString('hex')}`
+      );
     }
   }
 

@@ -29,7 +29,7 @@ import {
   getSignKeyCombinations,
   getUnsignedTransaction2Of3,
 } from '../transaction_util';
-import { getTransactionWithHighS } from './signatureModify';
+import { getPrevOutsWithInvalidOutputScript, getTransactionWithHighS } from './signatureModify';
 import { normDefault } from '../testutil/normalize';
 
 function getScriptTypes2Of3() {
@@ -291,6 +291,16 @@ function checkSignTransaction<TNumber extends number | bigint>(
           signKeys.length - 1
         );
       });
+
+      if (scriptType !== 'p2tr' && scriptType !== 'p2trMusig2') {
+        assert.throws(
+          () =>
+            signatureCount(
+              verifySignatureWithPublicKeys<TNumber>(tx, i, getPrevOutsWithInvalidOutputScript(prevOutputs, i), pubkeys)
+            ),
+          /prevout script .* does not match computed script .*/
+        );
+      }
     }
   });
 }
