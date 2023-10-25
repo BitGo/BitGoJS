@@ -9,4 +9,5 @@ yargs
   .command(cmdGenerateAddress)
   .demandCommand()
   .help()
+  .strict()
   .parse();
