@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import * as yargs from 'yargs';
-import { cmdGenerateAddress, cmdParseAddress, cmdParseScript, cmdParseTx } from '../src/commands';
+import { cmdGenerateAddress, cmdParseAddress, cmdParseScript, cmdParseTx, cmdConvertTx } from '../src/commands';
 
 yargs
   .command(cmdParseTx)
+  .command(cmdConvertTx)
   .command(cmdParseAddress)
   .command(cmdParseScript)
   .command(cmdGenerateAddress)

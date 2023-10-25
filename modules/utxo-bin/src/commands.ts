@@ -21,7 +21,7 @@ import { AddressParser } from './AddressParser';
 import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
 import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
-import { getParserTxProperties } from './ParserTx';
+import { getParserTxProperties, ParserTx } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
 import { stringToBuffer } from './parseString';
 import {
@@ -32,16 +32,115 @@ import {
   getRange,
   parseIndexRange,
 } from './generateAddress';
+import { convertTransaction } from './convertTransaction';
 
 type OutputFormat = 'tree' | 'json';
 
-type ArgsParseTransaction = {
+type ArgsReadTransaction = {
   network: string;
   stdin: boolean;
-  clipboard: boolean;
   path?: string;
-  txid?: string;
   data?: string;
+  clipboard: boolean;
+  txid?: string;
+  cache: boolean;
+  finalize: boolean;
+};
+
+function addReadTransactionOptions<T>(b: yargs.Argv<T>): yargs.Argv<T & ArgsReadTransaction> {
+  return b
+    .option('network', { alias: 'n', type: 'string', demandOption: true })
+    .option('stdin', { type: 'boolean', default: false })
+    .option('path', { type: 'string', nargs: 1, default: '' })
+    .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
+    .option('clipboard', { type: 'boolean', default: false })
+    .option('txid', { type: 'string' })
+    .option('cache', {
+      type: 'boolean',
+      default: false,
+      description: 'use local cache for http responses',
+    })
+    .option('finalize', {
+      type: 'boolean',
+      default: false,
+      description: 'finalize PSBT and parse result instead of PSBT',
+    });
+}
+
+async function readTransaction(argv: ArgsReadTransaction, httpClient: HttpClient): Promise<ParserTx> {
+  const network = getNetworkForName(argv.network);
+  let data;
+
+  if (argv.txid) {
+    data = await fetchTransactionHex(httpClient, argv.txid, network);
+  }
+
+  if (argv.stdin || argv.path === '-') {
+    if (data) {
+      throw new Error(`conflicting arguments`);
+    }
+    console.log('Reading from stdin. Please paste hex-encoded transaction data.');
+    console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
+    if (process.stdin.isTTY) {
+      data = await readStdin();
+    } else {
+      data = await fs.promises.readFile('/dev/stdin', 'utf8');
+    }
+  }
+
+  if (argv.clipboard) {
+    if (data) {
+      throw new Error(`conflicting arguments`);
+    }
+    data = await clipboardy.read();
+  }
+
+  if (argv.path) {
+    if (data) {
+      throw new Error(`conflicting arguments`);
+    }
+    data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
+  }
+
+  if (argv.data) {
+    if (data) {
+      throw new Error(`conflicting arguments`);
+    }
+    data = argv.data;
+  }
+
+  // strip whitespace
+  if (!data) {
+    throw new Error(`no txdata`);
+  }
+
+  const bytes = stringToBuffer(data, ['hex', 'base64']);
+
+  let tx = utxolib.bitgo.isPsbt(bytes)
+    ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
+    : utxolib.bitgo.createTransactionFromBuffer(bytes, network, { amountType: 'bigint' });
+
+  const { id: txid } = getParserTxProperties(tx, undefined);
+  if (tx instanceof utxolib.bitgo.UtxoTransaction) {
+    if (argv.txid && txid !== argv.txid) {
+      throw new Error(`computed txid does not match txid argument`);
+    }
+  } else if (argv.finalize) {
+    tx.finalizeAllInputs();
+    tx = tx.extractTransaction();
+  }
+
+  return tx;
+}
+
+type ArgsConvertTransaction = ArgsReadTransaction & {
+  format: 'legacy' | 'psbt';
+  outfile?: string;
+};
+
+type ArgsParseTransaction = ArgsReadTransaction & {
+  clipboard: boolean;
+  txid?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;
@@ -97,10 +196,6 @@ function getNetworkForName(name: string) {
     throw new Error(`invalid network ${name}`);
   }
   return network;
-}
-
-function getNetwork(argv: yargs.Arguments<{ network: string }>): utxolib.Network {
-  return getNetworkForName(argv.network);
 }
 
 function formatString(
@@ -162,17 +257,11 @@ export const cmdParseTx = {
     'Bytes must be encoded in hex or base64 format.',
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
-    return b
-      .option('path', { type: 'string', nargs: 1, default: '' })
-      .option('stdin', { type: 'boolean', default: false })
-      .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
-      .option('clipboard', { type: 'boolean', default: false })
-      .option('txid', { type: 'string' })
+    return addReadTransactionOptions(b)
       .option('fetchAll', { type: 'boolean', default: false })
       .option('fetchStatus', { type: 'boolean', default: false })
       .option('fetchInputs', { type: 'boolean', default: false })
       .option('fetchSpends', { type: 'boolean', default: false })
-      .option('network', { alias: 'n', type: 'string', demandOption: true })
       .option('parseScriptAsm', { alias: 'scriptasm', type: 'boolean', default: false })
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
@@ -185,85 +274,16 @@ export const cmdParseTx = {
       .option('maxOutputs', { type: 'number' })
       .option('vin', { type: 'number' })
       .array('vin')
-      .option('finalize', {
-        type: 'boolean',
-        default: false,
-        description: 'finalize PSBT and parse result instead of PSBT',
-      })
       .option('all', { type: 'boolean', default: false })
-      .option('cache', {
-        type: 'boolean',
-        default: false,
-        description: 'use local cache for http responses',
-      })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
       .option('parseError', { choices: ['continue', 'throw'], default: 'continue' } as const);
   },
 
   async handler(argv: yargs.Arguments<ArgsParseTransaction>): Promise<void> {
-    const network = getNetwork(argv);
-    let data;
-
-    const httpClient = await getClient({ cache: argv.cache });
-
-    if (argv.txid) {
-      data = await fetchTransactionHex(httpClient, argv.txid, network);
-    }
-
-    if (argv.stdin || argv.path === '-') {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-      console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
-      if (process.stdin.isTTY) {
-        data = await readStdin();
-      } else {
-        data = await fs.promises.readFile('/dev/stdin', 'utf8');
-      }
-    }
-
-    if (argv.clipboard) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = await clipboardy.read();
-    }
-
-    if (argv.path) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
-    }
-
-    if (argv.data) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = argv.data;
-    }
-
-    // strip whitespace
-    if (!data) {
-      throw new Error(`no txdata`);
-    }
-
-    const bytes = stringToBuffer(data, ['hex', 'base64']);
-
-    let tx = utxolib.bitgo.isPsbt(bytes)
-      ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
-      : utxolib.bitgo.createTransactionFromBuffer(bytes, network, { amountType: 'bigint' });
-
-    const { id: txid } = getParserTxProperties(tx, undefined);
-    if (tx instanceof utxolib.bitgo.UtxoTransaction) {
-      if (argv.txid && txid !== argv.txid) {
-        throw new Error(`computed txid does not match txid argument`);
-      }
-    } else if (argv.finalize) {
-      tx.finalizeAllInputs();
-      tx = tx.extractTransaction();
-    }
+    const { txid } = argv;
+    const network = getNetworkForName(argv.network ?? 'bitcoin');
+    const httpClient = await getClient(argv);
+    const tx = await readTransaction(argv, httpClient);
 
     if (argv.parseAsUnknown) {
       console.log(formatString(parseUnknown(new Parser(), 'tx', tx), argv));
@@ -373,5 +393,22 @@ export const cmdGenerateAddress = {
         console.log(formatAddressWithFormatString(address, argv.format));
       }
     }
+  },
+};
+
+export const cmdConvertTx = {
+  command: 'convertTx [path]',
+  describe: 'convert between transaction formats',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsConvertTransaction> {
+    return addReadTransactionOptions(b).option('format', { choices: ['legacy', 'psbt'], default: 'psbt' } as const);
+  },
+  async handler(argv: yargs.Arguments<ArgsConvertTransaction>): Promise<void> {
+    const httpClient = await getClient(argv);
+    const tx = await readTransaction(argv, httpClient);
+    await convertTransaction(tx, {
+      httpClient,
+      format: argv.format,
+      outfile: argv.outfile,
+    });
   },
 };

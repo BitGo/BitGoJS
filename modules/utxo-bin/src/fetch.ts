@@ -63,6 +63,10 @@ export async function fetchTransactionStatus(
   return await getApi(httpClient, network).getTransactionStatus(txid);
 }
 
+export async function fetchPrevTx(httpClient: HttpClient, tx: ParserTx): Promise<Buffer[]> {
+  return await blockapis.fetchPrevTxBuffers(getTxOutPoints(tx), getApi(httpClient, tx.network), tx.network);
+}
+
 export async function fetchPrevOutputs(httpClient: HttpClient, tx: ParserTx): Promise<utxolib.TxOutput<bigint>[]> {
   return (await blockapis.fetchInputs(getTxOutPoints(tx), getApi(httpClient, tx.network), tx.network)).map((v) => ({
     ...v,
