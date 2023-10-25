@@ -74,8 +74,8 @@
     "shx": "^0.3.4"
   },
   "resolutions": {
-    "@substrate/txwrapper-core": "7.0.1",
-    "@substrate/txwrapper-polkadot": "7.0.1"
+    "@substrate/txwrapper-core": "7.1.1",
+    "@substrate/txwrapper-polkadot": "7.1.1"
   },
   "nyc": {
     "extension": [
