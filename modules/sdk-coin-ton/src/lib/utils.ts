@@ -5,6 +5,9 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
     try {
+      if (address.length != 48) {
+        return false;
+      }
       Buffer.from(address, 'base64');
       return true;
     } catch (e) {
