@@ -6,7 +6,7 @@ import { CosmosUtils } from '@bitgo/abstract-cosmos';
 import * as constants from './constants';
 import { NetworkType } from '@bitgo/statics';
 
-export class CoreUtils extends CosmosUtils {
+export class CoreumUtils extends CosmosUtils {
   private networkType: NetworkType;
   constructor(networkType: NetworkType = NetworkType.MAINNET) {
     super();
@@ -46,6 +46,6 @@ export class CoreUtils extends CosmosUtils {
   }
 }
 
-const coreUtils = new CoreUtils();
+const coreumUtils = new CoreumUtils();
 
-export default coreUtils;
+export default coreumUtils;

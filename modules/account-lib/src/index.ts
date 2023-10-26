@@ -98,8 +98,8 @@ export { Islm };
 import * as Zeta from '@bitgo/sdk-coin-zeta';
 export { Zeta };
 
-import * as Core from '@bitgo/sdk-coin-core';
-export { Core };
+import * as Coreum from '@bitgo/sdk-coin-coreum';
+export { Coreum };
 
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
@@ -183,8 +183,8 @@ const coinBuilderMap = {
   tzeta: Zeta.TransactionBuilderFactory,
   islm: Islm.TransactionBuilderFactory,
   tislm: Islm.TransactionBuilderFactory,
-  core: Core.TransactionBuilderFactory,
-  tcore: Core.TransactionBuilderFactory,
+  core: Coreum.TransactionBuilderFactory,
+  tcore: Coreum.TransactionBuilderFactory,
   arbeth: Arbeth.TransactionBuilder,
   tarbeth: Arbeth.TransactionBuilder,
   opeth: Opeth.TransactionBuilder,

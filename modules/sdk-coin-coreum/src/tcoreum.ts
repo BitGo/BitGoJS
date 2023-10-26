@@ -5,12 +5,12 @@
  */
 import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseUnit, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Core } from './core';
+import { Coreum } from './coreum';
 import { KeyPair } from './lib';
-import { CoreUtils } from './lib/utils';
+import { CoreumUtils } from './lib/utils';
 
-export class Tcore extends Core {
-  protected readonly _utils: CoreUtils;
+export class Tcoreum extends Coreum {
+  protected readonly _utils: CoreumUtils;
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -20,16 +20,16 @@ export class Tcore extends Core {
     }
 
     this._staticsCoin = staticsCoin;
-    this._utils = new CoreUtils(NetworkType.TESTNET);
+    this._utils = new CoreumUtils(NetworkType.TESTNET);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tcore(bitgo, staticsCoin);
+    return new Tcoreum(bitgo, staticsCoin);
   }
 
   /** @inheritDoc **/
   getDenomination(): string {
-    return BaseUnit.TESTCORE;
+    return BaseUnit.TCOREUM;
   }
 
   /** @inheritDoc **/

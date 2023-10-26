@@ -3,10 +3,10 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
-import { Core, Tcore } from '../../../src';
-import * as testData from '../../resources/testcore';
+import { Coreum, Tcoreum } from '../../../src';
+import * as testData from '../../resources/tcoreum';
 
-describe('Core Transfer Builder', () => {
+describe('Coreum Transfer Builder', () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
@@ -14,10 +14,10 @@ describe('Core Transfer Builder', () => {
   let testTxWithMemo;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('core', Core.createInstance);
-    bitgo.safeRegister('tcore', Tcore.createInstance);
+    bitgo.safeRegister('coreum', Coreum.createInstance);
+    bitgo.safeRegister('tcoreum', Tcoreum.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tcore');
+    basecoin = bitgo.coin('tcoreum');
     factory = basecoin.getBuilder();
     testTx = testData.TEST_SEND_TX;
     testTxWithMemo = testData.TEST_TX_WITH_MEMO;
