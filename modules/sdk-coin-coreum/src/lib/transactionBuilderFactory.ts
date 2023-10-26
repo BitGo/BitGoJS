@@ -8,7 +8,7 @@ import {
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CoreUtils } from './utils';
+import { CoreumUtils } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -17,7 +17,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(raw: string): CosmosTransactionBuilder {
-    const tx = new CosmosTransaction(this._coinConfig, new CoreUtils(this._coinConfig.network.type));
+    const tx = new CosmosTransaction(this._coinConfig, new CoreumUtils(this._coinConfig.network.type));
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -41,7 +41,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
     return this.initializeBuilder(
       tx,
-      new CosmosTransferBuilder(this._coinConfig, new CoreUtils(this._coinConfig.network.type))
+      new CosmosTransferBuilder(this._coinConfig, new CoreumUtils(this._coinConfig.network.type))
     );
   }
 
@@ -49,7 +49,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
     return this.initializeBuilder(
       tx,
-      new StakingActivateBuilder(this._coinConfig, new CoreUtils(this._coinConfig.network.type))
+      new StakingActivateBuilder(this._coinConfig, new CoreumUtils(this._coinConfig.network.type))
     );
   }
 
@@ -57,7 +57,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
     return this.initializeBuilder(
       tx,
-      new StakingDeactivateBuilder(this._coinConfig, new CoreUtils(this._coinConfig.network.type))
+      new StakingDeactivateBuilder(this._coinConfig, new CoreumUtils(this._coinConfig.network.type))
     );
   }
 
@@ -65,7 +65,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
     return this.initializeBuilder(
       tx,
-      new StakingWithdrawRewardsBuilder(this._coinConfig, new CoreUtils(this._coinConfig.network.type))
+      new StakingWithdrawRewardsBuilder(this._coinConfig, new CoreumUtils(this._coinConfig.network.type))
     );
   }
 

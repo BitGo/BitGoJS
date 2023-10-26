@@ -1,13 +1,12 @@
-import should from 'should';
-
-import { CoreUtils } from '../../src/lib/utils';
-import { blockHash, txIds, mainnetCoinAmounts } from '../resources/core';
-import { testnetCoinAmounts } from '../resources/testcore';
 import { NetworkType } from '@bitgo/statics';
+import should from 'should';
+import { CoreumUtils } from '../../src/lib/utils';
+import { blockHash, mainnetCoinAmounts, txIds } from '../resources/coreum';
+import { testnetCoinAmounts } from '../resources/tcoreum';
 
 describe('utils', () => {
-  const mainnetUtils = new CoreUtils(NetworkType.MAINNET);
-  const testnetUtils = new CoreUtils(NetworkType.TESTNET);
+  const mainnetUtils = new CoreumUtils(NetworkType.MAINNET);
+  const testnetUtils = new CoreumUtils(NetworkType.TESTNET);
 
   it('should validate block hash correctly', () => {
     should.equal(mainnetUtils.isValidBlockId(blockHash.hash1), true);

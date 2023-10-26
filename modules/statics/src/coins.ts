@@ -998,22 +998,22 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
-    'core',
+    'coreum',
     'Coreum',
-    Networks.main.core,
+    Networks.main.coreum,
     6,
-    UnderlyingAsset.CORE,
-    BaseUnit.CORE,
+    UnderlyingAsset.COREUM,
+    BaseUnit.COREUM,
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
-    'tcore',
+    'tcoreum',
     'Testnet Coreum',
-    Networks.test.core,
+    Networks.test.coreum,
     6,
-    UnderlyingAsset.TESTCORE,
-    BaseUnit.TESTCORE,
+    UnderlyingAsset.COREUM,
+    BaseUnit.TCOREUM,
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(

@@ -1,10 +1,10 @@
+import { AddressFormat } from '@bitgo/sdk-core';
 import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../src';
-import { TEST_ACCOUNT } from '../resources/core';
-import { AddressFormat } from '@bitgo/sdk-core';
+import { TEST_ACCOUNT } from '../resources/coreum';
 
-describe('Core Key Pair', () => {
+describe('Coreum Key Pair', () => {
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
       const keyPairObj = new KeyPair();
@@ -46,7 +46,7 @@ describe('Core Key Pair', () => {
 
     it('from an uncompressed public key', () => {
       // Input is uncompressed, but we output the compressed key to keep
-      // parity with core network expectations.
+      // parity with coreum network expectations.
       const publicKey = TEST_ACCOUNT.uncompressedPublicKey;
       const keyPairObj = new KeyPair({ pub: publicKey });
       const keys = keyPairObj.getKeys();

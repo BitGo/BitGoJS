@@ -9,13 +9,13 @@ import {
   SendMessage,
   WithdrawDelegatorRewardsMessage,
 } from '@bitgo/abstract-cosmos';
-import { CoreUtils } from '../../src/lib/utils';
-import * as testData from '../resources/testcore';
+import { CoreumUtils } from '../../src/lib/utils';
+import * as testData from '../resources/tcoreum';
 
-describe('Core Transaction', () => {
+describe('Coreum Transaction', () => {
   let tx: CosmosTransaction;
-  const config = coins.get('tcore');
-  const utils = new CoreUtils(config.network.type);
+  const config = coins.get('tcoreum');
+  const utils = new CoreumUtils(config.network.type);
 
   beforeEach(() => {
     tx = new CosmosTransaction(config, utils);
@@ -49,14 +49,14 @@ describe('Core Transaction', () => {
         {
           address: testData.TEST_SEND_TX.sender,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
     });
@@ -82,14 +82,14 @@ describe('Core Transaction', () => {
         {
           address: testData.TEST_SEND_TX.sender,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
     });
@@ -115,14 +115,14 @@ describe('Core Transaction', () => {
         {
           address: testData.TEST_DELEGATE_TX.delegator,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_DELEGATE_TX.validator,
           value: testData.TEST_DELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
     });
@@ -148,14 +148,14 @@ describe('Core Transaction', () => {
         {
           address: testData.TEST_UNDELEGATE_TX.delegator,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_UNDELEGATE_TX.validator,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
     });
@@ -181,14 +181,14 @@ describe('Core Transaction', () => {
         {
           address: testData.TEST_WITHDRAW_REWARDS_TX.delegator,
           value: 'UNAVAILABLE',
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: testData.TEST_WITHDRAW_REWARDS_TX.validator,
           value: 'UNAVAILABLE',
-          coin: 'tcore',
+          coin: 'tcoreum',
         },
       ]);
     });

@@ -3,19 +3,19 @@ import should from 'should';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { Core, Tcore } from '../../../src';
-import * as testData from '../../resources/testcore';
+import { Coreum, Tcoreum } from '../../../src';
+import * as testData from '../../resources/tcoreum';
 
-describe('Core Transaction Builder', async () => {
+describe('Coreum Transaction Builder', async () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('core', Core.createInstance);
-    bitgo.safeRegister('tcore', Tcore.createInstance);
+    bitgo.safeRegister('coreum', Coreum.createInstance);
+    bitgo.safeRegister('tcoreum', Tcoreum.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tcore');
+    basecoin = bitgo.coin('tcoreum');
     factory = basecoin.getBuilder();
   });
 

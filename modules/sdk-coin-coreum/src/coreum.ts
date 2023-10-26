@@ -3,10 +3,10 @@ import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
-import { CoreUtils } from './lib/utils';
+import { CoreumUtils } from './lib/utils';
 
-export class Core extends CosmosCoin {
-  protected readonly _utils: CoreUtils;
+export class Coreum extends CosmosCoin {
+  protected readonly _utils: CoreumUtils;
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -14,11 +14,11 @@ export class Core extends CosmosCoin {
       throw new Error('missing required constructor parameter staticsCoin');
     }
     this._staticsCoin = staticsCoin;
-    this._utils = new CoreUtils();
+    this._utils = new CoreumUtils();
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Core(bitgo, staticsCoin);
+    return new Coreum(bitgo, staticsCoin);
   }
 
   /** @inheritDoc **/
@@ -38,12 +38,12 @@ export class Core extends CosmosCoin {
 
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].coreNodeUrl;
+    return Environments[this.bitgo.getEnv()].coreumNodeUrl;
   }
 
   /** @inheritDoc **/
   getDenomination(): string {
-    return BaseUnit.CORE;
+    return BaseUnit.COREUM;
   }
 
   /** @inheritDoc **/

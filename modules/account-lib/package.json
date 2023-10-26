@@ -36,7 +36,7 @@
     "@bitgo/sdk-coin-bld": "^1.6.0",
     "@bitgo/sdk-coin-bsc": "^3.10.0",
     "@bitgo/sdk-coin-celo": "^1.5.13",
-    "@bitgo/sdk-coin-core": "^1.2.0",
+    "@bitgo/sdk-coin-coreum": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^1.7.0",
     "@bitgo/sdk-coin-dot": "^3.15.0",
     "@bitgo/sdk-coin-etc": "^1.4.13",

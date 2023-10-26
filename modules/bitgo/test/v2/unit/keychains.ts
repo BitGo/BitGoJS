@@ -60,7 +60,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
         n.asset !== UnderlyingAsset.KAVA &&
-        n.asset !== UnderlyingAsset.CORE &&
+        n.asset !== UnderlyingAsset.COREUM &&
         n.asset !== UnderlyingAsset.BERA &&
         n.asset !== UnderlyingAsset.ISLM &&
         n.asset !== UnderlyingAsset.ARBETH && // TODO(WIN-692): remove this once coin-specific module for arbeth is added

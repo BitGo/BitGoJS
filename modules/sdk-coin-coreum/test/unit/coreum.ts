@@ -2,8 +2,8 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { Tcore, Core } from '../../src';
-import { CoreUtils } from '../../src/lib/utils';
+import { Tcoreum, Coreum } from '../../src';
+import { CoreumUtils } from '../../src/lib/utils';
 import {
   TEST_DELEGATE_TX,
   TEST_SEND_TX,
@@ -11,76 +11,76 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   testnetAddress,
-} from '../resources/testcore';
-import { mainnetAddress } from '../resources/core';
+} from '../resources/tcoreum';
+import { mainnetAddress } from '../resources/coreum';
 import should = require('should');
 import { NetworkType } from '@bitgo/statics';
 
-describe('Core', function () {
+describe('Coreum', function () {
   let bitgo: TestBitGoAPI;
-  let core;
-  let tcore;
-  let mainnetUtils: CoreUtils;
-  let testnetUtils: CoreUtils;
+  let coreum;
+  let tcoreum;
+  let mainnetUtils: CoreumUtils;
+  let testnetUtils: CoreumUtils;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('core', Core.createInstance);
-    bitgo.safeRegister('tcore', Tcore.createInstance);
+    bitgo.safeRegister('coreum', Coreum.createInstance);
+    bitgo.safeRegister('tcoreum', Tcoreum.createInstance);
     bitgo.initializeTestVars();
-    core = bitgo.coin('core');
-    tcore = bitgo.coin('tcore');
-    mainnetUtils = new CoreUtils(NetworkType.MAINNET);
-    testnetUtils = new CoreUtils(NetworkType.TESTNET);
+    coreum = bitgo.coin('coreum');
+    tcoreum = bitgo.coin('tcoreum');
+    mainnetUtils = new CoreumUtils(NetworkType.MAINNET);
+    testnetUtils = new CoreumUtils(NetworkType.TESTNET);
   });
 
   it('should return the right info', function () {
-    core.getChain().should.equal('core');
-    core.getFamily().should.equal('core');
-    core.getFullName().should.equal('Coreum');
-    core.getBaseFactor().should.equal(1e6);
+    coreum.getChain().should.equal('coreum');
+    coreum.getFamily().should.equal('coreum');
+    coreum.getFullName().should.equal('Coreum');
+    coreum.getBaseFactor().should.equal(1e6);
 
-    tcore.getChain().should.equal('tcore');
-    tcore.getFamily().should.equal('core');
-    tcore.getFullName().should.equal('Testnet Coreum');
-    tcore.getBaseFactor().should.equal(1e6);
+    tcoreum.getChain().should.equal('tcoreum');
+    tcoreum.getFamily().should.equal('coreum');
+    tcoreum.getFullName().should.equal('Testnet Coreum');
+    tcoreum.getBaseFactor().should.equal(1e6);
   });
 
   describe('Address Validation', () => {
     it('should get address details without memoId', function () {
-      const mainnetAddressDetails = core.getAddressDetails(mainnetAddress.noMemoIdAddress);
+      const mainnetAddressDetails = coreum.getAddressDetails(mainnetAddress.noMemoIdAddress);
       mainnetAddressDetails.address.should.equal(mainnetAddress.noMemoIdAddress);
       should.not.exist(mainnetAddressDetails.memoId);
 
-      const testnetAddressDetails = tcore.getAddressDetails(testnetAddress.noMemoIdAddress);
+      const testnetAddressDetails = tcoreum.getAddressDetails(testnetAddress.noMemoIdAddress);
       testnetAddressDetails.address.should.equal(testnetAddress.noMemoIdAddress);
       should.not.exist(testnetAddressDetails.memoId);
     });
 
     it('should get address details with memoId', function () {
-      const mainnetAddressDetails = core.getAddressDetails(mainnetAddress.validMemoIdAddress);
+      const mainnetAddressDetails = coreum.getAddressDetails(mainnetAddress.validMemoIdAddress);
       mainnetAddressDetails.address.should.equal(mainnetAddress.validMemoIdAddress.split('?')[0]);
       mainnetAddressDetails.memoId.should.equal('2');
 
-      const testnetAddressDetails = core.getAddressDetails(testnetAddress.validMemoIdAddress);
+      const testnetAddressDetails = coreum.getAddressDetails(testnetAddress.validMemoIdAddress);
       testnetAddressDetails.address.should.equal(testnetAddress.validMemoIdAddress.split('?')[0]);
       testnetAddressDetails.memoId.should.equal('2');
     });
 
     it('should throw on invalid memo id address', () => {
       (() => {
-        core.getAddressDetails(mainnetAddress.invalidMemoIdAddress);
+        coreum.getAddressDetails(mainnetAddress.invalidMemoIdAddress);
       }).should.throw();
       (() => {
-        tcore.getAddressDetails(testnetAddress.invalidMemoIdAddress);
+        tcoreum.getAddressDetails(testnetAddress.invalidMemoIdAddress);
       }).should.throw();
     });
 
     it('should throw on multiple memo id address', () => {
       (() => {
-        core.getAddressDetails(mainnetAddress.multipleMemoIdAddress);
+        coreum.getAddressDetails(mainnetAddress.multipleMemoIdAddress);
       }).should.throw();
       (() => {
-        tcore.getAddressDetails(testnetAddress.multipleMemoIdAddress);
+        tcoreum.getAddressDetails(testnetAddress.multipleMemoIdAddress);
       }).should.throw();
     });
 
@@ -100,8 +100,8 @@ describe('Core', function () {
         },
       };
 
-      const isValidMainnetReceiveAddress = await core.isWalletAddress(mainnetReceiveAddress);
-      const isValidTestnetReceiveAddress = await tcore.isWalletAddress(testnetReceiveAddress);
+      const isValidMainnetReceiveAddress = await coreum.isWalletAddress(mainnetReceiveAddress);
+      const isValidTestnetReceiveAddress = await tcoreum.isWalletAddress(testnetReceiveAddress);
 
       isValidMainnetReceiveAddress.should.equal(true);
       isValidTestnetReceiveAddress.should.equal(true);
@@ -159,7 +159,7 @@ describe('Core', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await tcore.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await tcoreum.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
 
@@ -177,7 +177,7 @@ describe('Core', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await tcore.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await tcoreum.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
 
@@ -195,7 +195,7 @@ describe('Core', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await tcore.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await tcoreum.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
 
@@ -213,14 +213,14 @@ describe('Core', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await tcore.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await tcoreum.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
 
     it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = { recipients: undefined };
-      await tcore
+      await tcoreum
         .verifyTransaction({
           txParams,
           txPrebuild,
@@ -231,7 +231,7 @@ describe('Core', function () {
 
   describe('Explain Transaction: ', () => {
     it('should explain a transfer transaction', async function () {
-      const explainedTransaction = await tcore.explainTransaction({
+      const explainedTransaction = await tcoreum.explainTransaction({
         txHex: TEST_SEND_TX.signedTxBase64,
       });
       explainedTransaction.should.deepEqual({
@@ -252,7 +252,7 @@ describe('Core', function () {
     });
 
     it('should explain a delegate transaction', async function () {
-      const explainedTransaction = await tcore.explainTransaction({
+      const explainedTransaction = await tcoreum.explainTransaction({
         txHex: TEST_DELEGATE_TX.signedTxBase64,
       });
       explainedTransaction.should.deepEqual({
@@ -273,7 +273,7 @@ describe('Core', function () {
     });
 
     it('should explain a undelegate transaction', async function () {
-      const explainedTransaction = await tcore.explainTransaction({
+      const explainedTransaction = await tcoreum.explainTransaction({
         txHex: TEST_UNDELEGATE_TX.signedTxBase64,
       });
       explainedTransaction.should.deepEqual({
@@ -294,7 +294,7 @@ describe('Core', function () {
     });
 
     it('should explain a withdraw transaction', async function () {
-      const explainedTransaction = await tcore.explainTransaction({
+      const explainedTransaction = await tcoreum.explainTransaction({
         txHex: TEST_WITHDRAW_REWARDS_TX.signedTxBase64,
       });
       explainedTransaction.should.deepEqual({
@@ -315,7 +315,7 @@ describe('Core', function () {
     });
 
     it('should explain a transfer transaction with memo', async function () {
-      const explainedTransaction = await tcore.explainTransaction({
+      const explainedTransaction = await tcoreum.explainTransaction({
         txHex: TEST_TX_WITH_MEMO.signedTxBase64,
       });
       explainedTransaction.should.deepEqual({
@@ -338,7 +338,7 @@ describe('Core', function () {
 
     it('should fail to explain transaction with missing params', async function () {
       try {
-        await tcore.explainTransaction({});
+        await tcoreum.explainTransaction({});
       } catch (error) {
         should.equal(error.message, 'missing required txHex parameter');
       }
@@ -346,7 +346,7 @@ describe('Core', function () {
 
     it('should fail to explain transaction with invalid params', async function () {
       try {
-        await tcore.explainTransaction({ txHex: 'randomString' });
+        await tcoreum.explainTransaction({ txHex: 'randomString' });
       } catch (error) {
         should.equal(error.message.startsWith('Invalid transaction:'), true);
       }
@@ -365,7 +365,7 @@ describe('Core', function () {
         amount: TEST_SEND_TX.sendAmount,
       };
 
-      const parsedTransaction = await tcore.parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 });
+      const parsedTransaction = await tcoreum.parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 });
 
       parsedTransaction.should.deepEqual({
         inputs: [transferInputsResponse],
@@ -374,9 +374,9 @@ describe('Core', function () {
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Core.prototype, 'explainTransaction');
+      const stub = sinon.stub(Coreum.prototype, 'explainTransaction');
       stub.resolves(undefined);
-      await tcore
+      await tcoreum
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
