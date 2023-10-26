@@ -1,6 +1,6 @@
 import { coins } from '@bitgo/statics';
 import { CustomTransaction } from '../../../src/lib/customTransaction';
-import { CUSTOM_TX_STAKING_POOL_SPLIT, UNSUPPORTED_TX } from '../../resources/sui';
+import { CUSTOM_TX_PUBLIC_TRANSFER, CUSTOM_TX_STAKING_POOL_SPLIT, UNSUPPORTED_TX } from '../../resources/sui';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
@@ -73,6 +73,27 @@ describe('Sui Custom Transaction Builder', () => {
       should.equal(rebuiltTx.outputs[0].address, '0x5be5ee85cf5825bd07df7bbe78f19bcaafd42e9e685fda1acf24233cd7b925a6');
       should.equal(rebuiltTx.outputs[0].value, '5000000000');
       should.equal(rebuiltTx.outputs[0].coin, coinName);
+    });
+
+    it('should build a tx with public_transfer function', async function () {
+      const tx = new CustomTransaction(coins.get('tsui'));
+      tx.fromRawTransaction(CUSTOM_TX_PUBLIC_TRANSFER);
+      should.equal(tx.suiTransaction.type, SuiTransactionType.CustomTx);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(rawTx, CUSTOM_TX_PUBLIC_TRANSFER);
+      should.equal(tx.id, 'FmsE5YgfTU2kiCfYmVE6Zmrow3JaXcA243tBjjNUmLex');
+      should.equal(tx.inputs[0].address, '0xce724b63fdfe875a7eeb425e42785c7c05be95bc4f00fbc5c6c75e0dc264abe2');
+      should.equal(tx.inputs[0].value, '20000000000');
+      should.equal(tx.inputs.length, 1);
+      should.equal(tx.outputs.length, 17);
+      should.equal(tx.recipients.length, 17);
+      should.equal(tx.recipients[0].address, '0x0f220421254dae4355a96b2ffb87ef46566c0918f8dd0e89a53c2ced4355cf12');
+      should.equal(tx.recipients[0].amount, '0');
+      should.equal(tx.recipients[0].data, 'unknown amount');
+      should.equal(tx.recipients[8].address, '0x8d3f38a4a4dfc6bd7bcfda4c9bff36ff89c4d5564672d85c533d86a2201b8158');
+      should.equal(tx.recipients[8].amount, '10000000000');
+      should.equal(tx.recipients[14].address, '0xe60d6acf56b10033f2e770807028978ef6896a5bb1da38b12ea68ebe20d11704');
+      should.equal(tx.recipients[14].amount, '10000000000');
     });
 
     it('should build a custom tx and serialize it and deserialize it', async function () {
