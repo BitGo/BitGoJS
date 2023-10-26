@@ -1,5 +1,5 @@
 /* eslint-disable no-redeclare */
-import { script, ScriptSignature } from 'bitcoinjs-lib';
+import { script, ScriptSignature, TxOutput } from 'bitcoinjs-lib';
 import { isPlaceholderSignature, parseSignatureScript, UtxoTransaction } from '../../src/bitgo';
 
 const BN = require('bn.js');
@@ -77,5 +77,20 @@ export function getTransactionWithHighS<TNumber extends number | bigint>(
       throw new Error(`could not parse modified input`);
     }
     return [cloned];
+  });
+}
+
+/** Return transaction with script xored with 0xff for the given input */
+export function getPrevOutsWithInvalidOutputScript<TNumber extends number | bigint>(
+  prevOuts: TxOutput<TNumber>[],
+  inputIndex: number
+): TxOutput<TNumber>[] {
+  return prevOuts.map((prevOut, i) => {
+    return i === inputIndex
+      ? {
+          ...prevOut,
+          script: prevOut.script.map((v) => v ^ 0xff) as typeof prevOut.script,
+        }
+      : prevOut;
   });
 }
