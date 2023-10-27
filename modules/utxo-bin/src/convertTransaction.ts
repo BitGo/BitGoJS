@@ -41,7 +41,8 @@ export async function convertTransaction(
       if (tx instanceof utxolib.bitgo.UtxoPsbt) {
         throw new Error(`TODO`);
       }
-      break;
+
+      throw new Error(`unknown tx type`);
     case 'psbt':
       if (tx instanceof utxolib.bitgo.UtxoPsbt) {
         throw new Error(`input is already in psbt format`);
@@ -55,6 +56,6 @@ export async function convertTransaction(
         return;
       }
 
-      break;
+      throw new Error(`unknown tx type`);
   }
 }
