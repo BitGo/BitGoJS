@@ -67,7 +67,7 @@ function addReadTransactionOptions<T>(b: yargs.Argv<T>): yargs.Argv<T & ArgsRead
     });
 }
 
-async function readTransaction(argv: ArgsReadTransaction, httpClient: HttpClient): Promise<ParserTx> {
+async function readTransactionBytes(argv: ArgsReadTransaction, httpClient: HttpClient): Promise<Buffer> {
   const network = getNetworkForName(argv.network);
   let data;
 
@@ -114,7 +114,12 @@ async function readTransaction(argv: ArgsReadTransaction, httpClient: HttpClient
     throw new Error(`no txdata`);
   }
 
-  const bytes = stringToBuffer(data, ['hex', 'base64']);
+  return stringToBuffer(data, ['hex', 'base64']);
+}
+
+async function readTransaction(argv: ArgsReadTransaction, httpClient: HttpClient): Promise<ParserTx> {
+  const network = getNetworkForName(argv.network);
+  const bytes = await readTransactionBytes(argv, httpClient);
 
   let tx = utxolib.bitgo.isPsbt(bytes)
     ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
