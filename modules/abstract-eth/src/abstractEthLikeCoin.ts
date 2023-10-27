@@ -36,7 +36,7 @@ export interface TxInfo {
   txid: string;
 }
 
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
+interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
   feeInfo: EthTransactionFee;

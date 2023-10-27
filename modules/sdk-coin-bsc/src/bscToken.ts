@@ -4,11 +4,11 @@
 
 import { EthLikeTokenConfig } from '@bitgo/statics';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeMPCToken } from '@bitgo/abstract-eth';
+import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
 
 export { EthLikeTokenConfig };
 
-export class BscToken extends EthLikeMPCToken {
+export class BscToken extends EthLikeToken {
   public readonly tokenConfig: EthLikeTokenConfig;
   static coinNames: CoinNames = {
     Mainnet: 'bsc',

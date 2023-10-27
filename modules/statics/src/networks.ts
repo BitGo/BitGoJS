@@ -80,6 +80,8 @@ export interface EthereumNetwork extends AccountNetwork {
   // forwarder configuration addresses used for calculating forwarder version 1 addresses
   readonly forwarderFactoryAddress?: string;
   readonly forwarderImplementationAddress?: string;
+  readonly walletFactoryAddress?: string;
+  readonly walletImplementationAddress?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {

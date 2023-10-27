@@ -41,6 +41,7 @@
     "@bitgo/sdk-core": "^8.26.0",
     "@bitgo/statics": "^29.0.0",
     "@bitgo/utxo-lib": "^9.16.0",
-    "bignumber.js": "^8.0.1"
+    "bignumber.js": "^8.0.1",
+    "superagent": "^3.8.3"
   }
 }
