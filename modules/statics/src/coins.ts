@@ -10228,7 +10228,7 @@ export const coins = CoinMap.fromCoins([
     'd82f66bf-e921-44e4-a9b0-462eda94a9ad',
     'sol:vi',
     'VI',
-    6,
+    9,
     '7zBWymxbZt7PVHQzfi3i85frc1YRiQc23K7bh3gos8ZC',
     UnderlyingAsset.VI,
     AccountCoin.DEFAULT_FEATURES
