@@ -39,7 +39,7 @@ export async function convertTransaction(
         throw new Error(`input is already in legacy format`);
       }
       if (tx instanceof utxolib.bitgo.UtxoPsbt) {
-        throw new Error(`TODO`);
+        throw new Error(`not implemented yet`);
       }
 
       throw new Error(`unknown tx type`);
