@@ -9,9 +9,10 @@ import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Eth } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
-import { EXPORT_C, IMPORT_C } from '../resources/avaxc';
+import { EXPORT_C, IMPORT_C, endpointResponses, recoveryUsers } from '../resources/avaxc';
 import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 import { decodeTransaction, parseTransaction, walletSimpleABI } from './helpers';
+import * as sinon from 'sinon';
 
 nock.enableNetConnect();
 
@@ -63,6 +64,7 @@ describe('Avalanche C-Chain', function () {
     bitgo.safeRegister('teth', Eth.createInstance);
     bitgo.safeRegister('tavaxp', TavaxP.createInstance);
     common.Environments[bitgo.getEnv()].hsmXpub = bitgoXpub;
+    common.Environments[bitgo.getEnv()].snowtraceApiToken = 'A3NFH1QQEW85R3KK1SJ9KN39RI7T5CB7AX';
     bitgo.initializeTestVars();
   });
 
@@ -953,6 +955,184 @@ describe('Avalanche C-Chain', function () {
         rebuiltTx.outputs.length.should.equal(1);
         rebuiltTx.outputs[0].address.should.equal(txPrebuild.recipient.address);
         rebuiltTx.outputs[0].value.should.equal(txPrebuild.recipient.amount);
+      });
+    });
+
+    describe('Token Recovery', async function () {
+      const destAddr = '0xc74b1c0ee90a481b528253042ce3228a8cd6873e';
+      const weiToGwei = 10 ** 9;
+      const gasPrice = 30 * weiToGwei;
+      // contract address for 'tavaxc:link'
+      const tokenContractAddress = '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846';
+      const tokenName = 'tavaxc:link';
+      const sequenceIdData = 'a0b7967b';
+      const sandBox = sinon.createSandbox();
+
+      beforeEach(function () {
+        const callBack = sandBox.stub(AvaxC.prototype, 'recoveryBlockchainExplorerQuery' as keyof AvaxC);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'txlist',
+            address: recoveryUsers.hotWalletRecoveryUser.backupKeyAddress,
+          })
+          .resolves(endpointResponses.addressNonceResponse1);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'txlist',
+            address: recoveryUsers.coldWalletRecoveryUser.backupKeyAddress,
+          })
+          .resolves(endpointResponses.addressNonceResponse2);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'balance',
+            address: recoveryUsers.hotWalletRecoveryUser.backupKeyAddress,
+          })
+          .resolves(endpointResponses.backupAddressBalanceResponse);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'balance',
+            address: recoveryUsers.coldWalletRecoveryUser.backupKeyAddress,
+          })
+          .resolves(endpointResponses.backupAddressBalanceResponse);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'tokenbalance',
+            address: recoveryUsers.hotWalletRecoveryUser.walletContractAddress,
+            contractaddress: tokenContractAddress,
+          })
+          .resolves(endpointResponses.addressTokenBalanceResponse);
+        callBack
+          .withArgs({
+            module: 'account',
+            action: 'tokenbalance',
+            address: recoveryUsers.coldWalletRecoveryUser.walletContractAddress,
+            contractaddress: tokenContractAddress,
+          })
+          .resolves(endpointResponses.addressTokenBalanceResponse);
+        callBack
+          .withArgs({
+            module: 'proxy',
+            action: 'eth_call',
+            to: recoveryUsers.hotWalletRecoveryUser.walletContractAddress,
+            data: sequenceIdData,
+            tag: 'latest',
+          })
+          .resolves(endpointResponses.sequenceIdResponse1);
+        callBack
+          .withArgs({
+            module: 'proxy',
+            action: 'eth_call',
+            to: recoveryUsers.coldWalletRecoveryUser.walletContractAddress,
+            data: sequenceIdData,
+            tag: 'latest',
+          })
+          .resolves(endpointResponses.sequenceIdResponse2);
+      });
+
+      afterEach(function () {
+        sandBox.restore();
+      });
+
+      it('should build token recovery tx', async function () {
+        const params = {
+          userKey: recoveryUsers.hotWalletRecoveryUser.userKey,
+          backupKey: recoveryUsers.hotWalletRecoveryUser.backupKey,
+          recoveryDestination: destAddr,
+          walletPassphrase: recoveryUsers.hotWalletRecoveryUser.walletPassphrase,
+          walletContractAddress: recoveryUsers.hotWalletRecoveryUser.walletContractAddress,
+          tokenContractAddress,
+          gasPrice: gasPrice.toString(),
+        };
+        const recoveryTxn = await tavaxCoin.recover(params);
+
+        recoveryTxn.should.not.be.undefined();
+        recoveryTxn.should.have.property('id');
+        recoveryTxn.should.have.property('tx');
+
+        const txBuilder = tavaxCoin.getTransactionBuilder() as TransactionBuilder;
+        txBuilder.from(recoveryTxn.tx);
+        const tx = await txBuilder.build();
+        tx.toBroadcastFormat().should.not.be.empty();
+        tx.inputs.should.not.be.empty();
+        tx.inputs[0].address.should.equal(recoveryUsers.hotWalletRecoveryUser.walletContractAddress);
+        tx.inputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.inputs[0].coin?.should.equal(tokenName);
+        tx.outputs.should.not.be.empty();
+        tx.outputs[0].address.should.equal(destAddr);
+        tx.outputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.outputs[0].coin?.should.equal(tokenName);
+      });
+
+      it('should build unsigned sweep token recovery tx', async function () {
+        const params = {
+          userKey: recoveryUsers.coldWalletRecoveryUser.userKey,
+          backupKey: recoveryUsers.coldWalletRecoveryUser.backupKey,
+          recoveryDestination: destAddr,
+          walletPassphrase: recoveryUsers.coldWalletRecoveryUser.walletPassphrase,
+          walletContractAddress: recoveryUsers.coldWalletRecoveryUser.walletContractAddress,
+          tokenContractAddress,
+          gasPrice: gasPrice.toString(),
+        };
+        const recoveryTxn = await tavaxCoin.recover(params);
+
+        recoveryTxn.should.not.be.undefined();
+        recoveryTxn.should.have.property('txHex');
+        const txBuilder = tavaxCoin.getTransactionBuilder() as TransactionBuilder;
+        txBuilder.from(recoveryTxn.txHex);
+        const tx = await txBuilder.build();
+        const recoveryAmount = endpointResponses.addressTokenBalanceResponse.result;
+        tx.toBroadcastFormat().should.not.be.empty();
+        tx.inputs.should.not.be.empty();
+        tx.inputs[0].address.should.equal(recoveryUsers.coldWalletRecoveryUser.walletContractAddress);
+        tx.inputs[0].value.should.equal(recoveryAmount);
+        tx.inputs[0].should.have.property('coin');
+        tx.inputs[0].coin?.should.equal(tokenName);
+        tx.outputs.should.not.be.empty();
+        tx.outputs[0].address.should.equal(destAddr);
+        tx.outputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.outputs[0].should.have.property('coin');
+        tx.outputs[0].coin?.should.equal(tokenName);
+
+        recoveryTxn.should.have.property('userKey');
+        recoveryTxn.userKey.should.equal(recoveryUsers.coldWalletRecoveryUser.userKey);
+        recoveryTxn.should.have.property('backupKey');
+        recoveryTxn.backupKey.should.equal(recoveryUsers.coldWalletRecoveryUser.backupKey);
+
+        recoveryTxn.should.have.property('coin');
+        recoveryTxn.coin.should.equal('tavaxc');
+
+        recoveryTxn.should.have.property('gasPrice');
+        recoveryTxn.gasPrice.should.equal(gasPrice.toString());
+        recoveryTxn.should.have.property('gasLimit');
+        recoveryTxn.gasLimit.should.equal('500000');
+
+        recoveryTxn.should.have.property('recipients');
+        recoveryTxn.recipients.length.should.equal(1);
+        recoveryTxn.recipients[0].address.should.equal(destAddr);
+        recoveryTxn.recipients[0].amount.should.equal(recoveryAmount);
+
+        recoveryTxn.should.have.property('walletContractAddress');
+        recoveryTxn.walletContractAddress.should.equal(recoveryUsers.coldWalletRecoveryUser.walletContractAddress);
+
+        recoveryTxn.should.have.property('amount');
+        recoveryTxn.amount.should.equal(recoveryAmount);
+
+        recoveryTxn.should.have.property('recipient');
+        recoveryTxn.recipient.address.should.equal(destAddr);
+        recoveryTxn.recipient.amount.should.equal(recoveryAmount);
+
+        recoveryTxn.should.have.property('tokenContractAddress');
+        recoveryTxn.tokenContractAddress.should.equal(tokenContractAddress);
+
+        recoveryTxn.should.have.property('backupKeyNonce');
+        recoveryTxn.should.have.property('expireTime');
+        recoveryTxn.should.have.property('contractSequenceId');
+        recoveryTxn.should.have.property('nextContractSequenceId');
       });
     });
   });
