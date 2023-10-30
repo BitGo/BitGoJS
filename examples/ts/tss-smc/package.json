@@ -4,7 +4,8 @@
   "description": "TSS Self Managed Cold Wallets Examples",
   "scripts": {
     "step1": "ts-node create-smc-wallet-step-1.ts",
-    "step2": "ts-node create-smc-wallet-step-2.ts"
+    "step2": "ts-node create-smc-wallet-step-2.ts",
+    "create-smc-wallet": "ts-node create-smc-wallet-reusing-keys.ts"
   },
   "dependencies": {
     "bitgo": "19.5.0"
