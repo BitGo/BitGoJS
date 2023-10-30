@@ -2,7 +2,7 @@
  * @prettier
  */
 import { bip32 } from '@bitgo/utxo-lib';
-import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
+import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 import {
   BitGoBase,
@@ -15,7 +15,6 @@ import {
   getIsUnsignedSweep,
   checkKrsProvider,
 } from '@bitgo/sdk-core';
-// import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
 import {
   AbstractEthLikeNewCoins,
   optionalDeps,
@@ -54,11 +53,13 @@ interface RecoverTokenTransaction {
 
 export class EthLikeToken extends AbstractEthLikeNewCoins {
   public readonly tokenConfig: EthLikeTokenConfig;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   protected constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig, coinNames: CoinNames) {
     const staticsCoin = coins.get(coinNames[tokenConfig.network]);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
+    this.sendMethodName = 'sendMultiSigToken';
   }
 
   static createTokenConstructor(config: EthLikeTokenConfig, coinNames: CoinNames): CoinConstructor {
@@ -488,10 +489,11 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
   }
 
   getOperation(recipient, expireTime, contractSequenceId) {
+    const network = this.getNetwork() as EthLikeNetwork;
     return [
       ['string', 'address', 'uint256', 'bytes', 'uint256', 'uint256'],
       [
-        'ERC20',
+        network.networkIdForTokenTransfer,
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(this.tokenContractAddress), 16),

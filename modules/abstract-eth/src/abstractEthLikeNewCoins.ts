@@ -354,6 +354,7 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  private static _ethLikeCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
@@ -363,6 +364,7 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
     }
 
     this._staticsCoin = staticsCoin;
+    AbstractEthLikeNewCoins._ethLikeCoin = staticsCoin;
     this.sendMethodName = 'sendMultiSig';
   }
 
@@ -458,14 +460,19 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
 
   // solve this
   static getCustomChainName(chainId?: number): string {
-    switch (chainId) {
-      case 137:
-        return 'PolygonMainnet';
-      case 80001:
-        return 'PolygonMumbai';
-      default:
-        throw new Error(`unsupported chain id ${chainId}`);
+    let chainName: string | undefined;
+    if (AbstractEthLikeNewCoins._ethLikeCoin.family === 'polygon') {
+      if (chainId === 80001) {
+        chainName = 'PolygonMumbai';
+      } else {
+        chainName = 'PolygonMainnet';
+      }
+    } else if (AbstractEthLikeNewCoins._ethLikeCoin.family === 'arbeth') {
+      chainName = 'ArbitrumOne';
+    } else if (AbstractEthLikeNewCoins._ethLikeCoin.family === 'opeth') {
+      chainName = 'OptimisticEthereum';
     }
+    return chainName;
   }
 
   /**
@@ -486,6 +493,7 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
       ethLikeCommon = optionalDeps.EthLikeCommon.default.custom(customChain);
       ethLikeCommon.setHardfork(replayProtectionOptions.hardfork);
     } else {
+      // const network = AbstractEthLikeNewCoins._ethLikeCoin.network as EthLikeNetwork;
       const customChain = optionalDeps.EthLikeCommon.CustomChain[AbstractEthLikeNewCoins.getCustomChainName()];
       ethLikeCommon = optionalDeps.EthLikeCommon.default.custom(customChain);
       ethLikeCommon.setHardfork(defaultHardfork);
@@ -670,10 +678,11 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
    * @returns {Array} operation array
    */
   getOperation(recipient: Recipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
+    const network = this.getNetwork() as EthLikeNetwork;
     return [
       ['string', 'address', 'uint256', 'bytes', 'uint256', 'uint256'],
       [
-        'POLYGON',
+        network.networkIdForNativeCoinTransfer,
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
         Buffer.from(optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.padToEven(recipient.data || '')), 'hex'),
@@ -2323,4 +2332,3 @@ export abstract class AbstractEthLikeNewCoins extends BaseCoin {
 }
 
 // buildTransaction related abstraction to be done
-// getOperation related abstraction
