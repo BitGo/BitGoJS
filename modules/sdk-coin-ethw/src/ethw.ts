@@ -1,4 +1,5 @@
 import request from 'superagent';
+
 import BigNumber from 'bignumber.js';
 import { BN } from 'ethereumjs-util';
 
@@ -14,7 +15,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { Eth, optionalDeps, TransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { Eth, optionalDeps, EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
 type FullNodeResponseBody = {
@@ -169,7 +170,7 @@ export class Ethw extends Eth {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): TransactionBuilder {
-    return new TransactionBuilder(coins.get(this.getChain()));
+  protected getTransactionBuilder(): EthTransactionBuilder {
+    return new EthTransactionBuilder(coins.get(this.getChain()));
   }
 }
