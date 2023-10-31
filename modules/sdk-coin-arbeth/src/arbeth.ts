@@ -4,11 +4,10 @@
 
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeMPCCoin } from '@bitgo/abstract-eth';
-import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { AbstractEthLikeNewCoins, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
-export class Arbeth extends AbstractEthLikeMPCCoin {
+export class Arbeth extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
@@ -17,7 +16,7 @@ export class Arbeth extends AbstractEthLikeMPCCoin {
     return new Arbeth(bitgo, staticsCoin);
   }
 
-  protected getTransactionBuilder(): EthTransactionBuilder {
+  protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }
