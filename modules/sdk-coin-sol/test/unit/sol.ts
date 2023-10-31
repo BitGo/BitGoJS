@@ -1811,6 +1811,65 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson2.numSignatures, testData.SolInputData.durableNonceSignatures);
     });
 
+    it('should build unsigned consolidation recoveries', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        bitgoKey: testData.wrwUser.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 4,
+        durableNonces: durableNonces,
+      })) as MPCSweepTxs;
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(2);
+
+      const txn1 = res.txRequests[0].transactions[0].unsignedTx;
+      txn1.should.hasOwnProperty('serializedTx');
+      txn1.should.hasOwnProperty('signableHex');
+      txn1.should.hasOwnProperty('scanIndex');
+      txn1.scanIndex.should.equal(2);
+      txn1.should.hasOwnProperty('coin');
+      txn1.coin?.should.equal('tsol');
+      txn1.should.hasOwnProperty('derivationPath');
+      txn1.derivationPath?.should.equal('m/2');
+
+      txn1.should.hasOwnProperty('coinSpecific');
+      const coinSpecific1 = txn1.coinSpecific;
+      coinSpecific1?.should.hasOwnProperty('commonKeychain');
+
+      const latestBlockhashTxnDeserialize1 = new Transaction(coin);
+      latestBlockhashTxnDeserialize1.fromRawTransaction((txn1 as MPCTx).serializedTx);
+      const latestBlockhashTxnJson1 = latestBlockhashTxnDeserialize1.toJson();
+
+      const nonce1 = testData.SolResponses.getAccountInfoResponse.body.result.value.data.parsed.info.blockhash;
+      should.equal(latestBlockhashTxnJson1.nonce, nonce1);
+      should.equal(latestBlockhashTxnJson1.feePayer, testData.wrwUser.walletAddress2);
+      should.equal(latestBlockhashTxnJson1.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+
+      const txn2 = res.txRequests[1].transactions[0].unsignedTx;
+      txn2.should.hasOwnProperty('serializedTx');
+      txn2.should.hasOwnProperty('signableHex');
+      txn2.should.hasOwnProperty('scanIndex');
+      txn2.scanIndex.should.equal(3);
+      txn2.should.hasOwnProperty('coin');
+      txn2.coin?.should.equal('tsol');
+      txn2.should.hasOwnProperty('derivationPath');
+      txn2.derivationPath?.should.equal('m/3');
+
+      txn2.should.hasOwnProperty('coinSpecific');
+      const coinSpecific2 = txn2.coinSpecific;
+      coinSpecific2?.should.hasOwnProperty('commonKeychain');
+      coinSpecific2?.should.hasOwnProperty('lastScanIndex');
+      coinSpecific2?.lastScanIndex?.should.equal(3);
+
+      const latestBlockhashTxnDeserialize2 = new Transaction(coin);
+      latestBlockhashTxnDeserialize2.fromRawTransaction((txn2 as MPCTx).serializedTx);
+      const latestBlockhashTxnJson2 = latestBlockhashTxnDeserialize2.toJson();
+
+      const nonce2 = testData.SolResponses.getAccountInfoResponse2.body.result.value.data.parsed.info.blockhash;
+      should.equal(latestBlockhashTxnJson2.nonce, nonce2);
+      should.equal(latestBlockhashTxnJson2.feePayer, testData.wrwUser.walletAddress3);
+      should.equal(latestBlockhashTxnJson2.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+    });
+
     it('should skip building consolidate transaction if balance is equal to zero', async function () {
       await basecoin
         .recoverConsolidations({
