@@ -2,13 +2,14 @@
  * @prettier
  */
 
-import { EthLikeTokenConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeMPCToken } from '@bitgo/abstract-eth';
+import { EthLikeTokenConfig, coins } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, MPCAlgorithm } from '@bitgo/sdk-core';
+import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
+import { TransactionBuilder } from './lib';
 
 export { EthLikeTokenConfig };
 
-export class BscToken extends EthLikeMPCToken {
+export class BscToken extends EthLikeToken {
   public readonly tokenConfig: EthLikeTokenConfig;
   static coinNames: CoinNames = {
     Mainnet: 'bsc',
@@ -23,6 +24,20 @@ export class BscToken extends EthLikeMPCToken {
 
   static createTokenConstructors(): NamedCoinConstructor[] {
     return super.createTokenConstructors(BscToken.coinNames);
+  }
+
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   getFullName(): string {
