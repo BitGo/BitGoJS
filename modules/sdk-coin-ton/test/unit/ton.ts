@@ -6,6 +6,7 @@ import assert from 'assert';
 import * as testData from '../resources/ton';
 import { TransactionExplanation } from '@bitgo/sdk-core';
 import should from 'should';
+import utils from '../../src/lib/utils';
 
 describe('TON:', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
@@ -230,6 +231,21 @@ describe('TON:', function () {
       await assert.rejects(async () => basecoin.isWalletAddress(params), {
         message: `invalid address: ${wrongAddress}`,
       });
+    });
+  });
+
+  describe('util class ', () => {
+    it('should validate block hash', async function () {
+      should.equal(utils.isValidBlockId('MPuOvHdu/z+t2l82YpZtiJQk8+FVKmWuKxd6ubn09fI='), true);
+      should.equal(utils.isValidBlockId('MPuOvHdu/z+t2l82YpZtiJQk8+FVKmWuKxd'), false);
+      should.equal(utils.isValidBlockId(''), false);
+    });
+
+    it('should validate transaction id', async function () {
+      should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLbVKBYxDtvpk='), true);
+      should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLb='), false);
+      should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLbVKBYxDtafdsasdadsfvpk='), false);
+      should.equal(utils.isValidTransactionId(''), false);
     });
   });
 });
