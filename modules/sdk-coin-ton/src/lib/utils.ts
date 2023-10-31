@@ -17,7 +17,11 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new Error('Method not implemented.');
+    try {
+      return Buffer.from(hash, 'base64').length === 32;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** @inheritdoc */
@@ -37,7 +41,11 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new Error('Method not implemented.');
+    try {
+      return Buffer.from(txId, 'base64').length === 32;
+    } catch (e) {
+      return false;
+    }
   }
 
   async getAddressFromPublicKey(publicKey: string): Promise<string> {
