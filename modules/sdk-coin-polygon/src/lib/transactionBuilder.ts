@@ -1,4 +1,4 @@
-import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
