@@ -29,7 +29,7 @@
   "dependencies": {
     "@bitgo/sdk-api": "^1.24.0",
     "@bitgo/sdk-core": "^8.26.0",
-    "bignumber.js": "^8.0.1",
+    "bignumber.js": "^9.1.1",
     "should-http": "^0.1.1"
   }
 }

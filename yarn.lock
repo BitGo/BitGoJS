@@ -6673,7 +6673,7 @@ bigint-mod-arith@^3.1.0:
   resolved "https://registry.npmjs.org/bigint-mod-arith/-/bigint-mod-arith-3.2.1.tgz"
   integrity sha512-roLlzeQ0okNjT8Ph9zL9Nvw85ucHSQkNndLRfAR2CVaYOEAMtbpIK3f6oJb3Jv/hg9mkrYaw/DknysTuvc8QhA==
 
-bignumber.js@8.1.1, bignumber.js@^8.0.1:
+bignumber.js@8.1.1:
   version "8.1.1"
   resolved "https://registry.npmjs.org/bignumber.js/-/bignumber.js-8.1.1.tgz"
   integrity sha512-QD46ppGintwPGuL1KqmwhR0O+N2cZUg8JG/VzwI2e28sM9TqHjQB10lI4QAaMHVbLzwVLLAwEglpKPViWX+5NQ==

@@ -43,7 +43,7 @@
     "@bitgo/sdk-core": "^8.26.0",
     "@bitgo/statics": "^29.0.0",
     "@bitgo/utxo-lib": "^9.16.0",
-    "bignumber.js": "^8.0.1",
+    "bignumber.js": "^9.1.1",
     "lodash": "^4.17.14",
     "stellar-sdk": "^10.0.1",
     "superagent": "^3.8.3"
