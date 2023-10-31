@@ -614,8 +614,7 @@ class OsmoTestnet extends Testnet implements AccountNetwork {
 class Tia extends Mainnet implements AccountNetwork {
   name = 'Celestia';
   family = CoinFamily.TIA;
-  //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
-  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
+  explorerUrl = 'https://www.mintscan.io/celestia/tx/';
 }
 
 class TiaTestnet extends Testnet implements AccountNetwork {
