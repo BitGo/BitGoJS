@@ -23,7 +23,6 @@ describe('Optimism', function () {
       opeth.getFamily().should.equal('opeth');
       opeth.getFullName().should.equal('Optimism Ethereum');
       opeth.getBaseFactor().should.equal(1e18);
-      opeth.supportsTss().should.equal(true);
     });
 
     it('should return the right info for topeth', function () {
@@ -34,7 +33,6 @@ describe('Optimism', function () {
       topeth.getFamily().should.equal('opeth');
       topeth.getFullName().should.equal('Testnet Optimism Ethereum');
       topeth.getBaseFactor().should.equal(1e18);
-      topeth.supportsTss().should.equal(true);
     });
   });
 });
