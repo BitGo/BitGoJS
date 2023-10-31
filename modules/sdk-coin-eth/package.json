@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/abstract-eth": "^1.6.0",
     "@bitgo/sdk-core": "^8.26.0",
     "@bitgo/sdk-lib-mpc": "^8.15.0",
     "@bitgo/statics": "^29.0.0",
@@ -50,7 +51,6 @@
     "@metamask/eth-sig-util": "^5.0.2",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
-    "debug": "^3.1.0",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "7.1.5",
     "ethers": "^5.1.3",

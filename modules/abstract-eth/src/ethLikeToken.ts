@@ -5,7 +5,8 @@ import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
-import { TransactionBuilder as EthTransactionBuilder, TransactionPrebuild } from '@bitgo/sdk-coin-eth';
+import { TransactionBuilder as EthLikeTransactionBuilder } from './lib';
+import { TransactionPrebuild } from './abstractEthLikeNewCoins';
 
 export type CoinNames = {
   [network: string]: string;
@@ -33,10 +34,6 @@ export class EthLikeToken extends AbstractEthLikeCoin {
       tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
     }
     return tokensCtors;
-  }
-
-  protected getTransactionBuilder(): EthTransactionBuilder {
-    return new EthTransactionBuilder(coins.get(this.getBaseChain()));
   }
 
   get type(): string {
@@ -101,5 +98,13 @@ export class EthLikeToken extends AbstractEthLikeCoin {
 
   verifyCoin(txPrebuild: TransactionPrebuild): boolean {
     return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
+  }
+
+  /**
+   * Create a new transaction builder for the current chain
+   * @return a new transaction builder
+   */
+  protected getTransactionBuilder(): EthLikeTransactionBuilder {
+    throw new Error('Method not implemented');
   }
 }

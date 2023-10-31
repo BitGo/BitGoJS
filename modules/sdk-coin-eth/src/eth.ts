@@ -4,7 +4,6 @@
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
-import debugLib from 'debug';
 import Keccak from 'keccak';
 import _ from 'lodash';
 import secp256k1 from 'secp256k1';
@@ -20,7 +19,6 @@ import {
   ECDSA,
   Ecdsa,
   ECDSAMethodTypes,
-  EthereumLibraryUnavailableError,
   FeeEstimateOptions,
   FullySignedTransaction,
   getIsKrsRecovery,
@@ -39,8 +37,6 @@ import {
   Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient,
   TypedData,
   UnexpectedAddressError,
   Util,
@@ -49,68 +45,20 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { TransactionPrebuild, optionalDeps } from '@bitgo/abstract-eth';
 
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork, ethGasConfigs } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
-import {
-  calculateForwarderV1Address,
-  getProxyInitcode,
-  getToken,
-  KeyPair as KeyPairLib,
-  TransactionBuilder,
-  TransferBuilder,
-} from './lib';
+import { calculateForwarderV1Address, getProxyInitcode, getToken, KeyPair as KeyPairLib } from './lib';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import BN from 'bn.js';
 import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
+import { TransactionBuilder } from './lib/transactionBuilder';
+import { TransferBuilder } from './lib/transferBuilder';
 
-export { Recipient, HalfSignedTransaction, FullySignedTransaction };
-
-const debug = debugLib('bitgo:v2:eth');
-
-export const optionalDeps = {
-  get ethAbi() {
-    try {
-      return require('ethereumjs-abi');
-    } catch (e) {
-      debug('unable to load ethereumjs-abi:');
-      debug(e.stack);
-      throw new EthereumLibraryUnavailableError(`ethereumjs-abi`);
-    }
-  },
-
-  get ethUtil() {
-    try {
-      return require('ethereumjs-util');
-    } catch (e) {
-      debug('unable to load ethereumjs-util:');
-      debug(e.stack);
-      throw new EthereumLibraryUnavailableError(`ethereumjs-util`);
-    }
-  },
-
-  get EthTx(): typeof EthTxLib {
-    try {
-      return require('@ethereumjs/tx');
-    } catch (e) {
-      debug('unable to load @ethereumjs/tx');
-      debug(e.stack);
-      throw new EthereumLibraryUnavailableError(`@ethereumjs/tx`);
-    }
-  },
-
-  get EthCommon(): typeof EthCommon {
-    try {
-      return require('@ethereumjs/common');
-    } catch (e) {
-      debug('unable to load @ethereumjs/common:');
-      debug(e.stack);
-      throw new EthereumLibraryUnavailableError(`@ethereumjs/common`);
-    }
-  },
-};
+export { Recipient, HalfSignedTransaction, FullySignedTransaction, TransactionPrebuild, optionalDeps };
 
 /**
  * The extra parameters to send to platform build route for hop transactions
@@ -305,20 +253,6 @@ interface BuildOptions {
 interface FeeEstimate {
   gasLimitEstimate: number;
   feeEstimate: number;
-}
-
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  hopTransaction?: HopPrebuild;
-  buildParams: {
-    recipients: Recipient[];
-  };
-  recipients: TransactionRecipient[];
-  nextContractSequenceId: string;
-  gasPrice: number;
-  gasLimit: number;
-  isBatch: boolean;
-  coin: string;
-  token?: string;
 }
 
 // TODO: This interface will need to be updated for the new fee model introduced in the London Hard Fork

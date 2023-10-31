@@ -1,17 +1,9 @@
-export * from './contractCall';
-export * from './iface';
-export * from './keyPair';
-export * from './transaction';
-export * from './transactionBuilder';
-export * from './transferBuilder';
-export * from './transferBuilders';
-export * from './transferBuilder';
-export * from './types';
-export * from './utils';
-export * from './walletUtil';
+// for Backwords Compatibility
+export * from '@bitgo/abstract-eth';
+
+// exporting the EthTransactionBuilder as it is needed in Ethw class
+export { TransactionBuilder as EthTransactionBuilder } from './transactionBuilder';
 
 // for Backwards Compatibility
-import * as Interface from './iface';
-import * as Utils from './utils';
-
+import { Interface, Utils } from '@bitgo/abstract-eth';
 export { Interface, Utils };

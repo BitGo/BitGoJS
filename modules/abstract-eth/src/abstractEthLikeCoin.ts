@@ -1,11 +1,9 @@
 /**
  * @prettier
  */
-import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-
 import {
   BaseCoin,
   BitGoBase,
@@ -22,8 +20,9 @@ import {
   TransactionRecipient as Recipient,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-
 import BigNumber from 'bignumber.js';
+
+import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -36,7 +35,7 @@ export interface TxInfo {
   txid: string;
 }
 
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
+interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
   feeInfo: EthTransactionFee;
