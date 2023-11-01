@@ -172,6 +172,169 @@ const getAccountBalanceResponseM2Derivation = {
   },
 };
 
+const getTokenAccountsByOwnerResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259019329,
+      },
+      value: [
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+                  owner: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '2000000000',
+                    decimals: 9,
+                    uiAmount: 2,
+                    uiAmountString: '2',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: '4FaMdTh9uwmroyfBxgtT7FfZV6e6ngmEFBJtXBUjjoNt',
+        },
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+                  owner: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '3000000000',
+                    decimals: 9,
+                    uiAmount: 3,
+                    uiAmountString: '3',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: 'F3xVrafJVoKGHfzXB6wXE4S1iBAwH6ZigpNhQcybHghM',
+        },
+      ],
+    },
+    id: '1',
+  },
+};
+
+const getTokenAccountsByOwnerResponse2 = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259019329,
+      },
+      value: [
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+                  owner: 'cyggsFnDvbfsPeiFXziebWsWAp6bW5Nc5SePTx8mebL',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '2000000000',
+                    decimals: 9,
+                    uiAmount: 2,
+                    uiAmountString: '2',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: '4FaMdTh9uwmroyfBxgtT7FfZV6e6ngmEFBJtXBUjjoNt',
+        },
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+                  owner: 'cyggsFnDvbfsPeiFXziebWsWAp6bW5Nc5SePTx8mebL',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '3000000000',
+                    decimals: 9,
+                    uiAmount: 3,
+                    uiAmountString: '3',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: 'F3xVrafJVoKGHfzXB6wXE4S1iBAwH6ZigpNhQcybHghM',
+        },
+      ],
+    },
+    id: '1',
+  },
+};
+
+const getTokenAccountsByOwnerResponseNoAccounts = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259020450,
+      },
+      value: [],
+    },
+    id: '1',
+  },
+};
+
 export const SolResponses = {
   getBlockhashResponse,
   getFeesResponse,
@@ -181,6 +344,9 @@ export const SolResponses = {
   getAccountBalanceResponseNoFunds,
   getAccountBalanceResponseM2Derivation,
   getAccountBalanceResponseM1Derivation,
+  getTokenAccountsByOwnerResponse,
+  getTokenAccountsByOwnerResponse2,
+  getTokenAccountsByOwnerResponseNoAccounts,
 } as const;
 
 export const accountInfo = {
@@ -232,6 +398,7 @@ export const keys = {
     '4368cecc6b8290fdab5e449c70673c5cb8d7f76481db807d41d16629143a2e1d6d97c5672a0\n' +
     '3060a1777530681a784cb15165f41e49f072d5eb8026d7a287b35',
   destinationPubKey: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
+  destinationPubKey2: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
   walletPassword: 't3stSicretly!',
   durableNoncePubKey: '6LqY5ncj7s4b1c3YJV1hsn2hVPNhEfvDCNYMaCc1jJhX',
   durableNoncePubKey2: '4Y3kQtmVUfF7nimtABPpCwjihmLgJUgm8eZTAo44c4u9',
