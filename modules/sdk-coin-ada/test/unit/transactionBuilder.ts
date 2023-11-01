@@ -66,6 +66,29 @@ describe('ADA Transaction Builder', async () => {
     should.equal(txBroadcast, testData.rawTx.unsignedTx5);
   });
 
+  it('should initialize and build tx with asset data', async () => {
+    const policyId = '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f';
+    const assetName = '534e454b';
+    const quantity = '6000000';
+    const preBuiltTx = new Transaction(coins.get('tada'));
+    preBuiltTx.fromRawTransaction(testData.rawTx.unsignedTx3);
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.initBuilder(preBuiltTx);
+
+    const tx = (await txBuilder.build()) as Transaction;
+    const txData = tx.toJson();
+    const expectedAssetName = CardanoWasm.AssetName.new(Buffer.from(assetName, 'hex'));
+    const expectedPolicyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
+    txData.outputs[0].should.have.property('multiAssets');
+    (txData.outputs[0].multiAssets as CardanoWasm.MultiAsset)
+      .get_asset(expectedPolicyId, expectedAssetName)
+      .to_str()
+      .should.equal(quantity);
+    txData.id.should.equal(testData.rawTx.txHash3);
+    const txBroadcast = tx.toBroadcastFormat();
+    should.equal(txBroadcast, testData.rawTx.unsignedTx3);
+  });
+
   it('should build a consolidate tx with single asset', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.input({

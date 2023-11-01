@@ -89,6 +89,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.output({
         address: output.address().to_bech32(),
         amount: output.amount().coin().to_str(),
+        multiAssets: output.amount().multiasset() || undefined,
       });
     }
 
@@ -234,12 +235,31 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // reset the outputs collection because now our last output has changed
     outputs = CardanoWasm.TransactionOutputs.new();
     this._transactionOutputs.forEach((output) => {
-      outputs.add(
-        CardanoWasm.TransactionOutput.new(
-          CardanoWasm.Address.from_bech32(output.address),
-          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount))
-        )
-      );
+      if (output.multiAssets) {
+        const policyId = output.multiAssets.keys().get(0);
+        const assets = output.multiAssets.get(policyId);
+        const assetName = assets!.keys().get(0);
+        const quantity = assets!.get(assetName);
+        let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+        const outputAmount = CardanoWasm.BigNum.from_str(output.amount);
+        const toAddress = CardanoWasm.Address.from_bech32(output.address);
+        txOutputBuilder = txOutputBuilder.with_address(toAddress);
+        let txOutputAmountBuilder = txOutputBuilder.next();
+        const multiAsset = CardanoWasm.MultiAsset.new();
+        const asset = CardanoWasm.Assets.new();
+        asset.insert(assetName, quantity!);
+        multiAsset.insert(policyId, asset);
+        txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(outputAmount, multiAsset);
+        const txOutput = txOutputAmountBuilder.build();
+        outputs.add(txOutput);
+      } else {
+        outputs.add(
+          CardanoWasm.TransactionOutput.new(
+            CardanoWasm.Address.from_bech32(output.address),
+            CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount))
+          )
+        );
+      }
     });
     if (this._changeAddress && this._senderBalance) {
       const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
