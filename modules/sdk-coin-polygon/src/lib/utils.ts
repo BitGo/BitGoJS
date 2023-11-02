@@ -1,4 +1,4 @@
-import { Utils, KeyPair, TxData } from '@bitgo/sdk-coin-eth';
+import { Utils, KeyPair, TxData } from '@bitgo/abstract-eth';
 import { InvalidTransactionError } from '@bitgo/sdk-core';
 import { NetworkType } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';

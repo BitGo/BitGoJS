@@ -1,9 +1,10 @@
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
+import { hexlify, hexZeroPad } from 'ethers/lib/utils';
+
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
 import { ERC721SafeTransferTypeMethodId } from '../walletUtil';
-import { hexlify, hexZeroPad } from 'ethers/lib/utils';
 
 export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenId: string;

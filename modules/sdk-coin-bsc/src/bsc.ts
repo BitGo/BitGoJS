@@ -1,10 +1,10 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeMPCCoin } from '@bitgo/abstract-eth';
+import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { TransactionBuilder } from './lib';
 
-export class Bsc extends AbstractEthLikeMPCCoin {
+export class Bsc extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
@@ -20,5 +20,15 @@ export class Bsc extends AbstractEthLikeMPCCoin {
   /** @inheritDoc */
   allowsAccountConsolidations(): boolean {
     return true;
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 }

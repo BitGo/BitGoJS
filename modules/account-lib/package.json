@@ -63,7 +63,7 @@
     "@bitgo/sdk-core": "^8.26.0",
     "@bitgo/sdk-lib-mpc": "^8.15.0",
     "@bitgo/statics": "^29.0.0",
-    "bignumber.js": "^9.0.0",
+    "bignumber.js": "^9.1.1",
     "bs58": "^4.0.1"
   },
   "devDependencies": {

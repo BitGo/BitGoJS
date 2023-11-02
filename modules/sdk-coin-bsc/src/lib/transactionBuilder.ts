@@ -27,4 +27,8 @@ export class TransactionBuilder extends EthTransactionBuilder {
   publicKey(key: string): void {
     this._sourceKeyPair = new KeyPair({ pub: key });
   }
+
+  protected getContractData(addresses: string[]): string {
+    throw new Error('Method not implemented.');
+  }
 }

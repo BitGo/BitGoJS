@@ -1,10 +1,9 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeMPCCoin } from '@bitgo/abstract-eth';
-import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { AbstractEthLikeNewCoins, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
-export class Opeth extends AbstractEthLikeMPCCoin {
+export class Opeth extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
@@ -13,7 +12,7 @@ export class Opeth extends AbstractEthLikeMPCCoin {
     return new Opeth(bitgo, staticsCoin);
   }
 
-  protected getTransactionBuilder(): EthTransactionBuilder {
+  protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }

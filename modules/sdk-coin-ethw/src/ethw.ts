@@ -1,4 +1,5 @@
 import request from 'superagent';
+
 import BigNumber from 'bignumber.js';
 import { BN } from 'ethereumjs-util';
 

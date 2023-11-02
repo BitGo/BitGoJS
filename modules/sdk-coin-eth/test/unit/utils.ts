@@ -6,9 +6,9 @@ import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
   getProxyInitcode,
+  createForwarderMethodId,
 } from '../../src';
 import * as testData from '../resources/eth';
-import * as walletUtilConstants from '../../src/lib/walletUtil';
 import { bufferToHex, setLengthLeft } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 
@@ -25,7 +25,7 @@ describe('ETH util library', function () {
   });
 
   it('Should validate valid createForwarder Id for forwarder', function () {
-    should.equal(getAddressInitializationData(), walletUtilConstants.createForwarderMethodId);
+    should.equal(getAddressInitializationData(), createForwarderMethodId);
   });
 
   it('should validate valid address', function () {

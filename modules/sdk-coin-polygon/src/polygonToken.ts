@@ -3,7 +3,7 @@
  */
 
 import { Polygon } from './polygon';
-import { TransactionPrebuild } from '@bitgo/sdk-coin-eth';
+import { TransactionPrebuild } from '@bitgo/abstract-eth';
 import { EthLikeTokenConfig, tokens, coins } from '@bitgo/statics';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 
