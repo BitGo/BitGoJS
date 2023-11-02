@@ -391,3 +391,13 @@ describe('Cold Wallet Features', () => {
     neither.should.deepEqual(expectedColdFeatures.neither.sort());
   });
 });
+
+describe('Distributed Custody Features', () => {
+  it('btc and tbtc should have distributed custody feature', () => {
+    const targetCoins = ['tbtc', 'btc'];
+    targetCoins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.DISTRIBUTED_CUSTODY).should.eql(true);
+    });
+  });
+});
