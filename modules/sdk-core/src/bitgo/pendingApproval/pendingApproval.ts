@@ -17,6 +17,7 @@ import {
 } from '../pendingApproval';
 import { RequestTracer, TssUtils } from '../utils';
 import { IWallet } from '../wallet';
+import { BuildParams } from '../wallet/BuildParams';
 
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
@@ -337,7 +338,7 @@ export class PendingApproval implements IPendingApproval {
       // it needs to be rebuilt using the special consolidation build route
       prebuildParams.prebuildTx = await this.bitgo
         .post(this.wallet.url(`/consolidateUnspents`))
-        .send(prebuildParams)
+        .send(BuildParams.encode(prebuildParams))
         .result();
       delete prebuildParams.recipients;
     }
