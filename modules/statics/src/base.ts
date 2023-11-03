@@ -240,6 +240,11 @@ export enum CoinFeature {
    * This coin supports bulk transaction creation
    */
   BULK_TRANSACTION = 'bulk-transaction',
+
+  /**
+   * This coin supports distributed custody wallets
+   */
+  DISTRIBUTED_CUSTODY = 'distributed-custody',
 }
 
 /**
