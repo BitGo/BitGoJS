@@ -620,7 +620,7 @@ class Tia extends Mainnet implements AccountNetwork {
 class TiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Celestia';
   family = CoinFamily.TIA;
-  explorerUrl = 'https://celestia.explorers.guru/transaction/';
+  explorerUrl = 'https://testnet.mintscan.io/celestia-testnet/txs/';
 }
 
 class Hash extends Mainnet implements AccountNetwork {
