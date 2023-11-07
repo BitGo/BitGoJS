@@ -620,6 +620,10 @@ describe('Recovery:', function () {
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+        replayProtectionOptions: {
+          chain: 42,
+          hardfork: 'london',
+        },
       };
       recoverEthSandbox = sinon.createSandbox();
       recoverEthSandbox
@@ -677,7 +681,7 @@ describe('Recovery:', function () {
       await basecoin
         .recover(recoveryParams)
         .should.be.rejectedWith(
-          'Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from Etherscan, got: Rate limit exceeded'
+          'Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from the explorer, got: Rate limit exceeded'
         );
     });
 
@@ -939,6 +943,10 @@ describe('Recovery:', function () {
           maxFeePerGas: 20,
         },
         isTss: true,
+        replayProtectionOptions: {
+          chain: 5,
+          hardfork: 'london',
+        },
       };
 
       const recovery = await basecoin.recover(recoveryParams);
@@ -974,6 +982,10 @@ describe('Recovery:', function () {
         isTss: true,
         gasPrice: '20000000000',
         gasLimit: '500000',
+        replayProtectionOptions: {
+          chain: 42,
+          hardfork: 'london',
+        },
       };
 
       const transaction = await basecoin.recover(recoveryParams);
