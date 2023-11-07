@@ -1,6 +1,5 @@
 import request from 'superagent';
 
-import BigNumber from 'bignumber.js';
 import { BN } from 'ethereumjs-util';
 
 import {
@@ -10,13 +9,11 @@ import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
-  TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { Eth, optionalDeps, TransactionBuilder } from '@bitgo/sdk-coin-eth';
-import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
 type FullNodeResponseBody = {
   jsonrpc: string;
@@ -30,22 +27,13 @@ type FullNodeResponseBody = {
 
 export class Ethw extends Eth {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
+    super(bitgo, staticsCoin);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Ethw(bitgo, staticsCoin);
   }
 
-  getChain(): string {
-    return 'ethw';
-  }
-  getFamily(): string {
-    return 'eth';
-  }
-  getFullName(): string {
-    return 'Ethereum PoW';
-  }
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
@@ -130,40 +118,6 @@ export class Ethw extends Eth {
       throw new Error(`ETHW full node error: ${response.body.error.code} - ${response.body.error.message}`);
     }
     return response.body;
-  }
-
-  /**
-   * Explain a transaction from txHex
-   * @param params The options with which to explain the transaction
-   */
-  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
-    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-    if (!txHex || !params.feeInfo) {
-      throw new Error('missing explain tx parameters');
-    }
-    const txBuilder = this.getTransactionBuilder();
-    txBuilder.from(txHex);
-    const tx = await txBuilder.build();
-    const outputs = tx.outputs.map((output) => {
-      return {
-        address: output.address,
-        amount: output.value,
-      };
-    });
-
-    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
-
-    return {
-      displayOrder,
-      id: tx.id,
-      outputs: outputs,
-      outputAmount: outputs
-        .reduce((accumulator, output) => accumulator.plus(output.amount), new BigNumber('0'))
-        .toFixed(0),
-      changeOutputs: [], // account based does not use change outputs
-      changeAmount: '0', // account base does not make change
-      fee: params.feeInfo,
-    };
   }
 
   /**

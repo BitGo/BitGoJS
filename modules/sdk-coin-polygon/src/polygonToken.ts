@@ -1,97 +1,45 @@
 /**
  * @prettier
  */
-
-import { Polygon } from './polygon';
-import { TransactionPrebuild } from '@bitgo/abstract-eth';
-import { EthLikeTokenConfig, tokens, coins } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-
+import { EthLikeToken, CoinNames } from '@bitgo/abstract-eth';
+import { EthLikeTokenConfig, coins } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { TransactionBuilder } from './lib';
 export { EthLikeTokenConfig };
 
-export class PolygonToken extends Polygon {
+export class PolygonToken extends EthLikeToken {
   public readonly tokenConfig: EthLikeTokenConfig;
+  static coinNames: CoinNames = {
+    Mainnet: 'polygon',
+    Testnet: 'tpolygon',
+  };
   constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig) {
-    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('polygon') : coins.get('tpolygon');
-    super(bitgo, staticsCoin);
-    this.tokenConfig = tokenConfig;
+    super(bitgo, tokenConfig, PolygonToken.coinNames);
   }
 
   static createTokenConstructor(config: EthLikeTokenConfig): CoinConstructor {
-    return (bitgo: BitGoBase) => new PolygonToken(bitgo, config);
+    return super.createTokenConstructor(config, PolygonToken.coinNames);
   }
 
   static createTokenConstructors(): NamedCoinConstructor[] {
-    const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.polygon.tokens, ...tokens.testnet.polygon.tokens]) {
-      const tokenConstructor = PolygonToken.createTokenConstructor(token);
-      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
-      tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
-    }
-    return tokensCtors;
+    return super.createTokenConstructors(PolygonToken.coinNames);
   }
 
-  get type() {
-    return this.tokenConfig.type;
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
-  get name() {
-    return this.tokenConfig.name;
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
   }
 
-  get coin() {
-    return this.tokenConfig.coin;
-  }
-
-  get network() {
-    return this.tokenConfig.network;
-  }
-
-  get tokenContractAddress() {
-    return this.tokenConfig.tokenContractAddress;
-  }
-
-  get decimalPlaces() {
-    return this.tokenConfig.decimalPlaces;
-  }
-
-  getChain(): string {
-    return this.tokenConfig.type;
-  }
-
-  getBaseChain() {
-    return this.coin;
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   getFullName(): string {
     return 'Polygon Token';
-  }
-
-  getBaseFactor() {
-    return String(Math.pow(10, this.tokenConfig.decimalPlaces));
-  }
-
-  /**
-   * Flag for sending value of 0
-   * @returns {boolean} True if okay to send 0 value, false otherwise
-   */
-  valuelessTransferAllowed() {
-    return false;
-  }
-
-  /**
-   * Flag for sending data along with transactions
-   * @returns {boolean} True if okay to send tx data (ETH), false otherwise
-   */
-  transactionDataAllowed() {
-    return false;
-  }
-
-  isToken(): boolean {
-    return true;
-  }
-
-  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
-    return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
   }
 }

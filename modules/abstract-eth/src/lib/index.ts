@@ -9,6 +9,7 @@ export * from './transferBuilder';
 export * from './types';
 export * from './utils';
 export * from './walletUtil';
+export * from './resources';
 
 // for Backwards Compatibility
 import * as Interface from './iface';

@@ -691,6 +691,10 @@ describe('Polygon', function () {
         isTss: true,
         gasPrice: 20000000000,
         gasLimit: 500000,
+        replayProtectionOptions: {
+          chain: 80001,
+          hardfork: 'london',
+        },
       };
 
       const transaction = (await basecoin.recover(recoveryParams)) as OfflineVaultTxInfo;

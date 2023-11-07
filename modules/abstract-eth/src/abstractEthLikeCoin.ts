@@ -23,6 +23,7 @@ import {
 import BigNumber from 'bignumber.js';
 
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
+import { VerifyEthAddressOptions } from './abstractEthLikeNewCoins';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -36,12 +37,12 @@ export interface TxInfo {
 }
 
 interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
+  txHex?: string;
   txInfo: TxInfo;
   feeInfo: EthTransactionFee;
   source: string;
   dataToSign: string;
-  nextContractSequenceId?: string;
+  nextContractSequenceId?: number;
   expireTime?: number;
 }
 
@@ -134,7 +135,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return {};
   }
 
-  async isWalletAddress(): Promise<boolean> {
+  async isWalletAddress(params: VerifyEthAddressOptions): Promise<boolean> {
     throw new MethodNotImplementedError();
   }
 
