@@ -83,13 +83,49 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Checks if a cosmos like Bech32 address matches given regular expression and
+   * validates memoId if present
+   * @param {string} address
+   * @param {RegExp} regExp Regular expression to validate the root address against after trimming the memoId
+   * @returns {boolean} true if address is valid
+   */
+  isValidCosmosLikeAddressWithMemoId(address: string, regExp: RegExp): boolean {
+    if (typeof address !== 'string') return false;
+    const addressArray = address.split('?memoId=');
+    if (
+      ![1, 2].includes(addressArray.length) || // should have at most one occurrence of 'memoId='
+      !regExp.test(addressArray[0]) ||
+      (addressArray[1] && !this.isValidMemoId(addressArray[1]))
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Return boolean indicating whether a memo id is valid
+   *
+   * @param memoId memo id
+   * @returns true if memo id is valid
+   */
+  isValidMemoId(memoId: string): boolean {
+    let memoIdNumber: BigNumber;
+    try {
+      memoIdNumber = new BigNumber(memoId);
+    } catch (e) {
+      return false;
+    }
+    return memoIdNumber.gte(0) && memoIdNumber.isInteger();
+  }
+
+  /**
    * Validates if the address matches with regex @see accountAddressRegex
    *
    * @param {string} address
    * @returns {boolean} - the validation result
    */
   isValidAddress(address: string): boolean {
-    return constants.accountAddressRegex.test(address);
+    return this.isValidCosmosLikeAddressWithMemoId(address, constants.accountAddressRegex);
   }
 
   /**

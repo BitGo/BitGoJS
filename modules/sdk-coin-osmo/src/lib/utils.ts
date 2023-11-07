@@ -7,7 +7,7 @@ import * as constants from './constants';
 export class OsmoUtils extends CosmosUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    return constants.accountAddressRegex.test(address);
+    return this.isValidCosmosLikeAddressWithMemoId(address, constants.accountAddressRegex);
   }
 
   /** @inheritdoc */

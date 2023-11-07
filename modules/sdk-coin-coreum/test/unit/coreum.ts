@@ -115,6 +115,9 @@ describe('Coreum', function () {
       should.equal(mainnetUtils.isValidAddress('dfjk35y'), false);
       should.equal(mainnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(mainnetUtils.isValidAddress(''), false);
+      should.equal(mainnetUtils.isValidAddress(mainnetAddress.validMemoIdAddress), true);
+      should.equal(mainnetUtils.isValidAddress(mainnetAddress.invalidMemoIdAddress), false);
+      should.equal(mainnetUtils.isValidAddress(mainnetAddress.multipleMemoIdAddress), false);
 
       should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
       should.equal(testnetUtils.isValidAddress(testnetAddress.address2), true);
@@ -123,6 +126,9 @@ describe('Coreum', function () {
       should.equal(testnetUtils.isValidAddress('dfjk35y'), false);
       should.equal(testnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(testnetUtils.isValidAddress(''), false);
+      should.equal(testnetUtils.isValidAddress(testnetAddress.validMemoIdAddress), true);
+      should.equal(testnetUtils.isValidAddress(testnetAddress.invalidMemoIdAddress), false);
+      should.equal(testnetUtils.isValidAddress(testnetAddress.multipleMemoIdAddress), false);
     });
 
     it('should validate validator addresses correctly', () => {

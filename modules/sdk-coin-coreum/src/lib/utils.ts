@@ -16,9 +16,9 @@ export class CoreumUtils extends CosmosUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
     if (this.networkType === NetworkType.TESTNET) {
-      return constants.testnetAccountAddressRegex.test(address);
+      return this.isValidCosmosLikeAddressWithMemoId(address, constants.testnetAccountAddressRegex);
     }
-    return constants.mainnetAccountAddressRegex.test(address);
+    return this.isValidCosmosLikeAddressWithMemoId(address, constants.mainnetAccountAddressRegex);
   }
 
   /** @inheritdoc */

@@ -15,7 +15,7 @@ import Keccak from 'keccak';
 export class IslmUtils extends CosmosUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    return constants.accountAddressRegex.test(address);
+    return this.isValidCosmosLikeAddressWithMemoId(address, constants.accountAddressRegex);
   }
 
   /** @inheritdoc */

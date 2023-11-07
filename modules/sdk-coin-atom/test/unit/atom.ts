@@ -91,6 +91,9 @@ describe('ATOM', function () {
       should.equal(utils.isValidAddress('dfjk35y'), false);
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);
+      should.equal(utils.isValidAddress(address.validMemoIdAddress), true);
+      should.equal(utils.isValidAddress(address.invalidMemoIdAddress), false);
+      should.equal(utils.isValidAddress(address.multipleMemoIdAddress), false);
     });
     it('should validate validator addresses correctly', () => {
       should.equal(utils.isValidValidatorAddress(address.validatorAddress1), true);
