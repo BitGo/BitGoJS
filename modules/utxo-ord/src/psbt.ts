@@ -56,14 +56,7 @@ export function createPsbtFromOutputLayout(
     throw new Error(`must provide at least one unspent`);
   }
   unspents.forEach((u) =>
-    bitgo.addWalletUnspentToPsbt(
-      psbt,
-      u,
-      inputBuilder.walletKeys,
-      inputBuilder.signer,
-      inputBuilder.cosigner,
-      psbt.network
-    )
+    bitgo.addWalletUnspentToPsbt(psbt, u, inputBuilder.walletKeys, inputBuilder.signer, inputBuilder.cosigner)
   );
   const ordInput = OrdOutput.joinAll(unspents.map((u) => new OrdOutput(u.value)));
   const ordOutputs = getOrdOutputsForLayout(ordInput, outputLayout);

@@ -25,8 +25,7 @@ function createCommitTransactionPsbt(commitAddress: string, walletKeys: utxolib.
       u,
       inputBuilder.walletKeys,
       inputBuilder.signer,
-      inputBuilder.cosigner,
-      commitTransactionPsbt.network
+      inputBuilder.cosigner
     )
   );
   return commitTransactionPsbt;
