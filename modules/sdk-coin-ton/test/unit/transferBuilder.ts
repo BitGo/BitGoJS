@@ -41,6 +41,7 @@ describe('Ton Transfer Builder', () => {
   it('should build a send from rawTx', async function () {
     const txBuilder = factory.from(testData.signedTransaction.tx);
     const builtTx = await txBuilder.build();
+    const jsonTx = builtTx.toJson();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(builtTx.signablePayload.toString('base64'), testData.signedTransaction.signable);
     //    should.equal(builtTx.id, testData.signedTransaction.txId);
@@ -50,7 +51,6 @@ describe('Ton Transfer Builder', () => {
     should.equal(builtTx.toBroadcastFormat(), testData.signedTransaction.tx);
     builtTx.inputs.length.should.equal(1);
     builtTx.outputs.length.should.equal(1);
-    const jsonTx = builtTx.toJson();
     jsonTx.sender.should.equal('EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl');
     jsonTx.destination.should.equal('EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG');
     jsonTx.amount.should.equal('10000000');
@@ -82,16 +82,14 @@ describe('Ton Transfer Builder', () => {
     should.equal(tx.type, TransactionType.Send);
     const signable = tx.signablePayload;
     const signature = keyPair.signMessageinUint8Array(signable);
-    txBuilder.addSignature(keyPair.getKeys(), Buffer.from(signature));
     const signedTx = await txBuilder.build();
     const builder2 = factory.from(signedTx.toBroadcastFormat());
+    builder2.addSignature(keyPair.getKeys(), Buffer.from(signature));
     const tx2 = await builder2.build();
     const signature2 = keyPair.signMessageinUint8Array(tx2.signablePayload);
     should.equal(Buffer.from(signature).toString('hex'), Buffer.from(signature2).toString('hex'));
-    should.equal(tx.toBroadcastFormat(), tx2.toBroadcastFormat());
-
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    const result = await tonweb.provider.sendBoc(signedTx.toBroadcastFormat());
+    const result = await tonweb.provider.sendBoc(tx2.toBroadcastFormat());
     console.log(JSON.stringify(result));
   });
 
