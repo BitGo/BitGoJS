@@ -45,7 +45,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this.transaction.signature.push(signature.toString('hex'));
+    this.transaction.signature[0] = signature.toString('hex');
   }
 
   /**
@@ -73,12 +73,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     await this.transaction.build();
-    //    if (this.si) {
-    //      this.transaction.sign(this._signer);
-    //    }
-    //    if (this._signatures?.length > 0) {
-    //      this.transaction.constructSignedPayload(this._signatures[0].signature);
-    //    }
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }

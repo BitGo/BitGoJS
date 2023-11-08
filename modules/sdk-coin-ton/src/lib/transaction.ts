@@ -59,12 +59,14 @@ export class Transaction extends BaseTransaction {
     const signingMessage = this.createSigningMessage(WALLET_ID, this.seqno, this.expireTime);
     const sendMode = 3;
     signingMessage.bits.writeUint8(sendMode);
-    signingMessage.refs.push(this.createOutMsg(this.recipient.address, this.recipient.amount, this.message));
+    const outMsg = this.createOutMsg(this.recipient.address, this.recipient.amount, this.message);
+    signingMessage.refs.push(outMsg);
     this.unsignedMessage = Buffer.from(await signingMessage.hash()).toString('hex');
 
     const signature =
       this._signatures.length > 0 ? this._signatures[0] : Buffer.from(new Uint8Array(64)).toString('hex');
     const finalMessage = await this.createExternalMessage(signingMessage, this.seqno, signature);
+
     this.finalMessage = TonWeb.utils.bytesToBase64(await finalMessage.toBoc(false));
 
     this._id = TonWeb.utils.bytesToBase64(await finalMessage.hash());
