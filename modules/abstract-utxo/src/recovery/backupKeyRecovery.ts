@@ -348,7 +348,7 @@ export async function backupKeyRecovery(
       : undefined;
 
   unspents.forEach((unspent) => {
-    utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, walletKeys, 'user', 'backup', coin.network);
+    utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, walletKeys, 'user', 'backup');
   });
 
   let krsFee = BigInt(0);

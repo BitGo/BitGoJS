@@ -194,18 +194,7 @@ function addUnspentToPsbt(psbt: UtxoPsbt, id: string): void {
   });
 }
 
-export function addReplayProtectionUnspentToPsbt(
-  psbt: UtxoPsbt,
-  u: Unspent<bigint>,
-  redeemScript: Buffer,
-  /**
-   * @deprecated
-   */
-  network: Network = psbt.network
-): void {
-  if (psbt.network !== network) {
-    throw new Error('psbt network does not match network');
-  }
+export function addReplayProtectionUnspentToPsbt(psbt: UtxoPsbt, u: Unspent<bigint>, redeemScript: Buffer): void {
   addUnspentToPsbt(psbt, u.id);
   updateReplayProtectionUnspentToPsbt(psbt, psbt.inputCount - 1, u, redeemScript);
 }
@@ -356,15 +345,8 @@ export function addWalletUnspentToPsbt(
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
-  cosigner: KeyName,
-  /**
-   * @deprecated
-   */
-  network: Network = psbt.network
+  cosigner: KeyName
 ): void {
-  if (psbt.network !== network) {
-    throw new Error('psbt network does not match network');
-  }
   addUnspentToPsbt(psbt, u.id);
   updateWalletUnspentForPsbt(psbt, psbt.inputCount - 1, u, rootWalletKeys, signer, cosigner);
 }
