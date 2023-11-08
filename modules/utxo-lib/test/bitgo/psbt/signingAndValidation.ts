@@ -8,6 +8,7 @@ import {
   addWalletOutputToPsbt,
   addWalletUnspentToPsbt,
   createPsbtForNetwork,
+  TX_INPUT_SEQUENCE_NUMBER_FINAL,
   getInternalChainCode,
   KeyName,
   outputScripts,
@@ -39,6 +40,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
     `signer=${signerName}`,
     `cosigner=${cosignerName}`,
   ].join(',')}`, function () {
+    const TX_INPUT_SEQUENCE_NUMBER_NON_FINAL = 73;
     let psbt: UtxoPsbt;
     before('create transaction', async function () {
       // Build a fully hydrated UtxoPsbt
@@ -62,7 +64,11 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
       } else {
         const unspents = mockUnspents(walletKeys, [scriptType], BigInt(1e8), network) as WalletUnspent<bigint>[];
-        unspents.forEach((unspent) => addWalletUnspentToPsbt(psbt, unspent, walletKeys, signerName, cosignerName));
+        unspents.forEach((unspent) =>
+          addWalletUnspentToPsbt(psbt, unspent, walletKeys, signerName, cosignerName, {
+            sequenceNumber: TX_INPUT_SEQUENCE_NUMBER_NON_FINAL,
+          })
+        );
       }
 
       // Add the outputs
@@ -86,6 +92,11 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction();
       assert(tx);
+      if (scriptType === 'p2shP2pk') {
+        tx.ins.forEach((input) => assert.strictEqual(input.sequence, TX_INPUT_SEQUENCE_NUMBER_FINAL));
+      } else {
+        tx.ins.forEach((input) => assert.strictEqual(input.sequence, TX_INPUT_SEQUENCE_NUMBER_NON_FINAL));
+      }
     });
   });
 }

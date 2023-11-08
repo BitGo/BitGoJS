@@ -36,6 +36,9 @@ import { parseSignatureScript } from '../parseInput';
 import { checkForInput } from 'bip174/src/lib/utils';
 import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 
+/** Final (non-replaceable) */
+export const TX_INPUT_SEQUENCE_NUMBER_FINAL = 0xffffffff;
+
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
   index: number;
@@ -186,11 +189,16 @@ export function updateReplayProtectionUnspentToPsbt(
   }
 }
 
-function addUnspentToPsbt(psbt: UtxoPsbt, id: string): void {
+function addUnspentToPsbt(
+  psbt: UtxoPsbt,
+  id: string,
+  { sequenceNumber = TX_INPUT_SEQUENCE_NUMBER_FINAL }: { sequenceNumber?: number } = {}
+): void {
   const { txid, vout } = parseOutputId(id);
   psbt.addInput({
     hash: txid,
     index: vout,
+    sequence: sequenceNumber,
   });
 }
 
@@ -345,8 +353,11 @@ export function addWalletUnspentToPsbt(
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
-  cosigner: KeyName
+  cosigner: KeyName,
+  customParams?: { sequenceNumber?: number }
 ): void {
-  addUnspentToPsbt(psbt, u.id);
+  addUnspentToPsbt(psbt, u.id, {
+    sequenceNumber: customParams ? customParams.sequenceNumber : TX_INPUT_SEQUENCE_NUMBER_FINAL,
+  });
   updateWalletUnspentForPsbt(psbt, psbt.inputCount - 1, u, rootWalletKeys, signer, cosigner);
 }
