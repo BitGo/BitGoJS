@@ -341,6 +341,7 @@ exports.createTransaction = function (params) {
     }
 
     return params.wallet.unspentsPaged(options).then(function (results) {
+      console.log(`Unspents fetched\n:  ${JSON.stringify(results, null, 2)}`);
       totalUnspentsCount = results.total;
       fetchedUnspentsCount = results.count;
       unspents = results.unspents.filter(function (u) {
