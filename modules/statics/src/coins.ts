@@ -139,6 +139,7 @@ const CSPR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.STAKING,
 ];
 const ALGO_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -202,6 +203,7 @@ const STX_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.STAKING,
 ];
 const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const MATIC_FEATURES = [
