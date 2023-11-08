@@ -531,13 +531,7 @@ export class Atom extends BaseCoin {
    * @returns true if memo id is valid
    */
   isValidMemoId(memoId: string): boolean {
-    let memoIdNumber;
-    try {
-      memoIdNumber = new BigNumber(memoId);
-    } catch (e) {
-      return false;
-    }
-    return memoIdNumber.gte(0);
+    return utils.isValidMemoId(memoId);
   }
 
   private getKeyCombinedFromTssKeyShares(
