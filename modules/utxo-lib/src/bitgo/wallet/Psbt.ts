@@ -9,7 +9,7 @@ import { UtxoTransaction } from '../UtxoTransaction';
 import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
-import { createPsbtFromTransaction } from '../transaction';
+import { createPsbtFromHex, createPsbtFromTransaction } from '../transaction';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
 
 import {
@@ -556,7 +556,7 @@ export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<big
  * It is not BIP-174 compliant, so use it carefully.
  */
 export function clonePsbtWithoutNonWitnessUtxo(psbt: UtxoPsbt): UtxoPsbt {
-  const newPsbt = psbt.clone();
+  const newPsbt = createPsbtFromHex(psbt.toHex(), psbt.network);
   const txInputs = psbt.txInputs;
 
   psbt.data.inputs.forEach((input, i) => {

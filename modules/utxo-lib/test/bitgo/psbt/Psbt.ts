@@ -190,7 +190,12 @@ function runExtractP2msOnlyHalfSignedTxTest(network: Network, inputs: Input[], o
   });
 }
 
-function runBuildSignSendFlowTest(network: Network, inputs: Input[], outputs: Output[]) {
+function runBuildSignSendFlowTest(
+  network: Network,
+  inputs: Input[],
+  outputs: Output[],
+  { skipNonWitnessUtxo = false } = {}
+) {
   const coin = getNetworkName(network);
 
   function assertValidate(psbt: UtxoPsbt) {
@@ -204,14 +209,24 @@ function runBuildSignSendFlowTest(network: Network, inputs: Input[], outputs: Ou
   }
 
   describe(`Build, sign & send flow for ${coin}`, function () {
-    it(`success for ${coin}`, function () {
-      const psbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'unsigned', {
+    /**
+     * Skip adding nonWitnessUtxos to psbts
+     * ------------------------------------
+     * In the instance that we want to doing a bulk sweep, for network and client performance reasons we are substituting
+     * the nonWitnessUtxo for p2sh and p2shP2pk inputs with a witnessUtxo. We need the witnessUtxo so that we can half
+     * sign the transaction locally with the user key. When we send the half signed to BitGo, the PSBT will be properly
+     * populated such that the non-segwit inputs have the nonWitnessUtxo. This means when we send it to BitGo we should
+     * remove the witnessUtxo so that it just has the partialSig and redeemScript.
+     */
+    it(`success for ${coin}${skipNonWitnessUtxo ? ' without nonWitnessUtxo for p2sh' : ''}`, function () {
+      const parentPsbt = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'unsigned', {
         signers: {
           signerName: 'user',
           cosignerName: 'bitgo',
         },
       });
 
+      let psbt = skipNonWitnessUtxo ? clonePsbtWithoutNonWitnessUtxo(parentPsbt) : parentPsbt;
       addXpubsToPsbt(psbt, rootWalletKeys);
       psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
 
@@ -231,6 +246,7 @@ function runBuildSignSendFlowTest(network: Network, inputs: Input[], outputs: Ou
           signerName: 'user',
           cosignerName: 'bitgo',
         },
+        skipNonWitnessUtxo,
       });
 
       psbtWithoutPrevTx = clonePsbtWithoutNonWitnessUtxo(psbt);
@@ -253,11 +269,37 @@ function runBuildSignSendFlowTest(network: Network, inputs: Input[], outputs: Ou
 
       psbtFromHsm = createPsbtFromHex(hexAtHsm, network);
       deleteWitnessUtxoForNonSegwitInputs(psbtFromHsm);
+
+      if (skipNonWitnessUtxo) {
+        psbt = parentPsbt;
+      }
       psbt.combine(psbtFromHsm);
 
       assertValidate(psbt);
       assert.doesNotThrow(() => psbt.finalizeAllInputs().extractTransaction());
     });
+  });
+}
+
+function runBuildPsbtWithSDK(network: Network, inputs: Input[], outputs: Output[]) {
+  const coin = getNetworkName(network);
+  it(`check that building a PSBT while skipping nonWitnessUtxo works - ${coin}`, async function () {
+    const psbtWithNonWitness = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'unsigned', {
+      signers: {
+        signerName: 'user',
+        cosignerName: 'bitgo',
+      },
+    });
+    const psbtWithoutNonWitness = testutil.constructPsbt(inputs, outputs, network, rootWalletKeys, 'unsigned', {
+      signers: {
+        signerName: 'user',
+        cosignerName: 'bitgo',
+      },
+      skipNonWitnessUtxo: true,
+    });
+
+    const clonedPsbt = clonePsbtWithoutNonWitnessUtxo(psbtWithNonWitness);
+    assert.deepStrictEqual(psbtWithoutNonWitness.toHex(), clonedPsbt.toHex());
   });
 }
 
@@ -274,7 +316,11 @@ getNetworkList()
       isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
     );
     const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
-    runBuildSignSendFlowTest(network, supportedPsbtInputs, supportedPsbtOutputs);
+    [false, true].forEach((skipNonWitnessUtxo) =>
+      runBuildSignSendFlowTest(network, supportedPsbtInputs, supportedPsbtOutputs, { skipNonWitnessUtxo })
+    );
+
+    runBuildPsbtWithSDK(network, supportedPsbtInputs, supportedPsbtOutputs);
   });
 
 describe('isTransactionWithKeyPathSpendInput', function () {
