@@ -1,11 +1,9 @@
 import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
-import EthereumAbi from 'ethereumjs-abi';
 import {
   Transaction,
   getCommon,
   TransactionBuilder as EthLikeTransactionBuilder,
   TransferBuilder,
-  walletSimpleConstructor,
 } from '@bitgo/abstract-eth';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 
@@ -25,22 +23,8 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
     super(_coinConfig);
     this._common = getCommon(this._coinConfig.network as EthereumNetwork);
     this.transaction = new Transaction(this._coinConfig, this._common);
+    this._walletSimpleByteCode = walletSimpleByteCode;
   }
-
-  /**
-   * Returns the smart contract encoded data
-   *
-   * @param {string[]} addresses - the contract signers
-   * @returns {string} - the smart contract encoded data
-   */
-  protected getContractData(addresses: string[]): string {
-    const params = [addresses];
-    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
-      .toString('hex')
-      .replace('0x', '');
-    return walletSimpleByteCode + resultEncodedParameters;
-  }
-  // endregion
 
   /**
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
