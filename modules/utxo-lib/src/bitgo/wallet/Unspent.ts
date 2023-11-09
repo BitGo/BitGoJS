@@ -163,7 +163,8 @@ export function updateReplayProtectionUnspentToPsbt(
   psbt: UtxoPsbt,
   inputIndex: number,
   u: Unspent<bigint>,
-  redeemScript?: Buffer
+  redeemScript?: Buffer,
+  customParams?: { skipNonWitnessUtxo?: boolean }
 ): void {
   if (!psbtIncludesUnspentAtIndex(psbt, inputIndex, u.id)) {
     throw new Error(`unspent does not correspond to psbt input`);
@@ -178,10 +179,10 @@ export function updateReplayProtectionUnspentToPsbt(
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
   const isZcash = getMainnet(psbt.network) === networks.zcash;
-  if (!isUnspentWithPrevTx(u) && !isZcash) {
+  if (!isUnspentWithPrevTx(u) && !isZcash && !customParams?.skipNonWitnessUtxo) {
     throw new Error('Error, require previous tx to add to PSBT');
   }
-  if (isZcash && !input.witnessUtxo) {
+  if ((isZcash && !input.witnessUtxo) || customParams?.skipNonWitnessUtxo) {
     const { script, value } = toPrevOutput(u, psbt.network);
     psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
   } else if (!isZcash && !input.nonWitnessUtxo) {
@@ -202,13 +203,21 @@ function addUnspentToPsbt(
   });
 }
 
-export function addReplayProtectionUnspentToPsbt(psbt: UtxoPsbt, u: Unspent<bigint>, redeemScript: Buffer): void {
+export function addReplayProtectionUnspentToPsbt(
+  psbt: UtxoPsbt,
+  u: Unspent<bigint>,
+  redeemScript: Buffer,
+  customParams?: { skipNonWitnessUtxo?: boolean }
+): void {
   addUnspentToPsbt(psbt, u.id);
-  updateReplayProtectionUnspentToPsbt(psbt, psbt.inputCount - 1, u, redeemScript);
+  updateReplayProtectionUnspentToPsbt(psbt, psbt.inputCount - 1, u, redeemScript, customParams);
 }
 
 /**
  * Update the PSBT with the unspent data for the input at the given index if the data is not there already.
+ *
+ * If skipNonWitnessUtxo is true, then the nonWitnessUtxo will not be added for an input that requires it (e.g. non-segwit)
+ * and instead the witnessUtxo will be added
  *
  * @param psbt
  * @param inputIndex
@@ -216,6 +225,7 @@ export function addReplayProtectionUnspentToPsbt(psbt: UtxoPsbt, u: Unspent<bigi
  * @param rootWalletKeys
  * @param signer
  * @param cosigner
+ * @param customParams
  */
 export function updateWalletUnspentForPsbt(
   psbt: UtxoPsbt,
@@ -223,7 +233,8 @@ export function updateWalletUnspentForPsbt(
   u: WalletUnspent<bigint>,
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
-  cosigner: KeyName
+  cosigner: KeyName,
+  customParams?: { skipNonWitnessUtxo?: boolean }
 ): void {
   if (!psbtIncludesUnspentAtIndex(psbt, inputIndex, u.id)) {
     throw new Error(`unspent does not correspond to psbt input`);
@@ -234,7 +245,7 @@ export function updateWalletUnspentForPsbt(
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
   const isZcashOrSegwit = isSegwit(u.chain) || getMainnet(psbt.network) === networks.zcash;
-  if (isZcashOrSegwit && !input.witnessUtxo) {
+  if ((isZcashOrSegwit && !input.witnessUtxo) || customParams?.skipNonWitnessUtxo) {
     const { script, value } = toPrevOutput(u, psbt.network);
     psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
   } else if (!isZcashOrSegwit) {
@@ -354,10 +365,18 @@ export function addWalletUnspentToPsbt(
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
   cosigner: KeyName,
-  customParams?: { sequenceNumber?: number }
+  customParams?: { sequenceNumber?: number; skipNonWitnessUtxo?: boolean }
 ): void {
   addUnspentToPsbt(psbt, u.id, {
     sequenceNumber: customParams ? customParams.sequenceNumber : TX_INPUT_SEQUENCE_NUMBER_FINAL,
   });
-  updateWalletUnspentForPsbt(psbt, psbt.inputCount - 1, u, rootWalletKeys, signer, cosigner);
+  updateWalletUnspentForPsbt(
+    psbt,
+    psbt.inputCount - 1,
+    u,
+    rootWalletKeys,
+    signer,
+    cosigner,
+    customParams ? { skipNonWitnessUtxo: customParams.skipNonWitnessUtxo } : {}
+  );
 }

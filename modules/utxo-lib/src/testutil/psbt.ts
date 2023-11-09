@@ -24,6 +24,7 @@ import {
   UtxoPsbt,
   UtxoTransaction,
   verifySignatureWithUnspent,
+  withUnsafeNonSegwit,
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
@@ -116,19 +117,32 @@ export function signPsbtInput(
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
+    skipNonWitnessUtxo?: boolean;
   }
 ): void {
-  const { signers, deterministic } = params ?? {};
+  function signPsbt(psbt: UtxoPsbt, signFunc: () => void, skipNonWitnessUtxo?: boolean) {
+    if (skipNonWitnessUtxo) {
+      withUnsafeNonSegwit(psbt, signFunc);
+    } else {
+      signFunc();
+    }
+  }
+
+  const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
   const { signerName, cosignerName } = signers ? signers : getSigners(input.scriptType);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
-      psbt.signInput(inputIndex, rootWalletKeys[signerName]);
+      signPsbt(psbt, () => psbt.signInput(inputIndex, rootWalletKeys[signerName]), skipNonWitnessUtxo);
     } else {
-      psbt.signInputHD(inputIndex, rootWalletKeys[signerName]);
+      signPsbt(psbt, () => psbt.signInputHD(inputIndex, rootWalletKeys[signerName]), skipNonWitnessUtxo);
     }
   }
   if (sign === 'fullsigned' && cosignerName && input.scriptType !== 'p2shP2pk') {
-    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic });
+    signPsbt(
+      psbt,
+      () => psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic }),
+      skipNonWitnessUtxo
+    );
   }
 }
 
@@ -144,11 +158,12 @@ export function signAllPsbtInputs(
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
+    skipNonWitnessUtxo?: boolean;
   }
 ): void {
-  const { signers, deterministic } = params ?? {};
+  const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
   inputs.forEach((input, inputIndex) => {
-    signPsbtInput(psbt, input, inputIndex, rootWalletKeys, sign, { signers, deterministic });
+    signPsbtInput(psbt, input, inputIndex, rootWalletKeys, sign, { signers, deterministic, skipNonWitnessUtxo });
   });
 }
 
@@ -164,9 +179,10 @@ export function constructPsbt(
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
+    skipNonWitnessUtxo?: boolean;
   }
 ): UtxoPsbt {
-  const { signers, deterministic } = params ?? {};
+  const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
@@ -181,11 +197,11 @@ export function constructPsbt(
   unspents.forEach((u, i) => {
     const { signerName, cosignerName } = signers ? signers : getSigners(inputs[i].scriptType);
     if (isWalletUnspent(u) && cosignerName) {
-      addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signerName, cosignerName);
+      addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signerName, cosignerName, { skipNonWitnessUtxo });
     } else {
       const { redeemScript } = createOutputScriptP2shP2pk(rootWalletKeys[signerName].publicKey);
       assert(redeemScript);
-      addReplayProtectionUnspentToPsbt(psbt, u, redeemScript);
+      addReplayProtectionUnspentToPsbt(psbt, u, redeemScript, { skipNonWitnessUtxo });
     }
   });
 
@@ -211,10 +227,10 @@ export function constructPsbt(
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo'], { deterministic });
 
-  signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', { signers });
+  signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', { signers, skipNonWitnessUtxo });
 
   if (sign === 'fullsigned') {
-    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, { signers, deterministic });
+    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, { signers, deterministic, skipNonWitnessUtxo });
   }
 
   return psbt;
