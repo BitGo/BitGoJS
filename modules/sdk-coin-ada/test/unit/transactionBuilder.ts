@@ -105,7 +105,7 @@ describe('ADA Transaction Builder', async () => {
       asset_name: assetName,
       quantity: quantity,
     });
-    const minAmountForSingleAsset = 1000000;
+    const minAmountForSingleAsset = 1500000;
     const totalInput = 20000000;
     txBuilder.changeAddress(testData.rawTx.outputAddress1.address, totalInput.toString());
     txBuilder.ttl(800000000);
@@ -166,7 +166,7 @@ describe('ADA Transaction Builder', async () => {
     });
 
     const totalInput = 20000000;
-    const minAmountForSingleAsset = 1000000;
+    const minAmountForSingleAsset = 1500000;
     txBuilder.changeAddress(testData.rawTx.outputAddress1.address, totalInput.toString());
     txBuilder.ttl(800000000);
     const tx = (await txBuilder.build()) as Transaction;
@@ -231,7 +231,7 @@ describe('ADA Transaction Builder', async () => {
     txBuilder.ttl(800000000);
     await txBuilder
       .build()
-      .should.rejectedWith('Insufficient funds: need a minimum of 1 ADA per output to construct token consolidation');
+      .should.rejectedWith('Insufficient funds: need a minimum of 1.5 ADA per output to construct token consolidation');
   });
 
   it('build and sign a transfer tx', async () => {
