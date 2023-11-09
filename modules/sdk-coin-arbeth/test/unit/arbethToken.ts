@@ -29,4 +29,9 @@ describe('Arbeth Token:', function () {
     arbethTokenCoin.network.should.equal('Testnet');
     arbethTokenCoin.decimalPlaces.should.equal(18);
   });
+
+  it('should return same token by contract address', function () {
+    const tokencoinBycontractAddress = bitgo.coin(arbethTokenCoin.tokenContractAddress);
+    arbethTokenCoin.should.deepEqual(tokencoinBycontractAddress);
+  });
 });
