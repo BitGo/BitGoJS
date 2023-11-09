@@ -187,4 +187,4 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Build BitGoJS Express Docker Image
-        run: docker build .
+        run: podman build .
