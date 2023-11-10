@@ -39,6 +39,11 @@ import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil'
 /** Final (non-replaceable) */
 export const TX_INPUT_SEQUENCE_NUMBER_FINAL = 0xffffffff;
 
+/** Non-Final (Replaceable)
+ * Reference: https://github.com/bitcoin/bitcoin/blob/v25.1/src/rpc/rawtransaction_util.cpp#L49
+ * */
+export const MAX_BIP125_RBF_SEQUENCE = 0xffffffff - 2;
+
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
   index: number;
@@ -365,11 +370,14 @@ export function addWalletUnspentToPsbt(
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
   cosigner: KeyName,
-  customParams?: { sequenceNumber?: number; skipNonWitnessUtxo?: boolean }
+  customParams?: { isReplaceableByFee?: boolean; skipNonWitnessUtxo?: boolean }
 ): void {
-  addUnspentToPsbt(psbt, u.id, {
-    sequenceNumber: customParams ? customParams.sequenceNumber : TX_INPUT_SEQUENCE_NUMBER_FINAL,
-  });
+  let sequenceNumber = TX_INPUT_SEQUENCE_NUMBER_FINAL;
+  if (customParams && customParams.isReplaceableByFee) {
+    sequenceNumber = MAX_BIP125_RBF_SEQUENCE;
+  }
+
+  addUnspentToPsbt(psbt, u.id, { sequenceNumber });
   updateWalletUnspentForPsbt(
     psbt,
     psbt.inputCount - 1,
