@@ -282,7 +282,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         // support for multi-asset consolidation
         if (this._multiAssets !== undefined) {
           const totalNumberOfAssets = CardanoWasm.BigNum.from_str(this._multiAssets.length.toString());
-          const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str('1000000');
+          const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str('1500000');
           const minAmountNeededForTotalAssetOutputs = minAmountNeededForOneAssetOutput.checked_mul(totalNumberOfAssets);
 
           if (!change.less_than(minAmountNeededForTotalAssetOutputs)) {
@@ -317,7 +317,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
             outputs.add(changeOutput);
           } else {
             throw new BuildTransactionError(
-              'Insufficient funds: need a minimum of 1 ADA per output to construct token consolidation'
+              'Insufficient funds: need a minimum of 1.5 ADA per output to construct token consolidation'
             );
           }
         } else {
