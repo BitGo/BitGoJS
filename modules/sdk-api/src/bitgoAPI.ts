@@ -234,7 +234,13 @@ export class BitGoAPI implements BitGoBase {
     }
     this._env = this.env = env;
 
-    const supportedApiTokens = ['etherscanApiToken', 'polygonscanApiToken', 'snowtraceApiToken'];
+    const supportedApiTokens = [
+      'etherscanApiToken',
+      'polygonscanApiToken',
+      'snowtraceApiToken',
+      'arbiscanApiToken',
+      'optimismEtherscanApiToken',
+    ];
 
     Object.keys(params).forEach((key) => {
       if (supportedApiTokens.includes(key)) {
