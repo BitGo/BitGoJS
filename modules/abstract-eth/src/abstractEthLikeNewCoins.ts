@@ -993,7 +993,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {SignTransactionOptions} params
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    // Normally the SDK provides the first signature for an POLYGON tx, but occasionally it provides the second and final one.
+    // Normally the SDK provides the first signature for an EthLike tx, but occasionally it provides the second and final one.
     if (params.isLastSignature) {
       // In this case when we're doing the second (final) signature, the logic is different.
       return await this.signFinalEthLike(params);
@@ -1279,7 +1279,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {string} params.userKey [encrypted] xprv or xpub
    * @param {string} params.backupKey [encrypted] xprv or xpub if the xprv is held by a KRS provider
    * @param {string} params.walletPassphrase used to decrypt userKey and backupKey
-   * @param {string} params.walletContractAddress the Polygon address of the wallet contract
+   * @param {string} params.walletContractAddress the EthLike address of the wallet contract
    * @param {string} params.krsProvider necessary if backup key is held by KRS
    * @param {string} params.recoveryDestination target address to send recovered funds to
    * @param {string} params.bitgoFeeAddress wrong chain wallet fee address for evm based cross chain recovery txn
@@ -1366,7 +1366,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     ];
 
     // Get sequence ID using contract call
-    // we need to wait between making two polygonscan calls to avoid getting banned
+    // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(params.walletContractAddress);
 
@@ -1554,7 +1554,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     );
 
     // Get sequence ID using contract call
-    // we need to wait between making two polygonscan calls to avoid getting banned
+    // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(walletContractAddress);
 
@@ -1691,7 +1691,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     ];
 
     // Get sequence ID using contract call
-    // we need to wait between making two polygonscan calls to avoid getting banned
+    // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(params.walletContractAddress);
 

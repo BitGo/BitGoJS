@@ -20,7 +20,7 @@ export class Polygon extends AbstractEthLikeNewCoins {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  public getTransactionBuilder(): TransactionBuilder {
+  protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 

@@ -904,7 +904,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
 class Optimism extends Mainnet implements EthereumNetwork {
   name = 'Optimism';
   family = CoinFamily.OPETH;
-  explorerUrl = 'https://optimistic.etherscan.io/ tx/';
+  explorerUrl = 'https://optimistic.etherscan.io/tx/';
   accountExplorerUrl = 'https://optimistic.etherscan.io/address/';
   chainId = 10;
   nativeCoinOperationHashPrefix = 'OPETH';
@@ -914,8 +914,8 @@ class Optimism extends Mainnet implements EthereumNetwork {
 class OptimismTestnet extends Testnet implements EthereumNetwork {
   name = 'OptimismTestnet';
   family = CoinFamily.OPETH;
-  explorerUrl = 'https://optimism-sepolia.blockscout.com/tx/';
-  accountExplorerUrl = 'https://optimism-sepolia.blockscout.com/address/';
+  explorerUrl = 'https://sepolia-optimism.etherscan.io/tx/';
+  accountExplorerUrl = 'https://sepolia-optimism.etherscan.io/address/';
   chainId = 11155420;
   nativeCoinOperationHashPrefix = 'OPETH';
   tokenOperationHashPrefix = 'OPETH-ERC20';
