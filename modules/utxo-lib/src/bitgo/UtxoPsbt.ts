@@ -1309,7 +1309,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return super.clone() as this;
   }
 
-  extractTransaction(disableFeeCheck?: boolean): UtxoTransaction<bigint> {
+  extractTransaction(disableFeeCheck = true): UtxoTransaction<bigint> {
     const tx = super.extractTransaction(disableFeeCheck);
     if (tx instanceof UtxoTransaction) {
       return tx;
