@@ -80,6 +80,8 @@ export interface EthereumNetwork extends AccountNetwork {
   // forwarder configuration addresses used for calculating forwarder version 1 addresses
   readonly forwarderFactoryAddress?: string;
   readonly forwarderImplementationAddress?: string;
+  readonly nativeCoinOperationHashPrefix?: string;
+  readonly tokenOperationHashPrefix?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {
@@ -145,6 +147,8 @@ class Arbitrum extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://arbiscan.io/tx/';
   accountExplorerUrl = 'https://arbiscan.io/address/';
   chainId = 42161;
+  nativeCoinOperationHashPrefix = 'ARBETH';
+  tokenOperationHashPrefix = 'ARBETH-ERC20';
 }
 
 class ArbitrumTestnet extends Testnet implements EthereumNetwork {
@@ -153,6 +157,8 @@ class ArbitrumTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://sepolia-explorer.arbitrum.io/tx/';
   accountExplorerUrl = 'https://sepolia-explorer.arbitrum.io/address/';
   chainId = 421614;
+  nativeCoinOperationHashPrefix = 'ARBETH';
+  tokenOperationHashPrefix = 'ARBETH-ERC20';
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
@@ -402,6 +408,8 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   batcherContractAddress = '0x0c9b25dfe02b2c89cce86e1a0bd6c04a7aca01b6';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -420,6 +428,8 @@ class EthereumW extends Mainnet implements EthereumNetwork {
   batcherContractAddress = '';
   forwarderFactoryAddress = '';
   forwarderImplementationAddress = '';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
@@ -439,6 +449,8 @@ class Kovan extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
   forwarderFactoryAddress = '0xa79a485294d226075ee65410bc94ea454f3e409d';
   forwarderImplementationAddress = '0xa946e748f25a5ec6878eb1a9f2e902028174c0b3';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class Goerli extends Testnet implements EthereumNetwork {
@@ -452,6 +464,8 @@ class Goerli extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
   forwarderFactoryAddress = '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917';
   forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class Holesky extends Testnet implements EthereumNetwork {
@@ -465,6 +479,8 @@ class Holesky extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
   forwarderFactoryAddress = '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917';
   forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
@@ -866,6 +882,8 @@ class Polygon extends Mainnet implements EthereumNetwork {
   walletFactoryAddress = '0xa7198f48c58e91f01317e70cd24c5cce475c1555';
   walletImplementationAddress = '0xe5dcdc13b628c2df813db1080367e929c1507ca0';
   batcherContractAddress = '0x7adc9b3d7521710321bec7dd6897d337e53c2493';
+  nativeCoinOperationHashPrefix = 'POLYGON';
+  tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
 
 class PolygonTestnet extends Testnet implements EthereumNetwork {
@@ -879,6 +897,8 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   walletFactoryAddress = '0xe37c07faec87be075ce4002b5fedbde00a4fe9d5';
   walletImplementationAddress = '0x11f8d70a4ee9d0962bb1160d776d4a996cfdff40';
   batcherContractAddress = '0xcdf01a31ea2a1d62951aac3a5743c4416f9da3fb';
+  nativeCoinOperationHashPrefix = 'POLYGON';
+  tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
 
 class Optimism extends Mainnet implements EthereumNetwork {
@@ -887,6 +907,8 @@ class Optimism extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://optimistic.etherscan.io/ tx/';
   accountExplorerUrl = 'https://optimistic.etherscan.io/address/';
   chainId = 10;
+  nativeCoinOperationHashPrefix = 'OPETH';
+  tokenOperationHashPrefix = 'OPETH-ERC20';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
@@ -895,6 +917,8 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://optimism-sepolia.blockscout.com/tx/';
   accountExplorerUrl = 'https://optimism-sepolia.blockscout.com/address/';
   chainId = 11155420;
+  nativeCoinOperationHashPrefix = 'OPETH';
+  tokenOperationHashPrefix = 'OPETH-ERC20';
 }
 
 export const Networks = {

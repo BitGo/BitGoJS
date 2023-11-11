@@ -1,24 +1,25 @@
 /**
  * @prettier
  */
-import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
+import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
 import { TransactionBuilder as EthLikeTransactionBuilder } from './lib';
-import { TransactionPrebuild } from './abstractEthLikeNewCoins';
+import { AbstractEthLikeNewCoins, optionalDeps, TransactionPrebuild } from './abstractEthLikeNewCoins';
 
 export type CoinNames = {
   [network: string]: string;
 };
 
-export class EthLikeToken extends AbstractEthLikeCoin {
+export class EthLikeToken extends AbstractEthLikeNewCoins {
   public readonly tokenConfig: EthLikeTokenConfig;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   protected constructor(bitgo: BitGoBase, tokenConfig: EthLikeTokenConfig, coinNames: CoinNames) {
     const staticsCoin = coins.get(coinNames[tokenConfig.network]);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
+    this.sendMethodName = 'sendMultiSigToken';
   }
 
   static createTokenConstructor(config: EthLikeTokenConfig, coinNames: CoinNames): CoinConstructor {
@@ -94,6 +95,58 @@ export class EthLikeToken extends AbstractEthLikeCoin {
 
   isToken(): boolean {
     return true;
+  }
+
+  getOperation(recipient, expireTime, contractSequenceId) {
+    const network = this.getNetwork() as EthLikeNetwork;
+    return [
+      ['string', 'address', 'uint', 'address', 'uint', 'uint'],
+      [
+        network.tokenOperationHashPrefix,
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
+        recipient.amount,
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(this.tokenContractAddress), 16),
+        expireTime,
+        contractSequenceId,
+      ],
+    ];
+  }
+
+  getSendMethodArgs(txInfo) {
+    // Method signature is
+    // sendMultiSigToken(address toAddress, uint value, address tokenContractAddress, uint expireTime, uint sequenceId, bytes signature)
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: txInfo.recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint',
+        value: txInfo.recipient.amount,
+      },
+      {
+        name: 'tokenContractAddress',
+        type: 'address',
+        value: this.tokenContractAddress,
+      },
+      {
+        name: 'expireTime',
+        type: 'uint',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
+      },
+    ];
   }
 
   verifyCoin(txPrebuild: TransactionPrebuild): boolean {

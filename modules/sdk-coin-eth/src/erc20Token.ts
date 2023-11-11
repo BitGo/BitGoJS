@@ -8,20 +8,29 @@ import {
   checkKrsProvider,
   getIsKrsRecovery,
   getIsUnsignedSweep,
+  MPCAlgorithm,
   NamedCoinConstructor,
 } from '@bitgo/sdk-core';
-import { Erc20TokenConfig, tokens } from '@bitgo/statics';
+import { coins, EthLikeTokenConfig, Erc20TokenConfig, tokens } from '@bitgo/statics';
+import { CoinNames } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
+import { TransactionBuilder } from './lib';
+
 export { Erc20TokenConfig };
 export class Erc20Token extends Eth {
-  public readonly tokenConfig: Erc20TokenConfig;
+  public readonly tokenConfig: EthLikeTokenConfig;
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
+  static coinNames: CoinNames = {
+    Mainnet: 'eth',
+    Testnet: 'gteth',
+  };
 
   constructor(bitgo: BitGoBase, tokenConfig: Erc20TokenConfig) {
-    super(bitgo);
+    const staticsCoin = coins.get(Erc20Token.coinNames[tokenConfig.network]);
+    super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
     this.sendMethodName = 'sendMultiSigToken';
   }
@@ -73,7 +82,7 @@ export class Erc20Token extends Eth {
   }
 
   getBaseFactor() {
-    return String(Math.pow(10, this.tokenConfig.decimalPlaces));
+    return Math.pow(10, this.tokenConfig.decimalPlaces);
   }
 
   /**
@@ -90,6 +99,20 @@ export class Erc20Token extends Eth {
    */
   transactionDataAllowed() {
     return false;
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
+  }
+
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
   /**
