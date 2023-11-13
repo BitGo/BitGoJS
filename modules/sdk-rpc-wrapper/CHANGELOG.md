@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-rpc-wrapper@1.3.0...@bitgo/sdk-rpc-wrapper@1.6.0) (2023-11-13)
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-rpc-wrapper@1.3.0...@bitgo/sdk-rpc-wrapper@1.5.0) (2023-11-13)
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-rpc-wrapper@1.3.0...@bitgo/sdk-rpc-wrapper@1.4.0) (2023-10-20)
 
 ### Features
