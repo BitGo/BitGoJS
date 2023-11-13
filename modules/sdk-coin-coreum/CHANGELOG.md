@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 3.0.0 (2023-11-13)
+
+### Bug Fixes
+
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+
+### Code Refactoring
+
+- rename coin 'core' to 'coreum' ([baecc01](https://github.com/BitGo/BitGoJS/commit/baecc013ff7243ce78ebd767bffdb0763b8b4cdb))
+
+### BREAKING CHANGES
+
+- rename coin module, coin name, named exports for coreum
+
 # 2.0.0 (2023-11-13)
 
 ### Bug Fixes
