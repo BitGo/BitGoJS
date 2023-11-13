@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@1.4.0...@bitgo/sdk-coin-hash@1.9.0) (2023-11-13)
+
+### Bug Fixes
+
+- **abstract-cosmos:** update fee for recovery transaction ([c631c05](https://github.com/BitGo/BitGoJS/commit/c631c051b227e397ff21e85418a40f1655d2d3f4))
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@1.4.0...@bitgo/sdk-coin-hash@1.8.0) (2023-11-13)
 
 ### Bug Fixes
