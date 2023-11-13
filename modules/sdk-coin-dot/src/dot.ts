@@ -313,7 +313,7 @@ export class Dot extends BaseCoin {
    */
   protected async getFee(destAddr: string, srcAddr: string, amount: number): Promise<number> {
     const api = await this.getInitializedNodeAPI();
-    const info = await api.tx.balances.transfer(destAddr, amount).paymentInfo(srcAddr);
+    const info = await api.tx.balances.transferAllowDeath(destAddr, amount).paymentInfo(srcAddr);
     return info.partialFee.toNumber();
   }
 
