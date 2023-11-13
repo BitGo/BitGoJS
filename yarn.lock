@@ -1030,6 +1030,13 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
+"@bitgo/public-types@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-1.1.2.tgz#125ff179cb1b6df3a2d7bf0f7cc430cab6e3990b"
+  integrity sha512-Z/mg63Pj8VFXEV9/J6F8w0L2XAPzzul7mT7mF7K2J0FtXNyHyJT5JBS1cRLc6lQ7bv/egG0YLTVZLyf3QUZgEg==
+  dependencies:
+    io-ts "^2.2.20"
+
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
   resolved "https://registry.npmjs.org/@brandonblack/musig/-/musig-0.0.1-alpha.1.tgz"
@@ -11899,9 +11906,9 @@ io-ts@2.0.1:
   resolved "https://registry.npmjs.org/io-ts/-/io-ts-2.0.1.tgz"
   integrity sha512-RezD+WcCfW4VkMkEcQWL/Nmy/nqsWTvTYg7oUmTGzglvSSV2P9h2z1PVeREPFf0GWNzruYleAt1XCMQZSg1xxQ==
 
-io-ts@^2.2.17:
+io-ts@2.2.20, io-ts@^2.2.20:
   version "2.2.20"
-  resolved "https://registry.npmjs.org/io-ts/-/io-ts-2.2.20.tgz"
+  resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-2.2.20.tgz#be42b75f6668a2c44f706f72ee6e4c906777c7f5"
   integrity sha512-Rq2BsYmtwS5vVttie4rqrOCIfHCS9TgpRLFpKQCM1wZBBRY9nWVGmEvm2FnDbSE2un1UE39DvFpTR5UL47YDcA==
 
 ip@^1.1.8:

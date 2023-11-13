@@ -94,9 +94,9 @@ import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
 import { Hash } from 'crypto';
 import { ofcTokens } from '@bitgo/statics';
-import { SendTransactionRequest } from './SendTransactionRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
+import { TxSendBody } from '@bitgo/public-types';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -646,10 +646,7 @@ export class Wallet implements IWallet {
     const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
 
     this.bitgo.setRequestTracer(reqId);
-    return this.bitgo
-      .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
-      .send(finalTxParams)
-      .result();
+    return this.sendTransaction(finalTxParams);
   }
 
   /**
@@ -856,10 +853,7 @@ export class Wallet implements IWallet {
     const selectParams = _.pick(params, ['otp']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
     this.bitgo.setRequestTracer(reqId);
-    return this.bitgo
-      .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
-      .send(finalTxParams)
-      .result();
+    return this.sendTransaction(finalTxParams);
   }
 
   /**
@@ -1999,17 +1993,7 @@ export class Wallet implements IWallet {
     } else if (!params.txRequestId && ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned))) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
-
-    return postWithCodec(
-      this.bitgo,
-      this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      SendTransactionRequest,
-      params,
-      {
-        /* for now, we will continue to use the original params and monitor encoding errors */
-        useEncodedBody: false,
-      }
-    ).result();
+    return this.sendTransaction(params);
   }
 
   /**
@@ -2129,8 +2113,7 @@ export class Wallet implements IWallet {
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-
-    return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
+    return this.sendTransaction(finalTxParams);
   }
 
   /**
@@ -3170,5 +3153,18 @@ export class Wallet implements IWallet {
     // note: this is not a coin specific route, we cannot use this.url(..)
     const url = this.bitgo.url(`/wallet/${this.id()}/challenges`, 2);
     return await this.bitgo.get(url).query({}).result();
+  }
+
+  private sendTransaction(params: TxSendBody) {
+    // extract the whitelisted params from the top level, in case
+    // other invalid params are present that would fail encoding
+    // and fall back to the body params
+    const whitelistedParams = _.pick(params, Object.keys(TxSendBody.type.props));
+    return postWithCodec(
+      this.bitgo,
+      this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
+      TxSendBody,
+      whitelistedParams
+    ).result();
   }
 }
