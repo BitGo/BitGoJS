@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.3.0...@bitgo/sdk-coin-xlm@2.8.0) (2023-11-13)
+
+### Bug Fixes
+
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+
+### Features
+
+- **sdk-coin-xlm:** support token enablement ([7e1e5c8](https://github.com/BitGo/BitGoJS/commit/7e1e5c8e836127a5ab45312895d73e499f694e16))
+
 # [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.3.0...@bitgo/sdk-coin-xlm@2.7.0) (2023-11-13)
 
 ### Bug Fixes
