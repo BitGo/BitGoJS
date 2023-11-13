@@ -3574,8 +3574,12 @@ describe('V2 Wallet:', function () {
       };
 
       const initiateTxPath = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/initiate`;
+      let initiateTxBody;
       const response = nock(bgUrl)
-        .post(initiateTxPath, _.matches(initiateTxParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .post(initiateTxPath, (body) => {
+          initiateTxBody = body;
+          return true;
+        })
         .reply(200);
 
       const feeEstimationPath = `/api/v2/${wallet.coin()}/tx/fee?hop=true&recipient=${address}&amount=10000000000000000&type=Export`;
@@ -3590,6 +3594,20 @@ describe('V2 Wallet:', function () {
         console.log(e);
         // test is successful if nock is consumed, HMAC errors expected
       }
+      _.isMatch(initiateTxBody, {
+        hopParams: {
+          gasPriceMax: 7187500000,
+        },
+        type: 'Export',
+        gasLimit: 500000,
+        recipients: [
+          {
+            amount: '10000000000000000',
+            address,
+          },
+        ],
+      }).should.be.true();
+
       response.isDone().should.be.true();
     });
   });

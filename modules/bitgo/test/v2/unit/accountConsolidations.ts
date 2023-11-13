@@ -87,8 +87,8 @@ describe('Account Consolidations:', function () {
             .reply(200);
 
           const params = { prebuildTx: fixtures.buildAccountConsolidation[0] };
-          const paramsWithJunk = { ...params, junk: 'junk' };
-          const paramsAfterCodec = { ...params, type: 'consolidate' };
+          const paramsWithJunk = { ...params, junk: 'junk', otp: '000000' };
+          const paramsAfterCodec = { type: 'consolidate', otp: '000000' };
 
           sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(fixtures.signedAccountConsolidationBuilds[0]);
           await custodialWallet.sendAccountConsolidation(paramsWithJunk);
