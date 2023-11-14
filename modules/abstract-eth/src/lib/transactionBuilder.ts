@@ -38,7 +38,7 @@ import {
   isValidEthAddress,
   getV1WalletInitializationData,
 } from './utils';
-import { defaultWalletVersion, defaultForwarderVersion } from './walletUtil';
+import { defaultWalletVersion, defaultForwarderVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
 import { Transaction } from './transaction';
@@ -85,6 +85,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // Common parameter for wallet initialization and address initialization transaction
   private _salt: string;
 
+  // walletsimplebytecode
+  protected _walletSimpleByteCode: string;
+
   /**
    * Public constructor.
    *
@@ -100,6 +103,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._forwarderVersion = 0;
     this._walletVersion = 0;
     this.transaction = new Transaction(this._coinConfig, this._common);
+    this._walletSimpleByteCode = '';
   }
 
   /** @inheritdoc */
@@ -573,7 +577,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string[]} addresses - the contract signers
    * @returns {string} - the smart contract encoded data
    */
-  protected abstract getContractData(addresses: string[]): string;
+  protected getContractData(addresses: string[]): string {
+    const params = [addresses];
+    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
+      .toString('hex')
+      .replace('0x', '');
+    return this._walletSimpleByteCode + resultEncodedParameters;
+  }
 
   // endregion
 

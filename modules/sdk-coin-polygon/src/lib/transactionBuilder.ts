@@ -1,9 +1,8 @@
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumAbi from 'ethereumjs-abi';
 import { getCommon } from './utils';
-import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { walletSimpleByteCode } from './walletUtil';
 import { Transaction, TransferBuilder } from './';
 
 export class TransactionBuilder extends EthTransactionBuilder {
@@ -13,20 +12,7 @@ export class TransactionBuilder extends EthTransactionBuilder {
     super(_coinConfig);
     this._common = getCommon(this._coinConfig.network.type);
     this.transaction = new Transaction(this._coinConfig, this._common);
-  }
-
-  /**
-   * Returns the smart contract encoded data
-   *
-   * @param {string[]} addresses - the contract signers
-   * @returns {string} - the smart contract encoded data
-   */
-  protected getContractData(addresses: string[]): string {
-    const params = [addresses];
-    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
-      .toString('hex')
-      .replace('0x', '');
-    return walletSimpleByteCode + resultEncodedParameters;
+    this._walletSimpleByteCode = walletSimpleByteCode;
   }
 
   /** @inheritdoc */
