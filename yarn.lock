@@ -1030,10 +1030,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@bitgo/public-types@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-1.1.2.tgz#125ff179cb1b6df3a2d7bf0f7cc430cab6e3990b"
-  integrity sha512-Z/mg63Pj8VFXEV9/J6F8w0L2XAPzzul7mT7mF7K2J0FtXNyHyJT5JBS1cRLc6lQ7bv/egG0YLTVZLyf3QUZgEg==
+"@bitgo/public-types@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-1.2.1.tgz#45028dd7ba89103d3fabde295cf33e1b733cc9bc"
+  integrity sha512-smOGrsMtxIJZxPP0CN6FMSP+k0NMxYM1dFbvhAxEZ9rAyMBGknVrCGUtZsman9a1ixE30nBv0SCjHB/6vn1bxA==
   dependencies:
     io-ts "^2.2.20"
 

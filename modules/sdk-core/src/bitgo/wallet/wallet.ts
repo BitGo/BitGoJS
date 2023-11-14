@@ -102,6 +102,8 @@ const debug = require('debug')('bitgo:v2:wallet');
 
 type ManageUnspents = 'consolidate' | 'fanout';
 
+const whitelistedSendParams = TxSendBody.type.types.flatMap((t) => Object.keys(t.props));
+
 export enum ManageUnspentsOptions {
   BUILD_ONLY,
   BUILD_SIGN_SEND,
@@ -2108,7 +2110,7 @@ export class Wallet implements IWallet {
     if (this._wallet.type === 'custodial') {
       const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
       Object.assign(selectParams, extraParams);
-      return await this.bitgo.post(this.url('/tx/initiate')).send(selectParams).result();
+      return this.initiateTransaction(selectParams);
     }
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
@@ -2452,7 +2454,7 @@ export class Wallet implements IWallet {
 
     if (this._wallet.type === 'custodial' && this._wallet.multisigType !== 'tss') {
       params.type = 'consolidate';
-      return await this.bitgo.post(this.url('/tx/initiate')).send(BuildParams.encode(params)).result();
+      return this.initiateTransaction(params as TxSendBody);
     }
 
     // one of a set of consolidation transactions
@@ -2608,8 +2610,7 @@ export class Wallet implements IWallet {
           const signedPrebuild = await this.prebuildAndSignTransaction(params);
           return await this.submitTransaction(signedPrebuild);
         case 'custodial':
-          const url = this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate');
-          return await this.bitgo.post(url).send(params.prebuildTx.buildParams).result();
+          return this.initiateTransaction(params.prebuildTx.buildParams);
       }
     }
   }
@@ -3159,10 +3160,23 @@ export class Wallet implements IWallet {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
-    const whitelistedParams = _.pick(params, Object.keys(TxSendBody.type.props));
+    const whitelistedParams = _.pick(params, whitelistedSendParams);
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
+      TxSendBody,
+      whitelistedParams
+    ).result();
+  }
+
+  private initiateTransaction(params: TxSendBody) {
+    // extract the whitelisted params from the top level, in case
+    // other invalid params are present that would fail encoding
+    // and fall back to the body params
+    const whitelistedParams = _.pick(params, whitelistedSendParams);
+    return postWithCodec(
+      this.bitgo,
+      this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate'),
       TxSendBody,
       whitelistedParams
     ).result();
