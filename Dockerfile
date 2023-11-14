@@ -2,7 +2,7 @@
 # An elaborated scheme to build all the dependencies of all packages first in a cached layer
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
-FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b AS filter-packages-json
+FROM node:20-buster-slim@sha256:134bee0381294078c5f2750f26573ac30bc7c5be8dec922498dc4b0217f4ba2b AS filter-packages-json
 LABEL maintainer="Developer Relations <developer-relations-team@bitgo.com>"
 
 COPY package.json yarn.lock lerna.json ./
@@ -12,7 +12,7 @@ COPY modules ./modules
 # delete all the non package.json files under `./modules/`
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
-FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b AS builder
+FROM node:20-buster-slim@sha256:134bee0381294078c5f2750f26573ac30bc7c5be8dec922498dc4b0217f4ba2b AS builder
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
@@ -31,7 +31,7 @@ RUN \
     rm -r modules/*/src
 
 
-FROM node:16-buster-slim@sha256:1d5b38c2dc2a7752a13818dfef9c0ad752cbc3becee097053fac460a57120a8b
+FROM node:20-buster-slim@sha256:134bee0381294078c5f2750f26573ac30bc7c5be8dec922498dc4b0217f4ba2b
 RUN apt-get update && apt-get install -y tini
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
@@ -55,10 +55,10 @@ COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
@@ -120,10 +120,10 @@ cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
 cd /var/modules/sdk-coin-arbeth && yarn link && \
 cd /var/modules/abstract-eth && yarn link && \
-cd /var/modules/sdk-coin-eth && yarn link && \
 cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
+cd /var/modules/sdk-coin-eth && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
@@ -188,10 +188,10 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-algo && \
     yarn link @bitgo/sdk-coin-arbeth && \
     yarn link @bitgo/abstract-eth && \
-    yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
+    yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-bera && \
     yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-bld && \
@@ -238,9 +238,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Fri, 20 Oct 2023 19:26:49 GMT"
-LABEL version=9.42.0
-LABEL git_hash=c857efdab519f0549c061ec7b94140ba9af55c4f
+LABEL created="Tue, 14 Nov 2023 15:29:31 GMT"
+LABEL version=9.45.0
+LABEL git_hash=b3360aee26ed01df122e6ce3875f1bcea9724c96
 #LABEL_END
 
 USER node
