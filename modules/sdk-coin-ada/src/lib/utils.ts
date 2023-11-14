@@ -11,6 +11,8 @@ import {
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
 
+export const MIN_ADA_FOR_ONE_ASSET = '1500000';
+
 export class Utils implements BaseUtils {
   createBaseAddressWithStakeAndPaymentKey(
     stakeKeyPair: KeyPair,

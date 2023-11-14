@@ -67,9 +67,9 @@ describe('ADA Transaction Builder', async () => {
   });
 
   it('should initialize and build tx with asset data', async () => {
-    const policyId = '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f';
-    const assetName = '534e454b';
-    const quantity = '6000000';
+    const policyId = 'e16c2dc8ae937e8d3790c7fd7168d7b994621ba14ca11415f39fed72';
+    const assetName = '4d494e';
+    const quantity = '2000000';
     const preBuiltTx = new Transaction(coins.get('tada'));
     preBuiltTx.fromRawTransaction(testData.rawTx.unsignedTx3);
     const txBuilder = factory.getTransferBuilder();
@@ -97,9 +97,9 @@ describe('ADA Transaction Builder', async () => {
     });
 
     const outputAmount = 0;
-    const policyId = '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f';
-    const assetName = '534e454b';
-    const quantity = '6000000';
+    const policyId = 'e16c2dc8ae937e8d3790c7fd7168d7b994621ba14ca11415f39fed72';
+    const assetName = '4d494e';
+    const quantity = '2000000';
     txBuilder.assets({
       policy_id: policyId,
       asset_name: assetName,
@@ -133,7 +133,7 @@ describe('ADA Transaction Builder', async () => {
     txData.outputs[1].amount.should.equal(
       (totalInput - minAmountForSingleAsset - outputAmount - Number(fee)).toString()
     );
-    fee.should.equal('165633');
+    fee.should.equal('170341');
     txData.id.should.equal(testData.rawTx.txHash3);
     const txBroadcast = tx.toBroadcastFormat();
     should.equal(txBroadcast, testData.rawTx.unsignedTx3);
@@ -202,7 +202,7 @@ describe('ADA Transaction Builder', async () => {
     txData.outputs[2].amount.should.equal(
       (totalInput - minAmountForSingleAsset * 2 - outputAmount - Number(fee)).toString()
     );
-    fee.should.equal('165633');
+    fee.should.equal('175225');
     txData.id.should.equal(testData.rawTx.txHash4);
     const txBroadcast = tx.toBroadcastFormat();
     should.equal(txBroadcast, testData.rawTx.unsignedTx4);

@@ -12,7 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal } from './transaction';
 import { KeyPair } from './keyPair';
-import util from './utils';
+import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { BigNum } from '@emurgo/cardano-serialization-lib-nodejs';
 
@@ -161,11 +161,70 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       // add extra output for the change
       if (this._changeAddress && this._senderBalance) {
         const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
-        const mockChange = CardanoWasm.TransactionOutput.new(
-          changeAddress,
-          CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(this._senderBalance))
-        );
-        outputs.add(mockChange);
+        const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
+
+        const adjustment = BigNum.from_str('2000000');
+        let change = utxoBalance.checked_sub(this._fee).checked_sub(totalAmountToSend);
+        if (this._type === TransactionType.StakingActivate) {
+          change = change.checked_sub(adjustment);
+        } else if (this._type === TransactionType.StakingDeactivate) {
+          change = change.checked_add(adjustment);
+        } else if (this._type === TransactionType.StakingWithdraw || this._type === TransactionType.StakingClaim) {
+          this._withdrawals.forEach((withdrawal: Withdrawal) => {
+            change = change.checked_add(CardanoWasm.BigNum.from_str(withdrawal.value));
+          });
+        }
+
+        // If totalAmountToSend is 0, its consolidation
+        if (totalAmountToSend.to_str() == '0') {
+          // support for multi-asset consolidation
+          if (this._multiAssets !== undefined) {
+            const totalNumberOfAssets = CardanoWasm.BigNum.from_str(this._multiAssets.length.toString());
+            const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str(MIN_ADA_FOR_ONE_ASSET);
+            const minAmountNeededForTotalAssetOutputs =
+              minAmountNeededForOneAssetOutput.checked_mul(totalNumberOfAssets);
+
+            if (!change.less_than(minAmountNeededForTotalAssetOutputs)) {
+              this._multiAssets.forEach((asset) => {
+                let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+                // changeAddress is the root address, which is where we want the tokens assets to be sent to
+                const toAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+                txOutputBuilder = txOutputBuilder.with_address(toAddress);
+                let txOutputAmountBuilder = txOutputBuilder.next();
+                const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+                const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+                const multiAsset = CardanoWasm.MultiAsset.new();
+                const assets = CardanoWasm.Assets.new();
+                assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+                multiAsset.insert(policyId, assets);
+
+                txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(
+                  minAmountNeededForOneAssetOutput,
+                  multiAsset
+                );
+
+                const txOutput = txOutputAmountBuilder.build();
+                outputs.add(txOutput);
+              });
+
+              // finally send the remaining ADA in its own output
+              const remainingOutputAmount = change.checked_sub(minAmountNeededForTotalAssetOutputs);
+              const changeOutput = CardanoWasm.TransactionOutput.new(
+                changeAddress,
+                CardanoWasm.Value.new(remainingOutputAmount)
+              );
+              outputs.add(changeOutput);
+            }
+          } else {
+            // If there are no tokens to consolidate, you only have 1 output which is ADA alone
+            const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+            outputs.add(changeOutput);
+          }
+        } else {
+          // If this isn't a consolidate request, whatever change that needs to be sent back to the rootaddress is added as a separate output here
+          const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+          outputs.add(changeOutput);
+        }
       }
 
       const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
@@ -378,7 +437,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._transaction.signature.push(signature.signature.toString('hex'));
     });
     witnessSet.set_vkeys(vkeyWitnesses);
-
     this._transaction.transaction = CardanoWasm.Transaction.new(txRaw, witnessSet);
     return this.transaction;
   }
