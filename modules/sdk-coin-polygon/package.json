@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@bitgo/abstract-eth": "^1.6.0",
-    "@bitgo/sdk-coin-eth": "^4.10.0",
     "@bitgo/sdk-core": "^8.26.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^29.0.0",

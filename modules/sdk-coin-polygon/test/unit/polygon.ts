@@ -8,7 +8,7 @@ import * as should from 'should';
 import { Polygon, Tpolygon, TransactionBuilder, TransferBuilder } from '../../src';
 import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
-import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/sdk-coin-eth';
+import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/abstract-eth';
 import * as sjcl from '@bitgo/sjcl';
 
 nock.enableNetConnect();
@@ -760,7 +760,7 @@ describe('Polygon', function () {
 
       const finalSigned = (await basecoin.signTransaction(halfSignedParams as any)) as FullySignedTransaction;
       finalSigned.should.have.property('txHex');
-      const txBuilder = basecoin.getTransactionBuilder() as TransactionBuilder;
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
       txBuilder.from(finalSigned.txHex);
       const rebuiltTx = await txBuilder.build();
       rebuiltTx.signature.length.should.equal(2);
