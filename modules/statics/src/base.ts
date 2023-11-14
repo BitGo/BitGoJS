@@ -735,6 +735,7 @@ export enum UnderlyingAsset {
   LINKBEAR = 'linkbear',
   LINKBULL = 'linkbull',
   LION = 'lion',
+  LIT = 'lit',
   LNC = 'lnc',
   LOOKS = 'looks',
   LOOM = 'loom',
