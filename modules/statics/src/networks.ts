@@ -686,7 +686,7 @@ class Zeta extends Mainnet implements AccountNetwork {
 class ZetaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Zeta';
   family = CoinFamily.ZETA;
-  explorerUrl = 'https://explorer.zetachain.com/cosmos/tx/';
+  explorerUrl = 'https://zetachain.explorers.guru/transaction/';
 }
 
 class Injective extends Mainnet implements AccountNetwork {
