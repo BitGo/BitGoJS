@@ -1063,8 +1063,7 @@ export class Xlm extends BaseCoin {
 
       _.forEach(txParams.recipients, (expectedOutput, index) => {
         const expectedOutputAddressDetails = this.getAddressDetails(expectedOutput.address);
-        // for muxed accounts, the destination will be the baseAddress
-        const expectedOutputAddress = expectedOutputAddressDetails.baseAddress;
+        const expectedOutputAddress = expectedOutputAddressDetails.address;
         const output = outputOperations[index] as stellar.Operation.Payment | stellar.Operation.CreateAccount;
         if (output.destination !== expectedOutputAddress) {
           throw new Error('transaction prebuild does not match expected recipient');
