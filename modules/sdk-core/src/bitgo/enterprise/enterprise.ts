@@ -6,7 +6,6 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal';
-import { Affirmations, Settlements } from '../trading';
 import { Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
@@ -104,20 +103,6 @@ export class Enterprise implements IEnterprise {
    */
   async getFirstPendingTransaction(params: Record<string, never> = {}): Promise<any> {
     return getFirstPendingTransaction({ enterpriseId: this.id }, this.baseCoin, this.bitgo);
-  }
-
-  /**
-   * Manage settlements for an enterprise
-   */
-  settlements(): Settlements {
-    return new Settlements(this.bitgo, this.id);
-  }
-
-  /**
-   * Manage affirmations for an enterprise
-   */
-  affirmations(): Affirmations {
-    return new Affirmations(this.bitgo, this.id);
   }
 
   /**

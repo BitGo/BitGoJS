@@ -1,6 +1,4 @@
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-
-import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
 import { BitGoProofSignatures, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
@@ -24,8 +22,6 @@ export interface IEnterprise {
   addUser(params?: any): Promise<any>;
   removeUser(params?: any): Promise<any>;
   getFirstPendingTransaction(params?: Record<string, never>): Promise<any>;
-  settlements(): ISettlements;
-  affirmations(): IAffirmations;
   verifyEcdsaBitGoChallengeProofs(userPassword: string): Promise<BitGoProofSignatures>;
   uploadAndEnableTssEcdsaSigning(
     userPassword: string,
