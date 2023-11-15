@@ -592,12 +592,14 @@ export class Wallet implements IWallet {
    *                  - maximum number of unspents you want to use in the transaction
    * Output parameters:
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   * @param {Boolean} params.bulk - if set to True, this enables the consolidation of large number of unspents by creating multiple transactions,
+   *                                with each transaction composed of 200 unspents, except for the last transaction which may have fewer unspents.
    */
   private async manageUnspents(
     routeName: ManageUnspents,
     params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {},
     option = ManageUnspentsOptions.BUILD_SIGN_SEND
-  ): Promise<any> {
+  ): Promise<unknown> {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
@@ -614,18 +616,20 @@ export class Wallet implements IWallet {
       'enforceMinConfirmsForChange',
       'targetAddress',
       'txFormat',
+      'bulk',
 
       routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
       'numUnspentsToMake',
     ]);
     this.bitgo.setRequestTracer(reqId);
-    const response = await this.bitgo
+
+    const buildResponse: TransactionPrebuild | TransactionPrebuild[] = await this.bitgo
       .post(this.url(`/${routeName}Unspents`))
       .send(filteredParams)
       .result();
 
     if (option === ManageUnspentsOptions.BUILD_ONLY) {
-      return response;
+      return buildResponse;
     }
 
     const keychains = (await this.baseCoin
@@ -634,19 +638,27 @@ export class Wallet implements IWallet {
 
     const transactionParams = {
       ...params,
-      txPrebuild: response,
       keychain: keychains[0],
       pubs: keychains.map((k) => {
         assert(k.pub);
         return k.pub;
       }),
     };
-    const signedTransaction = await this.signTransaction(transactionParams);
-    const selectParams = _.pick(params, ['comment', 'otp']);
-    const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
 
-    this.bitgo.setRequestTracer(reqId);
-    return this.sendTransaction(finalTxParams);
+    const txPrebuilds = Array.isArray(buildResponse) ? buildResponse : [buildResponse];
+
+    const selectParams = _.pick(params, ['comment', 'otp', 'bulk']);
+
+    const response = await Promise.all(
+      txPrebuilds.map(async (txPrebuild) => {
+        const signedTransaction = await this.signTransaction({ ...transactionParams, txPrebuild });
+        const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
+        this.bitgo.setRequestTracer(reqId);
+        return this.sendTransaction(finalTxParams);
+      })
+    );
+
+    return Array.isArray(buildResponse) ? response : response[0];
   }
 
   /**
@@ -667,12 +679,14 @@ export class Wallet implements IWallet {
    * @param {Number} params.limit                for routeName === 'consolidate'
    *                 params.maxNumInputsToUse    for routeName === 'fanout'
    *                  - maximum number of unspents you want to use in the transaction
-   * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   * @param {Number} params.numUnspentsToMake - the number of new unspents to make. It is not applicable for if bulk consolidate.
+   * @param {Boolean} params.bulk - if set to True, this enables the consolidation of large number of unspents by creating multiple transactions,
+   *                                with each transaction composed of 200 unspents, except for the last transaction which may have fewer unspents.
    */
   async consolidateUnspents(
     params: ConsolidateUnspentsOptions = {},
     option = ManageUnspentsOptions.BUILD_SIGN_SEND
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.manageUnspents('consolidate', params, option);
   }
 
@@ -693,7 +707,7 @@ export class Wallet implements IWallet {
    * @param {Number} params.maxNumInputsToUse - the number of unspents you want to use in the transaction
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    */
-  async fanoutUnspents(params: FanoutUnspentsOptions = {}): Promise<any> {
+  async fanoutUnspents(params: FanoutUnspentsOptions = {}): Promise<unknown> {
     return this.manageUnspents('fanout', params);
   }
 

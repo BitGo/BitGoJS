@@ -272,6 +272,7 @@ export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions
   comment?: string;
   otp?: string;
   targetAddress?: string;
+  bulk?: boolean;
   [index: string]: unknown;
 }
 
@@ -652,8 +653,8 @@ export interface IWallet {
   transferBySequenceId(params?: TransferBySequenceIdOptions): Promise<any>;
   maximumSpendable(params?: MaximumSpendableOptions): Promise<MaximumSpendable>;
   unspents(params?: UnspentsOptions): Promise<any>;
-  consolidateUnspents(params?: ConsolidateUnspentsOptions): Promise<any>;
-  fanoutUnspents(params?: FanoutUnspentsOptions): Promise<any>;
+  consolidateUnspents(params?: ConsolidateUnspentsOptions): Promise<unknown>;
+  fanoutUnspents(params?: FanoutUnspentsOptions): Promise<unknown>;
   updateTokenFlushThresholds(thresholds?: any): Promise<any>;
   updateForwarders(forwarderFlags?: any): Promise<any>;
   deployForwarders(params: DeployForwardersOptions): Promise<any>;

@@ -34,7 +34,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-import { getDefaultWalletKeys } from './coins/utxo/util';
+import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
 import { Tsol } from '@bitgo/sdk-coin-sol';
 import { Teth } from '@bitgo/sdk-coin-eth';
 
@@ -1420,6 +1420,102 @@ describe('V2 Wallet:', function () {
       }
 
       response.isDone().should.be.true();
+    });
+  });
+
+  describe('manage unspents', function () {
+    let rootWalletKey;
+    let walletPassphrase;
+    let basecoin;
+    let wallet;
+    let keysObj;
+
+    before(async function () {
+      rootWalletKey = getDefaultWalletKeys();
+      walletPassphrase = 'fixthemoneyfixtheworld';
+      keysObj = toKeychainObjects(rootWalletKey, walletPassphrase);
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: keysObj.map((k) => k.id),
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should pass for bulk consolidating unspents', async function () {
+      const psbts = (['p2wsh', 'p2shP2wsh'] as const).map((scriptType) =>
+        utxoLib.testutil.constructPsbt(
+          [{ scriptType, value: BigInt(1000) }],
+          [{ scriptType, value: BigInt(900) }],
+          basecoin.network,
+          rootWalletKey,
+          'unsigned'
+        )
+      );
+      const txHexes = psbts.map((psbt) => ({ txHex: psbt.toHex() }));
+
+      const nocks: nock.Scope[] = [];
+      nocks.push(
+        nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`).reply(200, txHexes)
+      );
+
+      nocks.push(
+        ...keysObj.map((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k))
+      );
+
+      nocks.push(
+        ...psbts.map((psbt) =>
+          nock(bgUrl)
+            .post(
+              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+              _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
+            )
+            .reply(200)
+        )
+      );
+
+      await wallet.consolidateUnspents({ bulk: true, walletPassphrase });
+
+      nocks.forEach((n) => {
+        n.isDone().should.be.true();
+      });
+    });
+
+    it('should pass for single consolidating unspents', async function () {
+      const psbt = utxoLib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(1000) }],
+        [{ scriptType: 'p2shP2wsh', value: BigInt(900) }],
+        basecoin.network,
+        rootWalletKey,
+        'unsigned'
+      );
+
+      const nocks: nock.Scope[] = [];
+      nocks.push(
+        nock(bgUrl)
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
+          .reply(200, { txHex: psbt.toHex() })
+      );
+
+      nocks.push(
+        ...keysObj.map((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k))
+      );
+
+      nocks.push(
+        nock(bgUrl)
+          .post(
+            `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
+            _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
+          )
+          .reply(200)
+      );
+
+      await wallet.consolidateUnspents({ walletPassphrase });
+
+      nocks.forEach((n) => {
+        n.isDone().should.be.true();
+      });
     });
   });
 
