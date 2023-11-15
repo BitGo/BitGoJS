@@ -7620,6 +7620,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('dbaf70b2-e159-4c67-9dd9-39ef886a2390', 'ofctrueusd', 'TrueUSD', 18, UnderlyingAsset.TUSD),
   ofcerc20('2566f816-47de-481c-b4b9-f31989861388', 'ofcuma', 'UMA Voting Token V1', 18, UnderlyingAsset.UMA),
   ofcerc20('c6a7a05d-c4bf-44e6-b8e8-21ee1c0d2aa7', 'ofcwxt', 'Wirex', 18, UnderlyingAsset.WXT),
+  ofcerc20('d46dc5ab-9c36-4591-b973-0175c2f4cdb5', 'ofcwsteth', 'Wrapped stETH', 18, UnderlyingAsset.WSTETH),
   ofcerc20('5ad50deb-a5ae-4fd9-b838-805542074cb1', 'ofcxsgd', 'StraitsX', 6, UnderlyingAsset.XSGD),
   ofcerc20('dff24bf9-5999-4093-bfe4-24e74eb5ff2f', 'ofctel', 'Telcoin', 2, UnderlyingAsset.TEL),
   ofcerc20('6e11614a-e393-45fb-aa95-30251229a0d6', 'ofcygg', 'Yield Guild Games', 18, UnderlyingAsset.YGG),
