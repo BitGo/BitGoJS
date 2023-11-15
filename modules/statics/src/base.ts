@@ -1454,6 +1454,7 @@ export interface BaseCoinConstructorOptions {
   kind: CoinKind;
   isToken: boolean;
   features: CoinFeature[];
+  restrictedCountries?: string[];
   decimalPlaces: number;
   asset: UnderlyingAsset;
   network: BaseNetwork;
@@ -1480,6 +1481,7 @@ export abstract class BaseCoin {
    */
   public readonly kind: CoinKind;
   public readonly family: CoinFamily;
+  public readonly restrictedCountries?: string[];
   public readonly isToken: boolean;
   /*
     Coin Features. These are yes or no questions about what the coin supports and does not support.
@@ -1572,6 +1574,7 @@ export abstract class BaseCoin {
     this.family = options.network.family;
     this.isToken = options.isToken;
     this.features = options.features;
+    this.restrictedCountries = options.restrictedCountries;
     this.decimalPlaces = options.decimalPlaces;
     this.asset = options.asset;
     this.network = options.network;

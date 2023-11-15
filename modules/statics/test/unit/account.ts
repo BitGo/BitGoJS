@@ -1,6 +1,72 @@
 const should = require('should');
-import { AccountCoin, Networks, UnderlyingAsset } from '../../src';
-import { txrpToken, xrpToken } from '../../src/account';
+import { AccountCoin, BaseUnit, CoinFeature, KeyCurve, Networks, UnderlyingAsset } from '../../src';
+import { account, txrpToken, xrpToken } from '../../src/account';
+
+describe('account', function () {
+  it('should create an account coin with default properties', function () {
+    const foo = account(
+      'a3a12458-47a2-4b67-a8a6-a16a0779b5e8',
+      'tfoo',
+      'Foo Coin',
+      Networks.test.goerli,
+      123,
+      UnderlyingAsset.ETH,
+      BaseUnit.ETH
+    );
+    should(foo.id).equal('a3a12458-47a2-4b67-a8a6-a16a0779b5e8');
+    should(foo.name).equal('tfoo');
+    should(foo.fullName).equal('Foo Coin');
+    should(foo.network).deepEqual(Networks.test.goerli);
+    should(foo.decimalPlaces).equal(123);
+    should(foo.asset).equal(UnderlyingAsset.ETH);
+    should(foo.baseUnit).equal(BaseUnit.ETH);
+    should(foo.isToken).equal(false);
+    should(foo.features).deepEqual(AccountCoin.DEFAULT_FEATURES);
+    should(foo.prefix).equal('');
+    should(foo.suffix).equal('TFOO');
+    should(foo.primaryKeyCurve).equal('secp256k1');
+    should(foo.baseUnit).equal('wei');
+    should(foo.kind).equal('crypto');
+    should(foo.family).equal('eth');
+    should(foo.asset).equal('eth');
+    should(foo.restrictedCountries).equal(undefined);
+  });
+
+  it('should create an account coin with additional properties', function () {
+    const foo = account(
+      'a3a12458-47a2-4b67-a8a6-a16a0779b5e8',
+      'tfoo',
+      'Foo Coin',
+      Networks.test.goerli,
+      123,
+      UnderlyingAsset.ETH,
+      BaseUnit.ETH,
+      [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED],
+      KeyCurve.Ed25519,
+      'prefix',
+      'TFOO Suffix',
+      true,
+      { restrictedCountries: ['USA'] }
+    );
+    should(foo.id).equal('a3a12458-47a2-4b67-a8a6-a16a0779b5e8');
+    should(foo.name).equal('tfoo');
+    should(foo.fullName).equal('Foo Coin');
+    should(foo.network).deepEqual(Networks.test.goerli);
+    should(foo.decimalPlaces).equal(123);
+    should(foo.asset).equal(UnderlyingAsset.ETH);
+    should(foo.baseUnit).equal(BaseUnit.ETH);
+    should(foo.isToken).equal(true);
+    should(foo.features).deepEqual([...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]);
+    should(foo.prefix).equal('prefix');
+    should(foo.suffix).equal('TFOO Suffix');
+    should(foo.primaryKeyCurve).equal('ed25519');
+    should(foo.baseUnit).equal('wei');
+    should(foo.kind).equal('crypto');
+    should(foo.family).equal('eth');
+    should(foo.asset).equal('eth');
+    should(foo.restrictedCountries).deepEqual(['USA']);
+  });
+});
 
 describe('XRP', () => {
   it('should create a new XRP token with the correct properties', () => {

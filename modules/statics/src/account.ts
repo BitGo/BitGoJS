@@ -1,23 +1,17 @@
-import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import {
+  BaseCoin,
+  BaseCoinConstructorOptions,
+  BaseUnit,
+  CoinFeature,
+  CoinKind,
+  KeyCurve,
+  UnderlyingAsset,
+} from './base';
 import { DOMAIN_PATTERN } from './constants';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
-export interface AccountConstructorOptions {
-  id: string;
-  fullName: string;
-  name: string;
-  alias?: string;
-  network: AccountNetwork;
-  asset: UnderlyingAsset;
-  baseUnit: BaseUnit;
-  features: CoinFeature[];
-  decimalPlaces: number;
-  isToken: boolean;
-  prefix?: string;
-  suffix?: string;
-  primaryKeyCurve: KeyCurve;
-}
+export type AccountConstructorOptions = Omit<BaseCoinConstructorOptions, 'kind'>;
 
 /**
  * Account based coins, such as Ethereum, Stellar, or XRP.
@@ -426,11 +420,13 @@ export class FiatCoin extends BaseCoin {
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
- * @param primaryKeyCurve? The elliptic curve for this chain/token
- * @param prefix? Optional coin prefix. Defaults to empty string
- * @param suffix? Optional coin suffix. Defaults to coin name.
- * @param isToken? Whether or not this account coin is a token of another coin
+ * @param baseUnit Base Unit of this coin (defined by coin name, e.g. BTC will map to satoshi)
+ * @param [features] Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param [primaryKeyCurve=Secp256k1] The elliptic curve for this chain/token
+ * @param [prefix=''] Optional coin prefix. Defaults to empty string
+ * @param [suffix=''] Optional coin suffix. Defaults to coin name.
+ * @param [isToken=false] Whether or not this account coin is a token of another coin
+ * @param [properties] Optional properties of this coin
  */
 export function account(
   id: string,
@@ -444,7 +440,10 @@ export function account(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  isToken = false
+  isToken = false,
+  properties: {
+    restrictedCountries?: string[];
+  } = {}
 ) {
   return Object.freeze(
     new AccountCoin({
@@ -460,6 +459,7 @@ export function account(
       isToken,
       asset,
       primaryKeyCurve,
+      restrictedCountries: properties.restrictedCountries,
     })
   );
 }

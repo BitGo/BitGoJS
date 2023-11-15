@@ -1130,7 +1130,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TON,
     BaseUnit.TON,
     TON_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    undefined,
+    undefined,
+    undefined,
+    { restrictedCountries: ['USA'] }
   ),
   account(
     '8244f85f-943c-4520-8e68-9e7f4361a13f',
@@ -1141,7 +1145,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TON,
     BaseUnit.TON,
     TON_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    undefined,
+    undefined,
+    undefined,
+    { restrictedCountries: ['USA'] }
   ),
   account(
     '020b57ce-bff0-4e25-95ce-0f3a94086db4',
