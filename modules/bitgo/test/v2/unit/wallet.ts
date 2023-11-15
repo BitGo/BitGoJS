@@ -28,6 +28,7 @@ import {
   ManageUnspentsOptions,
   SignedMessage,
   BaseTssUtils,
+  KeyType,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -333,6 +334,34 @@ describe('V2 Wallet:', function () {
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+    });
+
+    it('should return the prv provided for TSS SMC', async () => {
+      const tssWalletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {},
+        multisigType: 'tss',
+      };
+      const tsolcoin: any = bitgo.coin('tsol');
+      const wallet = new Wallet(bitgo, tsolcoin, tssWalletData);
+      const prv = 'longstringifiedjson';
+      const keychain = {
+        derivedFromParentWithSeed: 'random seed',
+        id: '123',
+        commonKeychain: 'longstring',
+        type: 'tss' as KeyType,
+      };
+      const userPrvOptions = {
+        prv,
+        keychain,
+      };
+      wallet.getUserPrv(userPrvOptions).should.eql(prv);
     });
   });
 

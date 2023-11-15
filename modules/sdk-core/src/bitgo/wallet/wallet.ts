@@ -1597,7 +1597,7 @@ export class Wallet implements IWallet {
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
-    const { txPrebuild, apiVersion } = params;
+    const { txPrebuild, apiVersion, txRequestId } = params;
 
     if (
       _.isFunction(params.customCommitmentGeneratingFunction) &&
@@ -1619,7 +1619,14 @@ export class Wallet implements IWallet {
     }
 
     if (!txPrebuild || typeof txPrebuild !== 'object') {
-      throw new Error('txPrebuild must be an object');
+      if (this.multisigType() === 'onchain') {
+        throw new Error('txPrebuild is required for on-chain multisig wallets');
+      }
+      if (!txRequestId) {
+        throw new Error('txPrebuild or txRequestId is required for TSS wallets');
+      }
+      // We only do this if we're not using the external signer TSS flow
+      params.txPrebuild = { txRequestId };
     }
 
     const presign = await this.baseCoin.presignTransaction({
@@ -1628,7 +1635,7 @@ export class Wallet implements IWallet {
       tssUtils: this.tssUtils,
     });
 
-    if (this._wallet.multisigType === 'tss') {
+    if (this.multisigType() === 'tss') {
       return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions), apiVersion });
     }
 
@@ -1751,10 +1758,12 @@ export class Wallet implements IWallet {
 
     // use the `derivedFromParentWithSeed` property from the user keychain as the `coldDerivationSeed`
     // if no other `coldDerivationSeed` was explicitly provided
+    // Only for onchain multisig wallets, TSS key derivation happens during the signing process
     if (
       params.coldDerivationSeed === undefined &&
       params.keychain !== undefined &&
-      params.keychain.derivedFromParentWithSeed !== undefined
+      params.keychain.derivedFromParentWithSeed !== undefined &&
+      this.multisigType() === 'onchain'
     ) {
       params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
     }
