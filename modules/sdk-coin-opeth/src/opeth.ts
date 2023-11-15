@@ -23,7 +23,7 @@ export class Opeth extends AbstractEthLikeNewCoins {
    * @returns {Promise<Object>} response from Arbiscan
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const token = common.Environments[this.bitgo.getEnv()].optimismEtherscanApiToken;
+    const token = common.Environments[this.bitgo.getEnv()].optimisticEtherscanApiToken;
     if (token) {
       query.apikey = token;
     }

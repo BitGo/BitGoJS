@@ -239,7 +239,7 @@ export class BitGoAPI implements BitGoBase {
       'polygonscanApiToken',
       'snowtraceApiToken',
       'arbiscanApiToken',
-      'optimismEtherscanApiToken',
+      'optimisticEtherscanApiToken',
     ];
 
     Object.keys(params).forEach((key) => {
