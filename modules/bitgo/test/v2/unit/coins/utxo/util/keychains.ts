@@ -13,6 +13,14 @@ export type KeychainBase58 = {
   prv: string;
 };
 
+export type KeyDoc = {
+  id: string;
+  pub: string;
+  source: string;
+  encryptedPrv: string;
+  coinSpecific: any;
+};
+
 export function toKeychainBase58(k: BIP32Interface): KeychainBase58 {
   if (k.isNeutered()) {
     throw new Error(`must provide private key`);
@@ -22,6 +30,21 @@ export function toKeychainBase58(k: BIP32Interface): KeychainBase58 {
     pub: k.neutered().toBase58(),
   };
 }
+
+export function toKeychainObjects(rootWalletKeys: RootWalletKeys, walletPassphrase: string): KeyDoc[] {
+  return rootWalletKeys.triple.map((bip32, keyIdx) => {
+    const pub = bip32.neutered().toBase58();
+    return {
+      id: getSeed(pub).toString('hex'),
+      pub,
+      source: KeyNames[keyIdx],
+      encryptedPrv: encrypt(walletPassphrase, bip32.toBase58()),
+      coinSpecific: {},
+    };
+  });
+}
+
+export const KeyNames = ['user', 'backup', 'bitgo'];
 
 export const keychainsBase58: Triple<KeychainBase58> = [
   {
