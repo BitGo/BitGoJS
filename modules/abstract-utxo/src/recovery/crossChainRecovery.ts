@@ -266,7 +266,10 @@ function createSweepTransaction<TNumber extends number | bigint = number>(
   amountType: 'number' | 'bigint' = 'number'
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   const inputValue = unspentSum<TNumber>(unspents, amountType);
-  const vsize = Dimensions.fromUnspents(unspents)
+  const vsize = Dimensions.fromUnspents(unspents, {
+    p2tr: { scriptPathLevel: 1 },
+    p2trMusig2: { scriptPathLevel: undefined },
+  })
     .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(targetAddress, network) }))
     .getVSize();
   const fee = vsize * feeRateSatVB;
@@ -342,7 +345,12 @@ function getFeeInfo<TNumber extends number | bigint = number>(
   unspents: WalletUnspent<TNumber>[],
   amountType: 'number' | 'bigint' = 'number'
 ): FeeInfo {
-  const vsize = Dimensions.fromUnspents(unspents).plus(Dimensions.fromOutputs(transaction.outs)).getVSize();
+  const vsize = Dimensions.fromUnspents(unspents, {
+    p2tr: { scriptPathLevel: 1 },
+    p2trMusig2: { scriptPathLevel: undefined },
+  })
+    .plus(Dimensions.fromOutputs(transaction.outs))
+    .getVSize();
   const inputAmount = utxolib.bitgo.unspentSum<TNumber>(unspents, amountType);
   const outputAmount = transaction.outs.reduce((sum, o) => sum + BigInt(o.value), BigInt(0));
   const fee = Number(BigInt(inputAmount) - outputAmount);

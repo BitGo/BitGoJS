@@ -64,11 +64,13 @@ export interface FromUnspentParams {
 
 const defaultUnspentParams: FromUnspentParams = {
   p2tr: {
-    scriptPathLevel: 1,
+    // Default to recovery script paths, to make it easier for recovery case callers (WRW etc).
+    // WP can explicitly pass scriptPathLevel: 1 to use happy path.
+    scriptPathLevel: 2,
   },
   p2trMusig2: {
     // Default to script path spend, to make it easier for recovery case callers (WRW etc).
-    // WP can explicitly pass undefined to use key path.
+    // WP can explicitly pass scriptPathLevel: undefined to use key path.
     scriptPathLevel: 1,
   },
 };
@@ -382,7 +384,7 @@ export class Dimensions {
   /**
    * Return dimensions of an unspent according to `chain` parameter
    * @param chain - Chain code as defined by utxo.chain
-   * @param params - Hint for unspents with variable input sizes (p2tr).
+   * @param params - Hint for unspents with variable input sizes (p2tr, p2trMusig2)
    * @return {Dimensions} of the unspent
    * @throws if the chain code is invalid or unsupported
    */
@@ -401,14 +403,15 @@ export class Dimensions {
 
   /**
    * @param unspents
+   * @param params - Hint for unspents with variable input sizes (p2tr, p2trMusig2)
    * @return {Dimensions} sum of the dimensions for each unspent (@see Dimensions.fromUnspent())
    */
-  static fromUnspents(unspents: { chain: ChainCode }[]): Dimensions {
+  static fromUnspents(unspents: { chain: ChainCode }[], params: FromUnspentParams = defaultUnspentParams): Dimensions {
     if (!Array.isArray(unspents)) {
       throw new TypeError(`unspents must be array`);
     }
     // Convert the individual unspents into dimensions and sum them up
-    return Dimensions.sum(...unspents.map((u) => Dimensions.fromUnspent(u)));
+    return Dimensions.sum(...unspents.map((u) => Dimensions.fromUnspent(u, params)));
   }
 
   /**

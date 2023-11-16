@@ -148,11 +148,11 @@ describe('Dimensions from unspent types', function () {
     );
 
     chainCodesP2tr.forEach((chain) => {
-      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }));
+      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }));
       Dimensions.fromUnspent(
         { chain },
-        { p2tr: { scriptPathLevel: 2 }, p2trMusig2: { scriptPathLevel: undefined } }
-      ).should.eql(Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }));
+        { p2tr: { scriptPathLevel: 1 }, p2trMusig2: { scriptPathLevel: undefined } }
+      ).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }));
     });
 
     chainCodesP2trMusig2.forEach((chain) => {
@@ -169,7 +169,23 @@ describe('Dimensions from unspent types', function () {
         nP2shInputs: 2,
         nP2wshInputs: 2,
         nP2trKeypathInputs: 0,
-        nP2trScriptPathLevel1Inputs: 4,
+        nP2trScriptPathLevel1Inputs: 2,
+        nP2trScriptPathLevel2Inputs: 2,
+        nP2shP2pkInputs: 0,
+        outputs: { count: 0, size: 0 },
+      })
+    );
+
+    Dimensions.fromUnspents(
+      chainCodes.map((chain) => ({ chain })),
+      { p2tr: { scriptPathLevel: 1 }, p2trMusig2: { scriptPathLevel: undefined } }
+    ).should.eql(
+      new Dimensions({
+        nP2shP2wshInputs: 2,
+        nP2shInputs: 2,
+        nP2wshInputs: 2,
+        nP2trKeypathInputs: 2,
+        nP2trScriptPathLevel1Inputs: 2,
         nP2trScriptPathLevel2Inputs: 0,
         nP2shP2pkInputs: 0,
         outputs: { count: 0, size: 0 },
