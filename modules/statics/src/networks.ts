@@ -154,8 +154,8 @@ class Arbitrum extends Mainnet implements EthereumNetwork {
 class ArbitrumTestnet extends Testnet implements EthereumNetwork {
   name = 'ArbitrumTestnet';
   family = CoinFamily.ARBETH;
-  explorerUrl = 'https://sepolia-explorer.arbitrum.io/tx/';
-  accountExplorerUrl = 'https://sepolia-explorer.arbitrum.io/address/';
+  explorerUrl = 'https://sepolia.arbiscan.io/tx/';
+  accountExplorerUrl = 'https://sepolia.arbiscan.io/address/';
   chainId = 421614;
   nativeCoinOperationHashPrefix = 'ARBETH';
   tokenOperationHashPrefix = 'ARBETH-ERC20';

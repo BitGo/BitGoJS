@@ -20,8 +20,8 @@ interface EnvironmentTemplate {
   polygonscanApiToken?: string;
   arbiscanBaseUrl?: string;
   arbiscanApiToken?: string;
-  optimismEtherscanBaseUrl?: string;
-  optimismEtherscanApiToken?: string;
+  optimisticEtherscanBaseUrl?: string;
+  optimisticEtherscanApiToken?: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   nearNodeUrls: string[];
@@ -108,8 +108,8 @@ const mainnetBase: EnvironmentTemplate = {
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   arbiscanBaseUrl: 'https://api.arbiscan.io',
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
-  optimismEtherscanBaseUrl: 'https://api-optimistic.etherscan.io',
-  optimismEtherscanApiToken: process.env.OPTIMISM_ETHERSCAN_API_TOKEN,
+  optimisticEtherscanBaseUrl: 'https://api-optimistic.etherscan.io',
+  optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
@@ -149,8 +149,8 @@ const testnetBase: EnvironmentTemplate = {
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
   arbiscanBaseUrl: 'https://api-sepolia.arbiscan.io',
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
-  optimismEtherscanBaseUrl: 'https://api-sepolia-optimistic.etherscan.io',
-  optimismEtherscanApiToken: process.env.OPTIMISM_ETHERSCAN_API_TOKEN,
+  optimisticEtherscanBaseUrl: 'https://api-sepolia-optimistic.etherscan.io',
+  optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
   // kylin eos endpoints found here
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup

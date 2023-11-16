@@ -246,8 +246,8 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.GENERIC_TOKEN,
 ];
 const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
-const ARBETH_FEATURES = [...ETH_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
-const OPETH_FEATURES = [...ETH_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
+const ARBETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
+const OPETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
 
 export const coins = CoinMap.fromCoins([
   utxo(
