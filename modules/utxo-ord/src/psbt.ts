@@ -144,7 +144,11 @@ export function findOutputLayoutForWalletUnspents(
     minInscriptionOutput,
     maxInscriptionOutput,
     feeFixed: getFee(
-      VirtualSizes.txSegOverheadVSize + Dimensions.fromUnspents(inputs).getInputsVSize(),
+      VirtualSizes.txSegOverheadVSize +
+        Dimensions.fromUnspents(inputs, {
+          p2tr: { scriptPathLevel: 1 },
+          p2trMusig2: { scriptPathLevel: undefined },
+        }).getInputsVSize(),
       constraints.feeRateSatKB
     ),
     feePerOutput: getFee(
