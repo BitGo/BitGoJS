@@ -3115,10 +3115,18 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ab3e6da9-d9b2-4ff5-a25e-e97b532b9a95',
-    'eurcv',
+    'eurcvv0',
     'EUR Coinvertible',
     18,
     '0xf7790914dc335b20aa19d7c9c9171e14e278a134',
+    UnderlyingAsset.EURCVV0
+  ),
+  erc20(
+    '4a47b0a6-f5a4-4a74-89f0-2475fb92e191',
+    'eurcv',
+    'EUR CoinVertible',
+    18,
+    '0x5f7827fdeb7c20b443265fc2f40845b715385ff2',
     UnderlyingAsset.EURCV
   ),
   erc20(
@@ -10765,6 +10773,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     UnderlyingAsset['polygon:usdc']
+  ),
+  polygonErc20(
+    '5a17fe9c-3b78-4f12-b419-ed3662f4e985',
+    'polygon:usdcv2',
+    'USD Coin (native)',
+    6,
+    '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+    UnderlyingAsset['polygon:usdcv2']
   ),
   polygonErc20(
     'dee07c7a-96cb-4dbb-906c-b0ad98160cff',

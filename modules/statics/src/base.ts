@@ -285,6 +285,7 @@ export enum UnderlyingAsset {
   EOS = 'eos',
   ERD = 'erd',
   EUR = 'eur',
+  EURCVV0 = 'eurcvv0',
   EURCV = 'eurcv',
   EUROC = 'euroc',
   GBP = 'gbp',
@@ -1282,6 +1283,7 @@ export enum UnderlyingAsset {
 
   // polygon Token ERC-20
   'polygon:usdc' = 'polygon:usdc',
+  'polygon:usdcv2' = 'polygon:usdcv2',
   'polygon:usdt' = 'polygon:usdt',
   'polygon:weth' = 'polygon:weth',
   'polygon:wbtc' = 'polygon:wbtc',
