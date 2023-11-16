@@ -1,9 +1,15 @@
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
+import { NetworkType, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
+import { beforeEach } from 'mocha';
 import sinon from 'sinon';
-import { Tcoreum, Coreum } from '../../src';
+import { Coreum, Tcoreum } from '../../src';
+import { GAS_AMOUNT } from '../../src/lib/constants';
 import { CoreumUtils } from '../../src/lib/utils';
+import { mainnetAddress } from '../resources/coreum';
 import {
   TEST_DELEGATE_TX,
   TEST_SEND_TX,
@@ -11,10 +17,9 @@ import {
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
   testnetAddress,
+  wrwUser,
 } from '../resources/tcoreum';
-import { mainnetAddress } from '../resources/coreum';
 import should = require('should');
-import { NetworkType } from '@bitgo/statics';
 
 describe('Coreum', function () {
   let bitgo: TestBitGoAPI;
@@ -386,6 +391,131 @@ describe('Coreum', function () {
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover transaction: success path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const coin = coins.get('tcoreum');
+    const testBalance = '1500000';
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Tcoreum.prototype, 'getAccountBalance' as keyof Tcoreum);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+
+      const accountDetails = sandBox.stub(Tcoreum.prototype, 'getAccountDetails' as keyof Tcoreum);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Tcoreum.prototype, 'getChainId' as keyof Tcoreum);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await tcoreum.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(tcoreum.getAccountBalance);
+      sandBox.assert.calledOnce(tcoreum.getAccountDetails);
+      sandBox.assert.calledOnce(tcoreum.getChainId);
+
+      const tcoreumTxn = new CosmosTransaction(coin, testnetUtils);
+      tcoreumTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const tcoreumTxnJson = tcoreumTxn.toJson();
+      const sendMessage = tcoreumTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance);
+      const actualBalance = balance.minus(new BigNumber(GAS_AMOUNT));
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+  });
+
+  describe('Recover transaction: failure path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const testZeroBalance = '0';
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Tcoreum.prototype, 'getAccountBalance' as keyof Tcoreum);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+
+      const accountDetails = sandBox.stub(Tcoreum.prototype, 'getAccountDetails' as keyof Tcoreum);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Tcoreum.prototype, 'getChainId' as keyof Tcoreum);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw error if backupkey is not present', async function () {
+      await tcoreum
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing backupKey');
+    });
+
+    it('should throw error if userkey is not present', async function () {
+      await tcoreum
+        .recover({
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing userKey');
+    });
+
+    it('should throw error if wallet passphrase is not present', async function () {
+      await tcoreum
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should throw error if there is no balance', async function () {
+      await tcoreum
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('Did not have enough funds to recover');
     });
   });
 });

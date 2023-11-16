@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/abstract-cosmos": "^1.11.0",
     "@bitgo/sdk-core": "^11.0.0",
+    "@bitgo/sdk-lib-mpc": "^8.18.0",
     "@bitgo/statics": "^32.0.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
