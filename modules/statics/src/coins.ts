@@ -1663,6 +1663,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AMPX
   ),
   erc20(
+    'dcca8b47-75c6-4cb2-8c91-ed5aa26f6310',
+    'ampl',
+    'Ampleforth',
+    9,
+    '0xd46ba6d942050d489dbd938a2c909a5d5039a161',
+    UnderlyingAsset.AMPL
+  ),
+  erc20(
     '60b37df5-c078-4d7e-b38a-6f3f7fd25ea7',
     'ana',
     'ANA',
@@ -4048,6 +4056,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2167fb82309cf76513e83b25123f8b0559d6b48f',
     UnderlyingAsset.LION
+  ),
+  erc20(
+    '391aa5ea-43e2-4ab2-a326-e24c6879708b',
+    'lit',
+    'Litentry',
+    18,
+    '0xb59490ab09a0f526cc7305822ac65f2ab12f9723',
+    UnderlyingAsset.LIT
   ),
   erc20(
     '741a2032-0f4f-400c-8c1c-55fe33af7f5c',
