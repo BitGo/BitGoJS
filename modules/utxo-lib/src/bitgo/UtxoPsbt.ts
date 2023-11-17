@@ -429,10 +429,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   finalizeTaprootInput(inputIndex: number): this {
-    const checkPartialSigSighashes = (sig: Buffer) => {
+    const sanitizeSignature = (sig: Buffer) => {
       const sighashType = sig.length === 64 ? Transaction.SIGHASH_DEFAULT : sig.readUInt8(sig.length - 1);
       const inputSighashType = input.sighashType === undefined ? Transaction.SIGHASH_DEFAULT : input.sighashType;
       assert(sighashType === inputSighashType, 'signature sighash does not match input sighash type');
+      // TODO BTC-663 This should be fixed in platform. This is just a workaround fix.
+      return sighashType === Transaction.SIGHASH_DEFAULT && sig.length === 65 ? sig.slice(0, 64) : sig;
     };
     const input = checkForInput(this.data.inputs, inputIndex);
     // witness = control-block script first-sig second-sig
@@ -447,8 +449,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       if (!sig) {
         throw new Error('Could not find signatures in Script Sig.');
       }
-      checkPartialSigSighashes(sig.signature);
-      witness.unshift(sig.signature);
+      witness.unshift(sanitizeSignature(sig.signature));
     }
 
     const witnessLength = witness.reduce((s, b) => s + b.length + varuint.encodingLength(b.length), 1);
