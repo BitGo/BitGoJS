@@ -56,7 +56,7 @@ export class Utils implements BaseUtils {
       wc: 0,
     });
     const address = await wallet.getAddress();
-    return address.toString(true, true, true);
+    return address.toString(true, true, false);
   }
 }
 
