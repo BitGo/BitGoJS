@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-injective@1.4.0...@bitgo/sdk-coin-injective@1.10.0) (2023-11-17)
+
+### Bug Fixes
+
+- **abstract-cosmos:** getAccountDetails fix ([d5c6c74](https://github.com/BitGo/BitGoJS/commit/d5c6c74845e62ee3cd68321c55d729da1526fcae))
+- **abstract-cosmos:** getAccountDetails mock added for testcases ([1c8795a](https://github.com/BitGo/BitGoJS/commit/1c8795a194d66b41ff46c33d70d14e8343048936))
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-injective@1.4.0...@bitgo/sdk-coin-injective@1.9.0) (2023-11-13)
 
 ### Bug Fixes
