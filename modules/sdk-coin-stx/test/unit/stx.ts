@@ -231,7 +231,7 @@ describe('STX:', function () {
         },
       });
       const factory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
-      const txBuilder = factory.from(tx.txHex);
+      const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
       txJson.payload.to.should.equal(destination);
