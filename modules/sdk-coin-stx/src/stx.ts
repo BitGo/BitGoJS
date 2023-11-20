@@ -141,9 +141,11 @@ export class Stx extends BaseCoin {
       throw new Error('Invalid message passed to signMessage');
     }
 
-    return {
+    const txHex = {
       txHex: transaction.toBroadcastFormat(),
     };
+
+    return transaction.signature.length >= 2 ? txHex : { halfSigned: txHex };
   }
 
   async parseTransaction(params: any): Promise<any> {
