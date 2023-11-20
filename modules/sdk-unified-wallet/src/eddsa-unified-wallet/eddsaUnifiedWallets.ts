@@ -53,7 +53,7 @@ export class EddsaUnifiedWallets extends UnifiedWallets {
       m: 2,
       n: 3,
       keys: [keychainsTriplet.userKeychain.id, keychainsTriplet.backupKeychain.id, keychainsTriplet.bitgoKeychain.id],
-      isCold: false,
+      type: 'hot',
       multisigType: 'tss',
       enterprise: params.enterprise,
       walletVersion: params.walletVersion,

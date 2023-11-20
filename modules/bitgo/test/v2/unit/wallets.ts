@@ -2,13 +2,21 @@
 // Tests for Wallets
 //
 
-import 'should';
 import * as nock from 'nock';
-import { BlsUtils, common, TssUtils, Wallets, ECDSAUtils, KeychainsTriplet } from '@bitgo/sdk-core';
+import {
+  BlsUtils,
+  common,
+  TssUtils,
+  Wallets,
+  ECDSAUtils,
+  KeychainsTriplet,
+  GenerateWalletOptions,
+} from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import * as sinon from 'sinon';
+import * as should from 'should';
 
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
@@ -507,7 +515,134 @@ describe('V2 Wallets:', function () {
           userKey: 'user key',
           multisigType: 'tss',
         })
-        .should.be.rejectedWith('TSS cold wallets are not supported at this time');
+        .should.be.rejectedWith('enterprise is required for TSS wallet');
+
+      await tsolWallets
+        .generateWallet({
+          label: 'tss cold wallet',
+          userKey: 'user key',
+          multisigType: 'tss',
+          enterprise: 'enterpriseId',
+        })
+        .should.be.rejectedWith('cannot generate TSS keys without passphrase');
+    });
+
+    it('should create a new TSS custodial wallet', async function () {
+      const keys = ['1', '2', '3'];
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'tss wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        type: 'custodial',
+      };
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet')
+        .reply(200, { ...walletParams, keys });
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      const res = await wallets.generateWallet(walletParams);
+
+      res.wallet.label().should.equal(walletParams.label);
+      should.equal(res.wallet.type(), walletParams.type);
+      res.wallet.toJSON().enterprise.should.equal(walletParams.enterprise);
+      res.wallet.multisigType().should.equal(walletParams.multisigType);
+      res.userKeychain.id.should.equal(keys[0]);
+      res.backupKeychain.id.should.equal(keys[1]);
+      res.bitgoKeychain.id.should.equal(keys[2]);
+
+      walletNock.isDone().should.be.true();
+    });
+
+    it('should create a new TSS SMC wallet', async function () {
+      const sandbox = sinon.createSandbox();
+      const commonKeychain = 'longstring';
+      const seed = 'seed';
+      const keys: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain,
+          type: 'tss',
+          derivedFromParentWithSeed: seed,
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain,
+          type: 'tss',
+          derivedFromParentWithSeed: seed,
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain,
+          type: 'tss',
+        },
+      };
+
+      const bitgoKeyNock = nock('https://bitgo.fakeurl').get('/api/v2/tsol/key/3').reply(200, keys.bitgoKeychain);
+      const userKeyExpectedBody = {
+        source: 'user',
+        keyType: 'tss',
+        commonKeychain,
+        derivedFromParentWithSeed: seed,
+      };
+      const userKeyNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/key', userKeyExpectedBody)
+        .reply(200, keys.userKeychain);
+      const backupKeyExpectedBody = {
+        source: 'backup',
+        keyType: 'tss',
+        commonKeychain,
+        derivedFromParentWithSeed: seed,
+      };
+      const backupKeyNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/key', backupKeyExpectedBody)
+        .reply(200, keys.backupKeychain);
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'tss wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        type: 'cold',
+        bitgoKeyId: keys.bitgoKeychain.id,
+        commonKeychain,
+        coldDerivationSeed: seed,
+      };
+
+      const walletNockExpected = {
+        label: walletParams.label,
+        m: 2,
+        n: 3,
+        keys: [keys.userKeychain.id, keys.backupKeychain.id, keys.bitgoKeychain.id],
+        type: walletParams.type,
+        multisigType: walletParams.multisigType,
+        enterprise: walletParams.enterprise,
+        walletVersion: undefined,
+      };
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet', walletNockExpected)
+        .reply(200, walletNockExpected);
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      const res = await wallets.generateWallet(walletParams);
+
+      res.wallet.label().should.equal(walletParams.label);
+      should.equal(res.wallet.type(), walletParams.type);
+      res.wallet.toJSON().enterprise.should.equal(walletParams.enterprise);
+      res.wallet.multisigType().should.equal(walletParams.multisigType);
+      res.userKeychain.should.deepEqual(keys.userKeychain);
+      res.backupKeychain.should.deepEqual(keys.backupKeychain);
+      res.bitgoKeychain.should.deepEqual(keys.bitgoKeychain);
+
+      bitgoKeyNock.isDone().should.be.true();
+      userKeyNock.isDone().should.be.true();
+      backupKeyNock.isDone().should.be.true();
+      walletNock.isDone().should.be.true();
+
+      sandbox.verifyAndRestore();
     });
   });
 
@@ -542,6 +677,7 @@ describe('V2 Wallets:', function () {
         label: 'blsdkg wallet',
         passphrase: 'blsdkg password',
         multisigType: 'blsdkg',
+        enterprise: 'enterpriseId',
       });
 
       walletNock.isDone().should.be.true();
@@ -564,6 +700,7 @@ describe('V2 Wallets:', function () {
       await eth2Wallets
         .generateWallet({
           label: 'blsdkg wallet',
+          enterprise: 'enterpriseId',
         })
         .should.be.rejectedWith('cannot generate BLS-DKG keys without passphrase');
 
@@ -571,9 +708,21 @@ describe('V2 Wallets:', function () {
         .generateWallet({
           label: 'blsdkg cold wallet',
           passphrase: 'passphrase',
+          enterprise: 'enterpriseId',
           userKey: 'user key',
+          type: 'cold',
         })
-        .should.be.rejectedWith('BLS-DKG cold wallets are not supported at this time');
+        .should.be.rejectedWith('BLS-DKG SMC wallets are not supported at this time');
+
+      await eth2Wallets
+        .generateWallet({
+          label: 'blsdkg cold wallet',
+          passphrase: 'passphrase',
+          enterprise: 'enterpriseId',
+          userKey: 'user key',
+          type: 'custodial',
+        })
+        .should.be.rejectedWith('BLS-DKG custodial wallets are not supported at this time');
     });
   });
 

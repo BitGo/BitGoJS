@@ -14,15 +14,24 @@ export interface GetWalletOptions {
   id?: string;
 }
 
-export interface GenerateMpcWalletOptions {
-  multisigType: 'onchain' | 'tss' | 'blsdkg';
+export interface GenerateBaseMpcWalletOptions {
+  multisigType: 'tss' | 'blsdkg';
   label: string;
-  passphrase?: string;
-  originalPasscodeEncryptionCode?: string;
-  enterprise?: string;
+  enterprise: string;
   walletVersion?: number;
+}
+
+export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
+  passphrase: string;
+  originalPasscodeEncryptionCode?: string;
   backupProvider?: BackupProvider;
 }
+export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
+  bitgoKeyId: string;
+  commonKeychain: string;
+  coldDerivationSeed?: string;
+}
+
 export const backupProviders = ['BitGoTrustAsKrs'] as const;
 export type BackupProvider = (typeof backupProviders)[number];
 export interface GenerateWalletOptions {
@@ -49,6 +58,9 @@ export interface GenerateWalletOptions {
   rootPrivateKey?: string;
   multisigType?: 'onchain' | 'tss' | 'blsdkg';
   isDistributedCustody?: boolean;
+  bitgoKeyId?: string;
+  commonKeychain?: string;
+  type?: 'hot' | 'cold' | 'custodial';
 }
 
 export interface GetWalletByAddressOptions {

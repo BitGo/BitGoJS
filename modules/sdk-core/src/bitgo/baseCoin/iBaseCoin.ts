@@ -166,7 +166,6 @@ export interface SupplementGenerateWalletOptions {
   };
   walletVersion?: number;
   keys: string[];
-  isCold: boolean;
   keySignatures?: {
     backup: string;
     bitgo: string;
@@ -174,6 +173,7 @@ export interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
+  type: 'hot' | 'cold' | 'custodial';
 }
 
 export interface FeeEstimateOptions {
