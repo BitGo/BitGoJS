@@ -1375,6 +1375,12 @@ export enum UnderlyingAsset {
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
 
+  // Optimism mainnet tokens
+  'opeth:link' = 'opeth:link',
+
+  // Optimism testnet tokens
+  'topeth:terc18dp' = 'topeth:terc18dp',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',

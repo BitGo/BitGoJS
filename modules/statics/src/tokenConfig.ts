@@ -15,6 +15,7 @@ import {
   TronErc20Coin,
   XrpCoin,
   ArbethERC20Token,
+  OpethERC20Token,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -102,6 +103,9 @@ export interface Tokens {
     arbeth: {
       tokens: EthLikeTokenConfig[];
     };
+    opeth: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
@@ -147,6 +151,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     arbeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    opeth: {
       tokens: EthLikeTokenConfig[];
     };
     sol: {
@@ -325,6 +332,20 @@ const formattedArbethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => 
   return acc;
 }, []);
 
+const formattedOpethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof OpethERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'opeth' : 'topeth',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
@@ -444,6 +465,9 @@ export const tokens: Tokens = {
     arbeth: {
       tokens: formattedArbethTokens.filter((token) => token.network === 'Mainnet'),
     },
+    opeth: {
+      tokens: formattedOpethTokens.filter((token) => token.network === 'Mainnet'),
+    },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
     },
@@ -491,6 +515,9 @@ export const tokens: Tokens = {
     },
     arbeth: {
       tokens: formattedArbethTokens.filter((token) => token.network === 'Testnet'),
+    },
+    opeth: {
+      tokens: formattedOpethTokens.filter((token) => token.network === 'Testnet'),
     },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),

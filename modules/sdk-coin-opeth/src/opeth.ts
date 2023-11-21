@@ -1,3 +1,7 @@
+/**
+ * @prettier
+ */
+
 import request from 'superagent';
 import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';

@@ -370,6 +370,16 @@ export class ArbethERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
+ * The Optimism Chain network support tokens
+ * Optimism Chain Tokens are ERC20 tokens
+ */
+export class OpethERC20Token extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
+/**
  * The Xrp network supports tokens
  * Xrp tokens are identified by their issuer address
  * Naming format is similar to XLM
@@ -1697,7 +1707,7 @@ export function tpolygonErc20(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Polygon main network.
+ * @param network? Optional token network. Defaults to Arbitrum main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -1744,7 +1754,7 @@ export function arbethErc20(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the Polygon test network.
+ * @param network? Optional token network. Defaults to the Arbitrum test network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -1762,6 +1772,96 @@ export function tarbethErc20(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return arbethErc20(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for opethErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Optimism main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function opethErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.optimism,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new OpethERC20Token({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for Optimism Sepolia testnet opethErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the Optimism test network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function topethErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.optimism,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return opethErc20(
     id,
     name,
     fullName,

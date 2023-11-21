@@ -16,6 +16,7 @@ import {
   hederaToken,
   nonstandardToken,
   polygonErc20,
+  opethErc20,
   solToken,
   stellarToken,
   talgoToken,
@@ -28,6 +29,7 @@ import {
   terc20,
   terc721,
   tpolygonErc20,
+  topethErc20,
   tronToken,
   tsolToken,
   tstellarToken,
@@ -11387,6 +11389,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x143e1dae4f018ff86051a01d44a1b49b13704056',
     UnderlyingAsset['tarbeth:link']
+  ),
+  opethErc20(
+    '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
+    'opeth:link',
+    'Chainlink Token',
+    18,
+    '0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6',
+    UnderlyingAsset['opeth:link']
+  ),
+  topethErc20(
+    '3c06bc28-1af2-4869-a632-bd081376fb46',
+    'topeth:terc18dp',
+    'Optimism Test ERC Token 18 Decimals',
+    18,
+    '0xe9df68a54bba438c8a6192e95f0f2c53ac93d997',
+    UnderlyingAsset['topeth:terc18dp']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',

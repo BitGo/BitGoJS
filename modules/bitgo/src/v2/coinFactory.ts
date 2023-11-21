@@ -54,6 +54,7 @@ import {
   Ofc,
   OfcToken,
   Opeth,
+  OpethToken,
   Osmo,
   Polygon,
   PolygonToken,
@@ -264,6 +265,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   ArbethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  OpethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 
