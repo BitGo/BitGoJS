@@ -97,14 +97,14 @@ export class AvaxP extends BaseCoin {
       throw new Error('Export Tx requires one recipient');
     }
 
+    const maxImportFee = (this._staticsCoin.network as AvalancheNetwork).maxImportFee;
     const recipientAmount = new BigNumber(recipients[0].amount);
-
     if (
       recipientAmount.isGreaterThan(explainedTx.outputAmount) ||
-      recipientAmount.plus(explainedTx.fee.fee).isLessThan(explainedTx.outputAmount)
+      recipientAmount.plus(maxImportFee).isLessThan(explainedTx.outputAmount)
     ) {
       throw new Error(
-        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${recipientAmount} and fixed fee ${explainedTx.fee.fee}`
+        `Tx total amount ${explainedTx.outputAmount} does not match with expected total amount field ${recipientAmount} and max import fee ${maxImportFee}`
       );
     }
 

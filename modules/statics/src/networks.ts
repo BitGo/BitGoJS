@@ -49,6 +49,7 @@ export interface AvalancheNetwork extends BaseNetwork {
   // current valid asset id is AVAX
   readonly avaxAssetID: string;
   readonly txFee: string;
+  readonly maxImportFee: string; // 0.01 AVAX
 }
 
 export interface AccountNetwork extends BaseNetwork {
@@ -192,6 +193,7 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
   alias = 'P';
   vm = 'platformvm';
   txFee = '1000000'; // 1 MILLIAVAX
+  maxImportFee = '10000000'; // 0.01 AVAX
   createSubnetTx = '1000000000'; // 1 AVAX
   createChainTx = '1000000000'; // 1 AVAX
   creationTxFee = '10000000'; // 1 CENTIAVAX
@@ -218,6 +220,7 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   hrp = 'fuji';
   vm = 'platformvm';
   txFee = '1000000'; // 1 MILLIAVAX
+  maxImportFee = '10000000'; // 0.01 AVAX
   createSubnetTx = '1000000000'; // 1 AVAX
   createChainTx = '1000000000'; // 1 AVAX
   creationTxFee = '10000000'; // 1 CENTIAVAX
