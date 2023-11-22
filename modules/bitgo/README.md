@@ -77,7 +77,7 @@ console.dir(result);
 
 ## More examples
 
-Further demos and examples in both JavaScript and TypeScript can be found in the [example](example) directory.
+Further demos and examples in both JavaScript and TypeScript can be found in the [examples](https://github.com/BitGo/BitGoJS/tree/master/examples) directory.
 
 # Enabling additional debugging output
 
