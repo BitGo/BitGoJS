@@ -5,7 +5,7 @@
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, BaseNetwork } from '@bitgo/statics';
 import * as _ from 'lodash';
 import {
   BaseCoin,
@@ -38,6 +38,8 @@ import {
   MPCUnsignedTx,
   MPCSweepRecoveryOptions,
   MPCTxs,
+  OvcInput,
+  OvcOutput,
 } from '@bitgo/sdk-core';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
@@ -46,6 +48,7 @@ import {
   isValidAddress,
   isValidPrivateKey,
   isValidPublicKey,
+  getSolTokenFromAddress,
 } from './lib/utils';
 import * as request from 'superagent';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
@@ -116,6 +119,27 @@ interface SolDurableNonceFromNode {
   blockhash: string;
 }
 
+interface TokenAmount {
+  amount: string;
+  decimals: number;
+  uiAmount: number;
+  uiAmountString: string;
+}
+
+interface TokenAccountInfo {
+  isNative: boolean;
+  mint: string;
+  owner: string;
+  state: string;
+  tokenAmount: TokenAmount;
+}
+
+interface TokenAccount {
+  info: TokenAccountInfo;
+  pubKey: string;
+  tokenName?: string;
+}
+
 export interface SolRecoveryOptions extends MPCRecoveryOptions {
   durableNonce?: {
     publicKey: string;
@@ -171,6 +195,10 @@ export class Sol extends BaseCoin {
 
   getFullName(): string {
     return this._staticsCoin.fullName;
+  }
+
+  getNetwork(): BaseNetwork {
+    return this._staticsCoin.network;
   }
 
   getBaseFactor(): string | number {
@@ -572,6 +600,38 @@ export class Sol extends BaseCoin {
     };
   }
 
+  protected async getTokenAccountsByOwner(pubKey = ''): Promise<[] | TokenAccount[]> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getTokenAccountsByOwner',
+        params: [
+          pubKey,
+          {
+            programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+          },
+          {
+            encoding: 'jsonParsed',
+          },
+        ],
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+
+    if (response.body.result.value !== []) {
+      const tokenAccounts: TokenAccount[] = [];
+      for (const tokenAccount of response.body.result.value) {
+        tokenAccounts.push({ info: tokenAccount.account.data.parsed.info, pubKey: tokenAccount.pubKey });
+      }
+      return tokenAccounts;
+    }
+
+    return [];
+  }
+
   /**
    * Creates funds sweep recovery transaction(s) without BitGo
    *
@@ -674,23 +734,100 @@ export class Sol extends BaseCoin {
     }
 
     const factory = this.getBuilder();
+    const walletCoin = this.getChain();
 
+    let txBuilder;
     let blockhash = await this.getBlockhash();
     let authority = '';
-    const netAmount = balance - totalFee;
+
     if (params.durableNonce) {
       const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
       blockhash = durableNonceInfo.blockhash;
       authority = durableNonceInfo.authority;
     }
 
-    const txBuilder = factory
-      .getTransferBuilder()
-      .nonce(blockhash)
-      .sender(bs58EncodedPublicKey)
-      .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-      .fee({ amount: feePerSignature })
-      .feePayer(bs58EncodedPublicKey);
+    // check for possible token recovery, token assets must be recovered first
+    const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
+    if (tokenAccounts.length !== 0) {
+      // there exists token accounts on the given address, but need to check certain conditions:
+      // 1. if there is a recoverable balance
+      // 2. if the token is supported by bitgo
+      const recovereableTokenAccounts: TokenAccount[] = [];
+      for (const tokenAccount of tokenAccounts as TokenAccount[]) {
+        const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
+        const network = this.getNetwork();
+        const token = getSolTokenFromAddress(tokenAccount.info.mint, network);
+
+        if (!_.isUndefined(token) && tokenAmount.gt(new BigNumber(0))) {
+          tokenAccount.tokenName = token.name;
+          recovereableTokenAccounts.push(tokenAccount);
+        }
+      }
+
+      if (recovereableTokenAccounts.length !== 0) {
+        // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
+        const totalTokenFees = new BigNumber(totalFee).multipliedBy(new BigNumber(recovereableTokenAccounts.length));
+        if (new BigNumber(balance).lt(totalTokenFees)) {
+          throw Error('Did not find address with funds to recover');
+        }
+
+        txBuilder = factory
+          .getTokenTransferBuilder()
+          .nonce(blockhash)
+          .sender(bs58EncodedPublicKey)
+          .fee({ amount: feePerSignature })
+          .feePayer(bs58EncodedPublicKey);
+
+        // need to get all token accounts of the recipient address and need to create them if they do not exist
+        const recipientTokenAccounts = await this.getTokenAccountsByOwner(params.recoveryDestination);
+
+        for (const tokenAccount of recovereableTokenAccounts) {
+          let recipientTokenAccountExists = false;
+          for (const recipientTokenAccount of recipientTokenAccounts as TokenAccount[]) {
+            if (recipientTokenAccount.info.mint === tokenAccount.info.mint) {
+              recipientTokenAccountExists = true;
+              break;
+            }
+          }
+
+          const recipientTokenAccount = await getAssociatedTokenAccountAddress(
+            tokenAccount.info.mint,
+            params.recoveryDestination
+          );
+          const tokenName = tokenAccount.tokenName as string;
+          txBuilder.send({
+            address: recipientTokenAccount,
+            amount: tokenAccount.info.tokenAmount.amount,
+            tokenName: tokenName,
+          });
+
+          if (!recipientTokenAccountExists) {
+            // recipient token account does not exist for token and must be created
+            txBuilder.createAssociatedTokenAccount({ ownerAddress: params.recoveryDestination, tokenName: tokenName });
+          }
+        }
+      } else {
+        const netAmount = balance - totalFee;
+
+        txBuilder = factory
+          .getTransferBuilder()
+          .nonce(blockhash)
+          .sender(bs58EncodedPublicKey)
+          .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+          .fee({ amount: feePerSignature })
+          .feePayer(bs58EncodedPublicKey);
+      }
+    } else {
+      const netAmount = balance - totalFee;
+
+      txBuilder = factory
+        .getTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+        .fee({ amount: feePerSignature })
+        .feePayer(bs58EncodedPublicKey);
+    }
 
     if (params.durableNonce) {
       txBuilder.nonce(blockhash, {
@@ -762,22 +899,23 @@ export class Sol extends BaseCoin {
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
     const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const walletCoin = this.getChain();
-    const inputs = [
-      {
-        address: completedTransaction.inputs[0].address,
-        valueString: completedTransaction.inputs[0].value,
-        value: new BigNumber(completedTransaction.inputs[0].value).toNumber(),
-      },
-    ];
-    const outputs = [
-      {
-        address: completedTransaction.outputs[0].address,
-        valueString: completedTransaction.inputs[0].value,
-        coinName: walletCoin,
-      },
-    ];
-    const spendAmount = completedTransaction.inputs[0].value;
+    const inputs: OvcInput[] = [];
+    for (const input of completedTransaction.inputs) {
+      inputs.push({
+        address: input.address,
+        valueString: input.value,
+        value: new BigNumber(input.value).toNumber(),
+      });
+    }
+    const outputs: OvcOutput[] = [];
+    for (const output of completedTransaction.outputs) {
+      outputs.push({
+        address: output.address,
+        valueString: output.value,
+        coinName: output.coin ? output.coin : walletCoin,
+      });
+    }
+    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
     const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
     const feeInfo = { fee: totalFee, feeString: new BigNumber(totalFee).toString() };
     const coinSpecific = { commonKeychain: bitgoKey };

@@ -457,6 +457,18 @@ export interface MPCTxs {
   lastScanIndex: number;
 }
 
+export interface OvcInput {
+  address: string;
+  value: number;
+  valueString: string;
+}
+
+export interface OvcOutput {
+  address: string;
+  valueString: string;
+  coinName?: string;
+}
+
 export type BackupGpgKey = SerializedKeyPair<string> | Key;
 
 /**

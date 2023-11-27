@@ -10,6 +10,8 @@ import { TssUtils, TxRequest, Wallet, MPCSweepTxs, MPCTx, MPCTxs } from '@bitgo/
 import { getBuilderFactory } from './getBuilderFactory';
 import { Transaction } from '../../src/lib';
 import { coins } from '@bitgo/statics';
+import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
+import { InstructionParams, AtaInit, TokenTransfer } from '../../src/lib/iface';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -1421,6 +1423,8 @@ describe('SOL:', function () {
   describe('Recover Transactions:', () => {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tsol');
+    const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
+    const usdcMintAddress = 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf';
 
     beforeEach(() => {
       const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
@@ -1503,6 +1507,88 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountInfoResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.keys.destinationPubKey,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.accountInfo.bs58EncodedPublicKey,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.keys.destinationPubKey2,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress0,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse2);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.wrwUser.walletAddress0],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
     });
 
     afterEach(() => {
@@ -1555,7 +1641,7 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(latestBlockhashTxnJson.numSignatures, testData.SolInputData.latestBlockhashSignatures);
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 3);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 4);
     });
 
     it('should recover a txn for non-bitgo recoveries (durable nonce)', async function () {
@@ -1585,7 +1671,7 @@ describe('SOL:', function () {
       should.equal(durableNonceTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(durableNonceTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 4);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 5);
     });
 
     it('should recover a txn for unsigned sweep recoveries', async function () {
@@ -1614,7 +1700,7 @@ describe('SOL:', function () {
       should.equal(unsignedSweepTxnJson.feePayer, testData.accountInfo.bs58EncodedPublicKey);
       should.equal(unsignedSweepTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 4);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 5);
     });
 
     it('should handle error in recover function if a required field is missing/incorrect', async function () {
@@ -1670,9 +1756,177 @@ describe('SOL:', function () {
         })
         .should.rejectedWith('Did not find address with funds to recover');
     });
+
+    it('should recover sol tokens to recovery destination with no existing token accounts', async function () {
+      const tokenTxn = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      tokenTxn.should.not.be.empty();
+      tokenTxn.should.hasOwnProperty('serializedTx');
+      tokenTxn.should.hasOwnProperty('scanIndex');
+      should.equal((tokenTxn as MPCTx).scanIndex, 0);
+
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction((tokenTxn as MPCTx).serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+
+      should.equal(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
+      should.equal(tokenTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+
+      const instructionsData = tokenTxnJson.instructionsData as InstructionParams[];
+      should.equal(instructionsData.length, 5);
+      should.equal(instructionsData[0].type, 'NonceAdvance');
+
+      const destinationUSDTTokenAccount = await getAssociatedTokenAccountAddress(
+        usdtMintAddress,
+        testData.keys.destinationPubKey
+      );
+      should.equal(instructionsData[1].type, 'CreateAssociatedTokenAccount');
+      should.equal((instructionsData[1] as AtaInit).params.mintAddress, usdtMintAddress);
+      should.equal((instructionsData[1] as AtaInit).params.ataAddress, destinationUSDTTokenAccount);
+      should.equal((instructionsData[1] as AtaInit).params.ownerAddress, testData.keys.destinationPubKey);
+      should.equal((instructionsData[1] as AtaInit).params.tokenName, 'tsol:usdt');
+      should.equal((instructionsData[1] as AtaInit).params.payerAddress, testData.wrwUser.walletAddress0);
+
+      const destinationUSDCTokenAccount = await getAssociatedTokenAccountAddress(
+        usdcMintAddress,
+        testData.keys.destinationPubKey
+      );
+      should.equal(instructionsData[2].type, 'CreateAssociatedTokenAccount');
+      should.equal((instructionsData[2] as AtaInit).params.mintAddress, usdcMintAddress);
+      should.equal((instructionsData[2] as AtaInit).params.ataAddress, destinationUSDCTokenAccount);
+      should.equal((instructionsData[2] as AtaInit).params.ownerAddress, testData.keys.destinationPubKey);
+      should.equal((instructionsData[2] as AtaInit).params.tokenName, 'tsol:usdc');
+      should.equal((instructionsData[2] as AtaInit).params.payerAddress, testData.wrwUser.walletAddress0);
+
+      const sourceUSDTTokenAccount = await getAssociatedTokenAccountAddress(
+        usdtMintAddress,
+        testData.wrwUser.walletAddress0
+      );
+      should.equal(instructionsData[3].type, 'TokenTransfer');
+      should.equal((instructionsData[3] as TokenTransfer).params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal((instructionsData[3] as TokenTransfer).params.toAddress, destinationUSDTTokenAccount);
+      should.equal((instructionsData[3] as TokenTransfer).params.amount, '2000000000');
+      should.equal((instructionsData[3] as TokenTransfer).params.tokenName, 'tsol:usdt');
+      should.equal((instructionsData[3] as TokenTransfer).params.sourceAddress, sourceUSDTTokenAccount);
+
+      const sourceUSDCTokenAccount = await getAssociatedTokenAccountAddress(
+        usdcMintAddress,
+        testData.wrwUser.walletAddress0
+      );
+      should.equal(instructionsData[4].type, 'TokenTransfer');
+      should.equal((instructionsData[4] as TokenTransfer).params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal((instructionsData[4] as TokenTransfer).params.toAddress, destinationUSDCTokenAccount);
+      should.equal((instructionsData[4] as TokenTransfer).params.amount, '3000000000');
+      should.equal((instructionsData[4] as TokenTransfer).params.tokenName, 'tsol:usdc');
+      should.equal((instructionsData[4] as TokenTransfer).params.sourceAddress, sourceUSDCTokenAccount);
+
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+    });
+
+    it('should recover sol tokens to recovery destination with existing token accounts', async function () {
+      const tokenTxn = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey2,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      });
+
+      tokenTxn.should.not.be.empty();
+      tokenTxn.should.hasOwnProperty('serializedTx');
+      tokenTxn.should.hasOwnProperty('scanIndex');
+      should.equal((tokenTxn as MPCTx).scanIndex, 0);
+
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction((tokenTxn as MPCTx).serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+
+      should.equal(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
+      should.equal(tokenTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+
+      const instructionsData = tokenTxnJson.instructionsData as TokenTransfer[];
+      should.equal(instructionsData.length, 3);
+      should.equal(instructionsData[0].type, 'NonceAdvance');
+
+      const sourceUSDTTokenAccount = await getAssociatedTokenAccountAddress(
+        usdtMintAddress,
+        testData.wrwUser.walletAddress0
+      );
+      const destinationUSDTTokenAccount = await getAssociatedTokenAccountAddress(
+        usdtMintAddress,
+        testData.keys.destinationPubKey2
+      );
+      should.equal(instructionsData[1].type, 'TokenTransfer');
+      should.equal(instructionsData[1].params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal(instructionsData[1].params.toAddress, destinationUSDTTokenAccount);
+      should.equal(instructionsData[1].params.amount, '2000000000');
+      should.equal(instructionsData[1].params.tokenName, 'tsol:usdt');
+      should.equal(instructionsData[1].params.sourceAddress, sourceUSDTTokenAccount);
+
+      const sourceUSDCTokenAccount = await getAssociatedTokenAccountAddress(
+        usdcMintAddress,
+        testData.wrwUser.walletAddress0
+      );
+      const destinationUSDCTokenAccount = await getAssociatedTokenAccountAddress(
+        usdcMintAddress,
+        testData.keys.destinationPubKey2
+      );
+      should.equal(instructionsData[2].type, 'TokenTransfer');
+      should.equal(instructionsData[2].params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal(instructionsData[2].params.toAddress, destinationUSDCTokenAccount);
+      should.equal(instructionsData[2].params.amount, '3000000000');
+      should.equal(instructionsData[2].params.tokenName, 'tsol:usdc');
+      should.equal(instructionsData[2].params.sourceAddress, sourceUSDCTokenAccount);
+
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+    });
+
+    it('should recover sol tokens to recovery destination with existing token accounts for unsigned sweep recoveries', async function () {
+      const tokenTxn = (await basecoin.recover({
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey2,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      })) as MPCSweepTxs;
+
+      tokenTxn.should.not.be.empty();
+      tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
+      tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('scanIndex');
+      should.equal(tokenTxn.txRequests[0].transactions[0].unsignedTx.scanIndex, 0);
+
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction(tokenTxn.txRequests[0].transactions[0].unsignedTx.serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+
+      should.equal(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
+      should.equal(tokenTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+    });
   });
 
-  describe('Build Unsigned Consolidation Recoveries:', () => {
+  describe('Build Consolidation Recoveries:', () => {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tsol');
     const durableNonces = {
@@ -1770,6 +2024,60 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountInfoResponse2);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress1,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress2,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress3,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
     });
 
     afterEach(() => {
