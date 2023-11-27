@@ -2,7 +2,7 @@ import { BaseCoin } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
-import { GenerateQrDataParams, QrData, QrDataEntry } from './types';
+import { GenerateQrDataParams, MasterPublicKeyQrDataEntry, QrData, QrDataEntry } from './types';
 
 function getPubFromKey(key: Keychain): string | undefined {
   switch (key.type) {
@@ -100,6 +100,24 @@ function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
   };
 }
 
+function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQrDataEntry {
+  return {
+    title: 'E: Master User Public Key',
+    description:
+      'This is the public key used to derive the user key for the wallet. This is not stored by BitGo, and may be required for use in recovery scenarios.',
+    data: publicKey,
+  };
+}
+
+function generateBackupMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQrDataEntry {
+  return {
+    title: 'F: Master Backup Public Key',
+    description:
+      'This is the public key used to derive the backup key for the wallet. This is not stored by BitGo, and may be required for use in recovery scenarios.',
+    data: publicKey,
+  };
+}
+
 export function generateQrData({
   backupKeychain,
   backupKeyProvider,
@@ -110,13 +128,19 @@ export function generateQrData({
   passphrase,
   userKeychain,
   userMasterKey,
+  userMasterPublicKey,
+  backupMasterPublicKey,
 }: GenerateQrDataParams): QrData {
   const qrData: QrData = {
     user: generateUserQrData(userKeychain, userMasterKey),
+    userMasterPublicKey: userMasterPublicKey ? generateUserMasterPublicKeyQRData(userMasterPublicKey) : undefined,
     backup: generateBackupQrData(coin, backupKeychain, {
       backupKeyProvider,
       backupMasterKey,
     }),
+    backupMasterPublicKey: backupMasterPublicKey
+      ? generateBackupMasterPublicKeyQRData(backupMasterPublicKey)
+      : undefined,
     bitgo: generateBitGoQrData(bitgoKeychain),
   };
 
