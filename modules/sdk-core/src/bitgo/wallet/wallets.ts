@@ -10,12 +10,14 @@ import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
-import { Keychain } from '../keychain';
+import { AddKeychainOptions, Keychain } from '../keychain';
 import { promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
   AddWalletOptions,
+  GenerateBaseMpcWalletOptions,
   GenerateMpcWalletOptions,
+  GenerateSMCMpcWalletOptions,
   GenerateWalletOptions,
   GetWalletByAddressOptions,
   GetWalletOptions,
@@ -159,16 +161,17 @@ export class Wallets implements IWallets {
    * 4. Creates the BitGo key on the service
    * 5. Creates the wallet on BitGo with the 3 public keys above
    * @param params
-   * @param params.label
-   * @param params.passphrase
+   * @param params.label Label for the wallet
+   * @param params.passphrase Passphrase to be used to encrypt the user and backup keychains
    * @param params.userKey User xpub
    * @param params.backupXpub Backup xpub
    * @param params.backupXpubProvider
    * @param params.backupProvider Third party backup provider for TSS
-   * @param params.enterprise
+   * @param params.enterprise the enterpriseId
    * @param params.disableTransactionNotifications
-   * @param params.passcodeEncryptionCode
-   * @param params.coldDerivationSeed
+   * @param params.passcodeEncryptionCode optional this is a recovery code that can be used to decrypt the original passphrase in a recovery case.
+   *                                      The user must generate and keep the encrypted original passphrase safe while this code is stored on BitGo
+   * @param params.coldDerivationSeed optional seed for SMC wallets
    * @param params.gasPrice
    * @param params.disableKRSEmail
    * @param params.walletVersion
@@ -176,6 +179,10 @@ export class Wallets implements IWallets {
    * @param params.isDistributedCustody optional parameter for creating bitgo key. This is only necessary if you want to create
    *                                    a distributed custody wallet. If provided, you must have the enterprise license and pass in
    *                                    `params.enterprise` into `generateWallet` as well.
+   * @param params.type optional wallet type, 'hot' or 'cold' or 'custodial'; if absent, we will defer to 'hot'
+   * @param params.bitgoKeyId optional bitgo key id for SMC TSS wallets
+   * @param params.commonKeychain optional common keychain for SMC TSS wallets
+   *
    * @returns {*}
    */
   async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
@@ -184,17 +191,16 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
+    const { type = 'hot', label, passphrase, enterprise, isDistributedCustody } = params;
     const isTss = params.multisigType === 'tss' && this.baseCoin.supportsTss();
-    const label = params.label;
-    const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
-    const isCold = !!params.userKey && params.multisigType !== 'onchain';
+
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
       m: 2,
       n: 3,
       keys: [],
-      isCold,
+      type: !!params.userKey && params.multisigType !== 'onchain' ? 'cold' : type,
     };
 
     if (!_.isUndefined(params.passcodeEncryptionCode)) {
@@ -203,16 +209,11 @@ export class Wallets implements IWallets {
       }
     }
 
-    if (!_.isUndefined(params.enterprise)) {
-      if (!_.isString(params.enterprise)) {
+    if (!_.isUndefined(enterprise)) {
+      if (!_.isString(enterprise)) {
         throw new Error('invalid enterprise argument, expecting string');
       }
-      walletParams.enterprise = params.enterprise;
-    } else {
-      // enterprise not defined
-      if (params.multisigType === 'tss' && params.backupProvider === 'BitGoTrustAsKrs') {
-        throw new Error('The enterprise id is required when creating TSS wallet with BitGo Trust as KRS.');
-      }
+      walletParams.enterprise = enterprise;
     }
 
     // EVM TSS wallets must use wallet version 3
@@ -221,20 +222,42 @@ export class Wallets implements IWallets {
     }
 
     if (isTss) {
-      if (isCold) {
-        throw new Error('TSS cold wallets are not supported at this time');
-      }
-
       if (!this.baseCoin.supportsTss()) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
       }
+      assert(enterprise, 'enterprise is required for TSS wallet');
 
+      if (type === 'cold') {
+        // validate
+        assert(params.bitgoKeyId, 'bitgoKeyId is required for SMC TSS wallet');
+        assert(params.commonKeychain, 'commonKeychain is required for SMC TSS wallet');
+        return this.generateSMCMpcWallet({
+          multisigType: 'tss',
+          label,
+          enterprise,
+          walletVersion: params.walletVersion,
+          bitgoKeyId: params.bitgoKeyId,
+          commonKeychain: params.commonKeychain,
+          coldDerivationSeed: params.coldDerivationSeed,
+        });
+      }
+
+      if (type === 'custodial') {
+        return this.generateCustodialMpcWallet({
+          multisigType: 'tss',
+          label,
+          enterprise,
+          walletVersion: params.walletVersion,
+        });
+      }
+
+      assert(passphrase, 'cannot generate TSS keys without passphrase');
       return this.generateMpcWallet({
         multisigType: 'tss',
         label,
         passphrase,
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
-        enterprise: params.enterprise,
+        enterprise,
         walletVersion: params.walletVersion,
         backupProvider: params.backupProvider,
       });
@@ -242,28 +265,30 @@ export class Wallets implements IWallets {
 
     const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
     if (isBlsDkg) {
-      if (!canEncrypt) {
-        throw new Error('cannot generate BLS-DKG keys without passphrase');
-      }
-
-      if (isCold) {
-        throw new Error('BLS-DKG cold wallets are not supported at this time');
-      }
-
       if (!this.baseCoin.supportsBlsDkg()) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support BLS-DKG at this time`);
       }
+      assert(enterprise, 'enterprise is required for BLS-DKG wallet');
 
-      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase });
+      if (type === 'cold') {
+        throw new Error('BLS-DKG SMC wallets are not supported at this time');
+      }
+
+      if (type === 'custodial') {
+        throw new Error('BLS-DKG custodial wallets are not supported at this time');
+      }
+
+      assert(passphrase, 'cannot generate BLS-DKG keys without passphrase');
+      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase, enterprise });
     }
 
     // Handle distributed custody
-    if (params.isDistributedCustody) {
-      if (!params.enterprise) {
+    if (isDistributedCustody) {
+      if (!enterprise) {
         throw new Error('must provide enterprise when creating distributed custody wallet');
       }
-      if (!walletParams.isCold) {
-        throw new Error('distributed custody wallets must be cold');
+      if (!type || type !== 'cold') {
+        throw new Error('distributed custody wallets must be type: cold');
       }
     }
 
@@ -411,8 +436,6 @@ export class Wallets implements IWallets {
     });
 
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
-
-    walletParams.isCold = isCold;
 
     const { prv } = userKeychain;
     if (_.isString(prv)) {
@@ -643,34 +666,39 @@ export class Wallets implements IWallets {
    * @param params
    * @private
    */
-  private async generateMpcWallet(params: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
+  private async generateMpcWallet({
+    passphrase,
+    label,
+    multisigType,
+    enterprise,
+    walletVersion,
+    originalPasscodeEncryptionCode,
+    backupProvider,
+  }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const walletParams: SupplementGenerateWalletOptions = {
-      label: params.label,
-      m: 2,
-      n: 3,
-      keys: [],
-      isCold: false,
-      multisigType: params.multisigType,
-      enterprise: params.enterprise,
-      walletVersion: params.walletVersion,
-    };
-
     // Create MPC Keychains
-
     const keychains = await this.baseCoin.keychains().createMpc({
-      multisigType: params.multisigType,
-      passphrase: params.passphrase,
-      enterprise: params.enterprise,
-      originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-      backupProvider: params.backupProvider,
+      multisigType,
+      passphrase,
+      enterprise,
+      originalPasscodeEncryptionCode,
+      backupProvider,
     });
-    const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
-    walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
 
     // Create Wallet
+    const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 2,
+      n: 3,
+      keys: [userKeychain.id, backupKeychain.id, bitgoKeychain.id],
+      type: 'hot',
+      multisigType,
+      enterprise,
+      walletVersion,
+    };
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
 
@@ -681,9 +709,120 @@ export class Wallets implements IWallets {
       bitgoKeychain,
     };
 
-    if (!_.isUndefined(backupKeychain.prv) && !_.isUndefined(params.backupProvider)) {
+    if (!_.isUndefined(backupKeychain.prv) && !_.isUndefined(backupProvider)) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
+
+    return result;
+  }
+
+  /**
+   * Generates a Self-Managed Cold TSS Wallet.
+   * @param params
+   * @private
+   */
+  private async generateSMCMpcWallet({
+    label,
+    multisigType,
+    enterprise,
+    walletVersion,
+    bitgoKeyId,
+    commonKeychain,
+    coldDerivationSeed,
+  }: GenerateSMCMpcWalletOptions): Promise<WalletWithKeychains> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    // Create MPC Keychains
+    const bitgoKeychain = await this.baseCoin.keychains().get({ id: bitgoKeyId });
+
+    if (!bitgoKeychain || !bitgoKeychain.commonKeychain) {
+      throw new Error('BitGo keychain not found');
+    }
+
+    if (bitgoKeychain.commonKeychain !== commonKeychain) {
+      throw new Error('The provided Common keychain mismatch with the provided Bitgo key');
+    }
+
+    if (!coldDerivationSeed) {
+      throw new Error('derivedFromParentWithSeed is required');
+    }
+
+    const userKeychainParams: AddKeychainOptions = {
+      source: 'user',
+      keyType: 'tss',
+      commonKeychain: commonKeychain,
+      derivedFromParentWithSeed: coldDerivationSeed,
+    };
+    const userKeychain = await this.baseCoin.keychains().add(userKeychainParams);
+
+    const backupKeyChainParams: AddKeychainOptions = {
+      source: 'backup',
+      keyType: 'tss',
+      commonKeychain: commonKeychain,
+      derivedFromParentWithSeed: coldDerivationSeed,
+    };
+
+    const backupKeychain = await this.baseCoin.keychains().add(backupKeyChainParams);
+
+    // Create Wallet
+    const keychains = { userKeychain, backupKeychain, bitgoKeychain };
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 2,
+      n: 3,
+      keys: [userKeychain.id, backupKeychain.id, bitgoKeychain.id],
+      type: 'cold',
+      multisigType,
+      enterprise,
+      walletVersion,
+    };
+
+    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+
+    const result: WalletWithKeychains = {
+      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+    };
+
+    return result;
+  }
+
+  /**
+   * Generates a Custodial TSS Wallet.
+   * @param params
+   * @private
+   */
+  private async generateCustodialMpcWallet({
+    label,
+    multisigType,
+    enterprise,
+    walletVersion,
+  }: GenerateBaseMpcWalletOptions): Promise<WalletWithKeychains> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const finalWalletParams = {
+      label,
+      multisigType,
+      enterprise,
+      walletVersion,
+      type: 'custodial',
+    };
+
+    // Create Wallet
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+    const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
+    const keychains = wallet.keyIds();
+    const result: WalletWithKeychains = {
+      wallet,
+      userKeychain: { id: keychains[0], type: multisigType },
+      backupKeychain: { id: keychains[1], type: multisigType },
+      bitgoKeychain: { id: keychains[2], type: multisigType },
+    };
 
     return result;
   }
