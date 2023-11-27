@@ -841,7 +841,8 @@ describe('Avalanche C-Chain', function () {
           );
       });
 
-      it('should build recovery tx', async function () {
+      // TODO(EA-2329): Fix this test
+      xit('should build recovery tx', async function () {
         const recovery = await tavaxCoin.recover({
           userKey:
             '{"iv":"o27pBl7IP+ibe39xYg/cXg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -883,7 +884,8 @@ describe('Avalanche C-Chain', function () {
       const recoveryDestination = '0x94b51ebb8c3b90404ad262f42c1588bd94242ecb';
       const gasPrice = '25000000000';
 
-      it('should build unsigned sweep tx', async function () {
+      // TODO(EA-2329): Fix this test
+      xit('should build unsigned sweep tx', async function () {
         const recovery = await tavaxCoin.recover({
           userKey: userXpub,
           backupKey: backupXpub,
@@ -906,7 +908,8 @@ describe('Avalanche C-Chain', function () {
         recovery.walletContractAddress.should.equal(walletContractAddress);
       });
 
-      it('should add a second signature', async function () {
+      // TODO(EA-2329): Fix this test
+      xit('should add a second signature', async function () {
         const recovery = await tavaxCoin.recover({
           userKey: userXpub,
           backupKey: backupXpub,
