@@ -247,5 +247,12 @@ describe('TON:', function () {
       should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLbVKBYxDtafdsasdadsfvpk='), false);
       should.equal(utils.isValidTransactionId(''), false);
     });
+
+    it('should generate transaction id', async function () {
+      const id = await utils.getMessageHashFromData(
+        'te6cckECCgEAAkoAA7V2k4Vw1nhxr7XcCBjWcFFHKqGwCglPSRuYAkWjWiTVAIAAAPbLgva0G7ytKw/xeE9a3FHK2RM8fgOpGvTpQRseeMer3efRKsiQAADxPhnaQFZWYrlQADRqbCUIAQIDAgHgBAUAgnIAZ0UIwmknkMaW7QboTcq48FfZ1NT5oMUj2VPOBr3zPoxriab4SfV65i6Hd1J2sFsuTcIWUobcKXMcIys+JWknAhMMwSvWBhmTzwRACAkB4YgA0nCuGs8ONfa7gQMazgoo5VQ2AUEp6SNzAEi0a0SaoBAHHgnPJBQQJ/meoCwzK5/PajBSxuJK2Gkva7NmlALNDs2IMEWi4ZRfIV4VeJpKBhzhKjNlFjuz60g+aeT5cNi4CU1NGLsrey/4AAAAGAAcBgEB3wcAaGIAK2cYdYCtxtBaWJ9hi7N+HVzeMsPQxLHSqYn7bfpOcRyh3NZQAAAAAAAAAAAAAAAAAAAAsWgA0nCuGs8ONfa7gQMazgoo5VQ2AUEp6SNzAEi0a0SaoBEAFbOMOsBW42gtLE+wxdm/Dq5vGWHoYljpVMT9tv0nOI5Q7msoAAYUWGAAAB7ZcF7WhMrMVypAAJ1BnYMTiAAAAAAAAAAAEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAG/Jh6EgTBRYQAAAAAAAAgAAAAAAA4E52AP/eAYnVhJkoII4YUrhpLfpDFt6mRKiktbFnqs+QFAWDAAacQ0=\\'
+      );
+      should.equal(id, 'TsVgNKT05cde4Q54sC+RFC7nToTrHk9ppGgE5M0jXtE=');
+    });
   });
 });
