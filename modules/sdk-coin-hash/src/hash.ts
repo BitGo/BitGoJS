@@ -1,11 +1,12 @@
 import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
-import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseUnit, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { AddressFormat, BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
+import { BaseUnit, NetworkType, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 
 import { KeyPair, TransactionBuilderFactory } from './lib';
-import utils from './lib/utils';
+import { HashUtils } from './lib/utils';
 
 export class Hash extends CosmosCoin {
+  protected readonly _utils: HashUtils;
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -15,6 +16,7 @@ export class Hash extends CosmosCoin {
     }
 
     this._staticsCoin = staticsCoin;
+    this._utils = new HashUtils(NetworkType.MAINNET);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
@@ -33,7 +35,7 @@ export class Hash extends CosmosCoin {
 
   /** @inheritDoc **/
   isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
+    return this._utils.isValidAddress(address) || this._utils.isValidValidatorAddress(address);
   }
 
   /** @inheritDoc **/
@@ -61,6 +63,6 @@ export class Hash extends CosmosCoin {
 
   /** @inheritDoc **/
   getAddressFromPublicKey(publicKey: string): string {
-    return new KeyPair({ pub: publicKey }).getAddress();
+    return new KeyPair({ pub: publicKey }).getAddress(AddressFormat.mainnet);
   }
 }

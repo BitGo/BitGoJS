@@ -2,6 +2,7 @@ import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../src';
 import { TEST_ACCOUNT } from '../resources/hash';
+import { AddressFormat } from '@bitgo/sdk-core';
 
 describe('HASH Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -26,7 +27,8 @@ describe('HASH Key Pair', () => {
       should.exists(keys.pub);
       should.equal(keys.prv, TEST_ACCOUNT.privateKey);
       should.equal(keys.pub, TEST_ACCOUNT.compressedPublicKey);
-      should.equal(keyPairObj.getAddress(), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPairObj.getAddress(AddressFormat.mainnet), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPairObj.getAddress(AddressFormat.testnet), TEST_ACCOUNT.testnetPubAddress);
 
       assert.throws(() => keyPairObj.getExtendedKeys());
     });
@@ -100,12 +102,14 @@ describe('HASH Key Pair', () => {
   describe('should get unique address', () => {
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: TEST_ACCOUNT.privateKey });
-      should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPair.getAddress(AddressFormat.mainnet), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPair.getAddress(AddressFormat.testnet), TEST_ACCOUNT.testnetPubAddress);
     });
 
     it('from a compressed public key', () => {
       const keyPair = new KeyPair({ pub: TEST_ACCOUNT.compressedPublicKey });
-      should.equal(keyPair.getAddress(), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPair.getAddress(AddressFormat.mainnet), TEST_ACCOUNT.pubAddress);
+      should.equal(keyPair.getAddress(AddressFormat.testnet), TEST_ACCOUNT.testnetPubAddress);
     });
 
     it('should be different for different public keys', () => {

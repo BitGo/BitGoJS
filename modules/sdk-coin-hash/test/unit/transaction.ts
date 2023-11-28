@@ -9,12 +9,13 @@ import {
   SendMessage,
   WithdrawDelegatorRewardsMessage,
 } from '@bitgo/abstract-cosmos';
-import utils from '../../src/lib/utils';
+import { HashUtils } from '../../src/lib/utils';
 import * as testData from '../resources/hash';
 
 describe('Hash Transaction', () => {
   let tx: CosmosTransaction;
   const config = coins.get('thash');
+  const utils = new HashUtils(config.network.type);
 
   beforeEach(() => {
     tx = new CosmosTransaction(config, utils);
