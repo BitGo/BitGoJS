@@ -4,6 +4,7 @@ import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
+export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
 export interface Keychain {
   id: string;
@@ -18,6 +19,7 @@ export interface Keychain {
   keyShares?: ApiKeyShare[];
   walletHSMGPGPublicKeySigs?: string;
   type: KeyType;
+  source?: SourceType;
 }
 
 export interface ChangedKeychains {
