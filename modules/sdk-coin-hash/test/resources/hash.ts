@@ -1,7 +1,8 @@
 // Get the test data by running the scripts for the particular coin from coin-sandbox repo.
 
 export const TEST_ACCOUNT = {
-  pubAddress: 'tp1496r8u4a48k6khknrhzd6c8cm3c64ewxy5p2rj',
+  pubAddress: 'pb1496r8u4a48k6khknrhzd6c8cm3c64ewxhlyxpc',
+  testnetPubAddress: 'tp1496r8u4a48k6khknrhzd6c8cm3c64ewxy5p2rj',
   compressedPublicKey: '02f2501af39680be0afea7d3e5dbb399e0fa018f7c6de12287282a315c88f72b70',
   compressedPublicKeyTwo: '03a0b91e3c7bfd399e46990a0ac60e0c75c53e83da944e65ce7d23f37302d253b4',
   uncompressedPublicKey:
@@ -193,7 +194,22 @@ export const TEST_TX_WITH_MEMO = {
   },
 };
 
-export const address = {
+export const mainnetAddress = {
+  address1: 'pb1fmxzuzx5c4ja50vu94nt0aessnuedzmppde8qr',
+  address2: 'pb16vmp7sz28pnvgz6f3zm6q93y39jsd33aazwg4u',
+  address3: 'pb2xvd4k9jg5h0d4dhzr4z0txtwe9p5zxf58xcmxd',
+  address4: 'pb1xvd4k9jg5h0d4dhzr4z0txtwe9p5zxf58xcmxd',
+  validatorAddress1: 'pbvaloper13905qnf0mc8f8h3dawsq0894ded0ct83f66l56',
+  validatorAddress2: 'pbvaloper1d7yum2cxwkhmmuxa096prlv5gawjxw0gc2sykq',
+  validatorAddress3: 'pbvaloder17yx96jtu0r24jp8gyxc8y8pj0lgvcz964w2gyg',
+  validatorAddress4: 'pbvaloper2v549f7d8f7junfga7yg04uz4zx0lwpqdl2f897',
+  noMemoIdAddress: 'pb1fmxzuzx5c4ja50vu94nt0aessnuedzmppde8qr',
+  validMemoIdAddress: 'pb1fmxzuzx5c4ja50vu94nt0aessnuedzmppde8qr?memoId=2',
+  invalidMemoIdAddress: 'pb1fmxzuzx5c4ja50vu94nt0aessnuedzmppde8qr?memoId=xyz',
+  multipleMemoIdAddress: 'pb1fmxzuzx5c4ja50vu94nt0aessnuedzmppde8qr?memoId=3&memoId=12',
+};
+
+export const testnetAddress = {
   address1: 'tp1umned7wx7le70ttvrcem3fsyhn343asr2k2pwe',
   address2: 'tp1ytxha7lg002rzd4jxmahrdjzkd62mx99klgjcc',
   address3: 'txp1x96r8u4a48k6khknrhzd6c8cm3c64ewxy5prj',
