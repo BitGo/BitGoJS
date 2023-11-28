@@ -10262,6 +10262,60 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '41e349ad-b727-4659-9b3e-04480304683e',
+    'sol:xrp-sollet',
+    'Wrapped XRP (Sollet)',
+    6,
+    'Ga2AXHpfAF6mv2ekZwcsJFqu7wB4NV331qNH7fW9Nst8',
+    UnderlyingAsset['xrp-sollet'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '081bd159-8157-4c7e-8836-9147784b7418',
+    'sol:AURY',
+    'Aurory',
+    9,
+    'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
+    UnderlyingAsset['AURY'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '86600f43-533c-4109-9bba-c66ac837d94c',
+    'sol:DIO',
+    'Decimated',
+    9,
+    'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
+    UnderlyingAsset['DIO'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'cd8013ff-efc4-4512-a07e-5c5c67d7b1f1',
+    'sol:sol-perp',
+    'Perp',
+    6,
+    'D68NB5JkzvyNCZAvi6EGtEcGvSoRNPanU9heYTAUFFRa',
+    UnderlyingAsset['sol-perp'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '667b9655-8f73-4231-9ce4-034b5a544fe5',
+    'sol:sol-woo',
+    'Wootrade Network',
+    6,
+    'E5rk3nmgLUuKUiS94gg4bpWwWwyjCMtddsAXkTFLtHEy',
+    UnderlyingAsset['sol-woo'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '58ed3daa-30b1-4352-8a98-0454b7475696',
+    'sol:sol-weth',
+    'WETH (alcorbridge.in)',
+    9,
+    '8kVHYoueJAaZtTqtqK5McRJSqX1yXii1epuxrW6jfsrD',
+    UnderlyingAsset['sol-weth'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '5f98c609-de50-41b4-8f82-c59e5273166e',
     'sol:ftt-sollet',
     'Wrapped FTT (Sollet)',

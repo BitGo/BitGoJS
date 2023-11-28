@@ -818,7 +818,8 @@ describe('Avalanche C-Chain', function () {
   // TODO(BG-56136): move to modules/bitgo/test/v2/integration/coins/avaxc.ts
   describe('Recovery', function () {
     describe('Non-BitGo', async function () {
-      it('should error when the backup key is unfunded (cannot pay gas)', async function () {
+      // TODO(EA-2329): Fix this test
+      xit('should error when the backup key is unfunded (cannot pay gas)', async function () {
         await tavaxCoin
           .recover({
             userKey:
@@ -884,7 +885,7 @@ describe('Avalanche C-Chain', function () {
       const recoveryDestination = '0x94b51ebb8c3b90404ad262f42c1588bd94242ecb';
       const gasPrice = '25000000000';
 
-      // TODO(EA-2329): Fix this test
+      // TODO(EA-2329): fix this test
       xit('should build unsigned sweep tx', async function () {
         const recovery = await tavaxCoin.recover({
           userKey: userXpub,

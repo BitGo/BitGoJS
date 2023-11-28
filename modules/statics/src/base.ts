@@ -1389,6 +1389,12 @@ export enum UnderlyingAsset {
   'wheth-usdc' = 'wheth-usdc',
   'wtust-usdt' = 'wtust-usdt',
   'xcope-usdc' = 'xcope-usdc',
+  'xrp-sollet' = 'xrp-sollet',
+  'AURY' = 'AURY',
+  'DIO' = 'DIO',
+  'sol-perp' = 'sol-perp',
+  'sol-woo' = 'sol-woo',
+  'sol-weth' = 'sol-weth',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
