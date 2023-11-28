@@ -58,6 +58,14 @@ export class Utils implements BaseUtils {
     const address = await wallet.getAddress();
     return address.toString(true, true, false);
   }
+
+  async getMessageHashFromData(data: string): Promise<string> {
+    const cell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(data));
+    // this is need to be confirmed by ton team
+    const message = cell.refs[0].refs[0];
+    const hash = TonWeb.utils.bytesToBase64(await message.hash());
+    return hash.toString();
+  }
 }
 
 const utils = new Utils();
