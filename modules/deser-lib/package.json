@@ -1,0 +1,45 @@
+{
+  "name": "deser-lib",
+  "version": "1.0.0",
+  "description": "BitGo serialization and deseralization library",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha --recursive test",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "clean": "rm -r ./dist",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/deser-lib"
+  },
+  "author": "John Driscoll <john@bitgo.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bitgo/bitgojs/issues"
+  },
+  "homepage": "https://github.com/bitgo/bitgojs#readme",
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "cbor": "^9.0.1"
+  }
+}
