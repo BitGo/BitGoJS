@@ -21,6 +21,10 @@ export interface GenerateQrDataParams {
   backupKeyProvider?: string;
   // The key id of the backup key, only used for cold keys
   backupMasterKey?: string;
+  /**
+   * @description The key used to derive the backup key using {@link backupMasterKey} as the seed.
+   */
+  backupMasterPublicKey?: string;
   // The BitGo keychain as it is returned from the BitGo API upon creation
   bitgoKeychain: Keychain;
   // The coin of the wallet that was/ is about to be created
@@ -37,6 +41,10 @@ export interface GenerateQrDataParams {
   userKeychain: Keychain;
   // The key id of the user key, only used for cold keys
   userMasterKey?: string;
+  /**
+   * @description The key used to derive the user key using {@link userMasterKey} as the seed.
+   */
+  userMasterPublicKey?: string;
 }
 
 export type GenerateKeycardParams = GenerateQrDataBaseParams & (GenerateQrDataForKeychainParams | GenerateQrDataParams);
@@ -63,10 +71,14 @@ export interface QrDataEntry {
   publicMasterKey?: string;
 }
 
+export type MasterPublicKeyQrDataEntry = Omit<QrDataEntry, 'publicMasterKey'>;
+
 export interface QrData {
   backup?: QrDataEntry;
+  backupMasterPublicKey?: MasterPublicKeyQrDataEntry;
   bitgo?: QrDataEntry;
   passcode?: QrDataEntry;
   curve?: KeyCurve;
   user: QrDataEntry;
+  userMasterPublicKey?: MasterPublicKeyQrDataEntry;
 }

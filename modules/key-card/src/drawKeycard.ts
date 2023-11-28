@@ -132,7 +132,9 @@ export async function drawKeycard({
   y = moveDown(y, 35);
   const qrSize = 130;
 
-  const qrKeys = ['user', 'passcode', 'backup', 'bitgo'].filter((key) => !!qrData[key]);
+  const qrKeys = ['user', 'userMasterPublicKey', 'passcode', 'backup', 'backupMasterPublicKey', 'bitgo'].filter(
+    (key) => !!qrData[key]
+  );
   for (let index = 0; index < qrKeys.length; index++) {
     const name = qrKeys[index];
     if (index === 2) {

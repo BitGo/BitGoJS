@@ -4,6 +4,7 @@ import {
   downloadKeycardForHotLtcWallet,
   downloadKeycardForSelfManagedHotAdvancedPolygonWallet,
   downloadKeycardForSelfManagedColdEddsaKey,
+  downloadKeycardForSelfManagedColdEddsaKeyWithDerivedKeys,
 } from '@components/KeyCard/fixtures';
 
 const KeyCard = () => {
@@ -22,6 +23,11 @@ const KeyCard = () => {
       </button>
       <button onClick={downloadKeycardForSelfManagedColdEddsaKey}>
         Download for Self Managed Cold Eddsa Key
+      </button>
+      <button
+        onClick={downloadKeycardForSelfManagedColdEddsaKeyWithDerivedKeys}
+      >
+        Download for Self Managed Cold Eddsa Key with Derived Keys
       </button>
     </React.Fragment>
   );

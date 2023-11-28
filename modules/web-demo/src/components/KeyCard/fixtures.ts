@@ -290,3 +290,41 @@ export async function downloadKeycardForSelfManagedColdEddsaKey() {
     keyCardImage: await downloadKeycardImage('bitgo'),
   });
 }
+
+export async function downloadKeycardForSelfManagedColdEddsaKeyWithDerivedKeys() {
+  const backupKeychain: Keychain = {
+    id: '63e50a158312c00007bd35c89cc5fb1a',
+    type: 'tss',
+    commonKeychain:
+      '021150550261463d753e96647bd5debb05d9ef325f4368cc160bf03365e4dadc756416f1230ccc4a1f24eb4924395bced22400f63d4837d511a28da015728ca049',
+  };
+
+  const userKeychain: Keychain = {
+    id: '63e50a158312c00007bd35c89cc5fb1a',
+    type: 'tss',
+    commonKeychain:
+      '021150550261463d753e96647bd5debb05d9ef325f4368cc160bf03365e4dadc756416f1230ccc4a1f24eb4924395bced22400f63d4837d511a28da015728ca049',
+  };
+
+  const bitgoKeychain: Keychain = {
+    id: '63e50a158312c00007bd35c89cc5fb1a',
+    type: 'tss',
+    commonKeychain:
+      '021150550261463d753e96647bd5debb05d9ef325f4368cc160bf03365e4dadc756416f1230ccc4a1f24eb4924395bced22400f63d4837d511a28da015728ca049',
+  };
+
+  await generateKeycard({
+    backupKeychain,
+    userKeychain,
+    bitgoKeychain,
+    backupMasterPublicKey:
+      'a9d32af48f14cd390c1fed68e46cd477a131f510ab32347433f6f7d22183129f6f47eb7b17e18546b19c482ee1543c2cd08916105e3c982f654398a844c562a5',
+    backupMasterKey: '1',
+    userMasterPublicKey:
+      'a9d32af48f14cd390c1fed68e46cd477a131f510ab32347433f6f7d22183129f6f47eb7b17e18546b19c482ee1543c2cd08916105e3c982f654398a844c562a5',
+    userMasterKey: '1',
+    coin: coins.get('tsol'),
+    walletLabel: 'My TSOL Key',
+    keyCardImage: await downloadKeycardImage('bitgo'),
+  });
+}
