@@ -200,7 +200,7 @@ describe('TON:', function () {
     });
 
     it('should return true for isWalletAddress with valid address for index 4', async function () {
-      const newAddress = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n';
+      const newAddress = 'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi';
       const index = 4;
 
       const params = { commonKeychain, address: newAddress, index, keychains };
