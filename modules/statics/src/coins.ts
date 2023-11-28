@@ -2063,6 +2063,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BOND
   ),
   erc20(
+    'c08b5b3c-2d6b-4eaa-aaf4-5e4aae9e741c',
+    'borg',
+    'SwissBorg Token',
+    18,
+    '0x64d0f55cd8c7133a9d7102b13987235f486f2224',
+    UnderlyingAsset.BORG
+  ),
+  erc20(
     '1ff8e770-33b9-4e62-9837-9eb26d67e191',
     'botto',
     'BOTTO',
@@ -2824,6 +2832,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd3d84d494b24661bb4a477169bb24bc905fb55dd',
     UnderlyingAsset.DUC
+  ),
+  erc20(
+    '89bba7e7-0534-4f1b-b4e7-df8ea3e83331',
+    'dust',
+    'DUST Protocol',
+    9,
+    '0xb5b1b659da79a2507c27aad509f15b4874edc0cc',
+    UnderlyingAsset.DUST
   ),
   erc20(
     '679e5e93-dab6-4688-8266-c0da32d304c4',
@@ -4676,6 +4692,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ORBS
   ),
   erc20(
+    'b7741f82-08e8-449d-9d91-924176f1cade',
+    'oseth',
+    'Staked ETH',
+    18,
+    '0xf1c9acdc66974dfb6decb12aa385b9cd01190e38',
+    UnderlyingAsset.OSETH
+  ),
+  erc20(
     '3cdd832f-6776-4694-b8a0-90ba4fc50c89',
     'ousg',
     'Ondo Short-Term U.S. Government Bond Fund',
@@ -6372,6 +6396,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.WBNB
   ),
   erc20(
+    'e2da899c-48f5-4ae6-a890-9a71eaff138c',
+    'wecan',
+    'Wecan Group',
+    18,
+    '0xea60cd69f2b9fd6eb067bddbbf86a5bdeffbbc55',
+    UnderlyingAsset.WECAN
+  ),
+  erc20(
     'c758d712-e38f-41e5-aee9-db575fce7c73',
     'wbtc',
     'Wrapped Bitcoin',
@@ -7476,6 +7508,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     UnderlyingAsset['bsc:busd']
+  ),
+  bscToken(
+    'b7128172-6f82-41ec-8557-522905e8f82a',
+    'bsc:hook',
+    'Hook Token',
+    18,
+    '0xa260e12d2b924cb899ae80bb58123ac3fee1e2f0',
+    UnderlyingAsset['bsc:hook']
   ),
   bscToken(
     '2400c915-d610-45e7-bd7d-a028eb653b42',
@@ -10478,6 +10518,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    'aa52fdba-4c35-48c0-851c-491b789a1cd2',
+    'sol:crown',
+    'CROWN Token',
+    9,
+    'GDfnEsia2WLAW5t8yx2X5j2mkfA74i5kwGdDuZHt7XmG',
+    UnderlyingAsset['crown'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '3d239b43-9ed2-4ea4-9117-10a20c1476b7',
     'sol:elu-usdt',
     'ELU-USDT (Raydium)',
@@ -10565,6 +10614,15 @@ export const coins = CoinMap.fromCoins([
     6,
     '3baYkTcudvSFMe25UpZcBfdp4FA5kL2E4pfaeJ8AiYJB',
     UnderlyingAsset['prism-usdc'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '4d953194-a87c-4d38-923b-a139f4d815f9',
+    'sol:pyth',
+    'Pyth',
+    6,
+    'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
+    UnderlyingAsset['pyth'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
