@@ -409,16 +409,19 @@ describe('V2 Wallets:', function () {
           id: '1',
           pub: 'userPub',
           type: 'independent',
+          source: 'user',
         },
         backupKeychain: {
           id: '2',
           pub: 'userPub',
           type: 'independent',
+          source: 'backup',
         },
         bitgoKeychain: {
           id: '3',
           pub: 'userPub',
           type: 'independent',
+          source: 'bitgo',
         },
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
@@ -566,17 +569,20 @@ describe('V2 Wallets:', function () {
           commonKeychain,
           type: 'tss',
           derivedFromParentWithSeed: seed,
+          source: 'user',
         },
         backupKeychain: {
           id: '2',
           commonKeychain,
           type: 'tss',
           derivedFromParentWithSeed: seed,
+          source: 'backup',
         },
         bitgoKeychain: {
           id: '3',
           commonKeychain,
           type: 'tss',
+          source: 'bitgo',
         },
       };
 
@@ -641,6 +647,56 @@ describe('V2 Wallets:', function () {
       userKeyNock.isDone().should.be.true();
       backupKeyNock.isDone().should.be.true();
       walletNock.isDone().should.be.true();
+
+      sandbox.verifyAndRestore();
+    });
+
+    it('should throw an error for TSS SMC wallet if the bitgoKeyId is not a bitgo key ', async function () {
+      const sandbox = sinon.createSandbox();
+      const commonKeychain = 'longstring';
+      const seed = 'seed';
+      const keys: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain,
+          type: 'tss',
+          derivedFromParentWithSeed: seed,
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain,
+          type: 'tss',
+          derivedFromParentWithSeed: seed,
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain,
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+
+      const bitgoKeyNock = nock('https://bitgo.fakeurl').get('/api/v2/tsol/key/1').reply(200, keys.userKeychain);
+
+      const walletParams: GenerateWalletOptions = {
+        label: 'tss wallet',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        type: 'cold',
+        bitgoKeyId: keys.userKeychain.id,
+        commonKeychain,
+        coldDerivationSeed: seed,
+      };
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      await wallets
+        .generateWallet(walletParams)
+        .should.be.rejectedWith('The provided bitgoKeyId is not a BitGo keychain');
+
+      bitgoKeyNock.isDone().should.be.true();
 
       sandbox.verifyAndRestore();
     });

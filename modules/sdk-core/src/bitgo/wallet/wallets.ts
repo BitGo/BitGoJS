@@ -740,6 +740,10 @@ export class Wallets implements IWallets {
       throw new Error('BitGo keychain not found');
     }
 
+    if (bitgoKeychain.source !== 'bitgo') {
+      throw new Error('The provided bitgoKeyId is not a BitGo keychain');
+    }
+
     if (bitgoKeychain.commonKeychain !== commonKeychain) {
       throw new Error('The provided Common keychain mismatch with the provided Bitgo key');
     }
@@ -819,9 +823,9 @@ export class Wallets implements IWallets {
     const keychains = wallet.keyIds();
     const result: WalletWithKeychains = {
       wallet,
-      userKeychain: { id: keychains[0], type: multisigType },
-      backupKeychain: { id: keychains[1], type: multisigType },
-      bitgoKeychain: { id: keychains[2], type: multisigType },
+      userKeychain: { id: keychains[0], type: multisigType, source: 'user' },
+      backupKeychain: { id: keychains[1], type: multisigType, source: 'backup' },
+      bitgoKeychain: { id: keychains[2], type: multisigType, source: 'bitgo' },
     };
 
     return result;
