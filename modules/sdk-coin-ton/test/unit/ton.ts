@@ -81,7 +81,7 @@ describe('TON:', function () {
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
-        id: 'tuyOkyFUMv/neV/FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
+        id: 'ZcCx+hBKx/AVqiaLkzXasR8jtH5F262IfJU6FuRY8F0=',
         outputs: [
           {
             address: testData.signedTransaction.recipient.address,
@@ -117,14 +117,14 @@ describe('TON:', function () {
 
     const transferInputsResponse = [
       {
-        address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
+        address: 'EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl',
         amount: '10000000',
       },
     ];
 
     const transferOutputsResponse = [
       {
-        address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+        address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
         amount: '10000000',
       },
     ];
@@ -200,7 +200,7 @@ describe('TON:', function () {
     });
 
     it('should return true for isWalletAddress with valid address for index 4', async function () {
-      const newAddress = 'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi';
+      const newAddress = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n';
       const index = 4;
 
       const params = { commonKeychain, address: newAddress, index, keychains };
