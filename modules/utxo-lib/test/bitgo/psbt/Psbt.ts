@@ -33,6 +33,8 @@ import {
   deleteWitnessUtxoForNonSegwitInputs,
   getPsbtInputScriptType,
   withUnsafeNonSegwit,
+  getTransactionAmountsFromPsbt,
+  WalletUnspent,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -876,8 +878,9 @@ function testUtxoPsbt(coinNetwork: Network) {
   describe(`Testing UtxoPsbt (de)serialization for ${getNetworkName(coinNetwork)} network`, function () {
     let psbt: UtxoPsbt;
     let psbtHex: string;
+    let unspents: (WalletUnspent<bigint> | Unspent<bigint>)[];
     before(async function () {
-      const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000'), coinNetwork);
+      unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000'), coinNetwork);
       const txBuilderParams = {
         signer: 'user',
         cosigner: 'bitgo',
@@ -903,6 +906,15 @@ function testUtxoPsbt(coinNetwork: Network) {
 
     it('should be able to round-trip', async function () {
       assert.deepStrictEqual(createPsbtFromHex(psbtHex, coinNetwork, false).toBuffer(), psbt.toBuffer());
+    });
+
+    it('should be able to get transaction info from psbt', function () {
+      const txInfo = getTransactionAmountsFromPsbt(psbt);
+      assert.strictEqual(txInfo.fee, FEE);
+      assert.strictEqual(txInfo.inputCount, unspents.length);
+      assert.strictEqual(txInfo.inputAmount, BigInt('10000000000000') * BigInt(unspents.length));
+      assert.strictEqual(txInfo.outputAmount, BigInt('10000000000000') * BigInt(unspents.length) - FEE);
+      assert.strictEqual(txInfo.outputCount, psbt.data.outputs.length);
     });
 
     function deserializeBip32PathsCorrectly(bip32PathsAbsolute: boolean): void {
